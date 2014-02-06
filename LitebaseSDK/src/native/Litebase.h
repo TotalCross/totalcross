@@ -97,7 +97,7 @@ bool initVars(OpenParams params);
  * @return A Litebase instance.
  * @throws OutOfMemoryError If memory allocation fails.
  */
-Object create(Context context, int32 crid, Object objParams);
+TCObject create(Context context, int32 crid, TCObject objParams);
 
 /**
  * Frees all data concerning a certaim driver connection.
@@ -127,7 +127,7 @@ void freeLitebase(Context context, int32 driver);
  * @throws AlreadyCreatedException If the table or index is already created.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 len);
+void litebaseExecute(Context context, TCObject driver, JCharP sqlStr, uint32 len);
 
 /**
  * Used to execute updates in a table (insert, delete, update, alter table, drop). E.g.:
@@ -149,7 +149,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 len);
  * @return The number of rows affected or <code>0</code> if a drop or alter operation was successful, or <code>-1</code> if an error occurs.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32 sqlLen);
+int32 litebaseExecuteUpdate(Context context, TCObject driver, JCharP sqlStr, int32 sqlLen);
 
 /**
  * Used to execute queries in a table. Example:
@@ -168,7 +168,7 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
  * @return A result set with the values returned from the query or <code>null</code> if an error occurs.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32 length);
+TCObject litebaseExecuteQuery(Context context, TCObject driver, JCharP strSql, int32 length);
 
 /**
  * Drops a table.
@@ -178,7 +178,7 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
  * @param parser The parser.
  * @throws DriverException If the table does not exist, if its name is greater than the maximum possible or it is not possible to remove it.
  */
-void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* parser);
+void litebaseExecuteDropTable(Context context, TCObject driver, LitebaseParser* parser);
 
 /**
  * Drops an index.
@@ -189,7 +189,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
  * @return <code>-1</code> if an error occured; the number of indices removed, otherwise.
  * @throws DriverException If a column does not have an index, is invalid, or if the columns to have the index dropped are from a primary key.
  */
-int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* parser);
+int32 litebaseExecuteDropIndex(Context context, TCObject driver, LitebaseParser* parser);
 
 /**
  * Executes an alter statement.
@@ -202,7 +202,7 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
  * @throws SQLParseException If there is a blob in a primary key definition or there is a duplicated column name in the primary key definition.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser);
+void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* parser);
 
 /**
  * Gets the value of a column stored in the row iterator.
@@ -236,7 +236,7 @@ bool testRIClosed(NMParams params);
  * @return The slot number for palm, -1 for the other devices or 0 in case of error.
  * @throws DriverException if the path passed as a parameter is invalid. 
  */
-int32 checkApppath(Context context, CharP sourcePath, CharP pathParam);
+int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam);
 
 /**
  * Verifies if the function can be applied to a data type field.

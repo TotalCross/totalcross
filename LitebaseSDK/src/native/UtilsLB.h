@@ -92,6 +92,14 @@ CharP strLeftTrim(CharP chars);
 CharP strTrim(CharP chars);
 
 /**
+* Does a left and right trim in tchar a string.
+*
+* @param chars The tchar string to be trimmed.
+* @return The tchar string with the blanks in the beggining and in the end trimmed.
+*/
+TCHARP tstrTrim(TCHARP chars);
+
+/**
  * Does a left trim in a unicode string.
  *
  * @param string16Str The string to be trimmed.
@@ -216,7 +224,7 @@ void setBit(uint8* items, int32 index, bool isOn);
  * @param sourcePath The path where the table is stored.
  * @param buffer Receives path + file name with a path separator if necessary.
  */
-void getFullFileName(CharP fileName, CharP sourcePath, TCHARP buffer);
+void getFullFileName(CharP fileName, TCHARP sourcePath, TCHARP buffer);
 
 /**
  * Returns the time in the format YYYYMMDDHHMMSS as a long value. It does not include the millis.
@@ -259,7 +267,7 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
  *                                                                          
  * @param sourcePath The path used by the system to store application files.
  */                                                                         
-void getCurrentPath(CharP sourcePath);   
+void getCurrentPath(TCHARP sourcePath);   
 
 /**
  * Formats a date in a unicode buffer.

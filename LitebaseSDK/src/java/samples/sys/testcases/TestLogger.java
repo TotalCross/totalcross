@@ -47,7 +47,7 @@ public class TestLogger  extends TestCase
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       LitebaseConnection.logger.dispose(true);
       LitebaseConnection.logger = null;
-      while (Vm.getTimeStamp() - time < 1000)
+      while (Vm.getTimeStamp() - time < 2000)
          Vm.sleep(1);
       LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();   
       assertEquals(1, LitebaseConnection.deleteLogFiles());

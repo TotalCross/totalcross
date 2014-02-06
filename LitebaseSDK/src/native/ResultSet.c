@@ -353,7 +353,7 @@ double rsGetDouble(ResultSet* resultSet, int32 column)
  * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue* value)
+TCObject rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue* value)
 {
 	TRACE("rsGetChars")
    int32 length = 0,
@@ -361,7 +361,7 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
    Table* table = resultSet->table;
    PlainDB* plainDB = &table->db;
    XFile* dbo; 
-   Object object;
+   TCObject object;
 
    // Fetches the string position in the .dbo of the disk table.
    loadPlainDBAndPosition(&plainDB->basbuf[table->columnOffsets[column]], &plainDB, &position);
@@ -421,14 +421,14 @@ void rsGetDateTimeValue(ResultSet* resultSet, int32 column, SQLValue* value)
  * @param column The column index.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
+TCObject rsGetBlob(Context context, ResultSet* resultSet, int32 column)
 {
 	TRACE("rsGetBlob")
    int32 length,
          position;
    Table* table = resultSet->table;
    PlainDB* plainDB = &table->db;
-   Object object;
+   TCObject object;
 
    // Fetches the blob position in the .dbo of the disk table.
    loadPlainDBAndPosition(&plainDB->basbuf[table->columnOffsets[column]], &plainDB, &position);
@@ -460,7 +460,7 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
  * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue* value)
+TCObject rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue* value)
 {
 	TRACE("rsGetString")
    Table* table = resultSet->table;
@@ -498,7 +498,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
          int32 length = 0,
                position;
          XFile* dbo;
-         Object object;
+         TCObject object;
 
          // Fetches the string position in the .dbo of the disk table.
          loadPlainDBAndPosition(ptr, &plainDB, &position);
@@ -559,9 +559,9 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
       if ((position = resultSet->pos) >= 0 && position <= (table = resultSet->table)->db.rowCount - 1) // Invalid result set position.
       {
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         Object* strings; 
-         Object* matrixEntry;
-         Object result;
+         TCObject* strings; 
+         TCObject* matrixEntry;
+         TCObject result;
          int8* columnTypes = table->columnTypes;
          uint8* columnNulls0 = table->columnNulls;
          SQLValue value;
@@ -596,7 +596,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
             TC_setObjectLock(result, UNLOCKED); 
             return;
          }
-         matrixEntry = (Object*)ARRAYOBJ_START(params->retO);
+         matrixEntry = (TCObject*)ARRAYOBJ_START(params->retO);
 
          do
          {
@@ -608,7 +608,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
             TC_setObjectLock(*matrixEntry, UNLOCKED);
             
             // We will hold the found objects in the native stack to avoid them being collected.
-            strings = (Object*)ARRAYOBJ_START(*(matrixEntry++));
+            strings = (TCObject*)ARRAYOBJ_START(*(matrixEntry++));
             i = -1;
             while (++i < cols)
             {
@@ -648,9 +648,9 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
          TC_setObjectLock(params->retO = result, UNLOCKED); 
          if ((int32)ARRAYOBJ_LEN(result) > validRecords) // juliana@211_4: solved bugs with result set dealing.
 		   {
-			   Object matrix;
+			   TCObject matrix;
    			
-			   matrixEntry = (Object*)ARRAYOBJ_START(params->retO);
+			   matrixEntry = (TCObject*)ARRAYOBJ_START(params->retO);
             if (!(matrix = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
 				   return;
 			   xmemmove(ARRAYOBJ_START(matrix), matrixEntry, PTRSIZE * validRecords); 
@@ -680,7 +680,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
 void rsGetByIndex(NMParams p, int32 type)
 {
 	TRACE("rsGetByIndex")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
       rsPrivateGetByIndex(p, type);
@@ -705,7 +705,7 @@ void rsGetByIndex(NMParams p, int32 type)
 void rsGetByName(NMParams p, int32 type)
 {
 	TRACE("rsGetByName")
-   Object resultSet = p->obj[0],
+   TCObject resultSet = p->obj[0],
           colName = p->obj[1];
  
    // juliana@227_4: the connection where the result set was created can't be closed while using it.
@@ -1105,7 +1105,7 @@ CharP zeroPad(CharP buffer, int32 value, uint32 order) // rnovais@567_2
  * @param stringObj The string object.
  * @return The hash code of the string object.
  */
-int32 identHashCode(Object stringObj)
+int32 identHashCode(TCObject stringObj)
 {
 	TRACE("identHashCode")
    int32 hash = 0,
@@ -1322,7 +1322,7 @@ void loadPlainDBAndPosition(uint8* buffer, PlainDB** plainDB, int32* position)
  * @param resultSet The result set object.
  * @throws IllegalStateException If the result set or driver is closed.
  */
-bool testRSClosed(Context context, Object resultSet)
+bool testRSClosed(Context context, TCObject resultSet)
 {
    TRACE("testRSClosed")
    if (OBJ_ResultSetDontFinalize(resultSet)) // Prepared Statement Closed.
@@ -1374,7 +1374,7 @@ Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName)
  * @return The default value of the column as a string or <code>null</code> if there is no default value.
  * @throws DriverException If the column index is of a column of type <code>BLOB</code>.
  */
-Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 index) 
+TCObject getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 index) 
 {
    Table* table;
    
@@ -1393,7 +1393,7 @@ Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 
          case CHARS_TYPE:
          case CHARS_NOCASE_TYPE:
          {
-            Object string = TC_createStringObjectWithLen(context, value->length);
+            TCObject string = TC_createStringObjectWithLen(context, value->length);
             if (!string)
                return null;
             xmemmove(String_charsStart(string), value->asChars, value->length << 1); 

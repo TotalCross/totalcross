@@ -266,7 +266,7 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+Table* tableCreate(Context context, CharP name, TCHARP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
                                                                                                          bool throwException, Heap heap); 
 
 /**
@@ -291,7 +291,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
+Table* driverCreateTable(Context context, TCObject driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
        SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
                               
 /**
@@ -304,7 +304,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws OutOfMemoryError If a memory allocation fails. 
  */
-bool renameTable(Context context, Object driver, Table* table, CharP newTableName); // rnovais@566_10
+bool renameTable(Context context, TCObject driver, Table* table, CharP newTableName); // rnovais@566_10
 
 /**
  * Renames a column of a table.
@@ -526,7 +526,7 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
  * @throws AlreadyCreatedException If the table is already created.
  * @throws DriverException If the path is too long.
  */
-bool tableExistsByName(Context context, Object driver, CharP name);
+bool tableExistsByName(Context context, TCObject driver, CharP name);
 
 /** 
  * Gets the table name on disk.
@@ -549,7 +549,7 @@ bool getDiskTableName(Context context, int32 crid, CharP name, CharP buffer);
  * @return <code>null<code> if an error occurs; a table handle, otherwise.
  * @throws DriverException If the table name is too big.
  */
-Table* getTableFromName(Context context, Object driver, Object name);
+Table* getTableFromName(Context context, TCObject driver, TCObject name);
 
 /**
  * Given a table name as an uint8 string, returns its table.
@@ -561,7 +561,7 @@ Table* getTableFromName(Context context, Object driver, Object name);
  * @throws DriverException If the table name is too big.
  * @throws OutOfMemoryError If there is not enougth memory to be allocated
  */
-Table* getTable(Context context, Object driver, CharP tableName);
+Table* getTable(Context context, TCObject driver, CharP tableName);
 
 /**
  * Reads a string from a buffer.

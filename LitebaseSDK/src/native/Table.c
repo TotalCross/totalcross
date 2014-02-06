@@ -309,9 +309,9 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
  */
 bool tableLoadMetaData(Context context, Table* table, bool throwException) // juliana@220_5
 {
-	TRACE("tableLoadMetaData")
-   CharP sourcePath = table->sourcePath,
-         tableName = table->name;
+   TRACE("tableLoadMetaData")
+   TCHARP sourcePath = table->sourcePath;
+   CharP tableName = table->name;
 	int32 flags,
          columnCount = 0,
          i = -1,
@@ -324,10 +324,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    bool exist;
    PlainDB* plainDB = &table->db;
    XFile* dbFile = &plainDB->db;
-#ifdef WINCE
-   TCHAR indexNameTCHARP[MAX_PATHNAME];
-#endif
-   char indexName[MAX_PATHNAME];
+   TCHAR indexName[MAX_PATHNAME];
    uint8 buffer[512]; // A buffer for small metadata.
    IntBuf intBuf;
    uint8* metadata = plainReadMetaData(context, plainDB, buffer); // Reads the meta data.
@@ -472,13 +469,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    table->columnNulls = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
 
    // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
-#ifdef WINCE
-   getFullFileName(tableName, sourcePath, indexNameTCHARP);
-   TC_JCharP2CharPBuf(indexNameTCHARP, -1, indexName); 
-#else
    getFullFileName(tableName, sourcePath, indexName);
-#endif
-   indexName[nameLength = xstrlen(indexName)] = '$';
+   indexName[nameLength = tcslen(indexName)] = '$';
 
    i = columnCount;
    while (--i >= 0) // Loads the indices.
@@ -497,42 +489,26 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          // rnovais@110_2: verifies if the index file exists, otherwise makes the re-index.
          columnSizesIdx = (int32*)TC_heapAlloc(idxHeap, 4);
          columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, 1);
-         xstrcpy(&indexName[nameLength + 1], TC_int2str(i, intBuf));
-         xstrcat(indexName, IDK_EXT);
-         indexNameLength = xstrlen(indexName);
+         TC_CharP2TCHARPBuf(TC_int2str(i, intBuf), &indexName[nameLength + 1]);
+         tcscat(indexName, TEXT(IDK_EXT));
+         indexNameLength = tcslen(indexName);
 
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
-#ifdef WINCE
-         TC_CharP2JCharPBuf(indexName, indexNameLength, indexNameTCHARP, true);
-         
-         // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-         if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
-         {     
-            if ((exist = lbfileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = lbfileSetSize(&idxFile, 0)) || (exist = lbfileClose(&idxFile)))
-            {
-               fileError(context, exist, indexName);
-               heapDestroy(idxHeap);
-               table->columnIndexes[i] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
-               goto error;
-            }
-            exist = false;
-         }   
-#else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
             if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE, &slot))
              || (exist = lbfileSetSize(&idxFile, 0)) || (exist = lbfileClose(&idxFile)))
             {
-               fileError(context, exist, indexName);
+               char buffer[1024];
+               TC_TCHARP2CharPBuf(indexName, buffer);
+               fileError(context, exist, buffer);
                heapDestroy(idxHeap);
                table->columnIndexes[i] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
                goto error;
             }
             exist = false;
          }
-#endif
 
          *columnSizesIdx = columnSizes[i];
          *columnTypesIdx = columnTypes[i];
@@ -659,43 +635,28 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             columnTypesIdx[j] = columnTypes[columns[j]];
          }
             
-         xstrcpy(&indexName[nameLength + 1], TC_int2str(i + 1, intBuf));
-         xstrcat(indexName, IDK_EXT);
-         indexNameLength = xstrlen(indexName);
+         TC_CharP2TCHARPBuf(TC_int2str(i + 1, intBuf), &indexName[nameLength + 1]);
+         tcscat(indexName, TEXT(IDK_EXT));
+         indexNameLength = tcslen(indexName);
             
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
-#ifdef WINCE
-         TC_CharP2JCharPBuf(indexName, indexNameLength, indexNameTCHARP, true);
-         
-         // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-         if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
-         {     
-            if ((exist = lbfileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = lbfileSetSize(&idxFile, 0)) || (exist = lbfileClose(&idxFile)))
-            {
-               fileError(context, exist, indexName);
-               heapDestroy(idxHeap);
-               table->composedIndexes[indexId] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
-               goto error;
-            }
-            exist = false;
-         }
-#else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
             if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE, &slot))
              || (exist = lbfileSetSize(&idxFile, 0))
              || (exist = lbfileClose(&idxFile)))
             {
-               fileError(context, exist, indexName);
+               char buffer[1024];
+               TC_TCHARP2CharPBuf(indexName, buffer);
+               fileError(context, exist, buffer);
                heapDestroy(idxHeap);
                table->composedIndexes[indexId] = null; // juliana@270_22: solved a possible crash when the table is corrupted.
                goto error;
             }
             exist = false;
          }
-#endif
+
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
          // One of the files may not exist.
          if (!indexCreateComposedIndex(context, table, table->name, columns, columnSizesIdx, columnTypesIdx, numColumns, indexId, false, exist, 
@@ -1589,7 +1550,7 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+Table* tableCreate(Context context, CharP name, TCHARP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
                                                                                            bool throwException, Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
@@ -1648,12 +1609,12 @@ error:
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
+Table* driverCreateTable(Context context, TCObject driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
        SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
 {
 	TRACE("driverCreateTable")
    Table* table = null;
-   CharP sourcePath = getLitebaseSourcePath(driver);
+   TCHARP sourcePath = getLitebaseSourcePath(driver);
 	int32 appCrid = OBJ_LitebaseAppCrid(driver);
    Hashtable* htTables = getLitebaseHtTables(driver);
 
@@ -1732,13 +1693,13 @@ error:
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws OutOfMemoryError If a memory allocation fails. 
  */
-bool renameTable(Context context, Object driver, Table* table, CharP newTableName) // rnovais@566_10
+bool renameTable(Context context, TCObject driver, Table* table, CharP newTableName) // rnovais@566_10
 {
    TRACE("renameTable")
 	char result[DBNAME_SIZE];
    IntBuf intBuf;
    char oldTableName[DBNAME_SIZE];
-   CharP sourcePath = table->sourcePath;
+   TCHARP sourcePath = table->sourcePath;
 	int32 i,
          length;
 	Hashtable* htTables = getLitebaseHtTables(driver);
@@ -2933,10 +2894,10 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       Index** columnIndexes = table->columnIndexes;
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* idx;
-      Object obj;
-      Objects* list = table->preparedStmts;
-      Objects* preparedStmts = table->preparedStmts;
-      CharP sourcePath = table->sourcePath;
+      TCObject obj;
+      TCObjects* list = table->preparedStmts;
+      TCObjects* preparedStmts = table->preparedStmts;
+      TCHARP sourcePath = table->sourcePath;
 
       TC_htFree(&table->htName2index, null); // Frees the column names hash table.
       xfree(table->allRowsBitmap); // juliana@230_14
@@ -2975,7 +2936,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
 		if (preparedStmts)
       {
          Hashtable* htPS;
-         Object sqlObj;
+         TCObject sqlObj;
          do
 		   {
             // juliana@226_16: prepared statement is now a singleton.
@@ -2986,7 +2947,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
                TC_htRemove(htPS, TC_JCharPHashCode(String_charsStart(sqlObj), String_charsLen(sqlObj)));
                freePreparedStatement(obj);
             }
-			   list = TC_ObjectsRemove(list, obj);
+			   list = TC_TCObjectsRemove(list, obj);
 			   list = list->next;
 		   } while (preparedStmts != list);
       }
@@ -3024,19 +2985,15 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
  * @throws AlreadyCreatedException If the table is already created.
  * @throws DriverException If the path is too long.
  */
-bool tableExistsByName(Context context, Object driver, CharP name)
+bool tableExistsByName(Context context, TCObject driver, CharP name)
 {
    TRACE("tableExistsByName")
-   char fullName[MAX_PATHNAME];
+   TCHAR fullName[MAX_PATHNAME];
    char bufName[DBNAME_SIZE];
-   CharP sourcePath = getLitebaseSourcePath(driver);
-
-#ifdef WINCE
-   TCHAR fullNameTCHARP[MAX_PATHNAME];
-#endif
+   TCHARP sourcePath = getLitebaseSourcePath(driver);
 
    // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-   if (xstrlen(name) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+   if (xstrlen(name) + tcslen(sourcePath) + 10 > MAX_PATHNAME)
    {     
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath); 
       return false; 
@@ -3045,16 +3002,10 @@ bool tableExistsByName(Context context, Object driver, CharP name)
    // Verifies if the table exists checking if the .db exists. The name must be already on lower case.
    if (!getDiskTableName(context, OBJ_LitebaseAppCrid(driver), name, bufName))
       return true;
-   xstrcpy(fullName, sourcePath);
-   xstrcat(fullName, bufName);
-   xstrcat(fullName, DB_EXT);
+   getFullFileName(bufName, sourcePath, fullName);
+   tcscat(fullName, TEXT(DB_EXT));
 
-#ifdef WINCE
-   TC_CharP2JCharPBuf(fullName, -1, fullNameTCHARP, true);
-   if (lbfileExists(fullNameTCHARP, 0))
-#else
    if (lbfileExists(fullName, OBJ_LitebaseSlot(driver)))
-#endif
    {
       // The .db file already exists. So, the table is considered to exists.
       TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_TABLE_ALREADY_CREATED), name);
@@ -3103,7 +3054,7 @@ bool getDiskTableName(Context context, int32 crid, CharP name, CharP buffer)
  * @return <code>null<code> if an error occurs; a table handle, otherwise.
  * @throws DriverException If the table name is too big.
  */
-Table* getTableFromName(Context context, Object driver, Object name)
+Table* getTableFromName(Context context, TCObject driver, TCObject name)
 {
 	TRACE("getTableFromName")
    char tableName[DBNAME_SIZE];
@@ -3130,7 +3081,7 @@ Table* getTableFromName(Context context, Object driver, Object name)
  * @throws DriverException If the table name is too big.
  * @throws OutOfMemoryError If there is not enougth memory to be allocated.
  */
-Table* getTable(Context context, Object driver, CharP tableName)
+Table* getTable(Context context, TCObject driver, CharP tableName)
 {
 	TRACE("getTable")
    char name[DBNAME_SIZE];

@@ -33,7 +33,7 @@
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize);
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath, int32 slot, XFile* xFile, int32 cacheSize);
 
 /**
  * Reads file bytes.
@@ -87,7 +87,7 @@ void nfSetPos(XFile* xFile, int32 newPos);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to rename the file.
  */
-bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, int32 slot);
+bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath, int32 slot);
 
 /** 
  * Closes a file.
@@ -109,7 +109,7 @@ bool nfClose(Context context, XFile* xFile);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to remove the file.
  */
-bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot);
+bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath, int32 slot);
 
 /**
  * The cache must be refreshed if what is desired is not inside it.

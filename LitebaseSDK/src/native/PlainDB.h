@@ -35,7 +35,7 @@
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, CharP sourcePath, int32 slot);
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, TCHARP sourcePath, int32 slot);
 
 /**
  * Sets the size of a row.
@@ -95,7 +95,7 @@ bool plainRewrite(Context context, PlainDB* plainDB, int32 record);
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainRename(Context context, PlainDB* plainDB, CharP newName, CharP sourcePath, int32 slot);
+bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP sourcePath, int32 slot);
 
 /**
  * Writes the given metadata to the header of the .db file.
@@ -139,7 +139,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos);
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainRemove(Context context, PlainDB* plainDB, CharP sourcePath, int32 slot);
+bool plainRemove(Context context, PlainDB* plainDB, TCHARP sourcePath, int32 slot);
 
 /**
  * Sets the .db file pointer to point to a record position.

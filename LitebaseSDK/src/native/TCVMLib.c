@@ -29,9 +29,11 @@ void initTCVMLib()
    TC_tiF_create_sii = TC_getProcAddress(null, "tiF_create_sii");
    TC_CharP2JCharP = GETPROCADDRESS(CharP2JCharP);
    TC_CharP2JCharPBuf = GETPROCADDRESS(CharP2JCharPBuf);
+   TC_CharP2TCHARPBuf = GETPROCADDRESS(CharP2TCHARPBuf);
    TC_CharPToLower = GETPROCADDRESS(CharPToLower);
-   TC_JCharP2CharP = GETPROCADDRESS(JCharP2CharP);
+   TC_JCharP2CharP = GETPROCADDRESS(JCharP2CharP);   
    TC_JCharP2CharPBuf = GETPROCADDRESS(JCharP2CharPBuf);
+   TC_JCharP2TCHARPBuf = GETPROCADDRESS(JCharP2TCHARPBuf);
    TC_JCharPEqualsJCharP = GETPROCADDRESS(JCharPEqualsJCharP);
    TC_JCharPEqualsIgnoreCaseJCharP = GETPROCADDRESS(JCharPEqualsIgnoreCaseJCharP);
    TC_JCharPHashCode = GETPROCADDRESS(JCharPHashCode);
@@ -39,6 +41,7 @@ void initTCVMLib()
    TC_JCharPLen = GETPROCADDRESS(JCharPLen);
    TC_JCharToLower = GETPROCADDRESS(JCharToLower);
    TC_JCharToUpper = GETPROCADDRESS(JCharToUpper);
+   TC_TCHARP2CharPBuf = GETPROCADDRESS(TCHARP2CharPBuf);
    TC_alert = GETPROCADDRESS(alert);
    TC_appendCharP = GETPROCADDRESS(appendCharP); // juliana@230_30
    TC_appendJCharP = GETPROCADDRESS(appendJCharP); // juliana@230_30
@@ -124,9 +127,11 @@ TESTCASE(initTCVMLib)
    UNUSED(currentContext)
    ASSERT1_EQUALS(NotNull, TC_CharP2JCharP);
    ASSERT1_EQUALS(NotNull, TC_CharP2JCharPBuf);
+   ASSERT1_EQUALS(NotNull, TC_CharP2TCHARPBuf);
    ASSERT1_EQUALS(NotNull, TC_CharPToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharP2CharP);
    ASSERT1_EQUALS(NotNull, TC_JCharP2CharPBuf);
+   ASSERT1_EQUALS(NotNull, TC_JCharP2TCHARPBuf);
 	ASSERT1_EQUALS(NotNull, TC_JCharPEqualsJCharP);
    ASSERT1_EQUALS(NotNull, TC_JCharPEqualsIgnoreCaseJCharP);
    ASSERT1_EQUALS(NotNull, TC_JCharPHashCode);
@@ -134,6 +139,7 @@ TESTCASE(initTCVMLib)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TCHARP2CharPBuf);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);

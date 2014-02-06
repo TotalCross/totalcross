@@ -17,7 +17,7 @@
 
 #if defined PALMOS
    #include "palm/File_c.h"
-#elif defined WINCE || defined WIN32
+#elif defined WIN32
    #include "win/File_c.h"
 #else
    #include "posix/File_c.h"

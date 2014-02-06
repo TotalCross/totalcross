@@ -145,7 +145,7 @@ double rsGetDouble(ResultSet* resultSet, int32 column);
  * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue* value);
+TCObject rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue* value);
 
 /**
  * Given the column index (starting from 1), fetches two integers values that are represented by this column. Note that it is only possible to 
@@ -166,7 +166,7 @@ void rsGetDateTimeValue(ResultSet* resultSet, int32 column, SQLValue* value);
  * @param column The column index.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetBlob(Context context, ResultSet* resultSet, int32 column);
+TCObject rsGetBlob(Context context, ResultSet* resultSet, int32 column);
 
 /**
  * Given the column index (starting from 1), returns a string that is represented by this column. Any column type can be returned as a string. 
@@ -178,7 +178,7 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column);
  * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue* value);
+TCObject rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue* value);
 
 /**
  * Starting from the current cursor position, it reads all result set rows that are being requested. <code>first()</code>,  <code>last()</code>, 
@@ -307,7 +307,7 @@ CharP zeroPad(CharP buffer, int32 value, uint32 order);
  * @param stringObj The string object.
  * @return The hash code of the string object.
  */
-int32 identHashCode(Object stringObj);
+int32 identHashCode(TCObject stringObj);
 
 /**
  * Applies a function when fetching data from the result set.
@@ -347,7 +347,7 @@ void loadPlainDBAndPosition(uint8* buffer, PlainDB** plainDB, int32* position);
  * @param resultSet The result set object.
  * @throws IllegalStateException If the result set or driver is closed.
  */
-bool testRSClosed(Context context, Object resultSet);
+bool testRSClosed(Context context, TCObject resultSet);
 
 /**
  * Returns a table used in a select given its name.
@@ -370,6 +370,6 @@ Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName);
  * @return The default value of the column as a string or <code>null</code> if there is no default value.
  * @throws DriverException If the column index is of a column of type <code>BLOB</code>.
  */
-Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 index);
+TCObject getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 index);
 
 #endif

@@ -64,9 +64,11 @@ extern int32 crcTable[CRC32_SIZE]; // The crc32 table used to calculate a crc32 
 // TotalCross functions used by Litebase.
 extern CharP2JCharPFunc TC_CharP2JCharP;
 extern CharP2JCharPBufFunc TC_CharP2JCharPBuf;
+extern CharP2TCHARPBufFunc TC_CharP2TCHARPBuf;
 extern CharPToLowerFunc TC_CharPToLower;
 extern JCharP2CharPBufFunc TC_JCharP2CharPBuf;
 extern JCharP2CharPFunc TC_JCharP2CharP;
+extern JCharP2TCHARPBufFunc TC_JCharP2TCHARPBuf;
 extern JCharPEqualsJCharPFunc TC_JCharPEqualsJCharP;
 extern JCharPEqualsIgnoreCaseJCharPFunc TC_JCharPEqualsIgnoreCaseJCharP;
 extern JCharPHashCodeFunc TC_JCharPHashCode;
@@ -74,6 +76,7 @@ extern JCharPIndexOfJCharFunc TC_JCharPIndexOfJChar;
 extern JCharPLenFunc TC_JCharPLen;
 extern JCharToLowerFunc TC_JCharToLower;
 extern JCharToUpperFunc TC_JCharToUpper;
+extern TCHARP2CharPBufFunc TC_TCHARP2CharPBuf;
 extern alertFunc TC_alert;
 extern appendCharPFunc TC_appendCharP; // juliana@230_30
 extern appendJCharPFunc TC_appendJCharP; // juliana@230_30

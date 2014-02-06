@@ -260,6 +260,27 @@ CharP strTrim(CharP chars)
 }
 
 /**
+* Does a left and right trim in tchar a string.
+*
+* @param chars The tchar string to be trimmed.
+* @return The tchar string with the blanks in the beggining and in the end trimmed.
+*/
+TCHARP tstrTrim(TCHARP chars)
+{
+   TRACE("tstrTrim")
+   int32 j;
+
+   while (*chars == ' ') // Left trim.
+      chars++;
+   if ((j = tcslen(chars) - 1) < 0)
+      return chars;
+   while (chars[j] == ' ') // Right trim. 
+      j--;
+   chars[j + 1] = 0; // Zeroes the end of the string.
+   return chars;
+}
+
+/**
  * Does a left trim in a unicode string.
  *
  * @param string16Str The string to be trimmed.
@@ -620,32 +641,16 @@ void setBit(uint8* items, int32 index, bool isOn)
  * @param sourcePath The path where the table is stored.
  * @param buffer Receives path + file name with a path separator if necessary.
  */
-void getFullFileName(CharP fileName, CharP sourcePath, TCHARP buffer)
+void getFullFileName(CharP fileName, TCHARP sourcePath, TCHARP buffer)
 {
 	TRACE("getFullFileName")
-   int32 endChar = xstrlen(sourcePath) - 1;
+   int32 endChar = tcslen(sourcePath) - 1;
 
-// juliana@223_6: Corrected a bug that would create spourious paths if they had a stress on Windows CE. 
-#ifdef WINCE
-   TC_CharP2JCharPBuf(sourcePath, endChar + 1, buffer, true);
+   // juliana@223_6: Corrected a bug that would create spourious paths if they had a stress on Windows CE. 
+   tcscpy(buffer, sourcePath);
    if (sourcePath[endChar] != PATH_SEPARATOR && sourcePath[endChar] != NO_PATH_SEPARATOR)
-   {
-      buffer[endChar + 1] = PATH_SEPARATOR;
-      buffer[endChar + 2] = 0;
-      endChar += 2;
-   }
-   else
-      endChar++;
-   TC_CharP2JCharPBuf(fileName, -1, &buffer[endChar], true);
-#else
-   xstrcpy(buffer, sourcePath);
-   if (sourcePath[endChar] != PATH_SEPARATOR && sourcePath[endChar] != NO_PATH_SEPARATOR)
-   {
-      buffer[endChar + 1] = PATH_SEPARATOR;
-      buffer[endChar + 2] = 0;
-   }
-   xstrcat(buffer, fileName);
-#endif
+      tcscat(buffer, TEXT("\\"));
+   TC_CharP2TCHARPBuf(fileName, &buffer[tcslen(buffer)]);
 }
 
 /**
@@ -724,12 +729,14 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
  *                                                                          
  * @param sourcePath The path used by the system to store application files.
  */                                                                         
-void getCurrentPath(CharP sourcePath)                                       
+void getCurrentPath(TCHARP sourcePath)                                       
 {                     
    TRACE("getCurrentPath")
+   char buffer[MAX_PATHNAME];
                                                          
-   if (!TC_getDataPath(sourcePath) || sourcePath[0] == 0)                   
-      xstrcpy(sourcePath, TC_getAppPath());                                 
+   if (!TC_getDataPath(buffer) || buffer[0] == 0)
+      xstrcpy(buffer, TC_getAppPath());
+   TC_CharP2TCHARPBuf(buffer, sourcePath);
 }    
 
 /**
@@ -819,7 +826,7 @@ float str2float(CharP chars, bool* error)
  */
 bool setDateObject(NMParams params, int32 date)
 {
-   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.util.Date");
+   TCObject object = params->retO = TC_createObject(params->currentContext, "totalcross.util.Date");
       
    if (object)
    {
@@ -845,7 +852,7 @@ bool setDateObject(NMParams params, int32 date)
  */
 bool setTimeObject(NMParams params, int32 date, int32 time)
 {
-   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.sys.Time");
+   TCObject object = params->retO = TC_createObject(params->currentContext, "totalcross.sys.Time");
    
    if (object)
    {

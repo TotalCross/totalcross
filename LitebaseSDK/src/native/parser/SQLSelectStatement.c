@@ -246,7 +246,7 @@ bool allParamValuesDefinedSel(SQLSelectStatement* selectStmt)
  * @throws DriverException If the record can't be removed from the indices.
  * @throws OutOfMemoryError If a heap memory allocation fails.
  */
-Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* selectStmt)
+TCObject litebaseDoSelect(Context context, TCObject driver, SQLSelectStatement* selectStmt)
 {
 	TRACE("litebaseDoSelect")
    ResultSet* bag;
@@ -254,7 +254,7 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
    SQLResultSetTable** tableList = selectClause->tableList;
    Table* rsBaseTable;
 	bool isSimpleSelect = false;
-	Object resultSet = null;
+	TCObject resultSet = null;
    Heap heap;
 
 	int32 i = selectClause->tableListSize;
@@ -347,7 +347,7 @@ finish:
  * @param selectStmt A SQL select statement.
  * @return <code>true</code>, if the statement was bound successfully; <code>false</code> otherwise.
  */
-bool litebaseBindSelectStatement(Context context, Object driver, SQLSelectStatement* selectStmt)
+bool litebaseBindSelectStatement(Context context, TCObject driver, SQLSelectStatement* selectStmt)
 {
 	TRACE("litebaseBindSelectStatement")
    SQLResultSetTable** tableList = selectStmt->selectClause->tableList;
@@ -601,7 +601,7 @@ bool validateSelectStatement(Context context, SQLSelectStatement* selectStmt)
  * @return The temporary result set table or null if an error occurs.
  * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
  */
-Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement* selectStmt)
+Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStatement* selectStmt)
 {
 	TRACE("generateResultSetTable")
 	SQLSelectClause* selectClause = selectStmt->selectClause;
@@ -1739,7 +1739,7 @@ void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunct
  * @return The table if the method executes correctlty; <code>null</code>, otherwise.
  * @throws OutOfMemoryError If there is not enougth memory alloc memory. 
  */
-Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP colName)
+Table* createIntValueTable(Context context, TCObject driver, int32 intValue, CharP colName)
 {
 	TRACE("createIntValueTable")
    Table* table = null;

@@ -35,7 +35,7 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (testRIClosed(p)) 
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
       Table* table = getRowIteratorTable(rowIterator);
       int32 rowNumber = OBJ_RowIteratorRowNumber(rowIterator),
          id;
@@ -79,7 +79,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (testRIClosed(p))
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
       Context context = p->currentContext;
       Table* table = getRowIteratorTable(rowIterator);
       PlainDB* plainDB = &table->db;
@@ -127,7 +127,7 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (testRIClosed(p))
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
       Table* table = getRowIteratorTable(rowIterator);
       PlainDB* plainDB = &table->db; 
       uint8* basbuf = plainDB->basbuf;
@@ -169,7 +169,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (testRIClosed(p))
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
    
       // juliana@227_22: RowIterator.close() now flushes the setSynced() calls.
       XFile* dbFile = &getRowIteratorTable(rowIterator)->db.db;
@@ -336,7 +336,8 @@ LB_API void lRI_getDate_i(NMParams p) // litebase/RowIterator public native tota
 //////////////////////////////////////////////////////////////////////////
 // juliana@223_5: now possible null values are treated in RowIterator.
 /**
- * Returns a datetime contained in the current row.
+ * Retur
+ ns a datetime contained in the current row.
  *
  * @param p->obj[0] The row iterator.
  * @param p->i32[0] The datetime column index, starting from 1.
@@ -371,7 +372,7 @@ LB_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boole
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.	
    if (testRIClosed(p))
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
       Table* table = getRowIteratorTable(rowIterator);
       int32 column = p->i32[0];
       
@@ -416,7 +417,7 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
 {
 	TRACE("lLC_privateGetInstance_s")
 	char strAppId[5];
-   Object appCrid = p->obj[0];
+   TCObject appCrid = p->obj[0];
 
    MEMORY_TEST_START
 	
@@ -465,7 +466,7 @@ LB_API void lLC_privateGetInstance_ss(NMParams p)
 {
 	TRACE("lLC_privateGetInstance_ss")
 	char strAppId[5];
-   Object appCrid = p->obj[0],
+   TCObject appCrid = p->obj[0],
           params = p->obj[1];
 
    MEMORY_TEST_START
@@ -496,14 +497,14 @@ LB_API void lLC_privateGetInstance_ss(NMParams p)
 LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public native String getSourcePath() throws IllegalStateException;
 {
 	TRACE("lLC_getSourcePath")
-   Object driver = p->obj[0];
+   TCObject driver = p->obj[0];
 
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
       TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
-	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, getLitebaseSourcePath(driver), -1), UNLOCKED);
+      TC_setObjectLock(p->retO = TC_createStringObjectFromTCHARP(p->currentContext, getLitebaseSourcePath(driver), -1), UNLOCKED);
 
    MEMORY_TEST_END
 }
@@ -534,7 +535,7 @@ LB_API void lLC_execute_s(NMParams p) // litebase/LitebaseConnection public nati
 	if (checkParamAndDriver(p, "sql")) // The sql can't be null and the driver can't be closed.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              sqlString = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
 
@@ -582,7 +583,7 @@ LB_API void lLC_executeUpdate_s(NMParams p) // litebase/LitebaseConnection publi
    if (checkParamAndDriver(p, "sql")) // The sql can't be null and the driver can't be closed.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              sqlString = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
 
@@ -628,7 +629,7 @@ LB_API void lLC_executeQuery_s(NMParams p) // litebase/LitebaseConnection public
    if (checkParamAndDriver(p, "sql")) // The sql can't be null and the driver can't be closed.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              sqlString = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
 	          
@@ -669,7 +670,7 @@ LB_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection pu
 
    if (checkParamAndDriver(p, "sql")) // The sql can't be null and the driver can't be closed.
    {  
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              sqlObj = p->obj[1],
              oldSqlObj,
              logger = litebaseConnectionClass->objStaticValues[1],
@@ -691,7 +692,7 @@ LB_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection pu
       // juliana@253_18: now it is possible to log only changes during Litebase operation.
       if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 	   {
-	      Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+	      TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
          
          LOCKVAR(log);
 
@@ -790,7 +791,7 @@ free:
                   }
                   OBJ_PreparedStatementType(prepStmt) = CMD_DELETE;
                   setPreparedStatementStatement(prepStmt, deleteStmt);
-			         table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
+			         table->preparedStmts = TC_TCObjectsAdd(table->preparedStmts, prepStmt, table->heap);
 			      }
 			      else
                   goto free;
@@ -812,7 +813,7 @@ free:
                   goto free;
                }
                setPreparedStatementStatement(prepStmt, insertStmt);
-			      table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
+			      table->preparedStmts = TC_TCObjectsAdd(table->preparedStmts, prepStmt, table->heap);
                break;
             }
 
@@ -872,7 +873,7 @@ free:
                         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                         goto free;
                      }
-				         table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
+				         table->preparedStmts = TC_TCObjectsAdd(table->preparedStmts, prepStmt, table->heap);
 				      }
 			      }
 			      else
@@ -899,7 +900,7 @@ free:
                   goto free;
                }
                setPreparedStatementStatement(prepStmt, updateStmt);
-		         table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
+		         table->preparedStmts = TC_TCObjectsAdd(table->preparedStmts, prepStmt, table->heap);
             }
          }
       }
@@ -987,7 +988,7 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],  
+      TCObject driver = p->obj[0],  
              tableName = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
@@ -995,7 +996,7 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
 	   // juliana@253_18: now it is possible to log only changes during Litebase operation.
       if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 	   {
-		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+		   TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
@@ -1039,7 +1040,7 @@ LB_API void lLC_getRowCount_s(NMParams p)
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              tableName = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
@@ -1047,7 +1048,7 @@ LB_API void lLC_getRowCount_s(NMParams p)
 		// juliana@253_18: now it is possible to log only changes during Litebase operation.
       if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 		{
-			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+			TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
@@ -1103,7 +1104,7 @@ LB_API void lLC_setRowInc_si(NMParams p)
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              tableName = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
@@ -1117,7 +1118,7 @@ LB_API void lLC_setRowInc_si(NMParams p)
 
       if (logger) // juliana@230_30: reduced log files size.
 		{
-			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+			TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
          IntBuf intBuf;
          
          LOCKVAR(log);
@@ -1192,7 +1193,7 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
 
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              tableNameObj = p->obj[1];
       char tableNameCharP[DBNAME_SIZE],
            bufName[DBNAME_SIZE];
@@ -1204,11 +1205,15 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
       {
          int32 length = String_charsLen(tableNameObj),
                slot = OBJ_LitebaseSlot(driver);
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
 
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-         if (length + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
-            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+         if (length + tcslen(sourcePath) + 10 > MAX_PATHNAME)
+         {
+            char buffer[1024];
+            TC_TCHARP2CharPBuf(sourcePath, buffer);
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), buffer);
+         }
          else
          {
             TC_JCharP2CharPBuf(String_charsStart(tableNameObj), length, tableNameCharP);
@@ -1218,22 +1223,14 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
             p->retI = lbfileExists(fullName, slot);
          
             // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
-#ifdef WINCE
-            length = TC_JCharPLen(fullName);
-#else
-            length = xstrlen(fullName);
-#endif
+            length = tcslen(fullName);
             fullName[length] = 'o';
             fullName[length + 1] = 0;
             if (p->retI && !lbfileExists(fullName, slot))
             {
-#ifdef WINCE
                char path[MAX_PATHNAME];
-               TC_JCharP2CharPBuf(fullName, -1, path);
-               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
-#else
-               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
-#endif                         
+               TC_TCHARP2CharPBuf(fullName, path);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);                      
             }
          }
       }
@@ -1256,7 +1253,7 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
 LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public native void closeAll() throws IllegalStateException;
 {
 	TRACE("lLC_closeAll")
-	Object driver = p->obj[0];
+	TCObject driver = p->obj[0];
    Context context = p->currentContext;
    
    MEMORY_TEST_START
@@ -1265,11 +1262,11 @@ LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public nativ
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      Object logger = litebaseConnectionClass->objStaticValues[1];
+      TCObject logger = litebaseConnectionClass->objStaticValues[1];
 
       if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+		   TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
@@ -1320,7 +1317,7 @@ LB_API void lLC_purge_s(NMParams p)
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              tableName = p->obj[1],
              logger = litebaseConnectionClass->objStaticValues[1];
       Table* table = getTableFromName(context, driver, tableName);
@@ -1328,7 +1325,7 @@ LB_API void lLC_purge_s(NMParams p)
 
       if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+		   TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
@@ -1386,7 +1383,7 @@ LB_API void lLC_purge_s(NMParams p)
                   numberOfBytes = NUMBEROFBYTES(columnCount),
                   slot = table->slot;
             bool useCrypto = dbFile->useCrypto;
-            CharP sourcePath = getLitebaseSourcePath(driver);
+            TCHARP sourcePath = getLitebaseSourcePath(driver);
             SQLValue* record[MAXIMUMS + 1];
             Heap heap = heapCreate(); 
 
@@ -1580,7 +1577,7 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection 
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              tableName = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
@@ -1588,7 +1585,7 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection 
 		// juliana@253_18: now it is possible to log only changes during Litebase operation.
       if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 		{
-			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+			TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
@@ -1631,7 +1628,7 @@ LB_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection publ
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
       Context context = p->currentContext;
-      Object driver = p->obj[0],
+      TCObject driver = p->obj[0],
              tableName = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table = getTableFromName(context, driver, tableName);
@@ -1639,7 +1636,7 @@ LB_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection publ
 	   // juliana@253_18: now it is possible to log only changes during Litebase operation.
       if (logger && !litebaseConnectionClass->i32StaticValues[6]) // juliana@230_30: reduced log files size.
 	   {
-		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+		   TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
@@ -1656,7 +1653,7 @@ LB_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection publ
     
       if (table)
       {
-         Object rowIterator = p->retO = TC_createObject(context, "litebase.RowIterator");
+         TCObject rowIterator = p->retO = TC_createObject(context, "litebase.RowIterator");
 
          // Creates and populates the row iterator object.
          if (rowIterator)
@@ -1723,10 +1720,10 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
 {                                                                                                                                                    
 	TRACE("lLC_privateGetDefaultLogger")                                                                                                               
    Context context = p->currentContext;                                                                                                              
-   Object nameStr,                                                                                                                                   
+   TCObject nameStr,                                                                                                                                   
           logger,                                                                                                                                    
           file = null;                                                                                                                                      
-   char nameCharP[MAX_PATHNAME];                                                                                                                     
+   TCHAR name[MAX_PATHNAME];                                                                                                                     
                                                                                                                                                      
    MEMORY_TEST_START                                                                                                                                 
 	LOCKVAR(log);                                                                                                                                      
@@ -1750,18 +1747,18 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
             second,                                                                                                                                  
             millis;                                                                                                                                  
                                                                                                                                                      
-      getCurrentPath(nameCharP);                                                                                                                     
-		xstrcat(nameCharP, "/LITEBASE_");                                                                                                                
+      getCurrentPath(name);                                                                                                                     
+      tcscat(name, TEXT("/LITEBASE_"));
       TC_getDateTime(&year, &month, &day, &hour, &minute, &second, &millis);                                                                         
-		xstrcat(nameCharP, TC_long2str(getTimeLong(year, month, day, hour, minute, second), timeLong));                                                  
-		xstrcat(nameCharP, ".");                                                                                                                         
+      TC_CharP2TCHARPBuf(TC_long2str(getTimeLong(year, month, day, hour, minute, second), timeLong), &name[tcslen(name)]);
+      tcscat(name, TEXT("."));
       TC_int2CRID(TC_getApplicationId(), strAppId);                                                                                                  
-		xstrcat(nameCharP, strAppId);                                                                                                                    
-		xstrcat(nameCharP, ".LOGS");
+      TC_CharP2TCHARPBuf(strAppId, &name[tcslen(name)]);
+      tcscat(name, TEXT(".LOGS"));
 		TC_setObjectLock(nameStr, UNLOCKED);
 		nameStr = null;                                                                                                                     
 		if (!(file = TC_createObject(context, "totalcross.io.File"))                                                     
-       || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
+       || !(nameStr = TC_createStringObjectFromTCHARP(context, name, -1)))                                                                       
          goto finish;                                                                                                                                
          
       FIELD_OBJ(p->obj[0] = file, OBJ_CLASS(file), 0) = p->obj[1] = nameStr; // path
@@ -1787,7 +1784,7 @@ finish: ;
    // juliana@230_23: now LitebaseConnection.getDefaultLogger() will throw a DriverException instead of an IOException if a file error occurs.
    if (context->thrownException && TC_areClassesCompatible(context, OBJ_CLASS(context->thrownException), "totalcross.io.IOException"))                                                                                                             
    {
-      Object exception = context->thrownException,
+      TCObject exception = context->thrownException,
 			    exceptionMsg = FIELD_OBJ(exception, OBJ_CLASS(exception), 0);
       char msgError[1024];
       
@@ -1819,24 +1816,17 @@ finish: ;
 LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection public static native int deleteLogFiles();                          
 {                                                                                                                                                    
 	TRACE("lLC_privateDeleteLogFiles")                                                                                                                 
-   Context context = p->currentContext;                                                                                                              
-   char pathCharP[MAX_PATHNAME];                                                                                                                     
+   Context context = p->currentContext;                                                                                                                                                                                                                                 
    TCHARPs* list = null;                                                                                                                             
-   TCHAR fullPath[MAX_PATHNAME];
-   char name[MAX_PATHNAME];
+   TCHAR fullPath[MAX_PATHNAME],
+         path[MAX_PATHNAME];
+   char name[MAX_PATHNAME],
+        value[DBNAME_SIZE];
    int32 count = 0,                                                                                                                                  
          i = 0,
          ret;
    Heap heap = heapCreate();                                                                                                                         
-                                                                                                                                                     
-#ifdef WINCE // A file name in char for Windows CE, which uses TCHAR.                                                                                
-   char value[DBNAME_SIZE];                                                                                                                          
-   JChar pathTCHARP[MAX_PATHNAME];                                                                                                                   
-#else                                                                                                                                                
-   CharP value;                                                                                                                                      
-   CharP pathTCHARP;                                                                                                                                 
-#endif                                                                                                                                               
-	                                                                                                                                                   
+                                                                                                                                             	                                                                                                                                                   
    MEMORY_TEST_START                                                                                                                                 
    LOCKVAR(log);                                                                                                                                     
    IF_HEAP_ERROR(heap)                                                                                                                               
@@ -1844,15 +1834,9 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);                                                                           
       goto finish;                                                                                                                                   
    }                                                                                                                                                 
-   getCurrentPath(pathCharP);                                                                                                                        
-                                                                                                                                                     
-#ifdef WINCE                                                                                                                                         
-   TC_CharP2JCharPBuf(pathCharP, -1, pathTCHARP, true);                                                                                              
-#else                                                                                                                                                
-   pathTCHARP = pathCharP;                                                                                                                           
-#endif                                                                                                                                               
+   getCurrentPath(path);                                                                                                                                                                                                                                                                                                                                                                                                                      
 	                                                                                                                                                   
-   if ((ret = TC_listFiles(pathTCHARP, 1, &list, &count, heap, 0))) // Lists all the files of the folder.                                              
+   if ((ret = TC_listFiles(path, 1, &list, &count, heap, 0))) // Lists all the files of the folder.                                              
    {                                                                                                                                                 
       fileError(context, ret, "");                                                                                                                     
       goto finish;                                                                                                                                   
@@ -1861,28 +1845,23 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
    name[0] = 0;
    if (count)
    {
-      Object logger = litebaseConnectionClass->objStaticValues[1],
+      TCObject logger = litebaseConnectionClass->objStaticValues[1],
              nameObj;
 
       if (logger)
       {
-		   nameObj = ((Object*)ARRAYOBJ_START(FIELD_OBJ(FIELD_OBJ(logger, loggerClass, 1), OBJ_CLASS(FIELD_OBJ(logger, loggerClass, 1)), 0)))[0];
+		   nameObj = ((TCObject*)ARRAYOBJ_START(FIELD_OBJ(FIELD_OBJ(logger, loggerClass, 1), OBJ_CLASS(FIELD_OBJ(logger, loggerClass, 1)), 0)))[0];
 		   nameObj = FIELD_OBJ(nameObj, OBJ_CLASS(nameObj), 0);
          TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), name);
       }
    }
                                                                                                                                            
    while (--count >= 0)                                                                                                                              
-   {                                                                                                                                                 
-#ifndef WINCE                                                                                                                                        
-      value = list->value;                                                                                                                           
-#else                                                                                                                                                
-      TC_JCharP2CharPBuf(list->value, -1, value);                                                                                                    
-#endif                                                                                                                                               
-                                                                                                                                                     
+   {                                                                                                                                                                                                                                                                                                
+      TC_TCHARP2CharPBuf(list->value, value);                                                                                                                                                                                                                                                   
       if (xstrstr(value, "LITEBASE") == value && xstrstr(value, ".LOGS") && !xstrstr(name, value)) // Deletes only the closed log files.                                      
       {  
-         getFullFileName(value, pathCharP, fullPath);                                                                                                
+         getFullFileName(value, path, fullPath);                                                                                                
          if ((ret = lbfileDelete(null, fullPath, 1, false)))                                                                                                  
          {                                                                                                                                                 
             fileError(context, ret, "");                                                                                                                     
@@ -1939,12 +1918,12 @@ finish: ;
 LB_API void lLC_privateProcessLogs_Ssb(NMParams p) 
 {
 	TRACE("lLC_privateProcessLogs_Ssb")
-	Object driver = null,
+	TCObject driver = null,
 	       sql = p->obj[0],
 	       params = p->obj[1],
           string,
           resultSetObj;
-   Object* sqlArray = (Object*)ARRAYOBJ_START(sql);
+   TCObject* sqlArray = (TCObject*)ARRAYOBJ_START(sql);
    Context context = p->currentContext;
 	bool isDebug = p->i32[0];
 	int32 i,
@@ -1997,7 +1976,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 
 		   if (context->thrownException)
 		   {
-			   Object exception = context->thrownException,
+			   TCObject exception = context->thrownException,
 			          exceptionMsg = FIELD_OBJ(exception, OBJ_CLASS(exception), 0);
             char msgError[1024];
             
@@ -2055,17 +2034,17 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    { 
-      Object tableName = p->obj[1];
+      TCObject tableName = p->obj[1];
       Context context = p->currentContext; 
       
       if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         Object driver = p->obj[0],
+         TCObject driver = p->obj[0],
 	             logger = litebaseConnectionClass->objStaticValues[1];
          char name[DBNAME_SIZE];
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
          TCHAR buffer[MAX_PATHNAME];
          Heap heap = null;
          Table* table = null;
@@ -2104,7 +2083,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
          if (logger) // juliana@230_30: reduced log files size.
 	      {
-		      Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+		      TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
          
             LOCKVAR(log);
 
@@ -2119,7 +2098,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                goto finish;
 	      }
 
-         if ((j = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         if ((j = String_charsLen(tableName)) + tcslen(sourcePath) + 10 > MAX_PATHNAME)
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
 	         goto finish;
@@ -2344,18 +2323,18 @@ LB_API void lLC_convert_s(NMParams p)
 	
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
-      Object tableName = p->obj[1];
+      TCObject tableName = p->obj[1];
       Context context = p->currentContext;
    
       if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         Object driver = p->obj[0],
+         TCObject driver = p->obj[0],
                 logger = litebaseConnectionClass->objStaticValues[1];
          Heap heap;
          char name[DBNAME_SIZE];
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
          TCHAR buffer[MAX_PATHNAME];
          Table* table = null;
 	      PlainDB* plainDB;
@@ -2391,7 +2370,7 @@ LB_API void lLC_convert_s(NMParams p)
 
          if (logger) // juliana@230_30: reduced log files size.
 	      {  
-            Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+            TCObject logSBuffer = litebaseConnectionClass->objStaticValues[2];
          
             LOCKVAR(log);
 
@@ -2406,9 +2385,11 @@ LB_API void lLC_convert_s(NMParams p)
                goto finish;
 	      }
 	      
-	      if ((i = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         if ((i = String_charsLen(tableName)) + tcslen(sourcePath) + 10 > MAX_PATHNAME)
          {
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+            char buffer[1024];
+            TC_TCHARP2CharPBuf(sourcePath, buffer);
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), buffer);
 	         goto finish;
          }
     
@@ -2576,13 +2557,13 @@ LB_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public nativ
 
    if (checkParamAndDriver(p, "tableName")) // The driver can't be closed and the table name can't be null.
    {
-      Object tableName = p->obj[1];
+      TCObject tableName = p->obj[1];
    
       if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         Object driver = p->obj[0];
+         TCObject driver = p->obj[0];
          Hashtable* htTables = getLitebaseHtTables(driver);
          int32 length = String_charsLen(tableName);
          char nameCharP[DBNAME_SIZE];
@@ -2614,7 +2595,7 @@ LB_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public nativ
 LB_API void lLC_dropDatabase_ssi(NMParams p)
 {
    TRACE("lLC_dropDatabase_ssi")
-   Object cridObj = p->obj[0],
+   TCObject cridObj = p->obj[0],
           pathObj = p->obj[1];
    
    MEMORY_TEST_START
@@ -2625,30 +2606,15 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
          else
          {
             TCHARPs* list = null;
-
-#ifdef WINCE
-            JCharP cridStr;
-            JChar pathStr[MAX_PATHNAME]; // juliana@230_6
-            char value[DBNAME_SIZE],
-            fullPath[MAX_PATHNAME];
-#else
-            char cridStr[5],
-                 pathStr[MAX_PATHNAME]; 
-            CharP fullPath;
-            CharP value;
-#endif
-
+            char cridStr[5];
+            TCHAR fullPath[MAX_PATHNAME], // juliana@230_6
+                  buffer[MAX_PATHNAME];
+            char value[DBNAME_SIZE];
             int32 i,
                   count = 0,
                   slot = p->i32[0];
             bool deleted = false;
             Heap heap = heapCreate();
-            TCHAR buffer[MAX_PATHNAME];
-
-#ifdef PALMOS
-            if (slot == -1)
-               slot = TC_getLastVolume();
-#endif
 
             IF_HEAP_ERROR(heap)
             {
@@ -2659,19 +2625,10 @@ error:
                goto finish;
             }
 
-#ifdef WINCE
-            cridStr = String_charsStart(cridObj);
-            
-            // juliana@230_6: corrected LitebaseConnection.dropDatabase() not working properly on Windows CE.
-            xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
-            pathStr[i] = 0;
-            TC_JCharP2CharPBuf(pathStr, i, fullPath);
-#else
             TC_JCharP2CharPBuf(String_charsStart(cridObj), 4, cridStr);
-            TC_JCharP2CharPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath = pathStr);
-#endif
+            TC_JCharP2TCHARPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath);
 
-            if ((i = TC_listFiles(pathStr, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+            if ((i = TC_listFiles(fullPath, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
             {
                fileError(p->currentContext, i, "");
                goto error;
@@ -2679,13 +2636,8 @@ error:
 
             while (--count >= 0) // Deletes only the files of the chosen database.
             {
-#ifndef WINCE         
-               value = list->value;
+               TC_TCHARP2CharPBuf(list->value, value);
                if (xstrstr(value, cridStr) == value)
-#else
-               TC_JCharP2CharPBuf(list->value, -1, value);
-               if (str16StartsWith(list->value, cridStr, TC_JCharPLen(list->value), 4, 0, false))
-#endif
                {
                   getFullFileName(value, fullPath, buffer);
                   if ((i = lbfileDelete(null, buffer, slot, false)))
@@ -2734,21 +2686,21 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
    
    if (!p->currentContext->thrownException && !p->retI) // If the table is open, then it was closed properly.
    {
-      Object tableName = p->obj[1];
+      TCObject tableName = p->obj[1];
       Context context = p->currentContext; 
       
       if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         Object driver = p->obj[0];
+         TCObject driver = p->obj[0];
 
 #if defined(POSIX) || defined(ANDROID)
          Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
 #endif
 
          char name[DBNAME_SIZE];
-         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHARP sourcePath = getLitebaseSourcePath(driver);
          TCHAR buffer[MAX_PATHNAME];         
          NATIVE_FILE tableDb;
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
@@ -2821,7 +2773,7 @@ finish: ;
 LB_API void lLC_listAllTables(NMParams p) 
 {
    TRACE("lLC_listAllTables")
-   Object driver = p->obj[0];
+   TCObject driver = p->obj[0];
    
    MEMORY_TEST_START
 
@@ -2830,27 +2782,16 @@ LB_API void lLC_listAllTables(NMParams p)
    else   
    {      
       TCHARPs* list = null; 
-      Object* array;
+      TCObject* array;
       Context context = p->currentContext;
-      char crid[5];      
-
-#ifdef WINCE
-      char value[DBNAME_SIZE];
-      JChar path[MAX_PATHNAME];
-#else
-      CharP value;
-      CharP path = getLitebaseSourcePath(driver);
-#endif
-
+      char crid[5],      
+           value[DBNAME_SIZE];
+      TCHARP path = getLitebaseSourcePath(driver);
       int32 i,
             j,
             count = 0,
             slot = OBJ_LitebaseSlot(driver);
       Heap heap = heapCreate();
-      
-#ifdef WINCE
-   TC_CharP2JCharPBuf(getLitebaseSourcePath(driver), -1, path, true);
-#endif
 
       IF_HEAP_ERROR(heap)
       {
@@ -2873,13 +2814,8 @@ error:
       j = count;
       while (--j >= 0) // Deletes only the files of the chosen database.
       {
-      
-#ifndef WINCE         
-         value = list->value;
-#else
-         TC_JCharP2CharPBuf(list->value, -1, value);        
-#endif          
-
+         TC_TCHARP2CharPBuf(list->value, value);        
+         
          // Selects the .db files that are from the tables of the current connection. 
          if (xstrstr(value, crid) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
          { 
@@ -2894,7 +2830,7 @@ error:
       
       if (!(p->retO = TC_createArrayObject(context, "[java.lang.String", i)))
          goto finish;
-      array = (Object*)ARRAYOBJ_START(p->retO);
+      array = (TCObject*)ARRAYOBJ_START(p->retO);
       
       while (--count >= 0) // Gets only the table names that are from this connection.
       {
@@ -2964,7 +2900,7 @@ LB_API void lLC_decryptTables_ssi(NMParams p)
 LB_API void lRS_getResultSetMetaData(NMParams p) // litebase/ResultSet public native litebase.ResultSetMetaData getResultSetMetaData(); 
 {
 	TRACE("lRS_getResultSetMetaData")
-   Object resultSet = p->obj[0],
+   TCObject resultSet = p->obj[0],
           rsMetaData;
 	
    MEMORY_TEST_START
@@ -2992,7 +2928,7 @@ LB_API void lRS_getResultSetMetaData(NMParams p) // litebase/ResultSet public na
 LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsClose() throws IllegalStateException;
 {
 	TRACE("lRS_close")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
 	
    MEMORY_TEST_START
    
@@ -3018,7 +2954,7 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
 LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void beforeFirst();
 {
 	TRACE("lRS_beforeFirst")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3039,7 +2975,7 @@ LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void
 LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void afterLast();
 {
 	TRACE("lRS_afterLast")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3064,7 +3000,7 @@ LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void a
 LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first();
 {
 	TRACE("lRS_first")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3097,7 +3033,7 @@ LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first
 LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last();
 {
 	TRACE("lRS_last")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3130,7 +3066,7 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
 LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next();
 {
 	TRACE("lRS_next")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3152,7 +3088,7 @@ LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next()
 LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev();
 {
 	TRACE("lRS_prev")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3563,7 +3499,7 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
 {
 	TRACE("lRS_absolute_i")
    Context context = p->currentContext;
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    int32 row = p->i32[0],
          i = 0;
    
@@ -3635,7 +3571,7 @@ finish: ;
 LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool relative(int rows);
 {
 	TRACE("lRS_relative_i")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    Context context = p->currentContext;
    
    MEMORY_TEST_START
@@ -3746,7 +3682,7 @@ finish: ;
 LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRow();
 {
 	TRACE("lRS_getRow")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    Context context = p->currentContext;
    
    MEMORY_TEST_START
@@ -3813,7 +3749,7 @@ finish: ;
 LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public native void setDecimalPlaces(int col, int places) throws DriverException;
 {
 	TRACE("lRS_setDecimalPlaces_ii")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3861,7 +3797,7 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
 LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int getRowCount();
 {
 	TRACE("lRS_getRowCount")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3889,7 +3825,7 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
 LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean isNull(int col);
 {
 	TRACE("lRS_isNull_i")
-   Object resultSet = p->obj[0];
+   TCObject resultSet = p->obj[0];
    
    MEMORY_TEST_START
    
@@ -3913,7 +3849,7 @@ LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean
 LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean isNull(String colName) throws NullPointerException;
 {
 	TRACE("lRS_isNull_s")
-   Object resultSet = p->obj[0],
+   TCObject resultSet = p->obj[0],
           colName = p->obj[1];
    
    MEMORY_TEST_START
@@ -3944,7 +3880,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount();
 {
 	TRACE("lRSMD_getColumnCount")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
@@ -3978,7 +3914,7 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
 LB_API void lRSMD_getColumnDisplaySize_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnDisplaySize_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
@@ -4057,7 +3993,7 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
 LB_API void lRSMD_getColumnLabel_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnLabel_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
@@ -4098,7 +4034,7 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p)
 LB_API void lRSMD_getColumnType_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnType_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
@@ -4187,7 +4123,7 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
 LB_API void lRSMD_getColumnTableName_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
@@ -4231,13 +4167,13 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p)
 LB_API void lRSMD_getColumnTableName_s(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_s")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
    if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      Object columnNameStr = p->obj[1];
+      TCObject columnNameStr = p->obj[1];
 
       if (columnNameStr)
       {
@@ -4294,7 +4230,7 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
 LB_API void lRSMD_hasDefaultValue_i(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
           nameObj = null;
    
    MEMORY_TEST_START
@@ -4342,14 +4278,14 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
 LB_API void lRSMD_hasDefaultValue_s(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_s")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object columnNameStr = p->obj[1];
+      TCObject columnNameStr = p->obj[1];
 
       if (columnNameStr)
       {
@@ -4411,7 +4347,7 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
 LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws DriverException;
 {
    TRACE("lRSMD_isNotNull_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),
           nameObj = null;
    Context context = p->currentContext;
 
@@ -4460,14 +4396,14 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
 LB_API void lRSMD_isNotNull_s(NMParams p) 
 {
    TRACE("lRSMD_isNotNull_s")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object columnNameStr = p->obj[1];
+      TCObject columnNameStr = p->obj[1];
 
       if (columnNameStr)
       {
@@ -4529,14 +4465,14 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
 LB_API void lRSMD_getPKColumnIndices_s(NMParams p) 
 {
    TRACE("lRSMD_getPKColumnIndices_s")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    
    if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
-      Object tableNameStr = p->obj[1];
+      TCObject tableNameStr = p->obj[1];
       
       if (tableNameStr)
       {
@@ -4586,14 +4522,14 @@ finish: ;
 LB_API void lRSMD_getPKColumnNames_s(NMParams p) 
 {
    TRACE("lRSMD_getPKColumnNames_s")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    
    if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
-      Object tableNameStr = p->obj[1];
+      TCObject tableNameStr = p->obj[1];
       
       if (tableNameStr)
       {
@@ -4608,20 +4544,20 @@ LB_API void lRSMD_getPKColumnNames_s(NMParams p)
       
          if (table->primaryKeyCol != NO_PRIMARY_KEY) // Simple primary key.
          {
-            Object* array;
+            TCObject* array;
             
             if (!(p->retO = TC_createArrayObject(context, "[java.lang.String", 1)))
                goto finish;
             TC_setObjectLock(p->retO, UNLOCKED);
             
-            array = (Object*)ARRAYOBJ_START(p->retO);
+            array = (TCObject*)ARRAYOBJ_START(p->retO);
             if (!(array[0] = TC_createStringObjectFromCharP(context, table->columnNames[table->primaryKeyCol], -1)))
                goto finish;
             TC_setObjectLock(array[0], UNLOCKED);            
          }
          else if (table->composedPK != NO_PRIMARY_KEY) // Composed primary key.
          {  
-            Object* array;
+            TCObject* array;
             int32 i = table->numberComposedPKCols;
             uint8* composedPKCols = table->composedPrimaryKeyCols;
             CharP* columnNames = table->columnNames;
@@ -4629,7 +4565,7 @@ LB_API void lRSMD_getPKColumnNames_s(NMParams p)
             if (!(p->retO = TC_createArrayObject(context, "[java.lang.String", i)))
                goto finish;
             TC_setObjectLock(p->retO, UNLOCKED);
-            array = (Object*)ARRAYOBJ_START(p->retO);
+            array = (TCObject*)ARRAYOBJ_START(p->retO);
             
             while (--i >= 0)
             {
@@ -4662,7 +4598,7 @@ finish: ;
 LB_API void lRSMD_getDefaultValue_i(NMParams p) 
 {
    TRACE("lRSMD_getDefaultValue_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
           nameObj = null;
    Context context = p->currentContext;
    
@@ -4702,14 +4638,14 @@ LB_API void lRSMD_getDefaultValue_i(NMParams p)
 LB_API void lRSMD_getDefaultValue_s(NMParams p) 
 {
    TRACE("lRSMD_getDefaultValue_s")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   TCObject resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object columnNameStr = p->obj[1];
+      TCObject columnNameStr = p->obj[1];
 
       if (columnNameStr)
       {
@@ -4772,7 +4708,7 @@ LB_API void lPS_executeQuery(NMParams p)
  
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       Context context = p->currentContext;
       
       if (OBJ_PreparedStatementType(stmt) != CMD_SELECT) // The statement must be a select.
@@ -4780,7 +4716,7 @@ LB_API void lPS_executeQuery(NMParams p)
       else 
       {
          SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(stmt); // The select statement.
-         Object driver = OBJ_PreparedStatementDriver(stmt);
+         TCObject driver = OBJ_PreparedStatementDriver(stmt);
 
          if (!allParamValuesDefinedSel(selectStmt)) // All the parameters of the select statement must be defined.
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_NOT_ALL_PARAMETERS_DEFINED));
@@ -4791,7 +4727,7 @@ LB_API void lPS_executeQuery(NMParams p)
             Heap heap = selectClause->heap;
             bool locked = false;
             PlainDB* plainDB;
-            Object logger = litebaseConnectionClass->objStaticValues[1];
+            TCObject logger = litebaseConnectionClass->objStaticValues[1];
           
             // juliana@253_18: now it is possible to log only changes during Litebase operation.
             if (logger && !litebaseConnectionClass->i32StaticValues[6]) // If log is on, adds information to it.
@@ -4799,7 +4735,7 @@ LB_API void lPS_executeQuery(NMParams p)
                LOCKVAR(log);
                if (OBJ_PreparedStatementStoredParams(stmt))
                {
-                  Object string = toStringBuffer(context, stmt);
+                  TCObject string = toStringBuffer(context, stmt);
                   if (string)
                      TC_executeMethod(context, loggerLogInfo, logger, string); // juliana@230_30
                }
@@ -4869,14 +4805,14 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
 
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];   
+      TCObject stmt = p->obj[0];   
       Context context = p->currentContext;
    
       if (OBJ_PreparedStatementType(stmt) == CMD_SELECT) // The statement must be a select.
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_PERFORM_UPDATE));
       else 
       {
-         Object logger = litebaseConnectionClass->objStaticValues[1],
+         TCObject logger = litebaseConnectionClass->objStaticValues[1],
                 driver = OBJ_PreparedStatementDriver(stmt);
       
          if (logger) // If log is on, adds information to it.
@@ -4884,7 +4820,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
             LOCKVAR(log);
             if (OBJ_PreparedStatementStoredParams(stmt))
             {
-               Object string = toStringBuffer(context, stmt);
+               TCObject string = toStringBuffer(context, stmt);
                if (string)
                   TC_executeMethod(context, loggerLogInfo, logger, string); // juliana@230_30
             }
@@ -4933,7 +4869,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
             }
             case CMD_CREATE_TABLE:
             {
-               Object sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);
+               TCObject sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);
                
                litebaseExecute(context, driver, String_charsStart(sqlExpression), String_charsLen(sqlExpression));
                p->retI = 0;
@@ -4941,7 +4877,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
             }
             default: // alter table or drop
             {
-               Object sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);               
+               TCObject sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);               
                p->retI = litebaseExecuteUpdate(context, driver, String_charsStart(sqlExpression), String_charsLen(sqlExpression));
             }
          }
@@ -5055,18 +4991,18 @@ LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public na
    MEMORY_TEST_START
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];    
+      TCObject stmt = p->obj[0];    
       SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
-         Object string = p->obj[1];
+         TCObject string = p->obj[1];
          int32 index = p->i32[0];
       
          // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
          // juliana@222_8: stores the object so that it won't be collected.
          if (psSetStringParamValue(p->currentContext, stmt, string, index, string? String_charsLen(string) : 0)) // Sets the string parameter.
-            ((Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt)))[index] = string; 
+            ((TCObject*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt)))[index] = string; 
       }
    }
    
@@ -5092,13 +5028,13 @@ LB_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public nati
    
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
-         Object blob = p->obj[1];
-         Object* objParams = (Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
+         TCObject blob = p->obj[1];
+         TCObject* objParams = (TCObject*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
          uint8* blobArray = null;
          int32 index = p->i32[0],
                blobLength = 0;
@@ -5170,17 +5106,17 @@ LB_API void lPS_setDate_id(NMParams p)
    
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
          Context context = p->currentContext;
-   	   Object date = p->obj[1];
-         Object* objParams = (Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
+   	   TCObject date = p->obj[1];
+         TCObject* objParams = (TCObject*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
          JCharP stringChars = null;
          int32 index = p->i32[0];
-         Object dateBufObj = objParams[index];
+         TCObject dateBufObj = objParams[index];
 
          // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
          if (date)
@@ -5244,17 +5180,17 @@ LB_API void lPS_setDateTime_it(NMParams p)
    
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
          Context context = p->currentContext;
-   	   Object time = p->obj[1];
-         Object* objParams = (Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
+   	   TCObject time = p->obj[1];
+         TCObject* objParams = (TCObject*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
          JCharP stringChars = null;
          int32 index = p->i32[0];
-         Object dateTimeBufObj = objParams[index];      
+         TCObject dateTimeBufObj = objParams[index];      
 
          // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
          if (time)
@@ -5297,7 +5233,7 @@ LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public nativ
  
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5344,7 +5280,7 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
    
    if (testPSClosed(p))
    {
-      Object stmt = p->obj[0];
+      TCObject stmt = p->obj[0];
       SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only clears the parameter if the statement is not null.
@@ -5394,11 +5330,11 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
    
    if (testPSClosed(p))
    {
-      Object statement = p->obj[0];
+      TCObject statement = p->obj[0];
 
 	   if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters o the logger is not being used.
       {
-         Object string;
+         TCObject string;
          int16* paramsPos = getPreparedStatementParamsPos(statement);
 		   JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement)),
 		          charsStart;
@@ -5456,9 +5392,9 @@ LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native vo
    MEMORY_TEST_START
    if (testPSClosed(p))
    {
-      Object statement = p->obj[0];
+      TCObject statement = p->obj[0];
       Hashtable* htPS = getLitebaseHtPS(OBJ_PreparedStatementDriver(statement));
-      Object sqlExpression = OBJ_PreparedStatementSqlExpression(statement);
+      TCObject sqlExpression = OBJ_PreparedStatementSqlExpression(statement);
       int32 hashCode = TC_JCharPHashCode(String_charsStart(sqlExpression), String_charsLen(sqlExpression));
       TC_htRemove(htPS, hashCode);
       freePreparedStatement(statement);
@@ -5477,7 +5413,7 @@ LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native vo
 LB_API void lPS_isValid(NMParams p) // litebase/PreparedStatement public native boolean isValid();
 {
    TRACE("lPS_isValid")
-   Object statement = p->obj[0];
+   TCObject statement = p->obj[0];
    
    MEMORY_TEST_START
    
