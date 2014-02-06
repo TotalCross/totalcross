@@ -104,7 +104,7 @@ private:
    float aa, rr, gg, bb;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
    int lastPixelsCount;
-   int lastClip[4];
+   D3D11_RECT clipRect;
    bool clipSet;
 
    VertexPosition *pixelsVertices;

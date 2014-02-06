@@ -453,7 +453,7 @@ void Direct3DBase::setProgram(whichProgram p)
    if (p == curProgram) return;
    lastRGB = 0xFAFFFFFF; // user may never use this color
    curProgram = p;
-   lastClip[2] = -1;
+   clipRect.right = -1;
    m_d3dContext->RSSetState(pRasterStateDisableClipping);
    clipSet = false;
    switch (p)
@@ -494,6 +494,7 @@ void Direct3DBase::PreRender()
    m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
    m_d3dContext->RSSetState(pRasterStateDisableClipping);
+   clipSet = false;
 }
 
 bool Direct3DBase::Render()
@@ -568,21 +569,17 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    {
       if (!clipSet)
          m_d3dContext->RSSetState(pRasterStateEnableClipping);
-      if (clip[0] != lastClip[0] || clip[1] != lastClip[1] || clip[2] != lastClip[2] || clip[3] != lastClip[3])
+      if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
       {
-         D3D11_RECT rects[1];
-         rects[0].left = clip[0];
-         rects[0].right = clip[2];
-         rects[0].top = clip[1];
-         rects[0].bottom = clip[3];
-         m_d3dContext->RSSetScissorRects(1, rects);
-         lastClip[0] = clip[0];
-         lastClip[1] = clip[1];
-         lastClip[2] = clip[2];
-         lastClip[3] = clip[3];
+         clipRect.left = clip[0];
+         clipRect.top = clip[1];
+         clipRect.right = clip[2];
+         clipRect.bottom = clip[3];
+         m_d3dContext->RSSetScissorRects(1, &clipRect);
       }
    }
    clipSet = doClip;
+
    //dstY += glShiftY;
    int32 dstY2 = dstY + h;
    int32 dstX2 = dstX + w;
@@ -611,7 +608,6 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    m_d3dContext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
-   m_d3dContext->RSSetState(pRasterStateDisableClipping);
 }
 
 
