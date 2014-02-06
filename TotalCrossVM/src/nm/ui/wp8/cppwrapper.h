@@ -25,10 +25,6 @@ char *GetAppPathWP8();
 char *GetVmPathWP8();
 char *GetDisplayNameWP8();
 
-// WP8 dispatcher fuctions
-void set_dispatcher();
-void dispatcher_dispath();
-
 // WP8 keyboard functions
 void windowSetSIP(enum TCSIP kb);
 

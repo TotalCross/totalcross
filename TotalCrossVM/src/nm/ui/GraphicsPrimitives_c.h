@@ -2085,6 +2085,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    int32 screenW, screenH, shiftY = 0, shiftH = 0;
    TCClass window;
    PixelConv gray;
+   int32 y, count;
+
    gray.pixel = *shiftScreenColorP;
 
 #ifndef __gl2_h_
@@ -2150,7 +2152,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 #ifdef __gl2_h_
    desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
 #else
-   int32 y, count;
    screen.shiftY = shiftY;
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
@@ -2950,6 +2951,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
    int32 rr,gg,bb,sx,sy,i;
    Pixel foreColor;
    PixelConv pc;
+   int32 ii, i2;
    pc.a = 255;      
 #ifdef __gl2_h_
    flushPixels(2);
@@ -2971,7 +2973,6 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
    else
       currentContext->fullDirty = true;
 #else
-   int32 ii,i2;
    for (i = 0; i < numSteps; i++)
    {
       rr = ((red+i*redInc) >> 16) & 0xFFFFFF;     if (rr > endRed) rr = endRed;

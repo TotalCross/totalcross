@@ -28,7 +28,6 @@ static char vmPathWP8[1024] = "";
 static char devId[1024];
 static DWORD32 privHeight;
 static DWORD32 privWidth;
-static CoreDispatcher ^dispatcher = nullptr;
 
 static std::queue<eventQueueMember> eventQueue;
 
@@ -141,18 +140,6 @@ char *GetDisplayNameWP8()
 	   WideCharToMultiByte(CP_ACP, 0, displayName->Data(), displayName->Length(), devId, 1024, NULL, NULL);
 	}
    return devId;
-}
-
-void set_dispatcher()
-{
-	CoreWindow::GetForCurrentThread()->Activate();
-	dispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
-}
-
-void dispatcher_dispath()
-{
-	if (dispatcher != nullptr)
-		dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 }
 
 void windowSetDeviceTitle(TCObject titleObj)
