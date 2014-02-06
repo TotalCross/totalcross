@@ -18,8 +18,6 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs)
 {
    cs = _cs;
    lastInstance = this;
-   TheDrawCommand = DRAW_COMMAND_INVALID;
-   manipulationComplete = false;
 }
 
 Direct3DBase ^Direct3DBase::GetLastInstance()
@@ -132,7 +130,7 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 	if (m_d3dDevice.Get() != device)
 	{
 		m_d3dDevice->GetDeviceRemovedReason();
-		manipulationComplete = false;
+      eventsInitialized = false;
 		m_d3dDevice = device;
 		CreateDeviceResources();
 		// Force call to CreateWindowSizeDependentResources.
@@ -156,10 +154,6 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
       m_renderTargetSize.Height = static_cast<float>(backBufferDesc.Height);
       CreateWindowSizeDependentResources();
    }
-
-	// Set the rendering viewport to target the entire window.
-	CD3D11_VIEWPORT viewport(0.0f,0.0f,m_renderTargetSize.Width,m_renderTargetSize.Height);
-	m_d3dContext->RSSetViewports(1, &viewport);
 }
 
 // Allocate all memory resources that depend on the window size.
@@ -435,15 +429,14 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 
 bool Direct3DBase::isLoadCompleted() 
 {
-   return loadCompleted == TASKS_COMPLETED && manipulationComplete;
+   return loadCompleted == TASKS_COMPLETED && eventsInitialized;
 }
 int npre;
-void Direct3DBase::Present()
+void Direct3DBase::updateScreen()
 {
    //int ini = GetTickCount64() & 0x3FFFFFFF, fim;
-	TheDrawCommand = DRAW_COMMAND_PRESENT;
-	while (TheDrawCommand == DRAW_COMMAND_PRESENT) 
-		Sleep(OCCUPIED_WAIT_TIME);
+   for (updateScreenRequested = true; updateScreenRequested;)
+		Sleep(0);
    //debug("% 5d - fillRect: %d, line: %d, fillSrect: %d, tex: %d, points: %d", npre++, nfr, nl, nfsr, nt, np); nfr = nl = nfsr = nt = np = 0;
 	//fim = GetTickCount64() & 0x3FFFFFFF; debug("vm thread occupied wait time elapsed: %d ms\n", fim - ini);
 }
@@ -484,6 +477,10 @@ void Direct3DBase::setProgram(whichProgram p)
 void Direct3DBase::PreRender()
 {
    const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+   // Set the rendering viewport to target the entire window.
+   CD3D11_VIEWPORT viewport(0.0f, 0.0f, m_renderTargetSize.Width, m_renderTargetSize.Height);
+   m_d3dContext->RSSetViewports(1, &viewport);
+
    m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
    m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -497,11 +494,9 @@ void Direct3DBase::PreRender()
    clipSet = false;
 }
 
-bool Direct3DBase::Render()
+void Direct3DBase::startVMIfNeeded()
 {
-   if (!isLoadCompleted()) 
-	   return false;
-   if (!VMStarted) 
+   if (!VMStarted && isLoadCompleted())
    {
 	   auto lambda = [this]() 
       {
@@ -510,9 +505,8 @@ bool Direct3DBase::Render()
 	   };
 	   std::thread(lambda).detach();
 	   VMStarted = true;
-	   Sleep(OCCUPIED_WAIT_TIME);
+	   Sleep(1);
    }
-   return true;
 }
 
 void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
@@ -609,23 +603,6 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    m_d3dContext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
-}
-
-
-// DrawCommand methods
-int Direct3DBase::WaitDrawCommand() 
-{
-	return (int)TheDrawCommand;
-}
-
-void Direct3DBase::DoneDrawCommand() 
-{
-	TheDrawCommand = DRAW_COMMAND_INVALID;
-}
-
-void Direct3DBase::setManipulationComplete()
-{
-	this->manipulationComplete = true;
 }
 
 Platform::String^ Direct3DBase::GetAlertMsg()

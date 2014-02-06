@@ -42,7 +42,7 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 
 	manipulationHost->PointerReleased +=
 		ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerReleased);
-	m_renderer->setManipulationComplete();
+   m_renderer->eventsInitialized = true;
 }
 
 // Event Handlers
@@ -97,7 +97,8 @@ HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTa
 
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-	if (!m_renderer->isLoadCompleted()) {
+	if (!m_renderer->isLoadCompleted()) 
+   {
 	   m_renderer->UpdateDevice(device, context, renderTargetView);
 	   RequestAdditionalFrame();
 	}
@@ -107,20 +108,17 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 
 		m_renderer->UpdateDevice(device, context, renderTargetView);
 		m_renderer->PreRender();
-		m_renderer->Render();
+      m_renderer->startVMIfNeeded();
 
-		m_renderer->DoneDrawCommand();
-
-		while (m_renderer->WaitDrawCommand() != DRAW_COMMAND_PRESENT) {
-			Sleep(OCCUPIED_WAIT_TIME);
-		}
+      for (m_renderer->updateScreenRequested = false; !m_renderer->updateScreenRequested;)
+			Sleep(0);
       
       alertMsg = m_renderer->GetAlertMsg();
       if (alertMsg != nullptr)
-
          Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(alertMsg);
       alertMsg = nullptr;
-		RequestAdditionalFrame();
+		      
+      RequestAdditionalFrame();
 	}
 
 	return S_OK;

@@ -7,7 +7,6 @@
 #include "tcvm.h"
 
 #define TASKS_COMPLETED ((1 << 6)-1) // 6 tasks
-#define OCCUPIED_WAIT_TIME 1
 
 struct ProjectionConstantBuffer
 {
@@ -37,22 +36,12 @@ struct TextureVertex
    DirectX::XMFLOAT2 tex;  // texture coordinate
 };
 
-enum drawCommand 
-{
-	DRAW_COMMAND_INVALID = -1,
-	DRAW_COMMAND_PRESENT = 0,
-	DRAW_COMMAND_PIXELS = 1,
-	DRAW_COMMAND_LINE = 2,
-	DRAW_COMMAND_RECT = 3,
-	DRAW_COMMAND_SETCOLOR = 10
-};
-
 enum whichProgram
 {
    PROGRAM_NONE,
-   PROGRAM_GC,
-   PROGRAM_TEX,
-   PROGRAM_LC,
+   PROGRAM_GC,  // global color
+   PROGRAM_TEX, // texture
+   PROGRAM_LC,  // local color
 };
 
 #include "tcthread.h"
@@ -63,15 +52,16 @@ ref class Direct3DBase
 internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
 
+	bool updateScreenRequested;
+   bool eventsInitialized;
 	void Initialize(_In_ ID3D11Device1* device);
 	void CreateDeviceResources();
 	void UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView);
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
 	void PreRender(); // resets the screen and set it ready to render
-	bool Render();
-	int WaitDrawCommand(); // wait until another thread calls some draw command
-	void Present();
+   void startVMIfNeeded();
+	void updateScreen();
 
    void setProgram(whichProgram p);
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
@@ -85,10 +75,7 @@ internal:
    void createTexture();
    void setup();
 
-   void DoneDrawCommand();
-
    bool isLoadCompleted();
-   void setManipulationComplete();
 
    static Direct3DBase ^GetLastInstance();
    PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
@@ -98,7 +85,6 @@ internal:
 
 private:
    int loadCompleted;
-   bool manipulationComplete;
    whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
@@ -144,16 +130,5 @@ protected private:
 	bool VMStarted;
 
 	// DrawCommand internal variables
-	enum drawCommand TheDrawCommand;
    Platform::String^ alertMsg;
-
-	int DrawCommand_x1;
-	int DrawCommand_x2;
-	int DrawCommand_y1;
-	int DrawCommand_y2;
-	int DrawCommand_color;
-
-	int DrawCommand_count;
-	int *DrawCommand_x_array;
-	int *DrawCommand_y_array;
 };
