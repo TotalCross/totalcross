@@ -55,7 +55,7 @@ typedef TIdColor* IdColor;
 
 struct TIdColor
 {
-   int32 id;
+   int32 id[2];
    Pixel color;
    TIdColor* next;
 };

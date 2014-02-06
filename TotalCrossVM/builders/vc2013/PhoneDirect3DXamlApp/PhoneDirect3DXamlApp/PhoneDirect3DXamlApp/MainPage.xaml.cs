@@ -77,7 +77,10 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void privateAlertCS(String str) // Vm
       {
-         MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+         Deployment.Current.Dispatcher.BeginInvoke(() =>
+         {
+            MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+         });
       }
 
       public void vmSetAutoOffCS(bool enable) // Vm
@@ -143,6 +146,7 @@ namespace PhoneDirect3DXamlAppInterop
       {
          try
          {
+
             if (!tracking)
             {
                (geolocator = new Geolocator()).DesiredAccuracy = PositionAccuracy.High;
@@ -184,7 +188,7 @@ namespace PhoneDirect3DXamlAppInterop
             flags |= 8;
          // Não tem 16 pois não tem número de satélites.
          if (pdop != null && pdop != 4.9E-324)
-            flags |= 32;  
+            flags |= 32;
 
          return flags;
       }
@@ -320,6 +324,7 @@ namespace PhoneDirect3DXamlAppInterop
     public partial class MainPage : PhoneApplicationPage
     {
         private Direct3DBackground m_d3dBackground = null;
+
 
         // Constructor
         public MainPage()

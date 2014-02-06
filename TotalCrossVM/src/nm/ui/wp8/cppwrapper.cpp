@@ -175,12 +175,12 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::GetLastInstance()->SetAlertMsg(ref new Platform::String((wchar_t*)jCharStr));
 }
 
 void vmSetAutoOffCPP(bool enable)
 {
-//XXX   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
+   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
@@ -270,9 +270,9 @@ void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
    Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
 }
 
-void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
 {
-   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, clip);
+   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
 }
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)

@@ -164,7 +164,7 @@
 
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define Image_textureId(o)          ((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 2)))
+#define Image_textureId(o)          ((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 2))) // 2 positions
 #define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 3)
 #define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 4)
 #define Image_changed(o)            *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))

@@ -76,7 +76,7 @@ internal:
    void setProgram(whichProgram p);
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
    void deleteTexture(TCObject img, int32* textureId, bool updateList);
-   void drawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip);
+   void drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip);
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void drawPixels(int *x, int *y, int count, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
@@ -93,6 +93,9 @@ internal:
    static Direct3DBase ^GetLastInstance();
    PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
 
+   Platform::String^ GetAlertMsg();
+   void SetAlertMsg(Platform::String^ newAlertMsg);
+
 private:
    int loadCompleted;
    bool manipulationComplete;
@@ -101,6 +104,9 @@ private:
    float aa, rr, gg, bb;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
    int lastPixelsCount;
+   D3D11_RECT clipRect;
+   bool clipSet;
+
    VertexPosition *pixelsVertices;
 
    // texture
@@ -126,8 +132,6 @@ protected private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
-	int def_status;
-
 	// Cached renderer properties.
 	Windows::Foundation::Size m_renderTargetSize;
 	Windows::Foundation::Rect m_windowBounds;
@@ -141,6 +145,7 @@ protected private:
 
 	// DrawCommand internal variables
 	enum drawCommand TheDrawCommand;
+   Platform::String^ alertMsg;
 
 	int DrawCommand_x1;
 	int DrawCommand_x2;
