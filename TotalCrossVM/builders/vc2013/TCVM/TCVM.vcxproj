@@ -138,7 +138,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <PreprocessorDefinitions>USE_DX;PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);ENABLE_TEST_SUITE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__gl2_h_;USE_DX;PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
