@@ -437,14 +437,14 @@ bool Direct3DBase::isLoadCompleted()
 {
    return loadCompleted == TASKS_COMPLETED && manipulationComplete;
 }
-
+int npre;
 void Direct3DBase::Present()
 {
    //int ini = GetTickCount64() & 0x3FFFFFFF, fim;
 	TheDrawCommand = DRAW_COMMAND_PRESENT;
 	while (TheDrawCommand == DRAW_COMMAND_PRESENT) 
 		Sleep(OCCUPIED_WAIT_TIME);
-   //debug("fillRect: %d, line: %d, fillSrect: %d, tex: %d, points: %d", nfr, nl, nfsr, nt, np);
+   //debug("% 5d - fillRect: %d, line: %d, fillSrect: %d, tex: %d, points: %d", npre++, nfr, nl, nfsr, nt, np); nfr = nl = nfsr = nt = np = 0;
 	//fim = GetTickCount64() & 0x3FFFFFFF; debug("vm thread occupied wait time elapsed: %d ms\n", fim - ini);
 }
 
@@ -561,7 +561,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    xmoveptr(&texture, &textureId[0]);
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
-   setColor(!color ? null : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
+   setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
 
    if (!doClip && clipSet)
       m_d3dContext->RSSetState(pRasterStateDisableClipping);
