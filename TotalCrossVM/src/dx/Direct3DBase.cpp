@@ -264,9 +264,9 @@ void Direct3DBase::setup()
 
    // setup clipping
    D3D11_RASTERIZER_DESC1 rasterizerState = { D3D11_FILL_SOLID };
-   rasterizerState.CullMode = D3D11_CULL_NONE;
+   rasterizerState.CullMode = D3D11_CULL_FRONT;
    rasterizerState.FrontCounterClockwise = true;
-   //rasterizerState.AntialiasedLineEnable = false;
+   rasterizerState.DepthClipEnable = true;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
    rasterizerState.ScissorEnable = true;
    m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
@@ -460,28 +460,25 @@ void Direct3DBase::setProgram(whichProgram p)
    {
       case PROGRAM_GC:
          m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-         m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
          m_d3dContext->IASetInputLayout(m_inputLayout.Get());
          break;
       case PROGRAM_LC:
          m_d3dContext->VSSetShader(m_vertexShaderLC.Get(), nullptr, 0);
-         m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShaderLC.Get(), nullptr, 0);
          m_d3dContext->IASetInputLayout(m_inputLayoutLC.Get());
          break;
       case PROGRAM_TEX:
          m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
          m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
-         m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
          m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
-         m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
          m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
          m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
          m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
          m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
          break;
    }
+   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 }
 
 void Direct3DBase::PreRender()
@@ -564,7 +561,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
 
-   if (!doClip && clipSet)
+/*   if (!doClip && clipSet)
       m_d3dContext->RSSetState(pRasterStateDisableClipping);
    else
    if (doClip)
@@ -572,7 +569,8 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
       if (!clipSet)
          m_d3dContext->RSSetState(pRasterStateEnableClipping);
       if (clip[0] != lastClip[0] || clip[1] != lastClip[1] || clip[2] != lastClip[2] || clip[3] != lastClip[3])
-      {
+*/ if (doClip)      {
+   m_d3dContext->RSSetState(pRasterStateEnableClipping);
          D3D11_RECT rects[1];
          rects[0].left = clip[0];
          rects[0].right = clip[2];
@@ -584,7 +582,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
          lastClip[2] = clip[2];
          lastClip[3] = clip[3];
       }
-   }
+   //}
    //dstY += glShiftY;
    int32 dstY2 = dstY + h;
    int32 dstX2 = dstX + w;
@@ -613,6 +611,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    m_d3dContext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
+   m_d3dContext->RSSetState(pRasterStateDisableClipping);
 }
 
 
