@@ -266,15 +266,17 @@ public class Scanner4A
    
    static boolean setBarcodeParam(int barcodeType, boolean enable)
    {
+      if (bcr == null)
+         return false;
       try
-	  {
+	   {
          semaphore.acquire();
       }
-	  catch (InterruptedException exception)
-	  {
-	     AndroidUtils.debug(exception.getMessage());
+	   catch (InterruptedException exception)
+	   {
+	      AndroidUtils.debug(exception.getMessage());
          return false;
-	  }
+	   }
 		 
       switch (barcodeType)
       {
