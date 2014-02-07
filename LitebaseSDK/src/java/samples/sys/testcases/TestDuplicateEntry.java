@@ -100,10 +100,12 @@ public class TestDuplicateEntry extends TestCase
          assertEquals("RLN", rs.getString("name"));
          assertEquals("RLN", rs.getString("t"));
          assertEquals(20, rs.getInt("age"));
+         assertEquals("RLN\tRLN\t20", rs.rowToString());
          assertTrue(rs.next());
          assertEquals("IOG", rs.getString("name"));
          assertEquals("IOG", rs.getString("t"));
          assertEquals(18, rs.getInt("age"));
+         assertEquals("IOG\tIOG\t18", rs.rowToString());
          rs.close();
       }
       catch (RuntimeException exception)
