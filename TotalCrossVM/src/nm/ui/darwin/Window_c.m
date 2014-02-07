@@ -18,7 +18,7 @@
 
 bool allowMainThread();
 
-void windowSetSIP(Context currentContext, int32 sipOption, Object control, bool secret)
+void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret)
 {
    NSString *str = nil;
    if (control)
@@ -38,7 +38,7 @@ void windowSetSIP(Context currentContext, int32 sipOption, Object control, bool 
    }
 }
 
-void setEditText(Context currentContext, Object control, NSString *str)
+void setEditText(Context currentContext, TCObject control, NSString *str)
 {
    if (control)
    {
@@ -47,7 +47,7 @@ void setEditText(Context currentContext, Object control, NSString *str)
       [ str getCharacters: data ];
       if (control && OBJ_CLASS(control))
       {
-         Object msgObj = createStringObjectFromJCharP(currentContext, data, len);
+         TCObject msgObj = createStringObjectFromJCharP(currentContext, data, len);
          Method m = getMethod(OBJ_CLASS(control), true, "setText", 1, "java.lang.String");
          if (!m) return; // guich@tc115_15
          executeMethod(currentContext, m, control, msgObj);
