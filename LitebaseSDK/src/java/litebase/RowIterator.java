@@ -201,6 +201,38 @@ public class RowIterator
          throw new DriverException(exception);
       }
    }
+   
+   // juliana@270_29: added RowIterator.setNotSynced().
+   /**
+    * Forces the attribute to be NEW. This method will be useful if a row was marked as synchronized but was not sent to server for some problem.
+    * If the row is marked as DELETED, its attribute won't be changed.
+    *
+    * @throws DriverException If an <code>IOException</code> occurs.
+    */
+   public void setNotSynced()
+   {
+      checkState(); // juliana@230_27
+      
+      PlainDB plainDb = table.db;
+      plainDb.bas.reset();
+   
+      try 
+      {
+         int id = plainDb.basds.readInt();
+         int oldAttr = (((id & Utils.ROW_ATTR_MASK) >> ROW_ATTR_SHIFT) & 3); // guich@560_19
+         int newAttr = attr = Utils.ROW_ATTR_NEW;
+         if (newAttr != oldAttr && oldAttr != ROW_ATTR_DELETED)
+         {
+            plainDb.bas.reset();
+            plainDb.basds.writeInt((id & Utils.ROW_ID_MASK) | newAttr); // Sets the new attribute.
+            plainDb.rewrite(rowNumber);
+         }
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+   }
 
    /**
     * Closes this iterator.

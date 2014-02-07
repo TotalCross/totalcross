@@ -1,6 +1,7 @@
 litebase/RowIterator|public native boolean next();
 litebase/RowIterator|public native boolean nextNotSynced();
 litebase/RowIterator|public native void setSynced();
+litebase/RowIterator|public native void setNotSynced();
 litebase/RowIterator|public native void close();
 litebase/RowIterator|public native void reset();
 litebase/RowIterator|public native short getShort(int column);
@@ -77,7 +78,8 @@ litebase/ResultSet|public native int getRow();
 litebase/ResultSet|public native void setDecimalPlaces(int col, int places) throws DriverException;
 litebase/ResultSet|public native int getRowCount();
 litebase/ResultSet|public native boolean isNull(int col);
-litebase/ResultSet|public native boolean isNull(String colName) throws NullPointerException;  
+litebase/ResultSet|public native boolean isNull(String colName) throws NullPointerException; 
+litebase/ResultSet|public native String rowToString() throws DriverException;   
 litebase/ResultSetMetaData|public native int getColumnCount();
 litebase/ResultSetMetaData|public native int getColumnDisplaySize(int column) throws IllegalArgumentException;
 litebase/ResultSetMetaData|public native String getColumnLabel(int column) throws IllegalArgumentException;
