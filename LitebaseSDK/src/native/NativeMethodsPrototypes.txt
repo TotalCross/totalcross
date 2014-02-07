@@ -2,6 +2,7 @@
 TC_API void lRI_next(NMParams p);
 TC_API void lRI_nextNotSynced(NMParams p);
 TC_API void lRI_setSynced(NMParams p);
+TC_API void lRI_setNotSynced(NMParams p);
 TC_API void lRI_close(NMParams p);
 TC_API void lRI_reset(NMParams p);
 TC_API void lRI_getShort_i(NMParams p);
@@ -81,6 +82,7 @@ TC_API void lRS_setDecimalPlaces_ii(NMParams p);
 TC_API void lRS_getRowCount(NMParams p);
 TC_API void lRS_isNull_i(NMParams p);
 TC_API void lRS_isNull_s(NMParams p);
+TC_API void lRS_rowToString(NMParams p);
 TC_API void lRSMD_getColumnCount(NMParams p);
 TC_API void lRSMD_getColumnDisplaySize_i(NMParams p);
 TC_API void lRSMD_getColumnLabel_i(NMParams p);

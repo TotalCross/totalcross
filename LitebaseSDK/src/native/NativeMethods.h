@@ -42,6 +42,14 @@ LB_API void lRI_nextNotSynced(NMParams p);
 LB_API void lRI_setSynced(NMParams p);
 
 /**
+ * Forces the attribute to be NEW. This method will be useful if a row was marked as synchronized but was not sent to server for some problem.
+ * If the row is marked as DELETED, its attribute won't be changed.
+ *
+ * @param p->obj[0] The row iterator. 
+ */
+LB_API void lRI_setNotSynced(NMParams p); // juliana@270_29: added RowIterator.setNotSynced().
+
+/**
  * Closes this iterator.
  *
  */
@@ -863,6 +871,14 @@ LB_API void lRS_getRowCount(NMParams p);
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
  */
 LB_API void lRS_isNull_i(NMParams p);
+
+/**
+ * Transforms a <code>ResultSet</code> row in a string.
+ *
+ * @param p->obj[0] The result set.
+ * @param p->retO receives a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. 
+ */
+LB_API void lRS_rowToString(NMParams p); // juliana@270_30: added ResultSet.rowToString().
 
 /**
  * Given the column name (case insensitive), indicates if this column has a <code>NULL</code>.

@@ -951,59 +951,72 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("Joao Pedro", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals(1, rs.getInt("cnt"));
+      assertEquals("Joao Pedro\t\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("Lucas", rs.getString("name"));
       assertEquals("8", rs.getString("age1"));
       assertEquals(1, rs.getInt("cnt"));
+      assertEquals("Lucas\t8\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("Maria", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
+      assertEquals("Maria\t\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("caio", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
+      assertEquals("caio\t\t2", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("carol", rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
+      assertEquals("carol\t23\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("danilo", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
+      assertEquals("danilo\t\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("felipe", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
+      assertEquals("felipe\t\t2", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("indira", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
+      assertEquals("indira\t\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("null", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
+      assertEquals("null\t\t2", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
       assertEquals("85", rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
+      assertEquals("renato\t85\t1", rs.rowToString());
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
+      assertEquals("renato\t\t2", rs.rowToString());
       assertTrue(rs.next());
       assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
+      assertEquals("\t23\t2", rs.rowToString());
       assertTrue(rs.next());
       assertNull(rs.getString("name"));
       assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
+      assertEquals("\t\t1", rs.rowToString());
       rs.close();
    }
 
    /**
-    * Tests prepared tatements.
+    * Tests prepared statements.
     */
    private void testPreparedStatements() 
    {
