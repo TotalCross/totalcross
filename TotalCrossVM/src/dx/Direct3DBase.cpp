@@ -481,17 +481,17 @@ void Direct3DBase::PreRender()
    clipSet = false;
 }
 
-void Direct3DBase::startVMIfNeeded()
+void Direct3DBase::startProgramIfNeeded()
 {
    if (!VMStarted && isLoadCompleted())
    {
+	   VMStarted = true;
 	   auto lambda = [this]() 
       {
 		   PreRender();
 		   startProgram(local_context);
 	   };
 	   std::thread(lambda).detach();
-	   VMStarted = true;
 	   Sleep(1);
    }
 }

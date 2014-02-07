@@ -33,14 +33,7 @@ static std::queue<eventQueueMember> eventQueue;
 
 #pragma endregion
 
-enum qStEn {
-	QUEUE_PUSH,
-	QUEUE_POP,
-	QUEUE_IDLE
-};
-
-static enum qStEn queue_state = QUEUE_IDLE;
-
+static int counter;
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
@@ -50,14 +43,14 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
 	if (type == *ignoreEventOfType) 
 		return;
-
 	newEvent.type = type;
 	newEvent.key = key;
 	newEvent.x = x;
 	newEvent.y = y;
 	newEvent.modifiers = modifiers;
+   newEvent.count = ++counter;
 	eventQueue.push(newEvent);
-	//debug("elapsed %d, pushing event from queue; queue size %d", fim - ini, eventQueue.size());
+   //debug("%X - %d. push %d", GetCurrentThreadId(), counter, type);
 }
 
 struct eventQueueMember eventQueuePop(void)
@@ -75,6 +68,7 @@ struct eventQueueMember eventQueuePop(void)
 int eventQueueEmpty(void)
 {
 	int ret = (int)eventQueue.empty();
+   Sleep(1);
 	return ret;
 }
 

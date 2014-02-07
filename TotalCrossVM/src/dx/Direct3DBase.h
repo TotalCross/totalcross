@@ -63,7 +63,7 @@ internal:
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
 	void PreRender(); // resets the screen and set it ready to render
-   void startVMIfNeeded();
+   void startProgramIfNeeded();
 	void updateScreen();
 
    void setProgram(whichProgram p);

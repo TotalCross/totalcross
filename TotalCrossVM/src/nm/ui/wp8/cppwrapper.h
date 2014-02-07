@@ -19,6 +19,7 @@ struct eventQueueMember {
 	int x;
 	int y;
 	int modifiers;
+   int count;
 };
 
 char *GetAppPathWP8();
