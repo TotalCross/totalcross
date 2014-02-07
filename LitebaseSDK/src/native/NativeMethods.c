@@ -153,6 +153,48 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@270_29: added RowIterator.setNotSynced().
+/**
+ * Forces the attribute to be NEW. This method will be useful if a row was marked as synchronized but was not sent to server for some problem.
+ * If the row is marked as DELETED, its attribute won't be changed.
+ *
+ * @param p->obj[0] The row iterator. 
+ */
+LB_API void lRI_setNotSynced(NMParams p) // litebase/RowIterator public native void setNotSynced();
+{
+	TRACE("lRI_setNotSynced")
+   
+   MEMORY_TEST_START
+
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   if (testRIClosed(p))
+   {
+      Object rowIterator = p->obj[0];
+      Table* table = getRowIteratorTable(rowIterator);
+      PlainDB* plainDB = &table->db; 
+      uint8* basbuf = plainDB->basbuf;
+      int32 rowNumber = OBJ_RowIteratorRowNumber(rowIterator),
+            id,
+            oldAttr,
+            newAttr;
+
+      // The record is assumed to have been already read.
+      xmove4(&id, basbuf);
+      
+      // guich@560_19 // juliana@230_16: solved a bug with row iterator.
+      if ((newAttr = OBJ_RowIteratorAttr(rowIterator) = ROW_ATTR_NEW) != (oldAttr = ((id & ROW_ATTR_MASK) >> ROW_ATTR_SHIFT) & 3) 
+       && oldAttr != (int32)ROW_ATTR_DELETED_MASK)
+      {
+         id = (id & ROW_ID_MASK) | newAttr; // Sets the new attribute.
+         xmove4(basbuf, &id); 
+		   plainRewrite(p->currentContext, plainDB, rowNumber);
+      }
+   }
+
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 /**
@@ -3863,6 +3905,114 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
       }         
       else
          TC_throwNullArgumentException(p->currentContext, "colName");
+   }
+  
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// juliana@270_30: added ResultSet.rowToString().
+/**
+ * Transforms a <code>ResultSet</code> row in a string.
+ *
+ * @param p->obj[0] The result set.
+ * @param p->retO receives a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. 
+ */
+LB_API void lRS_rowToString(NMParams p)
+{
+   TRACE("lRS_rowToString")
+   Object resultSetObj = p->obj[0];
+   Context context = p->currentContext;
+
+   MEMORY_TEST_START
+   
+   if (testRSClosed(context, resultSetObj)) // The driver and the result set can't be closed.
+   {
+      ResultSet* resultSet = getResultSetBag(resultSetObj);
+      Table* table = resultSet->table;
+      int32 position = resultSet->pos;
+
+      if (position >= 0 && position <= table->db.rowCount - 1) // Invalid result set position.
+      {
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         int8* columnTypes = table->columnTypes;
+         int8* decimalPlaces = resultSet->decimalPlaces;
+         uint8* columnNulls0 = table->columnNulls;
+         SQLValue value;
+         bool notTemporary = resultSet->answerCount >= 0 || resultSet->isSimpleSelect;
+         SQLResultSetField** fields = resultSet->selectClause->fieldList;
+         SQLResultSetField* field;
+         Object strings[MAXIMUMS];
+         Object result;
+         JCharP resultStr;
+
+         // juliana@211_4: solved bugs with result set dealing.
+         // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
+         int32 cols = resultSet->selectClause->fieldsCount,
+               i = cols, 
+               j = 0,
+               k,
+               finalSize = 0;
+
+         while (--i >= 0) // Fetches all the strings.
+         {
+            field = fields[i];
+            k = notTemporary? (field->parameter? field->parameter->tableColIndex : field->tableColIndex) : i;   
+
+            if (isBitUnSet(columnNulls0, k) && columnTypes[k] != BLOB_TYPE) 
+            {
+               // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
+               if (!(strings[i] = rsGetString(context, resultSet, k, &value)) || field->isDataTypeFunction)
+               {
+                  if (field->isDataTypeFunction)
+                  {
+                     rsApplyDataTypeFunction(p, &value, field, UNDEFINED_TYPE);
+                     if (columnTypes[k] == CHARS_TYPE || columnTypes[k] == CHARS_NOCASE_TYPE)
+                     {
+                        if ((strings[i] = TC_createStringObjectWithLen(context, value.length)))
+                           xmemmove(String_charsStart(strings[i]), value.asChars, value.length << 1); 
+                     }
+                     else
+                        TC_setObjectLock(strings[i] = p->retO, LOCKED); 
+                  }
+                  else
+                  {
+                     createString(p, &value, columnTypes[k], decimalPlaces? decimalPlaces[k] : -1);
+                     TC_setObjectLock(strings[i] = p->retO, LOCKED);
+                  }
+                  
+               }
+            }
+            else
+               strings[i] = null;
+         }
+
+         // Fetches the final size of the resultant string
+         i = cols;
+         while (--i >= 0)
+            if (strings[i])
+			      finalSize += String_charsLen(strings[i]);
+         finalSize += cols - 1;
+
+         TC_setObjectLock(p->retO = result = TC_createStringObjectWithLen(context, finalSize), UNLOCKED); 
+         resultStr = String_charsStart(result);
+
+         // Copies the strings to the resultant string.
+         i = -1;
+         while (++i < cols)
+         {
+            if (strings[i])
+               xmemmove(&resultStr[j], String_charsStart(strings[i]), (k = String_charsLen(strings[i])) << 1);
+            else
+               k = 0;
+            if (i + 1 < cols)
+               resultStr[j += k] = '\t';
+            j++;
+            TC_setObjectLock(strings[i], UNLOCKED);
+         }        
+      }
+      else
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RS_INV_POS), position);
    }
   
    MEMORY_TEST_END

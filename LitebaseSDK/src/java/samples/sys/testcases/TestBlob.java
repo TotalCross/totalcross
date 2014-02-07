@@ -15,6 +15,7 @@ package samples.sys.testcases;
 
 import litebase.*;
 import totalcross.io.*;
+import totalcross.sys.Vm;
 import totalcross.unit.*;
 import totalcross.util.Random;
 
@@ -464,6 +465,7 @@ public class TestBlob extends TestCase
          assertEquals("\'" + ch, rs3.getString(1));
          assertEquals(ch--, rs3.getInt(2));
          assertEquals(bytes[i], rs3.getBlob(3));
+         
       }
       rs3.close();
       
@@ -474,6 +476,7 @@ public class TestBlob extends TestCase
       rs2.next();
       assertEquals(0, rs2.getChars("name").length);
       assertEquals(102400, rs2.getBlob("picture").length);
+      assertEquals("\t", rs2.rowToString());
       rs2.close();
       
       driver.closeAll();

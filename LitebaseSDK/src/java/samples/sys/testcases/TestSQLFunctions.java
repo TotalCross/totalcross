@@ -107,12 +107,15 @@ public class TestSQLFunctions extends TestCase
       catch (DriverException exception) {}
       assertEquals(12, resultSet.getShort(1));
       assertEquals(3, resultSet.getShort(2));
+      assertEquals("12\t3", resultSet.rowToString());
       assertTrue(resultSet.next());
       assertEquals(13, resultSet.getShort("h1"));
       assertEquals(6, resultSet.getShort("d1"));
+      assertEquals("13\t6", resultSet.rowToString());
       assertTrue(resultSet.next());
       assertEquals(1, resultSet.getShort(1));
       assertEquals(12, resultSet.getShort(2));
+      assertEquals("1\t12", resultSet.rowToString());
       assertFalse(resultSet.next());
       resultSet.close();
       
@@ -195,12 +198,14 @@ public class TestSQLFunctions extends TestCase
       assertEquals("Lucas Novais", resultSet.getString(3));
       assertEquals("lucas novais", resultSet.getString(4));
       assertEquals("LUCAS NOVAIS",resultSet.getString(5));
+      assertEquals("-20\t20\tLucas Novais\tlucas novais\tLUCAS NOVAIS", resultSet.rowToString());
       assertTrue(resultSet.next());
       assertEquals(-15, resultSet.getInt(1));
       assertEquals(15, resultSet.getInt("a1"));
       assertEquals("Zenes Lima", resultSet.getString(3));
       assertEquals("zenes lima", resultSet.getString("u1"));
       assertEquals("ZENES LIMA", resultSet.getString("u2"));
+      assertEquals("-15\t15\tZenes Lima\tzenes lima\tZENES LIMA", resultSet.rowToString());
       assertFalse(resultSet.next());
       resultSet.close();
       
