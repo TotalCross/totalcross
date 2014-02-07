@@ -52,6 +52,8 @@ ref class Direct3DBase
 internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
 
+   Platform::String^ alertMsg;
+
 	bool updateScreenRequested;
    bool eventsInitialized;
 	void Initialize(_In_ ID3D11Device1* device);
@@ -79,9 +81,6 @@ internal:
 
    static Direct3DBase ^GetLastInstance();
    PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
-
-   Platform::String^ GetAlertMsg();
-   void SetAlertMsg(Platform::String^ newAlertMsg);
 
 private:
    int loadCompleted;
@@ -130,5 +129,4 @@ protected private:
 	bool VMStarted;
 
 	// DrawCommand internal variables
-   Platform::String^ alertMsg;
 };

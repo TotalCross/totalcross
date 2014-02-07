@@ -175,7 +175,7 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::GetLastInstance()->SetAlertMsg(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::GetLastInstance()->alertMsg = ref new Platform::String((wchar_t*)jCharStr);
 }
 
 void vmSetAutoOffCPP(bool enable)

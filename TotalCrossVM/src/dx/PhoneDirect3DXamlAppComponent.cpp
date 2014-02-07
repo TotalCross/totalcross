@@ -104,20 +104,18 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 	}
 	else 
    {
-      Platform::String^ alertMsg;
-
+      // prepare the screen
 		m_renderer->UpdateDevice(device, context, renderTargetView);
 		m_renderer->PreRender();
       m_renderer->startVMIfNeeded();
-
-      for (m_renderer->updateScreenRequested = false; !m_renderer->updateScreenRequested;)
-			Sleep(0);
-      
-      alertMsg = m_renderer->GetAlertMsg();
-      if (alertMsg != nullptr)
-         Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(alertMsg);
-      alertMsg = nullptr;
-		      
+      // wait the screen to be filled
+      for (m_renderer->updateScreenRequested = false; !m_renderer->updateScreenRequested;) Sleep(0);
+      // alert stuff
+      if (m_renderer->alertMsg != nullptr)
+      {
+         Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(m_renderer->alertMsg);
+         m_renderer->alertMsg = nullptr;
+      }
       RequestAdditionalFrame();
 	}
 

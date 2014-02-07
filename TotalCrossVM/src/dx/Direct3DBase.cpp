@@ -10,8 +10,7 @@ using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
-static Direct3DBase ^lastInstance = nullptr;
-int nfr, nl, nfsr, nt, np;
+static Direct3DBase ^lastInstance;
 
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs)
@@ -277,7 +276,6 @@ void Direct3DBase::setup()
 #define f255(x) ((float)x/255.0f)
 void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   nfsr++;
    //y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
@@ -327,7 +325,6 @@ void Direct3DBase::setColor(int color)
 
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
-   nl++;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -351,7 +348,6 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
-   nfr++;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -377,7 +373,6 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 {
-   np++;
    int i;
    int n = count * 2;
    VertexPosition *cubeVertices = new VertexPosition[n];// position, color
@@ -431,20 +426,17 @@ bool Direct3DBase::isLoadCompleted()
 {
    return loadCompleted == TASKS_COMPLETED && eventsInitialized;
 }
-int npre;
+
 void Direct3DBase::updateScreen()
 {
-   //int ini = GetTickCount64() & 0x3FFFFFFF, fim;
-   for (updateScreenRequested = true; updateScreenRequested;)
-		Sleep(0);
-   //debug("% 5d - fillRect: %d, line: %d, fillSrect: %d, tex: %d, points: %d", npre++, nfr, nl, nfsr, nt, np); nfr = nl = nfsr = nt = np = 0;
-	//fim = GetTickCount64() & 0x3FFFFFFF; debug("vm thread occupied wait time elapsed: %d ms\n", fim - ini);
+   for (updateScreenRequested = true; updateScreenRequested;) 
+      Sleep(0);
 }
 
 void Direct3DBase::setProgram(whichProgram p)
 {
    if (p == curProgram) return;
-   lastRGB = 0xFAFFFFFF; // user may never use this color
+   lastRGB = 0xFAFFFFFF; // user may never set to this color
    curProgram = p;
    clipRect.right = -1;
    m_d3dContext->RSSetState(pRasterStateDisableClipping);
@@ -548,7 +540,6 @@ void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList
 void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
    bool doClip = clip != null;
-   nt++;
    ID3D11Texture2D *texture;
    ID3D11ShaderResourceView *textureView;
 
@@ -603,14 +594,4 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    m_d3dContext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    m_d3dContext->DrawIndexed(6, 0, 0);
-}
-
-Platform::String^ Direct3DBase::GetAlertMsg()
-{
-   return alertMsg;
-}
-
-void Direct3DBase::SetAlertMsg(Platform::String^ newAlertMsg)
-{
-   alertMsg = newAlertMsg;
 }
