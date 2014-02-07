@@ -113,7 +113,7 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
       // alert stuff
       if (m_renderer->alertMsg != nullptr)
       {
-         Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(m_renderer->alertMsg);
+         Direct3DBase::GetLastInstance()->csharp->privateAlertCS(m_renderer->alertMsg);
          m_renderer->alertMsg = nullptr;
       }
       RequestAdditionalFrame();

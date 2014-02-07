@@ -53,6 +53,7 @@ internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
 
    Platform::String^ alertMsg;
+   PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
 
 	bool updateScreenRequested;
    bool eventsInitialized;
@@ -80,7 +81,6 @@ internal:
    bool isLoadCompleted();
 
    static Direct3DBase ^GetLastInstance();
-   PhoneDirect3DXamlAppComponent::CSwrapper^ getCSwrapper();
 
 private:
    int loadCompleted;
@@ -120,9 +120,6 @@ protected private:
 	// Cached renderer properties.
 	Windows::Foundation::Size m_renderTargetSize;
 	Windows::Foundation::Rect m_windowBounds;
-
-	// C# wrapper object
-   PhoneDirect3DXamlAppComponent::CSwrapper ^cs;
 
 	// TotalCross objects
 	Context local_context;

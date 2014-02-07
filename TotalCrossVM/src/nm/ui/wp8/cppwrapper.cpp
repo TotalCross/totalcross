@@ -44,66 +44,31 @@ static enum qStEn queue_state = QUEUE_IDLE;
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
-	int ini, fim;
-
 	static int32 *ignoreEventOfType = null;
 	struct eventQueueMember newEvent;
 	if (ignoreEventOfType == null)
 		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
-	if (type == *ignoreEventOfType) {
+	if (type == *ignoreEventOfType) 
 		return;
-	}
-	ini = GetTickCount64() & 0x3FFFFFFF;
 
 	newEvent.type = type;
 	newEvent.key = key;
 	newEvent.x = x;
 	newEvent.y = y;
 	newEvent.modifiers = modifiers;
-
-	/*if (eventQueue.size() < 3) {
-		while (queue_state == QUEUE_POP) {
-			Sleep(1);
-		}
-		queue_state = QUEUE_PUSH;
-		eventQueue.push(newEvent);
-		queue_state = QUEUE_IDLE;
-	}
-	else {*/
-		eventQueue.push(newEvent);
-	//}
-
-	fim = GetTickCount64() & 0x3FFFFFFF;
+	eventQueue.push(newEvent);
 	//debug("elapsed %d, pushing event from queue; queue size %d", fim - ini, eventQueue.size());
 }
 
 struct eventQueueMember eventQueuePop(void)
 {
-	int ini, fim;
 	struct eventQueueMember top;
-
-	ini = GetTickCount64() & 0x3FFFFFFF;
-
 	top.type = 0;
-	/*if (eventQueue.size() < 3) {
-		while (queue_state == QUEUE_PUSH) {
-			Sleep(1);
-		}
-		queue_state = QUEUE_POP;
-		top = eventQueue.front();
-		eventQueue.pop();
-		queue_state = QUEUE_IDLE;
-	}
-	else {*/
 	if (!eventQueue.empty())
 	{
 		top = eventQueue.front();
 		eventQueue.pop();
 	}
-
-	fim = GetTickCount64() & 0x3FFFFFFF;
-	//debug("elapsed %d, popping event from queue; queue size %d", fim - ini, eventQueue.size());
-
 	return top;
 }
 
@@ -115,9 +80,9 @@ int eventQueueEmpty(void)
 
 char *GetAppPathWP8()
 {
-	if (appPathWP8[0] == '\0') {
+	if (appPathWP8[0] == '\0') 
+   {
 		Platform::String ^_appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
-
 		WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPathWP8, 1024, NULL, NULL);
 	}
 	return appPathWP8;
@@ -144,7 +109,6 @@ char *GetDisplayNameWP8()
 
 void windowSetDeviceTitle(TCObject titleObj)
 {
-
 }
 
 void windowSetSIP(enum TCSIP kb)
@@ -180,22 +144,22 @@ void alertCPP(JCharP jCharStr)
 
 void vmSetAutoOffCPP(bool enable)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
+   Direct3DBase::GetLastInstance()->csharp->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->dialNumberCS(ref new Platform::String((wchar_t*)number));
+   Direct3DBase::GetLastInstance()->csharp->dialNumberCS(ref new Platform::String((wchar_t*)number));
 }
 
 void smsSendCPP(JCharP szMessage, JCharP szDestination)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
+   Direct3DBase::GetLastInstance()->csharp->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
 }
 
 int rdGetStateCPP(int type)
 {
-   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->getCSwrapper();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->csharp;
    cs->rdGetStateCS(type);
    return cs->getTurnedState();
 }
@@ -207,12 +171,12 @@ bool isAvailableCPP(int type)
 
 bool nativeStartGPSCPP()
 {
-   return Direct3DBase::GetLastInstance()->getCSwrapper()->nativeStartGPSCS();
+   return Direct3DBase::GetLastInstance()->csharp->nativeStartGPSCS();
 }
 
 int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 {
-   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->getCSwrapper();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->csharp;
    int ret = cs->nativeUpdateLocationCS();
    TCObject lastFix = GPS_lastFix(gpsObject);
    Platform::String^ messageReceived;
@@ -247,7 +211,7 @@ int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 
 void nativeStopGPSCPP()
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->nativeStopGPSCS();
+   Direct3DBase::GetLastInstance()->csharp->nativeStopGPSCS();
 }
 
 bool dxSetup()
@@ -297,5 +261,5 @@ void dxDrawPixels(int *x, int *y, int count, int color)
 
 double getFontHeightCPP()
 {
-	return Direct3DBase::GetLastInstance()->getCSwrapper()->getFontHeightCS();
+	return Direct3DBase::GetLastInstance()->csharp->getFontHeightCS();
 }
