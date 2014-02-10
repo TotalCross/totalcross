@@ -411,6 +411,7 @@ public class Scanner4A
             break;
       }
       
+      semaphore.release();
       return true;
    }
    
