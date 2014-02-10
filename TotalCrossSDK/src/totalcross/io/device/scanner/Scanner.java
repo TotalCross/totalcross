@@ -1032,6 +1032,8 @@ public class Scanner
    * in scanning.  Choose from one of the barcode types given above.
    * @param barcodeType the type of barcode under consideration
    * @param enable a flag to enable or disable decoding barcodes of this type.
+   * 
+   * <p><b>Note</b>: On Android Intermec, you CAN'T set enable a barcode type the scanner is not activate. In this case, this method will return false.
    */
    public static boolean setBarcodeParam(int barcodeType, boolean enable)
    {
