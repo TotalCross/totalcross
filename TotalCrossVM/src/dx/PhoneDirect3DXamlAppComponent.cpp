@@ -2,7 +2,6 @@
 
 #include "cppwrapper.h"
 
-static float lastX, lastY;
 static float glShiftY = 0.0f;
 
 using namespace Windows::Foundation;
@@ -14,7 +13,7 @@ using namespace Windows::Phone::Input::Interop;
 namespace PhoneDirect3DXamlAppComponent
 {
 
-   Direct3DBackground::Direct3DBackground(CSwrapper ^_cs) : cs(_cs)
+Direct3DBackground::Direct3DBackground(CSwrapper ^_cs) : cs(_cs)
 {
 }
 
@@ -49,23 +48,26 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 void Direct3DBackground::OnPointerPressed(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
-   eventQueuePush(PENEVENT_PEN_DOWN, 0, (int32)(lastX = pos.X), (int32)(lastY = pos.Y - glShiftY), -1);
+   eventQueuePush(PENEVENT_PEN_DOWN, 0, (int32)(pos.X), (int32)(pos.Y - glShiftY), -1);
 }
 
+static unsigned long long lastMove;
 void Direct3DBackground::OnPointerMoved(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
-	auto pos = args->CurrentPoint->Position;
-	if (lastX != pos.X || lastY != pos.Y) 
+   unsigned long long ts = args->CurrentPoint->Timestamp;
+   if ((ts-lastMove) > 20) // ignore fast moves
    {
-      eventQueuePush(PENEVENT_PEN_DRAG, 0, (int32)(lastX = pos.X), (int32)(lastY = pos.Y - glShiftY), -1);
-		isDragging = true;
-	}
+      lastMove = ts;
+      auto pos = args->CurrentPoint->Position;
+      eventQueuePush(PENEVENT_PEN_DRAG, 0, (int32)(pos.X), (int32)(pos.Y - glShiftY), -1);
+      isDragging = true;
+   }
 }
 
 void Direct3DBackground::OnPointerReleased(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
 	auto pos = args->CurrentPoint->Position;
-   eventQueuePush(PENEVENT_PEN_UP, 0, (int32)(lastX = pos.X), (int32)(lastY = pos.Y - glShiftY), -1);
+   eventQueuePush(PENEVENT_PEN_UP, 0, (int32)(pos.X), (int32)(pos.Y - glShiftY), -1);
 	isDragging = false;
 }
 
@@ -93,17 +95,11 @@ HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTa
 
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-	if (!m_renderer->isLoadCompleted()) 
-   {
-	   m_renderer->UpdateDevice(device, context, renderTargetView);
-	   RequestAdditionalFrame();
-	}
-	else 
+   if (m_renderer->isLoadCompleted() && m_renderer->startProgramIfNeeded())
    {
       // prepare the screen
 		m_renderer->UpdateDevice(device, context, renderTargetView);
 		m_renderer->PreRender();
-      m_renderer->startProgramIfNeeded();
       // wait the screen to be filled
       for (m_renderer->updateScreenRequested = false; !m_renderer->updateScreenRequested;) Sleep(0);
       // alert stuff
@@ -112,9 +108,8 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
          Direct3DBase::GetLastInstance()->csharp->privateAlertCS(m_renderer->alertMsg);
          m_renderer->alertMsg = nullptr;
       }
-      RequestAdditionalFrame();
 	}
-
+   Direct3DBackground::RequestAdditionalFrame();
 	return S_OK;
 }
 

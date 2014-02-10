@@ -481,19 +481,18 @@ void Direct3DBase::PreRender()
    clipSet = false;
 }
 
-void Direct3DBase::startProgramIfNeeded()
+bool Direct3DBase::startProgramIfNeeded()
 {
    if (!VMStarted && isLoadCompleted())
    {
 	   VMStarted = true;
-	   auto lambda = [this]() 
+	   auto lambda = [this]()  // program start
       {
-		   PreRender();
-		   startProgram(local_context);
+		   startProgram(local_context); // this will block until the application ends
 	   };
 	   std::thread(lambda).detach();
-	   Sleep(1);
    }
+   return VMStarted;
 }
 
 void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)

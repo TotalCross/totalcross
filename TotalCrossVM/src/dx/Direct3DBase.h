@@ -63,7 +63,7 @@ internal:
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
 	void PreRender(); // resets the screen and set it ready to render
-   void startProgramIfNeeded();
+   bool startProgramIfNeeded();
 	void updateScreen();
 
    void setProgram(whichProgram p);
@@ -83,6 +83,7 @@ internal:
    static Direct3DBase ^GetLastInstance();
 
 private:
+   int renderPrepared;
    int loadCompleted;
    whichProgram curProgram;
    int lastRGB;
