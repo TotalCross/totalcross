@@ -244,7 +244,8 @@ public class Scanner4A
    
    private static BarcodeReader bcr;
    private static VirtualWedge wedg;
-   private static Semaphore semaphore = new Semaphore(0);
+   private static boolean isOk;
+   private static Semaphore semaphore = new Semaphore(1);
    
    static boolean scannerActivate()
    {
@@ -253,15 +254,20 @@ public class Scanner4A
       AidcManager.connectService(Launcher4A.loader, new AidcManager.IServiceListener() 
       {
          public void onConnect()
-         {  		 
-            doBarcodReader(); // The dependent service is connected and it is ready to receive barcode requests.
-            semaphore.release();
+         {  		    
+			try
+            {
+			   semaphore.acquire();				   
+		    }		           
+            catch (InterruptedException exception) {}
+			doBarcodReader(); // The dependent service is connected and it is ready to receive barcode requests.
+			semaphore.release();				
 		   }
 
          public void onDisconnect() {}
 
       });
-      return true;
+      return isOk;
    }
    
    static boolean setBarcodeParam(int barcodeType, boolean enable)
@@ -269,155 +275,162 @@ public class Scanner4A
       if (bcr == null)
          return false;
       try
-	   {
-         semaphore.acquire();
-      }
-	   catch (InterruptedException exception)
-	   {
-	      AndroidUtils.debug(exception.getMessage());
-         return false;
+	   {	
+         semaphore.acquire();	
 	   }
-		 
-      switch (barcodeType)
-      {
-         case INTERMEC_AUSTRALIAN_POST:
-            bcr.symbology.australianPost.setEnable(enable);
-            break;
-         case INTERMEC_AZTEC:
-            bcr.symbology.aztec.setEnable(enable);
-            break;
-         case INTERMEC_BPO:
-            bcr.symbology.bpo.setEnable(enable);
-            break;
-         case INTERMEC_CANADA_POST:
-            bcr.symbology.canadaPost.setEnable(enable);
-            break;
-         case INTERMEC_CODABAR:
-            bcr.symbology.codabar.setEnable(enable);
-            break;
-         case INTERMEC_CODABLOCK_A:
-            bcr.symbology.codablockA.setEnable(enable);
-            break;
-         case INTERMEC_CODABLOCK_F:
-            bcr.symbology.codablockF.setEnable(enable);
-            break;
-         case INTERMEC_CODE_11:
-            bcr.symbology.code11.setEnable(enable);
-            break;
-         case INTERMEC_CODE_128:
-            bcr.symbology.code128.setEnable(enable);
-            break;        
-         case INTERMEC_CODE_GS1_128:
-            bcr.symbology.code128.setGS1_128Enable(enable);
-            break;
-         case INTERMEC_CODE_ISBT_128:
-            bcr.symbology.code128.setISBT128Enable(enable);
-            break;
-         case INTERMEC_CODE_39:    
-            bcr.symbology.code39.setEnable(enable);
-            break;   
-         case INTERMEC_CODE_93:
-            bcr.symbology.code93.setEnable(enable);
-            break;   
-         case INTERMEC_DATA_MATRIX:
-            bcr.symbology.datamatrix.setEnable(enable);
-            break;
-         case INTERMEC_DUTCH_POST:
-            bcr.symbology.dutchPost.setEnable(enable);
-            break;
-         case INTERMEC_EAN_UPC_EAN_13:
-            bcr.symbology.eanUpc.setEan13Enable(enable);
-            break;
-         case INTERMEC_EAN_UPC_EAN_8:
-            bcr.symbology.eanUpc.setEan8Enable(enable);
-            break;
-         case INTERMEC_EAN_UPC_UPCA:
-            bcr.symbology.eanUpc.setUPCAEnable(enable);
-            break;
-         case INTERMEC_EAN_UPC_UPC_E:
-            bcr.symbology.eanUpc.setUPCEEnable(enable);
-            break;
-         case INTERMEC_EAN_UPC_UPC_E1:
-            bcr.symbology.eanUpc.setUPCE1Enable(enable);
-            break;            
-         case INTERMEC_GS1_COMPOSITE:       
-            bcr.symbology.gs1Composite.setEnable(enable);
-            break;      
-         case INTERMEC_GS1_COMPOSITE_C:
-            bcr.symbology.gs1Composite.setGS1CompositeCEnable(enable);
-            break;
-         case INTERMEC_GS1_DATA_BAR_EXPANDED:       
-            bcr.symbology.gs1DataBarExpanded.setEnable(enable);
-            break;   
-         case INTERMEC_GS1_DATA_BAR_LIMITED:    
-            bcr.symbology.gs1DataBarLimited.setEnable(enable);
-            break;   
-         case INTERMEC_GS1_OMINI_DIRECTIONAL:       
-            bcr.symbology.gs1DataBarOmniDirectional.setEnable(enable);
-            break;   
-         case INTERMEC_HAN_XIN:    
-            bcr.symbology.hanXin.setEnable(enable);
-            break;
-         case INTERMEC_INFOMAIL:    
-            bcr.symbology.infomail.setEnable(enable);
-            break;
-         case INTERMEC_INTELLIGENT_MAIL:    
-            bcr.symbology.intelligentMail.setEnable(enable);
-            break;
-         case INTERMEC_INTERLEAVED_2_OF_5:    
-            bcr.symbology.interleaved2Of5.setEnable(enable);
-            break;
-         case INTERMEC_JAPAN_POST:       
-            bcr.symbology.japanPost.setEnable(enable);
-            break;
-         case INTERMEC_MATRIX_2_OF_5:       
-            bcr.symbology.matrix2Of5.setEnable(enable);
-            break;
-         case INTERMEC_MAXICODE:       
-            bcr.symbology.maxicode.setEnable(enable);
-            break;
-         case INTERMEC_MICRO_PDF_417:       
-            bcr.symbology.microPdf417.setEnable(enable);
-            break;
-         case INTERMEC_MSI:       
-            bcr.symbology.msi.setEnable(enable);
-            break;
-         case INTERMEC_PDF_417:    
-            bcr.symbology.pdf417.setEnable(enable);
-            break;
-         case INTERMEC_PLANET:       
-            bcr.symbology.planet.setEnable(enable);
-            break;
-         case INTERMEC_PLESSEY:       
-            bcr.symbology.plessey.setEnable(enable);
-            break;
-         case INTERMEC_POSTNET:    
-            bcr.symbology.postnet.setEnable(enable);
-            break;
-         case INTERMEC_QR_CODE: 
-            bcr.symbology.qrCode.setEnable(enable);
-            break;
-         case INTERMEC_STANDARD_2_OF_5:    
-            bcr.symbology.standard2Of5.setEnable(enable);
-            break;
-         case INTERMEC_SWEDEN_POST:       
-            bcr.symbology.swedenPost.setEnable(enable);
-            break;
-         case INTERMEC_TELEPEN:
-            bcr.symbology.telepen.setEnable(enable);
-            break;
-         case INTERMEC_TLC_39:
-            bcr.symbology.tlc39.setEnable(enable);
-            break;
-      }
-      
-      semaphore.release();
-      return true;
+	   catch (InterruptedException exception) {}
+		 switch (barcodeType)
+		  {
+			 case INTERMEC_AUSTRALIAN_POST:
+				bcr.symbology.australianPost.setEnable(enable);
+				break;
+			 case INTERMEC_AZTEC:
+				bcr.symbology.aztec.setEnable(enable);
+				break;
+			 case INTERMEC_BPO:
+				bcr.symbology.bpo.setEnable(enable);
+				break;
+			 case INTERMEC_CANADA_POST:
+				bcr.symbology.canadaPost.setEnable(enable);
+				break;
+			 case INTERMEC_CODABAR:
+				bcr.symbology.codabar.setEnable(enable);
+				break;
+			 case INTERMEC_CODABLOCK_A:
+				bcr.symbology.codablockA.setEnable(enable);
+				break;
+			 case INTERMEC_CODABLOCK_F:
+				bcr.symbology.codablockF.setEnable(enable);
+				break;
+			 case INTERMEC_CODE_11:
+				bcr.symbology.code11.setEnable(enable);
+				break;
+			 case INTERMEC_CODE_128:
+				bcr.symbology.code128.setEnable(enable);
+				break;        
+			 case INTERMEC_CODE_GS1_128:
+				bcr.symbology.code128.setGS1_128Enable(enable);
+				break;
+			 case INTERMEC_CODE_ISBT_128:
+				bcr.symbology.code128.setISBT128Enable(enable);
+				break;
+			 case INTERMEC_CODE_39:    
+				bcr.symbology.code39.setEnable(enable);
+				break;   
+			 case INTERMEC_CODE_93:
+				bcr.symbology.code93.setEnable(enable);
+				break;   
+			 case INTERMEC_DATA_MATRIX:
+				bcr.symbology.datamatrix.setEnable(enable);
+				break;
+			 case INTERMEC_DUTCH_POST:
+				bcr.symbology.dutchPost.setEnable(enable);
+				break;
+			 case INTERMEC_EAN_UPC_EAN_13:
+				bcr.symbology.eanUpc.setEan13Enable(enable);
+				break;
+			 case INTERMEC_EAN_UPC_EAN_8:
+				bcr.symbology.eanUpc.setEan8Enable(enable);
+				break;
+			 case INTERMEC_EAN_UPC_UPCA:
+				bcr.symbology.eanUpc.setUPCAEnable(enable);
+				break;
+			 case INTERMEC_EAN_UPC_UPC_E:
+				bcr.symbology.eanUpc.setUPCEEnable(enable);
+				break;
+			 case INTERMEC_EAN_UPC_UPC_E1:
+				bcr.symbology.eanUpc.setUPCE1Enable(enable);
+				break;            
+			 case INTERMEC_GS1_COMPOSITE:       
+				bcr.symbology.gs1Composite.setEnable(enable);
+				break;      
+			 case INTERMEC_GS1_COMPOSITE_C:
+				bcr.symbology.gs1Composite.setGS1CompositeCEnable(enable);
+				break;
+			 case INTERMEC_GS1_DATA_BAR_EXPANDED:       
+				bcr.symbology.gs1DataBarExpanded.setEnable(enable);
+				break;   
+			 case INTERMEC_GS1_DATA_BAR_LIMITED:    
+				bcr.symbology.gs1DataBarLimited.setEnable(enable);
+				break;   
+			 case INTERMEC_GS1_OMINI_DIRECTIONAL:       
+				bcr.symbology.gs1DataBarOmniDirectional.setEnable(enable);
+				break;   
+			 case INTERMEC_HAN_XIN:    
+				bcr.symbology.hanXin.setEnable(enable);
+				break;
+			 case INTERMEC_INFOMAIL:    
+				bcr.symbology.infomail.setEnable(enable);
+				break;
+			 case INTERMEC_INTELLIGENT_MAIL:    
+				bcr.symbology.intelligentMail.setEnable(enable);
+				break;
+			 case INTERMEC_INTERLEAVED_2_OF_5:    
+				bcr.symbology.interleaved2Of5.setEnable(enable);
+				break;
+			 case INTERMEC_JAPAN_POST:       
+				bcr.symbology.japanPost.setEnable(enable);
+				break;
+			 case INTERMEC_MATRIX_2_OF_5:       
+				bcr.symbology.matrix2Of5.setEnable(enable);
+				break;
+			 case INTERMEC_MAXICODE:       
+				bcr.symbology.maxicode.setEnable(enable);
+				break;
+			 case INTERMEC_MICRO_PDF_417:       
+				bcr.symbology.microPdf417.setEnable(enable);
+				break;
+			 case INTERMEC_MSI:       
+				bcr.symbology.msi.setEnable(enable);
+				break;
+			 case INTERMEC_PDF_417:    
+				bcr.symbology.pdf417.setEnable(enable);
+				break;
+			 case INTERMEC_PLANET:       
+				bcr.symbology.planet.setEnable(enable);
+				break;
+			 case INTERMEC_PLESSEY:       
+				bcr.symbology.plessey.setEnable(enable);
+				break;
+			 case INTERMEC_POSTNET:    
+				bcr.symbology.postnet.setEnable(enable);
+				break;
+			 case INTERMEC_QR_CODE: 
+				bcr.symbology.qrCode.setEnable(enable);
+				break;
+			 case INTERMEC_STANDARD_2_OF_5:    
+				bcr.symbology.standard2Of5.setEnable(enable);
+				break;
+			 case INTERMEC_SWEDEN_POST:       
+				bcr.symbology.swedenPost.setEnable(enable);
+				break;
+			 case INTERMEC_TELEPEN:
+				bcr.symbology.telepen.setEnable(enable);
+				break;
+			 case INTERMEC_TLC_39:
+				bcr.symbology.tlc39.setEnable(enable);
+				break;
+		  }
+		  
+		  semaphore.release();				
+		  return true;
    }
    
    static String getData()
    {
-      return Launcher4A.loader.strBarcodeData;
+      String strBarcodeData;
+	  Semaphore loaderSemaphore = Launcher4A.loader.semaphore;
+	  
+	  try
+	   {
+         loaderSemaphore.acquire();		 
+      }
+	   catch (InterruptedException exception) {}
+	  
+       strBarcodeData = Launcher4A.loader.strBarcodeData;
+	   loaderSemaphore.release();
+	  
+	  return strBarcodeData;
    }
    
    static boolean deactivate()
@@ -431,41 +444,73 @@ public class Scanner4A
              bcr.close();
              bcr = null;
          }
-         
+      }
+	  catch (BarcodeReaderException exception)
+      {
+         String message = exception.getMessage();
+         AndroidUtils.debug(message != null? message : "Could not deactivate scanner.");     
+         return false;		 
+      }
+      
+      try
+      {	  
          if (wedg != null)
          {
             wedg.setEnable(true);
             wedg = null;
          }
-         wedg = null;
-         
-         //disconnect from data collection service
-         AidcManager.disconnectService();
-         return true;
-      }
-      catch (Exception exception)
+	  }
+      catch (VirtualWedgeException exception)
       {
-         AndroidUtils.debug(exception.getMessage());
+         String message = exception.getMessage();
+         AndroidUtils.debug(message != null? message : "Could not deactivate scanner.");        
          return false;
-      }
+	  }        
+         //disconnect from data collection service
+         try
+		 {
+		    AidcManager.disconnectService();
+         }
+		 catch (Exception exception) 
+		 {
+		    return false;
+		 }
+		 return true;  
    }
    
    public static void doBarcodReader()
    {
+      isOk = true;
       try
-      {  
+      {    
          //disable virtual wedge
-         (wedg = new VirtualWedge()).setEnable(false);  
-                     
+		 if ((wedg = new VirtualWedge()).isEnabled())
+            wedg.setEnable(false);  
+		 else
+		    wedg = null;
+	  }
+      catch (VirtualWedgeException exception)
+      {
+	     String message = exception.getMessage();
+         AndroidUtils.debug(message != null? message : "Could not activate scanner.");		 
+		 wedg = null;
+		 isOk = false;
+      }
+      try
+      {                
          //set barcode reader object for internal scanner
-         (bcr = new BarcodeReader()).setScannerEnable(true);
+         if (!(bcr = new BarcodeReader()).isScannerEnabled())
+		    bcr.setScannerEnable(true);
 
          //add barcode reader listener
          bcr.addBarcodeReadListener(Launcher4A.loader);
       }
-      catch (Exception exception)
+      catch (BarcodeReaderException exception)
       {
-         AndroidUtils.debug(exception.getMessage());
+	     String message = exception.getMessage();
+         AndroidUtils.debug(message != null? message : "Could not activate scanner.");
+		 bcr = null;
+		 isOk = false;
       }
    }
 }
