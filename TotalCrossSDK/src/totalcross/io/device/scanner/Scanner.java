@@ -1004,6 +1004,10 @@ public class Scanner
    * Activate the scanner. Return true if the scanner could be activated,
    * false otherwise.  (A false condition may arise if batteries have run
    * too low, or if the unit does not have the scan library installed.
+   *
+   * <p><b>Note</b>: On Android Intermec, you can't activate the scanner if it is off in the settings. Moreover, you should not set the scanner and 
+   * virtual wedge settings off and then try to use the scanner. Even though your app won't crash or hang, the device might not behave properly. 
+   * There is no way to check if the device settings are off in the settings or in the app. 
    */
    public static boolean activate()
    {
@@ -1141,6 +1145,8 @@ public class Scanner
    /**
    * Get the decoded string of what has been scanned.  If an error occurs a
    * null String will be returned.
+   * 
+   * <p><b>Note</b>: On Android Intermec, you should first set some parameters before fetching data or else it might crash after 10 or 15 reads.
    */
    public static String getData()
    {
