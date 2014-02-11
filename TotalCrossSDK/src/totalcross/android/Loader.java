@@ -26,11 +26,10 @@ import android.view.*;
 import android.view.inputmethod.*;
 import java.io.*;
 import java.util.*;
-
 import totalcross.*;
 import totalcross.android.compat.*;
-
 import com.intermec.aidc.*; 
+import java.util.concurrent.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -505,10 +504,18 @@ public class Loader extends Activity implements BarcodeReadListener
    }
 
    String strBarcodeData;    
+   static Semaphore semaphore = new Semaphore(1);
 
    public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
    {
-      strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+      try
+	   {
+         semaphore.acquire();		 
+      }
+	   catch (InterruptedException exception) {}
+	   strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+	   semaphore.release();
+
       Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }
