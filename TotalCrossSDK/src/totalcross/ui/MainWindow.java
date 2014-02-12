@@ -27,6 +27,8 @@ import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.unit.*;
+import totalcross.util.*;
+import totalcross.util.concurrent.*;
 
 /**
  * MainWindow is the main window of a UI-based application.
@@ -585,6 +587,15 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
       if (minInterval > 0 || lastMinInterval > 0) // guich@tc100: call only if there's a timer to run
          setTimerInterval(lastMinInterval = minInterval);
+      // run everything that needs to run on main thread
+      Object [] runners = getRunners();
+      if (runners != null)
+      {
+         Window.enableUpdateScreen = false; // we'll update the screen below
+         for (int i = 0; i < runners.length; i++)
+            ((Runnable)runners[i]).run();
+         Window.enableUpdateScreen = true;
+      }
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
          repaintActiveWindows(); // already calls updateScreen
       else
@@ -654,5 +665,58 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (Settings.onJavaSE)
          img.setTransparentColor(-1);
       return img;
+   }
+
+
+   // stuff to let a thread update the screen
+   private Lock runnersLock = new Lock();
+   private Vector runners = new Vector(1);
+   
+   private Object[] getRunners()
+   {
+      Object[] o = null;
+      synchronized (runnersLock)
+      {
+         int n = runners.size();
+         if (n != 0) 
+         {
+            o = runners.toObjectArray();
+            runners.removeAllElements();
+         }
+      }
+      return o;
+   }
+   /** Runs the given code in the main thread. As of TotalCross 2.0, a thread cannot update the screen.
+    * So, asking the code to be called in the main thread solves the problem. Of course, this call is asynchronous, ie,
+    * the thread may run again before the screen is updated. This method is thread-safe.
+    * Sample:
+    * <pre>
+    *  new Thread()
+         {
+            public void run()
+            {
+               while (true)
+               {
+                  Vm.sleep(1000);
+                  MainWindow.getMainWindow().runOnMainThread(new Runnable()
+                  {
+                     public void run()
+                     {
+                        log("babi "+ ++contador);
+                     }
+                  });
+               }
+            }
+         }.start();
+    * </pre>
+    * @since TotalCross 2.1
+    */
+   public void runOnMainThread(Runnable r)
+   {
+      synchronized (runnersLock)
+      {
+         runners.addElement(r);
+         setTimerInterval(1);
+      }
    }
 }
