@@ -151,6 +151,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       mainWindowInstance.setFont(newFont);
       uitip.setFont(newFont); // guich@tc100b5_58
       mainWindowInstance.setTitleFont(newFont.asBold()); // guich@tc125_4
+      mainWindowInstance.titleGap = 0;
       if (Settings.fingerTouch) // guich@tc120_48
          Settings.touchTolerance = newFont.fm.height/2;
    }
