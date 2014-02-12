@@ -149,6 +149,11 @@ uint32 *_addrInParamA[4];
 uint32 *_addrNMRet[4];
 #endif
 
+inline void moveReg64(void* dest, void* src)
+{
+   xmove8(dest, src);
+}
+
 /* Note: this code is highly optimized. So, even if some things seems not "natural", keep it that way! */
 TC_API TValue executeMethod(Context context, Method method, ...)
 {
@@ -383,16 +388,16 @@ mainLoop:
       OPCODE(MOV_reg16_aru)       regI[code->reg_ar.reg] = ((uint16*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_field_regI)      GET_INSTANCE_FIELD(RegI) FIELD_I32(o,               retv) = regI[code->field_reg.reg]; NEXT_OP
       OPCODE(MOV_field_regO)      GET_INSTANCE_FIELD(RegO) FIELD_OBJ(o, OBJ_CLASS(o), retv) = regO[code->field_reg.reg]; NEXT_OP
-      OPCODE(MOV_field_reg64)     GET_INSTANCE_FIELD(RegD) FIELD_DBL(o, OBJ_CLASS(o), retv) = REGD(reg64)[code->field_reg.reg];NEXT_OP
+      OPCODE(MOV_field_reg64)     GET_INSTANCE_FIELD(RegD) moveReg64(&FIELD_DBL(o, OBJ_CLASS(o), retv), &REGD(reg64)[code->field_reg.reg]);NEXT_OP
       OPCODE(MOV_regI_field)      GET_INSTANCE_FIELD(RegI) regI[code->field_reg.reg] = FIELD_I32(o,               retv); NEXT_OP
       OPCODE(MOV_regO_field)      GET_INSTANCE_FIELD(RegO) regO[code->field_reg.reg] = FIELD_OBJ(o, OBJ_CLASS(o), retv); NEXT_OP
-      OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) REGD(reg64)[code->field_reg.reg] = FIELD_DBL(o, OBJ_CLASS(o), retv); NEXT_OP
+      OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) moveReg64(&REGD(reg64)[code->field_reg.reg], &FIELD_DBL(o, OBJ_CLASS(o), retv)); NEXT_OP
       OPCODE(MOV_static_regI)     GET_STATIC_FIELD(RegI) ((int32*) sf)[0] = regI[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((TCObject*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
-      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((int64*)sf)[0] = REGL(reg64)[code->static_reg.reg]; NEXT_OP
+      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) moveReg64((int64*)sf, &REGL(reg64)[code->static_reg.reg]); NEXT_OP
       OPCODE(MOV_regI_static)     GET_STATIC_FIELD(RegI) regI[code->static_reg.reg] = ((int32*) sf)[0]; NEXT_OP
       OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((TCObject*)sf)[0]; NEXT_OP
-      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGL(reg64)[code->static_reg.reg] = ((int64*)sf)[0]; NEXT_OP
+      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) moveReg64(&REGL(reg64)[code->static_reg.reg], (int64*)sf); NEXT_OP
       OPCODE(ADD_regI_regI_regI)  regI[code->reg_reg_reg.reg0] = regI[code->reg_reg_reg.reg1] + regI[code->reg_reg_reg.reg2]; NEXT_OP
       OPCODE(ADD_regI_s12_regI)   regI[code->reg_reg_s12.reg0] = regI[code->reg_reg_s12.reg1] + (int32)code->reg_reg_s12.s12; NEXT_OP
       OPCODE(ADD_regD_regD_regD)  REGD(reg64)[code->reg_reg_reg.reg0] = REGD(reg64)[code->reg_reg_reg.reg1] + REGD(reg64)[code->reg_reg_reg.reg2]; NEXT_OP
