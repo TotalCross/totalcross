@@ -149,7 +149,7 @@ uint32 *_addrInParamA[4];
 uint32 *_addrNMRet[4];
 #endif
 
-inline void moveReg64(void* dest, void* src)
+_inline void moveReg64(void* dest, void* src)
 {
    xmove8(dest, src);
 }
