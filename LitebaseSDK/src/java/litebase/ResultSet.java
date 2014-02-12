@@ -1056,7 +1056,8 @@ public class ResultSet
    /**
     * Transforms a <code>ResultSet</code> row in a string.
     *
-    * @return Returns a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. 
+    * @return Returns a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. With a column has a 
+    * <code>null</code> or empty value, the string will have two consecutive tabs "<code>\t\t</code>". Blobs are treated as nulls. 
     * @throws DriverException If the ResultSet position is invalid or an <code>IOException</code> occurs.
     */
    public String rowToString() throws DriverException
