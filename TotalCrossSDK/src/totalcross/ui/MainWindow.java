@@ -153,6 +153,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       mainWindowInstance.setFont(newFont);
       uitip.setFont(newFont); // guich@tc100b5_58
       mainWindowInstance.setTitleFont(newFont.asBold()); // guich@tc125_4
+      mainWindowInstance.titleGap = 0;
       if (Settings.fingerTouch) // guich@tc120_48
          Settings.touchTolerance = newFont.fm.height/2;
    }
@@ -595,7 +596,6 @@ public class MainWindow extends Window implements totalcross.MainClass
             ((Runnable)runners[i]).run();
          Window.enableUpdateScreen = true;
       }
-      
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
          repaintActiveWindows(); // already calls updateScreen
       else
@@ -718,5 +718,4 @@ public class MainWindow extends Window implements totalcross.MainClass
          setTimerInterval(1);
       }
    }
-
 }
