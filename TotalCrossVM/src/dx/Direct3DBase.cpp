@@ -1,6 +1,7 @@
 ﻿#include "Direct3DBase.h"
 
 #include <thread>
+#include "PhoneDirect3DXamlAppComponent.h"
 
 #define HAS_TCHAR
 #include "tcvm.h"
@@ -17,6 +18,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
+   callRender = true;
 }
 
 Direct3DBase ^Direct3DBase::GetLastInstance()
@@ -116,9 +118,8 @@ void Direct3DBase::CreateDeviceResources()
 
 }
 
-void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
+void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-	m_d3dContext = context;
 	m_renderTargetView = renderTargetView;
 
 	if (m_d3dDevice.Get() != device)
@@ -424,12 +425,42 @@ bool Direct3DBase::isLoadCompleted()
 
 void Direct3DBase::updateScreen()
 {
-   for (updateScreenRequested = true; updateScreenRequested;) 
-      Sleep(0);
+   debug("update screen");
+   //cmdlist = null;
+   m_d3dContext->FinishCommandList(false, &cmdlist);
+   callRender = true;
+   PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
+   //m_d3dContext = nullptr;
+}
+
+
+void Direct3DBase::PreRender()
+{
+   debug("pre render");
+   callRender = false;
+   //if (m_d3dContext == null)
+      m_d3dDevice->CreateDeferredContext1(0, &m_d3dContext);
+   const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+   // Set the rendering viewport to target the entire window.
+   CD3D11_VIEWPORT viewport(0.0f, 0.0f, m_renderTargetSize.Width, m_renderTargetSize.Height);
+   m_d3dContext->RSSetViewports(1, &viewport);
+
+   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+   m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
+   m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
+
+   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
+   curProgram = PROGRAM_NONE;
+   m_d3dContext->RSSetState(pRasterStateDisableClipping);
+   clipSet = false;
 }
 
 void Direct3DBase::setProgram(whichProgram p)
 {
+   if (callRender) PreRender();
    if (p == curProgram) return;
    lastRGB = 0xFAFFFFFF; // user may never set to this color
    curProgram = p;
@@ -459,26 +490,6 @@ void Direct3DBase::setProgram(whichProgram p)
          break;
    }
    m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-}
-
-void Direct3DBase::PreRender()
-{
-   const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-   // Set the rendering viewport to target the entire window.
-   CD3D11_VIEWPORT viewport(0.0f, 0.0f, m_renderTargetSize.Width, m_renderTargetSize.Height);
-   m_d3dContext->RSSetViewports(1, &viewport);
-
-   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
-   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-   m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
-   m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
-
-   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
-   curProgram = PROGRAM_NONE;
-   m_d3dContext->RSSetState(pRasterStateDisableClipping);
-   clipSet = false;
 }
 
 bool Direct3DBase::startProgramIfNeeded()

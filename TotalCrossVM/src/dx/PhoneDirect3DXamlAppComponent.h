@@ -27,6 +27,8 @@ public:
 
 	// Forward the back key press event to the application; return false when the app should quit
 	bool backKeyPress();
+   static Direct3DBackground^ GetInstance();
+   void RequestNewFrame();
 
 protected:
 

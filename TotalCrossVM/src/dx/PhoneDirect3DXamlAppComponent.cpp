@@ -12,9 +12,20 @@ using namespace Windows::Phone::Input::Interop;
 
 namespace PhoneDirect3DXamlAppComponent
 {
+static Direct3DBackground^ instance;
 
 Direct3DBackground::Direct3DBackground(CSwrapper ^_cs) : cs(_cs)
 {
+   instance = this;
+}
+
+Direct3DBackground^ Direct3DBackground::GetInstance()
+{
+   return instance;
+}
+void Direct3DBackground::RequestNewFrame()
+{
+   Direct3DBackground::RequestAdditionalFrame();
 }
 
 IDrawingSurfaceBackgroundContentProvider^ Direct3DBackground::CreateContentProvider()
@@ -95,22 +106,16 @@ HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTa
 
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
+   debug("draw");
    if (m_renderer->isLoadCompleted() && m_renderer->startProgramIfNeeded())
    {
       // prepare the screen
-		m_renderer->UpdateDevice(device, context, renderTargetView);
-		m_renderer->PreRender();
-      // wait the screen to be filled
-      for (m_renderer->updateScreenRequested = false; !m_renderer->updateScreenRequested;) Sleep(0);
-      // alert stuff
-      if (m_renderer->alertMsg != nullptr)
-      {
-         Direct3DBase::GetLastInstance()->csharp->privateAlertCS(m_renderer->alertMsg);
-         m_renderer->alertMsg = nullptr;
-      }
-	}
-   Direct3DBackground::RequestAdditionalFrame();
-	return S_OK;
+      m_renderer->UpdateDevice(device, renderTargetView);
+      //ID3D11DeviceContext1 *ic; device->GetImmediateContext1(&ic); ic->ExecuteCommandList(m_renderer->cmdlist, true);
+      context->ExecuteCommandList(m_renderer->cmdlist, true);
+      if (m_renderer->alertMsg != nullptr) {Direct3DBase::GetLastInstance()->csharp->privateAlertCS(m_renderer->alertMsg); m_renderer->alertMsg = nullptr;} // alert stuff
+	} else Direct3DBackground::RequestAdditionalFrame();
+   return S_OK;
 }
 
 }

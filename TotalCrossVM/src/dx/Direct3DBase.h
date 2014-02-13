@@ -59,7 +59,7 @@ internal:
    bool eventsInitialized;
 	void Initialize(_In_ ID3D11Device1* device);
 	void CreateDeviceResources();
-	void UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView);
+	void UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11RenderTargetView* renderTargetView);
 	void CreateWindowSizeDependentResources();
 	void UpdateForWindowSizeChange(float width, float height);
 	void PreRender(); // resets the screen and set it ready to render
@@ -82,6 +82,7 @@ internal:
 
    static Direct3DBase ^GetLastInstance();
 
+   ID3D11CommandList *cmdlist;
 private:
    int renderPrepared;
    int loadCompleted;
@@ -114,10 +115,11 @@ private:
 protected private:
 	// Direct3D Objects.
 	Microsoft::WRL::ComPtr<ID3D11Device1> m_d3dDevice;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
+   Microsoft::WRL::ComPtr<ID3D11DeviceContext1> m_d3dContext;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 
+   bool callRender;
 	// Cached renderer properties.
 	Windows::Foundation::Size m_renderTargetSize;
 	Windows::Foundation::Rect m_windowBounds;
