@@ -16,11 +16,10 @@
 
 package totalcross.android;
 
-import totalcross.*;
-import android.content.*;
-import com.intermec.aidc.*; 
-import totalcross.android.*;
+import com.intermec.aidc.*;
 import java.util.concurrent.*;
+
+import totalcross.*;
 
 /**
  * Scanner class for Android.
@@ -248,7 +247,7 @@ public class Scanner4A
    static String getData()
    {
       String strBarcodeData;
-	   Semaphore loaderSemaphore = Launcher4A.loader.semaphore;
+	   Semaphore loaderSemaphore = Loader.semaphore;
 	  
 	   try
 	   {
