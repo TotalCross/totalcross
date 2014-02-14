@@ -262,6 +262,7 @@ public class Scanner4A
    
    static boolean deactivate()
    {
+      if (bcr == null) return true;
       boolean ret = true;
       
       try
@@ -271,7 +272,6 @@ public class Scanner4A
              bcr.removeBarcodeReadListener(Launcher4A.loader);             
              bcr.setScannerEnable(false);
              bcr.close();
-             bcr = null;
          }
       }
 	   catch (Exception exception)
@@ -307,6 +307,7 @@ public class Scanner4A
          ret = false; 
 		}
 		
+      bcr = null;
       return ret;  
    }
    
