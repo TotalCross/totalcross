@@ -33,7 +33,7 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.7TC2";
+   public static String versionStr = "2.7";
 
    /**
     * The integer corresponding to the current Litebase version.
@@ -626,10 +626,11 @@ public class LitebaseConnection4D
    }
    
    /**
-    * Returns the slot where the tables are stored. Always return -1 except on palm.
+    * Used to returned the slot where the tables were stored on Palm OS. Not used anymore.
     * 
-    * @return The slot where the tables are stored.
-    */
+    * @return -1.
+    * @deprecated Not used anymore.
+	*/
    public native int getSlot(); // juliana@223_1: added a method to get the current slot being used. Returns -1 except on palm.
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
@@ -650,7 +651,7 @@ public class LitebaseConnection4D
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param slot The slot on Palm where the source path folder were stored. Not used anymore.
     * @throws DriverException If the database is not found or a file error occurs.
     * @throws NullPointerException If one of the string parameters is null.
     */

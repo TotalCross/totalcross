@@ -34,7 +34,7 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.7TC2";
+   public static String versionStr = "2.7";
 
    /**
     * The integer corresponding to the current Litebase version.
@@ -2519,10 +2519,11 @@ public class LitebaseConnection
    }
    
    /**
-    * Returns the slot where the tables are stored. Always return -1 except on palm.
+    * Used to returned the slot where the tables were stored on Palm OS. Not used anymore.
     * 
-    * @return The slot where the tables are stored.
-    */
+    * @return -1.
+    * @deprecated Not used anymore.
+	*/
    public int getSlot() // juliana@223_1: added a method to get the current slot being used. Returns -1 except on palm.
    {
       return -1;     
@@ -2553,7 +2554,7 @@ public class LitebaseConnection
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param slot The slot on Palm where the source path folder were stored. Not used anymore.
     * @throws DriverException If the database is not found or an <code>IOException</code> occurs.
     */
    public static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException
