@@ -169,7 +169,7 @@ LB_API void lRI_setNotSynced(NMParams p) // litebase/RowIterator public native v
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (testRIClosed(p))
    {
-      Object rowIterator = p->obj[0];
+      TCObject rowIterator = p->obj[0];
       Table* table = getRowIteratorTable(rowIterator);
       PlainDB* plainDB = &table->db; 
       uint8* basbuf = plainDB->basbuf;
@@ -3921,7 +3921,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 LB_API void lRS_rowToString(NMParams p)
 {
    TRACE("lRS_rowToString")
-   Object resultSetObj = p->obj[0];
+   TCObject resultSetObj = p->obj[0];
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -3942,8 +3942,8 @@ LB_API void lRS_rowToString(NMParams p)
          bool notTemporary = resultSet->answerCount >= 0 || resultSet->isSimpleSelect;
          SQLResultSetField** fields = resultSet->selectClause->fieldList;
          SQLResultSetField* field;
-         Object strings[MAXIMUMS];
-         Object result;
+         TCObject strings[MAXIMUMS];
+         TCObject result;
          JCharP resultStr;
 
          // juliana@211_4: solved bugs with result set dealing.
