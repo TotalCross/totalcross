@@ -42,6 +42,9 @@ namespace PhoneDirect3DXamlAppComponent
       double getPdop();
       Platform::String^ getLowSignalReason();
 
+      // File
+      bool fileIsCardInsertedCS();
+
 	  // Etc
 	  double getFontHeightCS();
 	};

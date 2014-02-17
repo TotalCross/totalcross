@@ -1,21 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media.Animation;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.Phone.Shell;
 using Microsoft.Phone.Tasks;
+using Microsoft.Phone.Storage;
 using Microsoft.Phone.Controls;
-using PhoneDirect3DXamlAppComponent;
-using Windows.Networking.Proximity;
 using Microsoft.Phone.Net.NetworkInformation;
+using PhoneDirect3DXamlAppComponent;
 using Windows.Devices.Geolocation;
+using Windows.Networking.Proximity;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -48,6 +50,10 @@ namespace PhoneDirect3DXamlAppInterop
       private String messageReceived = ""; // GPS_messageReceived()          
       private double? pdop; // GPS_pdop() 
       private String lowSignalReason = ""; // GPS_lowSignalReason()
+
+      // File
+      private bool cardIsInserted = false;
+      private int semaphore = 1;
 
       public double getFontHeightCS()
       {
@@ -320,6 +326,24 @@ namespace PhoneDirect3DXamlAppInterop
          pdop = args.Position.Coordinate.SatelliteData.PositionDilutionOfPrecision;
       }
 
+      private async Task sdCardTask()
+      {
+         semaphore = 0;
+
+         ExternalStorageDevice sdCard = (await ExternalStorage.GetExternalStorageDevicesAsync()).FirstOrDefault();
+         if (sdCard != null && sdCard.RootFolder != null)
+            cardIsInserted = true;
+         
+         semaphore = 1;
+      }
+
+      public bool fileIsCardInsertedCS()
+      {
+         if (!cardIsInserted)
+            sdCardTask();
+         while (semaphore == 0);
+         return cardIsInserted;
+      }
     }
     public partial class MainPage : PhoneApplicationPage
     {
