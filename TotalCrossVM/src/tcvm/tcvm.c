@@ -74,7 +74,7 @@ static void tcvmCreateException(Context currentContext, Throwable t, int32 pc, i
    }
 }
 
-bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 count) // check if the given array can access from start to start+count-1
+bool checkArrayRange(Context currentContext, Object obj, int32 start, int32 count) // check if the given array can access from start to start+count-1
 {
    if (obj == null)
       throwException(currentContext, NullPointerException,"In checkArrayRange");
@@ -145,9 +145,13 @@ uint32 *_addrMtdParam[4];
 uint32 *_addrMtdcParam[4];
 uint32 *_addrMtdbParam[4];
 uint32 *_addrInParam[4];
-uint32 *_addrInParamA[4];
 uint32 *_addrNMRet[4];
 #endif
+
+inline void moveReg64(void* dest, void* src)
+{
+   xmove8(dest, src);
+}
 
 /* Note: this code is highly optimized. So, even if some things seems not "natural", keep it that way! */
 TC_API TValue executeMethod(Context context, Method method, ...)
@@ -155,7 +159,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    // cache the current context into local variables
    Int32Array   regI  = context->regI;
    Value64Array reg64 = context->reg64;
-   TCObjectArray  regO  = context->regO,regO2;
+   ObjectArray  regO  = context->regO,regO2;
    VoidPArray callStack0 = null;
    // get method's variables
    register Code code = method->code;
@@ -167,7 +171,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    int32 i,len;
    UInt16Array sym;
    bool originalClassIsInterface,directNativeCall=false;
-   TCObject o=null;
+   Object o=null;
    Method newMethod=null;
    uint16 retv;
    VoidP sf;
@@ -184,7 +188,6 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    uint32 **addrMtdcParam;
    uint32 **addrMtdbParam;
    uint32 **addrInParam;
-   uint32 **addrInParamA;
    uint32 **addrNMRet;
    if (_address[0] == null)
    {
@@ -192,7 +195,6 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       _addrMtdcParam[RegI] = &&cRegI; _addrMtdcParam[RegO] = &&cRegO; _addrMtdcParam[RegD] = &&cRegD; _addrMtdcParam[RegL] = &&cRegL;
       _addrMtdbParam[RegI] = &&bRegI; _addrMtdbParam[RegO] = &&bRegO; _addrMtdbParam[RegD] = &&bRegD; _addrMtdbParam[RegL] = &&bRegL;
       _addrInParam[RegI] = &&dRegI;   _addrInParam[RegO] = &&dRegO;   _addrInParam[RegD] = &&dRegD;   _addrInParam[RegL] = &&dRegL;
-      _addrInParamA[RegI] = &&eRegI;  _addrInParamA[RegO] = &&eRegO;  _addrInParamA[RegD] = &&eRegD;  _addrInParamA[RegL] = &&eRegL;
       _addrNMRet[RegI] = &&nmRegI;    _addrNMRet[RegO] = &&nmRegO;    _addrNMRet[RegD] = &&nmRegD;    _addrNMRet[RegL] = &&nmRegL;
       OPADDR(BREAK)               OPADDR(MOV_regI_regI)       OPADDR(MOV_regI_field)      OPADDR(MOV_regI_static)     OPADDR(MOV_regI_aru)       OPADDR(MOV_regI_arc)        OPADDR(MOV_regI_sym)        OPADDR(MOV_regI_s18)        OPADDR(MOV_regI_arlen)     OPADDR(MOV_regO_regO)       OPADDR(MOV_regO_field)      OPADDR(MOV_regO_static)     OPADDR(MOV_regO_aru)       OPADDR(MOV_regO_arc)        OPADDR(MOV_regO_sym)        OPADDR(MOV_reg64_reg64)     OPADDR(MOV_reg64_field)      OPADDR(MOV_reg64_static)    OPADDR(MOV_reg64_aru)       OPADDR(MOV_reg64_arc)       OPADDR(MOV_regD_sym)       OPADDR(MOV_regL_sym)        OPADDR(MOV_regD_s18)        OPADDR(MOV_regL_s18)        OPADDR(MOV_field_regI)     OPADDR(MOV_field_regO)      OPADDR(MOV_field_reg64)     OPADDR(MOV_static_regI)     OPADDR(MOV_static_regO)    OPADDR(MOV_static_reg64)    OPADDR(MOV_arc_regI)        OPADDR(MOV_arc_regO)
       OPADDR(MOV_arc_reg64)       OPADDR(MOV_aru_regI)        OPADDR(MOV_aru_regO)        OPADDR(MOV_aru_reg64)       OPADDR(MOV_arc_regIb)      OPADDR(MOV_arc_reg16)       OPADDR(MOV_aru_regIb)       OPADDR(MOV_aru_reg16)       OPADDR(MOV_regIb_arc)      OPADDR(MOV_reg16_arc)       OPADDR(MOV_regIb_aru)       OPADDR(MOV_reg16_aru)       OPADDR(MOV_regO_null)      OPADDR(INC_regI)            OPADDR(ADD_regI_regI_regI)  OPADDR(ADD_regI_s12_regI)   OPADDR(ADD_regI_arc_s6)      OPADDR(ADD_regI_aru_s6)     OPADDR(ADD_regI_regI_sym)   OPADDR(ADD_regD_regD_regD)  OPADDR(ADD_regL_regL_regL) OPADDR(ADD_aru_regI_s6)     OPADDR(SUB_regI_s12_regI)   OPADDR(SUB_regI_regI_regI)  OPADDR(SUB_regD_regD_regD) OPADDR(SUB_regL_regL_regL)  OPADDR(MUL_regI_regI_s12)   OPADDR(MUL_regI_regI_regI)  OPADDR(MUL_regD_regD_regD) OPADDR(MUL_regL_regL_regL)  OPADDR(DIV_regI_regI_s12)   OPADDR(DIV_regI_regI_regI)
@@ -205,7 +207,6 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    addrMtdcParam = _addrMtdcParam;
    addrMtdbParam = _addrMtdbParam;
    addrInParam = _addrInParam;
-   addrInParamA = _addrInParamA;
    addrNMRet = _addrNMRet;
 #endif
 
@@ -278,11 +279,11 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #endif
    if (method->paramCount > 0 || !method->flags.isStatic)
    {
-      TCObject *rO = regO;
+      Object *rO = regO;
       va_list vaargs;
       va_start(vaargs, method);
 
-      if (!method->flags.isStatic && (*rO++ = va_arg(vaargs, TCObject)) == null) // push "this", which must be the first parameter passed to executeMethod
+      if (!method->flags.isStatic && (*rO++ = va_arg(vaargs, Object)) == null) // push "this", which must be the first parameter passed to executeMethod
       {
          tcvmCreateException(context, NullPointerException, -1, 0, "Instance is null when calling method %s", method->name); // cannot use "goto throwNullPointerException" here, because we can't replace "method" by newMethod
          goto handleException;
@@ -294,32 +295,14 @@ TC_API TValue executeMethod(Context context, Method method, ...)
          TValue64 *r64 = reg64;
          int32 n = method->paramCount;
          UInt8Array regTypes = method->paramRegs;
-         if (context->parametersInArray)
+         for (; n-- > 0; regTypes++)
          {
-            TValue* aargs = va_arg(vaargs, TValue*);
-            context->parametersInArray = false;
-            for (; n-- > 0; regTypes++, aargs++)
+            XSELECT(addrInParam, *regTypes)
             {
-               XSELECT(addrInParamA, *regTypes)
-               {
-                  XOPTION(e,RegI): *rI++ = aargs->asInt32;         continue;
-                  XOPTION(e,RegO): *rO++ = aargs->asObj;           continue;
-                  XOPTION(e,RegD):
-                  XOPTION(e,RegL): *REGD(r64++) = aargs->asDouble; continue;
-               }
-            }
-         }
-         else
-         {
-            for (; n-- > 0; regTypes++)
-            {
-               XSELECT(addrInParam, *regTypes)
-               {
-                  XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
-                  XOPTION(d,RegO): *rO++ = va_arg(vaargs, TCObject);        continue;
-                  XOPTION(d,RegD):
-                  XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
-               }
+               XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
+               XOPTION(d,RegO): *rO++ = va_arg(vaargs, Object);        continue;
+               XOPTION(d,RegD):
+               XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
             }
          }
       }
@@ -358,7 +341,7 @@ mainLoop:
       OPCODE(MOV_regO_regO)       regO[code->reg_reg.reg0] = regO[code->reg_reg.reg1]; NEXT_OP
       OPCODE(MOV_regO_null)       regO[code->reg.reg] = 0; NEXT_OP
       OPCODE(MOV_regO_arc)        ARRAYCHECK(code->reg)
-      OPCODE(MOV_regO_aru)        regO[code->reg_ar.reg]  = ((TCObject*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
+      OPCODE(MOV_regO_aru)        regO[code->reg_ar.reg]  = ((Object*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_regO_sym)        regO[code->reg_sym.reg] = cp->str[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_reg64_reg64)     reg64[code->reg_reg.reg0] = reg64[code->reg_reg.reg1]; NEXT_OP
       OPCODE(MOV_reg64_arc)       ARRAYCHECK(code->reg)
@@ -370,7 +353,7 @@ mainLoop:
       OPCODE(MOV_arc_regI)        ARRAYCHECK(code->reg)
       OPCODE(MOV_aru_regI)        ((int32 *)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = regI[code->reg_ar.reg]; NEXT_OP
       OPCODE(MOV_arc_regO)        ARRAYCHECK(code->reg)
-      OPCODE(MOV_aru_regO)        ((TCObject*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = regO[code->reg_ar.reg]; NEXT_OP
+      OPCODE(MOV_aru_regO)        ((Object*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = regO[code->reg_ar.reg]; NEXT_OP
       OPCODE(MOV_arc_reg64)       ARRAYCHECK(code->reg)
       OPCODE(MOV_aru_reg64)       ((Value64)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = reg64[code->reg_ar.reg]; NEXT_OP
       OPCODE(MOV_arc_regIb)       ARRAYCHECK(code->reg)
@@ -383,16 +366,16 @@ mainLoop:
       OPCODE(MOV_reg16_aru)       regI[code->reg_ar.reg] = ((uint16*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_field_regI)      GET_INSTANCE_FIELD(RegI) FIELD_I32(o,               retv) = regI[code->field_reg.reg]; NEXT_OP
       OPCODE(MOV_field_regO)      GET_INSTANCE_FIELD(RegO) FIELD_OBJ(o, OBJ_CLASS(o), retv) = regO[code->field_reg.reg]; NEXT_OP
-      OPCODE(MOV_field_reg64)     GET_INSTANCE_FIELD(RegD) FIELD_DBL(o, OBJ_CLASS(o), retv) = REGD(reg64)[code->field_reg.reg];NEXT_OP
+      OPCODE(MOV_field_reg64)     GET_INSTANCE_FIELD(RegD) moveReg64(&FIELD_DBL(o, OBJ_CLASS(o), retv), &REGD(reg64)[code->field_reg.reg]);NEXT_OP
       OPCODE(MOV_regI_field)      GET_INSTANCE_FIELD(RegI) regI[code->field_reg.reg] = FIELD_I32(o,               retv); NEXT_OP
       OPCODE(MOV_regO_field)      GET_INSTANCE_FIELD(RegO) regO[code->field_reg.reg] = FIELD_OBJ(o, OBJ_CLASS(o), retv); NEXT_OP
-      OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) REGD(reg64)[code->field_reg.reg] = FIELD_DBL(o, OBJ_CLASS(o), retv); NEXT_OP
+      OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) moveReg64(&REGD(reg64)[code->field_reg.reg], &FIELD_DBL(o, OBJ_CLASS(o), retv)); NEXT_OP
       OPCODE(MOV_static_regI)     GET_STATIC_FIELD(RegI) ((int32*) sf)[0] = regI[code->static_reg.reg]; NEXT_OP
-      OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((TCObject*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
-      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((int64*)sf)[0] = REGL(reg64)[code->static_reg.reg]; NEXT_OP
+      OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((Object*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
+      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) moveReg64((int64*)sf, &REGL(reg64)[code->static_reg.reg]); NEXT_OP
       OPCODE(MOV_regI_static)     GET_STATIC_FIELD(RegI) regI[code->static_reg.reg] = ((int32*) sf)[0]; NEXT_OP
-      OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((TCObject*)sf)[0]; NEXT_OP
-      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGL(reg64)[code->static_reg.reg] = ((int64*)sf)[0]; NEXT_OP
+      OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((Object*)sf)[0]; NEXT_OP
+      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) moveReg64(&REGL(reg64)[code->static_reg.reg], (int64*)sf); NEXT_OP
       OPCODE(ADD_regI_regI_regI)  regI[code->reg_reg_reg.reg0] = regI[code->reg_reg_reg.reg1] + regI[code->reg_reg_reg.reg2]; NEXT_OP
       OPCODE(ADD_regI_s12_regI)   regI[code->reg_reg_s12.reg0] = regI[code->reg_reg_s12.reg1] + (int32)code->reg_reg_s12.s12; NEXT_OP
       OPCODE(ADD_regD_regD_regD)  REGD(reg64)[code->reg_reg_reg.reg0] = REGD(reg64)[code->reg_reg_reg.reg1] + REGD(reg64)[code->reg_reg_reg.reg2]; NEXT_OP
@@ -537,7 +520,7 @@ contCall:
                int32  *ri = regI;
                TValue64 *r64 = reg64;
                uint8 *regs = newMethod->paramRegs, *params=0;
-               TCObject *ro = regO + (newMethod->flags.isStatic == 0);
+               Object *ro = regO + (newMethod->flags.isStatic == 0);
                // if nothing is returned, then the first parameter is in the method's instruction
                if (newMethod->cpReturn == 0)
                {
@@ -641,10 +624,7 @@ popStackFrame:
                context->callStack -= 2;
 
                if (context->thrownException != null) // if an exception was thrown by the native method, handle it
-               {
-                  nmp->retO = null;
                   goto handleException;
-               }
 
 #ifdef ENABLE_TRACE
                context->depth--;
@@ -917,7 +897,7 @@ handleException:
       OPCODE(INC_regI)  regI[code->inc.reg] += (int32)code->inc.s16; NEXT_OP
       OPCODE(MONITOR_Enter)
       {
-         TCObject mutex;
+         Object mutex;
          // get variables and do some checks
          o = regO[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
@@ -933,7 +913,7 @@ handleException:
       }
       OPCODE(MONITOR_Exit)
       {
-         TCObject mutex;
+         Object mutex;
          // get variables and do some checks
          o = regO[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
