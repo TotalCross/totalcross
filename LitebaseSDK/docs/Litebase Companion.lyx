@@ -1626,8 +1626,8 @@ Memory Card Support
 It is possible to store databases on memory cards on the device that supports
  it.
  Currently, only Android supports it.
- If it is necessary to fetch Litebase tables from an Android device, it
- is a good idea to create the data base on the memory card by using the
+ If it is necessary to fetch Litebase tables or logs from an Android device,
+ it is a good idea to create the data base on the memory card by using the
  path 
 \family typewriter
 /sdcard
@@ -1638,6 +1638,14 @@ It is possible to store databases on memory cards on the device that supports
 adb
 \family default
  from the application folder.
+\end_layout
+
+\begin_layout Standard
+Although Windows Phone 8 supports a memory card, it's read-only.
+ You can't create a database on it.
+ In the future, it will be possible to copy database files from it to the
+ application folder.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -22630,6 +22638,17 @@ The use of the source code examples is only permitted by the company that
 
 \begin_layout Chapter
 News
+\end_layout
+
+\begin_layout Itemize
+Removed everything concerning BlackBerry, Palm OS, and Windows CE, since
+ these platfroms are not supported anymore.
+\end_layout
+
+\begin_layout Itemize
+Added information concerning Windows Phone 8 memory card, which can't be
+ used to create databases.
+ 
 \end_layout
 
 \begin_layout Section
