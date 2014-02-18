@@ -1561,19 +1561,13 @@ free:
 
             // juliana@202_14: Corrected the simple index re-creation when purging the table. 
             if (columnIndexes[i] && !tableReIndex(context, table, i, false, null))
-            {
-               table->deletedRowsCount = deleted;
                goto finish;
-            }
 
          // recreate the composed indexes
          if ((i = table->numberComposedIndexes) > 0)
             while (--i >= 0)
                if (!tableReIndex(context, table, -1, false, composedIndexes[i]))
-               {
-                  table->deletedRowsCount = deleted;
                   goto finish;
-               }
 
          // juliana@115_8: saving metadata before recreating the indices does not let .db header become empty.
          // Updates the metadata.
@@ -2130,7 +2124,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crcPos,
 	            crc32Lido = 0,
                crc32Calc,
-               deleted = 0,
+               deleted = 0, // Invalidates the number of deleted rows.
                type;
          bool useCrypto = OBJ_LitebaseUseCrypto(driver),
               useOldCrypto;
@@ -2233,7 +2227,6 @@ LB_API void lLC_recoverTable_s(NMParams p)
             goto finish;
 
 	      i = rows = (plainDB = &table->db)->rowCount;
-	      table->deletedRowsCount = p->retI = 0; // Invalidates the number of deleted rows.
 	      basbuf = plainDB->basbuf;
          columnIndexes = table->columnIndexes;
          
@@ -2303,7 +2296,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                   xmove4(basbuf, &j);
 				      if (!plainRewrite(context, plainDB, i))
 					      goto finish;
-				      p->retI = ++deleted;
+				      deleted++;
 
                   // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
                   if (currentRowId < 0) 
@@ -2321,7 +2314,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		      }
 	      }
 
-         table->deletedRowsCount = deleted;
+         table->deletedRowsCount = p->retI = deleted;
          plainDB->rowCount = rows;
 
          // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.

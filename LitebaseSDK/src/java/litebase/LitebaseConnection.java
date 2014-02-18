@@ -2008,9 +2008,8 @@ public class LitebaseConnection
          
          // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
          int auxRowId = -1,
-             currentRowId = -1;         
-         
-         table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
+             currentRowId = -1,
+             deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
          while (--i >= 0) // Checks all table records.
          {
@@ -2025,7 +2024,7 @@ public class LitebaseConnection
             rowid = dataStream.readInt();
 
             if ((rowid & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED) // Counts the number of deleted records.
-               table.deletedRowsCount++;
+               deletedRowsCount++;
             else
             {
                bas.reset();
@@ -2070,7 +2069,7 @@ public class LitebaseConnection
                   bas.reset();
                   dataStream.writeInt(Utils.ROW_ATTR_DELETED);
                   plainDB.rewrite(i);
-                  table.deletedRowsCount++;
+                  deletedRowsCount++;
                   recovered = true;
                   
                   // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
@@ -2091,6 +2090,7 @@ public class LitebaseConnection
          }
            
          plainDB.rowCount = rows;
+         table.deletedRowsCount = deletedRowsCount;
          
          // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
          table.currentRowId = currentRowId;
