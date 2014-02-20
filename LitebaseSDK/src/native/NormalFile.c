@@ -62,7 +62,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
       
    // Creates the file or opens it and gets its size.
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    xstrcpy(xFile->fullPath, buffer);
    if ((ret = openFile(context, xFile, isCreation? CREATE_EMPTY : READ_WRITE))
 #else
@@ -72,7 +72,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
    {
       fileError(context, ret, name);
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
       removeFileFromList(xFile);
 #endif
       
@@ -182,7 +182,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -257,7 +257,7 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -267,7 +267,7 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
     || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
    {
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
 error:
 #endif
 
@@ -277,7 +277,7 @@ error:
 
    xstrcpy(xFile->name, newName);
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    xstrcpy(xFile->fullPath, newPath);
 #endif
 
@@ -299,7 +299,7 @@ bool nfClose(Context context, XFile* xFile)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((ret = reopenFileIfNeeded(context, xFile)))
       fileError(context, ret, xFile->name);
 #endif
@@ -322,7 +322,7 @@ bool nfClose(Context context, XFile* xFile)
       fileInvalidate(xFile->file);
    }
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    removeFileFromList(xFile);
 #endif
 
@@ -347,7 +347,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((ret = reopenFileIfNeeded(context, xFile)))
       fileError(context, ret, xFile->name);
 #endif
@@ -358,7 +358,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    removeFileFromList(xFile);
 #endif
 
@@ -394,7 +394,7 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -403,7 +403,7 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
    if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, (CharP)xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
    {
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
 error:
 #endif
 
@@ -434,7 +434,7 @@ bool flushCache(Context context, XFile* xFile)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((ret = reopenFileIfNeeded(context, xFile)))
       goto error;
 #endif
@@ -478,7 +478,7 @@ void fileError(Context context, int32 errorCode, CharP fileName)
 }
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
 /**
  * Opens a disk file to store tables and put it in the files list.
  *

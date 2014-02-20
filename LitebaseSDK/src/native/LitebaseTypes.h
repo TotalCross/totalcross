@@ -170,7 +170,7 @@ struct XFile
    uint8 useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    /**
     * The file full path;
     */
@@ -183,7 +183,7 @@ struct XFile
 #endif
 };
 
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
 typedef struct XFilesList XFilesList;
 
 /**
