@@ -13,7 +13,8 @@
 extern "C" {
 #endif
 
-struct eventQueueMember {
+struct eventQueueMember 
+{
 	int type;
 	int key;
 	int x;

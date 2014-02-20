@@ -1,8 +1,6 @@
 ﻿#include "Direct3DBase.h"
-
 #include <thread>
 #include "PhoneDirect3DXamlAppComponent.h"
-
 #define HAS_TCHAR
 #include "tcvm.h"
 
@@ -13,26 +11,269 @@ using namespace Windows::UI::Core;
 
 static Direct3DBase ^instance;
 
+#define _debug(x,...) 
+//#define _debug debug
+
+DECLARE_MUTEX(list);
+
+
+struct D3DCommands
+{
+   D3DCommand head;
+   D3DCommand tail;
+} cmdFill, cmdFree, cmdDraw;
+
+// lists
+int recorded,nmsg;
+
+void listAdd(D3DCommands* s, D3DCommand p)
+{
+   LOCKVAR(list);
+   p->next = NULL;
+   if (NULL == s->head && NULL == s->tail)
+      s->head = s->tail = p;
+   else
+   {
+      s->tail->next = p;
+      s->tail = p;
+   }
+   UNLOCKVAR(list);
+}
+
+bool listIsEmpty(D3DCommands* s)
+{
+   LOCKVAR(list);
+   bool b = NULL == s->head && NULL == s->tail;
+   UNLOCKVAR(list);
+   return b;
+}
+
+int listCount(D3DCommands* s)
+{
+   int n = 0;
+   for (D3DCommand p = s->head; p; p = p->next)
+      n++;
+   return n;
+}
+
+void listJoin(D3DCommands* src, D3DCommands* dst)
+{
+   LOCKVAR(list);
+   if (listIsEmpty(dst))
+      ;
+   else
+   if (listIsEmpty(src))
+      *dst = *src;
+   else
+   {
+      dst->tail->next = src->head;
+      dst->tail = src->head;
+   }
+   UNLOCKVAR(list);
+}
+
+void listSetEmpty(D3DCommands* s)
+{
+   LOCKVAR(list);
+   s->head = s->tail = NULL;
+   UNLOCKVAR(list);
+}
+
+/* This is a queue and it is FIFO, so we will always remove the first element */
+D3DCommand listPop(D3DCommands* s)
+{
+   if (listIsEmpty(s))
+      return NULL;
+
+   LOCKVAR(list);
+   D3DCommand top = s->head;
+   D3DCommand next = top->next;
+   s->head = next;
+   if (s->head == NULL) s->tail = NULL;   /* The element tail was pointing to is free(), so we need an update */
+   UNLOCKVAR(list);
+   return top;
+}
+
+int allocated;
+
+D3DCommand Direct3DBase::newCommand()
+{
+   if (listIsEmpty(&cmdFree))
+   {
+      allocated++;
+      return newX(D3DCommand);
+   }
+
+   D3DCommand c = listPop(&cmdFree);
+   if (c->cmd == D3DCMD_DRAWPIXELS) // free the pixels used
+   {
+      int *x = (int*)c->a;
+      int *y = (int*)c->b;
+      xfree(x);
+      xfree(y);
+   }
+   xmemzero(c, sizeof(TD3DCommand));
+   return c;
+}
+
+void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+{
+   D3DCommand cmd = newCommand();
+   cmd->cmd = D3DCMD_FILLSHADEDRECT;
+   cmd->a = x;
+   cmd->b = y;
+   cmd->c = w;
+   cmd->d = h;
+   cmd->c1 = c1;
+   cmd->c2 = c2;
+   cmd->flags.horiz = horiz;
+   listAdd(&cmdFill, cmd);
+   recorded++;
+}
+void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
+{
+   D3DCommand cmd = newCommand();
+   cmd->cmd = D3DCMD_DRAWLINE;
+   cmd->a = x1;
+   cmd->b = y1;
+   cmd->c = x2;
+   cmd->d = y2;
+   cmd->c1.pixel = color;
+   listAdd(&cmdFill, cmd);
+   recorded++;
+}
+void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
+{
+   D3DCommand cmd = newCommand();
+   cmd->cmd = D3DCMD_FILLRECT;
+   cmd->a = x1;
+   cmd->b = y1;
+   cmd->c = x2;
+   cmd->d = y2;
+   cmd->c1.pixel = color;
+   listAdd(&cmdFill, cmd);
+   recorded++;
+}
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+{
+   D3DCommand cmd = newCommand();
+   cmd->cmd = D3DCMD_DRAWTEXTURE;
+   cmd->textureId[0] = textureId[0];
+   cmd->textureId[1] = textureId[1];
+   cmd->a = x;
+   cmd->b = y;
+   cmd->c = w;
+   cmd->d = h;
+   cmd->e = dstX;
+   cmd->f = dstY;
+   cmd->g = imgW;
+   cmd->h = imgH;
+   cmd->flags.hasColor = color != null;
+   if (cmd->flags.hasColor) cmd->c1.pixel = color->pixel;
+   cmd->flags.hasClip = clip != null;
+   if (cmd->flags.hasClip) { cmd->clip[0] = clip[0]; cmd->clip[1] = clip[1]; cmd->clip[2] = clip[2]; cmd->clip[3] = clip[3]; }
+   listAdd(&cmdFill, cmd);
+   recorded++;
+}
+
+void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
+{
+   int32 *nx, *ny;
+   nx = (int32*)xmalloc(count * sizeof(int32));
+   ny = (int32*)xmalloc(count * sizeof(int32));
+   if (!nx || !ny)
+   {
+      xfree(nx);
+      xfree(ny);
+   }
+   else
+   {
+      D3DCommand cmd = newCommand();
+      cmd->cmd = D3DCMD_DRAWPIXELS;
+      xmemmove(nx, x, count * sizeof(int32));
+      xmemmove(ny, y, count * sizeof(int32));
+      cmd->a = (int)nx;
+      cmd->b = (int)ny;
+      cmd->c = count;
+      cmd->c1.pixel = color;
+      listAdd(&cmdFill, cmd);
+      recorded++;
+   }
+}
+
+void Direct3DBase::swapLists()
+{
+   D3DCommands oldDraw = cmdDraw;
+   // 1. draw what has been filled
+   cmdDraw = cmdFill;
+   // 2. move fill to free list
+   if (listIsEmpty(&cmdFree))
+      cmdFree = oldDraw;
+   else
+      listJoin(&oldDraw, &cmdFree);
+   // 3. clear fill
+   listSetEmpty(&cmdFill);
+   debug("swap. alloc: %d", allocated);
+   _debug("%d. recorded %d", nmsg++, recorded);
+   recorded = 0;
+}
+
+int Direct3DBase::runCommands()
+{
+   int n = 0;
+   if (!listIsEmpty(&cmdDraw))
+   {
+      preRender();
+      for (D3DCommand c = cmdDraw.head; c != NULL; c = c->next)
+      {
+         n++;
+         switch (c->cmd)
+         {
+            case D3DCMD_FILLSHADEDRECT:
+               fillShadedRectImpl(c->a, c->b, c->c, c->d, c->c1, c->c2, c->flags.horiz?true:false);
+               break;
+            case D3DCMD_FILLRECT:
+               fillRectImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
+               break;
+            case D3DCMD_DRAWLINE:
+               drawLineImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
+               break;
+            case D3DCMD_DRAWTEXTURE:
+               drawTextureImpl(c->textureId, c->a, c->b, c->c, c->d, c->e, c->f, c->g, c->h, c->flags.hasColor ? &c->c1 : null, c->flags.hasClip ? c->clip : null);
+               break;
+            case D3DCMD_DRAWPIXELS:
+               int *x = (int*)c->a;
+               int *y = (int*)c->b;
+               drawPixelsImpl(x, y, c->c, c->c1.pixel);
+               break;
+         }
+      }
+      _debug("%d. drawing %d", nmsg++,n);
+   }
+   else _debug("%d. nothing to show", nmsg++);
+   return n;
+}
+
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
-   callRender = true;
+   INIT_MUTEX(list);
 }
 
-Direct3DBase ^Direct3DBase::GetLastInstance()
+Direct3DBase ^Direct3DBase::getLastInstance()
 {
 	return instance;
 }
 
 // Initialize the Direct3D resources required to run.
-void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
+void Direct3DBase::initialize(_In_ ID3D11Device1* device)
 {
 	wchar_t mensagem_fim[2048];
 	int saida;
 
-	m_d3dDevice = device;
+	d3dDevice = device;
 	saida = startVM("UIControls", &local_context);
 
 	if (saida != 0) 
@@ -40,11 +281,11 @@ void Direct3DBase::Initialize(_In_ ID3D11Device1* device)
 		swprintf_s(mensagem_fim, 1000, L"Error code in starting VM: %d", saida);
 		csharp->privateAlertCS(ref new Platform::String(mensagem_fim));
 	}
-	CreateDeviceResources();
+	createDeviceResources();
 }
 
 // These are the resources that depend on the device.
-void Direct3DBase::CreateDeviceResources()
+void Direct3DBase::createDeviceResources()
 {
    auto loadVSTask1 = DX::ReadDataAsync("VertexShaderGlobalColor.cso");
    auto loadPSTask1 = DX::ReadDataAsync("PixelShaderGlobalColor.cso");
@@ -58,83 +299,86 @@ void Direct3DBase::CreateDeviceResources()
    // global color vertex
    auto createVSTask1 = loadVSTask1.then([this](Platform::Array<byte>^ fileData) 
    {
-      DX::ThrowIfFailed(m_d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &m_vertexShader));
+      DX::ThrowIfFailed(d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &vertexShader));
       const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
       {
          { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       };
-      DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayout));
+      DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &inputLayout));
       loadCompleted |= 1;
    });
 
    // global color pixel
    auto createPSTask1 = loadPSTask1.then([this](Platform::Array<byte>^ fileData)
    {
-      DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShader));
+      DX::ThrowIfFailed(d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &pixelShader));
       CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
-      DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer));
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer));
       loadCompleted |= 2;
    });
 
    // texture vertex
    auto createVSTask2 = loadVSTask2.then([this](Platform::Array<byte>^ fileData) 
    {
-      DX::ThrowIfFailed(m_d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &m_vertexShaderT));
+      DX::ThrowIfFailed(d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &vertexShaderT));
       const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
       {
          { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
          { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       };
-      DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayoutT));
+      DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &inputLayoutT));
       loadCompleted |= 4;
    });
 
    // texture pixel
    auto createPSTask2 = loadPSTask2.then([this](Platform::Array<byte>^ fileData)
    {
-      DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShaderT));
+      DX::ThrowIfFailed(d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &pixelShaderT));
       loadCompleted |= 8;
    });
 
    // local color vertex
    auto createVSTask3 = loadVSTask3.then([this](Platform::Array<byte>^ fileData)
    {
-      DX::ThrowIfFailed(m_d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &m_vertexShaderLC));
+      DX::ThrowIfFailed(d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &vertexShaderLC));
       const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
       {
          { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
          { "COLOR", 0,    DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       };
-      DX::ThrowIfFailed(m_d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &m_inputLayoutLC));
+      DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &inputLayoutLC));
       loadCompleted |= 16;
    });
 
    // local color pixel
    auto createPSTask3 = loadPSTask3.then([this](Platform::Array<byte>^ fileData)
    {
-      DX::ThrowIfFailed(m_d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &m_pixelShaderLC));
+      DX::ThrowIfFailed(d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &pixelShaderLC));
       loadCompleted |= 32;
    });
 
 }
 
-void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11RenderTargetView* renderTargetView)
+void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-	m_renderTargetView = renderTargetView;
+   _debug("%d. update device", nmsg++);
 
-	if (m_d3dDevice.Get() != device)
+	this->renderTargetView = renderTargetView;
+   d3dcontext = ic;
+
+	if (d3dDevice.Get() != device)
 	{
-		m_d3dDevice->GetDeviceRemovedReason();
+		d3dDevice->GetDeviceRemovedReason();
       eventsInitialized = false;
-		m_d3dDevice = device;
-		CreateDeviceResources();
+		d3dDevice = device;
+		createDeviceResources();
 		// Force call to CreateWindowSizeDependentResources.
-		m_renderTargetSize.Width  = -1;
-		m_renderTargetSize.Height = -1;
+		renderTargetSize.Width  = -1;
+		renderTargetSize.Height = -1;
 	}
 
 	ComPtr<ID3D11Resource> renderTargetViewResource;
-	m_renderTargetView->GetResource(&renderTargetViewResource);
+	renderTargetView->GetResource(&renderTargetViewResource);
 
 	ComPtr<ID3D11Texture2D> backBuffer;
 	DX::ThrowIfFailed(renderTargetViewResource.As(&backBuffer));
@@ -143,32 +387,32 @@ void Direct3DBase::UpdateDevice(_In_ ID3D11Device1* device, _In_ ID3D11RenderTar
    D3D11_TEXTURE2D_DESC backBufferDesc;
    backBuffer->GetDesc(&backBufferDesc);
 
-   if (m_renderTargetSize.Width  != static_cast<float>(backBufferDesc.Width) || m_renderTargetSize.Height != static_cast<float>(backBufferDesc.Height))
+   if (renderTargetSize.Width  != static_cast<float>(backBufferDesc.Width) || renderTargetSize.Height != static_cast<float>(backBufferDesc.Height))
    {
-      m_renderTargetSize.Width  = static_cast<float>(backBufferDesc.Width);
-      m_renderTargetSize.Height = static_cast<float>(backBufferDesc.Height);
-      CreateWindowSizeDependentResources();
+      renderTargetSize.Width  = static_cast<float>(backBufferDesc.Width);
+      renderTargetSize.Height = static_cast<float>(backBufferDesc.Height);
+      createWindowSizeDependentResources();
    }
 }
 
 // Allocate all memory resources that depend on the window size.
-void Direct3DBase::CreateWindowSizeDependentResources()
+void Direct3DBase::createWindowSizeDependentResources()
 {
 	// Create a depth stencil view.
-	CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT,static_cast<UINT>(m_renderTargetSize.Width),static_cast<UINT>(m_renderTargetSize.Height),1,1,D3D11_BIND_DEPTH_STENCIL);
+	CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT,static_cast<UINT>(renderTargetSize.Width),static_cast<UINT>(renderTargetSize.Height),1,1,D3D11_BIND_DEPTH_STENCIL);
 	ComPtr<ID3D11Texture2D> depthStencil;
-	DX::ThrowIfFailed(m_d3dDevice->CreateTexture2D(&depthStencilDesc,nullptr,&depthStencil));
+	DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc,nullptr,&depthStencil));
 	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
-	DX::ThrowIfFailed(m_d3dDevice->CreateDepthStencilView(depthStencil.Get(),&depthStencilViewDesc,&m_depthStencilView));
+	DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil.Get(),&depthStencilViewDesc,&depthStencilView));
 
-   XMStoreFloat4x4(&m_constantBufferData.projection, XMMatrixOrthographicOffCenterLH(0, m_windowBounds.Width, m_windowBounds.Height, 0, -1.0f, 1.0f));
+   XMStoreFloat4x4(&constantBufferData.projection, XMMatrixOrthographicOffCenterLH(0, windowBounds.Width, windowBounds.Height, 0, -1.0f, 1.0f));
    setup();
 }
 
-void Direct3DBase::UpdateForWindowSizeChange(float width, float height)
+void Direct3DBase::updateForWindowSizeChange(float width, float height)
 {
-	m_windowBounds.Width  = width;
-	m_windowBounds.Height = height;
+	windowBounds.Width  = width;
+	windowBounds.Height = height;
 }
 
 void Direct3DBase::setup()
@@ -180,7 +424,7 @@ void Direct3DBase::setup()
    D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
    indexBufferData.pSysMem = cubeIndices;
    CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
-   m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer);
+   d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
 
    // used in setColor for fillRect and drawLine and also textures
    {
@@ -189,7 +433,7 @@ void Direct3DBase::setup()
       bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor);       // create the buffer
+      d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor);       // create the buffer
    }
    // used in fillRect and drawLine
    {
@@ -198,7 +442,7 @@ void Direct3DBase::setup()
       bd.ByteWidth = sizeof(VertexPosition) * 4;     // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect);       // create the buffer
+      d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect);       // create the buffer
    }
    // used in fillShadedRect
    {
@@ -207,7 +451,7 @@ void Direct3DBase::setup()
       bd.ByteWidth = sizeof(VertexPositionColor) * 4;             // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC);       // create the buffer
+      d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC);       // create the buffer
    }
 
    /////////// TEXTURE
@@ -219,7 +463,7 @@ void Direct3DBase::setup()
    samplerDesc.AddressU = samplerDesc.AddressV = samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; // Feature level 9_3, the display device supports the use of 2-D textures with dimensions that are not powers of two under two conditions. First, only one MIP-map level for each texture can be created, and second, no wrap sampler modes for textures are allowed (that is, the AddressU, AddressV, and AddressW members of D3D11_SAMPLER_DESC cannot be set to D3D11_TEXTURE_ADDRESS_WRAP).
    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-   DX::ThrowIfFailed(m_d3dDevice->CreateSamplerState(&samplerDesc, &texsampler));
+   DX::ThrowIfFailed(d3dDevice->CreateSamplerState(&samplerDesc, &texsampler));
 
    D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
    depthDisabledStencilDesc.DepthEnable = false;
@@ -237,7 +481,7 @@ void Direct3DBase::setup()
    depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
    depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
    // Create the state using the device.
-   m_d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState);
+   d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState);
 
    // setup alpha blending
    D3D11_BLEND_DESC blendStateDescription = { 0 };
@@ -249,16 +493,16 @@ void Direct3DBase::setup()
    blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
    blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-   m_d3dDevice->CreateBlendState(&blendStateDescription, &g_pBlendState);
+   d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState);
 
    // setup clipping
    D3D11_RASTERIZER_DESC1 rasterizerState = { D3D11_FILL_SOLID };
    rasterizerState.CullMode = D3D11_CULL_FRONT;
    rasterizerState.FrontCounterClockwise = true;
    rasterizerState.DepthClipEnable = true;
-   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
+   d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
    rasterizerState.ScissorEnable = true;
-   m_d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
+   d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
 
    // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
@@ -266,11 +510,11 @@ void Direct3DBase::setup()
    bd.ByteWidth = sizeof(TextureVertex) * 8;             // size is the VERTEX struct * 3
    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-   m_d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
+   d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
 }
 
 #define f255(x) ((float)x/255.0f)
-void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    //y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
@@ -286,16 +530,16 @@ void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv 
 
    setProgram(PROGRAM_LC);
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContext->Map(pBufferRectLC, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   d3dcontext->Map(pBufferRectLC, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
-   m_d3dContext->Unmap(pBufferRectLC, NULL);                                     // unmap the buffer
+   d3dcontext->Unmap(pBufferRectLC, NULL);                                     // unmap the buffer
 
    UINT stride = sizeof(VertexPositionColor);
    UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRectLC, &stride, &offset);
-   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContext->DrawIndexed(6, 0, 0);
+   d3dcontext->IASetVertexBuffers(0, 1, &pBufferRectLC, &stride, &offset);
+   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   d3dcontext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   d3dcontext->DrawIndexed(6, 0, 0);
 }
 
 void Direct3DBase::setColor(int color)
@@ -312,14 +556,14 @@ void Direct3DBase::setColor(int color)
 
    D3D11_MAPPED_SUBRESOURCE ms;
 
-   m_d3dContext->Map(pBufferColor, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   d3dcontext->Map(pBufferColor, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, &vcolor, sizeof(VertexColor));                // copy the data
-   m_d3dContext->Unmap(pBufferColor, NULL);                                     // unmap the buffer
+   d3dcontext->Unmap(pBufferColor, NULL);                                     // unmap the buffer
 
-   m_d3dContext->VSSetConstantBuffers(1, 1, &pBufferColor);
+   d3dcontext->VSSetConstantBuffers(1, 1, &pBufferColor);
 }
 
-void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
+void Direct3DBase::drawLineImpl(int x1, int y1, int x2, int y2, int color)
 {
    VertexPosition cubeVertices[] = // position, color
    {
@@ -329,20 +573,20 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 
    setProgram(PROGRAM_GC);
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   d3dcontext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
-   m_d3dContext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
+   d3dcontext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
 
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
-   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+   d3dcontext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
+   d3dcontext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    setColor(color);
-   m_d3dContext->DrawIndexed(2, 0, 0);
+   d3dcontext->DrawIndexed(2, 0, 0);
 }
 
-void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
+void Direct3DBase::fillRectImpl(int x1, int y1, int x2, int y2, int color)
 {
    VertexPosition cubeVertices[] = // position, color
    {
@@ -354,20 +598,20 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 
    setProgram(PROGRAM_GC);
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   d3dcontext->Map(pBufferRect, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
-   m_d3dContext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
+   d3dcontext->Unmap(pBufferRect, NULL);                                     // unmap the buffer
 
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
-   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-   m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   d3dcontext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
+   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+   d3dcontext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
    setColor(color);
-   m_d3dContext->DrawIndexed(6, 0, 0);
+   d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
+void Direct3DBase::drawPixelsImpl(int *x, int *y, int count, int color)
 {
    int i;
    int n = count * 2;
@@ -377,7 +621,7 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
    {
       cubeVertices[i].pos = XMFLOAT2((float)*x, (float)*y);
       i++;
-      cubeVertices[i].pos = XMFLOAT2((float)(*x + 1), (float)*y);
+      cubeVertices[i].pos = XMFLOAT2((float)(*x)+1, (float)*y);
       i++;
       x++; y++;
    }
@@ -392,7 +636,7 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 
       D3D11_SUBRESOURCE_DATA indexBufferData = { cubeIndexes,0,0 };
       CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndexes[0]) * n, D3D11_BIND_INDEX_BUFFER);
-      DX::ThrowIfFailed(m_d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
       delete cubeIndexes;
 
       D3D11_BUFFER_DESC bd = { 0 };
@@ -400,20 +644,20 @@ void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
       bd.ByteWidth = sizeof(VertexPosition)* n;             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      m_d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
+      d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
    }
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(VertexPosition)* n);                // copy the data
-   m_d3dContext->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
+   d3dcontext->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
-   m_d3dContext->IASetIndexBuffer(pixelsIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-   m_d3dContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+   d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
+   d3dcontext->IASetIndexBuffer(pixelsIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    setColor(color);
-   m_d3dContext->DrawIndexed(n, 0, 0);
+   d3dcontext->DrawIndexed(n, 0, 0);
 
    delete cubeVertices;
 }
@@ -423,73 +667,71 @@ bool Direct3DBase::isLoadCompleted()
    return loadCompleted == TASKS_COMPLETED && eventsInitialized;
 }
 
+static int counter;
+
 void Direct3DBase::updateScreen()
 {
-   debug("update screen");
-   //cmdlist = null;
-   m_d3dContext->FinishCommandList(false, &cmdlist);
-   callRender = true;
+   _debug("%d. udpdateScreen", nmsg++);
+   swapLists();
+   updateScreenWaiting = true;
+   int ini = (int32)GetTickCount64();
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
-   //m_d3dContext = nullptr;
+   while (updateScreenWaiting) Sleep(0);
+   int fim = (int32)GetTickCount64();
+   debug("updateScr: %d", fim - ini);
 }
 
-
-void Direct3DBase::PreRender()
+void Direct3DBase::preRender()
 {
-   debug("pre render");
-   callRender = false;
-   //if (m_d3dContext == null)
-      m_d3dDevice->CreateDeferredContext1(0, &m_d3dContext);
    const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    // Set the rendering viewport to target the entire window.
-   CD3D11_VIEWPORT viewport(0.0f, 0.0f, m_renderTargetSize.Width, m_renderTargetSize.Height);
-   m_d3dContext->RSSetViewports(1, &viewport);
+   CD3D11_VIEWPORT viewport(0.0f, 0.0f, renderTargetSize.Width, renderTargetSize.Height);
+   d3dcontext->RSSetViewports(1, &viewport);
 
-   m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
-   m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+   d3dcontext->ClearRenderTargetView(renderTargetView.Get(), clearColor);
+   d3dcontext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-   m_d3dContext->OMSetDepthStencilState(depthDisabledStencilState, 1);
-   m_d3dContext->OMSetBlendState(g_pBlendState, 0, 0xffffffff);
+   d3dcontext->OMSetDepthStencilState(depthDisabledStencilState, 1);
+   d3dcontext->OMSetBlendState(pBlendState, 0, 0xffffffff);
 
-   m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
-   m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, NULL, &m_constantBufferData, 0, 0);
+   d3dcontext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+   d3dcontext->UpdateSubresource(constantBuffer.Get(), 0, NULL, &constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
-   m_d3dContext->RSSetState(pRasterStateDisableClipping);
+   d3dcontext->RSSetState(pRasterStateDisableClipping);
    clipSet = false;
 }
 
 void Direct3DBase::setProgram(whichProgram p)
 {
-   if (callRender) PreRender();
    if (p == curProgram) return;
    lastRGB = 0xFAFFFFFF; // user may never set to this color
    curProgram = p;
    clipRect.right = -1;
-   m_d3dContext->RSSetState(pRasterStateDisableClipping);
+   d3dcontext->RSSetState(pRasterStateDisableClipping);
    clipSet = false;
    switch (p)
    {
       case PROGRAM_GC:
-         m_d3dContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-         m_d3dContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-         m_d3dContext->IASetInputLayout(m_inputLayout.Get());
+         d3dcontext->VSSetShader(vertexShader.Get(), nullptr, 0);
+         d3dcontext->PSSetShader(pixelShader.Get(), nullptr, 0);
+         d3dcontext->IASetInputLayout(inputLayout.Get());
          break;
       case PROGRAM_LC:
-         m_d3dContext->VSSetShader(m_vertexShaderLC.Get(), nullptr, 0);
-         m_d3dContext->PSSetShader(m_pixelShaderLC.Get(), nullptr, 0);
-         m_d3dContext->IASetInputLayout(m_inputLayoutLC.Get());
+         d3dcontext->VSSetShader(vertexShaderLC.Get(), nullptr, 0);
+         d3dcontext->PSSetShader(pixelShaderLC.Get(), nullptr, 0);
+         d3dcontext->IASetInputLayout(inputLayoutLC.Get());
          break;
       case PROGRAM_TEX:
-         m_d3dContext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
-         m_d3dContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &m_constantBufferData, 0, 0);
-         m_d3dContext->VSSetShader(m_vertexShaderT.Get(), nullptr, 0);
-         m_d3dContext->PSSetShader(m_pixelShaderT.Get(), nullptr, 0);
-         m_d3dContext->IASetInputLayout(m_inputLayoutT.Get());
-         m_d3dContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-         m_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+         d3dcontext->PSSetSamplers(0, 1, texsampler.GetAddressOf());
+         d3dcontext->UpdateSubresource(constantBuffer.Get(), 0, nullptr, &constantBufferData, 0, 0);
+         d3dcontext->VSSetShader(vertexShaderT.Get(), nullptr, 0);
+         d3dcontext->PSSetShader(pixelShaderT.Get(), nullptr, 0);
+         d3dcontext->IASetInputLayout(inputLayoutT.Get());
+         d3dcontext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+         d3dcontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
          break;
    }
-   m_d3dContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+   d3dcontext->VSSetConstantBuffers(0, 1, constantBuffer.GetAddressOf());
 }
 
 bool Direct3DBase::startProgramIfNeeded()
@@ -523,7 +765,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
    textureSubresourceData.pSysMem = pt0;
    textureSubresourceData.SysMemPitch = textureDesc.Width * 4; // Specify the size of a row in bytes
-   if (FAILED(m_d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
+   if (FAILED(d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
    else
    {
@@ -533,16 +775,18 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
       textureViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
       textureViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
       textureViewDesc.Texture2D.MipLevels = 1;
-      m_d3dDevice->CreateShaderResourceView(&texture[0], &textureViewDesc, &textureView);
+      d3dDevice->CreateShaderResourceView(&texture[0], &textureViewDesc, &textureView);
       xmoveptr(&textureId[0], &texture);
       xmoveptr(&textureId[1], &textureView);
    }
    xfree(pt0);
 }
+
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
 {
 }
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+
+void Direct3DBase::drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
    bool doClip = clip != null;
    ID3D11Texture2D *texture;
@@ -554,19 +798,19 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
 
    if (!doClip && clipSet)
-      m_d3dContext->RSSetState(pRasterStateDisableClipping);
+      d3dcontext->RSSetState(pRasterStateDisableClipping);
    else
    if (doClip)
    {
       if (!clipSet)
-         m_d3dContext->RSSetState(pRasterStateEnableClipping);
+         d3dcontext->RSSetState(pRasterStateEnableClipping);
       if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
       {
          clipRect.left = clip[0];
          clipRect.top = clip[1];
          clipRect.right = clip[2];
          clipRect.bottom = clip[3];
-         m_d3dContext->RSSetScissorRects(1, &clipRect);
+         d3dcontext->RSSetScissorRects(1, &clipRect);
       }
    }
    clipSet = doClip;
@@ -586,17 +830,17 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
       { XMFLOAT2((float)dstX,  (float)dstY2), XMFLOAT2(left, bottom) },
    };
    D3D11_MAPPED_SUBRESOURCE ms;
-   m_d3dContext->Map(texVertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   d3dcontext->Map(texVertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
-   m_d3dContext->Unmap(texVertexBuffer, NULL);                                     // unmap the buffer
+   d3dcontext->Unmap(texVertexBuffer, NULL);                                     // unmap the buffer
 
    // Set the vertex and index buffers, and specify the way they define geometry.
    UINT stride = sizeof(TextureVertex);
    UINT offset = 0;
-   m_d3dContext->IASetVertexBuffers(0, 1, &texVertexBuffer, &stride, &offset);
+   d3dcontext->IASetVertexBuffers(0, 1, &texVertexBuffer, &stride, &offset);
 
    // Set the vertex and pixel shader stage state.
-   m_d3dContext->PSSetShaderResources(0, 1, &textureView);
+   d3dcontext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
-   m_d3dContext->DrawIndexed(6, 0, 0);
+   d3dcontext->DrawIndexed(6, 0, 0);
 }

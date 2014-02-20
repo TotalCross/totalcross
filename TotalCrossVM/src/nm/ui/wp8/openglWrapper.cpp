@@ -12,9 +12,6 @@
 #include "datastructures.h"
 #include "tcvm.h"
 
-//#define TOGGLE_BUFFER
-
-
 using namespace Windows::UI::Core;
 
 TC_API void throwException(Context currentContext, Throwable t, CharP message, ...);
@@ -193,14 +190,14 @@ void setShiftYgl()
 	if (setShiftYonNextUpdateScreen) 
    {
 		int32 componentPos;
-		int siph = 100;//XXX MainView::GetLastInstance()->GetSIPHeight();
+		int siph = 100;//XXX MainView::getLastInstance()->GetSIPHeight();
 		componentPos = -(desiredglShiftY - desiredScreenShiftY);     // set both at once
 		setShiftYonNextUpdateScreen = false;
 
-		if (componentPos <= 100)//XXX MainView::GetLastInstance()->GetSIPHeight())
+		if (componentPos <= 100)//XXX MainView::getLastInstance()->GetSIPHeight())
          glShiftY = 0;
 		else
-			glShiftY = -(componentPos - 100);//XXX MainView::GetLastInstance()->GetSIPHeight());
+			glShiftY = -(componentPos - 100);//XXX MainView::getLastInstance()->GetSIPHeight());
 	}
 }
 

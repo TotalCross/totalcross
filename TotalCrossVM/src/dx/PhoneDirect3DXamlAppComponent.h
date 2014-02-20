@@ -29,6 +29,7 @@ public:
 	bool backKeyPress();
    static Direct3DBackground^ GetInstance();
    void RequestNewFrame();
+   
 
 protected:
 
@@ -46,7 +47,8 @@ internal:
 
 private:
    CSwrapper ^cs;
-   Direct3DBase^ m_renderer;
+   ID3D11CommandList *currentCmdlist;
+   Direct3DBase^ renderer;
 };
 
 }
