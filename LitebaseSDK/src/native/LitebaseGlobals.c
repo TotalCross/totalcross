@@ -20,7 +20,7 @@ Hashtable htCreatedDrivers; // The hash table for the created connections with L
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // The list of table files currently opened.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
 XFilesList filesList; 
 #endif
 

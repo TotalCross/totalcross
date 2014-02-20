@@ -699,7 +699,7 @@ bool indexDeleteAllRows(Context context, Index* index)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Some files might have been closed if the maximum number of opened files was reached.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    if ((i = reopenFileIfNeeded(context, fnodes)))
    {
       fileError(context, i, fnodes->name);

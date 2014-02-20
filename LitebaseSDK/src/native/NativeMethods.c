@@ -1534,7 +1534,7 @@ free:
             heapDestroy(heap);
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
             removeFileFromList(&newdbo);
 #endif
 
