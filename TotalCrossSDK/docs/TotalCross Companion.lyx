@@ -353,7 +353,7 @@ large
 
 \begin_layout Plain Layout
 
-Version 1.63
+Version 2.1
 \end_layout
 
 \begin_layout Plain Layout
@@ -478,11 +478,7 @@ main class
 \family typewriter
 totalcross.ui.MainWindow
 \family default
- or 
-\family typewriter
-totalcross.io.sync.Conduit
-\family default
-, or implements 
+ or implements 
 \family typewriter
 totalcross.MainClass
 \family default
