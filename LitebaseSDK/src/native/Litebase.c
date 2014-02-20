@@ -129,7 +129,7 @@ bool initVars(OpenParams params)
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Initializes the list of Litebase opened files.
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
    xmemzero(&filesList, sizeof(XFilesList));
 #endif
 
@@ -1310,7 +1310,7 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
 
             record[oldCount] = newDefaultValue; // Sets the record for the new column.
                    
-#ifdef POSIX
+#if defined(POSIX) || defined(ANDROID)
             removeFileFromList(&newDB.db);
             removeFileFromList(&newDB.dbo);
 #endif

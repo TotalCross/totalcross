@@ -2972,7 +2972,7 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
 
    // juliana@230_12
    return readValue(context, &table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db.basbuf, !*table->name, 
-                                                                             isBitSet(table->columnNulls, column), true, -1, null);
+                                                isBitSet(table->columnNulls, column), true, table->columnSizes[column], null);
 }
 
 /**
