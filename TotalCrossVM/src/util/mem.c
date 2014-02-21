@@ -174,7 +174,7 @@ void destroyMem()
 
 static int32 hpcount;
 
-TC_API Heap privateHeapCreate(const char *file, int32 line)
+TC_API Heap privateHeapCreate(bool add2list, const char *file, int32 line)
 {
    Heap p = newX(Heap);
    if (p)
@@ -184,13 +184,16 @@ TC_API Heap privateHeapCreate(const char *file, int32 line)
       xstrcpy(p->ex.creationFile, max32(0,len-(sizeof(p->ex.creationFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
       p->ex.creationLine = line;
       p->count = ++hpcount;
-      LOCKVAR(createdHeaps);
-      ch = VoidPsAdd(createdHeaps, p, null); // cannot use a heap in VoidPsAdd
-      if (ch == null)
-         xfree(p);
-      else
-         createdHeaps = ch;
-      UNLOCKVAR(createdHeaps);
+      if (add2list)
+      {
+         LOCKVAR(createdHeaps);
+         ch = VoidPsAdd(createdHeaps, p, null); // cannot use a heap in VoidPsAdd
+         if (ch == null)
+            xfree(p);
+         else
+            createdHeaps = ch;
+         UNLOCKVAR(createdHeaps);
+      }
    }
    return p;
 }
@@ -311,7 +314,7 @@ void heapFreeAsking(Heap m, AskIfFreeFunc ask)
       }
 }
 
-TC_API void heapDestroyPrivate(Heap m)
+TC_API void heapDestroyPrivate(Heap m, bool added2list)
 {
    if (!m)
       return;
@@ -329,9 +332,12 @@ TC_API void heapDestroyPrivate(Heap m)
       m->current = mb;
    }
    m->finalizerFunc = null;
-   LOCKVAR(createdHeaps);
-   createdHeaps = VoidPsRemove(createdHeaps, m, null);
-   UNLOCKVAR(createdHeaps);
+   if (added2list)
+   {
+      LOCKVAR(createdHeaps);
+      createdHeaps = VoidPsRemove(createdHeaps, m, null);
+      UNLOCKVAR(createdHeaps);
+   }
    xfree(m);
 }
 

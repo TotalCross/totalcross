@@ -1,5 +1,6 @@
 ﻿#include "Direct3DBase.h"
 #include <thread>
+#include <mutex>
 #include "PhoneDirect3DXamlAppComponent.h"
 #define HAS_TCHAR
 #include "tcvm.h"
@@ -11,24 +12,23 @@ using namespace Windows::UI::Core;
 
 static Direct3DBase ^instance;
 
-#define _debug(x,...) 
-//#define _debug debug
-
-DECLARE_MUTEX(list);
-
+std::mutex listMutex;
 
 struct D3DCommands
 {
    D3DCommand head;
    D3DCommand tail;
-} cmdFill, cmdFree, cmdDraw;
+   Heap heap;
+} cmdFill, cmdDraw;
 
 // lists
-int recorded,nmsg;
-
+void listInit(D3DCommands* c)
+{
+   c->head = c->tail = NULL;
+   c->heap = heapCreateB(false);
+}
 void listAdd(D3DCommands* s, D3DCommand p)
 {
-   LOCKVAR(list);
    p->next = NULL;
    if (NULL == s->head && NULL == s->tail)
       s->head = s->tail = p;
@@ -37,87 +37,32 @@ void listAdd(D3DCommands* s, D3DCommand p)
       s->tail->next = p;
       s->tail = p;
    }
-   UNLOCKVAR(list);
 }
 
 bool listIsEmpty(D3DCommands* s)
 {
-   LOCKVAR(list);
    bool b = NULL == s->head && NULL == s->tail;
-   UNLOCKVAR(list);
    return b;
-}
-
-int listCount(D3DCommands* s)
-{
-   int n = 0;
-   for (D3DCommand p = s->head; p; p = p->next)
-      n++;
-   return n;
-}
-
-void listJoin(D3DCommands* src, D3DCommands* dst)
-{
-   LOCKVAR(list);
-   if (listIsEmpty(dst))
-      ;
-   else
-   if (listIsEmpty(src))
-      *dst = *src;
-   else
-   {
-      dst->tail->next = src->head;
-      dst->tail = src->head;
-   }
-   UNLOCKVAR(list);
 }
 
 void listSetEmpty(D3DCommands* s)
 {
-   LOCKVAR(list);
+   //debug("heap.alloc: %d (%d)", s->heap->numAlloc, s->heap->totalAlloc);
+   heapDestroyB(s->heap,false);
+   s->heap = heapCreateB(false);
    s->head = s->tail = NULL;
-   UNLOCKVAR(list);
-}
-
-/* This is a queue and it is FIFO, so we will always remove the first element */
-D3DCommand listPop(D3DCommands* s)
-{
-   if (listIsEmpty(s))
-      return NULL;
-
-   LOCKVAR(list);
-   D3DCommand top = s->head;
-   D3DCommand next = top->next;
-   s->head = next;
-   if (s->head == NULL) s->tail = NULL;   /* The element tail was pointing to is free(), so we need an update */
-   UNLOCKVAR(list);
-   return top;
 }
 
 int allocated;
 
 D3DCommand Direct3DBase::newCommand()
 {
-   if (listIsEmpty(&cmdFree))
-   {
-      allocated++;
-      return newX(D3DCommand);
-   }
-
-   D3DCommand c = listPop(&cmdFree);
-   if (c->cmd == D3DCMD_DRAWPIXELS) // free the pixels used
-   {
-      int *x = (int*)c->a;
-      int *y = (int*)c->b;
-      xfree(x);
-      xfree(y);
-   }
-   xmemzero(c, sizeof(TD3DCommand));
-   return c;
+   return newXH(D3DCommand,cmdFill.heap);
 }
 
 void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    D3DCommand cmd = newCommand();
    cmd->cmd = D3DCMD_FILLSHADEDRECT;
    cmd->a = x;
@@ -128,10 +73,10 @@ void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv 
    cmd->c2 = c2;
    cmd->flags.horiz = horiz;
    listAdd(&cmdFill, cmd);
-   recorded++;
 }
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    D3DCommand cmd = newCommand();
    cmd->cmd = D3DCMD_DRAWLINE;
    cmd->a = x1;
@@ -140,10 +85,10 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    cmd->d = y2;
    cmd->c1.pixel = color;
    listAdd(&cmdFill, cmd);
-   recorded++;
 }
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    D3DCommand cmd = newCommand();
    cmd->cmd = D3DCMD_FILLRECT;
    cmd->a = x1;
@@ -152,10 +97,10 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    cmd->d = y2;
    cmd->c1.pixel = color;
    listAdd(&cmdFill, cmd);
-   recorded++;
 }
 void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    D3DCommand cmd = newCommand();
    cmd->cmd = D3DCMD_DRAWTEXTURE;
    cmd->textureId[0] = textureId[0];
@@ -173,53 +118,39 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    cmd->flags.hasClip = clip != null;
    if (cmd->flags.hasClip) { cmd->clip[0] = clip[0]; cmd->clip[1] = clip[1]; cmd->clip[2] = clip[2]; cmd->clip[3] = clip[3]; }
    listAdd(&cmdFill, cmd);
-   recorded++;
 }
 
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    int32 *nx, *ny;
-   nx = (int32*)xmalloc(count * sizeof(int32));
-   ny = (int32*)xmalloc(count * sizeof(int32));
-   if (!nx || !ny)
-   {
-      xfree(nx);
-      xfree(ny);
-   }
-   else
-   {
-      D3DCommand cmd = newCommand();
-      cmd->cmd = D3DCMD_DRAWPIXELS;
-      xmemmove(nx, x, count * sizeof(int32));
-      xmemmove(ny, y, count * sizeof(int32));
-      cmd->a = (int)nx;
-      cmd->b = (int)ny;
-      cmd->c = count;
-      cmd->c1.pixel = color;
-      listAdd(&cmdFill, cmd);
-      recorded++;
-   }
+   nx = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
+   ny = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
+   D3DCommand cmd = newCommand();
+   cmd->cmd = D3DCMD_DRAWPIXELS;
+   xmemmove(nx, x, count * sizeof(int32));
+   xmemmove(ny, y, count * sizeof(int32));
+   cmd->a = (int)nx;
+   cmd->b = (int)ny;
+   cmd->c = count;
+   cmd->c1.pixel = color;
+   listAdd(&cmdFill, cmd);
 }
 
 void Direct3DBase::swapLists()
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    D3DCommands oldDraw = cmdDraw;
    // 1. draw what has been filled
    cmdDraw = cmdFill;
-   // 2. move fill to free list
-   if (listIsEmpty(&cmdFree))
-      cmdFree = oldDraw;
-   else
-      listJoin(&oldDraw, &cmdFree);
-   // 3. clear fill
+   // 2. clear fill
+   cmdFill = oldDraw;
    listSetEmpty(&cmdFill);
-   debug("swap. alloc: %d", allocated);
-   _debug("%d. recorded %d", nmsg++, recorded);
-   recorded = 0;
 }
 
 int Direct3DBase::runCommands()
 {
+   std::lock_guard<std::mutex> lock(listMutex);
    int n = 0;
    if (!listIsEmpty(&cmdDraw))
    {
@@ -248,9 +179,7 @@ int Direct3DBase::runCommands()
                break;
          }
       }
-      _debug("%d. drawing %d", nmsg++,n);
    }
-   else _debug("%d. nothing to show", nmsg++);
    return n;
 }
 
@@ -259,7 +188,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
-   INIT_MUTEX(list);
+   listInit(&cmdFill);
 }
 
 Direct3DBase ^Direct3DBase::getLastInstance()
@@ -361,8 +290,6 @@ void Direct3DBase::createDeviceResources()
 
 void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-   _debug("%d. update device", nmsg++);
-
 	this->renderTargetView = renderTargetView;
    d3dcontext = ic;
 
@@ -667,18 +594,12 @@ bool Direct3DBase::isLoadCompleted()
    return loadCompleted == TASKS_COMPLETED && eventsInitialized;
 }
 
-static int counter;
-
 void Direct3DBase::updateScreen()
 {
-   _debug("%d. udpdateScreen", nmsg++);
    swapLists();
    updateScreenWaiting = true;
-   int ini = (int32)GetTickCount64();
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
    while (updateScreenWaiting) Sleep(0);
-   int fim = (int32)GetTickCount64();
-   debug("updateScr: %d", fim - ini);
 }
 
 void Direct3DBase::preRender()
