@@ -2550,10 +2550,18 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
    int32 green = startGreen << 16;
    int32 blue = startBlue << 16;
    int32 i;
-   int32 leftOffset=0;
-   int32 rightOffset=0;
-   bool hasRadius = (topLeftRadius+topRightRadius+bottomLeftRadius+bottomRightRadius) > 0;
+   int32 leftOffset = 0;
+   int32 rightOffset = 0;
+   bool hasRadius = (topLeftRadius + topRightRadius + bottomLeftRadius + bottomRightRadius) > 0;
    Pixel p;
+   bool drawFadedPixels = !Graphics_useOpenGL(g);
+#ifdef __gl2_h_
+   bool optimize = topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
+#else
+   bool optimize = false;
+#endif
+   int32 ri, gi, bi, rf, gf, bf, stage=0,k;
+
    if (startX > endX)
    {
       int32 temp = startX;
@@ -2574,37 +2582,73 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
          leftOffset = rightOffset = 0;
 
          if (topLeftRadius > 0 && i < topLeftRadius)
-            leftOffset = getOffset(topLeftRadius,topLeftRadius - i - 1) - 1;
+            leftOffset = getOffset(topLeftRadius, topLeftRadius - i - 1) - 1;
          else
          if (bottomLeftRadius > 0 && i > numSteps - bottomLeftRadius)
-            leftOffset = getOffset(bottomLeftRadius,bottomLeftRadius - (numSteps - i + 1)) - 1;
+            leftOffset = getOffset(bottomLeftRadius, bottomLeftRadius - (numSteps - i + 1)) - 1;
 
          if (topRightRadius > 0 && i < topRightRadius)
-            rightOffset = getOffset(topRightRadius,topRightRadius - i - 1) - 1;
+            rightOffset = getOffset(topRightRadius, topRightRadius - i - 1) - 1;
          else
          if (bottomRightRadius > 0 && i > numSteps - bottomRightRadius)
-            rightOffset = getOffset(bottomRightRadius,bottomRightRadius - (numSteps - i + 1)) - 1;
+            rightOffset = getOffset(bottomRightRadius, bottomRightRadius - (numSteps - i + 1)) - 1;
 
          if (leftOffset < 0) leftOffset = 0;
          if (rightOffset < 0) rightOffset = 0;
       }
-      p = makePixel(red >> 16,green >> 16, blue >> 16);
-      if (vertical)
+      p = makePixel(red >> 16, green >> 16, blue >> 16);
+      if (!optimize || leftOffset != 0 || rightOffset != 0)
       {
-         int32 fc = p;
-         drawLine(currentContext, g, startX + leftOffset, startY+i, endX - rightOffset, startY+i, p);
-         if (rightOffset != 0)
-            drawFadedPixel(currentContext, g, endX - rightOffset+1, startY+i, fc);
-         if (leftOffset != 0)
-            drawFadedPixel(currentContext, g, startX+leftOffset-1, startY+i, fc);
+         if (vertical)
+         {
+            int32 fc = p;
+            drawLine(currentContext, g, startX + leftOffset, startY + i, endX - rightOffset, startY + i, p);
+            if (drawFadedPixels && rightOffset != 0) // since there's no fading of pixels in opengl, we can safely ignore this
+               drawFadedPixel(currentContext, g, endX - rightOffset + 1, startY + i, fc);
+            if (drawFadedPixels && leftOffset != 0)
+               drawFadedPixel(currentContext, g, startX + leftOffset - 1, startY + i, fc);
+         }
+         else
+            drawLine(currentContext, g, startX + i, startY + leftOffset, startX + i, endY - rightOffset, p);
       }
-      else
-         drawLine(currentContext, g, startX+i, startY + leftOffset, startX+i, endY - rightOffset, p);
+      if (stage < 2) // find starting and ending colors
+      {
+         bool hasOffset = leftOffset != 0 || rightOffset != 0;
+         if (stage == 0 && !hasOffset)
+         {
+            ri = red; gi = green; bi = blue;
+            stage++;
+         }
+         else
+         if (stage == 1 && hasOffset)
+         {
+            rf = red; gf = green; bf = blue;
+            stage++;
+         }
+      }
 
       red += redInc;
       green += greenInc;
       blue += blueInc;
    }
+   if (stage == 1) // case has no radius
+   {
+      rf = red; gf = green; bf = blue;
+   }
+#ifdef __gl2_h_
+   if (optimize)
+   {
+      int32 r = topLeftRadius/2;
+      PixelConv pi,pf;
+      int32 tx = Graphics_transX(g), ty = Graphics_transY(g);
+      pi.pixel = makePixelA(255,ri >> 16, gi >> 16,bi >> 16);
+      pf.pixel = makePixelA(255,rf >> 16, gf >> 16,bf >> 16);
+      if (vertical)
+         glFillShadedRect(g, startX + tx, startY + ty + r - 1, endX - startX, endY - startY - r * 2 + 1, pf, pi, false);
+      else
+         glFillShadedRect(g, startX + tx + r - 1, startY + ty, endX - startX - r * 2 + 1, endY - startY, pf, pi, true);
+   }  
+#endif
 }
 
 static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32 offset, int32 x, int32 y, int32 w, int32 h, bool isGet)
@@ -3010,15 +3054,15 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
 {
    PixelConv pc1,pc2;
 #if defined(__gl2_h_)
-   pc1.pixel = c1;
-   pc2.pixel = c2;
-   pc1.pixel = interpolate(pc1,pc2,factor*255/100);
-   if (translateAndClip(g, &x, &y, &width, &height))
-      glFillShadedRect(g,x,y,width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
-   if (Surface_isImage(Graphics_surface(g)))
-      Image_changed(Graphics_surface(g)) = true;
-   else
+   if (!Surface_isImage(Graphics_surface(g)))
+   {
+      pc1.pixel = c1;
+      pc2.pixel = c2;
+      pc1.pixel = interpolate(pc1,pc2,factor*255/100);
+      glFillShadedRect(g,x+Graphics_transX(g),y+Graphics_transY(g),width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
       currentContext->fullDirty = true;
+      return;
+   }
 #else
    int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
    if (true) return;

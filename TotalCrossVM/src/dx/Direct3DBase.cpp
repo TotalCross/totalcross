@@ -60,7 +60,7 @@ D3DCommand Direct3DBase::newCommand()
    return newXH(D3DCommand,cmdFill.heap);
 }
 
-void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    std::lock_guard<std::mutex> lock(listMutex);
    D3DCommand cmd = newCommand();
@@ -72,6 +72,11 @@ void Direct3DBase::fillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv 
    cmd->c1 = c1;
    cmd->c2 = c2;
    cmd->flags.horiz = horiz;
+   cmd->flags.hasClip = true;
+   cmd->clip[0] = Graphics_clipX1(g);
+   cmd->clip[1] = Graphics_clipY1(g);
+   cmd->clip[2] = Graphics_clipX2(g);
+   cmd->clip[3] = Graphics_clipY2(g);
    listAdd(&cmdFill, cmd);
 }
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
@@ -161,7 +166,7 @@ int Direct3DBase::runCommands()
          switch (c->cmd)
          {
             case D3DCMD_FILLSHADEDRECT:
-               fillShadedRectImpl(c->a, c->b, c->c, c->d, c->c1, c->c2, c->flags.horiz?true:false);
+               fillShadedRectImpl(c->a, c->b, c->c, c->d, c->c1, c->c2, c->flags.horiz?true:false, c->clip);
                break;
             case D3DCMD_FILLRECT:
                fillRectImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
@@ -441,7 +446,7 @@ void Direct3DBase::setup()
 }
 
 #define f255(x) ((float)x/255.0f)
-void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip)
 {
    //y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
@@ -456,6 +461,7 @@ void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelC
    };
 
    setProgram(PROGRAM_LC);
+   setClip(clip);
    D3D11_MAPPED_SUBRESOURCE ms;
    d3dcontext->Map(pBufferRectLC, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
@@ -707,17 +713,9 @@ void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList
 {
 }
 
-void Direct3DBase::drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+void Direct3DBase::setClip(int32* clip)
 {
    bool doClip = clip != null;
-   ID3D11Texture2D *texture;
-   ID3D11ShaderResourceView *textureView;
-
-   xmoveptr(&texture, &textureId[0]);
-   xmoveptr(&textureView, &textureId[1]);
-   setProgram(PROGRAM_TEX);
-   setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
-
    if (!doClip && clipSet)
       d3dcontext->RSSetState(pRasterStateDisableClipping);
    else
@@ -735,6 +733,19 @@ void Direct3DBase::drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, 
       }
    }
    clipSet = doClip;
+}
+
+void Direct3DBase::drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+{
+   ID3D11Texture2D *texture;
+   ID3D11ShaderResourceView *textureView;
+
+   xmoveptr(&texture, &textureId[0]);
+   xmoveptr(&textureView, &textureId[1]);
+   setProgram(PROGRAM_TEX);
+   setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
+
+   setClip(clip);
 
    //dstY += glShiftY;
    int32 dstY2 = dstY + h;

@@ -181,7 +181,7 @@ void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   dxFillShadedRect(x, y, w, h, c1, c2, horiz);
+   dxFillShadedRect(g, x, y, w, h, c1, c2, horiz);
 }
 
 void setTimerInterval(int32 t);

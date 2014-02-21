@@ -243,9 +243,9 @@ void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 	Direct3DBase::getLastInstance()->drawLine(x1, y1, x2, y2, color);
 }
 
-void dxFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-	Direct3DBase::getLastInstance()->fillShadedRect(x,y,w,h,c1,c2,horiz);
+	Direct3DBase::getLastInstance()->fillShadedRect(g,x,y,w,h,c1,c2,horiz);
 }
 
 void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
