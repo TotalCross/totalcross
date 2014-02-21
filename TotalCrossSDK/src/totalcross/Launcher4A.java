@@ -915,7 +915,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          
          Calendar fix = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //flsobral@tc126_57: Date is deprecated, and apparently bugged for some devices. Replaced with Calendar.
          fix.setTimeInMillis(loc.getTime());
-         int satellites = gps.getGpsStatus(gpsStatus).getMaxSatellites();
+         int satellites = 0;
+		 Iterable<GpsSatellite> satellities = gpsStatus.getSatellites();
+		 for (GpsSatellite satellitie : satellities) 
+            if (satellitie.usedInFix())
+               satellites++;
+
          String sat = satellites < 255 && satellites > 0 ? String.valueOf(satellites) : "";
          String vel = loc.hasSpeed() && loc.getSpeed() != 0d ? String.valueOf(loc.getSpeed())   : "";
          String dir = loc.hasBearing() ? String.valueOf(loc.getBearing()) : "";
