@@ -103,7 +103,7 @@ void Direct3DBackground::RequestNewFrame()
    Direct3DBackground::RequestAdditionalFrame();
 }
 
-static int lastPaint;
+static int lastPaint,lastAcum=10;
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
    if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
@@ -111,7 +111,7 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
       int cur = (int32)GetTickCount64();
       renderer->updateDevice(device, context, renderTargetView);
       int n = renderer->runCommands();
-      //debug("%d: %d", cur - lastPaint,n); lastPaint = cur;
+      //if (--lastAcum == 0) { debug("%d: %d ms", n, cur - lastPaint); lastAcum = 10; } lastPaint = cur;
       if (renderer->alertMsg != nullptr) {Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr;} // alert stuff
       renderer->updateScreenWaiting = false;
 	} 
