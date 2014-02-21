@@ -453,13 +453,22 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
       if (Graphics_useOpenGL(g))
       {
          glDrawLine(x,y,x+width,y,pixel1,255);
-         if (pixel1 != pixel2)
+         if (pixel1 != pixel2 && checkGLfloatBuffer(currentContext, width/2+1))
+         {
+            float *glC = glcolors;
+            float *glV = glcoords;
             for (x++; width > 0; width -= 2, x += 2)
-               glDrawPixel(x,y, pixel2,255);
-         if (Surface_isImage(Graphics_surface(g)))
-            Image_changed(Graphics_surface(g)) = true;
-         else
-            currentContext->fullDirty = true;
+            {
+               // alpha
+               *glC++ = 1;
+               // vertices
+               *glV++ = (float)x;
+               *glV++ = (float)y;
+            }
+            if (glC != glcolors) // flush vertices buffer
+               glDrawPixels(((int32)(glC-glcolors)),pixel2);
+         }
+         currentContext->fullDirty = true;
       }
       else
 #endif
