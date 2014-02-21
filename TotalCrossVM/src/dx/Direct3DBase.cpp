@@ -341,10 +341,11 @@ void Direct3DBase::createWindowSizeDependentResources()
    setup();
 }
 
+extern "C" { extern int32 appW, appH; }
 void Direct3DBase::updateForWindowSizeChange(float width, float height)
 {
-	windowBounds.Width  = width;
-	windowBounds.Height = height;
+	appW = (int32)(windowBounds.Width  = width);
+	appH = (int32)(windowBounds.Height = height);
 }
 
 void Direct3DBase::setup()
