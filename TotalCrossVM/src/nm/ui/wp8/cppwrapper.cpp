@@ -208,6 +208,11 @@ void nativeStopGPSCPP()
    Direct3DBase::getLastInstance()->csharp->nativeStopGPSCS();
 }
 
+bool fileIsCardInsertedCPP()
+{
+   return Direct3DBase::GetLastInstance()->csharp->fileIsCardInsertedCS();
+}
+
 bool dxSetup()
 {
 	return true;//XXX

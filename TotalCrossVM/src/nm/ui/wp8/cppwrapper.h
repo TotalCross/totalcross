@@ -57,6 +57,9 @@ bool nativeStartGPSCPP();
 int nativeUpdateLocationCPP(Context context, TCObject gpsObject);
 void nativeStopGPSCPP();
 
+// File
+bool fileIsCardInsertedCPP();
+
 //Event Queue functions
 void eventQueuePush(int type, int key, int x, int y, int modifiers);
 struct eventQueueMember eventQueuePop(void);

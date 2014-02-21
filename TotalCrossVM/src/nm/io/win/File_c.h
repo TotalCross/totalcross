@@ -38,10 +38,17 @@ DWORD WINAPI SetFilePointer(
  *
  *************************************/
 
+#ifdef WP8
+static bool fileIsCardInserted(int32 slot)
+{
+   return fileIsCardInsertedCPP();
+}
+#else
 static bool fileIsCardInserted(int32 slot)
 {
    return true;
 }
+#endif
 
 /*
  *
