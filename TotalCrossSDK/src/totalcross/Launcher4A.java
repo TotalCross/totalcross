@@ -566,7 +566,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName, int stillQuality, int width, int height)
+   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
@@ -574,6 +574,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("showCamera.quality", stillQuality);
       b.putInt("showCamera.width",width);
       b.putInt("showCamera.height",height);
+	  b.putBoolean("showCamera.allowRotation", allowRotation);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
