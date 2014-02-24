@@ -487,17 +487,21 @@ totalcross.MainClass
 
 \begin_layout Standard
 The term “
+\family typewriter
 \series bold
-<TOTALCROSS_HOME>
+%TOTALCROSS_HOME
 \series default
+%
+\family default
 ” refers to the directory where the TotalCross SDK is located.
  The default location is 
 \family typewriter
 C:
 \backslash
-TotalCrossSDK
+TotalCross2SDK
 \family default
 .
+ But you can change it during installation.
 \end_layout
 
 \begin_layout Standard
@@ -581,13 +585,21 @@ It has support for real multi-threading.
 \end_layout
 
 \begin_layout Itemize
-The TotalCross class (tclass) files stores internal information in little
- endian, since its the most widely used format of actual microprocessors.
+The TotalCross class (
+\family typewriter
+tclass
+\family default
+) files stores internal information in little endian, since its the most
+ widely used format of actual microprocessors.
 \end_layout
 
 \begin_layout Itemize
-The tclass files are highly optimized to save space.
- For instance, the constant pool (where Strings, constants and identifiers
+The 
+\family typewriter
+tclass
+\family default
+ files are highly optimized to save space.
+ For instance, the constant pool (where strings, constants, and identifiers
  are stored) is shared among all deployed classes, and each class entry
  is compressed using zlib.
 \end_layout
@@ -769,6 +781,11 @@ Lock
 RuntimeException
 \family default
  will be thrown when your program runs in the TotalCross virtual machine.
+ Moreover, using the 
+\family typewriter
+synchronized
+\family default
+ keyword before a method will be useless: it will be ignored by the VM.
  Note that these problems will not occur when running on Java desktop, only
  when running on TCVM.
  Here's a sample that shows how to use it:
@@ -829,14 +846,8 @@ Regardless of the device's color depth, the screen and images are stored
 updateScreen()
 \family default
  method is called.
-\end_layout
-
-\begin_layout Standard
-If the screen is 8 bpp, a variant of the 685 palette (6 bits for red, 8
- for green and 5 for blue, plus 16 shades of gray) is used.
- (see Appendix C – 685 palette).
- Note: since 2011, no devices with 8 bpp are released to the market; all
- of them use 16 bpp (65536 colors).
+ Note that since 2011, no devices with 8 bpp are released to the market;
+ all of them use at least 16 bpp (65536 colors).
 \end_layout
 
 \begin_layout Standard
@@ -967,7 +978,7 @@ Getting Started
 \begin_layout Standard
 Be sure to read the API javadocs at 
 \family typewriter
-TotalCrossSDK/docs/html/index.html
+%TOTALCROSS_HOME%/docs/html/index.html
 \family default
 .
  
@@ -1001,7 +1012,7 @@ The javadocs and this reference manual are complementary, and the javadocs
 \begin_layout Standard
 There are some examples in the 
 \family typewriter
-TotalCrossSDK/src/java/tc/samples
+%TOTALCROSS_HOME%/src/java/tc/samples
 \family default
  directories.
  These samples covers the usage of a great portion of TotalCross' class
@@ -1031,7 +1042,7 @@ If you'd like to report a bug or problem within the TotalCross SDK – including
 \end_layout
 
 \begin_layout Itemize
-Documentation problems, grammar errors or typos.
+Documentation problems, grammar errors, or typos.
 \end_layout
 
 \begin_layout Itemize
@@ -1075,7 +1086,9 @@ target "http://www.superwaba.com.br/en/suporte.asp"
 \end_layout
 
 \begin_layout Standard
-Here's a rough template of a bug report for TotalCross:
+When opening an issue, it's very important to give all the details so that
+ its correction will be faster.
+ Here's a rough template of a bug report for TotalCross:
 \end_layout
 
 \begin_layout Itemize
@@ -1131,18 +1144,22 @@ The VM provided in the SDK is a demo version.
 \end_layout
 
 \begin_layout Standard
-On devices, performing a hard-reset allows you to reinstall the VM and have
+On Android and iOS, it's only necessary to first uninstall and then reinstall
+ TotalCross (or your application together with it), so that you will have
  more 80 hours to test.
  This is NOT considered a license violation.
 \end_layout
 
 \begin_layout Standard
-On Win32 (Windows 2000, XP, Vista or Seven), this can only be done by reformatti
-ng your hard drive and reinstalling Windows.
+On Win32 (Windows, XP, Vista, Seven, or 8), this can only be done by reinstallin
+g Windows.
 \end_layout
 
 \begin_layout Standard
-In order to deploy applications, the JDK 1.6 or higher is required.
+In order to deploy applications, the JDK 1.6 is required.
+ It's a good idea to install the latest version of Java 1.6.
+ However, TotalCross won't work properly with JDK 1.7.
+ Therefore, don't install it.
 \end_layout
 
 \begin_layout Standard
@@ -1173,10 +1190,9 @@ The SDK has the following structure:
 \begin_layout Description
 
 \family typewriter
-TotalCrossSDK
+%TOTALCROSS_HOME%
 \end_layout
 
-\begin_deeper
 \begin_layout Description
 
 \family typewriter
@@ -1190,6 +1206,7 @@ TotalCrossSDK
 + samples
 \end_layout
 
+\begin_deeper
 \begin_layout Description
 
 \family typewriter
@@ -1344,6 +1361,17 @@ status open
 If your desktop has the SDK installed, you may run the application from
  any place, as long as the environment variables set during the installation
  are not changed and the SDK installation folder is not moved.
+ If your application can't found the SDK (or the right SDK if you have more
+ than one installed), make sure that the environment variable 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+ is pointing to the desired TotalCross installation folder.
+ On some systems (Windows 8, for instance), 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+ must be set both in user and system environment variables.
 \end_layout
 
 \end_inset
@@ -1483,32 +1511,8 @@ TCBase.tcz
 \family typewriter
 TCFont.tcz
 \family default
- on the same folder of the application.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Shadowbox
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100line%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Plain Layout
-If your desktop has the SDK installed, this is not required, as long as
- the environment variables set during the installation are not changed and
- the SDK installation folder is not moved.
-\end_layout
-
-\end_inset
-
-
+ on the same folder of the application or install TotalCross properly in
+ your operational system.
 \end_layout
 
 \begin_layout Itemize
@@ -1620,15 +1624,8 @@ tools
 tc.Deploy
 \family default
 .
- Inside this folder, you may have to use the apache folder, which contains
- a xml-rpc server, and the commapi, which contains files that must be added
- to the classpath to use the 
-\family typewriter
-PortConnector
-\family default
- class on desktop.
- There's also a high resolution fix for TreoPro devices, and a folder with
- some Android tools used to install the application on the device.
+ Inside this folder, you may use only the folder with some Android tools
+ used to install the application or debug on the device.
 \end_layout
 
 \begin_layout Standard
@@ -1703,30 +1700,18 @@ The entry point of a TotalCross application is always a class that extends
 
 MainWindow
 \family default
- (directly or indirectly, such as 
+ (directly or indirectly) or implements the interface 
 \family typewriter
-Conduit
-\family default
-) or implements the interface 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
 MainClass
 \family default
 .
  It is not possible to directly run TotalCross applications in Java, in
- this case, you must use the lLauncher provided with the SDK.
+ this case, you must use the launcher provided with the SDK.
  (see Chapter 4 for details about 
 \family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
 totalcross.Launcher
 \family default
-)
+).
 \end_layout
 
 \begin_layout Itemize
@@ -1763,8 +1748,8 @@ Unfortunately this feature can be misleading, because the opposite is NOT
 
 java.lang
 \family default
- package does have members (interfaces, classes, exceptions or errors) that
- are not available in 
+ package does have members (interfaces, classes, exceptions, or errors)
+ that are not available in 
 \family typewriter
 totalcross.lang
 \family default
@@ -1877,9 +1862,44 @@ Program Files
 \backslash
 Java
 \backslash
-jdk1.6.0_11
+jdk1.6.0_45
 \family default
 .
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note that some Java versions have problem when there is a space in the folder
+ name, such as 
+\family typewriter
+Program Files
+\family default
+ or 
+\family typewriter
+Arquivos de Programas
+\family default
+.
+ If this is the case, just uninstall Java and reinstall it in a folder without
+ space in its name.
+ 
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1908,7 +1928,7 @@ You may also add the path to the TotalCross
 TotalCrossSDK/dist/tc.
  jar
 \family default
-) to your CLASSPATH environment variable (or create one if the variables
+) to your CLASSPATH environment variable (or create one if the variable
  does not exists).
 \end_layout
 
@@ -2048,7 +2068,7 @@ Running with the Launcher (on JDK)
 \end_layout
 
 \begin_layout Standard
-Using the launcher, we can run our application and take alook at the result.
+Using the launcher, we can run our application and take a look at the result.
  Using a command shell, execute the following command:
 \end_layout
 
@@ -2405,7 +2425,7 @@ android
 \family default
 : Android (same of 
 \family typewriter
-/scr 320x480x16
+/scr 320x480x24
 \family default
 ).
 \end_layout
@@ -2444,6 +2464,7 @@ status open
 \family default
 : emulates 8 bits per pixel screens.
  (256 colors).
+ No used anymore on modern devices.
 \end_layout
 
 \begin_layout Itemize
@@ -2573,6 +2594,8 @@ status open
 /penlessDevice
 \family default
 : acts as a device that has no touch screen.
+ Note that all currently supported devices have touch screen.
+ 
 \end_layout
 
 \begin_layout Itemize
@@ -2722,7 +2745,7 @@ to
 The last argument passed to the launcher is always the qualified name of
  the main class of the application to be launched (for example, 
 \family typewriter
-tc.samples.ui.gadgets.UIGadgets
+tc.samples.ui.controls.UIControls
 \family default
 ).
 \end_layout
@@ -2754,7 +2777,7 @@ tc.jar
 \family default
  located at 
 \family typewriter
-TotalCrossSDK/dist
+%TOTALCROSS_HOME%/dist
 \family default
 .
 \end_layout
@@ -2781,9 +2804,7 @@ To run a Java application from a jar file, you must specify the source
  to the Java classpath, e.g.
  
 \family typewriter
-java -classpath C:
-\backslash
-TotalCrossSDK
+java -classpath %TOTALCROSS_HOME%
 \backslash
 dist
 \backslash
@@ -2815,8 +2836,8 @@ tc.Deploy
 \family typewriter
 .tcz
 \family default
- and will be available in the stack trace (all other debug information are
- discarded).
+ and will be available in the stack trace (all other debug information is
+ discarded in the default compilation).
  
 \family typewriter
 .bmp
@@ -2960,18 +2981,10 @@ MainWindow
 \family default
 , 
 \family typewriter
-Conduit
-\family default
-, 
-\family typewriter
 TestSuite
 \family default
  or 
 \family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
 GameEngineMainWindow
 \family default
 .
@@ -3307,7 +3320,7 @@ platforms
 \family default
  : Pass a list of comma-separated platforms to let the generated file be
  installed.
- Currently works on for Android.
+ Currently works on Android.
  E.G.: 
 \family typewriter
 /i android
@@ -3399,10 +3412,21 @@ release+litebase
 \family default
  (where demo/release are the virtual machine types you want to include:
  the time-limited demonstration, or the release that requires activation).
- The DEMO SDKs must be in the path or in the TOTALCROSS_HOME/ LITEBASE_HOME
+ The DEMO SDKs must be in the path or in the 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+/
+\family typewriter
+ LITEBASE_HOME
+\family default
  environment variables, and the RELEASE SDKs must be in the same parent
  folder of the DEMO ones.
- Example: if TOTALCROSS_HOME points to 
+ Example: if 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+ points to 
 \family typewriter
 t:
 \backslash
@@ -3419,10 +3443,22 @@ sdks
 TotalCrossVMS
 \family default
 .
- If the TOTALCROSS_HOME and LITEBASE_HOME are not set, then all SDKs must
- be at the top-level folder of the 
+ If the
+\begin_inset Newline newline
+\end_inset
+
+
 \family typewriter
-TotalCrossSDK
+TOTALCROSS_HOME
+\family default
+ and 
+\family typewriter
+LITEBASE_HOME
+\family default
+ variables are not set, then all SDKs must be at the top-level folder of
+ the 
+\family typewriter
+%TOTALCROSS_HOME%
 \backslash
 etc
 \family default
@@ -3576,6 +3612,7 @@ list
 \family default
 : Comma-separated list of class names that must be excluded (in a starts-with
  manner).
+ Use this to exclude classes included in an already created library.
 \end_layout
 
 \end_deeper
@@ -3844,7 +3881,7 @@ Company
 \begin_inset space ~
 \end_inset
 
-Informations
+Information
 \end_layout
 
 \begin_layout Labeling
@@ -3895,8 +3932,7 @@ Resulting
 \begin_inset space ~
 \end_inset
 
-property "This is my company information" will be used as the company's
- information.
+property "My company information" will be used as the company's information.
  You may also use this in an 
 \begin_inset Quotes eld
 \end_inset
