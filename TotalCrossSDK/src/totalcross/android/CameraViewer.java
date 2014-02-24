@@ -34,6 +34,7 @@ import android.os.*;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
+import android.content.res.*;
 
 public class CameraViewer extends Activity // guich@tc126_34
 {
@@ -42,7 +43,23 @@ public class CameraViewer extends Activity // guich@tc126_34
       Preview(Context context)
       {
          super(context);
-         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+		 if (allowRotation) 
+		 { 
+			switch (getResources().getConfiguration().orientation)
+			{
+			   case Configuration.ORIENTATION_PORTRAIT:
+			      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				  break;
+			   case Configuration.ORIENTATION_LANDSCAPE:
+			      AndroidUtils.debug("" + getWindowManager().getDefaultDisplay().getRotation());
+			      if (getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270)
+				     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE); 
+				  else 
+				     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+		    }
+		 }
+		 else
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
          // Install a SurfaceHolder.Callback so we get notified when the
          // underlying surface is created and destroyed.
          holder = getHolder(); 
@@ -123,6 +140,7 @@ public class CameraViewer extends Activity // guich@tc126_34
    SurfaceHolder holder; 
    Camera camera; 
    boolean isMovie;
+   boolean allowRotation;
    String fileName;
    int stillQuality, width,height;
    Preview preview; 
@@ -215,6 +233,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       stillQuality = b.getInt("quality");
       width = b.getInt("width");
       height = b.getInt("height");
+	  allowRotation = b.getBoolean("allowRotation");
 
       isMovie = fileName.endsWith(".3gp");
 
