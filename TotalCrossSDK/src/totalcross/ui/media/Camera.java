@@ -96,8 +96,9 @@ public class Camera
    
    /**
     * This field is false by default so that the default camera orientation is still landscape. 
-	* If this is set to true, the camera orientation will follow the device orientation.
-	*/
+	 * If this is set to true, the camera orientation will follow the device orientation.
+	 * Used on Android only.
+	 */
    public boolean allowRotation;
 
    /** Used in the cameraMode member. */
