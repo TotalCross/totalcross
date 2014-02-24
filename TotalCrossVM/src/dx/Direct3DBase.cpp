@@ -172,7 +172,13 @@ int Direct3DBase::runCommands()
                fillRectImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
                break;
             case D3DCMD_DRAWLINE:
-               drawLineImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
+               if (c->a == c->c) // x1 == x2?
+                  fillRectImpl(c->a, c->b, c->a + 1, c->d, c->c1.pixel);
+               else
+               if (c->b == c->d) // y1 == y2
+                  fillRectImpl(c->a, c->b, c->c, c->b + 1, c->c1.pixel);
+               else
+                  drawLineImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
                break;
             case D3DCMD_DRAWTEXTURE:
                drawTextureImpl(c->textureId, c->a, c->b, c->c, c->d, c->e, c->f, c->g, c->h, c->flags.hasColor ? &c->c1 : null, c->flags.hasClip ? c->clip : null);
@@ -555,7 +561,7 @@ void Direct3DBase::drawPixelsImpl(int *x, int *y, int count, int color)
    {
       cubeVertices[i].pos = XMFLOAT2((float)*x, (float)*y);
       i++;
-      cubeVertices[i].pos = XMFLOAT2((float)(*x)+1, (float)*y);
+      cubeVertices[i].pos = XMFLOAT2((float)(*x)+1, ((float)*y)+1);
       i++;
       x++; y++;
    }
