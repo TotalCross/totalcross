@@ -128,15 +128,22 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
 void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
 {
    std::lock_guard<std::mutex> lock(listMutex);
-   int32 *nx, *ny;
-   nx = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
-   ny = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
    D3DCommand cmd = newCommand();
    cmd->cmd = D3DCMD_DRAWPIXELS;
-   xmemmove(nx, x, count * sizeof(int32));
-   xmemmove(ny, y, count * sizeof(int32));
-   cmd->a = (int)nx;
-   cmd->b = (int)ny;
+   if (count == 1) // optimization to prevent allocation of 1 point. can be changed in the future to use up to 3 points
+   {
+      cmd->a = x[0];
+      cmd->b = x[1];
+   }
+   else
+   {
+      int32 *nx = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
+      int32 *ny = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
+      xmemmove(nx, x, count * sizeof(int32));
+      xmemmove(ny, y, count * sizeof(int32));
+      cmd->a = (int)nx;
+      cmd->b = (int)ny;
+   }
    cmd->c = count;
    cmd->c1.pixel = color;
    listAdd(&cmdFill, cmd);
@@ -153,6 +160,7 @@ void Direct3DBase::swapLists()
    listSetEmpty(&cmdFill);
 }
 
+int dline;
 int Direct3DBase::runCommands()
 {
    std::lock_guard<std::mutex> lock(listMutex);
@@ -184,9 +192,14 @@ int Direct3DBase::runCommands()
                drawTextureImpl(c->textureId, c->a, c->b, c->c, c->d, c->e, c->f, c->g, c->h, c->flags.hasColor ? &c->c1 : null, c->flags.hasClip ? c->clip : null);
                break;
             case D3DCMD_DRAWPIXELS:
-               int *x = (int*)c->a;
-               int *y = (int*)c->b;
-               drawPixelsImpl(x, y, c->c, c->c1.pixel);
+               if (c->c == 1)
+                  drawPixelsImpl(&c->a, &c->b, c->c, c->c1.pixel);
+               else
+               {
+                  int *x = (int*)c->a;
+                  int *y = (int*)c->b;
+                  drawPixelsImpl(x, y, c->c, c->c1.pixel);
+               }
                break;
          }
       }
