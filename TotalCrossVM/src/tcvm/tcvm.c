@@ -367,10 +367,10 @@ mainLoop:
       OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) REGD(reg64)[code->field_reg.reg] = FIELD_DBL(o, OBJ_CLASS(o), retv); NEXT_OP
       OPCODE(MOV_static_regI)     GET_STATIC_FIELD(RegI) ((int32*) sf)[0] = regI[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((Object*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
-      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((int64*)sf)[0] = REGL(reg64)[code->static_reg.reg]; NEXT_OP
+      OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((double*)sf)[0] = REGD(reg64)[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_regI_static)     GET_STATIC_FIELD(RegI) regI[code->static_reg.reg] = ((int32*) sf)[0]; NEXT_OP
       OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((Object*)sf)[0]; NEXT_OP
-      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGL(reg64)[code->static_reg.reg] = ((int64*)sf)[0]; NEXT_OP
+      OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGD(reg64)[code->static_reg.reg] = ((double*)sf)[0]; NEXT_OP
       OPCODE(ADD_regI_regI_regI)  regI[code->reg_reg_reg.reg0] = regI[code->reg_reg_reg.reg1] + regI[code->reg_reg_reg.reg2]; NEXT_OP
       OPCODE(ADD_regI_s12_regI)   regI[code->reg_reg_s12.reg0] = regI[code->reg_reg_s12.reg1] + (int32)code->reg_reg_s12.s12; NEXT_OP
       OPCODE(ADD_regD_regD_regD)  REGD(reg64)[code->reg_reg_reg.reg0] = REGD(reg64)[code->reg_reg_reg.reg1] + REGD(reg64)[code->reg_reg_reg.reg2]; NEXT_OP
