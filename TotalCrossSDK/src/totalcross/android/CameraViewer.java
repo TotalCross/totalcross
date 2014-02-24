@@ -43,8 +43,21 @@ public class CameraViewer extends Activity // guich@tc126_34
       Preview(Context context)
       {
          super(context);
-		 if (allowRotation && getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		 if (allowRotation) 
+		 { 
+			switch (getResources().getConfiguration().orientation)
+			{
+			   case Configuration.ORIENTATION_PORTRAIT:
+			      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				  break;
+			   case Configuration.ORIENTATION_LANDSCAPE:
+			      AndroidUtils.debug("" + getWindowManager().getDefaultDisplay().getRotation());
+			      if (getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270)
+				     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE); 
+				  else 
+				     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+		    }
+		 }
 		 else
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
          // Install a SurfaceHolder.Callback so we get notified when the
