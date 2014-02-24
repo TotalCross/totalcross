@@ -32,8 +32,8 @@ namespace PhoneDirect3DXamlAppInterop
       private int turnedState;
 
       // GPS
-      private Geolocator geolocator = null;
-      private bool tracking = false;
+      private Geolocator geolocator;
+      private bool tracking;
       private PositionStatus status = PositionStatus.NotInitialized;
       private double latitude; // GPS_latitude()               
       private double longitude; // GPS_longitude()                  
@@ -52,7 +52,7 @@ namespace PhoneDirect3DXamlAppInterop
       private String lowSignalReason = ""; // GPS_lowSignalReason()
 
       // File
-      private bool cardIsInserted = false;
+      private bool cardIsInserted;
       private int semaphore = 1;
 
       public double getFontHeightCS()
@@ -77,8 +77,6 @@ namespace PhoneDirect3DXamlAppInterop
       public MainPage mp { set; get; }
       public void callDraw()
       {
-         //mp.Background.Transform.Inverse = true;
-         //mp.UpdateLayout();
       }
 
       public void privateAlertCS(String str) // Vm
@@ -91,18 +89,12 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void vmSetAutoOffCS(bool enable) // Vm
       {
-         if (enable)
-            PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode
-                                                                           = IdleDetectionMode.Enabled;
-         else
-            PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode
-                                                                           = IdleDetectionMode.Disabled;
+         PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode = enable ? IdleDetectionMode.Enabled : IdleDetectionMode.Disabled;
       }
 
       public void dialNumberCS(String number) // Dial
       {
          PhoneCallTask phoneCallTask = new PhoneCallTask();
-
          phoneCallTask.PhoneNumber = number;
          phoneCallTask.Show();
       }
@@ -110,7 +102,6 @@ namespace PhoneDirect3DXamlAppInterop
       public void smsSendCS(String message, String destination) // SMS
       {
          SmsComposeTask smsComposeTask = new SmsComposeTask();
-
          smsComposeTask.To = destination;
          smsComposeTask.Body = message;
          smsComposeTask.Show();
@@ -152,7 +143,6 @@ namespace PhoneDirect3DXamlAppInterop
       {
          try
          {
-
             if (!tracking)
             {
                (geolocator = new Geolocator()).DesiredAccuracy = PositionAccuracy.High;
@@ -192,7 +182,7 @@ namespace PhoneDirect3DXamlAppInterop
             flags |= 4;
          if (velocity != null && velocity != 4.9E-324)
             flags |= 8;
-         // Não tem 16 pois não tem número de satélites.
+         // 16 = satellites
          if (pdop != null && pdop != 4.9E-324)
             flags |= 32;
 
@@ -207,103 +197,43 @@ namespace PhoneDirect3DXamlAppInterop
          tracking = false;
       }
 
-      public double getLatitude()
-      {
-         return latitude;
-      }
+      public double getLatitude()   {return latitude;}
+      public double getLongitude()  {return longitude;}
+      public double getDirection()  {return (double)direction;}      
+      public double getVelocity()   {return (double)velocity;}
+      public int getYear()          {return year;}
+      public int getMonth()         {return month;}
+      public int getDay()           {return day;}
+      public int getHour()          {return hour;}
+      public int getMinute()        {return minute;}
+      public int getSecond()        {return second;}
+      public int getMilliSecond()   {return milliSecond;}
+      public double getPdop()       {return (double)pdop;}
 
-      public double getLongitude()
-      {
-         return longitude;
-      }
-
-      public double getDirection()
-      {
-         return (double)direction;
-      }
-      
-      public double getVelocity()
-      {
-         return (double)velocity;
-      }
-
-      public int getYear()
-      {
-         return year;
-      }
-
-      public int getMonth()
-      {
-         return month;
-      }
-
-      public int getDay()
-      {
-         return day;
-      }
-
-      public int getHour()
-      {
-         return hour;
-      }
-
-      public int getMinute()
-      {
-         return minute;
-      }
-
-      public int getSecond()
-      {
-         return second;
-      }
-
-      public int getMilliSecond()
-      {
-         return milliSecond;
-      }
-
-      public String getMessageReceived()
-      {
-         return messageReceived;
-      }
-
-      public double getPdop()
-      {
-         return (double)pdop;
-      }
-
-      public String getLowSignalReason()
-      {
-         return lowSignalReason;
-      }
+      public String getMessageReceived()  {return messageReceived;}
+      public String getLowSignalReason() {return lowSignalReason;}
 
       private void geolocator_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
       {
          switch (status = args.Status)
          {
             case PositionStatus.Disabled:
-               // the application does not have the right capability or the location master switch is off
-               messageReceived = "location is disabled in phone settings";
+               messageReceived = "location is disabled in phone settings"; // the application does not have the right capability or the location master switch is off
                break;
             case PositionStatus.Initializing:
-               // the geolocator started the tracking operation
-               messageReceived = "initializing";
+               messageReceived = "initializing"; // the geolocator started the tracking operation
                break;
             case PositionStatus.NoData:
-               // the location service was not able to acquire the location
-               messageReceived = "no data";
+               messageReceived = "no data"; // the location service was not able to acquire the location
                break;
             case PositionStatus.Ready:
-               // the location service is generating geopositions as specified by the tracking parameters
-               messageReceived = "ready";
+               messageReceived = "ready"; // the location service is generating geopositions as specified by the tracking parameters
                break;
             case PositionStatus.NotAvailable:
-               // not used in WindowsPhone, Windows desktop uses this value to signal that there is no hardware capable to acquire location information
-               messageReceived = "not available";
+               messageReceived = "not available"; // not used in WindowsPhone, Windows desktop uses this value to signal that there is no hardware capable to acquire location information
                break;
             case PositionStatus.NotInitialized:
-               // the initial state of the geolocator, once the tracking operation is stopped by the user the geolocator moves back to this state
-               messageReceived = "";
+               messageReceived = ""; // the initial state of the geolocator, once the tracking operation is stopped by the user the geolocator moves back to this state
                break;
          }
       }
@@ -329,11 +259,9 @@ namespace PhoneDirect3DXamlAppInterop
       private async Task sdCardTask()
       {
          semaphore = 0;
-
          ExternalStorageDevice sdCard = (await ExternalStorage.GetExternalStorageDevicesAsync()).FirstOrDefault();
          if (sdCard != null && sdCard.RootFolder != null)
             cardIsInserted = true;
-         
          semaphore = 1;
       }
 
@@ -341,14 +269,13 @@ namespace PhoneDirect3DXamlAppInterop
       {
          if (!cardIsInserted)
             sdCardTask();
-         while (semaphore == 0);
+         while (semaphore == 0) { }
          return cardIsInserted;
       }
     }
     public partial class MainPage : PhoneApplicationPage
     {
-        private Direct3DBackground m_d3dBackground = null;
-
+        private Direct3DBackground m_d3dBackground;
 
         // Constructor
         public MainPage()
@@ -360,21 +287,12 @@ namespace PhoneDirect3DXamlAppInterop
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (m_d3dBackground == null)
-            {
-                e.Cancel = false;
-            }
-            else
-            {
-                e.Cancel = m_d3dBackground.backKeyPress();
-                //throw new NotImplementedException();
-            }
+            e.Cancel = m_d3dBackground != null && m_d3dBackground.backKeyPress();
         }
 
         void MainPage_LostFocus(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("lalala");
-            //throw new NotImplementedException();
         }
 
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
@@ -386,21 +304,15 @@ namespace PhoneDirect3DXamlAppInterop
                 cs.getFontHeightCS();
                 m_d3dBackground = new Direct3DBackground(cs);
 
+                float w = (float)Application.Current.Host.Content.ActualWidth;
+                float h = (float)Application.Current.Host.Content.ActualHeight;
+                float k = (float)Application.Current.Host.Content.ScaleFactor;
                 // Set window bounds in dips
-                m_d3dBackground.WindowBounds = new Windows.Foundation.Size(
-                    (float)Application.Current.Host.Content.ActualWidth,
-                    (float)Application.Current.Host.Content.ActualHeight
-                    );
-
+                m_d3dBackground.WindowBounds = new Windows.Foundation.Size(w,h);
                 // Set native resolution in pixels
-                m_d3dBackground.NativeResolution = new Windows.Foundation.Size(
-                    (float)Math.Floor(Application.Current.Host.Content.ActualWidth * Application.Current.Host.Content.ScaleFactor / 100.0f + 0.5f),
-                    (float)Math.Floor(Application.Current.Host.Content.ActualHeight * Application.Current.Host.Content.ScaleFactor / 100.0f + 0.5f)
-                    );
-
+                m_d3dBackground.NativeResolution = new Windows.Foundation.Size((float)Math.Floor(w * k / 100.0f + 0.5f), (float)Math.Floor(h * k / 100.0f + 0.5f));
                 // Set render resolution to the full native resolution
                 m_d3dBackground.RenderResolution = m_d3dBackground.NativeResolution;
-
                 // Hook-up native component to DrawingSurfaceBackgroundGrid
                 DrawingSurfaceBackground.SetBackgroundContentProvider(m_d3dBackground.CreateContentProvider());
                 DrawingSurfaceBackground.SetBackgroundManipulationHandler(m_d3dBackground);

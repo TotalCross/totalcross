@@ -39,14 +39,9 @@ bool Direct3DBackground::backKeyPress()
 // IDrawingSurfaceManipulationHandler
 void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ manipulationHost)
 {
-	manipulationHost->PointerPressed +=
-		ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerPressed);
-
-	manipulationHost->PointerMoved +=
-		ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerMoved);
-
-	manipulationHost->PointerReleased +=
-		ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerReleased);
+	manipulationHost->PointerPressed  += ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerPressed);
+	manipulationHost->PointerMoved    += ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerMoved);
+	manipulationHost->PointerReleased += ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerReleased);
    renderer->eventsInitialized = true;
 }
 
@@ -61,7 +56,7 @@ static unsigned long long lastMove;
 void Direct3DBackground::OnPointerMoved(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
 {
    unsigned long long ts = args->CurrentPoint->Timestamp;
-   if ((ts-lastMove) > 20) // ignore fast moves
+   if ((ts - lastMove) > 20) // ignore fast moves
    {
       lastMove = ts;
       auto pos = args->CurrentPoint->Position;
