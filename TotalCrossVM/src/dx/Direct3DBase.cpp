@@ -53,8 +53,6 @@ void listSetEmpty(D3DCommands* s)
    s->head = s->tail = NULL;
 }
 
-int allocated;
-
 D3DCommand Direct3DBase::newCommand()
 {
    return newXH(D3DCommand,cmdFill.heap);
@@ -160,7 +158,6 @@ void Direct3DBase::swapLists()
    listSetEmpty(&cmdFill);
 }
 
-int dline;
 int Direct3DBase::runCommands()
 {
    std::lock_guard<std::mutex> lock(listMutex);

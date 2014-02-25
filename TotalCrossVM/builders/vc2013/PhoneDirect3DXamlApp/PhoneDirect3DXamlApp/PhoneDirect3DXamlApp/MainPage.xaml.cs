@@ -33,7 +33,6 @@ namespace PhoneDirect3DXamlAppInterop
 
       // GPS
       private Geolocator geolocator;
-      private bool tracking;
       private PositionStatus status = PositionStatus.NotInitialized;
       private double latitude; // GPS_latitude()               
       private double longitude; // GPS_longitude()                  
@@ -143,24 +142,22 @@ namespace PhoneDirect3DXamlAppInterop
       {
          try
          {
-            if (!tracking)
+            if (geolocator == null)
             {
-               (geolocator = new Geolocator()).DesiredAccuracy = PositionAccuracy.High;
+               geolocator = new Geolocator();
+               geolocator.DesiredAccuracy = PositionAccuracy.High;
                geolocator.DesiredAccuracyInMeters = 10;
                geolocator.MovementThreshold = 10; // The units are meters.
-
                geolocator.StatusChanged += geolocator_StatusChanged;
                geolocator.PositionChanged += geolocator_PositionChanged;
-               tracking = true;
             }
+            return true;
          }
          catch (Exception)
          {
             nativeStopGPSCS();
             return false;
          }
-
-         return true;
       }
 
       public int nativeUpdateLocationCS() // GPS
@@ -194,7 +191,6 @@ namespace PhoneDirect3DXamlAppInterop
          geolocator.PositionChanged -= geolocator_PositionChanged;
          geolocator.StatusChanged -= geolocator_StatusChanged;
          geolocator = null;
-         tracking = false;
       }
 
       public double getLatitude()   {return latitude;}
