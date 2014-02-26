@@ -19,6 +19,7 @@ struct D3DCommands
    D3DCommand head;
    D3DCommand tail;
    Heap heap;
+   int id;
 } cmdFill, cmdDraw;
 
 // lists
@@ -26,6 +27,7 @@ void listInit(D3DCommands* c)
 {
    c->head = c->tail = NULL;
    c->heap = heapCreateB(false);
+   c->id = 1;
 }
 void listAdd(D3DCommands* s, D3DCommand p)
 {
@@ -161,6 +163,7 @@ void Direct3DBase::swapLists()
 int Direct3DBase::runCommands()
 {
    std::lock_guard<std::mutex> lock(listMutex);
+   //debug("showing %d", cmdDraw.id);
    int n = 0;
    if (!listIsEmpty(&cmdDraw))
    {
@@ -317,7 +320,6 @@ void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 	if (d3dDevice.Get() != device)
 	{
 		d3dDevice->GetDeviceRemovedReason();
-      eventsInitialized = false;
 		d3dDevice = device;
 		createDeviceResources();
 		// Force call to CreateWindowSizeDependentResources.
@@ -614,7 +616,7 @@ void Direct3DBase::drawPixelsImpl(int *x, int *y, int count, int color)
 
 bool Direct3DBase::isLoadCompleted() 
 {
-   return loadCompleted == TASKS_COMPLETED && eventsInitialized;
+   return loadCompleted == TASKS_COMPLETED;
 }
 
 void Direct3DBase::updateScreen()

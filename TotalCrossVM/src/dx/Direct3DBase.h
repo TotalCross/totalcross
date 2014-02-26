@@ -85,7 +85,6 @@ internal:
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
 
 	bool updateScreenRequested;
-   bool eventsInitialized;
 	void initialize(_In_ ID3D11Device1* device);
 	void createDeviceResources();
    void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
