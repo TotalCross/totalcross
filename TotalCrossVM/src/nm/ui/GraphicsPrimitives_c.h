@@ -2103,7 +2103,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    int32 screenW, screenH, shiftY = 0, shiftH = 0;
    TCClass window;
    PixelConv gray;
+#ifndef __gl2_h_
    int32 y, count;
+#endif
 
    gray.pixel = *shiftScreenColorP;
 
@@ -2569,7 +2571,7 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
 #else
    bool optimize = false;
 #endif
-   int32 ri, gi, bi, rf, gf, bf, stage=0,k;
+   int32 ri, gi, bi, rf, gf, bf, stage=0;
 
    if (startX > endX)
    {
@@ -3013,7 +3015,9 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
    int32 rr,gg,bb,sx,sy,i;
    Pixel foreColor;
    PixelConv pc;
+#ifndef __gl2_h_
    int32 ii, i2;
+#endif
    pc.a = 255;      
 #ifdef __gl2_h_
    flushPixels(2);
