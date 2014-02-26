@@ -18,6 +18,7 @@ using Microsoft.Phone.Net.NetworkInformation;
 using PhoneDirect3DXamlAppComponent;
 using Windows.Devices.Geolocation;
 using Windows.Networking.Proximity;
+using System.Diagnostics;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -25,8 +26,6 @@ namespace PhoneDirect3DXamlAppInterop
    {
       // Workarround vars
       Grid root;
-      TextBlock tx;
-      private Thickness awayMargin; // any new  programaticallycreated controller that should not be placed on screen should do "newController.margin = awayMargin;"
 
       // RadioDevice
       private int turnedState;
@@ -53,29 +52,43 @@ namespace PhoneDirect3DXamlAppInterop
       // File
       private bool cardIsInserted;
       private int semaphore = 1;
+      
+      // user interface
+      private double fontHeight;
+      public TextBox tbox;
 
-      public double getFontHeightCS()
-      {
-          if (tx == null)
-          {
-              tx = new TextBlock();
-              tx.Text = "@";
-
-              tx.Margin = awayMargin;
-              root.Children.Add(tx);
-          }
-
-          return tx.ActualHeight;
-      }
+      public MainPage mp { set; get; }
 
       public CSWrapper(Grid g)
       {
           this.root = g;
-          this.awayMargin = new Thickness(500, 0, 0, 0);
+          // used to get input from keyboard
+          tbox = new TextBox();
+          root.Children.Add(tbox);
+          tbox.Visibility = Visibility.Collapsed;
+          tbox.Margin = new Thickness(0, g.ActualHeight * 10, 0, 0);
+          // get native font size
+          fontHeight = tbox.FontSize;
       }
-      public MainPage mp { set; get; }
-      public void callDraw()
+
+      public double getFontHeightCS()
       {
+          return fontHeight;
+      }
+
+      public void privateWindowSetSIP(bool visible)
+      {
+          root.Dispatcher.BeginInvoke((Action)(() => // must run on ui thread
+          {
+              if (!visible)
+                  tbox.Visibility = System.Windows.Visibility.Collapsed;
+              else
+              {
+                  tbox.Text = "";
+                  tbox.Visibility = System.Windows.Visibility.Visible;
+                  tbox.Focus();
+              }
+          }));
       }
 
       public void privateAlertCS(String str) // Vm
@@ -268,50 +281,119 @@ namespace PhoneDirect3DXamlAppInterop
          while (semaphore == 0) { }
          return cardIsInserted;
       }
-    }
+   }
+
+    ////////////////////////////////////////////////////////////////////////////////
+
     public partial class MainPage : PhoneApplicationPage
     {
-        private Direct3DBackground m_d3dBackground;
+        private Direct3DBackground d3dBackground;
+        private int specialKey;
+        private int keyboardH;
+        private long lastTick;
+        private CSWrapper cs;
+        private static MainPage instance;
 
         // Constructor
         public MainPage()
         {
+            instance = this;
             InitializeComponent();
-            this.LostFocus += MainPage_LostFocus;
             this.BackKeyPress += MainPage_BackKeyPress;
+            this.MouseMove += MainPage_MouseMove;
+            this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
+            this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
+            this.SizeChanged += MainPage_SizeChanged;
+            BeginListenForSIPChanged();
+        }
+
+        private void BeginListenForSIPChanged()
+        {
+           System.Windows.Data.Binding b = new System.Windows.Data.Binding("Y");
+           b.Source = (((App.Current as App).RootFrame).RenderTransform as TransformGroup).Children[0] as TranslateTransform;
+           SetBinding(RootFrameTransformProperty, b);
+        }
+
+        public static readonly DependencyProperty RootFrameTransformProperty = DependencyProperty.Register("RootFrameTransform",typeof(double),typeof(MainPage),new PropertyMetadata(OnRootFrameTransformChanged));
+        static void OnRootFrameTransformChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+           double newvalue = (double)e.NewValue;
+           if (newvalue == (int)newvalue) // finished?
+           {
+               instance.keyboardH = -(int)newvalue; // when 0, keyboard is hidden
+               instance.d3dBackground.OnScreenChanged(instance.keyboardH, 0, 0);
+           }
+        }
+
+        void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Debug.WriteLine(e.PreviousSize + " -> " + e.NewSize);
+        }
+
+        void MainPage_KeyUp(object sender, KeyEventArgs e)
+        {
+        }
+
+        void MainPage_KeyDown(object sender, KeyEventArgs e)
+        {
+            int key = e.PlatformKeyCode;
+            specialKey = key < 32 ? key : 0;
+        }
+        
+        void tbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            d3dBackground.OnKeyPressed(specialKey != 0 ? specialKey : cs.tbox.Text.ElementAt(cs.tbox.SelectionStart-1));
+        }
+
+        void MainPage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            Point p = e.GetPosition(this);
+            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y);
+        }
+
+        void MainPage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            Point p = e.GetPosition(this);
+            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y);
+        }
+
+        void MainPage_MouseMove(object sender, MouseEventArgs e)
+        {
+            long tick = DateTime.Now.Ticks / 10000;
+            if ((tick - lastTick) > 20) // ignore fast moves
+            {
+                lastTick = tick;
+                Point p = e.GetPosition(this);
+                d3dBackground.OnPointerMoved((int)p.X, (int)p.Y);
+            }
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            e.Cancel = m_d3dBackground != null && m_d3dBackground.backKeyPress();
-        }
-
-        void MainPage_LostFocus(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("lalala");
+            e.Cancel = d3dBackground != null && d3dBackground.backKeyPress();
         }
 
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
         {
-            if (m_d3dBackground == null)
+            if (d3dBackground == null)
             {
-                CSWrapper cs = new CSWrapper(LayoutRoot);
+                cs = new CSWrapper(LayoutRoot);
                 cs.mp = this;
-                cs.getFontHeightCS();
-                m_d3dBackground = new Direct3DBackground(cs);
+                d3dBackground = new Direct3DBackground(cs);
 
-                float w = (float)Application.Current.Host.Content.ActualWidth;
-                float h = (float)Application.Current.Host.Content.ActualHeight;
-                float k = (float)Application.Current.Host.Content.ScaleFactor;
-                // Set window bounds in dips
-                m_d3dBackground.WindowBounds = new Windows.Foundation.Size(w,h);
-                // Set native resolution in pixels
-                m_d3dBackground.NativeResolution = new Windows.Foundation.Size((float)Math.Floor(w * k / 100.0f + 0.5f), (float)Math.Floor(h * k / 100.0f + 0.5f));
-                // Set render resolution to the full native resolution
-                m_d3dBackground.RenderResolution = m_d3dBackground.NativeResolution;
-                // Hook-up native component to DrawingSurfaceBackgroundGrid
-                DrawingSurfaceBackground.SetBackgroundContentProvider(m_d3dBackground.CreateContentProvider());
-                DrawingSurfaceBackground.SetBackgroundManipulationHandler(m_d3dBackground);
+                cs.tbox.KeyDown += MainPage_KeyDown;
+                cs.tbox.KeyUp += MainPage_KeyUp;
+                cs.tbox.TextChanged += tbox_TextChanged;
+
+                int w = (int)Application.Current.Host.Content.ActualWidth;
+                int h = (int)Application.Current.Host.Content.ActualHeight;
+                int k = (int)Application.Current.Host.Content.ScaleFactor;
+                d3dBackground.WindowBounds = new Windows.Foundation.Size(w,h);
+                d3dBackground.NativeResolution = new Windows.Foundation.Size(w * k / 100, h * k / 100);
+                d3dBackground.RenderResolution = d3dBackground.NativeResolution;
+                DrawingSurfaceBackground.SetBackgroundContentProvider(d3dBackground.CreateContentProvider());
             }
         }
     }

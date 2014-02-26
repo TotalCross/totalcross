@@ -7,8 +7,6 @@ namespace PhoneDirect3DXamlAppComponent
 {
 	public interface class CSwrapper {
 	public:
-		void callDraw();
-
       // Vm
       void privateAlertCS(Platform::String^ alertMsg);
       void vmSetAutoOffCS(bool enable);
@@ -47,6 +45,7 @@ namespace PhoneDirect3DXamlAppComponent
 
 	  // Etc
 	  double getFontHeightCS();
+     void privateWindowSetSIP(bool visible);
 	};
 }
 

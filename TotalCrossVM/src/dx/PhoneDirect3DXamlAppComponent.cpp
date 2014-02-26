@@ -1,6 +1,7 @@
 #include "Direct3DContentProvider.h"
 
 #include "cppwrapper.h"
+#include "../../event/specialkeys.h"
 
 static float glShiftY = 0.0f;
 
@@ -36,40 +37,36 @@ bool Direct3DBackground::backKeyPress()
 	return keepRunning;
 }
 
-// IDrawingSurfaceManipulationHandler
 void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ manipulationHost)
 {
-	manipulationHost->PointerPressed  += ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerPressed);
-	manipulationHost->PointerMoved    += ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerMoved);
-	manipulationHost->PointerReleased += ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerReleased);
-   renderer->eventsInitialized = true;
 }
 
 // Event Handlers
-void Direct3DBackground::OnPointerPressed(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
+void Direct3DBackground::OnPointerPressed(int x, int y)
 {
-	auto pos = args->CurrentPoint->Position;
-   eventQueuePush(PENEVENT_PEN_DOWN, 0, (int32)(pos.X), (int32)(pos.Y - glShiftY), -1);
+   eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y - (int)glShiftY, -1);
 }
 
-static unsigned long long lastMove;
-void Direct3DBackground::OnPointerMoved(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
+void Direct3DBackground::OnPointerMoved(int x, int y)
 {
-   unsigned long long ts = args->CurrentPoint->Timestamp;
-   if ((ts - lastMove) > 20) // ignore fast moves
-   {
-      lastMove = ts;
-      auto pos = args->CurrentPoint->Position;
-      eventQueuePush(PENEVENT_PEN_DRAG, 0, (int32)(pos.X), (int32)(pos.Y - glShiftY), -1);
-      isDragging = true;
-   }
+   eventQueuePush(PENEVENT_PEN_DRAG, 0, x,y - (int)glShiftY, -1);
+   isDragging = true;
 }
 
-void Direct3DBackground::OnPointerReleased(DrawingSurfaceManipulationHost^ sender, PointerEventArgs^ args)
+void Direct3DBackground::OnPointerReleased(int x, int y)
 {
-	auto pos = args->CurrentPoint->Position;
-   eventQueuePush(PENEVENT_PEN_UP, 0, (int32)(pos.X), (int32)(pos.Y - glShiftY), -1);
+   eventQueuePush(PENEVENT_PEN_UP, 0, x, y - (int)glShiftY, -1);
 	isDragging = false;
+}
+
+void Direct3DBackground::OnKeyPressed(int key)
+{
+   eventQueuePush(key < 32 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key < 32 ? keyDevice2Portable(key) : key, 0, 0, -1);
+}
+
+void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
+{
+   glShiftY = newKeyboardH;
 }
 
 // Interface With Direct3DContentProvider

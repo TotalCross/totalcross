@@ -262,3 +262,8 @@ double getFontHeightCPP()
 {
 	return Direct3DBase::getLastInstance()->csharp->getFontHeightCS();
 }
+
+void privateWindowSetSIP(bool visible)
+{
+   Direct3DBase::getLastInstance()->csharp->privateWindowSetSIP(visible);
+}
