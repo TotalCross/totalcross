@@ -121,11 +121,11 @@ struct THeap
 };
 
 /// create a memory heap, with an optional finalizer
-TC_API Heap privateHeapCreate(const char *file, int32 line);
-typedef Heap (*privateHeapCreateFunc)(const char *file, int32 line);
+TC_API Heap privateHeapCreate(bool add2list, const char *file, int32 line);
+typedef Heap(*privateHeapCreateFunc)(bool add2list, const char *file, int32 line);
 /// destroy the heap and all pointers inside it
-TC_API void heapDestroyPrivate(Heap m);
-typedef void (*heapDestroyPrivateFunc)(Heap m);
+TC_API void heapDestroyPrivate(Heap m, bool added2list);
+typedef void(*heapDestroyPrivateFunc)(Heap m, bool added2list);
 /// alloc a pointer inside the heap
 TC_API void* heapAlloc(Heap m, uint32 size);
 typedef void* (*heapAllocFunc)(Heap m, uint32 size);
@@ -145,9 +145,11 @@ TC_API int32 privateHeapSetJump(Heap m, const char *file, int32 line);
 typedef int32 (*privateHeapSetJumpFunc)(Heap m, const char *file, int32 line);
 
 /// important: m must be set to null before calling the destroy, otherwise strange errors will occur in windows.
-#define heapDestroy(m) do {Heap mm = m; m = null; TCAPI_FUNC(heapDestroyPrivate)(mm);} while (0)
+#define heapDestroy(m) do {Heap mm = m; m = null; TCAPI_FUNC(heapDestroyPrivate)(mm,true);} while (0)
+#define heapDestroyB(m,b) do {Heap mm = m; m = null; TCAPI_FUNC(heapDestroyPrivate)(mm,b);} while (0)
 
-#define heapCreate() TCAPI_FUNC(privateHeapCreate)(__FILE__,__LINE__)
+#define heapCreate() TCAPI_FUNC(privateHeapCreate)(true,__FILE__,__LINE__)
+#define heapCreateB(b) TCAPI_FUNC(privateHeapCreate)(b,__FILE__,__LINE__)
 #define HEAP_ERROR(heap, errorCode) TCAPI_FUNC(privateHeapError)(heap, errorCode, __FILE__,__LINE__)
 #define IF_HEAP_ERROR(heap) if (!heap || TCAPI_FUNC(privateHeapSetJump)(heap, __FILE__,__LINE__) || setjmp(heap->ex.errorJump) != 0)
 

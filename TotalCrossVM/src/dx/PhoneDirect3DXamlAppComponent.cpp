@@ -12,11 +12,17 @@ using namespace Windows::Phone::Input::Interop;
 
 namespace PhoneDirect3DXamlAppComponent
 {
+static Direct3DBackground^ instance;
 
 Direct3DBackground::Direct3DBackground(CSwrapper ^_cs) : cs(_cs)
 {
+   instance = this;
 }
 
+Direct3DBackground^ Direct3DBackground::GetInstance()
+{
+   return instance;
+}
 IDrawingSurfaceBackgroundContentProvider^ Direct3DBackground::CreateContentProvider()
 {
 	ComPtr<Direct3DContentProvider> provider = Make<Direct3DContentProvider>(this);
@@ -41,7 +47,7 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 
 	manipulationHost->PointerReleased +=
 		ref new TypedEventHandler<DrawingSurfaceManipulationHost^, PointerEventArgs^>(this, &Direct3DBackground::OnPointerReleased);
-   m_renderer->eventsInitialized = true;
+   renderer->eventsInitialized = true;
 }
 
 // Event Handlers
@@ -74,43 +80,43 @@ void Direct3DBackground::OnPointerReleased(DrawingSurfaceManipulationHost^ sende
 // Interface With Direct3DContentProvider
 HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
-   m_renderer = ref new Direct3DBase(cs);
-	m_renderer->Initialize(device);
-	m_renderer->UpdateForWindowSizeChange(WindowBounds.Width, WindowBounds.Height);
+   renderer = ref new Direct3DBase(cs);
+	renderer->initialize(device);
+	renderer->updateForWindowSizeChange(WindowBounds.Width, WindowBounds.Height);
 	return S_OK;
 }
 
 void Direct3DBackground::Disconnect()
 {
-	m_renderer = nullptr;
+	renderer = nullptr;
 }
 
 HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize)
 {
 	desiredRenderTargetSize->width = RenderResolution.Width;
 	desiredRenderTargetSize->height = RenderResolution.Height;
-
 	return S_OK;
 }
 
+void Direct3DBackground::RequestNewFrame()
+{
+   Direct3DBackground::RequestAdditionalFrame();
+}
+
+static int lastPaint,lastAcum=10;
 HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
-   if (m_renderer->isLoadCompleted() && m_renderer->startProgramIfNeeded())
+   if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
    {
-      // prepare the screen
-		m_renderer->UpdateDevice(device, context, renderTargetView);
-		m_renderer->PreRender();
-      // wait the screen to be filled
-      for (m_renderer->updateScreenRequested = false; !m_renderer->updateScreenRequested;) Sleep(0);
-      // alert stuff
-      if (m_renderer->alertMsg != nullptr)
-      {
-         Direct3DBase::GetLastInstance()->csharp->privateAlertCS(m_renderer->alertMsg);
-         m_renderer->alertMsg = nullptr;
-      }
-	}
-   Direct3DBackground::RequestAdditionalFrame();
-	return S_OK;
+      int cur = (int32)GetTickCount64();
+      renderer->updateDevice(device, context, renderTargetView);
+      int n = renderer->runCommands();
+      //if (--lastAcum == 0) { debug("%d: %d ms", n, cur - lastPaint); lastAcum = 10; } lastPaint = cur;
+      if (renderer->alertMsg != nullptr) {Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr;} // alert stuff
+      renderer->updateScreenWaiting = false;
+	} 
+   else Direct3DBackground::RequestAdditionalFrame();
+   return S_OK;
 }
 
 }

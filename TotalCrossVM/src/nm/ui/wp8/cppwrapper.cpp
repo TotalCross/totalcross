@@ -133,27 +133,27 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::GetLastInstance()->alertMsg = ref new Platform::String((wchar_t*)jCharStr);
+   Direct3DBase::getLastInstance()->alertMsg = ref new Platform::String((wchar_t*)jCharStr);
 }
 
 void vmSetAutoOffCPP(bool enable)
 {
-   Direct3DBase::GetLastInstance()->csharp->vmSetAutoOffCS(enable);
+   Direct3DBase::getLastInstance()->csharp->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
 {
-   Direct3DBase::GetLastInstance()->csharp->dialNumberCS(ref new Platform::String((wchar_t*)number));
+   Direct3DBase::getLastInstance()->csharp->dialNumberCS(ref new Platform::String((wchar_t*)number));
 }
 
 void smsSendCPP(JCharP szMessage, JCharP szDestination)
 {
-   Direct3DBase::GetLastInstance()->csharp->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
+   Direct3DBase::getLastInstance()->csharp->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
 }
 
 int rdGetStateCPP(int type)
 {
-   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->csharp;
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::getLastInstance()->csharp;
    cs->rdGetStateCS(type);
    return cs->getTurnedState();
 }
@@ -165,12 +165,12 @@ bool isAvailableCPP(int type)
 
 bool nativeStartGPSCPP()
 {
-   return Direct3DBase::GetLastInstance()->csharp->nativeStartGPSCS();
+   return Direct3DBase::getLastInstance()->csharp->nativeStartGPSCS();
 }
 
 int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 {
-   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->csharp;
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::getLastInstance()->csharp;
    int ret = cs->nativeUpdateLocationCS();
    TCObject lastFix = GPS_lastFix(gpsObject);
    Platform::String^ messageReceived;
@@ -205,12 +205,12 @@ int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 
 void nativeStopGPSCPP()
 {
-   Direct3DBase::GetLastInstance()->csharp->nativeStopGPSCS();
+   Direct3DBase::getLastInstance()->csharp->nativeStopGPSCS();
 }
 
 bool fileIsCardInsertedCPP()
 {
-   return Direct3DBase::GetLastInstance()->csharp->fileIsCardInsertedCS();
+   return Direct3DBase::getLastInstance()->csharp->fileIsCardInsertedCS();
 }
 
 bool dxSetup()
@@ -220,45 +220,45 @@ bool dxSetup()
 
 void dxUpdateScreen()
 {
-   Direct3DBase::GetLastInstance()->updateScreen();
+   Direct3DBase::getLastInstance()->updateScreen();
 }
 
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
-   Direct3DBase::GetLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
 }
 
 void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
-   Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
+   Direct3DBase::getLastInstance()->deleteTexture(img, textureId, updateList);
 }
 
 void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
 {
-   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
+   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
 }
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
-	Direct3DBase::GetLastInstance()->drawLine(x1, y1, x2, y2, color);
+	Direct3DBase::getLastInstance()->drawLine(x1, y1, x2, y2, color);
 }
 
-void dxFillShadedRect(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-	Direct3DBase::GetLastInstance()->fillShadedRect(x,y,w,h,c1,c2,horiz);
+	Direct3DBase::getLastInstance()->fillShadedRect(g,x,y,w,h,c1,c2,horiz);
 }
 
 void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
 {
-   Direct3DBase::GetLastInstance()->fillRect(x, y, w, h, color);
+   Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
 }
 
 void dxDrawPixels(int *x, int *y, int count, int color)
 {
-	Direct3DBase::GetLastInstance()->drawPixels(x, y, count, color);
+	Direct3DBase::getLastInstance()->drawPixels(x, y, count, color);
 }
 
 double getFontHeightCPP()
 {
-	return Direct3DBase::GetLastInstance()->csharp->getFontHeightCS();
+	return Direct3DBase::getLastInstance()->csharp->getFontHeightCS();
 }
