@@ -213,14 +213,14 @@ bool fileIsCardInsertedCPP()
    return Direct3DBase::getLastInstance()->csharp->fileIsCardInsertedCS();
 }
 
-bool dxSetup()
-{
-	return true;//XXX
-}
-
 void dxUpdateScreen()
 {
    Direct3DBase::getLastInstance()->updateScreen();
+}
+
+int32 dxGetSipHeight()
+{
+   return Direct3DBase::getLastInstance()->sipHeight;
 }
 
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)

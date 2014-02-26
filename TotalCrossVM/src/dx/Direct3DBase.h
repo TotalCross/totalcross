@@ -119,6 +119,7 @@ internal:
 
    Microsoft::WRL::ComPtr<ID3D11DeviceContext1> d3dcontext;
    bool updateScreenWaiting;
+   int sipHeight;
 
 private:
    int renderPrepared;

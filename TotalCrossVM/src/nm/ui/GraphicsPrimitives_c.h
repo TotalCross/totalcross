@@ -24,7 +24,7 @@
 
 #ifdef __gl2_h_
 extern int32 appW,appH,glShiftY,desiredglShiftY;
-extern float ftransp[16], f255[256];
+extern float ftransp[16];
 extern float *glcoords, *glcolors;
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)

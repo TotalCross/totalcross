@@ -3,8 +3,6 @@
 #include "cppwrapper.h"
 #include "../../event/specialkeys.h"
 
-static float glShiftY = 0.0f;
-
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 using namespace Microsoft::WRL;
@@ -42,20 +40,21 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 }
 
 // Event Handlers
+extern "C" {extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; }
 void Direct3DBackground::OnPointerPressed(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y - (int)glShiftY, -1);
+   eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y + glShiftY, -1);
 }
 
 void Direct3DBackground::OnPointerMoved(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_DRAG, 0, x,y - (int)glShiftY, -1);
+   eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y + glShiftY, -1);
    isDragging = true;
 }
 
 void Direct3DBackground::OnPointerReleased(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_UP, 0, x, y - (int)glShiftY, -1);
+   eventQueuePush(PENEVENT_PEN_UP, 0, x, y + glShiftY, -1);
 	isDragging = false;
 }
 
@@ -64,15 +63,19 @@ void Direct3DBackground::OnKeyPressed(int key)
    eventQueuePush(key < 32 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key < 32 ? keyDevice2Portable(key) : key, 0, 0, -1);
 }
 
+
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
 {
-   glShiftY = newKeyboardH;
+   renderer->sipHeight = newKeyboardH;
+   setShiftYonNextUpdateScreen = true;
 }
 
 // Interface With Direct3DContentProvider
 HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
    renderer = ref new Direct3DBase(cs);
+   appW = (int)WindowBounds.Width;
+   appH = (int)WindowBounds.Height;
 	renderer->initialize(device);
 	renderer->updateForWindowSizeChange(WindowBounds.Width, WindowBounds.Height);
 	return S_OK;

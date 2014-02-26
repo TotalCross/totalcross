@@ -464,10 +464,12 @@ void Direct3DBase::setup()
    d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
 }
 
+extern "C" {extern int32 glShiftY; }
+
 #define f255(x) ((float)x/255.0f)
 void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip)
 {
-   //y += glShiftY;
+   y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
    XMFLOAT4 color2 = XMFLOAT4(f255(c1.r), f255(c1.g), f255(c1.b), f255(c1.a));
@@ -517,6 +519,8 @@ void Direct3DBase::setColor(int color)
 
 void Direct3DBase::drawLineImpl(int x1, int y1, int x2, int y2, int color)
 {
+   y1 += glShiftY;
+   y2 += glShiftY;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -540,6 +544,8 @@ void Direct3DBase::drawLineImpl(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::fillRectImpl(int x1, int y1, int x2, int y2, int color)
 {
+   y1 += glShiftY;
+   y2 += glShiftY;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -571,9 +577,9 @@ void Direct3DBase::drawPixelsImpl(int *x, int *y, int count, int color)
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
    for (i = 0; i < n;)
    {
-      cubeVertices[i].pos = XMFLOAT2((float)*x, (float)*y);
+      cubeVertices[i].pos = XMFLOAT2((float)*x, (float)*y + glShiftY);
       i++;
-      cubeVertices[i].pos = XMFLOAT2((float)(*x)+1, ((float)*y)+1);
+      cubeVertices[i].pos = XMFLOAT2((float)(*x)+1, ((float)*y)+1 + glShiftY);
       i++;
       x++; y++;
    }
@@ -745,9 +751,9 @@ void Direct3DBase::setClip(int32* clip)
       if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
       {
          clipRect.left = clip[0];
-         clipRect.top = clip[1];
+         clipRect.top = clip[1] + glShiftY;
          clipRect.right = clip[2];
-         clipRect.bottom = clip[3];
+         clipRect.bottom = clip[3] + glShiftY;
          d3dcontext->RSSetScissorRects(1, &clipRect);
       }
    }
@@ -766,7 +772,7 @@ void Direct3DBase::drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, 
 
    setClip(clip);
 
-   //dstY += glShiftY;
+   dstY += glShiftY;
    int32 dstY2 = dstY + h;
    int32 dstX2 = dstX + w;
 

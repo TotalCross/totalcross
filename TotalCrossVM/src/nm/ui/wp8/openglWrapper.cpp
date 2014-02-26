@@ -29,11 +29,11 @@ static int32 desiredglShiftY;
 
 #pragma region NonStaticVars
 
-bool setShiftYonNextUpdateScreen;
+int32 setShiftYonNextUpdateScreen;
 
 VoidPs* imgTextures;
-int32 realAppH, appW, appH, glShiftY;
-TCGfloat ftransp[16], f255[256];
+TCGfloat ftransp[16];
+int32 appW, appH, glShiftY;
 int32 flen;
 TCGfloat* glcoords;//[flen*2]; x,y
 TCGfloat* glcolors;//[flen];   alpha
@@ -47,9 +47,7 @@ int32 abs32(int32 a)
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
-#ifndef ANDROID
 	screen->extension = deviceCtx;
-#endif
 	screen->pitch = screen->screenW * screen->bpp / 8;
 	screen->pixels = (uint8*)1;
 	return screen->pixels != null;
@@ -129,11 +127,10 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 	screen->hRes = ascrHRes;
 	screen->vRes = ascrVRes;
 
-   screen->screenW = 480; //XXX lastW must be initialized with the screen bounds
-   screen->screenH = 800;
+   screen->screenW = appW;
+   screen->screenH = appH;
 
-   dxSetup();
-   return checkGLfloatBuffer(mainContext, 10000);
+   return checkGLfloatBuffer(mainContext, 1000);
 }
 
 DWORD32 getGlColor(int32 rgb, int32 a)
@@ -189,15 +186,13 @@ void setShiftYgl()
 {
 	if (setShiftYonNextUpdateScreen) 
    {
-		int32 componentPos;
-		int siph = 100;//XXX MainView::getLastInstance()->GetSIPHeight();
-		componentPos = -(desiredglShiftY - desiredScreenShiftY);     // set both at once
+      int32 sipHeight = dxGetSipHeight();
+		int32 componentPos = desiredScreenShiftY;     // set both at once
 		setShiftYonNextUpdateScreen = false;
-
-		if (componentPos <= 100)//XXX MainView::getLastInstance()->GetSIPHeight())
+		if (sipHeight == 0 || componentPos <= sipHeight)
          glShiftY = 0;
 		else
-			glShiftY = -(componentPos - 100);//XXX MainView::getLastInstance()->GetSIPHeight());
+			glShiftY = -(componentPos - sipHeight);
 	}
 }
 

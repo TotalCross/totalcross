@@ -52,7 +52,7 @@ extern TCGfloat ftransp[16];
 extern TCGfloat* glcoords;//[flen*2]; x,y
 extern TCGfloat* glcolors;//[flen];   alpha
 extern int32 desiredScreenShiftY;
-extern bool setShiftYonNextUpdateScreen;
+extern int32 setShiftYonNextUpdateScreen;
 
 extern VoidPs* imgTextures;
 
