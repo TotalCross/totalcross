@@ -149,7 +149,7 @@ void glDrawPixels(int32 n, int32 rgb)
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
    Pixel colour = getGlColor(rgb, a);
-   float coords[2] = { x, y }, colors[1] = { a };
+   float coords[2] = { (float)x, (float)y }, colors[1] = { a/255.0f };
    dxDrawPixels(coords, colors, 1, colour);
 }
 
@@ -164,6 +164,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    dxFillShadedRect(g, x, y, w, h, c1, c2, horiz);
 }
 
+extern "C" {extern int32 *shiftYfield; }
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
@@ -176,6 +177,7 @@ void setShiftYgl()
          glShiftY = 0;
 		else
 			glShiftY = -(componentPos - sipHeight);
+      *shiftYfield = glShiftY;
 	}
 }
 

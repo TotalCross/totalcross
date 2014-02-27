@@ -43,18 +43,18 @@ void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ man
 extern "C" {extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; }
 void Direct3DBackground::OnPointerPressed(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y + glShiftY, -1);
+   eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y - glShiftY, -1);
 }
 
 void Direct3DBackground::OnPointerMoved(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y + glShiftY, -1);
+   eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y - glShiftY, -1);
    isDragging = true;
 }
 
 void Direct3DBackground::OnPointerReleased(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_UP, 0, x, y + glShiftY, -1);
+   eventQueuePush(PENEVENT_PEN_UP, 0, x, y - glShiftY, -1);
 	isDragging = false;
 }
 
@@ -63,11 +63,12 @@ void Direct3DBackground::OnKeyPressed(int key)
    eventQueuePush(key < 32 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key < 32 ? keyDevice2Portable(key) : key, 0, 0, -1);
 }
 
-
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
 {
    renderer->sipHeight = newKeyboardH;
    setShiftYonNextUpdateScreen = true;
+   if (newKeyboardH == 0)
+      eventQueuePush(CONTROLEVENT_SIP_CLOSED, 9, 0, 0, -1);
 }
 
 // Interface With Direct3DContentProvider

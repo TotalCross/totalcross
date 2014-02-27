@@ -84,7 +84,8 @@ namespace PhoneDirect3DXamlAppInterop
                   tbox.Visibility = System.Windows.Visibility.Collapsed;
               else
               {
-                  tbox.Text = "";
+                  tbox.Text = "A";
+                  tbox.SelectionStart = 1;
                   tbox.Visibility = System.Windows.Visibility.Visible;
                   tbox.Focus();
               }
@@ -339,24 +340,40 @@ namespace PhoneDirect3DXamlAppInterop
             int key = e.PlatformKeyCode;
             specialKey = key < 32 ? key : 0;
         }
-        
+
+        bool ignoreNext;
         void tbox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            d3dBackground.OnKeyPressed(specialKey != 0 ? specialKey : cs.tbox.Text.ElementAt(cs.tbox.SelectionStart-1));
+            if (ignoreNext) { ignoreNext = false; return; }
+            if (specialKey != 0)
+                d3dBackground.OnKeyPressed(specialKey);
+            else
+            {
+                String s = cs.tbox.Text;
+                int idx = cs.tbox.SelectionStart - 1;
+                if (0 <= idx && idx < s.Length)
+                   d3dBackground.OnKeyPressed(s.ElementAt(idx));
+            }
+            if (cs.tbox.Text.Length == 0)
+            {
+                ignoreNext = true;
+                cs.tbox.Text = "A"; // dont leave it empty, otherwise we will not receive a backspace key (and we don't know the TotalCross' edit value)
+                cs.tbox.SelectionStart = 1;
+            }
         }
 
         void MainPage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y);
+            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y - keyboardH); // when the keyboard is open, all events are shifted by its heihgt
         }
 
         void MainPage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y);
+            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y - keyboardH);
         }
 
         void MainPage_MouseMove(object sender, MouseEventArgs e)
@@ -366,7 +383,7 @@ namespace PhoneDirect3DXamlAppInterop
             {
                 lastTick = tick;
                 Point p = e.GetPosition(this);
-                d3dBackground.OnPointerMoved((int)p.X, (int)p.Y);
+                d3dBackground.OnPointerMoved((int)p.X, (int)p.Y - keyboardH);
             }
         }
 
