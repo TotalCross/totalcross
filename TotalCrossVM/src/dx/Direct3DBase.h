@@ -99,7 +99,6 @@ internal:
 	void createDeviceResources();
    void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
 	void createWindowSizeDependentResources();
-	void updateForWindowSizeChange(float width, float height);
 	void preRender(); // resets the screen and set it ready to render
    bool startProgramIfNeeded();
 	void updateScreen();
@@ -129,6 +128,7 @@ internal:
 
    Microsoft::WRL::ComPtr<ID3D11DeviceContext1> d3dcontext;
    bool updateScreenWaiting;
+   int rotatedTo;
    int sipHeight;
 
 private:
@@ -167,7 +167,6 @@ protected private:
 
 	// Cached renderer properties.
 	Windows::Foundation::Size renderTargetSize;
-	Windows::Foundation::Rect windowBounds;
 
 	// TotalCross objects
 	Context local_context;

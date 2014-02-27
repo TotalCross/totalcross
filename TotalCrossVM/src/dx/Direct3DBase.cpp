@@ -307,19 +307,20 @@ void Direct3DBase::createDeviceResources()
 
 }
 
+extern "C" { extern int32 appW, appH; }
+
 void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView)
 {
 	this->renderTargetView = renderTargetView;
    d3dcontext = ic;
+   bool updateWS = rotatedTo >= 0;
 
 	if (d3dDevice.Get() != device)
 	{
 		d3dDevice->GetDeviceRemovedReason();
 		d3dDevice = device;
 		createDeviceResources();
-		// Force call to CreateWindowSizeDependentResources.
-		renderTargetSize.Width  = -1;
-		renderTargetSize.Height = -1;
+      updateWS = true;
 	}
 
 	ComPtr<ID3D11Resource> renderTargetViewResource;
@@ -332,33 +333,26 @@ void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
    D3D11_TEXTURE2D_DESC backBufferDesc;
    backBuffer->GetDesc(&backBufferDesc);
 
-   if (renderTargetSize.Width  != static_cast<float>(backBufferDesc.Width) || renderTargetSize.Height != static_cast<float>(backBufferDesc.Height))
-   {
-      renderTargetSize.Width  = static_cast<float>(backBufferDesc.Width);
-      renderTargetSize.Height = static_cast<float>(backBufferDesc.Height);
+   if (updateWS)
       createWindowSizeDependentResources();
-   }
+   rotatedTo = -1;
 }
 
 // Allocate all memory resources that depend on the window size.
 void Direct3DBase::createWindowSizeDependentResources()
 {
 	// Create a depth stencil view.
-	CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT,static_cast<UINT>(renderTargetSize.Width),static_cast<UINT>(renderTargetSize.Height),1,1,D3D11_BIND_DEPTH_STENCIL);
+	CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT,appW,appH,1,1,D3D11_BIND_DEPTH_STENCIL);
 	ComPtr<ID3D11Texture2D> depthStencil;
 	DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc,nullptr,&depthStencil));
 	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
 	DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil.Get(),&depthStencilViewDesc,&depthStencilView));
 
-   XMStoreFloat4x4(&constantBufferData.projection, XMMatrixOrthographicOffCenterLH(0, windowBounds.Width, windowBounds.Height, 0, -1.0f, 1.0f));
+   XMMATRIX mat = rotatedTo == 0 ?
+      XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f) :
+      XMMatrixMultiply(XMMatrixRotationX(XM_PIDIV2), XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f));
+   XMStoreFloat4x4(&constantBufferData.projection, mat);
    setup();
-}
-
-extern "C" { extern int32 appW, appH; }
-void Direct3DBase::updateForWindowSizeChange(float width, float height)
-{
-	appW = (int32)(windowBounds.Width  = width);
-	appH = (int32)(windowBounds.Height = height);
 }
 
 void Direct3DBase::setup()
@@ -631,7 +625,7 @@ void Direct3DBase::preRender()
 {
    const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    // Set the rendering viewport to target the entire window.
-   CD3D11_VIEWPORT viewport(0.0f, 0.0f, renderTargetSize.Width, renderTargetSize.Height);
+   CD3D11_VIEWPORT viewport(0.0f, 0.0f, (float)appW, (float)appH);
    d3dcontext->RSSetViewports(1, &viewport);
 
    d3dcontext->ClearRenderTargetView(renderTargetView.Get(), clearColor);

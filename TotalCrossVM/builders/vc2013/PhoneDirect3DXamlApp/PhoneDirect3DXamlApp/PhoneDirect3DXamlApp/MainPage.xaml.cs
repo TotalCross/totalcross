@@ -308,6 +308,11 @@ namespace PhoneDirect3DXamlAppInterop
             BeginListenForSIPChanged();
         }
 
+        void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (d3dBackground != null) d3dBackground.OnScreenChanged(-1, (int)e.NewSize.Width, (int)e.NewSize.Height);
+        }
+
         private void BeginListenForSIPChanged()
         {
            System.Windows.Data.Binding b = new System.Windows.Data.Binding("Y");
@@ -324,11 +329,6 @@ namespace PhoneDirect3DXamlAppInterop
                instance.keyboardH = -(int)newvalue; // when 0, keyboard is hidden
                instance.d3dBackground.OnScreenChanged(instance.keyboardH, 0, 0);
            }
-        }
-
-        void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Debug.WriteLine(e.PreviousSize + " -> " + e.NewSize);
         }
 
         void MainPage_KeyUp(object sender, KeyEventArgs e)
@@ -404,12 +404,11 @@ namespace PhoneDirect3DXamlAppInterop
                 cs.tbox.KeyUp += MainPage_KeyUp;
                 cs.tbox.TextChanged += tbox_TextChanged;
 
-                int w = (int)Application.Current.Host.Content.ActualWidth;
-                int h = (int)Application.Current.Host.Content.ActualHeight;
-                int k = (int)Application.Current.Host.Content.ScaleFactor;
-                d3dBackground.WindowBounds = new Windows.Foundation.Size(w,h);
-                d3dBackground.NativeResolution = new Windows.Foundation.Size(w * k / 100, h * k / 100);
-                d3dBackground.RenderResolution = d3dBackground.NativeResolution;
+                int appW = (int)LayoutRoot.ActualWidth, appH = (int)LayoutRoot.ActualHeight;
+                //int scrW = (int)Application.Current.Host.Content.ActualWidth, scrH = (int)Application.Current.Host.Content.ActualHeight;
+                //LayoutRoot.Margin = new Thickness(0, scrH - appH,0,0);
+                d3dBackground.OnScreenChanged(-1, appW, appH);
+                d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
                 DrawingSurfaceBackground.SetBackgroundContentProvider(d3dBackground.CreateContentProvider());
             }
         }

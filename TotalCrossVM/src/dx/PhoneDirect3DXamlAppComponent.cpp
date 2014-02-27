@@ -65,20 +65,32 @@ void Direct3DBackground::OnKeyPressed(int key)
 
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
 {
-   renderer->sipHeight = newKeyboardH;
-   setShiftYonNextUpdateScreen = true;
-   if (newKeyboardH == 0)
-      eventQueuePush(CONTROLEVENT_SIP_CLOSED, 9, 0, 0, -1);
+   if (newKeyboardH >= 0)
+   {
+      renderer->sipHeight = newKeyboardH;
+      setShiftYonNextUpdateScreen = true;
+      if (newKeyboardH == 0)
+         eventQueuePush(CONTROLEVENT_SIP_CLOSED, 0, 0, 0, -1);
+   }
+   else
+   {
+#define SCREEN_CHANGE -1030
+      bool firstTime = appW == 0;
+      appW = newWidth;
+      appH = newHeight;
+      if (!firstTime)
+      {
+         renderer->rotatedTo = newWidth > newHeight ? 1 : 0;
+         eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SCREEN_CHANGE, 0, 0, -1);
+      }
+   }
 }
 
 // Interface With Direct3DContentProvider
 HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
    renderer = ref new Direct3DBase(cs);
-   appW = (int)WindowBounds.Width;
-   appH = (int)WindowBounds.Height;
 	renderer->initialize(device);
-	renderer->updateForWindowSizeChange(WindowBounds.Width, WindowBounds.Height);
 	return S_OK;
 }
 
