@@ -143,31 +143,14 @@ DWORD32 getGlColor(int32 rgb, int32 a)
 void glDrawPixels(int32 n, int32 rgb)
 {
    Pixel colour = getGlColor(rgb,0xFF);
-
-   int* x;
-   int* y;
-
-   x = (int*) xmalloc(n * sizeof(int));
-   y = (int*) xmalloc(n * sizeof(int));
-
-   if (x != null && y != null)
-   {
-      for (int i = 0; i < n; i++)
-      {
-         x[i] = (int)glcoords[pointsPosition + (i * 2)];
-         y[i] = (int)glcoords[pointsPosition + (i * 2 + 1)];
-      }
-
-      dxDrawPixels(x, y, n, colour);
-      xfree(x);
-      xfree(y);
-   }
+   dxDrawPixels(glcoords+pointsPosition, glcolors+pointsPosition, n, colour);
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
    Pixel colour = getGlColor(rgb, a);
-   dxDrawPixels(&x, &y, 1, colour);
+   float coords[2] = { x, y }, colors[1] = { a };
+   dxDrawPixels(coords, colors, 1, colour);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)

@@ -66,7 +66,17 @@ typedef TD3DCommand* D3DCommand;
 struct TD3DCommand
 {
    D3DCMD cmd;
-   int32 a, b, c, d, e, f, g, h;
+   union
+   {
+      struct
+      {
+         int32 a, b, c, d, e, f, g, h;
+      };
+      struct
+      {
+         float *coords, *colors, fcolor, xy[2];
+      };
+   };
    PixelConv c1, c2;
    int32 clip[4];
    int32 textureId[2];
@@ -105,8 +115,8 @@ internal:
    void fillRectImpl(int x1, int y1, int x2, int y2, int color);
    void fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip);
    void drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip);
-   void drawPixels(int *x, int *y, int count, int color);
-   void drawPixelsImpl(int *x, int *y, int count, int color);
+   void drawPixels(float *glcoords, float *glcolors, int count, int color);
+   void drawPixelsImpl(float *glcoords, float *glcolors, int count, int color);
    void setClip(int32* clip);
    void setColor(int color);
    void createTexture();

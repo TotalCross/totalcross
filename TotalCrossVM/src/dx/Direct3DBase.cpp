@@ -125,24 +125,23 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    listAdd(&cmdFill, cmd);
 }
 
-void Direct3DBase::drawPixels(int *x, int *y, int count, int color)
+void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
 {
    std::lock_guard<std::mutex> lock(listMutex);
    D3DCommand cmd = newCommand();
    cmd->cmd = D3DCMD_DRAWPIXELS;
    if (count == 1) // optimization to prevent allocation of 1 point. can be changed in the future to use up to 3 points
    {
-      cmd->a = x[0];
-      cmd->b = x[1];
+      cmd->xy[0] = glcoords[0];
+      cmd->xy[1] = glcoords[1];
+      cmd->fcolor = glcolors[0];
    }
    else
    {
-      int32 *nx = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
-      int32 *ny = (int32*)heapAlloc(cmdFill.heap, count * sizeof(int32));
-      xmemmove(nx, x, count * sizeof(int32));
-      xmemmove(ny, y, count * sizeof(int32));
-      cmd->a = (int)nx;
-      cmd->b = (int)ny;
+      cmd->coords = (float*)heapAlloc(cmdFill.heap, 2 * count * sizeof(float));
+      cmd->colors = (float*)heapAlloc(cmdFill.heap,     count * sizeof(float));
+      xmemmove(cmd->coords, glcoords, 2 * count * sizeof(float));
+      xmemmove(cmd->colors, glcolors,     count * sizeof(float));
    }
    cmd->c = count;
    cmd->c1.pixel = color;
@@ -193,13 +192,9 @@ int Direct3DBase::runCommands()
                break;
             case D3DCMD_DRAWPIXELS:
                if (c->c == 1)
-                  drawPixelsImpl(&c->a, &c->b, c->c, c->c1.pixel);
+                  drawPixelsImpl(c->xy, &c->fcolor, c->c, c->c1.pixel);
                else
-               {
-                  int *x = (int*)c->a;
-                  int *y = (int*)c->b;
-                  drawPixelsImpl(x, y, c->c, c->c1.pixel);
-               }
+                  drawPixelsImpl(c->coords, c->colors, c->c, c->c1.pixel);
                break;
          }
       }
@@ -569,19 +564,18 @@ void Direct3DBase::fillRectImpl(int x1, int y1, int x2, int y2, int color)
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::drawPixelsImpl(int *x, int *y, int count, int color)
+void Direct3DBase::drawPixelsImpl(float* glcoords, float* glcolors, int count, int color)
 {
    int i;
    int n = count * 2;
-   VertexPosition *cubeVertices = new VertexPosition[n];// position, color
+   VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
-   for (i = 0; i < n;)
+   for (i = count; --i >= 0;)
    {
-      cubeVertices[i].pos = XMFLOAT2((float)*x, (float)*y + glShiftY);
-      i++;
-      cubeVertices[i].pos = XMFLOAT2((float)(*x)+1, ((float)*y)+1 + glShiftY);
-      i++;
-      x++; y++;
+      float x = *glcoords++;  // TODO use glcolors
+      float y = *glcoords++;
+      cv->pos = XMFLOAT2(x,     y     + glShiftY); cv++;
+      cv->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); cv++;
    }
    setProgram(PROGRAM_GC);
 
