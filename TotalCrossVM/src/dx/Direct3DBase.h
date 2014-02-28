@@ -120,6 +120,7 @@ internal:
    void createTexture();
    void setup();
    bool isLoadCompleted();
+   void lifeCycle(bool suspending);
    void swapLists();
    D3DCommand newCommand();
    static Direct3DBase ^getLastInstance();
@@ -130,6 +131,7 @@ internal:
    int rotatedTo;
    int sipHeight;
    bool updateWS;
+   bool minimized;
 
 private:
    int renderPrepared;

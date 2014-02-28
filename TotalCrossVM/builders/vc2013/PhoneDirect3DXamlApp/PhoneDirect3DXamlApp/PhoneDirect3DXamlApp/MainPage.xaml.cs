@@ -390,12 +390,12 @@ namespace PhoneDirect3DXamlAppInterop
 
         public void onSuspend()
         {
-            Debug.WriteLine("on suspend");
+            d3dBackground.lifeCycle(true);
         }
 
         public void onResume()
         {
-            Debug.WriteLine("on resume");
+            d3dBackground.lifeCycle(false);
         }
 
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)

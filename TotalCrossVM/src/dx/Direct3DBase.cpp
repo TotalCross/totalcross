@@ -608,8 +608,14 @@ bool Direct3DBase::isLoadCompleted()
    return loadCompleted == TASKS_COMPLETED;
 }
 
+void Direct3DBase::lifeCycle(bool suspending)
+{
+   postOnMinimizeOrRestore(minimized = suspending);
+}
+
 void Direct3DBase::updateScreen()
 {
+   if (minimized) return;
    swapLists();
    updateScreenWaiting = true;
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
@@ -618,6 +624,7 @@ void Direct3DBase::updateScreen()
 
 void Direct3DBase::preRender()
 {
+   if (minimized) return;
    const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
    // Set the rendering viewport to target the entire window.
    CD3D11_VIEWPORT viewport(0.0f, 0.0f, (float)appW, (float)appH);

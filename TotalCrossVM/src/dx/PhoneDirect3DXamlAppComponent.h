@@ -32,6 +32,7 @@ public:
    void OnPointerMoved(int x, int y);
    void OnKeyPressed(int key);
    void OnScreenChanged(int newKeyboardH, int newWidth, int newHeight);
+   void lifeCycle(bool suspending);
 
 protected:
 

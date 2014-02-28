@@ -35,5 +35,7 @@ HRESULT Direct3DContentProvider::PrepareResources(_In_ const LARGE_INTEGER* pres
 
 HRESULT Direct3DContentProvider::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
 {
+
+   debug("draw");
 	return m_controller->Draw(device, context, renderTargetView);
 }

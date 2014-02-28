@@ -97,6 +97,11 @@ void Direct3DBackground::Disconnect()
 	//renderer = nullptr;
 }
 
+void Direct3DBackground::lifeCycle(bool suspending)
+{
+   renderer->lifeCycle(suspending);
+}
+
 HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize)
 {
 	desiredRenderTargetSize->width = RenderResolution.Width;
