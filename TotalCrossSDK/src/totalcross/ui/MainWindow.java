@@ -199,7 +199,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    * Notifies the application that it should stop executing and exit. It will
    * exit after executing any pending events. If the underlying system supports
    * it, the exitCode passed is returned to the program that started the app.
-   * Note: in PalmOS and in AppletViewer/Browser the exitCode is useless.
+   * Note: On AppletViewer/Browser the exitCode is useless.
+   * Note 2: On Android, you can exit softly by using SOFT_EXIT as the exit code. 
    * <p>If you want your code to be called when the VM exits, extend the onExit method.
    * @see #onExit
    */
@@ -213,7 +214,8 @@ public class MainWindow extends Window implements totalcross.MainClass
     * Notifies the application that it should be minimized, that is, transfered
     * to the background. Whenever the application is minimized, the following call back function
     * will be called: {@link #onMinimize()}. Note: On Android, calling {@link #minimize()} will
-    * pause the application execution and it can only be restored manually by the user.
+    * pause the application execution and it can only be restored manually by the user. This method is
+    * also supported on Windows 32.
     * @see #onMinimize
     * @see #onRestore
     * @since TotalCross 1.10
@@ -228,8 +230,8 @@ public class MainWindow extends Window implements totalcross.MainClass
     * Notifies the application that it should be restored, that is, transfered
     * to the foreground. 
     * Whenever the application is restored, the following call back function will be called:
-    * {@link #onRestore()}. Note: This method is supported on Android; the user must restore
-    * the application manually.
+    * {@link #onRestore()}. Note: This method is supported on Android but the user must restore
+    * the application manually. This method is also supported on Windows 32.
     * @since TotalCross 1.10
     */
    public static void restore() // bruno@tc110_89
@@ -238,7 +240,14 @@ public class MainWindow extends Window implements totalcross.MainClass
    }
    native public static void restore4D();
 
-   /** Returns the MainWindow of the current application. */
+   /** 
+    * Returns the instance of the current main window. You can use it to get access to methods of the <code>MainWindow</code> class from outside the class. 
+    * It is also possible to cast the returned class to the class that is extending <code>MainWindow</code> (this is a normal Java behavior). 
+    * So, if UiGadgets is running, it is correct to do:
+    * <pre>
+    * UIGadgets instance = (UIGadgets)MainWindow.getMainWindow();
+    * </pre>
+    */
    public static MainWindow getMainWindow()
    {
       return mainWindowInstance;
@@ -247,7 +256,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    /**
    * Adds a timer to a control. This method is protected, the public
    * method to add a timer to a control is the addTimer() method in
-   * the Control class.
+   * the Control class. The Timer event will be issued to the target every millis milliseconds.
    */
    protected TimerEvent addTimer(Control target, int millis)
    {
@@ -259,7 +268,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    /**
     * Adds the timer t to the target control. This method is protected, the public
     * method to add a timer to a control is the addTimer() method in
-    * the Control class.
+    * the Control class. The Timer event will be issued to the target every millis milliseconds.
     */
     protected void addTimer(TimerEvent t, Control target, int millis)
     {
@@ -269,7 +278,7 @@ public class MainWindow extends Window implements totalcross.MainClass
     /**
      * Adds the timer t to the target control. This method is protected, the public
      * method to add a timer to a control is the addTimer() method in
-     * the Control class.
+     * the Control class. The Timer event will be issued to the target every millis milliseconds.
      */
     protected void addTimer(TimerEvent t, Control target, int millis, boolean append)
     {
@@ -297,7 +306,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
 
    /**
-   * Removes a timer. This method returns true if the timer was found
+   * Removes the given timer from the timers queue. This method returns true if the timer was found
    * and removed and false if the given timer could not be found.
    * The <code>target</code> member is set to null.
    */
@@ -398,17 +407,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    }
 
    /**
-    * Called just after the application is minimized. Currently, this is only supported on
-    * Java, BlackBerry, WinCE, Win32 and Android.
-    * <br><br>The following applies to Android, only.
-    * <br><br>The Android on TotalCross has a predefined life cycle:
-    * <ol>
-    * <li>onStart: called when the application starts
-    * <li>onMinimize: called when the user press the home key, or when a call is received, or when the screen turns off
-    * <li>onRestore: called after the call ends or the screen is turned on again
-    * <li>onExit: called when the system decides that is time to finish the application. If the home key was pressed, this method
-    * is called when another application is invoked.
-    * </ol>
+    * Called just after the application is minimized. 
+    * 
     * If the user press the home key and then forces the application to stop (by going to the Settings / Applications), then
     * all Litebase tables may be corrupted (actually, no data is lost, but a TableNotClosedException will be issued). So, its a good
     * thing to call LitebaseConnection.closeAll in your litebase instances and recover them in the onRestore method.
@@ -423,23 +423,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    }
 
    /**
-    * Called just after the application is restored. Currently, this is only supported on
-    * Java, BlackBerry, WinCE, Win32 and Android.
-    * <br><br>The following applies to Android, only.
-    * <br><br>The Android on TotalCross has a predefined life cycle:
-    * <ol>
-    * <li>onStart: called when the application starts
-    * <li>onMinimize: called when the user press the home key, or when a call is received, or when the screen turns off
-    * <li>onRestore: called after the call ends or the screen is turned on again
-    * <li>onExit: called when the system decides that is time to finish the application. If the home key was pressed, this method
-    * is called when another application is invoked.
-    * </ol>
-    * If the user press the home key and then forces the application to stop (by going to the Settings / Applications), then
-    * all Litebase tables may be corrupted (actually, no data is lost, but a TableNotClosedException will be issued). So, its a good
-    * thing to call LitebaseConnection.closeAll in your litebase instances and recover them in the onRestore method.
-    * <br><br>
-    * When the onMinimize is called, the screen will only be able to be updated after it resumes (in other words,
-    * calling repaint or repaintNow from the onMinimize method has no effect).
+    * Called just after the application is restored. 
+    * 
     * @see #onRestore()
     * @since TotalCross 1.10
     */
@@ -604,6 +589,8 @@ public class MainWindow extends Window implements totalcross.MainClass
     * adb shell am start -a android.intent.action.MAIN -n totalcross.app.uigadgets/.UIGadgets -e cmdline "Hello world"
     * </pre>
     * In the sample above, we're starting UIGadgets. Your app should be: totalcross.app.yourMainWindowClass/.yourMainWindowClass
+    *
+    * Note: When you click on the application's icon, there’s no command line.
     */
    final public static String getCommandLine() // guich@tc120_8: now is static
    {

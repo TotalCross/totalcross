@@ -355,7 +355,7 @@ public class Control extends GfxSurface
       uitip.show();
    }
    
-   /** Posts a ControlEvent.PRESSED event whith this control as target.
+   /** Posts a ControlEvent.PRESSED event with this control as target.
     * @since TotalCross 1.14 
     */
    public void postPressedEvent()
