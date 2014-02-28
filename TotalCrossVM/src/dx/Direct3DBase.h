@@ -118,7 +118,6 @@ internal:
    void setClip(int32* clip);
    void setColor(int color);
    void createTexture();
-   void setup();
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
    void swapLists();
