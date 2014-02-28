@@ -392,6 +392,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    * When this is called, all threads are already killed.
    * You should return from this method as soon as possible, because the OS can kill the application if
    * it takes too much to return.
+   * 
+   * Note that on Windows Phone this method is NEVER called.
    */
    public void onExit()
    {
@@ -415,6 +417,10 @@ public class MainWindow extends Window implements totalcross.MainClass
     * <br><br>
     * When the onMinimize is called, the screen will only be able to be updated after it resumes (in other words,
     * calling repaint or repaintNow from the onMinimize method has no effect).
+    * 
+    * On Windows Phone, the onMinimize is called and, if the user don't call the application again
+    * within 10 seconds, the application is KILLED without notifications. So, you should save all your application's state
+    * in this method and restore it in the onRestore method.
     * @see #minimize()
     * @since TotalCross 1.10
     */

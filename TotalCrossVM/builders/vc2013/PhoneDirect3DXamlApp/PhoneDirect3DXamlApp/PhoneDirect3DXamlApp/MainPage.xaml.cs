@@ -293,7 +293,7 @@ namespace PhoneDirect3DXamlAppInterop
         private int keyboardH;
         private long lastTick;
         private CSWrapper cs;
-        private static MainPage instance;
+        public static MainPage instance;
 
         // Constructor
         public MainPage()
@@ -329,10 +329,6 @@ namespace PhoneDirect3DXamlAppInterop
                instance.keyboardH = -(int)newvalue; // when 0, keyboard is hidden
                instance.d3dBackground.OnScreenChanged(instance.keyboardH, 0, 0);
            }
-        }
-
-        void MainPage_KeyUp(object sender, KeyEventArgs e)
-        {
         }
 
         void MainPage_KeyDown(object sender, KeyEventArgs e)
@@ -392,6 +388,16 @@ namespace PhoneDirect3DXamlAppInterop
             e.Cancel = d3dBackground != null && d3dBackground.backKeyPress();
         }
 
+        public void onSuspend()
+        {
+            Debug.WriteLine("on suspend");
+        }
+
+        public void onResume()
+        {
+            Debug.WriteLine("on resume");
+        }
+
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
         {
             if (d3dBackground == null)
@@ -401,7 +407,6 @@ namespace PhoneDirect3DXamlAppInterop
                 d3dBackground = new Direct3DBackground(cs);
 
                 cs.tbox.KeyDown += MainPage_KeyDown;
-                cs.tbox.KeyUp += MainPage_KeyUp;
                 cs.tbox.TextChanged += tbox_TextChanged;
 
                 int appW = (int)LayoutRoot.ActualWidth, appH = (int)LayoutRoot.ActualHeight;

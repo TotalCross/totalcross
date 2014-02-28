@@ -9,13 +9,12 @@ namespace PhoneDirect3DXamlAppComponent
 public delegate void RequestAdditionalFrameHandler();
 
 [Windows::Foundation::Metadata::WebHostHidden]
-public ref class Direct3DBackground sealed : public Windows::Phone::Input::Interop::IDrawingSurfaceManipulationHandler
+public ref class Direct3DBackground sealed
 {
 public:
    Direct3DBackground(CSwrapper ^_cs);
 
 	Windows::Phone::Graphics::Interop::IDrawingSurfaceBackgroundContentProvider^ CreateContentProvider();
-	virtual void SetManipulationHost(Windows::Phone::Input::Interop::DrawingSurfaceManipulationHost^ manipulationHost);
 
 	event RequestAdditionalFrameHandler^ RequestAdditionalFrame;
 

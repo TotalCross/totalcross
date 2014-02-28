@@ -216,19 +216,24 @@ Direct3DBase ^Direct3DBase::getLastInstance()
 }
 
 // Initialize the Direct3D resources required to run.
-void Direct3DBase::initialize(_In_ ID3D11Device1* device)
+void Direct3DBase::initialize(_In_ ID3D11Device1* device, bool resuming)
 {
-	wchar_t mensagem_fim[2048];
-	int saida;
-
-	d3dDevice = device;
-	saida = startVM("UIControls", &local_context);
-
-	if (saida != 0) 
+   loadCompleted = 0;
+   d3dDevice = device;
+   updateWS = true;
+   if (!resuming)
    {
-		swprintf_s(mensagem_fim, 1000, L"Error code in starting VM: %d", saida);
-		csharp->privateAlertCS(ref new Platform::String(mensagem_fim));
-	}
+      wchar_t mensagem_fim[2048];
+      int saida;
+
+      saida = startVM("UIControls", &local_context);
+
+      if (saida != 0)
+      {
+         swprintf_s(mensagem_fim, 1000, L"Error code in starting VM: %d", saida);
+         csharp->privateAlertCS(ref new Platform::String(mensagem_fim));
+      }
+   }
 	createDeviceResources();
 }
 
@@ -313,15 +318,8 @@ void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
 {
 	this->renderTargetView = renderTargetView;
    d3dcontext = ic;
-   bool updateWS = rotatedTo >= 0;
-
-	if (d3dDevice.Get() != device)
-	{
-		d3dDevice->GetDeviceRemovedReason();
-		d3dDevice = device;
-		createDeviceResources();
-      updateWS = true;
-	}
+   d3dDevice = device;
+   updateWS |= rotatedTo >= 0;
 
 	ComPtr<ID3D11Resource> renderTargetViewResource;
 	renderTargetView->GetResource(&renderTargetViewResource);
@@ -334,25 +332,22 @@ void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
    backBuffer->GetDesc(&backBufferDesc);
 
    if (updateWS)
-      createWindowSizeDependentResources();
+   {
+      // Create a depth stencil view.
+      CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
+      ComPtr<ID3D11Texture2D> depthStencil;
+      DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil));
+      CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
+      DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView));
+
+      XMMATRIX mat = rotatedTo == 0 ?
+         XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f) :
+         XMMatrixMultiply(XMMatrixRotationX(XM_PIDIV2), XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f));
+      XMStoreFloat4x4(&constantBufferData.projection, mat);
+      setup();
+      updateWS = false;
+   }
    rotatedTo = -1;
-}
-
-// Allocate all memory resources that depend on the window size.
-void Direct3DBase::createWindowSizeDependentResources()
-{
-	// Create a depth stencil view.
-	CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT,appW,appH,1,1,D3D11_BIND_DEPTH_STENCIL);
-	ComPtr<ID3D11Texture2D> depthStencil;
-	DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc,nullptr,&depthStencil));
-	CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
-	DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil.Get(),&depthStencilViewDesc,&depthStencilView));
-
-   XMMATRIX mat = rotatedTo == 0 ?
-      XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f) :
-      XMMatrixMultiply(XMMatrixRotationX(XM_PIDIV2), XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f));
-   XMStoreFloat4x4(&constantBufferData.projection, mat);
-   setup();
 }
 
 void Direct3DBase::setup()
@@ -364,7 +359,7 @@ void Direct3DBase::setup()
    D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
    indexBufferData.pSysMem = cubeIndices;
    CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
-   d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer);
+   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
 
    // used in setColor for fillRect and drawLine and also textures
    {
@@ -373,7 +368,7 @@ void Direct3DBase::setup()
       bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor);       // create the buffer
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor));       // create the buffer
    }
    // used in fillRect and drawLine
    {
@@ -382,7 +377,7 @@ void Direct3DBase::setup()
       bd.ByteWidth = sizeof(VertexPosition) * 4;     // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect);       // create the buffer
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect));       // create the buffer
    }
    // used in fillShadedRect
    {
@@ -391,7 +386,7 @@ void Direct3DBase::setup()
       bd.ByteWidth = sizeof(VertexPositionColor) * 4;             // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC);       // create the buffer
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC));       // create the buffer
    }
 
    /////////// TEXTURE
@@ -421,7 +416,7 @@ void Direct3DBase::setup()
    depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
    depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
    // Create the state using the device.
-   d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState);
+   DX::ThrowIfFailed(d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState));
 
    // setup alpha blending
    D3D11_BLEND_DESC blendStateDescription = { 0 };
@@ -433,16 +428,16 @@ void Direct3DBase::setup()
    blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
    blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-   d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState);
+   DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
 
    // setup clipping
    D3D11_RASTERIZER_DESC1 rasterizerState = { D3D11_FILL_SOLID };
    rasterizerState.CullMode = D3D11_CULL_FRONT;
    rasterizerState.FrontCounterClockwise = true;
    rasterizerState.DepthClipEnable = true;
-   d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping);
+   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping));
    rasterizerState.ScissorEnable = true;
-   d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping);
+   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping));
 
    // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
@@ -450,7 +445,7 @@ void Direct3DBase::setup()
    bd.ByteWidth = sizeof(TextureVertex) * 8;             // size is the VERTEX struct * 3
    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-   d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer);       // create the buffer
+   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer));       // create the buffer
 }
 
 extern "C" {extern int32 glShiftY; }

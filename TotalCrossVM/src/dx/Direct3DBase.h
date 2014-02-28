@@ -84,7 +84,7 @@ struct TD3DCommand
    struct TD3DCommand* next;
 };
 
-// Helper class that initializes DirectX APIs for 3D rendering.
+// Helper class that initializes DirectX APIs
 ref class Direct3DBase 
 {
 internal:
@@ -95,10 +95,9 @@ internal:
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
 
 	bool updateScreenRequested;
-	void initialize(_In_ ID3D11Device1* device);
+	void initialize(_In_ ID3D11Device1* device, bool resuming);
 	void createDeviceResources();
    void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
-	void createWindowSizeDependentResources();
 	void preRender(); // resets the screen and set it ready to render
    bool startProgramIfNeeded();
 	void updateScreen();
@@ -130,6 +129,7 @@ internal:
    bool updateScreenWaiting;
    int rotatedTo;
    int sipHeight;
+   bool updateWS;
 
 private:
    int renderPrepared;

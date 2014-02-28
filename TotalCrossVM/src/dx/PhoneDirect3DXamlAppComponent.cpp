@@ -35,10 +35,6 @@ bool Direct3DBackground::backKeyPress()
 	return keepRunning;
 }
 
-void Direct3DBackground::SetManipulationHost(DrawingSurfaceManipulationHost^ manipulationHost)
-{
-}
-
 // Event Handlers
 extern "C" {extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; }
 void Direct3DBackground::OnPointerPressed(int x, int y)
@@ -89,14 +85,16 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
 // Interface With Direct3DContentProvider
 HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
-   renderer = ref new Direct3DBase(cs);
-	renderer->initialize(device);
+   bool resuming = renderer != nullptr;
+   if (!resuming)
+      renderer = ref new Direct3DBase(cs);
+   renderer->initialize(device, resuming);
 	return S_OK;
 }
 
 void Direct3DBackground::Disconnect()
 {
-	renderer = nullptr;
+	//renderer = nullptr;
 }
 
 HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize)
