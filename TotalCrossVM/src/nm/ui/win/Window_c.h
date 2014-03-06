@@ -52,8 +52,8 @@ static void windowSetSIP(int32 sipOption)
       case SIP_TOP:
       case SIP_BOTTOM:
       case SIP_SHOW:
+		  break;
    }
-#endif
 }
 
 static void windowSetDeviceTitle(TCObject titleObj)
