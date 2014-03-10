@@ -38,8 +38,10 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    if (!m_synchronizedTexture)
    {
       m_controller->renderer->updateDevice();
-      hr = m_host->CreateSynchronizedTexture(m_controller->GetTexture(), &m_synchronizedTexture);
+      hr = m_host->CreateSynchronizedTexture(m_controller->renderer->renderTex1, &syncTex1);
+      hr = m_host->CreateSynchronizedTexture(m_controller->renderer->renderTex2, &syncTex2);
    }
+   m_synchronizedTexture = m_controller->renderer->is1 ? syncTex1 : syncTex2;
    // Set output parameters.
    textureSubRectangle->left = textureSubRectangle->top = 0.0f;
    textureSubRectangle->right = static_cast<FLOAT>(size->width);

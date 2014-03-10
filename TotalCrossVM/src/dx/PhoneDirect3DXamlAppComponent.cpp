@@ -101,7 +101,8 @@ void Direct3DBackground::lifeCycle(bool suspending)
 HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Out_ BOOL* contentDirty)
 {
    // update screen only if necessary
-   *contentDirty = renderer == nullptr || renderer->updateScreenWaiting || !renderer->isLoadCompleted();
+   updateScreenCalledOnce |= renderer->updateScreenWaiting;
+   *contentDirty = !updateScreenCalledOnce || renderer->updateScreenWaiting;
 	return S_OK;
 }
 
@@ -116,20 +117,12 @@ HRESULT Direct3DBackground::updateScreenTexture()
    {
       int cur = (int32)GetTickCount64();
       if (renderer->updateScreenWaiting)
-      {
-         renderer->updateDevice();
          renderer->runCommands();
-      }
       if (renderer->alertMsg != nullptr) { Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr; } // alert stuff
       renderer->updateScreenWaiting = false;
    }
    else Direct3DBackground::RequestAdditionalFrame();
    return S_OK;
-}
-
-ID3D11Texture2D* Direct3DBackground::GetTexture()
-{
-   return renderer->renderTex1;
 }
 
 }

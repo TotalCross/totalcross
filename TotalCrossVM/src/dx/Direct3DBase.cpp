@@ -213,6 +213,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
+   is1 = true;
    listInit(&cmdFill);
 }
 

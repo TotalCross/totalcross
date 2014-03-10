@@ -42,12 +42,11 @@ internal:
    void STDMETHODCALLTYPE Disconnect();
    HRESULT STDMETHODCALLTYPE PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Out_ BOOL* contentDirty);
    HRESULT STDMETHODCALLTYPE updateScreenTexture();
-   ID3D11Texture2D* GetTexture();
    Direct3DBase^ renderer;
 
 private:
    CSwrapper ^cs;
-   ID3D11CommandList *currentCmdlist;
+   bool updateScreenCalledOnce;
 };
 
 }

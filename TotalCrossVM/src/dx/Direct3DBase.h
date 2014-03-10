@@ -128,6 +128,7 @@ internal:
    bool updateWS;
    bool minimized;
    ID3D11Texture2D *renderTex1, *renderTex2;
+   bool is1;
 
 private:
    int loadCompleted;

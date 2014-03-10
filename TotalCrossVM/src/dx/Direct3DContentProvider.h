@@ -25,5 +25,5 @@ public:
 private:
 	PhoneDirect3DXamlAppComponent::Direct3DBackground^ m_controller;
 	Microsoft::WRL::ComPtr<IDrawingSurfaceRuntimeHostNative> m_host;
-   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> m_synchronizedTexture;
+   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> m_synchronizedTexture,syncTex1,syncTex2;
 };
