@@ -222,10 +222,15 @@ Direct3DBase ^Direct3DBase::getLastInstance()
 }
 
 // Initialize the Direct3D resources required to run.
-void Direct3DBase::initialize(_In_ ID3D11Device1* device, bool resuming)
+void Direct3DBase::initialize(bool resuming)
 {
+   // create the D3DDevice
+   UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+   //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+   D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_9_3};
+   DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dcontext));
+
    loadCompleted = 0;
-   d3dDevice = device;
    updateWS = true;
    if (!resuming)
    {
@@ -322,18 +327,9 @@ void Direct3DBase::initialize(_In_ ID3D11Device1* device, bool resuming)
    });
 }
 
-void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView)
+void Direct3DBase::updateDevice()
 {
-	this->renderTargetView = renderTargetView;   // NOT BEING RELEASED
-   d3dcontext = ic;
-   d3dDevice = device;
    updateWS |= rotatedTo == -2 || rotatedTo >= 0;
-
-	ComPtr<ID3D11Resource> renderTargetViewResource;
-	renderTargetView->GetResource(&renderTargetViewResource);
-
-	ComPtr<ID3D11Texture2D> backBuffer;
-	DX::ThrowIfFailed(renderTargetViewResource.As(&backBuffer));
 
    if (updateWS)
    {
@@ -349,6 +345,21 @@ void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
       DXRELEASE(pRasterStateDisableClipping);
       DXRELEASE(pRasterStateEnableClipping);
       DXRELEASE(texVertexBuffer);
+      DXRELEASE(renderTexView1);
+      DXRELEASE(renderTexView2);
+      DXRELEASE(renderTex1);
+      DXRELEASE(renderTex2);
+
+      // Create a descriptor for the render target buffer.
+      CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appW, appH, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+      renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+
+      // Allocate a 2-D surface as the render target buffer.
+      DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex1));
+      DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex2));
+      DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex1, nullptr, &renderTexView1));
+      DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex2, nullptr, &renderTexView2));
+
       // Create a depth stencil view.
       CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
       DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil));
@@ -439,13 +450,13 @@ void Direct3DBase::updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCon
       DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
 
       // setup clipping
-      D3D11_RASTERIZER_DESC1 rasterizerState = { D3D11_FILL_SOLID };
+      D3D11_RASTERIZER_DESC rasterizerState = { D3D11_FILL_SOLID };
       rasterizerState.CullMode = D3D11_CULL_FRONT;
       rasterizerState.FrontCounterClockwise = true;
       rasterizerState.DepthClipEnable = true;
-      DX::ThrowIfFailed(d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateDisableClipping));
+      DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateDisableClipping));
       rasterizerState.ScissorEnable = true;
-      DX::ThrowIfFailed(d3dDevice->CreateRasterizerState1(&rasterizerState, &pRasterStateEnableClipping));
+      DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateEnableClipping));
 
       // texture vertices
       D3D11_BUFFER_DESC bd = { 0 };
@@ -645,13 +656,13 @@ void Direct3DBase::preRender()
    CD3D11_VIEWPORT viewport(0.0f, 0.0f, (float)appW, (float)appH);
    d3dcontext->RSSetViewports(1, &viewport);
 
-   d3dcontext->ClearRenderTargetView(renderTargetView, clearColor);
+   d3dcontext->ClearRenderTargetView(renderTexView1, clearColor);
    d3dcontext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
    d3dcontext->OMSetDepthStencilState(depthDisabledStencilState, 1);
    d3dcontext->OMSetBlendState(pBlendState, 0, 0xffffffff);
 
-   d3dcontext->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+   d3dcontext->OMSetRenderTargets(1, &renderTexView1, depthStencilView);
    d3dcontext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
    d3dcontext->RSSetState(pRasterStateDisableClipping);

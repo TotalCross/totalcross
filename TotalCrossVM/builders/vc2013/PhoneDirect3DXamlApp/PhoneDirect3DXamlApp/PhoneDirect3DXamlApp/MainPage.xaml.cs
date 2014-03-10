@@ -414,7 +414,7 @@ namespace PhoneDirect3DXamlAppInterop
                 //LayoutRoot.Margin = new Thickness(0, scrH - appH,0,0);
                 d3dBackground.OnScreenChanged(-1, appW, appH);
                 d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
-                DrawingSurfaceBackground.SetBackgroundContentProvider(d3dBackground.CreateContentProvider());
+                DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
             }
         }
     }

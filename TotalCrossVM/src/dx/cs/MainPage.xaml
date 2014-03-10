@@ -14,7 +14,7 @@
     shell:SystemTray.IsVisible="True">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
-    <DrawingSurfaceBackgroundGrid x:Name="DrawingSurfaceBackground" Loaded="DrawingSurfaceBackground_Loaded">
-    </DrawingSurfaceBackgroundGrid>
+    <DrawingSurface x:Name="DrawingSurfaceBackground" Loaded="DrawingSurfaceBackground_Loaded">
+    </DrawingSurface>
 
 </phone:PhoneApplicationPage>

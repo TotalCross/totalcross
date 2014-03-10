@@ -22,10 +22,10 @@ Direct3DBackground^ Direct3DBackground::GetInstance()
 {
    return instance;
 }
-IDrawingSurfaceBackgroundContentProvider^ Direct3DBackground::CreateContentProvider()
+IDrawingSurfaceContentProvider^ Direct3DBackground::CreateContentProvider()
 {
 	ComPtr<Direct3DContentProvider> provider = Make<Direct3DContentProvider>(this);
-	return reinterpret_cast<IDrawingSurfaceBackgroundContentProvider^>(provider.Get());
+	return reinterpret_cast<IDrawingSurfaceContentProvider^>(provider.Get());
 }
 
 bool Direct3DBackground::backKeyPress()
@@ -83,12 +83,12 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
 }
 
 // Interface With Direct3DContentProvider
-HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
+HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host)
 {
    bool resuming = renderer != nullptr;
    if (!resuming)
       renderer = ref new Direct3DBase(cs);
-   renderer->initialize(device, resuming);
+   renderer->initialize(resuming);
 	return S_OK;
 }
 
@@ -98,10 +98,9 @@ void Direct3DBackground::lifeCycle(bool suspending)
    renderer->rotatedTo = -2;
 }
 
-HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize)
+HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Out_ BOOL* contentDirty)
 {
-	desiredRenderTargetSize->width = RenderResolution.Width;
-	desiredRenderTargetSize->height = RenderResolution.Height;
+   *contentDirty = true;
 	return S_OK;
 }
 
@@ -110,34 +109,26 @@ void Direct3DBackground::RequestNewFrame()
    Direct3DBackground::RequestAdditionalFrame();
 }
 
-static int lastPaint,lastAcum=10;
-HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
+HRESULT Direct3DBackground::GetTexture(_In_ const DrawingSurfaceSizeF* size, _Inout_ IDrawingSurfaceSynchronizedTextureNative** synchronizedTexture, _Inout_ DrawingSurfaceRectF* textureSubRectangle)
 {
    if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
    {
-      // QUANDO VAI DORMIR, O MALDITO LANÇA UM REPAINT, QUE USA TEXTURAS QUE JA ESTAO INVALIDADAS,
-      // E ISSO GERA UM ERRO INTERNO DO DX. QUANDO VOLTA, DA PAU.
-      // SE NAO EXECUTAR OS COMANDOS QUANDO O UPDATESCREEN NAO TIVER SIDO CHAMADO, NAO DA ERRO
-      // MAS AÍ A TELA NAO DESENHA DIREITO
-
-      // A FAZER: TROCAR O DrawingSurfaceBackgroundGrid PELO DrawingSurface PRA VER SE ESSA PINTURA EXTRA DE
-      // QUANDO SE PRESSIONA A TELA SOME
-
-      // VER TAMBEM SE DA PRA COPIAR O RENDERTARGETVIEW PARA O ANTERIOR USANDO context->CopyResource
-
-      debug("d: %X, c: %X, r: %X", device, context, renderTargetView); // SAO 3 RTV, UM APOS O OUTRO
       int cur = (int32)GetTickCount64();
       if (renderer->updateScreenWaiting)
       {
-         renderer->updateDevice(device, context, renderTargetView);
-         int n = renderer->runCommands();
+         renderer->updateDevice();
+         renderer->runCommands();
       }
-      //if (--lastAcum == 0) { debug("%d: %d ms", n, cur - lastPaint); lastAcum = 10; } lastPaint = cur;
-      if (renderer->alertMsg != nullptr) {Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr;} // alert stuff
+      if (renderer->alertMsg != nullptr) { Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr; } // alert stuff
       renderer->updateScreenWaiting = false;
-	} 
+   }
    else Direct3DBackground::RequestAdditionalFrame();
    return S_OK;
+}
+
+ID3D11Texture2D* Direct3DBackground::GetTexture()
+{
+   return renderer->renderTex1;
 }
 
 }

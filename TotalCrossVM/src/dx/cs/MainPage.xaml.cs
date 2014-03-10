@@ -330,7 +330,7 @@ namespace PhoneDirect3DXamlAppInterop
                 // Set render resolution to the full native resolution
                 m_d3dBackground.RenderResolution = m_d3dBackground.NativeResolution;
 
-                // Hook-up native component to DrawingSurfaceBackgroundGrid
+                // Hook-up native component to DrawingSurface
                 DrawingSurfaceBackground.SetBackgroundContentProvider(m_d3dBackground.CreateContentProvider());
                 DrawingSurfaceBackground.SetBackgroundManipulationHandler(m_d3dBackground);
             }

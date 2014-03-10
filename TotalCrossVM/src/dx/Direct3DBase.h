@@ -91,9 +91,8 @@ internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
    static Direct3DBase ^getLastInstance();
 
-
-	void initialize(_In_ ID3D11Device1* device, bool resuming);
-   void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
+	void initialize(bool resuming);
+   void updateDevice();
 	void preRender(); // resets the screen and set it ready to render
    bool startProgramIfNeeded();
 	void updateScreen();
@@ -120,7 +119,7 @@ internal:
    D3DCommand newCommand();
    int runCommands();
 
-   ID3D11DeviceContext1 *d3dcontext;
+   ID3D11DeviceContext *d3dcontext;
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
    Platform::String^ alertMsg;
    bool updateScreenWaiting;
@@ -128,6 +127,7 @@ internal:
    int sipHeight;
    bool updateWS;
    bool minimized;
+   ID3D11Texture2D *renderTex1, *renderTex2;
 
 private:
    int loadCompleted;
@@ -141,6 +141,10 @@ private:
 	Context localContext;
 	bool vmStarted;
 
+   // screen textures
+   ID3D11RenderTargetView *renderTexView1, *renderTexView2;
+
+   D3D_FEATURE_LEVEL m_featureLevel;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
 	ID3D11DepthStencilView* depthStencilView;
    ID3D11Texture2D *depthStencil;
@@ -153,7 +157,6 @@ private:
    ID3D11PixelShader *pixelShader, *pixelShaderT, *pixelShaderLC;
    ID3D11Buffer *constantBuffer;
    ProjectionConstantBuffer constantBufferData;
-   ID3D11RasterizerState1 *pRasterStateEnableClipping, *pRasterStateDisableClipping;
-	ID3D11Device1* d3dDevice;
-	ID3D11RenderTargetView* renderTargetView;
+   ID3D11RasterizerState *pRasterStateEnableClipping, *pRasterStateDisableClipping;
+	ID3D11Device* d3dDevice;
 };
