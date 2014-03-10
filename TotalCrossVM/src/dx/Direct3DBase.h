@@ -2,6 +2,7 @@
 
 #include "DirectXHelper.h"
 #include "cswrapper.h"
+#include <DrawingSurfaceNative.h>
 
 #define HAS_TCHAR
 #include "tcvm.h"
@@ -92,7 +93,7 @@ internal:
    static Direct3DBase ^getLastInstance();
 
 	void initialize(bool resuming);
-   void updateDevice();
+   void updateDevice(IDrawingSurfaceRuntimeHostNative* host);
 	void preRender(); // resets the screen and set it ready to render
    bool startProgramIfNeeded();
 	void updateScreen();
@@ -127,8 +128,7 @@ internal:
    int sipHeight;
    bool updateWS;
    bool minimized;
-   ID3D11Texture2D *renderTex1, *renderTex2;
-   bool is1;
+   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex;
 
 private:
    int loadCompleted;
@@ -143,7 +143,9 @@ private:
 	bool vmStarted;
 
    // screen textures
-   ID3D11RenderTargetView *renderTexView1, *renderTexView2;
+   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex1, syncTex2;
+   ID3D11Texture2D *renderTex1, *renderTex2;
+   ID3D11RenderTargetView *renderTexView, *renderTexView1, *renderTexView2;
 
    D3D_FEATURE_LEVEL m_featureLevel;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;

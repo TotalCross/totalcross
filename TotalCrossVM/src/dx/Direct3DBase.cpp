@@ -213,7 +213,6 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
-   is1 = true;
    listInit(&cmdFill);
 }
 
@@ -328,7 +327,7 @@ void Direct3DBase::initialize(bool resuming)
    });
 }
 
-void Direct3DBase::updateDevice()
+void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 {
    updateWS |= rotatedTo == -2 || rotatedTo >= 0;
 
@@ -360,6 +359,10 @@ void Direct3DBase::updateDevice()
       DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex2));
       DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex1, nullptr, &renderTexView1));
       DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex2, nullptr, &renderTexView2));
+      host->CreateSynchronizedTexture(renderTex1, &syncTex1);
+      host->CreateSynchronizedTexture(renderTex2, &syncTex2);
+      syncTex = syncTex1;
+      renderTexView = renderTexView1;
 
       // Create a depth stencil view.
       CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
@@ -657,13 +660,13 @@ void Direct3DBase::preRender()
    CD3D11_VIEWPORT viewport(0.0f, 0.0f, (float)appW, (float)appH);
    d3dcontext->RSSetViewports(1, &viewport);
 
-   d3dcontext->ClearRenderTargetView(renderTexView1, clearColor);
+   d3dcontext->ClearRenderTargetView(renderTexView, clearColor);
    d3dcontext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
    d3dcontext->OMSetDepthStencilState(depthDisabledStencilState, 1);
    d3dcontext->OMSetBlendState(pBlendState, 0, 0xffffffff);
 
-   d3dcontext->OMSetRenderTargets(1, &renderTexView1, depthStencilView);
+   d3dcontext->OMSetRenderTargets(1, &renderTexView, depthStencilView);
    d3dcontext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
    d3dcontext->RSSetState(pRasterStateDisableClipping);

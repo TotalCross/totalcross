@@ -115,7 +115,6 @@ HRESULT Direct3DBackground::updateScreenTexture()
 {
    if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
    {
-      int cur = (int32)GetTickCount64();
       if (renderer->updateScreenWaiting)
          renderer->runCommands();
       if (renderer->alertMsg != nullptr) { Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr; } // alert stuff

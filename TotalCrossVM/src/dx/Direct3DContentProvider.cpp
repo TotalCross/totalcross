@@ -24,7 +24,7 @@ HRESULT Direct3DContentProvider::Connect(_In_ IDrawingSurfaceRuntimeHostNative* 
 void Direct3DContentProvider::Disconnect()
 {
 	m_host = nullptr;
-   m_synchronizedTexture = nullptr;
+   m_controller->renderer->syncTex = nullptr;
 }
 
 HRESULT Direct3DContentProvider::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Out_ BOOL* contentDirty)
@@ -32,31 +32,18 @@ HRESULT Direct3DContentProvider::PrepareResources(_In_ const LARGE_INTEGER* pres
    return m_controller->PrepareResources(presentTargetTime, contentDirty);
 }
 
-HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size, _Out_ IDrawingSurfaceSynchronizedTextureNative** synchronizedTexture, _Out_ DrawingSurfaceRectF* textureSubRectangle)
+HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size, _Out_ IDrawingSurfaceSynchronizedTextureNative** synchronizedTexture, _Out_ DrawingSurfaceRectF* texSubRect)
 {
-   HRESULT hr = S_OK;
-   if (!m_synchronizedTexture)
-   {
-      m_controller->renderer->updateDevice();
-      hr = m_host->CreateSynchronizedTexture(m_controller->renderer->renderTex1, &syncTex1);
-      hr = m_host->CreateSynchronizedTexture(m_controller->renderer->renderTex2, &syncTex2);
-   }
-   m_synchronizedTexture = m_controller->renderer->is1 ? syncTex1 : syncTex2;
+   if (!m_controller->renderer->syncTex)
+      m_controller->renderer->updateDevice(m_host.Get());
+   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex = m_controller->renderer->syncTex;
    // Set output parameters.
-   textureSubRectangle->left = textureSubRectangle->top = 0.0f;
-   textureSubRectangle->right = static_cast<FLOAT>(size->width);
-   textureSubRectangle->bottom = static_cast<FLOAT>(size->height);
-   m_synchronizedTexture.CopyTo(synchronizedTexture);
-
+   texSubRect->left = texSubRect->top = 0.0f; texSubRect->right = (float)size->width; texSubRect->bottom = (float)size->height;
+   syncTex.CopyTo(synchronizedTexture);
    // Draw to the texture.
-   if (SUCCEEDED(hr))
-   {
-      static int count;
-      debug("updating screen texture %d", count++);
-      hr = m_synchronizedTexture->BeginDraw();
-      if (SUCCEEDED(hr))
-         hr = m_controller->updateScreenTexture();
-      m_synchronizedTexture->EndDraw();
-   }
-   return hr;
+   static int count; debug("updating screen texture %d", count++);
+   syncTex->BeginDraw();
+   m_controller->updateScreenTexture();
+   syncTex->EndDraw();
+   return S_OK;
 }
