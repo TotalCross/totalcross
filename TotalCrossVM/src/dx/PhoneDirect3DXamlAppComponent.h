@@ -7,7 +7,6 @@
 namespace PhoneDirect3DXamlAppComponent
 {
 public delegate void RequestAdditionalFrameHandler();
-public delegate void RecreateSynchronizedTextureHandler();
 
 [Windows::Foundation::Metadata::WebHostHidden]
 public ref class Direct3DBackground sealed
@@ -18,7 +17,6 @@ public:
 	Windows::Phone::Graphics::Interop::IDrawingSurfaceContentProvider^ CreateContentProvider();
 
 	event RequestAdditionalFrameHandler^ RequestAdditionalFrame;
-   event RecreateSynchronizedTextureHandler^ RecreateSynchronizedTexture;
 
 	property Windows::Foundation::Size WindowBounds;
 	property Windows::Foundation::Size NativeResolution;

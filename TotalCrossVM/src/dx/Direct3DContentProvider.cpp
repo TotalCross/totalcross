@@ -12,13 +12,6 @@ Direct3DContentProvider::Direct3DContentProvider(Direct3DBackground^ controller)
 				m_host->RequestAdditionalFrame();
 			}
 		});
-   m_controller->RecreateSynchronizedTexture += ref new RecreateSynchronizedTextureHandler([=]()
-   {
-      if (m_host)
-      {
-         m_host->CreateSynchronizedTexture(m_controller->GetTexture(), &m_synchronizedTexture);
-      }
-   });
 }
 
 // IDrawingSurfaceContentProviderNative interface
