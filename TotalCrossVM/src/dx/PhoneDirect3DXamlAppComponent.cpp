@@ -100,7 +100,8 @@ void Direct3DBackground::lifeCycle(bool suspending)
 
 HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Out_ BOOL* contentDirty)
 {
-   *contentDirty = true;
+   // update screen only if necessary
+   *contentDirty = renderer == nullptr || renderer->updateScreenWaiting || !renderer->isLoadCompleted();
 	return S_OK;
 }
 
@@ -109,7 +110,7 @@ void Direct3DBackground::RequestNewFrame()
    Direct3DBackground::RequestAdditionalFrame();
 }
 
-HRESULT Direct3DBackground::GetTexture(_In_ const DrawingSurfaceSizeF* size, _Inout_ IDrawingSurfaceSynchronizedTextureNative** synchronizedTexture, _Inout_ DrawingSurfaceRectF* textureSubRectangle)
+HRESULT Direct3DBackground::updateScreenTexture()
 {
    if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
    {

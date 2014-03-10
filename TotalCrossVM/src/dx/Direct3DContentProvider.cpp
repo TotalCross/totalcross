@@ -56,9 +56,11 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    // Draw to the texture.
    if (SUCCEEDED(hr))
    {
+      static int count;
+      debug("updating screen texture %d", count++);
       hr = m_synchronizedTexture->BeginDraw();
       if (SUCCEEDED(hr))
-         hr = m_controller->GetTexture(size, synchronizedTexture, textureSubRectangle);
+         hr = m_controller->updateScreenTexture();
       m_synchronizedTexture->EndDraw();
    }
    return hr;
