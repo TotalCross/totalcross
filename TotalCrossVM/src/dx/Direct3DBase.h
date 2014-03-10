@@ -89,14 +89,10 @@ ref class Direct3DBase
 {
 internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+   static Direct3DBase ^getLastInstance();
 
-   Platform::String^ alertMsg;
-   PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
 
-	bool updateScreenRequested;
 	void initialize(_In_ ID3D11Device1* device, bool resuming);
-	void createDeviceResources();
    void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
 	void preRender(); // resets the screen and set it ready to render
    bool startProgramIfNeeded();
@@ -122,10 +118,11 @@ internal:
    void lifeCycle(bool suspending);
    void swapLists();
    D3DCommand newCommand();
-   static Direct3DBase ^getLastInstance();
    int runCommands();
 
-   Microsoft::WRL::ComPtr<ID3D11DeviceContext1> d3dcontext;
+   ID3D11DeviceContext1 *d3dcontext;
+   PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
+   Platform::String^ alertMsg;
    bool updateScreenWaiting;
    int rotatedTo;
    int sipHeight;
@@ -133,45 +130,30 @@ internal:
    bool minimized;
 
 private:
-   int renderPrepared;
    int loadCompleted;
    whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
-   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
    int lastPixelsCount;
-   D3D11_RECT clipRect;
    bool clipSet;
+   D3D11_RECT clipRect;
+   float clearColor[4]; // all 0
+	Context localContext;
+	bool vmStarted;
 
-   VertexPosition *pixelsVertices;
-
-   // texture
-   Microsoft::WRL::ComPtr<ID3D11SamplerState> texsampler;
-   ID3D11DepthStencilState* depthDisabledStencilState;
-   ID3D11BlendState* pBlendState;
-
-   Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
-   Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout, inputLayoutT, inputLayoutLC;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer, pixelsIndexBuffer, colorBuffer;
-   Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader, vertexShaderT, vertexShaderLC;
-   Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader, pixelShaderT, pixelShaderLC;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
-
+   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
+	ID3D11DepthStencilView* depthStencilView;
+   ID3D11Texture2D *depthStencil;
+   ID3D11SamplerState *texsampler;
+   ID3D11DepthStencilState *depthDisabledStencilState;
+   ID3D11BlendState *pBlendState;
+   ID3D11InputLayout *inputLayout, *inputLayoutT, *inputLayoutLC;
+   ID3D11Buffer *indexBuffer, *pixelsIndexBuffer;
+   ID3D11VertexShader *vertexShader, *vertexShaderT, *vertexShaderLC;
+   ID3D11PixelShader *pixelShader, *pixelShaderT, *pixelShaderLC;
+   ID3D11Buffer *constantBuffer;
    ProjectionConstantBuffer constantBufferData;
    ID3D11RasterizerState1 *pRasterStateEnableClipping, *pRasterStateDisableClipping;
-
-protected private:
-	// Direct3D Objects.
-	Microsoft::WRL::ComPtr<ID3D11Device1> d3dDevice;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
-
-	// Cached renderer properties.
-	Windows::Foundation::Size renderTargetSize;
-
-	// TotalCross objects
-	Context local_context;
-	bool VMStarted;
-
-	// DrawCommand internal variables
+	ID3D11Device1* d3dDevice;
+	ID3D11RenderTargetView* renderTargetView;
 };

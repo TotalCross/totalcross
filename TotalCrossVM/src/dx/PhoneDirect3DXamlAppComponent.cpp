@@ -92,14 +92,10 @@ HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host,
 	return S_OK;
 }
 
-void Direct3DBackground::Disconnect()
-{
-	//renderer = nullptr;
-}
-
 void Direct3DBackground::lifeCycle(bool suspending)
 {
    renderer->lifeCycle(suspending);
+   renderer->rotatedTo = -2;
 }
 
 HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize)
@@ -119,9 +115,23 @@ HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceCo
 {
    if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
    {
+      // QUANDO VAI DORMIR, O MALDITO LANÇA UM REPAINT, QUE USA TEXTURAS QUE JA ESTAO INVALIDADAS,
+      // E ISSO GERA UM ERRO INTERNO DO DX. QUANDO VOLTA, DA PAU.
+      // SE NAO EXECUTAR OS COMANDOS QUANDO O UPDATESCREEN NAO TIVER SIDO CHAMADO, NAO DA ERRO
+      // MAS AÍ A TELA NAO DESENHA DIREITO
+
+      // A FAZER: TROCAR O DrawingSurfaceBackgroundGrid PELO DrawingSurface PRA VER SE ESSA PINTURA EXTRA DE
+      // QUANDO SE PRESSIONA A TELA SOME
+
+      // VER TAMBEM SE DA PRA COPIAR O RENDERTARGETVIEW PARA O ANTERIOR USANDO context->CopyResource
+
+      debug("d: %X, c: %X, r: %X", device, context, renderTargetView); // SAO 3 RTV, UM APOS O OUTRO
       int cur = (int32)GetTickCount64();
-      renderer->updateDevice(device, context, renderTargetView);
-      int n = renderer->runCommands();
+      if (renderer->updateScreenWaiting)
+      {
+         renderer->updateDevice(device, context, renderTargetView);
+         int n = renderer->runCommands();
+      }
       //if (--lastAcum == 0) { debug("%d: %d ms", n, cur - lastPaint); lastAcum = 10; } lastPaint = cur;
       if (renderer->alertMsg != nullptr) {Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr;} // alert stuff
       renderer->updateScreenWaiting = false;

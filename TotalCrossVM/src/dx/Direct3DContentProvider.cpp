@@ -18,13 +18,11 @@ Direct3DContentProvider::Direct3DContentProvider(Direct3DBackground^ controller)
 HRESULT Direct3DContentProvider::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
 {
 	m_host = host;
-
 	return m_controller->Connect(host, device);
 }
 
 void Direct3DContentProvider::Disconnect()
 {
-	m_controller->Disconnect();
 	m_host = nullptr;
 }
 

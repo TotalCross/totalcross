@@ -689,6 +689,9 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
       int32 height = Image_height(obj);
+#ifdef WP8
+      glDeleteTexture(obj, Image_textureId(obj), false);
+#endif
       glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList);
    }
    Image_changed(obj) = false;
@@ -708,10 +711,12 @@ void recreateTextures() // called by opengl when the application changes the ope
       do
       {    
          TCObject img = (TCObject)current->value;
-         //glDeleteTexture(img,&(Image_textureId(img)),false); - cannot delete the textures! they were already deleted when the window was disposed
+#ifndef WP8 // in wp8 we have to delete the texture when applying the changes
          Image_textureId(img)[0] = 0;
+         Image_textureId(img)[1] = 0;
+#endif
          Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;
+         current = current->next;      
       } while (imgTextures != current);
    resetFontTexture();
 }

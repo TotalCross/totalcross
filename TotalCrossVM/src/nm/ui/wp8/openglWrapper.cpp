@@ -193,11 +193,21 @@ void glSetLineWidth(int32 w)
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
    dxDeleteTexture(img, textureId, updateList);
+   if (updateList && img && VoidPsContains(imgTextures, img))
+   {
+      int n1 = listGetCount(imgTextures);
+      imgTextures = VoidPsRemove(imgTextures, img, null);
+      int n2 = listGetCount(imgTextures);
+      if (n2 - 1 != n1)
+         debug("**** tinha %d, tirou 1 mas ficou %d", n1, n2);
+   }
 }
 
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
    dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
+      imgTextures = VoidPsAdd(imgTextures, img, null);
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
