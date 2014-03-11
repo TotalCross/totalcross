@@ -28,7 +28,7 @@ struct D3DCommands
    D3DCommand tail;
    Heap heap;
    int id;
-} cmdFill, cmdDraw;
+} cmds;
 
 // lists
 void listInit(D3DCommands* c)
@@ -65,7 +65,7 @@ void listSetEmpty(D3DCommands* s)
 
 D3DCommand Direct3DBase::newCommand()
 {
-   return newXH(D3DCommand,cmdFill.heap);
+   return newXH(D3DCommand,cmds.heap);
 }
 
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
@@ -85,7 +85,7 @@ void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h
    cmd->clip[1] = Graphics_clipY1(g);
    cmd->clip[2] = Graphics_clipX2(g);
    cmd->clip[3] = Graphics_clipY2(g);
-   listAdd(&cmdFill, cmd);
+   listAdd(&cmds, cmd);
 }
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
@@ -97,7 +97,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    cmd->c = x2;
    cmd->d = y2;
    cmd->c1.pixel = color;
-   listAdd(&cmdFill, cmd);
+   listAdd(&cmds, cmd);
 }
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
@@ -109,7 +109,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    cmd->c = x2;
    cmd->d = y2;
    cmd->c1.pixel = color;
-   listAdd(&cmdFill, cmd);
+   listAdd(&cmds, cmd);
 }
 void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
@@ -130,7 +130,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    if (cmd->flags.hasColor) cmd->c1.pixel = color->pixel;
    cmd->flags.hasClip = clip != null;
    if (cmd->flags.hasClip) { cmd->clip[0] = clip[0]; cmd->clip[1] = clip[1]; cmd->clip[2] = clip[2]; cmd->clip[3] = clip[3]; }
-   listAdd(&cmdFill, cmd);
+   listAdd(&cmds, cmd);
 }
 
 void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
@@ -146,37 +146,25 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    }
    else
    {
-      cmd->coords = (float*)heapAlloc(cmdFill.heap, 2 * count * sizeof(float));
-      cmd->colors = (float*)heapAlloc(cmdFill.heap,     count * sizeof(float));
+      cmd->coords = (float*)heapAlloc(cmds.heap, 2 * count * sizeof(float));
+      cmd->colors = (float*)heapAlloc(cmds.heap,     count * sizeof(float));
       xmemmove(cmd->coords, glcoords, 2 * count * sizeof(float));
       xmemmove(cmd->colors, glcolors,     count * sizeof(float));
    }
    cmd->c = count;
    cmd->c1.pixel = color;
-   listAdd(&cmdFill, cmd);
-}
-
-void Direct3DBase::swapLists()
-{
-   std::lock_guard<std::mutex> lock(listMutex);
-   D3DCommands oldDraw = cmdDraw;
-   // 1. draw what has been filled
-   cmdDraw = cmdFill;
-   // 2. clear fill
-   cmdFill = oldDraw;
-   listSetEmpty(&cmdFill);
+   listAdd(&cmds, cmd);
 }
 
 int Direct3DBase::runCommands()
 {
    if (minimized) return 0;
    std::lock_guard<std::mutex> lock(listMutex);
-   //debug("showing %d", cmdDraw.id);
    int n = 0;
-   if (!listIsEmpty(&cmdDraw))
+   if (!listIsEmpty(&cmds))
    {
       preRender();
-      for (D3DCommand c = cmdDraw.head; c != NULL; c = c->next, n++)
+      for (D3DCommand c = cmds.head; c != NULL; c = c->next, n++)
          switch (c->cmd)
          {
             case D3DCMD_FILLSHADEDRECT:
@@ -204,6 +192,7 @@ int Direct3DBase::runCommands()
                   drawPixelsImpl(c->coords, c->colors, c->c, c->c1.pixel);
                break;
          }
+      listSetEmpty(&cmds);
    }
    updateScreenWaiting = false;
    return n;
@@ -214,7 +203,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
-   listInit(&cmdFill);
+   listInit(&cmds);
 }
 
 Direct3DBase ^Direct3DBase::getLastInstance()
@@ -655,7 +644,6 @@ void Direct3DBase::lifeCycle(bool suspending)
 void Direct3DBase::updateScreen()
 {
    if (minimized) return;
-   swapLists();
    updateScreenWaiting = true;
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
    while (updateScreenWaiting) Sleep(0);

@@ -115,7 +115,6 @@ internal:
    void createTexture();
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
-   void swapLists();
    D3DCommand newCommand();
    int runCommands();
 
