@@ -110,18 +110,4 @@ void Direct3DBackground::RequestNewFrame()
 {
    Direct3DBackground::RequestAdditionalFrame();
 }
-
-HRESULT Direct3DBackground::updateScreenTexture()
-{
-   if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
-   {
-      if (renderer->updateScreenWaiting)
-         renderer->runCommands();
-      if (renderer->alertMsg != nullptr) { Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr; } // alert stuff
-      renderer->updateScreenWaiting = false;
-   }
-   else Direct3DBackground::RequestAdditionalFrame();
-   return S_OK;
-}
-
 }

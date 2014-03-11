@@ -205,6 +205,7 @@ int Direct3DBase::runCommands()
                break;
          }
    }
+   updateScreenWaiting = false;
    return n;
 }
 
@@ -330,146 +331,153 @@ void Direct3DBase::initialize(bool resuming)
 void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 {
    updateWS |= rotatedTo == -2 || rotatedTo >= 0;
+   if (!updateWS)
+      return;
 
-   if (updateWS)
+   DXRELEASE(depthStencil);
+   DXRELEASE(depthStencilView);
+   DXRELEASE(indexBuffer);
+   DXRELEASE(pBufferColor);
+   DXRELEASE(pBufferRect);
+   DXRELEASE(pBufferRectLC);
+   DXRELEASE(texsampler);
+   DXRELEASE(depthDisabledStencilState);
+   DXRELEASE(pBlendState);
+   DXRELEASE(pRasterStateDisableClipping);
+   DXRELEASE(pRasterStateEnableClipping);
+   DXRELEASE(texVertexBuffer);
+   DXRELEASE(renderTexView1);
+   DXRELEASE(renderTexView2);
+   DXRELEASE(renderTex1);
+   DXRELEASE(renderTex2);
+
+   // Create a descriptor for the render target buffer.
+   CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appW, appH, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+   renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+
+   // Allocate a 2-D surface as the render target buffer.
+   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex1));
+   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex2));
+   DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex1, nullptr, &renderTexView1));
+   DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex2, nullptr, &renderTexView2));
+   host->CreateSynchronizedTexture(renderTex1, &syncTex1);
+   host->CreateSynchronizedTexture(renderTex2, &syncTex2);
+   syncTex = syncTex1;
+   renderTexView = renderTexView1;
+
+   // Create a depth stencil view.
+   CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
+   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil));
+   CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
+   DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil, &depthStencilViewDesc, &depthStencilView));
+
+   XMMATRIX mat = rotatedTo == 0 || rotatedTo == -2 ?
+      XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f) :
+      XMMatrixMultiply(XMMatrixRotationX(XM_PIDIV2), XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f));
+   XMStoreFloat4x4(&constantBufferData.projection, mat);
+
+   unsigned short cubeIndices[] =
    {
-      DXRELEASE(depthStencil);
-      DXRELEASE(depthStencilView);
-      DXRELEASE(indexBuffer);
-      DXRELEASE(pBufferColor);
-      DXRELEASE(pBufferRect);
-      DXRELEASE(pBufferRectLC);
-      DXRELEASE(texsampler);
-      DXRELEASE(depthDisabledStencilState);
-      DXRELEASE(pBlendState);
-      DXRELEASE(pRasterStateDisableClipping);
-      DXRELEASE(pRasterStateEnableClipping);
-      DXRELEASE(texVertexBuffer);
-      DXRELEASE(renderTexView1);
-      DXRELEASE(renderTexView2);
-      DXRELEASE(renderTex1);
-      DXRELEASE(renderTex2);
+      0, 1, 2, 0, 2, 3
+   };
+   D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
+   indexBufferData.pSysMem = cubeIndices;
+   CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
+   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
 
-      // Create a descriptor for the render target buffer.
-      CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appW, appH, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
-      renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
-
-      // Allocate a 2-D surface as the render target buffer.
-      DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex1));
-      DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex2));
-      DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex1, nullptr, &renderTexView1));
-      DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex2, nullptr, &renderTexView2));
-      host->CreateSynchronizedTexture(renderTex1, &syncTex1);
-      host->CreateSynchronizedTexture(renderTex2, &syncTex2);
-      syncTex = syncTex1;
-      renderTexView = renderTexView1;
-
-      // Create a depth stencil view.
-      CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
-      DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil));
-      CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
-      DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil, &depthStencilViewDesc, &depthStencilView));
-
-      XMMATRIX mat = rotatedTo == 0 || rotatedTo == -2 ?
-         XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f) :
-         XMMatrixMultiply(XMMatrixRotationX(XM_PIDIV2), XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f));
-      XMStoreFloat4x4(&constantBufferData.projection, mat);
-
-      unsigned short cubeIndices[] =
-      {
-         0, 1, 2, 0, 2, 3
-      };
-      D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
-      indexBufferData.pSysMem = cubeIndices;
-      CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
-
-      // used in setColor for fillRect and drawLine and also textures
-      {
-         D3D11_BUFFER_DESC bd = { 0 };
-         bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-         bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
-         bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
-         bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-         DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor));       // create the buffer
-      }
-      // used in fillRect and drawLine
-      {
-         D3D11_BUFFER_DESC bd = { 0 };
-         bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-         bd.ByteWidth = sizeof(VertexPosition)* 4;     // size is the VERTEX
-         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
-         bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-         DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect));       // create the buffer
-      }
-      // used in fillShadedRect
-      {
-         D3D11_BUFFER_DESC bd = { 0 };
-         bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-         bd.ByteWidth = sizeof(VertexPositionColor)* 4;             // size is the VERTEX
-         bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
-         bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-         DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC));       // create the buffer
-      }
-
-      /////////// TEXTURE
-      // Once the texture view is created, create a sampler.  This defines how the color
-      // for a particular texture coordinate is determined using the relevant texture data.
-      D3D11_SAMPLER_DESC samplerDesc;
-      ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-      samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-      samplerDesc.AddressU = samplerDesc.AddressV = samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; // Feature level 9_3, the display device supports the use of 2-D textures with dimensions that are not powers of two under two conditions. First, only one MIP-map level for each texture can be created, and second, no wrap sampler modes for textures are allowed (that is, the AddressU, AddressV, and AddressW members of D3D11_SAMPLER_DESC cannot be set to D3D11_TEXTURE_ADDRESS_WRAP).
-      samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-      samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-      DX::ThrowIfFailed(d3dDevice->CreateSamplerState(&samplerDesc, &texsampler));
-
-      D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
-      depthDisabledStencilDesc.DepthEnable = false;
-      depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-      depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-      depthDisabledStencilDesc.StencilEnable = true;
-      depthDisabledStencilDesc.StencilReadMask = 0xFF;
-      depthDisabledStencilDesc.StencilWriteMask = 0xFF;
-      depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-      depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-      depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-      depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-      depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-      depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-      depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-      depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-      // Create the state using the device.
-      DX::ThrowIfFailed(d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState));
-
-      // setup alpha blending
-      D3D11_BLEND_DESC blendStateDescription = { 0 };
-      blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-      blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-      blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-      blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-      blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-      blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-      blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-      blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-      DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
-
-      // setup clipping
-      D3D11_RASTERIZER_DESC rasterizerState = { D3D11_FILL_SOLID };
-      rasterizerState.CullMode = D3D11_CULL_FRONT;
-      rasterizerState.FrontCounterClockwise = true;
-      rasterizerState.DepthClipEnable = true;
-      DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateDisableClipping));
-      rasterizerState.ScissorEnable = true;
-      DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateEnableClipping));
-
-      // texture vertices
+   // used in setColor for fillRect and drawLine and also textures
+   {
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(TextureVertex)* 8;             // size is the VERTEX struct * 3
+      bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
+      bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
+      bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor));       // create the buffer
+   }
+   // used in fillRect and drawLine
+   {
+      D3D11_BUFFER_DESC bd = { 0 };
+      bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+      bd.ByteWidth = sizeof(VertexPosition)* 4;     // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer));       // create the buffer
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect));       // create the buffer
    }
+   // used in fillShadedRect
+   {
+      D3D11_BUFFER_DESC bd = { 0 };
+      bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+      bd.ByteWidth = sizeof(VertexPositionColor)* 4;             // size is the VERTEX
+      bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+      bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC));       // create the buffer
+   }
+
+   /////////// TEXTURE
+   // Once the texture view is created, create a sampler.  This defines how the color
+   // for a particular texture coordinate is determined using the relevant texture data.
+   D3D11_SAMPLER_DESC samplerDesc;
+   ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+   samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+   samplerDesc.AddressU = samplerDesc.AddressV = samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; // Feature level 9_3, the display device supports the use of 2-D textures with dimensions that are not powers of two under two conditions. First, only one MIP-map level for each texture can be created, and second, no wrap sampler modes for textures are allowed (that is, the AddressU, AddressV, and AddressW members of D3D11_SAMPLER_DESC cannot be set to D3D11_TEXTURE_ADDRESS_WRAP).
+   samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+   samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+   DX::ThrowIfFailed(d3dDevice->CreateSamplerState(&samplerDesc, &texsampler));
+
+   D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+   depthDisabledStencilDesc.DepthEnable = false;
+   depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+   depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+   depthDisabledStencilDesc.StencilEnable = true;
+   depthDisabledStencilDesc.StencilReadMask = 0xFF;
+   depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+   depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+   depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+   depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+   depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+   depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+   depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+   depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+   depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+   // Create the state using the device.
+   DX::ThrowIfFailed(d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState));
+
+   // setup alpha blending
+   D3D11_BLEND_DESC blendStateDescription = { 0 };
+   blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+   blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+   blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+   blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+   blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+   blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+   blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+   blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+   DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
+
+   // setup clipping
+   D3D11_RASTERIZER_DESC rasterizerState = { D3D11_FILL_SOLID };
+   rasterizerState.CullMode = D3D11_CULL_FRONT;
+   rasterizerState.FrontCounterClockwise = true;
+   rasterizerState.DepthClipEnable = true;
+   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateDisableClipping));
+   rasterizerState.ScissorEnable = true;
+   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateEnableClipping));
+
+   // texture vertices
+   D3D11_BUFFER_DESC bd = { 0 };
+   bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+   bd.ByteWidth = sizeof(TextureVertex)* 8;             // size is the VERTEX struct * 3
+   bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+   bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer));       // create the buffer
+
+   // block while load is not completed
+   while (!isLoadCompleted())
+      Sleep(10);
+   if (!vmStarted)
+      std::thread([this]() {startProgram(localContext); }).detach(); // this will block until the application ends         
+   vmStarted = true;
+
    updateWS = false;
    rotatedTo = -1;
 }
@@ -704,20 +712,6 @@ void Direct3DBase::setProgram(whichProgram p)
          break;
    }
    d3dcontext->VSSetConstantBuffers(0, 1, &constantBuffer);
-}
-
-bool Direct3DBase::startProgramIfNeeded()
-{
-   if (!vmStarted && isLoadCompleted())
-   {
-	   vmStarted = true;
-	   auto lambda = [this]()  // program start
-      {
-		   startProgram(localContext); // this will block until the application ends
-	   };
-	   std::thread(lambda).detach();
-   }
-   return vmStarted;
 }
 
 void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)

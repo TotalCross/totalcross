@@ -95,7 +95,6 @@ internal:
 	void initialize(bool resuming);
    void updateDevice(IDrawingSurfaceRuntimeHostNative* host);
 	void preRender(); // resets the screen and set it ready to render
-   bool startProgramIfNeeded();
 	void updateScreen();
 
    void setProgram(whichProgram p);
