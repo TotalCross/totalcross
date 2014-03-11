@@ -291,7 +291,6 @@ namespace PhoneDirect3DXamlAppInterop
         private Direct3DBackground d3dBackground;
         private int specialKey;
         private int keyboardH;
-        private long lastTick;
         private CSWrapper cs;
         public static MainPage instance;
 
@@ -374,13 +373,8 @@ namespace PhoneDirect3DXamlAppInterop
 
         void MainPage_MouseMove(object sender, MouseEventArgs e)
         {
-            long tick = DateTime.Now.Ticks / 10000;
-            if ((tick - lastTick) > 20) // ignore fast moves
-            {
-                lastTick = tick;
-                Point p = e.GetPosition(this);
-                d3dBackground.OnPointerMoved((int)p.X, (int)p.Y - keyboardH);
-            }
+            Point p = e.GetPosition(this);
+            d3dBackground.OnPointerMoved((int)p.X, (int)p.Y - keyboardH);
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)

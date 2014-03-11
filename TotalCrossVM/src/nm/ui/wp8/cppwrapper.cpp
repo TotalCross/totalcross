@@ -37,12 +37,7 @@ static int counter;
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
-	static int32 *ignoreEventOfType = null;
 	struct eventQueueMember newEvent;
-	if (ignoreEventOfType == null)
-		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
-	if (type == *ignoreEventOfType) 
-		return;
 	newEvent.type = type;
 	newEvent.key = key;
 	newEvent.x = x;
@@ -50,7 +45,6 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	newEvent.modifiers = modifiers;
    newEvent.count = ++counter;
 	eventQueue.push(newEvent);
-   //debug("%X - %d. push %d", GetCurrentThreadId(), counter, type);
 }
 
 struct eventQueueMember eventQueuePop(void)

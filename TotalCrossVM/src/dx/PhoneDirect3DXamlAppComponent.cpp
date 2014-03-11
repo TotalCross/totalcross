@@ -44,7 +44,8 @@ void Direct3DBackground::OnPointerPressed(int x, int y)
 
 void Direct3DBackground::OnPointerMoved(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y - glShiftY, -1);
+   if (!renderer->updateScreenWaiting) // boosts performance during drag 
+      eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y - glShiftY, -1);
    isDragging = true;
 }
 
