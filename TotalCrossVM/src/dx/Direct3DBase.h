@@ -104,21 +104,15 @@ internal:
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
    void fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
-   void drawLineImpl(int x1, int y1, int x2, int y2, int color);
-   void fillRectImpl(int x1, int y1, int x2, int y2, int color);
-   void fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip);
-   void drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip);
    void drawPixels(float *glcoords, float *glcolors, int count, int color);
-   void drawPixelsImpl(float *glcoords, float *glcolors, int count, int color);
    void setClip(int32* clip);
    void setColor(int color);
    void createTexture();
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
-   D3DCommand newCommand();
-   int runCommands();
 
-   ID3D11DeviceContext *d3dcontext;
+   ID3D11DeviceContext *d3dcontext, *d3dImedContext;
+   ID3D11CommandList *d3dCommandList;
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
    Platform::String^ alertMsg;
    bool updateScreenWaiting;
@@ -141,9 +135,8 @@ private:
 	bool vmStarted;
 
    // screen textures
-   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex1, syncTex2;
-   ID3D11Texture2D *renderTex1, *renderTex2;
-   ID3D11RenderTargetView *renderTexView, *renderTexView1, *renderTexView2;
+   ID3D11Texture2D *renderTex;
+   ID3D11RenderTargetView *renderTexView;
 
    D3D_FEATURE_LEVEL m_featureLevel;
    ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;

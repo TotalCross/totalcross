@@ -44,7 +44,8 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    if (m_controller->renderer->updateScreenWaiting)
    {
       syncTex->BeginDraw();
-      m_controller->renderer->runCommands();
+      m_controller->renderer->d3dImedContext->ExecuteCommandList(m_controller->renderer->d3dCommandList, FALSE);
+      m_controller->renderer->updateScreenWaiting = false; // once the commandlist is used, we can continue
       syncTex->EndDraw();
    }
    //if (m_controller->renderer->alertMsg != nullptr) { Direct3DBase::getLastInstance()->csharp->privateAlertCS(m_controller->renderer->alertMsg); m_controller->renderer->alertMsg = nullptr; } // alert stuff

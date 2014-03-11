@@ -13,8 +13,6 @@ using namespace Windows::UI::Core;
 #define DXRELEASE(x) do {if (x) {x->Release(); x = null;}} while (0)
 static Direct3DBase ^instance;
 
-std::mutex listMutex;
-
 extern "C" 
 { 
    extern int32 appW, appH, glShiftY; 
@@ -22,188 +20,11 @@ extern "C"
    void repaintActiveWindows(Context currentContext);
 }
 
-struct D3DCommands
-{
-   D3DCommand head;
-   D3DCommand tail;
-   Heap heap;
-   int id;
-} cmds;
-
-// lists
-void listInit(D3DCommands* c)
-{
-   c->head = c->tail = NULL;
-   c->heap = heapCreateB(false);
-   c->id = 1;
-}
-void listAdd(D3DCommands* s, D3DCommand p)
-{
-   p->next = NULL;
-   if (NULL == s->head && NULL == s->tail)
-      s->head = s->tail = p;
-   else
-   {
-      s->tail->next = p;
-      s->tail = p;
-   }
-}
-
-bool listIsEmpty(D3DCommands* s)
-{
-   bool b = NULL == s->head && NULL == s->tail;
-   return b;
-}
-
-void listSetEmpty(D3DCommands* s)
-{
-   //debug("heap.alloc: %d (%d)", s->heap->numAlloc, s->heap->totalAlloc);
-   heapDestroyB(s->heap,false);
-   s->heap = heapCreateB(false);
-   s->head = s->tail = NULL;
-}
-
-D3DCommand Direct3DBase::newCommand()
-{
-   return newXH(D3DCommand,cmds.heap);
-}
-
-void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
-{
-   std::lock_guard<std::mutex> lock(listMutex);
-   D3DCommand cmd = newCommand();
-   cmd->cmd = D3DCMD_FILLSHADEDRECT;
-   cmd->a = x;
-   cmd->b = y;
-   cmd->c = w;
-   cmd->d = h;
-   cmd->c1 = c1;
-   cmd->c2 = c2;
-   cmd->flags.horiz = horiz;
-   cmd->flags.hasClip = true;
-   cmd->clip[0] = Graphics_clipX1(g);
-   cmd->clip[1] = Graphics_clipY1(g);
-   cmd->clip[2] = Graphics_clipX2(g);
-   cmd->clip[3] = Graphics_clipY2(g);
-   listAdd(&cmds, cmd);
-}
-void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
-{
-   std::lock_guard<std::mutex> lock(listMutex);
-   D3DCommand cmd = newCommand();
-   cmd->cmd = D3DCMD_DRAWLINE;
-   cmd->a = x1;
-   cmd->b = y1;
-   cmd->c = x2;
-   cmd->d = y2;
-   cmd->c1.pixel = color;
-   listAdd(&cmds, cmd);
-}
-void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
-{
-   std::lock_guard<std::mutex> lock(listMutex);
-   D3DCommand cmd = newCommand();
-   cmd->cmd = D3DCMD_FILLRECT;
-   cmd->a = x1;
-   cmd->b = y1;
-   cmd->c = x2;
-   cmd->d = y2;
-   cmd->c1.pixel = color;
-   listAdd(&cmds, cmd);
-}
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
-{
-   std::lock_guard<std::mutex> lock(listMutex);
-   D3DCommand cmd = newCommand();
-   cmd->cmd = D3DCMD_DRAWTEXTURE;
-   cmd->textureId[0] = textureId[0];
-   cmd->textureId[1] = textureId[1];
-   cmd->a = x;
-   cmd->b = y;
-   cmd->c = w;
-   cmd->d = h;
-   cmd->e = dstX;
-   cmd->f = dstY;
-   cmd->g = imgW;
-   cmd->h = imgH;
-   cmd->flags.hasColor = color != null;
-   if (cmd->flags.hasColor) cmd->c1.pixel = color->pixel;
-   cmd->flags.hasClip = clip != null;
-   if (cmd->flags.hasClip) { cmd->clip[0] = clip[0]; cmd->clip[1] = clip[1]; cmd->clip[2] = clip[2]; cmd->clip[3] = clip[3]; }
-   listAdd(&cmds, cmd);
-}
-
-void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
-{
-   std::lock_guard<std::mutex> lock(listMutex);
-   D3DCommand cmd = newCommand();
-   cmd->cmd = D3DCMD_DRAWPIXELS;
-   if (count == 1) // optimization to prevent allocation of 1 point. can be changed in the future to use up to 3 points
-   {
-      cmd->xy[0] = glcoords[0];
-      cmd->xy[1] = glcoords[1];
-      cmd->fcolor = glcolors[0];
-   }
-   else
-   {
-      cmd->coords = (float*)heapAlloc(cmds.heap, 2 * count * sizeof(float));
-      cmd->colors = (float*)heapAlloc(cmds.heap,     count * sizeof(float));
-      xmemmove(cmd->coords, glcoords, 2 * count * sizeof(float));
-      xmemmove(cmd->colors, glcolors,     count * sizeof(float));
-   }
-   cmd->c = count;
-   cmd->c1.pixel = color;
-   listAdd(&cmds, cmd);
-}
-
-int Direct3DBase::runCommands()
-{
-   if (minimized) return 0;
-   std::lock_guard<std::mutex> lock(listMutex);
-   int n = 0;
-   if (!listIsEmpty(&cmds))
-   {
-      preRender();
-      for (D3DCommand c = cmds.head; c != NULL; c = c->next, n++)
-         switch (c->cmd)
-         {
-            case D3DCMD_FILLSHADEDRECT:
-               fillShadedRectImpl(c->a, c->b, c->c, c->d, c->c1, c->c2, c->flags.horiz?true:false, c->clip);
-               break;
-            case D3DCMD_FILLRECT:
-               fillRectImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
-               break;
-            case D3DCMD_DRAWLINE:
-               if (c->a == c->c) // x1 == x2?
-                  fillRectImpl(c->a, c->b, c->a + 1, c->d, c->c1.pixel);
-               else
-               if (c->b == c->d) // y1 == y2
-                  fillRectImpl(c->a, c->b, c->c, c->b + 1, c->c1.pixel);
-               else
-                  drawLineImpl(c->a, c->b, c->c, c->d, c->c1.pixel);
-               break;
-            case D3DCMD_DRAWTEXTURE:
-               drawTextureImpl(c->textureId, c->a, c->b, c->c, c->d, c->e, c->f, c->g, c->h, c->flags.hasColor ? &c->c1 : null, c->flags.hasClip ? c->clip : null);
-               break;
-            case D3DCMD_DRAWPIXELS:
-               if (c->c == 1)
-                  drawPixelsImpl(c->xy, &c->fcolor, c->c, c->c1.pixel);
-               else
-                  drawPixelsImpl(c->coords, c->colors, c->c, c->c1.pixel);
-               break;
-         }
-      listSetEmpty(&cmds);
-   }
-   updateScreenWaiting = false;
-   return n;
-}
-
 // Constructor.
 Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
-   listInit(&cmds);
 }
 
 Direct3DBase ^Direct3DBase::getLastInstance()
@@ -218,7 +39,8 @@ void Direct3DBase::initialize(bool resuming)
    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
    //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
    D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_9_3};
-   DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dcontext));
+   DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
+   d3dDevice->CreateDeferredContext(0, &d3dcontext);
 
    loadCompleted = 0;
    updateWS = true;
@@ -335,24 +157,17 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    DXRELEASE(pRasterStateDisableClipping);
    DXRELEASE(pRasterStateEnableClipping);
    DXRELEASE(texVertexBuffer);
-   DXRELEASE(renderTexView1);
-   DXRELEASE(renderTexView2);
-   DXRELEASE(renderTex1);
-   DXRELEASE(renderTex2);
+   DXRELEASE(renderTexView);
+   DXRELEASE(renderTex);
 
    // Create a descriptor for the render target buffer.
    CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appW, appH, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
    renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
    // Allocate a 2-D surface as the render target buffer.
-   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex1));
-   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex2));
-   DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex1, nullptr, &renderTexView1));
-   DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex2, nullptr, &renderTexView2));
-   host->CreateSynchronizedTexture(renderTex1, &syncTex1);
-   host->CreateSynchronizedTexture(renderTex2, &syncTex2);
-   syncTex = syncTex1;
-   renderTexView = renderTexView1;
+   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex));
+   DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex, nullptr, &renderTexView));
+   host->CreateSynchronizedTexture(renderTex, &syncTex);
 
    // Create a depth stencil view.
    CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
@@ -466,14 +281,37 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    if (!vmStarted)
       std::thread([this]() {startProgram(localContext); }).detach(); // this will block until the application ends         
    vmStarted = true;
-
+   preRender();
    updateWS = false;
    rotatedTo = -1;
 }
 
-#define f255(x) ((float)x/255.0f)
-void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip)
+void Direct3DBase::setColor(int color)
 {
+   if (color == lastRGB) return;
+   lastRGB = color;
+   aa = ((color >> 24) & 0xFF) / 255.0f;
+   rr = ((color >> 16) & 0xFF) / 255.0f;
+   gg = ((color >> 8) & 0xFF) / 255.0f;
+   bb = (color & 0xFF) / 255.0f;
+
+   VertexColor vcolor;
+   vcolor.color = XMFLOAT4(rr, gg, bb, aa);
+
+   D3D11_MAPPED_SUBRESOURCE ms;
+
+   d3dcontext->Map(pBufferColor, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   memcpy(ms.pData, &vcolor, sizeof(VertexColor));                // copy the data
+   d3dcontext->Unmap(pBufferColor, NULL);                                     // unmap the buffer
+
+   d3dcontext->VSSetConstantBuffers(1, 1, &pBufferColor);
+}
+
+#define f255(x) ((float)x/255.0f)
+
+void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+{
+   int clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
    y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
@@ -501,28 +339,7 @@ void Direct3DBase::fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelC
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::setColor(int color)
-{
-   if (color == lastRGB) return;
-   lastRGB = color;
-   aa = ((color >> 24) & 0xFF) / 255.0f;
-   rr = ((color >> 16) & 0xFF) / 255.0f;
-   gg = ((color >> 8) & 0xFF) / 255.0f;
-   bb = (color & 0xFF) / 255.0f;
-
-   VertexColor vcolor;
-   vcolor.color = XMFLOAT4(rr, gg, bb, aa);
-
-   D3D11_MAPPED_SUBRESOURCE ms;
-
-   d3dcontext->Map(pBufferColor, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
-   memcpy(ms.pData, &vcolor, sizeof(VertexColor));                // copy the data
-   d3dcontext->Unmap(pBufferColor, NULL);                                     // unmap the buffer
-
-   d3dcontext->VSSetConstantBuffers(1, 1, &pBufferColor);
-}
-
-void Direct3DBase::drawLineImpl(int x1, int y1, int x2, int y2, int color)
+void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
    y1 += glShiftY;
    y2 += glShiftY;
@@ -547,7 +364,7 @@ void Direct3DBase::drawLineImpl(int x1, int y1, int x2, int y2, int color)
    d3dcontext->DrawIndexed(2, 0, 0);
 }
 
-void Direct3DBase::fillRectImpl(int x1, int y1, int x2, int y2, int color)
+void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
    y1 += glShiftY;
    y2 += glShiftY;
@@ -574,7 +391,7 @@ void Direct3DBase::fillRectImpl(int x1, int y1, int x2, int y2, int color)
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::drawPixelsImpl(float* glcoords, float* glcolors, int count, int color)
+void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
 {
    int i;
    int n = count * 2;
@@ -644,9 +461,11 @@ void Direct3DBase::lifeCycle(bool suspending)
 void Direct3DBase::updateScreen()
 {
    if (minimized) return;
+   d3dcontext->FinishCommandList(FALSE, &d3dCommandList); // 0ms
    updateScreenWaiting = true;
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
-   while (updateScreenWaiting) Sleep(0);
+   while (updateScreenWaiting) Sleep(0); // 16ms
+   preRender();
 }
 
 void Direct3DBase::preRender()
@@ -770,7 +589,7 @@ void Direct3DBase::setClip(int32* clip)
    clipSet = doClip;
 }
 
-void Direct3DBase::drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
    ID3D11Texture2D *texture;
    ID3D11ShaderResourceView *textureView;
