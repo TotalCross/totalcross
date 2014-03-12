@@ -120,6 +120,7 @@ internal:
    int sipHeight;
    bool updateWS;
    bool minimized;
+   int screenShiftY;
    Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex;
 
 private:

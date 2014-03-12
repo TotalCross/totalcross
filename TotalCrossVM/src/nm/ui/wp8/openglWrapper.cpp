@@ -171,7 +171,7 @@ void setShiftYgl()
 	if (setShiftYonNextUpdateScreen) 
    {
       int32 sipHeight = dxGetSipHeight();
-		int32 componentPos = desiredScreenShiftY;     // set both at once
+		int32 componentPos = desiredScreenShiftY;
 		setShiftYonNextUpdateScreen = false;
 		if (sipHeight == 0 || componentPos <= sipHeight)
          glShiftY = 0;

@@ -40,7 +40,7 @@ protected:
 internal:
    HRESULT STDMETHODCALLTYPE Connect(_In_ IDrawingSurfaceRuntimeHostNative* host);
    void STDMETHODCALLTYPE Disconnect();
-   HRESULT STDMETHODCALLTYPE PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Out_ BOOL* contentDirty);
+   HRESULT STDMETHODCALLTYPE PrepareResources(_Out_ BOOL* contentDirty);
    Direct3DBase^ renderer;
 
 private:

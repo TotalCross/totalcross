@@ -19,6 +19,7 @@ using PhoneDirect3DXamlAppComponent;
 using Windows.Devices.Geolocation;
 using Windows.Networking.Proximity;
 using System.Diagnostics;
+using Windows.UI.ViewManagement;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -304,6 +305,7 @@ namespace PhoneDirect3DXamlAppInterop
             this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
             this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
             this.SizeChanged += MainPage_SizeChanged;
+            // InputPane input = InputPane.GetForCurrentView(); input.Showing += input_Showing; input.Hiding += input_Hiding; DOES NOT WORK! METHODS ARE NEVER CALLED
             BeginListenForSIPChanged();
         }
 
