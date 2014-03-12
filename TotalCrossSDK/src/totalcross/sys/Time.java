@@ -133,6 +133,34 @@ public final class Time
       second = Convert.toInt(new String(chars, 15, 2));
    }
    
+   /** Creates a time in the SQL' format. 
+    * @param time Number of millis since 1/1/1970
+    * @param b Here only to differ from the other constructor that receives a long and its ignored.
+    * @throws InvalidDateException 
+    * @since TotalCross 2.1
+    */
+   public Time(long time, boolean b) throws InvalidDateException
+   {
+      millis = (int)(time % 1000); time /= 1000;
+      second = (int)(time % 60); time /= 60;
+      minute = (int)(time % 60); time /= 60;
+      hour   = (int)(time % 24); time /= 24;
+      hour  += Settings.timeZoneMinutes*60;
+      Date d = new Date(Date.SQL_EPOCH.getDateInt());
+      d.advance((int)time);
+      day = d.getDay();
+      month = d.getMonth();
+      year = d.getYear();
+   }
+   
+   /** Returns the number of millis since 1/1/1970
+    * @since TotalCross 2.1 
+    */
+   public long getTime() throws InvalidDateException
+   {
+      return new Date(this).getTime() + hour * 60*60*1000 + minute*60*1000+ second*1000 + millis;
+   }
+
    /** Constructs a Time object, parsing the String and placing the fields depending on
     * the flags that were set, using the Settings.timeSeparator as spliter.
     * The number of parts must match the number of true flags, or an ArrayIndexOutOfBoundsException will be thrown.

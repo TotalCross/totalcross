@@ -615,18 +615,18 @@ public class Date implements Comparable
    }
    
 
-   private static Date EPOCH;
+   public static Date SQL_EPOCH;
    
    static 
    {
-      try {EPOCH = new Date(1,1,1970);} catch (Exception e) {}
+      try {SQL_EPOCH = new Date(1,1,1970);} catch (Exception e) {}
    }
-   /** Returns the number of millis since 1/1/1970.
+   /** Returns the number of millis since SQL_EPOCH 1/1/1970.
     * @since TotalCross 2.1
     */
    public long getTime()
    {
-      long days = EPOCH.subtract(this);
+      long days = SQL_EPOCH.subtract(this);
       return days*24*60*60*1000 - Settings.timeZoneMinutes*60*1000;
    }
 }

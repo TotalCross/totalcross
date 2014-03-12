@@ -14,7 +14,7 @@ class SQLConvert
    {
       try
       {
-         return new java.sql.Time(new Date(x).getTime() + x.hour * 60*60*1000 + x.minute*60*1000+ x.second*1000);
+         return new java.sql.Time(x.getTime());
       }
       catch (InvalidDateException e)
       {
@@ -23,7 +23,15 @@ class SQLConvert
    }
    static totalcross.sys.Time time(java.sql.Time x)
    {
-      return x == null ? null : new totalcross.sys.Time(x.getTime());
+      try
+      {
+         return x == null ? null : new totalcross.sys.Time(x.getTime(),true);
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+         return null;
+      }
    }
 
    static java.sql.Date date(Date x)
@@ -44,6 +52,14 @@ class SQLConvert
          {
          }
       return null;
+   }
+   
+   public static void main(String args[])
+   {
+      totalcross.sys.Time t0 = new totalcross.sys.Time();
+      java.sql.Time t1 = time(t0);
+      totalcross.sys.Time t2 = time(t1);
+      System.out.println(t0.getTimeLong()+" -> "+t2.getTimeLong());
    }
 
    static java.sql.Timestamp timestamp(Timestamp x)
