@@ -19,7 +19,7 @@
 package totalcross.util.zip;
 
 /**
- * This exception may be dispatched by zlib routines.
+ * This exception may be dispatched by zLib routines.
  */
 
 public class ZLibException extends Exception
