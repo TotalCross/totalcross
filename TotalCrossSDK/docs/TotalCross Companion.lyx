@@ -61404,11 +61404,17 @@ There are some proof timings (measured in microseconds – µ = 1 second /
 \end_layout
 
 \begin_layout Itemize
-Windows Mobile: Toshiba G900, 400MHz – named Win
+Windows 8.1, iCore 5, 2 x 2.80 GHz, 5 Gb RAM, 192 Gb disk size - named Win
 \end_layout
 
 \begin_layout Itemize
-iPhone 1.1.4, 412MHz – named iPhone
+Android 4.4.2, Motorola Moto G, 4 x 1.2 GHz, 1 Gb RAM, 16 Gb disk size - named
+ Android
+\end_layout
+
+\begin_layout Itemize
+iPhone 7.0.6, iPhone 4 S, 2 x 800 MHz, 512 Mb RAM, 8 Gb disk size - named
+ iPhone
 \end_layout
 
 \begin_layout Chapter
@@ -61454,7 +61460,7 @@ for (int i =0; i < v.size(); i++)
 \end_layout
 
 \begin_layout Standard
-Win: 1.00, iPhone: 5.47
+Win: 00.00, Android: 00.67, iPhone: 00.47
 \end_layout
 
 \begin_layout Standard
@@ -61482,7 +61488,7 @@ for (int i=0; i < n; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 0.40, iPhone: 1.47
+Win: 00.00, Android: 00.27, iPhone: 00.20
 \end_layout
 
 \begin_layout Standard
@@ -61506,7 +61512,7 @@ for (int i=v.size()-1; i >= 0; i--)
 \end_layout
 
 \begin_layout Standard
-Win: 0.40, iPhone: 1.40
+Win: 00.40, Android: 00.20, iPhone: 00.13
 \end_layout
 
 \begin_layout Standard
@@ -61540,14 +61546,14 @@ for (int i =0; i < items.length; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 0.47, iPhone: 1.53
+Win: 00.00, Android: 00.20, iPhone: 00.20
 \end_layout
 
 \end_deeper
 \begin_layout Enumerate
 Avoid using get and set methods.
- This may go against standard object oriented practices, but in small Java
- devices it is necessary that you avoid this.
+ This may go against standard object oriented practices, but in small devices
+ it is necessary that you avoid this.
  If you have a simple member that is protected or private, and is set and
  get by using something like: 
 \end_layout
@@ -61574,7 +61580,7 @@ public void setS(String newS) {s = newS;}
 \end_layout
 
 \begin_layout Standard
-Win: 0.87, iPhone: 2.65
+Win: 00.11, Android: 00.51, iPhone: 00.44
 \end_layout
 
 \begin_layout Standard
@@ -61593,7 +61599,7 @@ public String getS() {return s;}
 \end_layout
 
 \begin_layout Standard
-Win: 0.86, iPhone: 2.76
+Win: 00.08, Android: 00.46, iPhone: 00.38
 \end_layout
 
 \begin_layout Standard
@@ -61620,7 +61626,7 @@ direct set (
 \family typewriter
 s = ...
 \family default
-): Win: 0.28, iPhone: 0.69
+): Win: 00.02, Android: 00.14, iPhone: 00.13
 \end_layout
 
 \begin_layout Standard
@@ -61629,7 +61635,7 @@ direct get (
 ...
  = s
 \family default
-): Win: 0.31, iPhone: 0.82
+): Win: 00.02, Android: 00.19, iPhone: 00.15
 \end_layout
 
 \begin_layout Standard
@@ -61669,7 +61675,7 @@ Avoid using Interfaces.
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring abstract classes0
-interfaces Win: 2.16, iPhone: 8.83
+interfaces Win: 00.20, Android: 01.16, iPhone: 01.76
 \end_layout
 
 \begin_layout Labeling
@@ -61678,7 +61684,7 @@ abstract
 \begin_inset space ~
 \end_inset
 
-classes Win: 0.79, iPhone: 2.54
+classes Win: 00.05, Android: 00.49, iPhone: 00.40
 \end_layout
 
 \begin_layout Labeling
@@ -61687,7 +61693,7 @@ normal
 \begin_inset space ~
 \end_inset
 
-classes Win: 0.79, iPhone: 2.53
+classes Win: 00.06, Android: 00.48, iPhone: 00.40
 \end_layout
 
 \end_deeper
@@ -61725,7 +61731,7 @@ x/4 = x>>2
 \family typewriter
 */
 \family default
- Win: 0.58, iPhone: 1.02
+ Win: 00.03, Android: 00.20, iPhone: 00.33
 \end_layout
 
 \begin_layout Labeling
@@ -61734,7 +61740,7 @@ x/4 = x>>2
 \family typewriter
 <<>>
 \family default
- Win: 0.37, iPhone: 0.93
+ Win: 00.02, Android: 00.19, iPhone: 00.17
 \end_layout
 
 \end_deeper
@@ -61821,7 +61827,7 @@ n
 \family typewriter
 %
 \family default
- Win: 0.48, iPhone: 0.76
+ Win: 00.02, Android: 00.17, iPhone: 00.21
 \end_layout
 
 \begin_layout Labeling
@@ -61830,7 +61836,7 @@ n
 \family typewriter
 &
 \family default
- Win: 0.27, iPhone: 0.70
+ Win: 00.02, Android: 00.14, iPhone: 00.11
 \end_layout
 
 \end_deeper
@@ -61861,7 +61867,7 @@ centerY = pos[i].y;
 \end_layout
 
 \begin_layout Standard
-Win: 0.63, iPhone: 1.61
+Win: 00.06, Android: 00.33, iPhone: 00.29
 \end_layout
 
 \begin_layout Standard
@@ -61894,18 +61900,29 @@ centerY = c.y;
 \end_layout
 
 \begin_layout Standard
-Win: 0.57, iPhone: 1.48
+Win: 00.03, Android: 00.30, iPhone: 00.26
 \end_layout
 
 \begin_layout Standard
-Because each time you access an array position, the VM checks for null pointer
- exceptions, array index out of bounds exceptions, and does a multiply to
- access the memory address, which expends time.
+Because each time you access an array position, the VM checks for 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+NullPointerException
+\family default
+s, 
+\family typewriter
+ArrayIndexOutOfBoundsException
+\family default
+s, and does a multiply to access the memory address, which expends time.
 \end_layout
 
 \end_deeper
 \begin_layout Enumerate
-Use an array (E.g.: 
+Use an array (e.
+ g.: 
 \family typewriter
 String[]
 \family default
@@ -62036,7 +62053,7 @@ for (int i=0; i < LOOP3; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 134.00, iPhone: 225.2
+Win: 03.00, Android: 16.80, iPhone: 23.80
 \end_layout
 
 \begin_layout Standard
@@ -62095,7 +62112,7 @@ for (int i=0; i < LOOP3; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 2.40, iPhone: 7.00
+Win: 00.00, Android: 01.00, iPhone: 00.60
 \end_layout
 
 \end_deeper
@@ -62151,7 +62168,7 @@ for (int i=0; i < 10000; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 45.60, iPhone: 76.60
+Win: 01.60, Android: 06.80, iPhone: 08.80
 \end_layout
 
 \begin_layout Standard
@@ -62185,7 +62202,7 @@ lb.add(s);
 \end_layout
 
 \begin_layout Standard
-Win: 8.80, iPhone: 33.10
+Win: 00.00, Android: 02.90, iPhone: 05.20
 \end_layout
 
 \end_deeper
@@ -62208,7 +62225,7 @@ double
 long
 \family default
  type has to be emulated on 32-bit processors.
- Currently, almost all PDA processors have a math co-processor and thus
+ Currently, almost all device processors have a math co-processor and thus
  
 \family typewriter
 double
@@ -62227,7 +62244,7 @@ int
 \family typewriter
 long
 \family default
- Win: 3.88, iPhone: 1.99
+ Win: 00.06, Android: 00.51, iPhone: 00.33
 \end_layout
 
 \begin_layout Labeling
@@ -62236,7 +62253,7 @@ long
 \family typewriter
 double
 \family default
- Win: 0.99, iPhone: 1.34
+ Win: 00.25, Android: 00.27, iPhone: 00.26
 \end_layout
 
 \begin_layout Labeling
@@ -62245,7 +62262,7 @@ double
 \family typewriter
 int
 \family default
- Win: 0.63, iPhone: 0.90
+ Win: 00.03, Android: 00.19, iPhone: 00.37
 \end_layout
 
 \end_deeper
@@ -62292,12 +62309,12 @@ reference "sec:Event-Handling"
 \begin_deeper
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-if/else Win: 0.48, iPhone: 1.23
+if/else Win: 00.05, Android: 00.25, iPhone: 00.26
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-switch Win: 0.43, iPhone: 1.20
+switch Win: 00.03, Android: 00.21, iPhone: 00.21
 \end_layout
 
 \end_deeper
@@ -62336,7 +62353,7 @@ from
 \begin_inset space ~
 \end_inset
 
-10 Win: 2.4, iPhone: 7.30
+10 Win: 00.00, Android: 01.10, iPhone: 00.90
 \end_layout
 
 \begin_layout Labeling
@@ -62349,7 +62366,7 @@ from
 \begin_inset space ~
 \end_inset
 
-10000 Win: 1.7, iPhone: 6.30
+10000 Win: 00.00, Android: 01.00, iPhone: 00.80
 \end_layout
 
 \end_deeper
@@ -62366,7 +62383,11 @@ int
 \family typewriter
 String
 \family default
- value if the String being searched has a length of one 
+ value if the 
+\family typewriter
+String
+\family default
+ being searched has a length of one 
 \family typewriter
 char
 \family default
@@ -62380,7 +62401,7 @@ char
 \family typewriter
 int
 \family default
- Win: 1.64, iPhone: 4.98
+ Win: 00.09, Android: 00.69, iPhone: 00.67
 \end_layout
 
 \begin_layout Labeling
@@ -62389,7 +62410,7 @@ int
 \family typewriter
 String
 \family default
- Win: 1.90, iPhone: 6.08
+ Win: 00.13, Android: 00.91, iPhone: 00.90
 \end_layout
 
 \end_deeper
@@ -62510,7 +62531,7 @@ x
 
 x+y
 \family default
- Win: 0.27, iPhone: 0.71
+ Win: 00.02, Android: 00.15, iPhone: 00.13
 \end_layout
 
 \begin_layout Labeling
@@ -62527,7 +62548,7 @@ x
 
 y
 \family default
- Win: 0.22, iPhone: 0.57
+ Win: 00.02, Android: 00.13, iPhone: 00.13
 \end_layout
 
 \end_deeper
@@ -62611,7 +62632,7 @@ instance
 \begin_inset space ~
 \end_inset
 
-variable Win: 0.46, iPhone: 1.25
+variable Win: 00.02, Android: 00.27, iPhone: 00.25
 \end_layout
 
 \begin_layout Labeling
@@ -62620,7 +62641,7 @@ local
 \begin_inset space ~
 \end_inset
 
-variable Win: 0.22, iPhone: 0.57
+variable Win: 00.02, Android: 00.12, iPhone: 00.13
 \end_layout
 
 \begin_layout Standard
@@ -62754,7 +62775,7 @@ for (int i =0; i < n; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 61.95, iPhone: 151.10
+Win: 03.15, Android: 25.75, iPhone: 26.60
 \end_layout
 
 \begin_layout Standard
@@ -62796,7 +62817,7 @@ for (int j =0; j < n; j++)
 \end_layout
 
 \begin_layout Standard
-Win: 54.75, iPhone: 363.85
+Win: 03.90, Android: 26.35, iPhone: 28.25
 \end_layout
 
 \begin_layout Standard
@@ -62834,7 +62855,7 @@ for (int i =0; i < n; i++)
 \end_layout
 
 \begin_layout Standard
-Win: 134.55, iPhone: 557.30
+Win: 09.35, Android: 78.00, iPhone: 64.40
 \end_layout
 
 \begin_layout Standard
@@ -62866,18 +62887,17 @@ chars2bytes()
  is used.
 \end_layout
 
-\begin_layout Standard
-iOS has a virtual memory that swaps unused portions to disk; this may explain
- why this test ran so slowly when comparing to the other platform.
-\end_layout
-
 \end_deeper
 \begin_layout Enumerate
 The use of 
 \family typewriter
 short
 \family default
- and byte data types are slower than using 
+ and 
+\family typewriter
+byte
+\family default
+ data types are slower than using 
 \family typewriter
 int
 \family default
@@ -62906,7 +62926,7 @@ int
 \family typewriter
 int
 \family default
- Win: 0.27, iPhone: 0.68
+ Win: 00.02, Android: 00.16, iPhone: 00.13
 \end_layout
 
 \begin_layout Labeling
@@ -62915,7 +62935,7 @@ int
 \family typewriter
 short
 \family default
- Win: 0.32, iPhone: 0.81
+ Win: 00.03, Android: 00.17, iPhone: 00.15
 \end_layout
 
 \begin_layout Labeling
@@ -62924,7 +62944,7 @@ short
 \family typewriter
 byte
 \family default
- Win: 0.32, iPhone: 0.81
+ Win: 00.02, Android: 00.17, iPhone: 00.15
 \end_layout
 
 \end_deeper
@@ -62932,11 +62952,7 @@ byte
 Remember that although the time of each operation is small, in your whole
  program every speed improvement gained using the approaches described above
  will count a lot.
-\end_layout
-
-\begin_layout Standard
-As a side note, running the same tests on SuperWaba 5.85, TotalCross 1.0 beta
- 4 was 10% faster on Windows Mobile.
+ Notice also that the tricks also improve performance on desktop.
 \end_layout
 
 \begin_layout Part
@@ -62957,7 +62973,7 @@ name "chap:Copyright"
 
 \begin_layout Standard
 All contents of this tutorial, including text, programs, applets, source
- code, and images are copyrighted and owned by SuperWaba Ltda, all rights
+ code, and images are copyrighted and owned by TotalCross Ltda, all rights
  reserved.
  No material can be reproduced and/or distributed electronically or in print
  without written permission.
@@ -62968,28 +62984,12 @@ Platform specific known features/flaws
 \end_layout
 
 \begin_layout Section
-Windows CE
-\end_layout
-
-\begin_layout Standard
-When an application crashes, it usually freezes and must be closed by the
- user.
-\end_layout
-
-\begin_layout Section
 iOS and Android
 \end_layout
 
 \begin_layout Standard
 When an application crashes, it is usually closed by the system.
  But on Android the system might reboot.
-\end_layout
-
-\begin_layout Standard
-Pressing the home button puts it to background.
- If it is doing some data processing, it won't stop.
- The SO may kill your background application if it is in need of resources.
- There is no way to prevent it.
 \end_layout
 
 \begin_layout Standard
@@ -63378,11 +63378,11 @@ The Eclipse IDE with Java Development Tools installed.
 \end_layout
 
 \begin_layout Itemize
-We'll refer to the TotalCross location as TotalCross SDK.
+We'll refer to the TotalCross location as TotalCrossSDK.
 \end_layout
 
 \begin_layout Standard
-We'll use the UIGadgets sample that comes with the SDK to skip the programming
+We'll use the UIControls sample that comes with the SDK to skip the programming
  and focus on the project setup:
 \end_layout
 
@@ -63392,7 +63392,7 @@ Create a new Java Project: Open the menu File and click on New > Java Project.
 
 \begin_layout Enumerate
 Choose a project name for your project and click on Finish.
- We'll use UIGadgets.
+ We'll use UIControls.
 \end_layout
 
 \begin_layout Enumerate
@@ -63406,11 +63406,11 @@ On the new “Import” dialog shown, click on “+” to expand the folder “G
 \end_layout
 
 \begin_layout Enumerate
-Now write the complete file path to the UIGadgets example, or use “Browse”
+Now write the complete file path to the UIControls example, or use “Browse”
  to navigate to the file system.
  Our source is located at 
 \family typewriter
-TotalCrossSDK/src/tc/samples/ui/gadgets
+TotalCrossSDK/src/tc/samples/ui/controls
 \family default
 .
 \end_layout
@@ -63418,15 +63418,15 @@ TotalCrossSDK/src/tc/samples/ui/gadgets
 \begin_layout Enumerate
 After inputing the source location, check the file 
 \family typewriter
-UIGadgets.java
+UIControls.java
 \family default
  on the right panel; Below you can see the default input folder is 
 \family typewriter
-UIGadgets/src
+UIControls/src
 \family default
 , change it to 
 \family typewriter
-UIGadgets/src/tc/ samples/ui/gadgets
+UIControls/ src/tc/samples/ui/controls
 \family default
  and click on “Finish”.
 \end_layout
@@ -63434,7 +63434,7 @@ UIGadgets/src/tc/ samples/ui/gadgets
 \begin_layout Enumerate
 Now we can see our project has 
 \family typewriter
-tc.samples.ui.gadgets.UIGadgets.java
+tc.samples.ui.controls.UIControls.java
 \family default
  on it, but it is also displaying several build errors.
  To fix this, right-click on the project and choose “Properties”.
@@ -63492,7 +63492,8 @@ Press “Ok” to confirm and close the “Properties” dialog.
 
 \begin_layout Enumerate
 Re-build the project and the build errors should all be gone (skip this
- step if your Eclipse is configured to Build automatically).
+ step if your Eclipse is configured to build automatically in Preferences-->Work
+space).
 \end_layout
 
 \begin_layout Chapter
@@ -63504,8 +63505,6 @@ We have developped a way to automatically generate an error log.
  In our case, the log is sent by email on each data synchronization.
  Thus, it is possible to catch errors that occur when the application is
  in production and the user can't send the device to us.
- The option described here uses commands that are available in version 1.52,
- released on March 20.
  The code written here is NOT in the SDK.
  
 \end_layout
@@ -64430,7 +64429,7 @@ In our synchronization, we send the log error using a servlet; if you preffer
 \begin_layout Enumerate
 In the server, we get the report and send it by e-mail directly to the developer
  support service.
- If the report has tcvmlib errors, you should open a request in our support
+ If the report has errors in the VM, you should open a request in our support
  service with the error log and addicional information to help us to reproduce
  the errors.
  
