@@ -15,7 +15,7 @@ static Direct3DBase ^instance;
 
 extern "C" 
 { 
-   extern int32 appW, appH, glShiftY; 
+   extern int32 appW, appH, glShiftY;
    void recreateTextures();
    void repaintActiveWindows(Context currentContext);
 }
@@ -309,12 +309,10 @@ void Direct3DBase::setColor(int color)
 
 #define f255(x) ((float)x/255.0f)
 
-#define SCREEN_SHIFTY (glShiftY-screenShiftY)
-
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    int clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
-   y += SCREEN_SHIFTY;
+   y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
    XMFLOAT4 color2 = XMFLOAT4(f255(c1.r), f255(c1.g), f255(c1.b), f255(c1.a));
@@ -343,8 +341,8 @@ void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h
 
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
-   y1 += SCREEN_SHIFTY;
-   y2 += SCREEN_SHIFTY;
+   y1 += glShiftY;
+   y2 += glShiftY;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -368,8 +366,8 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
-   y1 += SCREEN_SHIFTY;
-   y2 += SCREEN_SHIFTY;
+   y1 += glShiftY;
+   y2 += glShiftY;
    VertexPosition cubeVertices[] = // position, color
    {
       { XMFLOAT2((float)x1, (float)y1) },
@@ -403,8 +401,8 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    {
       float x = *glcoords++;  // TODO use glcolors
       float y = *glcoords++;
-      cv->pos = XMFLOAT2(x, y + SCREEN_SHIFTY); cv++;
-      cv->pos = XMFLOAT2(x + 1, y + 1 + SCREEN_SHIFTY); cv++;
+      cv->pos = XMFLOAT2(x, y + glShiftY); cv++;
+      cv->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); cv++;
    }
    setProgram(PROGRAM_GC);
 
@@ -582,9 +580,9 @@ void Direct3DBase::setClip(int32* clip)
       if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
       {
          clipRect.left = clip[0];
-         clipRect.top = clip[1] + SCREEN_SHIFTY;
+         clipRect.top = clip[1] + glShiftY;
          clipRect.right = clip[2];
-         clipRect.bottom = clip[3] + SCREEN_SHIFTY;
+         clipRect.bottom = clip[3] + glShiftY;
          d3dcontext->RSSetScissorRects(1, &clipRect);
       }
    }
@@ -603,7 +601,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
 
    setClip(clip);
 
-   dstY += SCREEN_SHIFTY;
+   dstY += glShiftY;
    int32 dstY2 = dstY + h;
    int32 dstX2 = dstX + w;
 
