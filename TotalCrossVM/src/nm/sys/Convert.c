@@ -97,8 +97,13 @@ TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public s
       bool err = false;
       String2CharPBuf(string, buffer);
       p->retD = str2double(buffer, &err);
-      if (err || !buffer[0])
-         throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer);
+      if (err)
+      {
+         double result;
+         String2CharPBuf(string, buffer);
+         if (!(result = p->retD = strtod(buffer, null)) || result == HUGE_VAL || result == -HUGE_VAL)
+            throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer);
+      }
    }
 }
 //////////////////////////////////////////////////////////////////////////
