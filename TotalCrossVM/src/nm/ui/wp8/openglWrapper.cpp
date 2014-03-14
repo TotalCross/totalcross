@@ -164,7 +164,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    dxFillShadedRect(g, x, y, w, h, c1, c2, horiz);
 }
 
-extern "C" {extern int32 *shiftYfield; }
+extern "C" {extern int32 *shiftYfield, *lastShiftYfield; }
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
@@ -177,7 +177,7 @@ void setShiftYgl()
          glShiftY = 0;
 		else
 			glShiftY = -(componentPos - sipHeight);
-      *shiftYfield = glShiftY;
+      *shiftYfield = *lastShiftYfield = glShiftY;
 	}
 }
 

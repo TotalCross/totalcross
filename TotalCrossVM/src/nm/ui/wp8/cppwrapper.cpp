@@ -214,7 +214,7 @@ void dxUpdateScreen()
 
 int32 dxGetSipHeight()
 {
-   return Direct3DBase::getLastInstance()->sipHeight;
+   return Direct3DBase::getLastInstance()->csharp->getSipHeight();
 }
 
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
