@@ -212,11 +212,14 @@ public class DeploySettings
       if (folderTotalCrossVMSDistVM == null)
          folderTotalCrossVMSDistVM = Convert.replace(folderTotalCrossSDKDistVM, "SDK","VMS");
       String lbhome = System.getenv("LITEBASE_HOME");
-      if (lbhome == null)
+      if (lbhome == null && etcDir != null)
          lbhome = Utils.getParent(Utils.getParentFolder(etcDir))+"/LitebaseSDK";
-      lbhome = lbhome.replace('\\','/');
-      if (folderLitebaseSDKDistLIB == null)
-         folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
+      if (lbhome != null)
+      {
+         lbhome = lbhome.replace('\\','/');
+         if (folderLitebaseSDKDistLIB == null)
+            folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
+      }
       // check if folders exist
       if (!new File(folderLitebaseSDKDistLIB).exists())
          folderLitebaseSDKDistLIB = null;
