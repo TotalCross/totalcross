@@ -221,11 +221,11 @@ public class DeploySettings
             folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
       }
       // check if folders exist
-      if (!new File(folderLitebaseSDKDistLIB).exists())
+      if (folderLitebaseSDKDistLIB == null || !new File(folderLitebaseSDKDistLIB).exists())
          folderLitebaseSDKDistLIB = null;
-      if (!new File(folderTotalCrossSDKDistVM).exists()) 
+      if (folderTotalCrossSDKDistVM == null || !new File(folderTotalCrossSDKDistVM).exists()) 
          folderTotalCrossSDKDistVM = null;
-      if (!new File(folderTotalCrossVMSDistVM).exists()) 
+      if (folderTotalCrossVMSDistVM == null || !new File(folderTotalCrossVMSDistVM).exists()) 
          folderTotalCrossVMSDistVM = null;
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
