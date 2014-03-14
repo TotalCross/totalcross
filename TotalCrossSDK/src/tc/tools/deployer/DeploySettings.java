@@ -159,17 +159,18 @@ public class DeploySettings
          else
          if (new File("/TotalCrossSDK/etc").exists()) // check on the root of the current drive
             etcDir = "/TotalCrossSDK/etc";
-         if (etcDir == null || !new File(etcDir).exists())
-            throw new DeployerException("Can't find path for etc folder. Add TotalCrossSDK to the classpath or set the TOTALCROSS_HOME environment variable.");
       }
-      if (!etcDir.endsWith("/"))
-         etcDir += "/";
-      etcDir = Convert.replace(etcDir, "//","/").replace('\\','/');
-      homeDir = Convert.replace(etcDir, "/etc/","/");
-      binDir = Convert.replace(etcDir, "/etc/","/bin/");
-      distDir = Convert.replace(etcDir, "/etc/", "/dist/");
+      if (etcDir != null)
+      {
+         if (!etcDir.endsWith("/"))
+            etcDir += "/";
+         etcDir = Convert.replace(etcDir, "//","/").replace('\\','/');
+         homeDir = Convert.replace(etcDir, "/etc/","/");
+         binDir = Convert.replace(etcDir, "/etc/","/bin/");
+         distDir = Convert.replace(etcDir, "/etc/", "/dist/");
+      }
       System.out.println("TotalCross SDK version "+Settings.versionStr+" running on "+osName+" with JDK "+javaVersion);
-      System.out.println("Etc directory: "+etcDir); // keep this always visible, its a very important information
+      System.out.println("Etc directory: "+ (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
       System.out.println("Classpath: "+cp0);
 
       // find the demo and release folders for totalcross and litebase
