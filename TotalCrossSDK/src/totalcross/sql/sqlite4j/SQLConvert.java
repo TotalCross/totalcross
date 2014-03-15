@@ -54,12 +54,36 @@ class SQLConvert
       return null;
    }
    
+   private static void test(long l)
+   {
+      try
+      {
+         Time t = new Time(l); // como vem da nuvem
+         long lt = t.getTime(); // desde 1/1/1970
+         Time t2 = new Time(lt,true);
+         long lf = t2.getTimeLong();
+         String s = t2.getSQLString();
+         System.out.println(l+" -> "+lf+" ("+s+")");
+      }
+      catch (InvalidDateException e)
+      {
+         e.printStackTrace();
+      }
+   }
    public static void main(String args[])
    {
+      Settings.is24Hour = true;
+      Settings.dateSeparator = '/';
+      Settings.timeZoneMinutes = -240;
+      
       totalcross.sys.Time t0 = new totalcross.sys.Time();
       java.sql.Time t1 = time(t0);
       totalcross.sys.Time t2 = time(t1);
       System.out.println(t0.getTimeLong()+" -> "+t2.getTimeLong());
+      
+      test(20121203000000L);
+      test(20130127232922L); // fails if Settings.timeZoneMinutes is considered
+      test(20130125125200L);
    }
 
    static java.sql.Timestamp timestamp(Timestamp x)
