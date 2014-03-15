@@ -145,7 +145,7 @@ public final class Time
       second = (int)(time % 60); time /= 60;
       minute = (int)(time % 60); time /= 60;
       hour   = (int)(time % 24); time /= 24;
-      hour  += Settings.timeZoneMinutes/60;
+      //hour  += Settings.timeZoneMinutes/60;  - cannot be considered
       Date d = new Date(Date.SQL_EPOCH.getDateInt());
       d.advance((int)time);
       day = d.getDay();
@@ -158,7 +158,7 @@ public final class Time
     */
    public long getTime() throws InvalidDateException
    {
-      return new Date(this).getTime() + hour*60L*60L*1000L + (minute - Settings.timeZoneMinutes)*60L*1000L + second*1000L + millis;
+      return new Date(this).getTime() + hour*60L*60L*1000L + (minute/* - Settings.timeZoneMinutes cannot be considered*/)*60L*1000L + second*1000L + millis;
    }
 
    /** Constructs a Time object, parsing the String and placing the fields depending on
@@ -225,7 +225,22 @@ public final class Time
     */
    public String getSQLString() // guich@tc115_22
    {
-      return dump(new StringBuffer(20), "-", true).toString();
+      StringBuffer sb = new StringBuffer(20);
+      sb.append(year);
+      sb.append(Settings.dateSeparator);
+      if (month < 10) sb.append('0'); sb.append(month);
+      sb.append(Settings.dateSeparator);
+      if (day   < 10) sb.append('0'); sb.append(day);
+      sb.append(' ');
+      return dump(sb, "-", true).toString();
+   }
+
+   /** Returns this date in the format <code>YYYY-MM-DD HH:mm:SS.mmm</code>
+    * @since TotalCross 2.0
+    */
+   public String getSQLString(StringBuffer sb) // guich@tc115_22
+   {
+      return dump(sb, "-", true).toString();
    }
 
    /** Constructs a new time with the given values. The values are not checked.

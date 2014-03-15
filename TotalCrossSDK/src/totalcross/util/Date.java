@@ -601,9 +601,23 @@ public class Date implements Comparable
    /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
     * @since TotalCross 2.0 
     */
+   public String getSQLString(StringBuffer sb)
+   {
+      sb.append(year);
+      sb.append(Settings.dateSeparator);
+      if (month < 10) sb.append('0'); sb.append(month);
+      sb.append(Settings.dateSeparator);
+      if (day   < 10) sb.append('0'); sb.append(day);
+      sb.append(" 00:00:00.000");
+      return sb.toString();
+   }
+   
+   /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
+    * @since TotalCross 2.0 
+    */
    public String getSQLString()
    {
-      return year+"-"+month+"-"+day+ " 00:00:00.000";
+      return getSQLString(new StringBuffer(20));
    }
 
    /** Returns this date in the Time.getTimeLong format, with hour/minute/second/millis equal to 0.
