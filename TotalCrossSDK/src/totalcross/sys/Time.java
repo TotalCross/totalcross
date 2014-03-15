@@ -145,7 +145,7 @@ public final class Time
       second = (int)(time % 60); time /= 60;
       minute = (int)(time % 60); time /= 60;
       hour   = (int)(time % 24); time /= 24;
-      hour  += Settings.timeZoneMinutes*60;
+      hour  += Settings.timeZoneMinutes/60;
       Date d = new Date(Date.SQL_EPOCH.getDateInt());
       d.advance((int)time);
       day = d.getDay();
@@ -158,7 +158,7 @@ public final class Time
     */
    public long getTime() throws InvalidDateException
    {
-      return new Date(this).getTime() + hour * 60*60*1000 + minute*60*1000+ second*1000 + millis;
+      return new Date(this).getTime() + hour*60L*60L*1000L + (minute - Settings.timeZoneMinutes)*60L*1000L + second*1000L + millis;
    }
 
    /** Constructs a Time object, parsing the String and placing the fields depending on

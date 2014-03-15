@@ -627,6 +627,6 @@ public class Date implements Comparable
    public long getTime()
    {
       long days = SQL_EPOCH.subtract(this);
-      return days*24*60*60*1000 - Settings.timeZoneMinutes*60*1000;
+      return days*24L*60L*60L*1000L;
    }
 }
