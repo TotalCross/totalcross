@@ -63,6 +63,8 @@ GLfloat* glcoords;//[flen*2]; x,y
 GLfloat* glcolors;//[flen];   alpha
 static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
 static int32 *pixcoords, *pixcolors, *pixEnd;
+void glClearClip();
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -273,6 +275,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 {
    if (pixcolors != (int32*)glcolors) flushPixels(4);
    setCurrentProgram(shadeProgram);
+   glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
    
@@ -305,6 +308,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    }
     
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+   glClearClip();
 }
 
 void initTexture()
@@ -408,13 +412,13 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
    }
 }
 
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
 {         
    GLfloat* coords = texcoords;
    PixelConv pcolor;
    if (pixcolors != (int32*)glcolors) flushPixels(6);
    setCurrentProgram(textureProgram);
-   glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
+   glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 
    dstY += glShiftY;
 

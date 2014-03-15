@@ -75,6 +75,8 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
    }
    return true;
 }
+#elif defined WP8
+#define replacePath(x,y,z) false
 #else
 #define replacePath(x,y,z) true
 #endif

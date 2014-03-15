@@ -710,7 +710,7 @@ public final class Settings
     * Setting it to -1 (default value) will use half the current screen height.
     * 
     * This field is used in Windows CE devices only.
-    * 
+    * @deprecated Unsupported on TC 2.1 and beyond.
     * @since TotalCross 1.3
     */
    public static int SIPBottomLimit = -1;

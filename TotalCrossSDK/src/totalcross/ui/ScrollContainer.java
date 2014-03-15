@@ -365,9 +365,9 @@ public class ScrollContainer extends Container implements Scrollable
       else
       {
          if (sbH != null)
-            sbH.setValue(bag.x = vx);
+            sbH.setValue(-(bag.x = vx));
          if (sbV != null)
-            sbV.setValue(bag.y = vy);
+            sbV.setValue(-(bag.y = vy));
       }
    }
    
@@ -440,7 +440,7 @@ public class ScrollContainer extends Container implements Scrollable
                {
                   scrollContent(dx, dy);
                   event.consumed = true;
-                  Event.clearQueue(PenEvent.PEN_DRAG);
+                  //Event.clearQueue(PenEvent.PEN_DRAG);
                }
                else
                {

@@ -9,15 +9,12 @@ namespace PhoneDirect3DXamlAppComponent
 public delegate void RequestAdditionalFrameHandler();
 
 [Windows::Foundation::Metadata::WebHostHidden]
-public ref class Direct3DBackground sealed : public Windows::Phone::Input::Interop::IDrawingSurfaceManipulationHandler
+public ref class Direct3DBackground sealed
 {
 public:
    Direct3DBackground(CSwrapper ^_cs);
 
 	Windows::Phone::Graphics::Interop::IDrawingSurfaceBackgroundContentProvider^ CreateContentProvider();
-
-	// IDrawingSurfaceManipulationHandler
-	virtual void SetManipulationHost(Windows::Phone::Input::Interop::DrawingSurfaceManipulationHost^ manipulationHost);
 
 	event RequestAdditionalFrameHandler^ RequestAdditionalFrame;
 
@@ -25,12 +22,20 @@ public:
 	property Windows::Foundation::Size NativeResolution;
 	property Windows::Foundation::Size RenderResolution;
 
+	// Forward the back key press event to the application; return false when the app should quit
+	bool backKeyPress();
+   static Direct3DBackground^ GetInstance();
+   void RequestNewFrame();
+   
+	void OnPointerPressed(int x, int y);
+   void OnPointerReleased(int x, int y);
+   void OnPointerMoved(int x, int y);
+   void OnKeyPressed(int key);
+   void OnScreenChanged(int newKeyboardH, int newWidth, int newHeight);
+   void lifeCycle(bool suspending);
+
 protected:
 
-	// Event Handlers
-	void OnPointerPressed(Windows::Phone::Input::Interop::DrawingSurfaceManipulationHost^ sender, Windows::UI::Core::PointerEventArgs^ args);
-	void OnPointerReleased(Windows::Phone::Input::Interop::DrawingSurfaceManipulationHost^ sender, Windows::UI::Core::PointerEventArgs^ args);
-	void OnPointerMoved(Windows::Phone::Input::Interop::DrawingSurfaceManipulationHost^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
 internal:
 	HRESULT Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device);
@@ -41,7 +46,8 @@ internal:
 
 private:
    CSwrapper ^cs;
-   Direct3DBase^ m_renderer;
+   ID3D11CommandList *currentCmdlist;
+   Direct3DBase^ renderer;
 };
 
 }

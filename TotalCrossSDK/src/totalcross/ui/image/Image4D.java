@@ -36,7 +36,7 @@ public class Image4D extends GfxSurface
    // object
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
-   int[] textureId = new int[1];
+   int[] textureId = new int[2];
    public String comment;
    private Graphics4D gfx;
    private boolean[] changed = {true};

@@ -143,8 +143,12 @@ typedef struct TConstantPool TConstantPool;
 typedef TConstantPool* ConstantPool;
 
 typedef struct TContext TContext;
-#ifndef Context
+#if !defined Context
+#if !defined __OBJC__
 typedef TContext* Context;
+#else
+typedef id Context;
+#endif
 #endif
 
 typedef JCharP TJCharP;

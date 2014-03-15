@@ -14,6 +14,10 @@
 #ifndef SPECIALKEYS_H
 #define SPECIALKEYS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** There are three ranges of keys:
 
   k > 0 - standard ASCII chars
@@ -98,5 +102,9 @@ int32 keyPortable2Device(PortableSpecialKeys key);
 PortableSpecialKeys keyDevice2Portable(int32 key);
 /// Returns the modifiers state (or'ed)
 PortableModifiers keyGetPortableModifiers(int32 mods);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

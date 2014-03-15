@@ -149,7 +149,7 @@ public class MultiButton extends Control
             {
                PenEvent pe = (PenEvent)e;
                int sel = isInsideOrNear(pe.x,pe.y) ? pe.x / (width / tits.length) : -1;
-               if (sel != this.sel && (sel == -1 || disabled == null || !disabled[sel]))
+               if (sel != this.sel && (sel == -1 || disabled == null || (sel < disabled.length && !disabled[sel])))
                   setSelectedIndex(sel);
             }
             break;

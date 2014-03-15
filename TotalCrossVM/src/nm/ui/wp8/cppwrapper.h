@@ -13,21 +13,19 @@
 extern "C" {
 #endif
 
-struct eventQueueMember {
+struct eventQueueMember 
+{
 	int type;
 	int key;
 	int x;
 	int y;
 	int modifiers;
+   int count;
 };
 
 char *GetAppPathWP8();
 char *GetVmPathWP8();
 char *GetDisplayNameWP8();
-
-// WP8 dispatcher fuctions
-void set_dispatcher();
-void dispatcher_dispath();
 
 // WP8 keyboard functions
 void windowSetSIP(enum TCSIP kb);
@@ -59,24 +57,27 @@ bool nativeStartGPSCPP();
 int nativeUpdateLocationCPP(Context context, TCObject gpsObject);
 void nativeStopGPSCPP();
 
+// File
+bool fileIsCardInsertedCPP();
+
 //Event Queue functions
 void eventQueuePush(int type, int key, int x, int y, int modifiers);
 struct eventQueueMember eventQueuePop(void);
 int eventQueueEmpty(void);
 
-bool dxSetup();
 void dxUpdateScreen();
 void dxDrawLine(int x1, int y1, int x2, int y2, int color);
 void dxFillRect(int x1, int y1, int x2, int y2, int color);
-void dxDrawPixels(int *x, int *y, int count, int color);
+void dxDrawPixels(float *glcoords, float *glcolors, int count, int color);
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
 void dxDeleteTexture(TCObject img, int32* textureId, bool updateList);
-void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip);
-
-
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip);
+void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
+int32 dxGetSipHeight();
 
 // Etc
 double getFontHeightCPP();
+void privateWindowSetSIP(bool visible);
 
 #ifdef __cplusplus
 }

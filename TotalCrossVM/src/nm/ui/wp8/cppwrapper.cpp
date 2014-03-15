@@ -28,97 +28,55 @@ static char vmPathWP8[1024] = "";
 static char devId[1024];
 static DWORD32 privHeight;
 static DWORD32 privWidth;
-static CoreDispatcher ^dispatcher = nullptr;
 
 static std::queue<eventQueueMember> eventQueue;
 
 #pragma endregion
 
-enum qStEn {
-	QUEUE_PUSH,
-	QUEUE_POP,
-	QUEUE_IDLE
-};
-
-static enum qStEn queue_state = QUEUE_IDLE;
-
+static int counter;
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
-	int ini, fim;
-
 	static int32 *ignoreEventOfType = null;
 	struct eventQueueMember newEvent;
 	if (ignoreEventOfType == null)
 		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
-	if (type == *ignoreEventOfType) {
+	if (type == *ignoreEventOfType) 
 		return;
-	}
-	ini = GetTickCount64() & 0x3FFFFFFF;
-
 	newEvent.type = type;
 	newEvent.key = key;
 	newEvent.x = x;
 	newEvent.y = y;
 	newEvent.modifiers = modifiers;
-
-	/*if (eventQueue.size() < 3) {
-		while (queue_state == QUEUE_POP) {
-			Sleep(1);
-		}
-		queue_state = QUEUE_PUSH;
-		eventQueue.push(newEvent);
-		queue_state = QUEUE_IDLE;
-	}
-	else {*/
-		eventQueue.push(newEvent);
-	//}
-
-	fim = GetTickCount64() & 0x3FFFFFFF;
-	//debug("elapsed %d, pushing event from queue; queue size %d", fim - ini, eventQueue.size());
+   newEvent.count = ++counter;
+	eventQueue.push(newEvent);
+   //debug("%X - %d. push %d", GetCurrentThreadId(), counter, type);
 }
 
 struct eventQueueMember eventQueuePop(void)
 {
-	int ini, fim;
 	struct eventQueueMember top;
-
-	ini = GetTickCount64() & 0x3FFFFFFF;
-
 	top.type = 0;
-	/*if (eventQueue.size() < 3) {
-		while (queue_state == QUEUE_PUSH) {
-			Sleep(1);
-		}
-		queue_state = QUEUE_POP;
-		top = eventQueue.front();
-		eventQueue.pop();
-		queue_state = QUEUE_IDLE;
-	}
-	else {*/
 	if (!eventQueue.empty())
 	{
 		top = eventQueue.front();
 		eventQueue.pop();
 	}
-
-	fim = GetTickCount64() & 0x3FFFFFFF;
-	//debug("elapsed %d, popping event from queue; queue size %d", fim - ini, eventQueue.size());
-
 	return top;
 }
 
 int eventQueueEmpty(void)
 {
 	int ret = (int)eventQueue.empty();
+   Sleep(1);
 	return ret;
 }
 
 char *GetAppPathWP8()
 {
-	if (appPathWP8[0] == '\0') {
+	if (appPathWP8[0] == '\0') 
+   {
 		Platform::String ^_appPath = Windows::Storage::ApplicationData::Current->LocalFolder->Path;
-
 		WideCharToMultiByte(CP_ACP, 0, _appPath->Data(), _appPath->Length(), appPathWP8, 1024, NULL, NULL);
 	}
 	return appPathWP8;
@@ -143,21 +101,8 @@ char *GetDisplayNameWP8()
    return devId;
 }
 
-void set_dispatcher()
-{
-	CoreWindow::GetForCurrentThread()->Activate();
-	dispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
-}
-
-void dispatcher_dispath()
-{
-	if (dispatcher != nullptr)
-		dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-}
-
 void windowSetDeviceTitle(TCObject titleObj)
 {
-
 }
 
 void windowSetSIP(enum TCSIP kb)
@@ -188,27 +133,27 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::getLastInstance()->alertMsg = ref new Platform::String((wchar_t*)jCharStr);
 }
 
 void vmSetAutoOffCPP(bool enable)
 {
-//XXX   Direct3DBase::GetLastInstance()->getCSwrapper()->vmSetAutoOffCS(enable);
+   Direct3DBase::getLastInstance()->csharp->vmSetAutoOffCS(enable);
 }
 
 void dialNumberCPP(JCharP number)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->dialNumberCS(ref new Platform::String((wchar_t*)number));
+   Direct3DBase::getLastInstance()->csharp->dialNumberCS(ref new Platform::String((wchar_t*)number));
 }
 
 void smsSendCPP(JCharP szMessage, JCharP szDestination)
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
+   Direct3DBase::getLastInstance()->csharp->smsSendCS(ref new Platform::String((wchar_t*)szMessage), ref new Platform::String((wchar_t*)szDestination));
 }
 
 int rdGetStateCPP(int type)
 {
-   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->getCSwrapper();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::getLastInstance()->csharp;
    cs->rdGetStateCS(type);
    return cs->getTurnedState();
 }
@@ -220,12 +165,12 @@ bool isAvailableCPP(int type)
 
 bool nativeStartGPSCPP()
 {
-   return Direct3DBase::GetLastInstance()->getCSwrapper()->nativeStartGPSCS();
+   return Direct3DBase::getLastInstance()->csharp->nativeStartGPSCS();
 }
 
 int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 {
-   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::GetLastInstance()->getCSwrapper();
+   PhoneDirect3DXamlAppComponent::CSwrapper^ cs = Direct3DBase::getLastInstance()->csharp;
    int ret = cs->nativeUpdateLocationCS();
    TCObject lastFix = GPS_lastFix(gpsObject);
    Platform::String^ messageReceived;
@@ -260,50 +205,65 @@ int nativeUpdateLocationCPP(Context context, TCObject gpsObject)
 
 void nativeStopGPSCPP()
 {
-   Direct3DBase::GetLastInstance()->getCSwrapper()->nativeStopGPSCS();
+   Direct3DBase::getLastInstance()->csharp->nativeStopGPSCS();
 }
 
-bool dxSetup()
+bool fileIsCardInsertedCPP()
 {
-	return true;//XXX
+   return Direct3DBase::getLastInstance()->csharp->fileIsCardInsertedCS();
 }
 
 void dxUpdateScreen()
 {
-   Direct3DBase::GetLastInstance()->Present();
+   Direct3DBase::getLastInstance()->updateScreen();
+}
+
+int32 dxGetSipHeight()
+{
+   return Direct3DBase::getLastInstance()->sipHeight;
 }
 
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
-   Direct3DBase::GetLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
 }
 
 void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
-   Direct3DBase::GetLastInstance()->deleteTexture(img, textureId, updateList);
+   Direct3DBase::getLastInstance()->deleteTexture(img, textureId, updateList);
 }
 
-void dxDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, int32* clip)
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
 {
-   Direct3DBase::GetLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, clip);
+   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
 }
 
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
-	Direct3DBase::GetLastInstance()->drawLine(x1, y1, x2, y2, color);
+	Direct3DBase::getLastInstance()->drawLine(x1, y1, x2, y2, color);
 }
 
-void dxFillRect(int x1, int y1, int x2, int y2, int color)
+void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-	Direct3DBase::GetLastInstance()->fillRect(x1, y1, x2, y2, color);
+	Direct3DBase::getLastInstance()->fillShadedRect(g,x,y,w,h,c1,c2,horiz);
 }
 
-void dxDrawPixels(int *x, int *y, int count, int color)
+void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
 {
-	Direct3DBase::GetLastInstance()->drawPixels(x, y, count, color);
+   Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
+}
+
+void dxDrawPixels(float *glcoords, float *glcolors, int count, int color)
+{
+	Direct3DBase::getLastInstance()->drawPixels(glcoords, glcolors, count, color);
 }
 
 double getFontHeightCPP()
 {
-	return Direct3DBase::GetLastInstance()->getCSwrapper()->getFontHeightCS();
+	return Direct3DBase::getLastInstance()->csharp->getFontHeightCS();
+}
+
+void privateWindowSetSIP(bool visible)
+{
+   Direct3DBase::getLastInstance()->csharp->privateWindowSetSIP(visible);
 }

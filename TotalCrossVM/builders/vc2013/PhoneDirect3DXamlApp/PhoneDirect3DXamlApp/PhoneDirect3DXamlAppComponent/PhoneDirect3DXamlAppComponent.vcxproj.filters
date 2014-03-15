@@ -7,10 +7,12 @@
     <FxCompile Include="..\..\..\..\..\src\nm\ui\wp8\VertexShaderGlobalColor.hlsl">
       <Filter>TCVM\Native methods\ui\wp8</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\..\..\..\src\dx\PixelShaderGlobalColor.hlsl" />
     <FxCompile Include="..\..\..\..\..\src\dx\PixelShaderTexture.hlsl" />
     <FxCompile Include="..\..\..\..\..\src\dx\VertexShaderGlobalColor.hlsl" />
     <FxCompile Include="..\..\..\..\..\src\dx\VertexShaderTexture.hlsl" />
+    <FxCompile Include="..\..\..\..\..\src\dx\PixelShaderGlobalColor.hlsl" />
+    <FxCompile Include="..\..\..\..\..\src\dx\PixelShaderLocalColor.hlsl" />
+    <FxCompile Include="..\..\..\..\..\src\dx\VertexShaderLocalColor.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\src\png\png.c">

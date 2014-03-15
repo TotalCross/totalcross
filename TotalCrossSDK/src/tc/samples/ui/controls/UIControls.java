@@ -28,6 +28,7 @@ public class UIControls extends MainWindow
       setBackColor(UIColors.controlsBack = Color.WHITE);
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
+      Vm.debug(Vm.ALTERNATIVE_DEBUG);
       //ScrollPosition.AUTO_HIDE = false;
    }
    
