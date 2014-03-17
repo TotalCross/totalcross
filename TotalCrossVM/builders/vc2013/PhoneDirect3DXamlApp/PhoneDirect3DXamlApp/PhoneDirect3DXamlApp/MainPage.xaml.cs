@@ -303,6 +303,11 @@ namespace PhoneDirect3DXamlAppInterop
       {
          return currentSipH;
       }
+
+      public int getScreenSize()
+      {
+         return MainPage.screenSize;
+      }
    }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -314,11 +319,13 @@ namespace PhoneDirect3DXamlAppInterop
         private CSWrapper cs;
         public static MainPage instance;
         public static bool isPortrait;
+        public static int screenSize;
 
         // Constructor
         public MainPage()
         {
             instance = this;
+            screenSize = (int) Math.Max(Application.Current.Host.Content.ActualWidth, Application.Current.Host.Content.ActualHeight);
             InitializeComponent();
             this.BackKeyPress += MainPage_BackKeyPress;
             this.MouseMove += MainPage_MouseMove;

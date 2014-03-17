@@ -166,7 +166,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    DXRELEASE(renderTex);
 
    // Create a descriptor for the render target buffer.
-   int appSize = max(appW, appH);
+   int appSize = dxGetScreenSize();
    CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appSize, appSize, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
    renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 

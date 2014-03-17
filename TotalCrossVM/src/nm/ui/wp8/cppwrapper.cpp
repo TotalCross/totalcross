@@ -228,6 +228,11 @@ int32 dxGetSipHeight()
    return Direct3DBase::getLastInstance()->csharp->getSipHeight();
 }
 
+int32 dxGetScreenSize()
+{
+   return Direct3DBase::getLastInstance()->csharp->getScreenSize();
+}
+
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
    Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);

@@ -47,6 +47,7 @@ namespace PhoneDirect3DXamlAppComponent
 	  double getFontHeightCS();
      void privateWindowSetSIP(bool visible);
      int getSipHeight();
+     int getScreenSize();
      void setSip(bool visible);
 	};
 }
