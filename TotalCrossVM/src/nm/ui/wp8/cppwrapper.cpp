@@ -213,14 +213,14 @@ bool fileIsCardInsertedCPP()
    return Direct3DBase::getLastInstance()->csharp->fileIsCardInsertedCS();
 }
 
-bool dxSetup()
-{
-	return true;//XXX
-}
-
 void dxUpdateScreen()
 {
    Direct3DBase::getLastInstance()->updateScreen();
+}
+
+int32 dxGetSipHeight()
+{
+   return Direct3DBase::getLastInstance()->sipHeight;
 }
 
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
@@ -253,12 +253,17 @@ void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
    Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
 }
 
-void dxDrawPixels(int *x, int *y, int count, int color)
+void dxDrawPixels(float *glcoords, float *glcolors, int count, int color)
 {
-	Direct3DBase::getLastInstance()->drawPixels(x, y, count, color);
+	Direct3DBase::getLastInstance()->drawPixels(glcoords, glcolors, count, color);
 }
 
 double getFontHeightCPP()
 {
 	return Direct3DBase::getLastInstance()->csharp->getFontHeightCS();
+}
+
+void privateWindowSetSIP(bool visible)
+{
+   Direct3DBase::getLastInstance()->csharp->privateWindowSetSIP(visible);
 }

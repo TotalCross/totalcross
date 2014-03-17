@@ -66,7 +66,17 @@ typedef TD3DCommand* D3DCommand;
 struct TD3DCommand
 {
    D3DCMD cmd;
-   int32 a, b, c, d, e, f, g, h;
+   union
+   {
+      struct
+      {
+         int32 a, b, c, d, e, f, g, h;
+      };
+      struct
+      {
+         float *coords, *colors, fcolor, xy[2];
+      };
+   };
    PixelConv c1, c2;
    int32 clip[4];
    int32 textureId[2];
@@ -74,7 +84,7 @@ struct TD3DCommand
    struct TD3DCommand* next;
 };
 
-// Helper class that initializes DirectX APIs for 3D rendering.
+// Helper class that initializes DirectX APIs
 ref class Direct3DBase 
 {
 internal:
@@ -85,12 +95,9 @@ internal:
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
 
 	bool updateScreenRequested;
-   bool eventsInitialized;
-	void initialize(_In_ ID3D11Device1* device);
+	void initialize(_In_ ID3D11Device1* device, bool resuming);
 	void createDeviceResources();
    void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
-	void createWindowSizeDependentResources();
-	void updateForWindowSizeChange(float width, float height);
 	void preRender(); // resets the screen and set it ready to render
    bool startProgramIfNeeded();
 	void updateScreen();
@@ -106,13 +113,13 @@ internal:
    void fillRectImpl(int x1, int y1, int x2, int y2, int color);
    void fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip);
    void drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip);
-   void drawPixels(int *x, int *y, int count, int color);
-   void drawPixelsImpl(int *x, int *y, int count, int color);
+   void drawPixels(float *glcoords, float *glcolors, int count, int color);
+   void drawPixelsImpl(float *glcoords, float *glcolors, int count, int color);
    void setClip(int32* clip);
    void setColor(int color);
    void createTexture();
-   void setup();
    bool isLoadCompleted();
+   void lifeCycle(bool suspending);
    void swapLists();
    D3DCommand newCommand();
    static Direct3DBase ^getLastInstance();
@@ -120,6 +127,10 @@ internal:
 
    Microsoft::WRL::ComPtr<ID3D11DeviceContext1> d3dcontext;
    bool updateScreenWaiting;
+   int rotatedTo;
+   int sipHeight;
+   bool updateWS;
+   bool minimized;
 
 private:
    int renderPrepared;
@@ -157,7 +168,6 @@ protected private:
 
 	// Cached renderer properties.
 	Windows::Foundation::Size renderTargetSize;
-	Windows::Foundation::Rect windowBounds;
 
 	// TotalCross objects
 	Context local_context;

@@ -29,11 +29,11 @@ static int32 desiredglShiftY;
 
 #pragma region NonStaticVars
 
-bool setShiftYonNextUpdateScreen;
+int32 setShiftYonNextUpdateScreen;
 
 VoidPs* imgTextures;
-int32 realAppH, appW, appH, glShiftY;
-TCGfloat ftransp[16], f255[256];
+TCGfloat ftransp[16];
+int32 appW, appH, glShiftY;
 int32 flen;
 TCGfloat* glcoords;//[flen*2]; x,y
 TCGfloat* glcolors;//[flen];   alpha
@@ -47,9 +47,7 @@ int32 abs32(int32 a)
 
 bool graphicsCreateScreenSurface(ScreenSurface screen)
 {
-#ifndef ANDROID
 	screen->extension = deviceCtx;
-#endif
 	screen->pitch = screen->screenW * screen->bpp / 8;
 	screen->pixels = (uint8*)1;
 	return screen->pixels != null;
@@ -129,11 +127,10 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 	screen->hRes = ascrHRes;
 	screen->vRes = ascrVRes;
 
-   screen->screenW = 480; //XXX lastW must be initialized with the screen bounds
-   screen->screenH = 800;
+   screen->screenW = appW;
+   screen->screenH = appH;
 
-   dxSetup();
-   return checkGLfloatBuffer(mainContext, 10000);
+   return checkGLfloatBuffer(mainContext, 1000);
 }
 
 DWORD32 getGlColor(int32 rgb, int32 a)
@@ -146,31 +143,14 @@ DWORD32 getGlColor(int32 rgb, int32 a)
 void glDrawPixels(int32 n, int32 rgb)
 {
    Pixel colour = getGlColor(rgb,0xFF);
-
-   int* x;
-   int* y;
-
-   x = (int*) xmalloc(n * sizeof(int));
-   y = (int*) xmalloc(n * sizeof(int));
-
-   if (x != null && y != null)
-   {
-      for (int i = 0; i < n; i++)
-      {
-         x[i] = (int)glcoords[pointsPosition + (i * 2)];
-         y[i] = (int)glcoords[pointsPosition + (i * 2 + 1)];
-      }
-
-      dxDrawPixels(x, y, n, colour);
-      xfree(x);
-      xfree(y);
-   }
+   dxDrawPixels(glcoords+pointsPosition, glcolors+pointsPosition, n, colour);
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
    Pixel colour = getGlColor(rgb, a);
-   dxDrawPixels(&x, &y, 1, colour);
+   float coords[2] = { (float)x, (float)y }, colors[1] = { a/255.0f };
+   dxDrawPixels(coords, colors, 1, colour);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
@@ -184,20 +164,20 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    dxFillShadedRect(g, x, y, w, h, c1, c2, horiz);
 }
 
+extern "C" {extern int32 *shiftYfield; }
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
 	if (setShiftYonNextUpdateScreen) 
    {
-		int32 componentPos;
-		int siph = 100;//XXX MainView::getLastInstance()->GetSIPHeight();
-		componentPos = -(desiredglShiftY - desiredScreenShiftY);     // set both at once
+      int32 sipHeight = dxGetSipHeight();
+		int32 componentPos = desiredScreenShiftY;     // set both at once
 		setShiftYonNextUpdateScreen = false;
-
-		if (componentPos <= 100)//XXX MainView::getLastInstance()->GetSIPHeight())
+		if (sipHeight == 0 || componentPos <= sipHeight)
          glShiftY = 0;
 		else
-			glShiftY = -(componentPos - 100);//XXX MainView::getLastInstance()->GetSIPHeight());
+			glShiftY = -(componentPos - sipHeight);
+      *shiftYfield = glShiftY;
 	}
 }
 

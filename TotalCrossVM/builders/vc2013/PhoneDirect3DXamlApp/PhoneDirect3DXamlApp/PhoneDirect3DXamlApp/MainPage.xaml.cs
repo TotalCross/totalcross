@@ -18,6 +18,7 @@ using Microsoft.Phone.Net.NetworkInformation;
 using PhoneDirect3DXamlAppComponent;
 using Windows.Devices.Geolocation;
 using Windows.Networking.Proximity;
+using System.Diagnostics;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -25,15 +26,12 @@ namespace PhoneDirect3DXamlAppInterop
    {
       // Workarround vars
       Grid root;
-      TextBlock tx;
-      private Thickness awayMargin; // any new  programaticallycreated controller that should not be placed on screen should do "newController.margin = awayMargin;"
 
       // RadioDevice
       private int turnedState;
 
       // GPS
-      private Geolocator geolocator = null;
-      private bool tracking = false;
+      private Geolocator geolocator;
       private PositionStatus status = PositionStatus.NotInitialized;
       private double latitude; // GPS_latitude()               
       private double longitude; // GPS_longitude()                  
@@ -52,33 +50,46 @@ namespace PhoneDirect3DXamlAppInterop
       private String lowSignalReason = ""; // GPS_lowSignalReason()
 
       // File
-      private bool cardIsInserted = false;
+      private bool cardIsInserted;
       private int semaphore = 1;
+      
+      // user interface
+      private double fontHeight;
+      public TextBox tbox;
 
-      public double getFontHeightCS()
-      {
-          if (tx == null)
-          {
-              tx = new TextBlock();
-              tx.Text = "@";
-
-              tx.Margin = awayMargin;
-              root.Children.Add(tx);
-          }
-
-          return tx.ActualHeight;
-      }
+      public MainPage mp { set; get; }
 
       public CSWrapper(Grid g)
       {
           this.root = g;
-          this.awayMargin = new Thickness(500, 0, 0, 0);
+          // used to get input from keyboard
+          tbox = new TextBox();
+          root.Children.Add(tbox);
+          tbox.Visibility = Visibility.Collapsed;
+          tbox.Margin = new Thickness(0, g.ActualHeight * 10, 0, 0);
+          // get native font size
+          fontHeight = tbox.FontSize;
       }
-      public MainPage mp { set; get; }
-      public void callDraw()
+
+      public double getFontHeightCS()
       {
-         //mp.Background.Transform.Inverse = true;
-         //mp.UpdateLayout();
+          return fontHeight;
+      }
+
+      public void privateWindowSetSIP(bool visible)
+      {
+          root.Dispatcher.BeginInvoke((Action)(() => // must run on ui thread
+          {
+              if (!visible)
+                  tbox.Visibility = System.Windows.Visibility.Collapsed;
+              else
+              {
+                  tbox.Text = "A";
+                  tbox.SelectionStart = 1;
+                  tbox.Visibility = System.Windows.Visibility.Visible;
+                  tbox.Focus();
+              }
+          }));
       }
 
       public void privateAlertCS(String str) // Vm
@@ -91,18 +102,12 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void vmSetAutoOffCS(bool enable) // Vm
       {
-         if (enable)
-            PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode
-                                                                           = IdleDetectionMode.Enabled;
-         else
-            PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode
-                                                                           = IdleDetectionMode.Disabled;
+         PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode = enable ? IdleDetectionMode.Enabled : IdleDetectionMode.Disabled;
       }
 
       public void dialNumberCS(String number) // Dial
       {
          PhoneCallTask phoneCallTask = new PhoneCallTask();
-
          phoneCallTask.PhoneNumber = number;
          phoneCallTask.Show();
       }
@@ -110,7 +115,6 @@ namespace PhoneDirect3DXamlAppInterop
       public void smsSendCS(String message, String destination) // SMS
       {
          SmsComposeTask smsComposeTask = new SmsComposeTask();
-
          smsComposeTask.To = destination;
          smsComposeTask.Body = message;
          smsComposeTask.Show();
@@ -152,25 +156,22 @@ namespace PhoneDirect3DXamlAppInterop
       {
          try
          {
-
-            if (!tracking)
+            if (geolocator == null)
             {
-               (geolocator = new Geolocator()).DesiredAccuracy = PositionAccuracy.High;
+               geolocator = new Geolocator();
+               geolocator.DesiredAccuracy = PositionAccuracy.High;
                geolocator.DesiredAccuracyInMeters = 10;
                geolocator.MovementThreshold = 10; // The units are meters.
-
                geolocator.StatusChanged += geolocator_StatusChanged;
                geolocator.PositionChanged += geolocator_PositionChanged;
-               tracking = true;
             }
+            return true;
          }
          catch (Exception)
          {
             nativeStopGPSCS();
             return false;
          }
-
-         return true;
       }
 
       public int nativeUpdateLocationCS() // GPS
@@ -192,7 +193,7 @@ namespace PhoneDirect3DXamlAppInterop
             flags |= 4;
          if (velocity != null && velocity != 4.9E-324)
             flags |= 8;
-         // Não tem 16 pois não tem número de satélites.
+         // 16 = satellites
          if (pdop != null && pdop != 4.9E-324)
             flags |= 32;
 
@@ -204,106 +205,45 @@ namespace PhoneDirect3DXamlAppInterop
          geolocator.PositionChanged -= geolocator_PositionChanged;
          geolocator.StatusChanged -= geolocator_StatusChanged;
          geolocator = null;
-         tracking = false;
       }
 
-      public double getLatitude()
-      {
-         return latitude;
-      }
+      public double getLatitude()   {return latitude;}
+      public double getLongitude()  {return longitude;}
+      public double getDirection()  {return (double)direction;}      
+      public double getVelocity()   {return (double)velocity;}
+      public int getYear()          {return year;}
+      public int getMonth()         {return month;}
+      public int getDay()           {return day;}
+      public int getHour()          {return hour;}
+      public int getMinute()        {return minute;}
+      public int getSecond()        {return second;}
+      public int getMilliSecond()   {return milliSecond;}
+      public double getPdop()       {return (double)pdop;}
 
-      public double getLongitude()
-      {
-         return longitude;
-      }
-
-      public double getDirection()
-      {
-         return (double)direction;
-      }
-      
-      public double getVelocity()
-      {
-         return (double)velocity;
-      }
-
-      public int getYear()
-      {
-         return year;
-      }
-
-      public int getMonth()
-      {
-         return month;
-      }
-
-      public int getDay()
-      {
-         return day;
-      }
-
-      public int getHour()
-      {
-         return hour;
-      }
-
-      public int getMinute()
-      {
-         return minute;
-      }
-
-      public int getSecond()
-      {
-         return second;
-      }
-
-      public int getMilliSecond()
-      {
-         return milliSecond;
-      }
-
-      public String getMessageReceived()
-      {
-         return messageReceived;
-      }
-
-      public double getPdop()
-      {
-         return (double)pdop;
-      }
-
-      public String getLowSignalReason()
-      {
-         return lowSignalReason;
-      }
+      public String getMessageReceived()  {return messageReceived;}
+      public String getLowSignalReason() {return lowSignalReason;}
 
       private void geolocator_StatusChanged(Geolocator sender, StatusChangedEventArgs args)
       {
          switch (status = args.Status)
          {
             case PositionStatus.Disabled:
-               // the application does not have the right capability or the location master switch is off
-               messageReceived = "location is disabled in phone settings";
+               messageReceived = "location is disabled in phone settings"; // the application does not have the right capability or the location master switch is off
                break;
             case PositionStatus.Initializing:
-               // the geolocator started the tracking operation
-               messageReceived = "initializing";
+               messageReceived = "initializing"; // the geolocator started the tracking operation
                break;
             case PositionStatus.NoData:
-               // the location service was not able to acquire the location
-               messageReceived = "no data";
+               messageReceived = "no data"; // the location service was not able to acquire the location
                break;
             case PositionStatus.Ready:
-               // the location service is generating geopositions as specified by the tracking parameters
-               messageReceived = "ready";
+               messageReceived = "ready"; // the location service is generating geopositions as specified by the tracking parameters
                break;
             case PositionStatus.NotAvailable:
-               // not used in WindowsPhone, Windows desktop uses this value to signal that there is no hardware capable to acquire location information
-               messageReceived = "not available";
+               messageReceived = "not available"; // not used in WindowsPhone, Windows desktop uses this value to signal that there is no hardware capable to acquire location information
                break;
             case PositionStatus.NotInitialized:
-               // the initial state of the geolocator, once the tracking operation is stopped by the user the geolocator moves back to this state
-               messageReceived = "";
+               messageReceived = ""; // the initial state of the geolocator, once the tracking operation is stopped by the user the geolocator moves back to this state
                break;
          }
       }
@@ -329,11 +269,9 @@ namespace PhoneDirect3DXamlAppInterop
       private async Task sdCardTask()
       {
          semaphore = 0;
-
          ExternalStorageDevice sdCard = (await ExternalStorage.GetExternalStorageDevicesAsync()).FirstOrDefault();
          if (sdCard != null && sdCard.RootFolder != null)
             cardIsInserted = true;
-         
          semaphore = 1;
       }
 
@@ -341,69 +279,142 @@ namespace PhoneDirect3DXamlAppInterop
       {
          if (!cardIsInserted)
             sdCardTask();
-         while (semaphore == 0);
+         while (semaphore == 0) { }
          return cardIsInserted;
       }
-    }
+   }
+
+    ////////////////////////////////////////////////////////////////////////////////
+
     public partial class MainPage : PhoneApplicationPage
     {
-        private Direct3DBackground m_d3dBackground = null;
-
+        private Direct3DBackground d3dBackground;
+        private int specialKey;
+        private int keyboardH;
+        private long lastTick;
+        private CSWrapper cs;
+        public static MainPage instance;
 
         // Constructor
         public MainPage()
         {
+            instance = this;
             InitializeComponent();
-            this.LostFocus += MainPage_LostFocus;
             this.BackKeyPress += MainPage_BackKeyPress;
+            this.MouseMove += MainPage_MouseMove;
+            this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
+            this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
+            this.SizeChanged += MainPage_SizeChanged;
+            BeginListenForSIPChanged();
+        }
+
+        void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (d3dBackground != null) d3dBackground.OnScreenChanged(-1, (int)e.NewSize.Width, (int)e.NewSize.Height);
+        }
+
+        private void BeginListenForSIPChanged()
+        {
+           System.Windows.Data.Binding b = new System.Windows.Data.Binding("Y");
+           b.Source = (((App.Current as App).RootFrame).RenderTransform as TransformGroup).Children[0] as TranslateTransform;
+           SetBinding(RootFrameTransformProperty, b);
+        }
+
+        public static readonly DependencyProperty RootFrameTransformProperty = DependencyProperty.Register("RootFrameTransform",typeof(double),typeof(MainPage),new PropertyMetadata(OnRootFrameTransformChanged));
+        static void OnRootFrameTransformChanged(DependencyObject source, DependencyPropertyChangedEventArgs e)
+        {
+           double newvalue = (double)e.NewValue;
+           if (newvalue == (int)newvalue) // finished?
+           {
+               instance.keyboardH = -(int)newvalue; // when 0, keyboard is hidden
+               instance.d3dBackground.OnScreenChanged(instance.keyboardH, 0, 0);
+           }
+        }
+
+        void MainPage_KeyDown(object sender, KeyEventArgs e)
+        {
+            int key = e.PlatformKeyCode;
+            specialKey = key < 32 ? key : 0;
+        }
+
+        bool ignoreNext;
+        void tbox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (ignoreNext) { ignoreNext = false; return; }
+            if (specialKey != 0)
+                d3dBackground.OnKeyPressed(specialKey);
+            else
+            {
+                String s = cs.tbox.Text;
+                int idx = cs.tbox.SelectionStart - 1;
+                if (0 <= idx && idx < s.Length)
+                   d3dBackground.OnKeyPressed(s.ElementAt(idx));
+            }
+            if (cs.tbox.Text.Length == 0)
+            {
+                ignoreNext = true;
+                cs.tbox.Text = "A"; // dont leave it empty, otherwise we will not receive a backspace key (and we don't know the TotalCross' edit value)
+                cs.tbox.SelectionStart = 1;
+            }
+        }
+
+        void MainPage_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            Point p = e.GetPosition(this);
+            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y - keyboardH); // when the keyboard is open, all events are shifted by its heihgt
+        }
+
+        void MainPage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            Point p = e.GetPosition(this);
+            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y - keyboardH);
+        }
+
+        void MainPage_MouseMove(object sender, MouseEventArgs e)
+        {
+            long tick = DateTime.Now.Ticks / 10000;
+            if ((tick - lastTick) > 20) // ignore fast moves
+            {
+                lastTick = tick;
+                Point p = e.GetPosition(this);
+                d3dBackground.OnPointerMoved((int)p.X, (int)p.Y - keyboardH);
+            }
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (m_d3dBackground == null)
-            {
-                e.Cancel = false;
-            }
-            else
-            {
-                e.Cancel = m_d3dBackground.backKeyPress();
-                //throw new NotImplementedException();
-            }
+            e.Cancel = d3dBackground != null && d3dBackground.backKeyPress();
         }
 
-        void MainPage_LostFocus(object sender, RoutedEventArgs e)
+        public void onSuspend()
         {
-            MessageBox.Show("lalala");
-            //throw new NotImplementedException();
+            d3dBackground.lifeCycle(true);
+        }
+
+        public void onResume()
+        {
+            d3dBackground.lifeCycle(false);
         }
 
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
         {
-            if (m_d3dBackground == null)
+            if (d3dBackground == null)
             {
-                CSWrapper cs = new CSWrapper(LayoutRoot);
+                cs = new CSWrapper(LayoutRoot);
                 cs.mp = this;
-                cs.getFontHeightCS();
-                m_d3dBackground = new Direct3DBackground(cs);
+                d3dBackground = new Direct3DBackground(cs);
 
-                // Set window bounds in dips
-                m_d3dBackground.WindowBounds = new Windows.Foundation.Size(
-                    (float)Application.Current.Host.Content.ActualWidth,
-                    (float)Application.Current.Host.Content.ActualHeight
-                    );
+                cs.tbox.KeyDown += MainPage_KeyDown;
+                cs.tbox.TextChanged += tbox_TextChanged;
 
-                // Set native resolution in pixels
-                m_d3dBackground.NativeResolution = new Windows.Foundation.Size(
-                    (float)Math.Floor(Application.Current.Host.Content.ActualWidth * Application.Current.Host.Content.ScaleFactor / 100.0f + 0.5f),
-                    (float)Math.Floor(Application.Current.Host.Content.ActualHeight * Application.Current.Host.Content.ScaleFactor / 100.0f + 0.5f)
-                    );
-
-                // Set render resolution to the full native resolution
-                m_d3dBackground.RenderResolution = m_d3dBackground.NativeResolution;
-
-                // Hook-up native component to DrawingSurfaceBackgroundGrid
-                DrawingSurfaceBackground.SetBackgroundContentProvider(m_d3dBackground.CreateContentProvider());
-                DrawingSurfaceBackground.SetBackgroundManipulationHandler(m_d3dBackground);
+                int appW = (int)LayoutRoot.ActualWidth, appH = (int)LayoutRoot.ActualHeight;
+                //int scrW = (int)Application.Current.Host.Content.ActualWidth, scrH = (int)Application.Current.Host.Content.ActualHeight;
+                //LayoutRoot.Margin = new Thickness(0, scrH - appH,0,0);
+                d3dBackground.OnScreenChanged(-1, appW, appH);
+                d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
+                DrawingSurfaceBackground.SetBackgroundContentProvider(d3dBackground.CreateContentProvider());
             }
         }
     }

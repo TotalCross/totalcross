@@ -229,9 +229,9 @@ public class Deploy
       iht.put("palmos" .hashCode(), 0);
       iht.put("blackberry".hashCode(), 0);
       iht.put("bb"     .hashCode(), 0);
-      iht.put("ce"     .hashCode(), BUILD_WINCE);
-      iht.put("wince"  .hashCode(), BUILD_WINCE);
-      iht.put("winmo"  .hashCode(), BUILD_WINMO);
+      iht.put("ce"     .hashCode(), 0);
+      iht.put("wince"  .hashCode(), 0);
+      iht.put("winmo"  .hashCode(), 0);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
       iht.put("applet" .hashCode(), BUILD_APPLET);

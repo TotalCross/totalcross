@@ -440,7 +440,7 @@ public class ScrollContainer extends Container implements Scrollable
                {
                   scrollContent(dx, dy);
                   event.consumed = true;
-                  Event.clearQueue(PenEvent.PEN_DRAG);
+                  //Event.clearQueue(PenEvent.PEN_DRAG);
                }
                else
                {

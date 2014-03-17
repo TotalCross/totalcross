@@ -385,7 +385,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /bpp 16          : emulates 16 bits per pixel screens (64K colors)");
       System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M colors)");
       System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M colors without transparency)");
-      System.out.println("   /scale <0.1 to 4>: scales the screen, magnifying the contents using a smooth scale.");
+      System.out.println("   /scale <0.1 to 8>: scales the screen, magnifying the contents using a smooth scale.");
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
       System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
@@ -537,7 +537,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/scale"))
             {
                toScale = toDouble(args[++i]); // guich@tc126_74: use a 
-               if (toScale < 0 || toScale > 4)
+               if (toScale < 0 || toScale > 8)
                   throw new Exception();
                System.out.println("Scale is "+toScale);
             }
