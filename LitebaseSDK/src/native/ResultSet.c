@@ -372,6 +372,12 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
    else if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
       return null;
 
+   if (length > table->columnSizes[column]) // juliana@270_22: solved a possible crash when the table is corrupted.
+   {
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), table->name);
+      return null;
+   }
+
    // Creates the returning object and loads the string inside it.
    if ((object = TC_createArrayObject(context, CHAR_ARRAY, length))) // guich@570_97: Checks often.
 	{   
@@ -438,6 +444,12 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
       length = 0;
    else if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4))
       return null;
+
+   if (length > table->columnSizes[column]) // juliana@270_22: solved a possible crash when the table is corrupted.
+   {
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), table->name);
+      return null;
+   }
 
    // guich@570_97: checks often.
    // Creates the returning object and copies the blob to it.
@@ -508,6 +520,12 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
             length = 0;
          else if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
             return null;
+
+         if (length > table->columnSizes[column]) // juliana@270_22: solved a possible crash when the table is corrupted.
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), table->name);
+            return null;
+         }
 
          // Creates the returning object and loads the string inside it.
          if ((object = TC_createStringObjectWithLen(context, length))) // guich@570_97: check often
@@ -620,10 +638,18 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
                   *strings = rsGetString(context, resultSet, column, &value);
                   
-                  if (!(*strings))
+                  // juliana@270_31: Corrected bug of ResultSet.getStrings() don't working properly when there is a data function in the columns 
+                  // being fetched.
+                  if (!(*strings) || field->isDataTypeFunction)
                   {
                      if (field->isDataTypeFunction)
-                        rsApplyDataTypeFunction(params, &value, field, columnTypes[column]);
+                     {
+                        rsApplyDataTypeFunction(params, &value, field, UNDEFINED_TYPE);
+                        if (!(columnTypes[column] == CHARS_TYPE || columnTypes[column] == CHARS_NOCASE_TYPE))
+                           *strings++ = params->retO;
+                        else
+                           TC_setObjectLock(*strings++, UNLOCKED);
+                     }
                      else 
                      {
                         createString(params, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
