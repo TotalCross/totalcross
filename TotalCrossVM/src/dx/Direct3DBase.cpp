@@ -37,7 +37,7 @@ void Direct3DBase::initialize(bool resuming)
 {
    // create the D3DDevice
    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-   //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+   creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
    D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_9_3};
    DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
    d3dDevice->CreateDeferredContext(0, &d3dcontext);
@@ -139,9 +139,14 @@ void Direct3DBase::initialize(bool resuming)
    });
 }
 
+void Direct3DBase::updateScreenMatrix()
+{
+   XMMATRIX mat = XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f);
+   XMStoreFloat4x4(&constantBufferData.projection, mat);
+}
+
 void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 {
-   updateWS |= rotatedTo == -2 || rotatedTo >= 0;
    if (!updateWS)
       return;
 
@@ -161,7 +166,8 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    DXRELEASE(renderTex);
 
    // Create a descriptor for the render target buffer.
-   CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appW, appH, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
+   int appSize = max(appW, appH);
+   CD3D11_TEXTURE2D_DESC renderTargetDesc(DXGI_FORMAT_B8G8R8A8_UNORM, appSize, appSize, 1, 1, D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
    renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
    // Allocate a 2-D surface as the render target buffer.
@@ -170,15 +176,12 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    host->CreateSynchronizedTexture(renderTex, &syncTex);
 
    // Create a depth stencil view.
-   CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appW, appH, 1, 1, D3D11_BIND_DEPTH_STENCIL);
+   CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appSize, appSize, 1, 1, D3D11_BIND_DEPTH_STENCIL);
    DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil));
    CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
    DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil, &depthStencilViewDesc, &depthStencilView));
 
-   XMMATRIX mat = rotatedTo == 0 || rotatedTo == -2 ?
-      XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f) :
-      XMMatrixMultiply(XMMatrixRotationX(XM_PIDIV2), XMMatrixOrthographicOffCenterLH(0, (float)appW, (float)appH, 0, -1.0f, 1.0f));
-   XMStoreFloat4x4(&constantBufferData.projection, mat);
+   updateScreenMatrix();
 
    unsigned short cubeIndices[] =
    {
@@ -283,7 +286,6 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    vmStarted = true;
    preRender();
    updateWS = false;
-   rotatedTo = -1;
 }
 
 void Direct3DBase::setColor(int color)
@@ -579,11 +581,16 @@ void Direct3DBase::setClip(int32* clip)
          d3dcontext->RSSetState(pRasterStateEnableClipping);
       if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
       {
-         clipRect.left = clip[0];
-         clipRect.top = clip[1] + glShiftY;
-         clipRect.right = clip[2];
-         clipRect.bottom = clip[3] + glShiftY;
-         d3dcontext->RSSetScissorRects(1, &clipRect);
+         if (clip[0] > clip[2] || clip[1] > clip[3])
+            debug("ERRO: setClip (L:%d,T:%d,R:%d,B:%d). glShiftY: %d", clip[0], clip[1], clip[2], clip[3], glShiftY);
+         else
+         {
+            clipRect.left = clip[0];
+            clipRect.top = clip[1] + glShiftY;
+            clipRect.right = clip[2];
+            clipRect.bottom = clip[3] + glShiftY;
+            d3dcontext->RSSetScissorRects(1, &clipRect);
+         }
       }
    }
    clipSet = doClip;

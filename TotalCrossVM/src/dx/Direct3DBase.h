@@ -94,6 +94,7 @@ internal:
 
 	void initialize(bool resuming);
    void updateDevice(IDrawingSurfaceRuntimeHostNative* host);
+   void updateScreenMatrix();
 	void preRender(); // resets the screen and set it ready to render
 	void updateScreen();
 
@@ -116,7 +117,6 @@ internal:
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
    Platform::String^ alertMsg;
    bool updateScreenWaiting;
-   int rotatedTo;
    int sipHeight;
    bool updateWS;
    bool minimized;

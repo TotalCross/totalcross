@@ -106,8 +106,7 @@ void flushAll()
 
 void privateScreenChange(int32 w, int32 h)
 {
-	appW = w;
-	appH = h;
+   dxprivateScreenChange();
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
@@ -198,7 +197,7 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
       int n1 = listGetCount(imgTextures);
       imgTextures = VoidPsRemove(imgTextures, img, null);
       int n2 = listGetCount(imgTextures);
-      if (n2 - 1 != n1)
+      if (n1 - 1 != n2)
          debug("**** tinha %d, tirou 1 mas ficou %d", n1, n2);
    }
 }

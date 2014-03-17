@@ -74,6 +74,7 @@ void dxDeleteTexture(TCObject img, int32* textureId, bool updateList);
 void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip);
 void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
 int32 dxGetSipHeight();
+void dxprivateScreenChange();
 
 // Etc
 double getFontHeightCPP();

@@ -47,6 +47,12 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	eventQueue.push(newEvent);
 }
 
+extern "C"
+{
+   void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
+   extern int appW, appH;
+}
+
 struct eventQueueMember eventQueuePop(void)
 {
 	struct eventQueueMember top;
@@ -55,6 +61,11 @@ struct eventQueueMember eventQueuePop(void)
 	{
 		top = eventQueue.front();
 		eventQueue.pop();
+      if (top.type == KEYEVENT_SPECIALKEY_PRESS && top.key == -1030)
+      {
+         screenChange(mainContext, appW, appH, 0, 0, true);
+         top.type = 0;
+      }
 	}
 	return top;
 }
@@ -260,4 +271,9 @@ double getFontHeightCPP()
 void privateWindowSetSIP(bool visible)
 {
    Direct3DBase::getLastInstance()->csharp->privateWindowSetSIP(visible);
+}
+
+void dxprivateScreenChange()
+{
+   Direct3DBase::getLastInstance()->updateScreenMatrix();
 }

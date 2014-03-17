@@ -58,10 +58,7 @@ namespace PhoneDirect3DXamlAppInterop
       private double fontHeight;
       public TextBox tbox;
       public int portraitSipH, landscapeSipH, currentSipH;
-      public int appW, appH;
       public bool sipVisible;
-
-      public MainPage mp { set; get; }
 
       public CSWrapper(Grid g)
       {
@@ -296,7 +293,8 @@ namespace PhoneDirect3DXamlAppInterop
          {
              setSip(visible);
          }));
-         currentSipH = visible ? (appH > appW ? portraitSipH : landscapeSipH) : 0;
+         bool isPortrait = MainPage.isPortrait;
+         currentSipH = visible ? (isPortrait ? portraitSipH : landscapeSipH) : 0;
          if ((visible && currentSipH != 0) || (!visible && currentSipH == 0))
             MainPage.instance.d3dBackground.OnScreenChanged(currentSipH, 0, 0);
       }
@@ -315,6 +313,7 @@ namespace PhoneDirect3DXamlAppInterop
         private int specialKey;
         private CSWrapper cs;
         public static MainPage instance;
+        public static bool isPortrait;
 
         // Constructor
         public MainPage()
@@ -326,15 +325,20 @@ namespace PhoneDirect3DXamlAppInterop
             this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
             this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
             this.SizeChanged += MainPage_SizeChanged;
+            checkOrientation();
             // InputPane input = InputPane.GetForCurrentView(); input.Showing += input_Showing; input.Hiding += input_Hiding; DOES NOT WORK! METHODS ARE NEVER CALLED. TEST AGAIN ON FUTURE WP VERSIONS
             BeginListenForSIPChanged();
+        }
+
+        public void checkOrientation()
+        {
+           isPortrait = Orientation == PageOrientation.Portrait || Orientation == PageOrientation.PortraitUp || Orientation == PageOrientation.PortraitDown;
         }
 
         void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
            if (d3dBackground == null) return;
-
-           bool isPortrait = instance.cs.appH > instance.cs.appW;
+           checkOrientation();
            // if sipH isnt set for current rotation, move it to bottom again
            if ((isPortrait && instance.cs.portraitSipH == 0) || (!isPortrait && instance.cs.landscapeSipH == 0))
               instance.cs.tbox.Margin = new Thickness(0, instance.ActualHeight * 10, 0, 0); // move to top
@@ -354,7 +358,6 @@ namespace PhoneDirect3DXamlAppInterop
            double newvalue = (double)e.NewValue;
            if (newvalue == (int)newvalue) // finished?
            {
-              bool isPortrait = instance.cs.appH > instance.cs.appW;
               if ((isPortrait && instance.cs.portraitSipH == 0) || (!isPortrait && instance.cs.landscapeSipH == 0))
               {
                  if (isPortrait)
@@ -437,18 +440,15 @@ namespace PhoneDirect3DXamlAppInterop
             if (d3dBackground == null)
             {
                 cs = new CSWrapper(LayoutRoot);
-                cs.mp = this;
                 d3dBackground = new Direct3DBackground(cs);
 
                 cs.tbox.KeyDown += MainPage_KeyDown;
                 cs.tbox.TextChanged += tbox_TextChanged;
 
-                cs.appW = (int)LayoutRoot.ActualWidth;
-                cs.appH = (int)LayoutRoot.ActualHeight;
-                //int scrW = (int)Application.Current.Host.Content.ActualWidth, scrH = (int)Application.Current.Host.Content.ActualHeight;
-                //LayoutRoot.Margin = new Thickness(0, scrH - appH,0,0);
-                d3dBackground.OnScreenChanged(-1, cs.appW, cs.appH);
-                d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(cs.appW,cs.appH);
+                int appW = (int)LayoutRoot.ActualWidth;
+                int appH = (int)LayoutRoot.ActualHeight;
+                d3dBackground.OnScreenChanged(-1, appW, appH);
+                d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
                 DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
             }
         }

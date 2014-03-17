@@ -36,7 +36,10 @@ bool Direct3DBackground::backKeyPress()
 }
 
 // Event Handlers
-extern "C" {extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; }
+extern "C" 
+{
+   extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; 
+}
 void Direct3DBackground::OnPointerPressed(int x, int y)
 {
    eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y - glShiftY, -1);
@@ -71,15 +74,10 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
    }
    else
    {
-#define SCREEN_CHANGE -1030
-      bool firstTime = appW == 0;
       appW = newWidth;
       appH = newHeight;
-      if (!firstTime)
-      {
-         renderer->rotatedTo = newWidth > newHeight ? 1 : 0;
-         eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SCREEN_CHANGE, 0, 0, -1);
-      }
+      if (renderer != nullptr)
+         eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0, 0, -1);
    }
 }
 
@@ -96,7 +94,7 @@ HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host)
 void Direct3DBackground::lifeCycle(bool suspending)
 {
    renderer->lifeCycle(suspending);
-   renderer->rotatedTo = -2;
+   renderer->updateWS = true;
 }
 
 HRESULT Direct3DBackground::PrepareResources(_Out_ BOOL* contentDirty)
