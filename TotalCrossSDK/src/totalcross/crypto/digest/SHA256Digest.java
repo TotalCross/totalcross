@@ -14,13 +14,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.digest;
 
 import java.security.*;
 import totalcross.crypto.NoSuchAlgorithmException;
-
 
 /**
  * This class implements the SHA-256 message digest algorithm.
@@ -29,6 +26,8 @@ public class SHA256Digest extends Digest
 {
    /**
     * Creates a new SHA256Digest object.
+    * 
+    * @throws NoSuchAlgorithmException If no Provider supports a <code>MessageDigestSpi</code> implementation for the specified algorithm.
     */
    public SHA256Digest() throws NoSuchAlgorithmException
    {
@@ -42,16 +41,31 @@ public class SHA256Digest extends Digest
       }
    }
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return "SHA-256".
+    */
    public final String getAlgorithm()
    {
       return "SHA-256";
    }
    
+   /**
+    * Returns the block length.
+    * 
+    * @return 64.
+    */
    public final int getBlockLength()
    {
       return 64;
    }
    
+   /**
+    * Returns the message digest length.
+    * 
+    * @return 32.
+    */
    public final int getDigestLength()
    {
       return 32;
