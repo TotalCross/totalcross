@@ -638,10 +638,18 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
                   *strings = rsGetString(context, resultSet, column, &value);
                   
-                  if (!(*strings))
+                  // juliana@270_31: Corrected bug of ResultSet.getStrings() don't working properly when there is a data function in the columns 
+                  // being fetched.
+                  if (!(*strings) || field->isDataTypeFunction)
                   {
                      if (field->isDataTypeFunction)
-                        rsApplyDataTypeFunction(params, &value, field, columnTypes[column]);
+                     {
+                        rsApplyDataTypeFunction(params, &value, field, UNDEFINED_TYPE);
+                        if (!(columnTypes[column] == CHARS_TYPE || columnTypes[column] == CHARS_NOCASE_TYPE))
+                           *strings++ = params->retO;
+                        else
+                           TC_setObjectLock(*strings++, UNLOCKED);
+                     }
                      else 
                      {
                         createString(params, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);

@@ -634,8 +634,10 @@ public class ResultSet
                   tableAux.readValue(value, offsets[column], types[column], false, false); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+                  // juliana@270_31: Corrected bug of ResultSet.getStrings() don't working properly when there is a data function in the columns 
+                  // being fetched.
                   if (field.isDataTypeFunction)
-                     applyDataTypeFunction(field, field.parameter.dataType);
+                     applyDataTypeFunction(field, SQLElement.UNDEFINED);
                   else 
                      createString(types[column], decimals == null? - 1: decimals[column]);
                   
