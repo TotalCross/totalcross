@@ -20,9 +20,16 @@ using Windows.Devices.Geolocation;
 using Windows.Networking.Proximity;
 using System.Diagnostics;
 using Windows.UI.ViewManagement;
+using System.IO;
+using Windows.Storage;
 
 namespace PhoneDirect3DXamlAppInterop
 {
+   class Settings
+   {
+      public static int landSipH, portSipH;
+   }
+
    public class CSWrapper : CSwrapper
    {
       // Workarround vars
@@ -57,7 +64,7 @@ namespace PhoneDirect3DXamlAppInterop
       // user interface
       private double fontHeight;
       public TextBox tbox;
-      public int portraitSipH, landscapeSipH, currentSipH;
+      public int currentSipH;
       public bool sipVisible;
 
       public CSWrapper(Grid g)
@@ -67,10 +74,47 @@ namespace PhoneDirect3DXamlAppInterop
           tbox = new TextBox();
           root.Children.Add(tbox);
           tbox.Visibility = Visibility.Collapsed;
-          tbox.Margin = new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0); // at bottom
           tbox.LostFocus += tbox_LostFocus;
           // get native font size
           fontHeight = tbox.FontSize;
+          ReadSettings().Wait();
+          tbox.Margin = isSipSet()
+            ? new Thickness(0, 0, 0, MainPage.instance.ActualHeight * 10) // to top
+            : new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0);  // to bottom
+      }
+
+      public bool isSipSet()
+      {
+         bool isPortrait = MainPage.isPortrait;
+         return (isPortrait && Settings.portSipH != 0) || (!isPortrait && Settings.landSipH != 0);
+      }
+
+      public async Task WriteSettings()
+      {
+         var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("AppSettings.dat", CreationCollisionOption.ReplaceExisting);
+         using (var s = await file.OpenStreamForWriteAsync())
+         {
+            BinaryWriter bw = new BinaryWriter(s);
+            bw.Write(Settings.landSipH);
+            bw.Write(Settings.portSipH);
+         }
+      }
+
+      public async Task ReadSettings()
+      {
+         try
+         {
+            var file = await Windows.Storage.ApplicationData.Current.LocalFolder.OpenStreamForReadAsync("AppSettings.dat");
+            using (var br = new BinaryReader(file))
+            {
+               Settings.landSipH = br.ReadInt32();
+               Settings.portSipH = br.ReadInt32();
+            }
+         }
+         catch
+         {
+            // do nothing
+         }
       }
 
       void tbox_LostFocus(object sender, RoutedEventArgs e)
@@ -294,7 +338,7 @@ namespace PhoneDirect3DXamlAppInterop
              setSip(visible);
          }));
          bool isPortrait = MainPage.isPortrait;
-         currentSipH = visible ? (isPortrait ? portraitSipH : landscapeSipH) : 0;
+         currentSipH = visible ? (isPortrait ? Settings.portSipH : Settings.landSipH) : 0;
          if ((visible && currentSipH != 0) || (!visible && currentSipH == 0))
             MainPage.instance.d3dBackground.OnScreenChanged(currentSipH, 0, 0);
       }
@@ -347,8 +391,8 @@ namespace PhoneDirect3DXamlAppInterop
            if (d3dBackground == null) return;
            checkOrientation();
            // if sipH isnt set for current rotation, move it to bottom again
-           if ((isPortrait && instance.cs.portraitSipH == 0) || (!isPortrait && instance.cs.landscapeSipH == 0))
-              instance.cs.tbox.Margin = new Thickness(0, instance.ActualHeight * 10, 0, 0); // move to top
+           if ((isPortrait && Settings.portSipH == 0) || (!isPortrait && Settings.landSipH == 0))
+              instance.cs.tbox.Margin = new Thickness(0, instance.ActualHeight * 10, 0, 0); // move to bottom
            d3dBackground.OnScreenChanged(-1, (int)e.NewSize.Width, (int)e.NewSize.Height);
         }
 
@@ -365,12 +409,13 @@ namespace PhoneDirect3DXamlAppInterop
            double newvalue = (double)e.NewValue;
            if (newvalue == (int)newvalue) // finished?
            {
-              if ((isPortrait && instance.cs.portraitSipH == 0) || (!isPortrait && instance.cs.landscapeSipH == 0))
+              if (!instance.cs.isSipSet())
               {
                  if (isPortrait)
-                    instance.cs.currentSipH = instance.cs.portraitSipH = -(int)newvalue;
+                    instance.cs.currentSipH = Settings.portSipH = -(int)newvalue;
                  else
-                    instance.cs.currentSipH = instance.cs.landscapeSipH = -(int)newvalue;
+                    instance.cs.currentSipH = Settings.landSipH = -(int)newvalue;
+                 instance.cs.WriteSettings();
                  instance.cs.tbox.Margin = new Thickness(0, 0, 0, instance.ActualHeight * 10); // move to top
                  // once we set the value, we move the sip to top to prevent the odd animation
                  instance.cs.setSip(false);
