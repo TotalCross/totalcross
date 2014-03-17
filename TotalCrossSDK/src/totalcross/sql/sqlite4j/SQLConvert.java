@@ -14,7 +14,7 @@ class SQLConvert
    {
       try
       {
-         return new java.sql.Time(new Date(x).getTime() + x.hour * 60*60*1000 + x.minute*60*1000+ x.second*1000);
+         return new java.sql.Time(x.getTime());
       }
       catch (InvalidDateException e)
       {
@@ -23,7 +23,15 @@ class SQLConvert
    }
    static totalcross.sys.Time time(java.sql.Time x)
    {
-      return x == null ? null : new totalcross.sys.Time(x.getTime());
+      try
+      {
+         return x == null ? null : new totalcross.sys.Time(x.getTime(),true);
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+         return null;
+      }
    }
 
    static java.sql.Date date(Date x)
@@ -44,6 +52,38 @@ class SQLConvert
          {
          }
       return null;
+   }
+   
+   private static void test(long l)
+   {
+      try
+      {
+         Time t = new Time(l); // como vem da nuvem
+         long lt = t.getTime(); // desde 1/1/1970
+         Time t2 = new Time(lt,true);
+         long lf = t2.getTimeLong();
+         String s = t2.getSQLString();
+         System.out.println(l+" -> "+lf+" ("+s+")");
+      }
+      catch (InvalidDateException e)
+      {
+         e.printStackTrace();
+      }
+   }
+   public static void main(String args[])
+   {
+      Settings.is24Hour = true;
+      Settings.dateSeparator = '/';
+      Settings.timeZoneMinutes = -240;
+      
+      totalcross.sys.Time t0 = new totalcross.sys.Time();
+      java.sql.Time t1 = time(t0);
+      totalcross.sys.Time t2 = time(t1);
+      System.out.println(t0.getTimeLong()+" -> "+t2.getTimeLong());
+      
+      test(20121203000000L);
+      test(20130127232922L); // fails if Settings.timeZoneMinutes is considered
+      test(20130125125200L);
    }
 
    static java.sql.Timestamp timestamp(Timestamp x)

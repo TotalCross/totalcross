@@ -52,8 +52,7 @@ public final class Font
    public Object hv_UserFont;
    public FontMetrics fm;
 
-   /** The default font name: Font.NEW_FONT_SET if new font set is being used, Font.OLD_FONT_SET otherwise. 
-    * If a specified font is not found, this one is used instead. 
+   /** The default font name. If a specified font is not found, this one is used instead. 
     */
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 7. */
@@ -152,7 +151,9 @@ public final class Font
     * @param boldStyle If true, a bold font is used. Otherwise, a plain font is used.
     * @param size If you want a text bigger than the standard size, use Font.NORMAL_SIZE+x; or if you want
     * a text smaller than the standard size, use Font.NORMAL_SIZE-x. Size is adjusted to be in the range
-    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>.
+    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>. That is, passing a value out of the bounds 
+    * won't throw an exception, will only use the minimum default size if the size passed is less than it or 
+    * use the maximum default size if the size passed is greater than it.
     */
    public static Font getFont(boolean boldStyle, int size) // guich@580_10
    {
@@ -161,15 +162,15 @@ public final class Font
 
    /**
     * Gets the instance of a font of the given name, style and size. Font styles are defined
-    * in this class. BlackBerry supports the use of native system fonts, which are formed by
-    * the font family name preceded by a '$' (e.g.: "$BBCasual"). You can also specify only
-    * "$" for the font name, which means the default system font. Font.DEFAULT will be used in
-    * place of native fonts for all platforms that do not support them.
+    * in this class. Font.DEFAULT will be used if the font is not installed on the device. 
+    * This method can be used to check if the created font is in fact installed on the device.
     * @param name Font.DEFAULT is the default font. You must install other fonts if you want to use them.
     * @param boldStyle If true, a bold font is used. Otherwise, a plain font is used.
     * @param size If you want a text bigger than the standard size, use Font.NORMAL_SIZE+x; or if you want
     * a text smaller than the standard size, use Font.NORMAL_SIZE-x. Size is adjusted to be in the range
-    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>.
+    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>. That is, passing a value out of the bounds won't throw an exception, 
+    * will only use the minimum default size if the size passed is less than it or use the maximum default size if the size passed is 
+    * greater than it.
     */
    public static Font getFont(String name, boolean boldStyle, int size) // guich@580_10
    {
@@ -189,6 +190,7 @@ public final class Font
    
    /** Returns a font with the size changed with that delta. 
     * The new size is thisFont.size+delta.
+    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
     * @since TotalCross 1.3
     */
    public Font adjustedBy(int delta)
@@ -198,6 +200,7 @@ public final class Font
 
    /** Returns a font with the size changed with that delta and the given bold style. 
     * The new size is thisFont.size+delta.
+    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
     * @since TotalCross 1.3
     */
    public Font adjustedBy(int delta, boolean bold)

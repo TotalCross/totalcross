@@ -601,9 +601,23 @@ public class Date implements Comparable
    /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
     * @since TotalCross 2.0 
     */
+   public String getSQLString(StringBuffer sb)
+   {
+      sb.append(year);
+      sb.append(Settings.dateSeparator);
+      if (month < 10) sb.append('0'); sb.append(month);
+      sb.append(Settings.dateSeparator);
+      if (day   < 10) sb.append('0'); sb.append(day);
+      sb.append(" 00:00:00.000");
+      return sb.toString();
+   }
+   
+   /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
+    * @since TotalCross 2.0 
+    */
    public String getSQLString()
    {
-      return year+"-"+month+"-"+day+ " 00:00:00.000";
+      return getSQLString(new StringBuffer(20));
    }
 
    /** Returns this date in the Time.getTimeLong format, with hour/minute/second/millis equal to 0.
@@ -615,18 +629,18 @@ public class Date implements Comparable
    }
    
 
-   private static Date EPOCH;
+   public static Date SQL_EPOCH;
    
    static 
    {
-      try {EPOCH = new Date(1,1,1970);} catch (Exception e) {}
+      try {SQL_EPOCH = new Date(1,1,1970);} catch (Exception e) {}
    }
-   /** Returns the number of millis since 1/1/1970.
+   /** Returns the number of millis since SQL_EPOCH 1/1/1970.
     * @since TotalCross 2.1
     */
    public long getTime()
    {
-      long days = EPOCH.subtract(this);
-      return days*24*60*60*1000 - Settings.timeZoneMinutes*60*1000;
+      long days = SQL_EPOCH.subtract(this);
+      return days*24L*60L*60L*1000L;
    }
 }
