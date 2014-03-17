@@ -37,7 +37,7 @@ void Direct3DBase::initialize(bool resuming)
 {
    // create the D3DDevice
    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-   creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+   //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
    D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_9_3};
    DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
    d3dDevice->CreateDeferredContext(0, &d3dcontext);
@@ -569,6 +569,12 @@ void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList
       texture->Release();
 }
 
+static void swap(int32* a, int32* b)
+{
+   int32 c = *a;
+   *a = *b;
+   *b = c;
+}
 void Direct3DBase::setClip(int32* clip)
 {
    bool doClip = clip != null;
@@ -581,16 +587,15 @@ void Direct3DBase::setClip(int32* clip)
          d3dcontext->RSSetState(pRasterStateEnableClipping);
       if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
       {
-         if (clip[0] > clip[2] || clip[1] > clip[3])
-            debug("ERRO: setClip (L:%d,T:%d,R:%d,B:%d). glShiftY: %d", clip[0], clip[1], clip[2], clip[3], glShiftY);
-         else
-         {
-            clipRect.left = clip[0];
-            clipRect.top = clip[1] + glShiftY;
-            clipRect.right = clip[2];
-            clipRect.bottom = clip[3] + glShiftY;
-            d3dcontext->RSSetScissorRects(1, &clipRect);
-         }
+         if (clip[0] > clip[2])
+            swap(&clip[0], &clip[2]);
+         if (clip[1] > clip[3])
+            swap(&clip[1], &clip[3]);
+         clipRect.left = clip[0];
+         clipRect.top = clip[1] + glShiftY;
+         clipRect.right = clip[2];
+         clipRect.bottom = clip[3] + glShiftY;
+         d3dcontext->RSSetScissorRects(1, &clipRect);
       }
    }
    clipSet = doClip;
