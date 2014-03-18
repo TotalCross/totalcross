@@ -41,6 +41,7 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    {
       m_controller->renderer->syncTex->BeginDraw();
       m_controller->renderer->d3dImedContext->ExecuteCommandList(m_controller->renderer->d3dCommandList, FALSE);
+      //m_controller->renderer->getPixels(null, 0, 0, 0, 0, 0);
       m_controller->renderer->updateScreenWaiting = false; // once the commandlist is used, we can continue
       m_controller->renderer->syncTex->EndDraw();
    }

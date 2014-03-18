@@ -642,3 +642,40 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    // Draw the cube.
    d3dcontext->DrawIndexed(6, 0, 0);
 }
+
+void Direct3DBase::getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
+{
+   ID3D11Texture2D *captureTexture;
+   // Copy the renderTarget texture resource to my "captureTexture" resource
+   D3D11_TEXTURE2D_DESC desc;
+   renderTex->GetDesc(&desc);
+   desc.BindFlags = desc.MiscFlags = 0;
+   desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+   desc.Usage = D3D11_USAGE_STAGING;
+   HRESULT hr = d3dDevice->CreateTexture2D(&desc, 0, &captureTexture);
+   if (FAILED(hr))
+      return;
+   d3dImedContext->CopyResource(captureTexture, renderTex);
+   // Map my "captureTexture" resource to access the pixel data
+   D3D11_MAPPED_SUBRESOURCE mapped;
+   hr = d3dImedContext->Map(captureTexture, 0, D3D11_MAP_READ, 0, &mapped);
+   if (FAILED(hr))
+      return;
+
+   // Cast the pixel data to a byte array essentially
+   struct Color { uint8 r, g, b, a; };
+   const Color* sptr = reinterpret_cast<const Color*>(mapped.pData);
+   if (sptr)
+   {
+      // Loop through all pixels in texture and copy to output buffer
+      int counter = 0;
+      for (int row = 0; row < appH; row++)
+      {
+         const Color* c = sptr + row * mapped.RowPitch;
+         //for (int col = 0; col < appW; col++, c++)
+           // dstPixels[row * appW + col] = (c->a << 24) | (c->r << 16) | (c->g << 8) | c->b;
+      }
+   }
+   d3dImedContext->Unmap(captureTexture, 0);
+   captureTexture->Release();
+}

@@ -109,6 +109,7 @@ internal:
    void setClip(int32* clip);
    void setColor(int color);
    void createTexture();
+   void getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch);
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
 
