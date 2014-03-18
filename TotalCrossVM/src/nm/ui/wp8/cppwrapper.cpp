@@ -223,6 +223,11 @@ void dxUpdateScreen()
    Direct3DBase::getLastInstance()->updateScreen();
 }
 
+void dxGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
+{
+   Direct3DBase::getLastInstance()->getPixels(dstPixels,srcX,srcY,width,height,pitch);
+}
+
 int32 dxGetSipHeight()
 {
    return Direct3DBase::getLastInstance()->csharp->getSipHeight();

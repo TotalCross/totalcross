@@ -41,7 +41,8 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    {
       m_controller->renderer->syncTex->BeginDraw();
       m_controller->renderer->d3dImedContext->ExecuteCommandList(m_controller->renderer->d3dCommandList, FALSE);
-      //m_controller->renderer->getPixels(null, 0, 0, 0, 0, 0);
+      if (*screenShotImagePtr != null) // used in screen capture
+         m_controller->renderer->getPixels((Pixel*)ARRAYOBJ_START(Image_pixels(*screenShotImagePtr)), 0, 0, Image_width(*screenShotImagePtr), Image_height(*screenShotImagePtr), Image_width(*screenShotImagePtr));
       m_controller->renderer->updateScreenWaiting = false; // once the commandlist is used, we can continue
       m_controller->renderer->syncTex->EndDraw();
    }

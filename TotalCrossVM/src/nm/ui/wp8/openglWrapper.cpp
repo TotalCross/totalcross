@@ -97,6 +97,7 @@ int32 glGetPixel(int32 x, int32 y)
 
 void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
+   dxGetPixels(dstPixels, srcX, srcY, width, height, pitch);
 }
 
 void flushAll()

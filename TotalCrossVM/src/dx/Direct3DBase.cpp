@@ -37,7 +37,7 @@ void Direct3DBase::initialize(bool resuming)
 {
    // create the D3DDevice
    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-   //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+   creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
    D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_9_3};
    DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
    d3dDevice->CreateDeferredContext(0, &d3dcontext);
@@ -49,7 +49,7 @@ void Direct3DBase::initialize(bool resuming)
       wchar_t mensagem_fim[2048];
       int saida;
 
-      saida = startVM("UIControls", &localContext);
+      saida = startVM(/*"UIControls"*/"TCTestWin", &localContext);
 
       if (saida != 0)
       {
@@ -477,7 +477,8 @@ void Direct3DBase::preRender()
    CD3D11_VIEWPORT viewport(0.0f, 0.0f, (float)appW, (float)appH);
    d3dcontext->RSSetViewports(1, &viewport);
 
-   d3dcontext->ClearRenderTargetView(renderTexView, clearColor);
+   float cc[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+   d3dcontext->ClearRenderTargetView(renderTexView, cc);
    d3dcontext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
    d3dcontext->OMSetDepthStencilState(depthDisabledStencilState, 1);
@@ -643,6 +644,8 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
+// note: on wp8 this will not work because we write everything in a deferred context, and the context is erased once 
+// its printed on screen. so, when it arrives here, its already empty.
 void Direct3DBase::getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
    ID3D11Texture2D *captureTexture;
@@ -652,10 +655,19 @@ void Direct3DBase::getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 wid
    desc.BindFlags = desc.MiscFlags = 0;
    desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
    desc.Usage = D3D11_USAGE_STAGING;
+   desc.Width = width;
+   desc.Height = height;
    HRESULT hr = d3dDevice->CreateTexture2D(&desc, 0, &captureTexture);
    if (FAILED(hr))
       return;
-   d3dImedContext->CopyResource(captureTexture, renderTex);
+   D3D11_BOX sourceRegion;
+   sourceRegion.left = srcX;
+   sourceRegion.right = srcX+width;
+   sourceRegion.top = srcY;
+   sourceRegion.bottom = srcY+height;
+   sourceRegion.front = 0;
+   sourceRegion.back = 1;
+   d3dImedContext->CopySubresourceRegion(captureTexture, 0, 0,0,0, renderTex, 0, &sourceRegion);
    // Map my "captureTexture" resource to access the pixel data
    D3D11_MAPPED_SUBRESOURCE mapped;
    hr = d3dImedContext->Map(captureTexture, 0, D3D11_MAP_READ, 0, &mapped);
@@ -664,18 +676,20 @@ void Direct3DBase::getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 wid
 
    // Cast the pixel data to a byte array essentially
    struct Color { uint8 r, g, b, a; };
-   const Color* sptr = reinterpret_cast<const Color*>(mapped.pData);
-   if (sptr)
+   const Color* psrc = reinterpret_cast<const Color*>(mapped.pData);
+   int row = 0,i;
+   for (; height-- > 0; srcY++, dstPixels += pitch, row++)
    {
-      // Loop through all pixels in texture and copy to output buffer
-      int counter = 0;
-      for (int row = 0; row < appH; row++)
+      const Color* c = psrc + row * mapped.RowPitch/4;
+      PixelConv* p = (PixelConv*)dstPixels;
+      for (i = 0; i < width; i++, c++,p++)
       {
-         const Color* c = sptr + row * mapped.RowPitch;
-         //for (int col = 0; col < appW; col++, c++)
-           // dstPixels[row * appW + col] = (c->a << 24) | (c->r << 16) | (c->g << 8) | c->b;
+         p->a = 255;
+         p->r = c->b;
+         p->g = c->g;
+         p->b = c->r;
       }
-   }
+   }         
    d3dImedContext->Unmap(captureTexture, 0);
    captureTexture->Release();
 }
