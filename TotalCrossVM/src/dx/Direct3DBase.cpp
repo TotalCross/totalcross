@@ -49,7 +49,7 @@ void Direct3DBase::initialize(bool resuming)
       wchar_t mensagem_fim[2048];
       int saida;
 
-      saida = startVM(/*"UIControls"*/"TCTestWin", &localContext);
+      saida = startVM("UIControls", &localContext);
 
       if (saida != 0)
       {
