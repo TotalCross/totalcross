@@ -64,6 +64,8 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    static Font defaultFont;
    private static Thread mainThread;
+   private Lock runnersLock = new Lock();
+   private Vector runners = new Vector(1);
 
    /** Constructs a main window with no title and no border. */
    public MainWindow()
@@ -619,6 +621,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       // no messages, please. just ignore
    }
 
+   static Image screenShotImage;
    /** Takes a screen shot of the current screen. 
     * Here's a sample:
     * <pre>
@@ -638,30 +641,38 @@ public class MainWindow extends Window implements totalcross.MainClass
       Graphics gscr = mainWindowInstance.getGraphics();
       int w = Settings.screenWidth;
       int h = Settings.screenHeight;
-      Image img = new Image(w,h);
-      Graphics gimg = img.getGraphics();
-      enableUpdateScreen = false;
-      repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
-      enableUpdateScreen = true;
-      int buf[] = new int[w];
-      for (int y = 0; y < h; y++)
+      Image img;
+      if (Settings.platform.equals(Settings.WP8))
       {
-         gscr.getRGB(buf, 0,0,y,w,1);
-         gimg.setRGB(buf, 0,0,y,w,1);
-      }
-      if (Settings.isOpenGL)
+         img = screenShotImage = new Image(w,h);
+         repaintActiveWindows();
          img.applyChanges();
+         screenShotImage = null;
+      }
       else
-      if (Settings.onJavaSE)
-         img.setTransparentColor(-1);
+      {
+         img = new Image(w,h);
+         Graphics gimg = img.getGraphics();
+         enableUpdateScreen = false;
+         repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
+         enableUpdateScreen = true;
+         int buf[] = new int[w];
+         for (int y = 0; y < h; y++)
+         {
+            gscr.getRGB(buf, 0,0,y,w,1);
+            gimg.setRGB(buf, 0,0,y,w,1);
+         }
+         if (Settings.isOpenGL)
+            img.applyChanges();
+         else
+            if (Settings.onJavaSE)
+               img.setTransparentColor(-1);
+      }
       return img;
    }
 
 
    // stuff to let a thread update the screen
-   private Lock runnersLock = new Lock();
-   private Vector runners = new Vector(1);
-   
    private Object[] getRunners()
    {
       Object[] o = null;
