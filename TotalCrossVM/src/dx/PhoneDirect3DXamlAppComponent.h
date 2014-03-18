@@ -31,6 +31,7 @@ public:
    void OnPointerReleased(int x, int y);
    void OnPointerMoved(int x, int y);
    void OnKeyPressed(int key);
+   void OnManipulation(int type, double delta);
    void OnScreenChanged(int newKeyboardH, int newWidth, int newHeight);
    void lifeCycle(bool suspending);
 

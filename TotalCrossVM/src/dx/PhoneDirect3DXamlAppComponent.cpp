@@ -63,6 +63,12 @@ void Direct3DBackground::OnKeyPressed(int key)
    eventQueuePush(key < 32 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key < 32 ? keyDevice2Portable(key) : key, 0, 0, -1);
 }
 
+void Direct3DBackground::OnManipulation(int type, double delta)
+{
+   int* pd = (int*)&delta;
+   eventQueuePush(MULTITOUCHEVENT_SCALE, type, pd[1],pd[0], 0);
+}
+
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
 {
    if (newKeyboardH >= 0)
