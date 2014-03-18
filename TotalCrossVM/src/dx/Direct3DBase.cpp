@@ -477,8 +477,7 @@ void Direct3DBase::preRender()
    CD3D11_VIEWPORT viewport(0.0f, 0.0f, (float)appW, (float)appH);
    d3dcontext->RSSetViewports(1, &viewport);
 
-   float cc[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-   d3dcontext->ClearRenderTargetView(renderTexView, cc);
+   d3dcontext->ClearRenderTargetView(renderTexView, clearColor);
    d3dcontext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
    d3dcontext->OMSetDepthStencilState(depthDisabledStencilState, 1);
