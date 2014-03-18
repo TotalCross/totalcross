@@ -50,6 +50,5 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    texSubRect->left = texSubRect->top = 0.0f; texSubRect->right = (float)size->width; texSubRect->bottom = (float)size->height;
    m_controller->renderer->syncTex.CopyTo(synchronizedTexture);
    //{static ULONGLONG last; ULONGLONG cur = GetTickCount64(); debug("elapsed: %d", (int)(cur - last)); last = cur;}
-   //if (m_controller->renderer->alertMsg != nullptr) { Direct3DBase::getLastInstance()->csharp->privateAlertCS(m_controller->renderer->alertMsg); m_controller->renderer->alertMsg = nullptr; } // alert stuff
    return S_OK;
 }

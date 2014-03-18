@@ -66,6 +66,7 @@ namespace PhoneDirect3DXamlAppInterop
       public TextBox tbox;
       public int currentSipH;
       public bool sipVisible;
+      private bool alertIsVisible;
 
       public CSWrapper(Grid g)
       {
@@ -130,10 +131,17 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void privateAlertCS(String str) // Vm
       {
+         alertIsVisible = true;
          Deployment.Current.Dispatcher.BeginInvoke(() =>
          {
             MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+            alertIsVisible = false;
          });
+      }
+
+      public bool isAlertVisible()
+      {
+         return alertIsVisible;
       }
 
       public void vmSetAutoOffCS(bool enable) // Vm

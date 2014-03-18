@@ -116,7 +116,6 @@ internal:
    ID3D11DeviceContext *d3dcontext, *d3dImedContext;
    ID3D11CommandList *d3dCommandList;
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
-   Platform::String^ alertMsg;
    bool updateScreenWaiting;
    int sipHeight;
    bool updateWS;
