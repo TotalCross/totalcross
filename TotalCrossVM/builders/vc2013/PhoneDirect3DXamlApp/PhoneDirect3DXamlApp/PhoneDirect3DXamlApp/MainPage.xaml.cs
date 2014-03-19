@@ -385,7 +385,6 @@ namespace PhoneDirect3DXamlAppInterop
             this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
             this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
             this.SizeChanged += MainPage_SizeChanged;
-            this.ManipulationStarted += MainPage_ManipulationStarted;
             this.ManipulationDelta += MainPage_ManipulationDelta;
             this.ManipulationCompleted += MainPage_ManipulationCompleted;
             checkOrientation();
@@ -396,24 +395,26 @@ namespace PhoneDirect3DXamlAppInterop
         void MainPage_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
            e.Handled = true;
-           manipulating = false;
-           d3dBackground.OnManipulation(2, 0);
-        }
-
-        void MainPage_ManipulationStarted(object sender, ManipulationStartedEventArgs e)
-        {
-           e.Handled = true;
-           manipulating = true;
-           d3dBackground.OnManipulation(1, 0);
+           if (manipulating)
+           {
+              manipulating = false;
+              d3dBackground.OnManipulation(2, 0);
+           }
         }
 
         void MainPage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
            e.Handled = true;
            double scale = e.DeltaManipulation.Scale.Y;
-           //scale *= 0.9;
            if (scale != 0)
+           {
+              if (!manipulating)
+              {
+                 manipulating = true;
+                 d3dBackground.OnManipulation(1, 0);
+              }
               d3dBackground.OnManipulation(0, scale);
+           }
         }
 
         public void checkOrientation()
