@@ -98,7 +98,6 @@ HRESULT Direct3DBackground::PrepareResources(_Out_ BOOL* contentDirty)
    // update screen only if necessary
    updateScreenCalledOnce |= renderer->updateScreenWaiting;
    *contentDirty = !updateScreenCalledOnce || renderer->updateScreenWaiting;
-   //debug("content dirty: %d", (int)*contentDirty);
 	return S_OK;
 }
 
