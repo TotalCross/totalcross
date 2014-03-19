@@ -89,6 +89,7 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
 
 void Direct3DBackground::lifeCycle(bool suspending)
 {
+   updateScreenCalledOnce = false;
    renderer->lifeCycle(suspending);
 }
 
@@ -97,6 +98,7 @@ HRESULT Direct3DBackground::PrepareResources(_Out_ BOOL* contentDirty)
    // update screen only if necessary
    updateScreenCalledOnce |= renderer->updateScreenWaiting;
    *contentDirty = !updateScreenCalledOnce || renderer->updateScreenWaiting;
+   //debug("content dirty: %d", (int)*contentDirty);
 	return S_OK;
 }
 
