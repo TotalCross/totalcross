@@ -31,7 +31,7 @@ public class File4D extends RandomAccessStream
 
    static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
    static final boolean isIOS = Settings.isIOS();
-   static final boolean isWP8 = Settings.platform.equals("WP8");
+   static final boolean isWP8 = Settings.platform.equals(Settings.WINDOWSPHONE);
    static final int INVALID = 0;
    public static final int DONT_OPEN = 1;
    public static final int READ_WRITE = 2;

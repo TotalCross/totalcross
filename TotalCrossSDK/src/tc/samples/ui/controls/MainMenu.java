@@ -30,6 +30,7 @@ public class MainMenu extends BaseContainer
       "Spinner",
       "TabbedContainer",
       "Scale with ImageControl",
+      "Multi touch",
       "Other controls",
    };
    
@@ -52,6 +53,7 @@ public class MainMenu extends BaseContainer
       "Spinner shows two spinner types",
       "TabbedContainer shows some container with tabs",
       "Realtime scale using ImageControl", 
+      "Zoom in and out using fingers and ImageControl", 
       "Other controls shows other controls that doesn't belong to these ones",
    };
 
@@ -73,6 +75,7 @@ public class MainMenu extends BaseContainer
       SpinnerSample.class,
       TabbedContainerSample.class,
       ImageControlSample.class,
+      MultitouchSample.class,
       OtherControlsSample.class,
    };
    

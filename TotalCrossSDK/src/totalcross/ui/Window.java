@@ -618,7 +618,7 @@ public class Window extends Container
             }
          }
          else
-         if (!Settings.platform.equals(Settings.WP8) && lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
+         if (!Settings.platform.equals(Settings.WINDOWSPHONE) && lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
          {
             lastY = y = y + lastShiftY;
             if (type == PenEvent.PEN_UP)

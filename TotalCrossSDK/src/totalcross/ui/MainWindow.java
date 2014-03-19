@@ -642,7 +642,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       int w = Settings.screenWidth;
       int h = Settings.screenHeight;
       Image img;
-      if (Settings.platform.equals(Settings.WP8))
+      if (Settings.platform.equals(Settings.WINDOWSPHONE))
       {
          img = screenShotImage = new Image(w,h);
          repaintActiveWindows();
