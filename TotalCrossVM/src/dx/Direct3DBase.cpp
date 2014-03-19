@@ -412,10 +412,7 @@ void Direct3DBase::lifeCycle(bool suspending)
 {
    postOnMinimizeOrRestore(minimized = suspending);
    if (minimized)
-   {
-      debug("==================================");
       recreateTextures();
-   }
 }
 
 void Direct3DBase::updateScreen()
