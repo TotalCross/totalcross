@@ -39,13 +39,11 @@ protected:
 
 
 internal:
-   HRESULT STDMETHODCALLTYPE Connect(_In_ IDrawingSurfaceRuntimeHostNative* host);
-   void STDMETHODCALLTYPE Disconnect();
    HRESULT STDMETHODCALLTYPE PrepareResources(_Out_ BOOL* contentDirty);
    Direct3DBase^ renderer;
+   CSwrapper ^cs;
 
 private:
-   CSwrapper ^cs;
    bool updateScreenCalledOnce;
 };
 

@@ -92,12 +92,9 @@ internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
    static Direct3DBase ^getLastInstance();
 
-	void initialize(bool resuming);
+	void updateScreen();
    void updateDevice(IDrawingSurfaceRuntimeHostNative* host);
    void updateScreenMatrix();
-	void preRender(); // resets the screen and set it ready to render
-	void updateScreen();
-
    void setProgram(whichProgram p);
    void deleteTexture(TCObject img, int32* textureId, bool updateList);
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
@@ -118,11 +115,13 @@ internal:
    PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
    bool updateScreenWaiting;
    int sipHeight;
-   bool updateWS;
    bool minimized;
    Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex;
 
 private:
+   void initialize();
+   void preRender(); // resets the screen and set it ready to render
+   void setBufAndLen(Platform::Array<byte>^ fileData, byte** buf, int* len, int completeValue);
    int loadCompleted;
    whichProgram curProgram;
    int lastRGB;
@@ -133,6 +132,8 @@ private:
    float clearColor[4]; // all 0
 	Context localContext;
 	bool vmStarted;
+   byte *vs1buf, *ps1buf, *vs2buf, *ps2buf, *vs3buf, *ps3buf;
+   int vs1len, ps1len, vs2len, ps2len, vs3len, ps3len;
 
    // screen textures
    ID3D11Texture2D *renderTex;

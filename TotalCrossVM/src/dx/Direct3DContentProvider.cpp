@@ -18,7 +18,9 @@ Direct3DContentProvider::Direct3DContentProvider(Direct3DBackground^ controller)
 HRESULT Direct3DContentProvider::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host)
 {
 	m_host = host;
-	return m_controller->Connect(host);
+   if (m_controller->renderer == nullptr)
+      m_controller->renderer = ref new Direct3DBase(m_controller->cs);
+	return S_OK;
 }
 
 void Direct3DContentProvider::Disconnect()

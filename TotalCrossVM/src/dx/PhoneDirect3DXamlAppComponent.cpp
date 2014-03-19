@@ -87,20 +87,9 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
    }
 }
 
-// Interface With Direct3DContentProvider
-HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host)
-{
-   bool resuming = renderer != nullptr;
-   if (!resuming)
-      renderer = ref new Direct3DBase(cs);
-   renderer->initialize(resuming);
-	return S_OK;
-}
-
 void Direct3DBackground::lifeCycle(bool suspending)
 {
    renderer->lifeCycle(suspending);
-   renderer->updateWS = true;
 }
 
 HRESULT Direct3DBackground::PrepareResources(_Out_ BOOL* contentDirty)
