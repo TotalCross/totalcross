@@ -1643,9 +1643,19 @@ adb
 \begin_layout Standard
 Although Windows Phone 8 supports a memory card, it's read-only.
  You can't create a database on it.
- In the future, it will be possible to copy database files from it to the
- application folder.
- 
+ The only way to fetch database files and other application files is using
+ the Isolated Storage Explorer command-line tool for Windows Phone.
+ This is inside the Windows Phone SDK.
+ You can also use it to put files in the application folder on the device.
+ To know how to use it, read the following tutorial: 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh286408(v=vs.105).aspx"
+target "http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh286408(v=vs.105).aspx"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
