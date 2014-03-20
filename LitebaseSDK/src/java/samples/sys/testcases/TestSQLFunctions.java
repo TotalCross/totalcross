@@ -71,6 +71,15 @@ public class TestSQLFunctions extends TestCase
       assertTrue(resultSet.next());
       assertEquals(1, resultSet.getShort(1));
       assertFalse(resultSet.next());
+      
+      // Tests functions with getStrings().
+      assertTrue(resultSet.first());
+      String[][] strings = resultSet.getStrings();
+      assertEquals(4, strings.length);
+      assertEquals("11", strings[0][0]);
+      assertEquals("8", strings[1][0]);
+      assertEquals("6", strings[2][0]);
+      assertEquals("1", strings[3][0]);
       resultSet.close();
       
       // years(DATE).
@@ -207,6 +216,16 @@ public class TestSQLFunctions extends TestCase
       assertEquals("ZENES LIMA", resultSet.getString("u2"));
       assertEquals("-15\t15\tZenes Lima\tzenes lima\tZENES LIMA", resultSet.rowToString());
       assertFalse(resultSet.next());
+      
+      // Tests functions with getStrings().
+      assertTrue(resultSet.first());
+      assertEquals(2, (strings = resultSet.getStrings()).length);
+      assertEquals("Lucas Novais", strings[0][2]);
+      assertEquals("lucas novais", strings[0][3]);
+      assertEquals("LUCAS NOVAIS", strings[0][4]);
+      assertEquals("Zenes Lima", strings[1][2]);
+      assertEquals("zenes lima", strings[1][3]);
+      assertEquals("ZENES LIMA", strings[1][4]);
       resultSet.close();
       
       // rnovais@570_6

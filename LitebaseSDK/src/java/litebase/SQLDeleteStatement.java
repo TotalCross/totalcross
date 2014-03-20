@@ -240,114 +240,122 @@ class SQLDeleteStatement extends SQLStatement
       // its last opening. 
       table.setModified(); // Sets the table as not closed properly.
       
-      if (wholeTable) // Deletes the whole table.
+      // juliana@270_32: corrected a bug of a delete not updating the number of total deleted rows in the metadata when there is an index corruption.
+      try 
       {
-         if (hasIndices) // If the whole table is being deleted, just empties all indexes.
+         if (wholeTable) // Deletes the whole table.
          {
-            i = columnCount;
-            while (--i >= 0)
-               if ((index = columnIndices[i]) != null)
-                  index.deleteAllRows();
-            if ((i = table.numberComposedIndices) > 0) // juliana@201_6: it now deletes the erases the composed index when deleting the whole table.
+            if (hasIndices) // If the whole table is being deleted, just empties all indexes.
+            {
+               i = columnCount;
                while (--i >= 0)
-                  composedIndices[i].index.deleteAllRows();
-         }
-         
-         // juliana@227_10: Corrected a bug of a delete with no where clause not taking the already deleted rows into consideration when returning 
-         // the number of deleted rows.
-         nn = plainDB.rowCount - table.deletedRowsCount;
-         i = table.deletedRowsCount = plainDB.rowCount;
-         
-         while (--i >= 0)
-         {
-            // Logically deletes the record: changes the attribute to 'deleted'.  
-            plainDB.read(i);
-            j = (ds.readInt() & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_DELETED; 
-            bas.reset();
-            ds.writeInt(j);
-            plainDB.rewrite(i);
-         }
-      }
-      else
-      {
-         // guich@300: now all records are just marked as deleted instead of physical removal.
-         int column;
-         SQLValue[] keys1 = new SQLValue[1];
-         SQLValue[] keys2;
-         byte[] types = table.columnTypes;
-         short[] offsets = table.columnOffsets;
-         byte[] nulls = table.columnNulls[0];
-         ResultSet rs = table.createSimpleResultSet(whereClause);
-         rs.pos = - 1;
-      
-         if (hasIndices)
-            while (rs.getNextRecord())
-            {
-               i = columnCount; // juliana@201_35: Would not remove key from the index of the last column.
-               
-               // juliana@227_11: corrected a bug of an exception being thrown when trying to delete a row with a null in column which has an index.
-               while (--i >= 0) // Simple index.
-                  if (columnIndices[i] != null && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                  {
-                     index = columnIndices[i];
-                     bas.reset(); // juliana@116_1: if reset is not done, the value read is wrong.
-                     table.readValue(driver.sqlv, offsets[i], types[i], false, false); // juliana@220_3 juliana@230_14
-                     keys1[0] = driver.sqlv;
-                     index.tempKey.set(keys1);
-                     index.removeValue(index.tempKey, rs.pos);
-                  }
-   
-               if ((i = table.numberComposedIndices) > 0) // Composed index.
+                  if ((index = columnIndices[i]) != null)
+                     index.deleteAllRows();
+               if ((i = table.numberComposedIndices) > 0) // juliana@201_6: it now deletes the erases the composed index when deleting the whole table.
                   while (--i >= 0)
-                  {
-                     ci = composedIndices[i];
-                     index = ci.index;
-                     keys2 = SQLValue.newSQLValues(j = ci.columns.length); // juliana@201_6
-                     while (--j >= 0)
-                     {
-                        // juliana@116_1: if reset is not done, the value read is wrong.
-                        bas.reset();
-                        
-                        // juliana@220_3
-                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], false, false); // juliana@230_14
-                        
-                     }
-                     index.tempKey.set(keys2);
-                     index.removeValue(index.tempKey, rs.pos);
-                  }
+                     composedIndices[i].index.deleteAllRows();
+            }
             
-               // Logically deletes the record: changes the attribute to 'deleted'.
-               i = (ds.readInt() & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_DELETED;
-               bas.reset();
-               ds.writeInt(i);
-               plainDB.rewrite(rs.pos);
-               nn++; // Increments the number of deleted rows.
-            }
-         else
-            while (rs.getNextRecord())
+            // juliana@227_10: Corrected a bug of a delete with no where clause not taking the already deleted rows into consideration when returning 
+            // the number of deleted rows.
+            nn = plainDB.rowCount - table.deletedRowsCount;
+            i = table.deletedRowsCount = plainDB.rowCount;
+            
+            while (--i >= 0)
             {
-               // Logically deletes the record: changes the attribute to 'deleted'.
-               i = (ds.readInt() & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_DELETED;
+               // Logically deletes the record: changes the attribute to 'deleted'.  
+               plainDB.read(i);
+               j = (ds.readInt() & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_DELETED; 
                bas.reset();
-               ds.writeInt(i);
-               plainDB.rewrite(rs.pos);
-               nn++; // Increments the number of deleted rows.
+               ds.writeInt(j);
+               plainDB.rewrite(i);
             }
-         table.deletedRowsCount += nn;
-      }   
-      if (nn > 0)
-         table.tableSaveMetaData(Utils.TSMD_ONLY_DELETEDROWSCOUNT);
- 
-      // juliana@227_3: improved table files flush dealing.
-      // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
-      if (!dbFile.dontFlush) // juliana@202_23: flushs the files to disk when row increment is the default.
-      {  
-         if (dbFile.cacheIsDirty)
-            dbFile.flushCache(); // Flushs .db.
-         if (((NormalFile)plainDB.dbo).cacheIsDirty)
-            ((NormalFile)plainDB.dbo).flushCache(); // Flushs .dbo.
+         }
+         else
+         {
+            // guich@300: now all records are just marked as deleted instead of physical removal.
+            int column;
+            SQLValue[] keys1 = new SQLValue[1];
+            SQLValue[] keys2;
+            byte[] types = table.columnTypes;
+            short[] offsets = table.columnOffsets;
+            byte[] nulls = table.columnNulls[0];
+            ResultSet rs = table.createSimpleResultSet(whereClause);
+            rs.pos = - 1;
+         
+            if (hasIndices)
+               while (rs.getNextRecord())
+               {
+                  i = columnCount; // juliana@201_35: Would not remove key from the index of the last column.
+                  
+                  // juliana@227_11: corrected a bug of an exception being thrown when trying to delete a row with a null in column which has an 
+                  // index.
+                  while (--i >= 0) // Simple index.
+                     if (columnIndices[i] != null && (nulls[i >> 3] & (1 << (i & 7))) == 0)
+                     {
+                        index = columnIndices[i];
+                        bas.reset(); // juliana@116_1: if reset is not done, the value read is wrong.
+                        table.readValue(driver.sqlv, offsets[i], types[i], false, false); // juliana@220_3 juliana@230_14
+                        keys1[0] = driver.sqlv;
+                        index.tempKey.set(keys1);
+                        index.removeValue(index.tempKey, rs.pos);
+                     }
+      
+                  if ((i = table.numberComposedIndices) > 0) // Composed index.
+                     while (--i >= 0)
+                     {
+                        ci = composedIndices[i];
+                        index = ci.index;
+                        keys2 = SQLValue.newSQLValues(j = ci.columns.length); // juliana@201_6
+                        while (--j >= 0)
+                        {
+                           // juliana@116_1: if reset is not done, the value read is wrong.
+                           bas.reset();
+                           
+                           // juliana@220_3
+                           table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], false, false); // juliana@230_14
+                           
+                        }
+                        index.tempKey.set(keys2);
+                        index.removeValue(index.tempKey, rs.pos);
+                     }
+               
+                  // Logically deletes the record: changes the attribute to 'deleted'.
+                  i = (ds.readInt() & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_DELETED;
+                  bas.reset();
+                  ds.writeInt(i);
+                  plainDB.rewrite(rs.pos);
+                  nn++; // Increments the number of deleted rows.
+               }
+            else
+               while (rs.getNextRecord())
+               {
+                  // Logically deletes the record: changes the attribute to 'deleted'.
+                  i = (ds.readInt() & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_DELETED;
+                  bas.reset();
+                  ds.writeInt(i);
+                  plainDB.rewrite(rs.pos);
+                  nn++; // Increments the number of deleted rows.
+               }
+            table.deletedRowsCount += nn;
+         }
+         return nn;
       }
-      return nn;
+      finally
+      {
+         if (nn > 0)
+            table.tableSaveMetaData(Utils.TSMD_ONLY_DELETEDROWSCOUNT);
+    
+         // juliana@227_3: improved table files flush dealing.
+         // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
+         if (!dbFile.dontFlush) // juliana@202_23: flushs the files to disk when row increment is the default.
+         {  
+            if (dbFile.cacheIsDirty)
+               dbFile.flushCache(); // Flushs .db.
+            if (((NormalFile)plainDB.dbo).cacheIsDirty)
+               ((NormalFile)plainDB.dbo).flushCache(); // Flushs .dbo.
+         }
+      }
    }
 
    // nowosad@200
