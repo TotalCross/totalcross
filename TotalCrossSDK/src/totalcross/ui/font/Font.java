@@ -75,7 +75,7 @@ public final class Font
       w = Math.min(Settings.screenWidth,Settings.screenHeight);
       h = Math.max(Settings.screenWidth,Settings.screenHeight);
 
-      if (Settings.WP8.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT))
+      if (Settings.WINDOWSPHONE.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT))
          fontSize = Settings.deviceFontHeight;
       else
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69

@@ -138,7 +138,8 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::getLastInstance()->alertMsg = ref new Platform::String((wchar_t*)jCharStr);
+   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   while (Direct3DBase::getLastInstance()->csharp->isAlertVisible()) Sleep(10);
 }
 
 void vmSetAutoOffCPP(bool enable)
@@ -221,6 +222,11 @@ bool fileIsCardInsertedCPP()
 void dxUpdateScreen()
 {
    Direct3DBase::getLastInstance()->updateScreen();
+}
+
+void dxGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
+{
+   Direct3DBase::getLastInstance()->getPixels(dstPixels,srcX,srcY,width,height,pitch);
 }
 
 int32 dxGetSipHeight()

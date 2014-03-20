@@ -66,6 +66,7 @@ namespace PhoneDirect3DXamlAppInterop
       public TextBox tbox;
       public int currentSipH;
       public bool sipVisible;
+      private bool alertIsVisible;
 
       public CSWrapper(Grid g)
       {
@@ -130,10 +131,17 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void privateAlertCS(String str) // Vm
       {
+         alertIsVisible = true;
          Deployment.Current.Dispatcher.BeginInvoke(() =>
          {
             MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+            alertIsVisible = false;
          });
+      }
+
+      public bool isAlertVisible()
+      {
+         return alertIsVisible;
       }
 
       public void vmSetAutoOffCS(bool enable) // Vm
@@ -361,6 +369,7 @@ namespace PhoneDirect3DXamlAppInterop
         public Direct3DBackground d3dBackground;
         private int specialKey;
         private CSWrapper cs;
+        private bool manipulating;
         public static MainPage instance;
         public static bool isPortrait;
         public static int screenSize;
@@ -376,9 +385,36 @@ namespace PhoneDirect3DXamlAppInterop
             this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
             this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
             this.SizeChanged += MainPage_SizeChanged;
+            this.ManipulationDelta += MainPage_ManipulationDelta;
+            this.ManipulationCompleted += MainPage_ManipulationCompleted;
             checkOrientation();
             // InputPane input = InputPane.GetForCurrentView(); input.Showing += input_Showing; input.Hiding += input_Hiding; DOES NOT WORK! METHODS ARE NEVER CALLED. TEST AGAIN ON FUTURE WP VERSIONS
             BeginListenForSIPChanged();
+        }
+
+        void MainPage_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+           e.Handled = true;
+           if (manipulating)
+           {
+              manipulating = false;
+              d3dBackground.OnManipulation(2, 0);
+           }
+        }
+
+        void MainPage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+           e.Handled = true;
+           double scale = e.DeltaManipulation.Scale.Y;
+           if (scale != 0)
+           {
+              if (!manipulating)
+              {
+                 manipulating = true;
+                 d3dBackground.OnManipulation(1, 0);
+              }
+              d3dBackground.OnManipulation(0, scale);
+           }
         }
 
         public void checkOrientation()
@@ -469,7 +505,8 @@ namespace PhoneDirect3DXamlAppInterop
         void MainPage_MouseMove(object sender, MouseEventArgs e)
         {
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerMoved((int)p.X, (int)p.Y);
+            if (!manipulating)
+               d3dBackground.OnPointerMoved((int)p.X, (int)p.Y);
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)

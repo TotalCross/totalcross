@@ -92,11 +92,16 @@ void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 
 int32 glGetPixel(int32 x, int32 y)
 {
+   /* getPixel and getPixels does not work due to the use of DeferredContext
+   Pixel p;
+   dxGetPixels(&p, x, y, 1, 1, 1);*/
    return 0;
 }
 
 void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
+   // getPixel and getPixels does not work due to the use of DeferredContext
+   //dxGetPixels(dstPixels, srcX, srcY, width, height, pitch);
 }
 
 void flushAll()

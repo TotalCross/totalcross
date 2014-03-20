@@ -861,7 +861,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    platform = "Win32";
 # else
    //XXX deviceId must be getted automatically
-   platform = "WP8";
+   platform = "WindowsPhone";
    xstrcpy(deviceId, GetDisplayNameWP8());
 # endif
 

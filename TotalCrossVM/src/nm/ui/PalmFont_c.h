@@ -496,6 +496,7 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
 #endif
 
 #ifdef __gl2_h_
+void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
 static void reset1Font(UserFont uf)
 {
    int32 i;       

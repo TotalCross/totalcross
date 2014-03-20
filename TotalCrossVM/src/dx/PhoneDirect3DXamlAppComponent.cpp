@@ -63,6 +63,12 @@ void Direct3DBackground::OnKeyPressed(int key)
    eventQueuePush(key < 32 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key < 32 ? keyDevice2Portable(key) : key, 0, 0, -1);
 }
 
+void Direct3DBackground::OnManipulation(int type, double delta)
+{
+   int* pd = (int*)&delta;
+   eventQueuePush(MULTITOUCHEVENT_SCALE, type, pd[1],pd[0], 0);
+}
+
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
 {
    if (newKeyboardH >= 0)
@@ -81,20 +87,10 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
    }
 }
 
-// Interface With Direct3DContentProvider
-HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host)
-{
-   bool resuming = renderer != nullptr;
-   if (!resuming)
-      renderer = ref new Direct3DBase(cs);
-   renderer->initialize(resuming);
-	return S_OK;
-}
-
 void Direct3DBackground::lifeCycle(bool suspending)
 {
+   updateScreenCalledOnce = false;
    renderer->lifeCycle(suspending);
-   renderer->updateWS = true;
 }
 
 HRESULT Direct3DBackground::PrepareResources(_Out_ BOOL* contentDirty)

@@ -25,6 +25,7 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
+   initialize();
 }
 
 Direct3DBase ^Direct3DBase::getLastInstance()
@@ -32,111 +33,31 @@ Direct3DBase ^Direct3DBase::getLastInstance()
 	return instance;
 }
 
-// Initialize the Direct3D resources required to run.
-void Direct3DBase::initialize(bool resuming)
+void Direct3DBase::setBufAndLen(Platform::Array<byte>^ fileData, byte** buf, int* len, int completeValue)
 {
-   // create the D3DDevice
-   UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-   //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
-   D3D_FEATURE_LEVEL featureLevels[] = {D3D_FEATURE_LEVEL_9_3};
-   DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
-   d3dDevice->CreateDeferredContext(0, &d3dcontext);
+   *len = fileData->Length;
+   *buf = new byte[*len]; 
+   memmove(*buf, fileData->Data, *len);
+   loadCompleted |= completeValue;
+}
 
-   loadCompleted = 0;
-   updateWS = true;
-   if (!resuming)
+// Initialize the Direct3D resources required to run.
+void Direct3DBase::initialize()
+{
+   int exitCode = startVM("UIControls", &localContext);
+   if (exitCode != 0)
    {
-      wchar_t mensagem_fim[2048];
-      int saida;
-
-      saida = startVM("UIControls", &localContext);
-
-      if (saida != 0)
-      {
-         swprintf_s(mensagem_fim, 1000, L"Error code in starting VM: %d", saida);
-         csharp->privateAlertCS(ref new Platform::String(mensagem_fim));
-      }
+      wchar_t exitMsg[64];
+      swprintf_s(exitMsg, 64, L"Error code when starting VM: %d", exitCode);
+      csharp->privateAlertCS(ref new Platform::String(exitMsg));
    }
 
-   auto loadVSTask1 = DX::ReadDataAsync("VertexShaderGlobalColor.cso");
-   auto loadPSTask1 = DX::ReadDataAsync("PixelShaderGlobalColor.cso");
-
-   auto loadVSTask2 = DX::ReadDataAsync("VertexShaderTexture.cso");
-   auto loadPSTask2 = DX::ReadDataAsync("PixelShaderTexture.cso");
-
-   auto loadVSTask3 = DX::ReadDataAsync("VertexShaderLocalColor.cso");
-   auto loadPSTask3 = DX::ReadDataAsync("PixelShaderLocalColor.cso");
-
-   // global color vertex
-   auto createVSTask1 = loadVSTask1.then([this](Platform::Array<byte>^ fileData) 
-   {
-      DXRELEASE(vertexShader);
-      DXRELEASE(inputLayout);
-      DX::ThrowIfFailed(d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &vertexShader));
-      const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-      {
-         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      };
-      DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &inputLayout));
-      loadCompleted |= 1;
-   });
-
-   // global color pixel
-   auto createPSTask1 = loadPSTask1.then([this](Platform::Array<byte>^ fileData)
-   {
-      DXRELEASE(pixelShader);
-      DXRELEASE(constantBuffer);
-      DX::ThrowIfFailed(d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &pixelShader));
-      CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer));
-      loadCompleted |= 2;
-   });
-
-   // texture vertex
-   auto createVSTask2 = loadVSTask2.then([this](Platform::Array<byte>^ fileData) 
-   {
-      DXRELEASE(vertexShaderT);
-      DXRELEASE(inputLayoutT);
-      DX::ThrowIfFailed(d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &vertexShaderT));
-      const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-      {
-         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      };
-      DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &inputLayoutT));
-      loadCompleted |= 4;
-   });
-
-   // texture pixel
-   auto createPSTask2 = loadPSTask2.then([this](Platform::Array<byte>^ fileData)
-   {
-      DXRELEASE(pixelShaderT);
-      DX::ThrowIfFailed(d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &pixelShaderT));
-      loadCompleted |= 8;
-   });
-
-   // local color vertex
-   auto createVSTask3 = loadVSTask3.then([this](Platform::Array<byte>^ fileData)
-   {
-      DXRELEASE(vertexShaderLC);
-      DXRELEASE(inputLayoutLC);
-      DX::ThrowIfFailed(d3dDevice->CreateVertexShader(fileData->Data, fileData->Length, nullptr, &vertexShaderLC));
-      const D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-      {
-         { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-         { "COLOR", 0,    DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-      };
-      DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), fileData->Data, fileData->Length, &inputLayoutLC));
-      loadCompleted |= 16;
-   });
-
-   // local color pixel
-   auto createPSTask3 = loadPSTask3.then([this](Platform::Array<byte>^ fileData)
-   {
-      DXRELEASE(pixelShaderLC);
-      DX::ThrowIfFailed(d3dDevice->CreatePixelShader(fileData->Data, fileData->Length, nullptr, &pixelShaderLC));
-      loadCompleted |= 32;
-   });
+   DX::ReadDataAsync("VertexShaderGlobalColor.cso").then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &vs1buf, &vs1len, 1); });
+   DX::ReadDataAsync("PixelShaderGlobalColor.cso" ).then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &ps1buf, &ps1len, 2); });
+   DX::ReadDataAsync("VertexShaderTexture.cso"    ).then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &vs2buf, &vs2len, 4); });
+   DX::ReadDataAsync("PixelShaderTexture.cso"     ).then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &ps2buf, &ps2len, 8); });
+   DX::ReadDataAsync("VertexShaderLocalColor.cso" ).then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &vs3buf, &vs3len, 16); });
+   DX::ReadDataAsync("PixelShaderLocalColor.cso"  ).then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &ps3buf, &ps3len, 32); });
 }
 
 void Direct3DBase::updateScreenMatrix()
@@ -147,23 +68,24 @@ void Direct3DBase::updateScreenMatrix()
 
 void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 {
-   if (!updateWS)
-      return;
+   while (!isLoadCompleted())
+      Sleep(0);
 
-   DXRELEASE(depthStencil);
-   DXRELEASE(depthStencilView);
-   DXRELEASE(indexBuffer);
-   DXRELEASE(pBufferColor);
-   DXRELEASE(pBufferRect);
-   DXRELEASE(pBufferRectLC);
-   DXRELEASE(texsampler);
-   DXRELEASE(depthDisabledStencilState);
-   DXRELEASE(pBlendState);
-   DXRELEASE(pRasterStateDisableClipping);
-   DXRELEASE(pRasterStateEnableClipping);
-   DXRELEASE(texVertexBuffer);
-   DXRELEASE(renderTexView);
-   DXRELEASE(renderTex);
+   // create the D3DDevice
+   UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+   //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+   D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_9_3 };
+   DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
+   d3dDevice->CreateDeferredContext(0, &d3dcontext);
+
+   DXRELEASE(depthStencil);                 DXRELEASE(pBlendState);                     DXRELEASE(pixelShader);
+   DXRELEASE(depthStencilView);             DXRELEASE(pRasterStateDisableClipping);     DXRELEASE(constantBuffer);
+   DXRELEASE(indexBuffer);                  DXRELEASE(pRasterStateEnableClipping);      DXRELEASE(vertexShaderT);
+   DXRELEASE(pBufferColor);                 DXRELEASE(texVertexBuffer);                 DXRELEASE(inputLayoutT);
+   DXRELEASE(pBufferRect);                  DXRELEASE(renderTexView);                   DXRELEASE(pixelShaderT);
+   DXRELEASE(pBufferRectLC);                DXRELEASE(renderTex);                       DXRELEASE(vertexShaderLC);
+   DXRELEASE(texsampler);                   DXRELEASE(vertexShader);                    DXRELEASE(inputLayoutLC);
+   DXRELEASE(depthDisabledStencilState);    DXRELEASE(inputLayout);                     DXRELEASE(pixelShaderLC);
 
    // Create a descriptor for the render target buffer.
    int appSize = dxGetScreenSize();
@@ -278,14 +200,50 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
    DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer));       // create the buffer
 
-   // block while load is not completed
-   while (!isLoadCompleted())
-      Sleep(10);
+   byte* buf;
+   int len;
+
+   buf = vs1buf; len = vs1len;
+   DX::ThrowIfFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShader));
+   const D3D11_INPUT_ELEMENT_DESC vertexDesc1[] =
+   {
+      { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+   };
+   DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc1, ARRAYSIZE(vertexDesc1), buf, len, &inputLayout));
+
+   buf = ps1buf; len = ps1len;
+   DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShader));
+   CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer));
+
+   buf = vs2buf; len = vs2len;
+   DX::ThrowIfFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShaderT));
+   const D3D11_INPUT_ELEMENT_DESC vertexDesc2[] =
+   {
+      { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+   };
+   DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc2, ARRAYSIZE(vertexDesc2), buf, len, &inputLayoutT));
+
+   buf = ps2buf; len = ps2len;
+   DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderT));
+
+   buf = vs3buf; len = vs3len;
+   DX::ThrowIfFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShaderLC));
+   const D3D11_INPUT_ELEMENT_DESC vertexDesc3[] =
+   {
+      { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+      { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+   };
+   DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc3, ARRAYSIZE(vertexDesc3), buf, len, &inputLayoutLC));
+
+   buf = ps3buf; len = ps3len;
+   DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderLC));
+
    if (!vmStarted)
       std::thread([this]() {startProgram(localContext); }).detach(); // this will block until the application ends         
    vmStarted = true;
    preRender();
-   updateWS = false;
 }
 
 void Direct3DBase::setColor(int color)
@@ -454,10 +412,7 @@ void Direct3DBase::lifeCycle(bool suspending)
 {
    postOnMinimizeOrRestore(minimized = suspending);
    if (minimized)
-   {
-      debug("==================================");
       recreateTextures();
-   }
 }
 
 void Direct3DBase::updateScreen()
@@ -595,6 +550,10 @@ void Direct3DBase::setClip(int32* clip)
          clipRect.top = clip[1] + glShiftY;
          clipRect.right = clip[2];
          clipRect.bottom = clip[3] + glShiftY;
+         if (clipRect.left   < 0) clipRect.left   = 0;
+         if (clipRect.top    < 0) clipRect.top    = 0;
+         if (clipRect.right  < 0) clipRect.right  = 0;
+         if (clipRect.bottom < 0) clipRect.bottom = 0;
          d3dcontext->RSSetScissorRects(1, &clipRect);
       }
    }
@@ -641,4 +600,54 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    d3dcontext->PSSetShaderResources(0, 1, &textureView);
    // Draw the cube.
    d3dcontext->DrawIndexed(6, 0, 0);
+}
+
+// note: on wp8 this will not work because we write everything in a deferred context, and the context is erased once 
+// its printed on screen. so, when it arrives here, its already empty.
+void Direct3DBase::getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
+{
+   ID3D11Texture2D *captureTexture;
+   // Copy the renderTarget texture resource to my "captureTexture" resource
+   D3D11_TEXTURE2D_DESC desc;
+   renderTex->GetDesc(&desc);
+   desc.BindFlags = desc.MiscFlags = 0;
+   desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+   desc.Usage = D3D11_USAGE_STAGING;
+   desc.Width = width;
+   desc.Height = height;
+   HRESULT hr = d3dDevice->CreateTexture2D(&desc, 0, &captureTexture);
+   if (FAILED(hr))
+      return;
+   D3D11_BOX sourceRegion;
+   sourceRegion.left = srcX;
+   sourceRegion.right = srcX+width;
+   sourceRegion.top = srcY;
+   sourceRegion.bottom = srcY+height;
+   sourceRegion.front = 0;
+   sourceRegion.back = 1;
+   d3dImedContext->CopySubresourceRegion(captureTexture, 0, 0,0,0, renderTex, 0, &sourceRegion);
+   // Map my "captureTexture" resource to access the pixel data
+   D3D11_MAPPED_SUBRESOURCE mapped;
+   hr = d3dImedContext->Map(captureTexture, 0, D3D11_MAP_READ, 0, &mapped);
+   if (FAILED(hr))
+      return;
+
+   // Cast the pixel data to a byte array essentially
+   struct Color { uint8 r, g, b, a; };
+   const Color* psrc = reinterpret_cast<const Color*>(mapped.pData);
+   int row = 0,i;
+   for (; height-- > 0; srcY++, dstPixels += pitch, row++)
+   {
+      const Color* c = psrc + row * mapped.RowPitch/4;
+      PixelConv* p = (PixelConv*)dstPixels;
+      for (i = 0; i < width; i++, c++,p++)
+      {
+         p->a = 255;
+         p->r = c->b;
+         p->g = c->g;
+         p->b = c->r;
+      }
+   }         
+   d3dImedContext->Unmap(captureTexture, 0);
+   captureTexture->Release();
 }

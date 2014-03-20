@@ -9,6 +9,7 @@ namespace PhoneDirect3DXamlAppComponent
 	public:
       // Vm
       void privateAlertCS(Platform::String^ alertMsg);
+      bool isAlertVisible();
       void vmSetAutoOffCS(bool enable);
 
       // Dial
