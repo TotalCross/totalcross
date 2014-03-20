@@ -362,6 +362,8 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       table->deletedRowsCount += nn;
 		heapDestroy(heap);
 	}
+
+error:
    if (nn > 0 && !tableSaveMetaData(context, table, TSMD_ONLY_DELETEDROWSCOUNT))
       return -1;
    
@@ -376,7 +378,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	}
 	return nn;
 	
-error:
    heapDestroy(heap);
    return -1;
 }
