@@ -363,6 +363,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		heapDestroy(heap);
 	}
 
+// juliana@270_32: corrected a bug of a delete not updating the number of total deleted rows in the metadata when there is an index corruption.
 error:
    if (nn > 0 && !tableSaveMetaData(context, table, TSMD_ONLY_DELETEDROWSCOUNT))
       return -1;
