@@ -77,10 +77,12 @@ void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 int32 dxGetSipHeight();
 int32 dxGetScreenSize();
 void dxprivateScreenChange();
+void cameraClick(NMParams p);
 
 // Etc
 double getFontHeightCPP();
 void privateWindowSetSIP(bool visible);
+void appExit();
 
 #ifdef __cplusplus
 }

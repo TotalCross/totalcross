@@ -29,11 +29,11 @@ import totalcross.ui.media.*;
 
 public class CameraTest extends MainWindow
 {
-   static
+/*   static
    {
       Settings.isFullScreen = true;
    }
-
+*/
    Button btnFilm, btnPhoto, btnRotate, btnExit;
    Label l;
    ComboBox cbRes;
@@ -50,8 +50,6 @@ public class CameraTest extends MainWindow
       Settings.showMemoryMessagesAtExit = false;
       add(l = new Label(""), LEFT, BOTTOM);
       l.setText("Status Bar");
-      if (Settings.fingerTouch)
-         Button.commonGap = 2;
       add(btnFilm = new Button("Film"), LEFT, BEFORE);
       add(btnPhoto = new Button("Photo"), AFTER + 5, SAME);
       add(btnRotate = new Button("Rotate"), AFTER + 5, SAME);
@@ -62,9 +60,8 @@ public class CameraTest extends MainWindow
       add(ic = new ImageControl(), LEFT, TOP, FILL, FIT, btnFilm);
       ic.setEventsEnabled(true);
       camera = new Camera();
-      if (("" + Settings.deviceId).indexOf("Hand Held") >= 0 || Settings.isIOS()) // D7600 supports only photo
+      if (("" + Settings.deviceId).indexOf("Hand Held") >= 0 || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE)) // D7600 supports only photo
          btnFilm.setVisible(false);
-      Button.commonGap = 0;
    }
 
    public void onEvent(Event event)
@@ -99,7 +96,7 @@ public class CameraTest extends MainWindow
                String ret = camera.click();
                if (ret != null)
                {
-                  File f = new File(ret, File.READ_ONLY, 1);
+                  File f = new File(ret, File.READ_ONLY);
                   int s = f.getSize();
                   try
                   {

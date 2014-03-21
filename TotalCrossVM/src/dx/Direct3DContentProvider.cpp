@@ -3,7 +3,7 @@
 using namespace PhoneDirect3DXamlAppComponent;
 
 Direct3DContentProvider::Direct3DContentProvider(Direct3DBackground^ controller) :
-	m_controller(controller), minimized(false)
+	m_controller(controller)
 {
 	m_controller->RequestAdditionalFrame += ref new RequestAdditionalFrameHandler([=] ()
 		{
@@ -27,7 +27,6 @@ void Direct3DContentProvider::Disconnect()
 {
 	m_host = nullptr;
    m_controller->renderer->syncTex = nullptr;
-   minimized = true;
 }
 
 extern "C" {extern int appW, appH; }
@@ -36,11 +35,12 @@ HRESULT Direct3DContentProvider::PrepareResources(_In_ const LARGE_INTEGER* pres
    if (!m_controller->renderer->syncTex)
    {
       m_controller->renderer->updateDevice(m_host.Get());
-      if (minimized)
+      if (m_controller->renderer->minimized)
       {
+         m_controller->renderer->minimized = false;
+         m_controller->renderer->preRender();
          PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->OnScreenChanged(-1, appW, appH);
          PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
-         minimized = false;
       }
    }
    return m_controller->PrepareResources(contentDirty);

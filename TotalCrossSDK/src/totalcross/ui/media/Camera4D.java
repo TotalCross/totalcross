@@ -19,7 +19,6 @@ package totalcross.ui.media;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.util.*;
 
 public class Camera4D
 {
@@ -56,7 +55,7 @@ public class Camera4D
 
    public String click() throws IOException
    {
-      if (Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
+      if (Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
          return this.nativeClick();
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();
