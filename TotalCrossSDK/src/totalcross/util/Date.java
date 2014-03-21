@@ -604,9 +604,9 @@ public class Date implements Comparable
    public String getSQLString(StringBuffer sb)
    {
       sb.append(year);
-      sb.append(Settings.dateSeparator);
+      sb.append('-');
       if (month < 10) sb.append('0'); sb.append(month);
-      sb.append(Settings.dateSeparator);
+      sb.append('-');
       if (day   < 10) sb.append('0'); sb.append(day);
       sb.append(" 00:00:00.000");
       return sb.toString();
