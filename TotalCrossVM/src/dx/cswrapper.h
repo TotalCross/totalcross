@@ -44,12 +44,20 @@ namespace PhoneDirect3DXamlAppComponent
       // File
       bool fileIsCardInsertedCS();
 
-	  // Etc
+	  // UI
 	  double getFontHeightCS();
      void privateWindowSetSIP(bool visible);
      int getSipHeight();
      int getScreenSize();
      void setSip(bool visible);
+
+     // Camera
+     void cameraClick();
+     int cameraStatus();
+     Platform::String^ cameraFilename();
+
+     // Others
+     void appExit();
 	};
 }
 

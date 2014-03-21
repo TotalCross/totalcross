@@ -288,3 +288,26 @@ void dxprivateScreenChange()
 {
    Direct3DBase::getLastInstance()->updateScreenMatrix();
 }
+
+void cameraClick(NMParams p)
+{
+   Direct3DBase::getLastInstance()->csharp->cameraClick();
+   int status;
+   while ((status = Direct3DBase::getLastInstance()->csharp->cameraStatus()) == -1)
+      Sleep(100);
+   if (status == 0) // cancelled?
+      p->retO = null;
+   else
+   {
+      Platform::String ^name = Direct3DBase::getLastInstance()->csharp->cameraFilename();
+      CharP ret = (CharP)xmalloc(name->Length() + 1);
+      WideCharToMultiByte(CP_ACP, 0, name->Data(), name->Length(), ret, name->Length() + 1, NULL, NULL);
+      setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, ret, name->Length()), UNLOCKED);
+      xfree(ret);
+   }
+}
+
+void appExit()
+{
+   Direct3DBase::getLastInstance()->csharp->appExit();
+}
