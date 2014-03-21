@@ -14,26 +14,22 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.lang;
 
 /** 
  * All arrays extend this class.
- * The purpose is to allow hashCode() and toString() methods on arrays. 
+ * The purpose is to allow <code>hashCode()</code> and <code>toString()</code> methods on arrays. 
+ *
  * <br><br>
- * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
- * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
- * all references to java.lang are replaced by totalcross.lang automatically. Given this,
- * you must use only the classes and methods that exists BOTH in java.lang and totalcross.lang.
- * For example, you can't use java.lang.ClassLoader because there are no totalcross.lang.ClassLoader.
- * Another example, you can't use java.lang.String.indexOfIgnoreCase because there are no
- * totalcross.lang.String.indexOfIgnoreCase method. Trying to use a class or method from the java.lang package
- * that has no correspondence with totalcross.lang will make the tc.Deploy program to abort, informing
- * where the problem occured. A good idea is to always refer to this javadoc to know what is and what isn't
- * available.
+ * IMPORTANT: the <code>totalcross.lang</code> package is the <code>java.lang</code> that will be used on the device.<br>
+ * You CANNOT use nor import <code>totalcross.lang</code> package on the desktop. When <code>tc.Deploy</code> is called, all references to 
+ * <code>java.lang</code> are replaced by <code>totalcross.lang</code> automatically. Given this, you must use only the classes and methods that 
+ * exists BOTH in <code>java.lang</code> and <code>totalcross.lang</code>. For example, you can't use <code>java.lang.ClassLoader</code> because 
+ * there is no <code>totalcross.lang.ClassLoader</code>. Another example, you can't use <code>java.lang.String.indexOfIgnoreCase()</code> because
+ * there is no <code>totalcross.lang.String.indexOfIgnoreCase()</code> method. Trying to use a class or method from the <code>java.lang</code> 
+ * package that has no correspondence with <code>totalcross.lang</code> will make the <code>tc.Deploy</code> program to abort, informing where the 
+ * problem has occurred. A good idea is to always refer to this JavaDoc to know what is and what isn't available.
  */
-
 public class Array4D
 {
 }

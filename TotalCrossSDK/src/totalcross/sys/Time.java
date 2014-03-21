@@ -170,6 +170,19 @@ public final class Time
     */
    public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute, boolean hasSeconds) throws InvalidNumberException
    {
+      this(time, hasYear, hasMonth, hasDay, hasHour, hasMinute, hasSeconds, Settings.dateFormat);
+   }
+   
+   /** Constructs a Time object, parsing the String and placing the fields depending on
+    * the flags that were set, using the Settings.timeSeparator as spliter.
+    * The number of parts must match the number of true flags, or an ArrayIndexOutOfBoundsException will be thrown.
+    * The dateFormat is only considered if hasYear, hasMonth and hasDay are all true.
+    * 
+    * AM/PM is supported.
+    * @since TotalCross 2.1
+    */
+   public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute, boolean hasSeconds, byte dateFormat) throws InvalidNumberException
+   {
       String timeLow = time.toLowerCase();
       if (timeLow.endsWith("AM"))
          time = time.substring(0,time.length()-2).trim();
@@ -191,9 +204,24 @@ public final class Time
          }
          String[] parts = Convert.tokenizeString(time, seps.toString().toCharArray());
          int idx = 0;
-         if (hasYear) year = Convert.toInt(parts[idx++]);
-         if (hasMonth) month = Convert.toInt(parts[idx++]);
-         if (hasDay) day = Convert.toInt(parts[idx++]);
+         if (hasYear && hasMonth && hasDay)
+         {
+            int p1 = Convert.toInt(parts[idx++]);
+            int p2 = Convert.toInt(parts[idx++]);
+            int p3 = Convert.toInt(parts[idx++]);
+            switch (dateFormat)
+            {
+               case Settings.DATE_DMY: day = p1; month = p2; year = p3; break;
+               case Settings.DATE_MDY: day = p2; month = p1; year = p3; break;
+               case Settings.DATE_YMD: day = p3; month = p2; year = p1; break;
+            }
+         }
+         else
+         {
+            if (hasYear)  year  = Convert.toInt(parts[idx++]);
+            if (hasMonth) month = Convert.toInt(parts[idx++]);
+            if (hasDay)   day   = Convert.toInt(parts[idx++]);
+         }
          if (hasHour) hour += Convert.toInt(parts[idx++]);
          if (hasMinute) minute = Convert.toInt(parts[idx++]);
          if (hasSeconds) second = Convert.toInt(parts[idx++]);
@@ -226,13 +254,7 @@ public final class Time
    public String getSQLString() // guich@tc115_22
    {
       StringBuffer sb = new StringBuffer(20);
-      sb.append(year);
-      sb.append(Settings.dateSeparator);
-      if (month < 10) sb.append('0'); sb.append(month);
-      sb.append(Settings.dateSeparator);
-      if (day   < 10) sb.append('0'); sb.append(day);
-      sb.append(' ');
-      return dump(sb, "-", true).toString();
+      return getSQLString(sb);
    }
 
    /** Returns this date in the format <code>YYYY-MM-DD HH:mm:SS.mmm</code>
@@ -240,7 +262,13 @@ public final class Time
     */
    public String getSQLString(StringBuffer sb) // guich@tc115_22
    {
-      return dump(sb, "-", true).toString();
+      sb.append(year);
+      sb.append('-');
+      if (month < 10) sb.append('0'); sb.append(month);
+      sb.append('-');
+      if (day   < 10) sb.append('0'); sb.append(day);
+      sb.append(' ');
+      return dump(sb, ":", true).toString();
    }
 
    /** Constructs a new time with the given values. The values are not checked.

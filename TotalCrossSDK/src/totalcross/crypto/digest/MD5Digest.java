@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.digest;
 
 import java.security.MessageDigest;
@@ -28,6 +26,8 @@ public class MD5Digest extends Digest
 {
    /**
     * Creates a new MD5Digest object.
+    * 
+    * @throws NoSuchAlgorithmException If no Provider supports a <code>MessageDigestSpi</code> implementation for the specified algorithm.
     */
    public MD5Digest() throws NoSuchAlgorithmException
    {
@@ -41,16 +41,31 @@ public class MD5Digest extends Digest
       }
    }
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return "MD5".
+    */
    public final String getAlgorithm()
    {
       return "MD5";
    }
    
+   /**
+    * Returns the block length.
+    * 
+    * @return 64.
+    */
    public final int getBlockLength()
    {
       return 64;
    }
    
+   /**
+    * Returns the message digest length.
+    * 
+    * @return 16.
+    */
    public final int getDigestLength()
    {
       return 16;
