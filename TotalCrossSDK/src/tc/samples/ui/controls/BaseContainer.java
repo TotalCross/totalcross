@@ -20,6 +20,7 @@ public class BaseContainer extends Container
    private static Image infoImg,camImg;
    private String defaultTitle = "User Interface Controls";
    protected int gap;
+   public boolean isSingleCall;
 
    public void initUI()
    {
@@ -163,6 +164,7 @@ public class BaseContainer extends Container
          MainWindow.exit(0); // we're the last screen, so just exit the application
       }
    }
+   
 /*   
    public void onPaint(Graphics g)
    {
