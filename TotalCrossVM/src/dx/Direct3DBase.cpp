@@ -240,6 +240,9 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    buf = ps3buf; len = ps3len;
    DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderLC));
 
+   // reset variables
+   lastPixelsCount = 0;
+
    if (!vmStarted)
       std::thread([this]() {startProgram(localContext); }).detach(); // this will block until the application ends         
    vmStarted = true;
