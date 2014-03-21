@@ -18,6 +18,7 @@ package totalcross.lang;
 
 /** 
  * Thrown when an arithmetic problem occurs, usually a division by zero. 
+ * 
  * <br><br>
  * IMPORTANT: the <code>totalcross.lang</code> package is the <code>java.lang</code> that will be used on the device.<br>
  * You CANNOT use nor import <code>totalcross.lang</code> package on the desktop. When <code>tc.Deploy</code> is called, all references to 
@@ -28,11 +29,10 @@ package totalcross.lang;
  * package that has no correspondence with <code>totalcross.lang</code> will make the <code>tc.Deploy</code> program to abort, informing where the 
  * problem has occurred. A good idea is to always refer to this JavaDoc to know what is and what isn't available.
  */
-
 public class ArithmeticException4D extends RuntimeException
 {
    /** 
-    * Constructs an empty Exception. 
+    * Constructs an empty exception. 
     */
    public ArithmeticException4D()
    {

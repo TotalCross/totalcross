@@ -23,13 +23,13 @@ import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /** 
- * Bar is a class that provides a title area and a button area (at right).
- * The title and the button are optional, although it doesn't make sense to have a Bar
- * without title and buttons.
+ * This class provides a title area and a button area (at right). The title and the button are optional, although it doesn't make sense to have a 
+ * <code>Bar</code> without title and buttons.
  * 
  * You can add or remove buttons, and change the title text; the title text can have an icon at left.
  * 
- * Here's an example of how to use it, taken from the UIGadgets sample:
+ * Here's an example of how to use it, taken from the old UIGadgets sample:
+ *
  * <pre>
  * final Bar h1,h2;
  * Font f = Font.getFont(true,Font.NORMAL_SIZE+2);
@@ -41,13 +41,11 @@ import totalcross.util.*;
  * h1.addButton(new Image("ic_dialog_info.png"));
  * add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the default menu area
  * </pre>
- * A ControlEvent.PRESSED is sent to the caller, and the button index can be retrieved using 
- * <code>getSelectedIndex</code> method.
  * 
- * By default, the background is shaded. You can change it to plain using
- * <code>h1.backgroundStyle = BACKGROUND_SOLID;</code> 
+ * A <code>ControlEvent.PRESSED</code> is sent to the caller, and the button index can be retrieved using the <code>getSelectedIndex()</code> method.
+ * 
+ * By default, the background is shaded. You can change it to plain using <code>h1.backgroundStyle = BACKGROUND_SOLID;</code>. 
  */
-
 public class Bar extends Container
 {
    private BarButton title;
@@ -57,10 +55,14 @@ public class Bar extends Container
    private int c1,c2,c3,c4,tcolor,pcolor;
    private Spinner spinner;
    
-   /** Set to true to allow the title to be selected and send events. */
+   /** 
+    * Set to <code>true</code> to allow the title to be selected and send events. 
+    */
    public boolean canSelectTitle;
    
-   /** The title horizontal alignment (LEFT, CENTER, RIGHT). Defaults to LEFT. */
+   /** 
+    * The title horizontal alignment (<code>LEFT</code>, <code>CENTER</code>, or <code>RIGHT</code>). Defaults to <code>LEFT</code>. 
+    */
    public int titleAlign = LEFT;
    
    private class BarButton extends Control
@@ -222,17 +224,22 @@ public class Bar extends Container
       }
    }
    
-   /** Constructs a Bar class without a title. Note that if 
-    * you call the setTitle method, a RuntimeException will be thrown. 
+   /** 
+    * Constructs a <code>Bar</code> object without a title. Note that if you call the <code>setTitle()</code> method, a <code>RuntimeException</code> 
+    * will be thrown. 
     *
-    * If you want to change the title later, use the other constructor and pass an empty String ("").
+    * If you want to change the title later, use the other constructor and pass an empty string (<code>""</code>).
     */
    public Bar()
    {
       this(null);
    }
    
-   /** Constructs a Bar class with the given title. */
+   /** 
+    * Constructs a <code>Bar</code> object with the given title. 
+    *
+    * @param title The bar title.
+    */
    public Bar(String title)
    {
       this.title = title != null ? new BarButton(title,null) : null;
@@ -240,8 +247,11 @@ public class Bar extends Container
       setFont(font.asBold());
    }
    
-   /** An image icon that can be placed at left of the title. It only shows if there's a title set. 
-    * Pass null to remove the icon, if previously set. 
+   /** 
+    * An image icon that can be placed at the left of the title. It only shows if there's a title set. Pass <code>null</code> to remove the icon if 
+    * it was previously set.
+    * 
+    * @param icon The image icon.
     */
    public void setIcon(Image icon)
    {
@@ -253,7 +263,11 @@ public class Bar extends Container
       }
    }
 
-   /** Changes the title to the given one. */
+   /** 
+    * Changes the title to the given one. 
+    *
+    * @param newTitle The bar new title.
+    */
    public void setTitle(String newTitle)
    {
       if (this.title == null)
@@ -263,25 +277,42 @@ public class Bar extends Container
       Window.needsPaint = true;
    }
    
-   /** Retrieves the current title. */
+   /** 
+    * Retrieves the current title. 
+    *
+    * @return The bar title.
+    */
    public String getTitle()
    {
       return this.title == null ? "" : title.title;
    }
    
-   /** Adds an image Button */
+   /** 
+    * Adds an image button. 
+    *
+    * @param icon The image to the add to a button in the bar.
+    */
    public void addButton(Image icon)
    {
       addControl(new BarButton(null,icon));
    }
    
-   /** Sets the given button with an auto-repeat interval of the given ms. */
+   /** 
+    * Sets the given button with an auto-repeat interval in the given milliseconds. 
+    *
+    * @param idx The index of the button in the bar.
+    * @param ms The auto-repeat interval in milliseconds.
+    */
    public void setButtonRepeatRate(int idx, int ms)
    {
       ((BarButton)icons.items[idx]).autoRepeatRate = ms;
    }
    
-   /** Adds a Control. Not all types of controls are supported. */
+   /** 
+    * Adds a control to the bar. Not all types of controls are supported. 
+    *
+    * @param c The control to be added.
+    */
    public void addControl(Control c)
    {
       icons.addElement(c);
@@ -289,7 +320,11 @@ public class Bar extends Container
       if (initialized) initUI();
    }
    
-   /** Removes a Button at the given index, starting at 1. */
+   /** 
+    * Removes a button at the given index, starting at 1. 
+    *
+    * @param index The index of the button to be removed.
+    */
    public void removeButton(int index)
    {
       icons.removeElementAt(index-1);
@@ -297,15 +332,21 @@ public class Bar extends Container
       if (initialized) initUI();
    }
    
-   /** Returns the selected button, or -1 if none was selected.
+   /** 
+    * Returns the selected button, or -1 if none was selected.
     * 
-    * The title is always index 0 (even if there's no title), and the buttons start at index 1. 
+    * The title always has index 0 (even if there's no title), and the button' index start at index 1.
+    * 
+    * @return The index of the selected button.
     */
    public int getSelectedIndex()
    {
       return selected;
    }
    
+   /**
+    * Called to initialize the user interface of this container. 
+    */
    public void initUI()
    {
       removeAll();
@@ -331,6 +372,14 @@ public class Bar extends Container
       initialized = true;
    }
    
+   /**
+    * Called after a <code>setEnabled()</code>, <code>setForeColor()</code>, or <code>setBackColor()</code>; or when a control has been added to a 
+    * container. If <code>colorsChanged</code> is <code>true</code>, it was called from <code>setForeColor()</code>/<code>setBackColor()</code>/
+    * <code>Container.add()</code>; otherwise, it was called from <code>setEnabled()</code>.
+    *
+    * @param colorsChanged Indicates if the control colors have changed, which happens after a <code>setForeColor()</code>, 
+    * <code>setBackColor()</code>, or <code>Container.add()</code>. 
+    */
    public void onColorsChanged(boolean colorsChanged)
    {
       c1 = Color.brighter(backColor,30);
@@ -341,18 +390,30 @@ public class Bar extends Container
       pcolor = Color.interpolate(backColor,foreColor);
    }
    
+   /** 
+    * Returns the preferred width of this control. 
+    * 
+    * @return The preferred width of this control.
+    */
    public int getPreferredWidth()
    {
       return parent == null ? FILL : parent.width;
    }
    
+   /**
+    * Returns the preferred height of this control. 
+    *
+    * @return The preferred height of this control.
+    */
    public int getPreferredHeight()
    {
       return fmH*2;
    }
    
-   /** Shows and starts the spinner (if one has been assigned to the spinner field)
-    *  @see #spinner
+   /** 
+    * Shows and starts the spinner (if one has been assigned to the <code>spinner</code> field).
+    * 
+    * @see #spinner
     */
    public void startSpinner()
    {
@@ -360,8 +421,10 @@ public class Bar extends Container
       spinner.start();
    }
    
-   /** Stops and hides the spinner (if one has been assigned to the spinner field)
-    *  @see #spinner
+   /** 
+    * Stops and hides the spinner (if one has been assigned to the <code>spinner</code> field)
+    * 
+    * @see #spinner
     */
    public void stopSpinner()
    {
@@ -369,17 +432,22 @@ public class Bar extends Container
       spinner.setVisible(false);
    }
    
+   /**
+    * Repositions this control, calling again <code>setRect()</code> with the original parameters. 
+    */
    public void reposition()
    {
       super.reposition();
       initUI();
    }
    
-   /** Assigns the BACK key on Android (mapped to SpecialKeys.ESCAPE) to the given button.
-    * This can only be called after the Bar has been added to a Container.
+   /** 
+    * Assigns the BACK key on Android (mapped to <code>SpecialKeys.ESCAPE</code>) to the given button. This can only be called after the bar has been 
+    * added to a container.
     * 
-    * For example, if Button 0 is assigned with <code>totalcross.res.Resources.back</code>, call
-    * <code>assignBackKeyToButton(0);</code>.
+    * For example, if button 1 is assigned with <code>totalcross.res.Resources.back</code>, call <code>assignBackKeyToButton(1);</code>.
+    *
+    * @param idx The index of the bar button, starting at 1.
     */
    public void assignBackKeyToButton(int idx)
    {
@@ -402,9 +470,10 @@ public class Bar extends Container
       w.callListenersOnAllTargets = true;
    }
 
-   /** Creates a Spinner with the following color.
-    * The Spinner will be placed at the right of the title
-    * (only works if there's a title)
+   /** 
+    * Creates a spinner with the following color. The spinner will be placed at the right of the title (it only works if there's a title).
+    *
+    * @param color The spinner color.
     */
    public void createSpinner(int color)
    {
