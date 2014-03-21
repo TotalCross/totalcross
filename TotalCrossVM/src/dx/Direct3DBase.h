@@ -117,10 +117,10 @@ internal:
    int sipHeight;
    bool minimized;
    Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex;
+   void preRender(); // resets the screen and set it ready to render
 
 private:
    void initialize();
-   void preRender(); // resets the screen and set it ready to render
    void setBufAndLen(Platform::Array<byte>^ fileData, byte** buf, int* len, int completeValue);
    int loadCompleted;
    whichProgram curProgram;
