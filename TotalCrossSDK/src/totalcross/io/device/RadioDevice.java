@@ -21,8 +21,6 @@ package totalcross.io.device;
 /**
  * Provides access to the device's radios and information about their status.
  * 
- * This class is fully functional on WinCE based devices version 4.2 and later.
- * 
  * Refer to each method documentation for detailed information about the supported usage.
  * 
  * @since TotalCross 1.15

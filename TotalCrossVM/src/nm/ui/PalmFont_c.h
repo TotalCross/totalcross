@@ -471,7 +471,6 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
             }
          p->a = 0; p++; // skip a row at right
       }
-      
       glLoadTexture(currentContext, null, id, (Pixel*)pixels, width+1, height+1, false);
       if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
       {
@@ -497,6 +496,7 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
 #endif
 
 #ifdef __gl2_h_
+void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
 static void reset1Font(UserFont uf)
 {
    int32 i;       
@@ -505,7 +505,13 @@ static void reset1Font(UserFont uf)
       {
          IdColor ic = uf->textureIds[i];
          for (; ic != null; ic = ic->next)
-            ic->id[0] = 0;
+         {
+#ifdef WP8      
+            if (ic->id[0] != 0)
+               glDeleteTexture(null, ic->id, false);
+#endif
+            ic->id[0] = ic->id[1] = 0;
+         }
       }
 }
 #endif

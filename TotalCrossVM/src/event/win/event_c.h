@@ -470,7 +470,8 @@ void privatePumpEvent(Context currentContext)
 #if defined(WP8)
 	struct eventQueueMember q_member = eventQueuePop();
    //debug("%X - %d.event pop: %d", GetCurrentThreadId(), q_member.count, q_member.type);
-	postEvent(mainContext, q_member.type, q_member.key, q_member.x, q_member.y, q_member.modifiers);
+   if (q_member.type != 0)
+	   postEvent(mainContext, q_member.type, q_member.key, q_member.x, q_member.y, q_member.modifiers);
 #else
    MSG msg;
 #ifdef WINCE

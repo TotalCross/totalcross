@@ -599,6 +599,7 @@ public class Window extends Container
             repaintActiveWindows();
             return;
          }
+         if (shiftY > 0) shiftY = 0; // required for WP8. not sure on other platforms
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
@@ -617,7 +618,7 @@ public class Window extends Container
             }
          }
          else
-         if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
+         if (!Settings.platform.equals(Settings.WINDOWSPHONE) && lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
          {
             lastY = y = y + lastShiftY;
             if (type == PenEvent.PEN_UP)

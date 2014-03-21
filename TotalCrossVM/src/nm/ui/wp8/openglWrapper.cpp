@@ -92,11 +92,16 @@ void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 
 int32 glGetPixel(int32 x, int32 y)
 {
+   /* getPixel and getPixels does not work due to the use of DeferredContext
+   Pixel p;
+   dxGetPixels(&p, x, y, 1, 1, 1);*/
    return 0;
 }
 
 void glGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
+   // getPixel and getPixels does not work due to the use of DeferredContext
+   //dxGetPixels(dstPixels, srcX, srcY, width, height, pitch);
 }
 
 void flushAll()
@@ -106,8 +111,7 @@ void flushAll()
 
 void privateScreenChange(int32 w, int32 h)
 {
-	appW = w;
-	appH = h;
+   dxprivateScreenChange();
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
@@ -164,20 +168,22 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    dxFillShadedRect(g, x, y, w, h, c1, c2, horiz);
 }
 
-extern "C" {extern int32 *shiftYfield; }
+extern "C" {extern int32 *shiftYfield, *lastShiftYfield, *shiftHfield; }
 void setTimerInterval(int32 t);
 void setShiftYgl()
 {
 	if (setShiftYonNextUpdateScreen) 
    {
       int32 sipHeight = dxGetSipHeight();
-		int32 componentPos = desiredScreenShiftY;     // set both at once
+		int32 componentPos = desiredScreenShiftY;
+      if (appW > appH) // in landscape we work a bit different
+         componentPos += *shiftHfield/4*5;
 		setShiftYonNextUpdateScreen = false;
 		if (sipHeight == 0 || componentPos <= sipHeight)
          glShiftY = 0;
 		else
 			glShiftY = -(componentPos - sipHeight);
-      *shiftYfield = glShiftY;
+      *shiftYfield = *lastShiftYfield = glShiftY;
 	}
 }
 
@@ -193,11 +199,21 @@ void glSetLineWidth(int32 w)
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
    dxDeleteTexture(img, textureId, updateList);
+   if (updateList && img && VoidPsContains(imgTextures, img))
+   {
+      int n1 = listGetCount(imgTextures);
+      imgTextures = VoidPsRemove(imgTextures, img, null);
+      int n2 = listGetCount(imgTextures);
+      if (n1 - 1 != n2)
+         debug("**** tinha %d, tirou 1 mas ficou %d", n1, n2);
+   }
 }
 
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
    dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
+      imgTextures = VoidPsAdd(imgTextures, img, null);
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)

@@ -22,10 +22,10 @@ Direct3DBackground^ Direct3DBackground::GetInstance()
 {
    return instance;
 }
-IDrawingSurfaceBackgroundContentProvider^ Direct3DBackground::CreateContentProvider()
+IDrawingSurfaceContentProvider^ Direct3DBackground::CreateContentProvider()
 {
 	ComPtr<Direct3DContentProvider> provider = Make<Direct3DContentProvider>(this);
-	return reinterpret_cast<IDrawingSurfaceBackgroundContentProvider^>(provider.Get());
+	return reinterpret_cast<IDrawingSurfaceContentProvider^>(provider.Get());
 }
 
 bool Direct3DBackground::backKeyPress()
@@ -36,7 +36,10 @@ bool Direct3DBackground::backKeyPress()
 }
 
 // Event Handlers
-extern "C" {extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; }
+extern "C" 
+{
+   extern int32 setShiftYonNextUpdateScreen,appW,appH,glShiftY; 
+}
 void Direct3DBackground::OnPointerPressed(int x, int y)
 {
    eventQueuePush(PENEVENT_PEN_DOWN, 0, x, y - glShiftY, -1);
@@ -44,7 +47,8 @@ void Direct3DBackground::OnPointerPressed(int x, int y)
 
 void Direct3DBackground::OnPointerMoved(int x, int y)
 {
-   eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y - glShiftY, -1);
+   if (!renderer->updateScreenWaiting) // boosts performance during drag 
+      eventQueuePush(PENEVENT_PEN_DRAG, 0, x, y - glShiftY, -1);
    isDragging = true;
 }
 
@@ -59,6 +63,12 @@ void Direct3DBackground::OnKeyPressed(int key)
    eventQueuePush(key < 32 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key < 32 ? keyDevice2Portable(key) : key, 0, 0, -1);
 }
 
+void Direct3DBackground::OnManipulation(int type, double delta)
+{
+   int* pd = (int*)&delta;
+   eventQueuePush(MULTITOUCHEVENT_SCALE, type, pd[1],pd[0], 0);
+}
+
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)
 {
    if (newKeyboardH >= 0)
@@ -70,42 +80,24 @@ void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int new
    }
    else
    {
-#define SCREEN_CHANGE -1030
-      bool firstTime = appW == 0;
       appW = newWidth;
       appH = newHeight;
-      if (!firstTime)
-      {
-         renderer->rotatedTo = newWidth > newHeight ? 1 : 0;
-         eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SCREEN_CHANGE, 0, 0, -1);
-      }
+      if (renderer != nullptr)
+         eventQueuePush(KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0, 0, -1);
    }
-}
-
-// Interface With Direct3DContentProvider
-HRESULT Direct3DBackground::Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device)
-{
-   bool resuming = renderer != nullptr;
-   if (!resuming)
-      renderer = ref new Direct3DBase(cs);
-   renderer->initialize(device, resuming);
-	return S_OK;
-}
-
-void Direct3DBackground::Disconnect()
-{
-	//renderer = nullptr;
 }
 
 void Direct3DBackground::lifeCycle(bool suspending)
 {
+   updateScreenCalledOnce = false;
    renderer->lifeCycle(suspending);
 }
 
-HRESULT Direct3DBackground::PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize)
+HRESULT Direct3DBackground::PrepareResources(_Out_ BOOL* contentDirty)
 {
-	desiredRenderTargetSize->width = RenderResolution.Width;
-	desiredRenderTargetSize->height = RenderResolution.Height;
+   // update screen only if necessary
+   updateScreenCalledOnce |= renderer->updateScreenWaiting;
+   *contentDirty = !updateScreenCalledOnce || renderer->updateScreenWaiting;
 	return S_OK;
 }
 
@@ -113,21 +105,4 @@ void Direct3DBackground::RequestNewFrame()
 {
    Direct3DBackground::RequestAdditionalFrame();
 }
-
-static int lastPaint,lastAcum=10;
-HRESULT Direct3DBackground::Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView)
-{
-   if (renderer->isLoadCompleted() && renderer->startProgramIfNeeded())
-   {
-      int cur = (int32)GetTickCount64();
-      renderer->updateDevice(device, context, renderTargetView);
-      int n = renderer->runCommands();
-      //if (--lastAcum == 0) { debug("%d: %d ms", n, cur - lastPaint); lastAcum = 10; } lastPaint = cur;
-      if (renderer->alertMsg != nullptr) {Direct3DBase::getLastInstance()->csharp->privateAlertCS(renderer->alertMsg); renderer->alertMsg = nullptr;} // alert stuff
-      renderer->updateScreenWaiting = false;
-	} 
-   else Direct3DBackground::RequestAdditionalFrame();
-   return S_OK;
-}
-
 }

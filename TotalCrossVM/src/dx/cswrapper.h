@@ -9,6 +9,7 @@ namespace PhoneDirect3DXamlAppComponent
 	public:
       // Vm
       void privateAlertCS(Platform::String^ alertMsg);
+      bool isAlertVisible();
       void vmSetAutoOffCS(bool enable);
 
       // Dial
@@ -46,6 +47,9 @@ namespace PhoneDirect3DXamlAppComponent
 	  // Etc
 	  double getFontHeightCS();
      void privateWindowSetSIP(bool visible);
+     int getSipHeight();
+     int getScreenSize();
+     void setSip(bool visible);
 	};
 }
 
