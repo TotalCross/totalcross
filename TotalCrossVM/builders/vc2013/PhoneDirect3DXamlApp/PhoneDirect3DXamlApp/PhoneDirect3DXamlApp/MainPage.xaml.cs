@@ -19,9 +19,17 @@ using PhoneDirect3DXamlAppComponent;
 using Windows.Devices.Geolocation;
 using Windows.Networking.Proximity;
 using System.Diagnostics;
+using Windows.UI.ViewManagement;
+using System.IO;
+using Windows.Storage;
 
 namespace PhoneDirect3DXamlAppInterop
 {
+   class Settings
+   {
+      public static int landSipH, portSipH;
+   }
+
    public class CSWrapper : CSwrapper
    {
       // Workarround vars
@@ -56,8 +64,9 @@ namespace PhoneDirect3DXamlAppInterop
       // user interface
       private double fontHeight;
       public TextBox tbox;
-
-      public MainPage mp { set; get; }
+      public int currentSipH;
+      public bool sipVisible;
+      private bool alertIsVisible;
 
       public CSWrapper(Grid g)
       {
@@ -66,9 +75,53 @@ namespace PhoneDirect3DXamlAppInterop
           tbox = new TextBox();
           root.Children.Add(tbox);
           tbox.Visibility = Visibility.Collapsed;
-          tbox.Margin = new Thickness(0, g.ActualHeight * 10, 0, 0);
+          tbox.LostFocus += tbox_LostFocus;
           // get native font size
           fontHeight = tbox.FontSize;
+          ReadSettings().Wait();
+          tbox.Margin = isSipSet()
+            ? new Thickness(0, 0, 0, MainPage.instance.ActualHeight * 10) // to top
+            : new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0);  // to bottom
+      }
+
+      public bool isSipSet()
+      {
+         bool isPortrait = MainPage.isPortrait;
+         return (isPortrait && Settings.portSipH != 0) || (!isPortrait && Settings.landSipH != 0);
+      }
+
+      public async Task WriteSettings()
+      {
+         var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("AppSettings.dat", CreationCollisionOption.ReplaceExisting);
+         using (var s = await file.OpenStreamForWriteAsync())
+         {
+            BinaryWriter bw = new BinaryWriter(s);
+            bw.Write(Settings.landSipH);
+            bw.Write(Settings.portSipH);
+         }
+      }
+
+      public async Task ReadSettings()
+      {
+         try
+         {
+            var file = await Windows.Storage.ApplicationData.Current.LocalFolder.OpenStreamForReadAsync("AppSettings.dat");
+            using (var br = new BinaryReader(file))
+            {
+               Settings.landSipH = br.ReadInt32();
+               Settings.portSipH = br.ReadInt32();
+            }
+         }
+         catch
+         {
+            // do nothing
+         }
+      }
+
+      void tbox_LostFocus(object sender, RoutedEventArgs e)
+      {
+         if (sipVisible) // when we click outside the keyboard area, it tries to close; so we set the focus back again.
+            tbox.Focus();
       }
 
       public double getFontHeightCS()
@@ -76,28 +129,19 @@ namespace PhoneDirect3DXamlAppInterop
           return fontHeight;
       }
 
-      public void privateWindowSetSIP(bool visible)
-      {
-          root.Dispatcher.BeginInvoke((Action)(() => // must run on ui thread
-          {
-              if (!visible)
-                  tbox.Visibility = System.Windows.Visibility.Collapsed;
-              else
-              {
-                  tbox.Text = "A";
-                  tbox.SelectionStart = 1;
-                  tbox.Visibility = System.Windows.Visibility.Visible;
-                  tbox.Focus();
-              }
-          }));
-      }
-
       public void privateAlertCS(String str) // Vm
       {
+         alertIsVisible = true;
          Deployment.Current.Dispatcher.BeginInvoke(() =>
          {
             MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+            alertIsVisible = false;
          });
+      }
+
+      public bool isAlertVisible()
+      {
+         return alertIsVisible;
       }
 
       public void vmSetAutoOffCS(bool enable) // Vm
@@ -282,35 +326,110 @@ namespace PhoneDirect3DXamlAppInterop
          while (semaphore == 0) { }
          return cardIsInserted;
       }
+
+      public void setSip(bool visible)
+      {
+         if (!visible)
+            tbox.Visibility = System.Windows.Visibility.Collapsed;
+         else
+         {
+            tbox.Text = "A"; tbox.SelectionStart = 1;
+            tbox.Visibility = System.Windows.Visibility.Visible;
+            tbox.Focus();
+         }
+      }
+      public void privateWindowSetSIP(bool visible)
+      {
+         sipVisible = visible;
+         root.Dispatcher.BeginInvoke((Action)(() => // must run on ui thread
+         {
+             setSip(visible);
+         }));
+         bool isPortrait = MainPage.isPortrait;
+         currentSipH = visible ? (isPortrait ? Settings.portSipH : Settings.landSipH) : 0;
+         if ((visible && currentSipH != 0) || (!visible && currentSipH == 0))
+            MainPage.instance.d3dBackground.OnScreenChanged(currentSipH, 0, 0);
+      }
+
+      public int getSipHeight()
+      {
+         return currentSipH;
+      }
+
+      public int getScreenSize()
+      {
+         return MainPage.screenSize;
+      }
    }
 
     ////////////////////////////////////////////////////////////////////////////////
 
     public partial class MainPage : PhoneApplicationPage
     {
-        private Direct3DBackground d3dBackground;
+        public Direct3DBackground d3dBackground;
         private int specialKey;
-        private int keyboardH;
-        private long lastTick;
         private CSWrapper cs;
+        private bool manipulating;
         public static MainPage instance;
+        public static bool isPortrait;
+        public static int screenSize;
 
         // Constructor
         public MainPage()
         {
             instance = this;
+            screenSize = (int) Math.Max(Application.Current.Host.Content.ActualWidth, Application.Current.Host.Content.ActualHeight);
             InitializeComponent();
             this.BackKeyPress += MainPage_BackKeyPress;
             this.MouseMove += MainPage_MouseMove;
             this.MouseLeftButtonDown += MainPage_MouseLeftButtonDown;
             this.MouseLeftButtonUp += MainPage_MouseLeftButtonUp;
             this.SizeChanged += MainPage_SizeChanged;
+            this.ManipulationDelta += MainPage_ManipulationDelta;
+            this.ManipulationCompleted += MainPage_ManipulationCompleted;
+            checkOrientation();
+            // InputPane input = InputPane.GetForCurrentView(); input.Showing += input_Showing; input.Hiding += input_Hiding; DOES NOT WORK! METHODS ARE NEVER CALLED. TEST AGAIN ON FUTURE WP VERSIONS
             BeginListenForSIPChanged();
+        }
+
+        void MainPage_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+           e.Handled = true;
+           if (manipulating)
+           {
+              manipulating = false;
+              d3dBackground.OnManipulation(2, 0);
+           }
+        }
+
+        void MainPage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+           e.Handled = true;
+           double scale = e.DeltaManipulation.Scale.Y;
+           if (scale != 0)
+           {
+              if (!manipulating)
+              {
+                 manipulating = true;
+                 d3dBackground.OnManipulation(1, 0);
+              }
+              d3dBackground.OnManipulation(0, scale);
+           }
+        }
+
+        public void checkOrientation()
+        {
+           isPortrait = Orientation == PageOrientation.Portrait || Orientation == PageOrientation.PortraitUp || Orientation == PageOrientation.PortraitDown;
         }
 
         void MainPage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (d3dBackground != null) d3dBackground.OnScreenChanged(-1, (int)e.NewSize.Width, (int)e.NewSize.Height);
+           if (d3dBackground == null) return;
+           checkOrientation();
+           // if sipH isnt set for current rotation, move it to bottom again
+           if ((isPortrait && Settings.portSipH == 0) || (!isPortrait && Settings.landSipH == 0))
+              instance.cs.tbox.Margin = new Thickness(0, instance.ActualHeight * 10, 0, 0); // move to bottom
+           d3dBackground.OnScreenChanged(-1, (int)e.NewSize.Width, (int)e.NewSize.Height);
         }
 
         private void BeginListenForSIPChanged()
@@ -326,8 +445,18 @@ namespace PhoneDirect3DXamlAppInterop
            double newvalue = (double)e.NewValue;
            if (newvalue == (int)newvalue) // finished?
            {
-               instance.keyboardH = -(int)newvalue; // when 0, keyboard is hidden
-               instance.d3dBackground.OnScreenChanged(instance.keyboardH, 0, 0);
+              if (!instance.cs.isSipSet())
+              {
+                 if (isPortrait)
+                    instance.cs.currentSipH = Settings.portSipH = -(int)newvalue;
+                 else
+                    instance.cs.currentSipH = Settings.landSipH = -(int)newvalue;
+                 instance.cs.WriteSettings();
+                 instance.cs.tbox.Margin = new Thickness(0, 0, 0, instance.ActualHeight * 10); // move to top
+                 // once we set the value, we move the sip to top to prevent the odd animation
+                 instance.cs.setSip(false);
+                 instance.cs.setSip(true);
+              }
            }
         }
 
@@ -337,7 +466,7 @@ namespace PhoneDirect3DXamlAppInterop
             specialKey = key < 32 ? key : 0;
         }
 
-        bool ignoreNext;
+        public bool ignoreNext;
         void tbox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (ignoreNext) { ignoreNext = false; return; }
@@ -347,6 +476,7 @@ namespace PhoneDirect3DXamlAppInterop
             {
                 String s = cs.tbox.Text;
                 int idx = cs.tbox.SelectionStart - 1;
+                cs.tbox.Text = "A"; cs.tbox.SelectionStart = 1; ignoreNext = true; // reset keyboard
                 if (0 <= idx && idx < s.Length)
                    d3dBackground.OnKeyPressed(s.ElementAt(idx));
             }
@@ -362,25 +492,21 @@ namespace PhoneDirect3DXamlAppInterop
         {
             e.Handled = true;
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y - keyboardH); // when the keyboard is open, all events are shifted by its heihgt
+            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y);
         }
 
         void MainPage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y - keyboardH);
+            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y);
         }
 
         void MainPage_MouseMove(object sender, MouseEventArgs e)
         {
-            long tick = DateTime.Now.Ticks / 10000;
-            if ((tick - lastTick) > 20) // ignore fast moves
-            {
-                lastTick = tick;
-                Point p = e.GetPosition(this);
-                d3dBackground.OnPointerMoved((int)p.X, (int)p.Y - keyboardH);
-            }
+            Point p = e.GetPosition(this);
+            if (!manipulating)
+               d3dBackground.OnPointerMoved((int)p.X, (int)p.Y);
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
@@ -403,18 +529,16 @@ namespace PhoneDirect3DXamlAppInterop
             if (d3dBackground == null)
             {
                 cs = new CSWrapper(LayoutRoot);
-                cs.mp = this;
                 d3dBackground = new Direct3DBackground(cs);
 
                 cs.tbox.KeyDown += MainPage_KeyDown;
                 cs.tbox.TextChanged += tbox_TextChanged;
 
-                int appW = (int)LayoutRoot.ActualWidth, appH = (int)LayoutRoot.ActualHeight;
-                //int scrW = (int)Application.Current.Host.Content.ActualWidth, scrH = (int)Application.Current.Host.Content.ActualHeight;
-                //LayoutRoot.Margin = new Thickness(0, scrH - appH,0,0);
+                int appW = (int)LayoutRoot.ActualWidth;
+                int appH = (int)LayoutRoot.ActualHeight;
                 d3dBackground.OnScreenChanged(-1, appW, appH);
                 d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
-                DrawingSurfaceBackground.SetBackgroundContentProvider(d3dBackground.CreateContentProvider());
+                DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
             }
         }
     }

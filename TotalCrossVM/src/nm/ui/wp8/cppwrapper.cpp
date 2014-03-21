@@ -37,12 +37,7 @@ static int counter;
 // Not a concurrent queue
 void eventQueuePush(int type, int key, int x, int y, int modifiers)
 {
-	static int32 *ignoreEventOfType = null;
 	struct eventQueueMember newEvent;
-	if (ignoreEventOfType == null)
-		ignoreEventOfType = getStaticFieldInt(loadClass(mainContext, "totalcross.ui.Window", false), "ignoreEventOfType");
-	if (type == *ignoreEventOfType) 
-		return;
 	newEvent.type = type;
 	newEvent.key = key;
 	newEvent.x = x;
@@ -50,7 +45,12 @@ void eventQueuePush(int type, int key, int x, int y, int modifiers)
 	newEvent.modifiers = modifiers;
    newEvent.count = ++counter;
 	eventQueue.push(newEvent);
-   //debug("%X - %d. push %d", GetCurrentThreadId(), counter, type);
+}
+
+extern "C"
+{
+   void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
+   extern int appW, appH;
 }
 
 struct eventQueueMember eventQueuePop(void)
@@ -61,6 +61,11 @@ struct eventQueueMember eventQueuePop(void)
 	{
 		top = eventQueue.front();
 		eventQueue.pop();
+      if (top.type == KEYEVENT_SPECIALKEY_PRESS && top.key == -1030)
+      {
+         screenChange(mainContext, appW, appH, 0, 0, true);
+         top.type = 0;
+      }
 	}
 	return top;
 }
@@ -133,7 +138,8 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::getLastInstance()->alertMsg = ref new Platform::String((wchar_t*)jCharStr);
+   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   while (Direct3DBase::getLastInstance()->csharp->isAlertVisible()) Sleep(10);
 }
 
 void vmSetAutoOffCPP(bool enable)
@@ -218,9 +224,19 @@ void dxUpdateScreen()
    Direct3DBase::getLastInstance()->updateScreen();
 }
 
+void dxGetPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
+{
+   Direct3DBase::getLastInstance()->getPixels(dstPixels,srcX,srcY,width,height,pitch);
+}
+
 int32 dxGetSipHeight()
 {
-   return Direct3DBase::getLastInstance()->sipHeight;
+   return Direct3DBase::getLastInstance()->csharp->getSipHeight();
+}
+
+int32 dxGetScreenSize()
+{
+   return Direct3DBase::getLastInstance()->csharp->getScreenSize();
 }
 
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
@@ -266,4 +282,9 @@ double getFontHeightCPP()
 void privateWindowSetSIP(bool visible)
 {
    Direct3DBase::getLastInstance()->csharp->privateWindowSetSIP(visible);
+}
+
+void dxprivateScreenChange()
+{
+   Direct3DBase::getLastInstance()->updateScreenMatrix();
 }

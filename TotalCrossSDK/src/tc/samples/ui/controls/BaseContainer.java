@@ -17,7 +17,7 @@ public class BaseContainer extends Container
    protected Bar headerBar,footerBar;
    protected String helpMessage;
    private static Vector containerStack = new Vector(5);
-   private static Image infoImg;
+   private static Image infoImg,camImg;
    private String defaultTitle = "User Interface Controls";
    protected int gap;
 
@@ -34,12 +34,16 @@ public class BaseContainer extends Container
          }
          
          if (infoImg == null)
+         {
             infoImg = new Image("images/ic_dialog_info.png");
+            camImg = new Image("camera.png");
+         }
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
+         headerBar.addButton(camImg);
          headerBar.addButton(isMainMenu ? infoImg : Resources.back);
          add(headerBar, LEFT,0,FILL,PREFERRED);
          
@@ -59,22 +63,32 @@ public class BaseContainer extends Container
                e.consumed = true;
                try
                {
-                  if (((Bar)e.target).getSelectedIndex() == 1)
+                  switch (((Bar)e.target).getSelectedIndex())
                   {
-                     boolean isMainMenu = containerStack.size() == 1;
-                     if (isMainMenu)
+                     case 2:
                      {
-                        if (helpMessage == null) 
-                           return;
-                        MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
-                        mb.footerColor = mb.headerColor = UIColors.messageboxBack;
-                        mb.setIcon(infoImg);
-                        mb.popup();
+                        boolean isMainMenu = containerStack.size() == 1;
+                        if (isMainMenu)
+                        {
+                           if (helpMessage == null) 
+                              return;
+                           MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
+                           mb.footerColor = mb.headerColor = UIColors.messageboxBack;
+                           mb.setIcon(infoImg);
+                           mb.popup();
+                        }
+                        else
+                        {
+                           back();
+                        }
+                        break;
                      }
-                     else
+                     case 1:
                      {
-                        back();
-                     }  
+                        MultitouchSample.screenShot = MainWindow.getScreenShot();
+                        setInfo("See screenshot at Multi touch sample");
+                        break;
+                     }
                   }
                }
                catch (Exception ee)

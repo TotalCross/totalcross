@@ -14,7 +14,7 @@ public ref class Direct3DBackground sealed
 public:
    Direct3DBackground(CSwrapper ^_cs);
 
-	Windows::Phone::Graphics::Interop::IDrawingSurfaceBackgroundContentProvider^ CreateContentProvider();
+	Windows::Phone::Graphics::Interop::IDrawingSurfaceContentProvider^ CreateContentProvider();
 
 	event RequestAdditionalFrameHandler^ RequestAdditionalFrame;
 
@@ -26,11 +26,12 @@ public:
 	bool backKeyPress();
    static Direct3DBackground^ GetInstance();
    void RequestNewFrame();
-   
+
 	void OnPointerPressed(int x, int y);
    void OnPointerReleased(int x, int y);
    void OnPointerMoved(int x, int y);
    void OnKeyPressed(int key);
+   void OnManipulation(int type, double delta);
    void OnScreenChanged(int newKeyboardH, int newWidth, int newHeight);
    void lifeCycle(bool suspending);
 
@@ -38,16 +39,12 @@ protected:
 
 
 internal:
-	HRESULT Connect(_In_ IDrawingSurfaceRuntimeHostNative* host, _In_ ID3D11Device1* device);
-	void Disconnect();
-
-	HRESULT PrepareResources(_In_ const LARGE_INTEGER* presentTargetTime, _Inout_ DrawingSurfaceSizeF* desiredRenderTargetSize);
-	HRESULT Draw(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1* context, _In_ ID3D11RenderTargetView* renderTargetView);
+   HRESULT STDMETHODCALLTYPE PrepareResources(_Out_ BOOL* contentDirty);
+   Direct3DBase^ renderer;
+   CSwrapper ^cs;
 
 private:
-   CSwrapper ^cs;
-   ID3D11CommandList *currentCmdlist;
-   Direct3DBase^ renderer;
+   bool updateScreenCalledOnce;
 };
 
 }

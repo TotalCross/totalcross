@@ -2,6 +2,7 @@
 
 #include "DirectXHelper.h"
 #include "cswrapper.h"
+#include <DrawingSurfaceNative.h>
 
 #define HAS_TCHAR
 #include "tcvm.h"
@@ -89,19 +90,11 @@ ref class Direct3DBase
 {
 internal:
    Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^_cs);
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+   static Direct3DBase ^getLastInstance();
 
-   Platform::String^ alertMsg;
-   PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
-
-	bool updateScreenRequested;
-	void initialize(_In_ ID3D11Device1* device, bool resuming);
-	void createDeviceResources();
-   void updateDevice(_In_ ID3D11Device1* device, _In_ ID3D11DeviceContext1 *ic, _In_ ID3D11RenderTargetView* renderTargetView);
-	void preRender(); // resets the screen and set it ready to render
-   bool startProgramIfNeeded();
 	void updateScreen();
-
+   void updateDevice(IDrawingSurfaceRuntimeHostNative* host);
+   void updateScreenMatrix();
    void setProgram(whichProgram p);
    void deleteTexture(TCObject img, int32* textureId, bool updateList);
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
@@ -109,69 +102,56 @@ internal:
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
    void fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
-   void drawLineImpl(int x1, int y1, int x2, int y2, int color);
-   void fillRectImpl(int x1, int y1, int x2, int y2, int color);
-   void fillShadedRectImpl(int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz, int32* clip);
-   void drawTextureImpl(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip);
    void drawPixels(float *glcoords, float *glcolors, int count, int color);
-   void drawPixelsImpl(float *glcoords, float *glcolors, int count, int color);
    void setClip(int32* clip);
    void setColor(int color);
    void createTexture();
+   void getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch);
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
-   void swapLists();
-   D3DCommand newCommand();
-   static Direct3DBase ^getLastInstance();
-   int runCommands();
 
-   Microsoft::WRL::ComPtr<ID3D11DeviceContext1> d3dcontext;
+   ID3D11DeviceContext *d3dcontext, *d3dImedContext;
+   ID3D11CommandList *d3dCommandList;
+   PhoneDirect3DXamlAppComponent::CSwrapper ^csharp;
    bool updateScreenWaiting;
-   int rotatedTo;
    int sipHeight;
-   bool updateWS;
    bool minimized;
+   Microsoft::WRL::ComPtr<IDrawingSurfaceSynchronizedTextureNative> syncTex;
 
 private:
-   int renderPrepared;
+   void initialize();
+   void preRender(); // resets the screen and set it ready to render
+   void setBufAndLen(Platform::Array<byte>^ fileData, byte** buf, int* len, int completeValue);
    int loadCompleted;
    whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
-   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
    int lastPixelsCount;
-   D3D11_RECT clipRect;
    bool clipSet;
+   D3D11_RECT clipRect;
+   float clearColor[4]; // all 0
+	Context localContext;
+	bool vmStarted;
+   byte *vs1buf, *ps1buf, *vs2buf, *ps2buf, *vs3buf, *ps3buf;
+   int vs1len, ps1len, vs2len, ps2len, vs3len, ps3len;
 
-   VertexPosition *pixelsVertices;
+   // screen textures
+   ID3D11Texture2D *renderTex;
+   ID3D11RenderTargetView *renderTexView;
 
-   // texture
-   Microsoft::WRL::ComPtr<ID3D11SamplerState> texsampler;
-   ID3D11DepthStencilState* depthDisabledStencilState;
-   ID3D11BlendState* pBlendState;
-
-   Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
-   Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout, inputLayoutT, inputLayoutLC;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer, pixelsIndexBuffer, colorBuffer;
-   Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader, vertexShaderT, vertexShaderLC;
-   Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader, pixelShaderT, pixelShaderLC;
-   Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
-
+   D3D_FEATURE_LEVEL m_featureLevel;
+   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
+	ID3D11DepthStencilView* depthStencilView;
+   ID3D11Texture2D *depthStencil;
+   ID3D11SamplerState *texsampler;
+   ID3D11DepthStencilState *depthDisabledStencilState;
+   ID3D11BlendState *pBlendState;
+   ID3D11InputLayout *inputLayout, *inputLayoutT, *inputLayoutLC;
+   ID3D11Buffer *indexBuffer, *pixelsIndexBuffer;
+   ID3D11VertexShader *vertexShader, *vertexShaderT, *vertexShaderLC;
+   ID3D11PixelShader *pixelShader, *pixelShaderT, *pixelShaderLC;
+   ID3D11Buffer *constantBuffer;
    ProjectionConstantBuffer constantBufferData;
-   ID3D11RasterizerState1 *pRasterStateEnableClipping, *pRasterStateDisableClipping;
-
-protected private:
-	// Direct3D Objects.
-	Microsoft::WRL::ComPtr<ID3D11Device1> d3dDevice;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
-
-	// Cached renderer properties.
-	Windows::Foundation::Size renderTargetSize;
-
-	// TotalCross objects
-	Context local_context;
-	bool VMStarted;
-
-	// DrawCommand internal variables
+   ID3D11RasterizerState *pRasterStateEnableClipping, *pRasterStateDisableClipping;
+	ID3D11Device* d3dDevice;
 };
