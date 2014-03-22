@@ -9,32 +9,36 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.cipher;
 
 import java.security.GeneralSecurityException;
-
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
+import javax.crypto.spec.*;
 import totalcross.crypto.*;
 
 /**
  * This class implements the AES cryptographic cipher.
- *  <p>
-    If you get a <code>totalcross.crypto.CryptoException: Illegal key size</code>, you must
-    download the strong cryptography files from <a href='http://www.totalcross.com/etc/securejars.zip' class=mail>here</a> <b>AFTER</b>
-    understanding that you are elligible to do so as stated in <a href='http://java.sun.com/j2se/1.4.2/jre/README' class=mail>here</a> 
-    (search for 'Unlimited Strength Java Cryptography Extension' - installation instructions are inside that topic).
+ *
+ * <p>If you get a <code>totalcross.crypto.CryptoException: Illegal key size</code>, you must download the strong cryptography files from Oracle 
+ * site. In order to do that, go to the ReadMe file whole link is below the download link. In this file, search for "Unlimited Strength Java 
+ * Cryptography Extension" and follow the instructions. 
  */
 public class AESCipher extends Cipher
 {
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return "AES".
+    */
    public final String getAlgorithm()
    {
       return "AES";
    }
 
+   /**
+    * Returns the block length.
+    * 
+    * @return Always returns 16.
+    */
    public final int getBlockLength()
    {
       // Applet may support 16 or 32, like axtls

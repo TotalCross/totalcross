@@ -66,7 +66,8 @@ void Direct3DBackground::OnKeyPressed(int key)
 void Direct3DBackground::OnManipulation(int type, double delta)
 {
    int* pd = (int*)&delta;
-   eventQueuePush(MULTITOUCHEVENT_SCALE, type, pd[1],pd[0], 0);
+   if (!renderer->updateScreenWaiting) // boosts performance during drag 
+      eventQueuePush(MULTITOUCHEVENT_SCALE, type, pd[1], pd[0], 0);
 }
 
 void Direct3DBackground::OnScreenChanged(int newKeyboardH, int newWidth, int newHeight)

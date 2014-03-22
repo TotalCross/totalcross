@@ -17,6 +17,8 @@ public class ImageControlSample extends BaseContainer
       try
       {
          super.initUI();
+         isSingleCall = true;
+         
          setTitle("Scale with ImageControl");
          add(new Label("To Natasha"),CENTER,TOP);
          img = new Image("heart.png");

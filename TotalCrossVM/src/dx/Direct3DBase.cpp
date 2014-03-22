@@ -240,6 +240,9 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    buf = ps3buf; len = ps3len;
    DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderLC));
 
+   // reset variables
+   lastPixelsCount = 0;
+
    if (!vmStarted)
       std::thread([this]() {startProgram(localContext); }).detach(); // this will block until the application ends         
    vmStarted = true;
@@ -248,7 +251,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 
 void Direct3DBase::setColor(int color)
 {
-   if (color == lastRGB) return;
+   if (color == lastRGB || minimized) return;
    lastRGB = color;
    aa = ((color >> 24) & 0xFF) / 255.0f;
    rr = ((color >> 16) & 0xFF) / 255.0f;
@@ -271,6 +274,7 @@ void Direct3DBase::setColor(int color)
 
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+   if (minimized) return;
    int clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
    y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
@@ -301,6 +305,7 @@ void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h
 
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 {
+   if (minimized) return;
    y1 += glShiftY;
    y2 += glShiftY;
    VertexPosition cubeVertices[] = // position, color
@@ -326,6 +331,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 {
+   if (minimized) return;
    y1 += glShiftY;
    y2 += glShiftY;
    VertexPosition cubeVertices[] = // position, color
@@ -353,6 +359,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
 
 void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
 {
+   if (minimized) return;
    int i;
    int n = count * 2;
    VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
@@ -408,9 +415,10 @@ bool Direct3DBase::isLoadCompleted()
    return loadCompleted == TASKS_COMPLETED;
 }
 
-void Direct3DBase::lifeCycle(bool suspending)
+void Direct3DBase::lifeCycle(bool minimizing)
 {
-   postOnMinimizeOrRestore(minimized = suspending);
+   if (minimizing) minimized = true; // will be set to false in the ContentProvider
+   postOnMinimizeOrRestore(minimizing);
    if (minimized)
       recreateTextures();
 }
@@ -447,7 +455,7 @@ void Direct3DBase::preRender()
 
 void Direct3DBase::setProgram(whichProgram p)
 {
-   if (p == curProgram) return;
+   if (p == curProgram || minimized) return;
    lastRGB = 0xFAFFFFFF; // user may never set to this color
    curProgram = p;
    clipRect.right = -1;
@@ -480,9 +488,15 @@ void Direct3DBase::setProgram(whichProgram p)
 
 void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
 {
+   if (minimized) return;
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
    PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
+   if (!pt)
+   {
+      throwException(currentContext, OutOfMemoryError, "Cannot allocate memory for texture.");
+      return;
+   }
    ID3D11Texture2D *texture;
    D3D11_TEXTURE2D_DESC textureDesc = { 0 };
    textureDesc.Width = width;
@@ -532,6 +546,7 @@ static void swap(int32* a, int32* b)
 }
 void Direct3DBase::setClip(int32* clip)
 {
+   if (minimized) return;
    bool doClip = clip != null;
    if (!doClip && clipSet)
       d3dcontext->RSSetState(pRasterStateDisableClipping);
@@ -562,6 +577,7 @@ void Direct3DBase::setClip(int32* clip)
 
 void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
 {
+   if (minimized) return;
    ID3D11Texture2D *texture;
    ID3D11ShaderResourceView *textureView;
 
@@ -606,6 +622,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
 // its printed on screen. so, when it arrives here, its already empty.
 void Direct3DBase::getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch)
 {
+   if (minimized) return;
    ID3D11Texture2D *captureTexture;
    // Copy the renderTarget texture resource to my "captureTexture" resource
    D3D11_TEXTURE2D_DESC desc;
