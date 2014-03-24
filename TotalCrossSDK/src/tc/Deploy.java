@@ -394,8 +394,6 @@ public class Deploy
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
-            "   -ce or -wince : create the cab files for Windows CE\n" +
-            "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
