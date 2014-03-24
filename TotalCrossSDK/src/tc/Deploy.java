@@ -434,9 +434,6 @@ public class Deploy
                          "other locations): TOTALCROSS2_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
                          "LITEBASE_DEMO or LITEBASE_RELEASE (must point to LitebaseSDK folder).\n" +
             "   /r key  : Specify a registration key to be used to activate TotalCross when required\n" +
-            "   /s pass : Launch the BlackBerry SignatureTool and automatically sign the COD module\n" +
-            "             using the optional password. If no password is provided, the SignatureTool will\n" +
-            "             be launched and you will have to specify a password manually.\n" +
             "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n" +
             "   /v      : Verbose output for information messages\n" +
             "   /w      : Waits for a key press if an error occurs\n" +
@@ -444,10 +441,8 @@ public class Deploy
             "\n" +
             "   The easiest way to create an icon is to provide an 'appicon.gif' file of any SQUARE size (80x80 preferable) " +
             "and any palette, which will be automatically converted to the target icon sizes. Put the file in the src folder." +
-            "If you need better icons, you can create some bmp and png files with these sizes: icon15x9x8.bmp icon30x18x8.bmp icon22x22x8.bmp icon44x44x8.bmp (Palm OS), " +
-            "icon16x16x8.bmp icon32x32x8.bmp icon48x48x8.bmp (Windows CE/Windows 32), icon60x60.png (iPhone), icon80x80.png (BlackBerry), icon72x72.png (Android - use alpha channel on PNG for better appearance). " +
-            "Be careful with the palette of the bmp files, never use the MSPaint program; instead, get the bmp files that are in the etc/images folder and edit " +
-            "them in a software that keeps the original palette, like Photoshop and PaintShopPro." +
+            "If you need better icons, you can create some png files with these sizes: " +
+            "icon60x60.png (iPhone), icon72x72.png (Android); for all icons, use alpha channel on PNG for better appearance. " +
             "");
    }
 }
