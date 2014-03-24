@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
  /* java.math.BigDecimal -- Arbitrary precision decimals.
    Copyright (C) 1999, 2000, 2001, 2003, 2005, 2006 Free Software Foundation, Inc.
 
@@ -59,6 +57,12 @@ package totalcross.util;
 
 import totalcross.sys.*;
 
+/**
+ * Arbitrary-precision signed decimal numbers. A <code>BigDecimal</code> consists of an arbitrary precision integer <i>unscaled value</i> and a 
+ * 32-bit integer <i>scale</i>. If zero or positive, the scale is the number of digits to the right of the decimal point. If negative, the unscaled 
+ * value of the number is multiplied by ten to the power of the negation of the scale. The value of the number represented by the 
+ * <code>BigDecimal</code> is therefore <tt>(unscaledValue &times; 10<sup>-scale</sup>)</tt>.
+ */
 public class BigDecimal implements Comparable
 {
    private BigInteger intVal;
@@ -66,37 +70,66 @@ public class BigDecimal implements Comparable
    private int precision;
 
    /**
-    * The constant zero as a BigDecimal with scale zero.
+    * The constant zero as a <code>BigDecimal</code> with scale zero.
     */
    public static final BigDecimal ZERO = new BigDecimal(BigInteger.ZERO, 0);
 
    /**
-    * The constant one as a BigDecimal with scale zero.
+    * The constant one as a <code>BigDecimal</code> with scale zero.
     */
    public static final BigDecimal ONE = new BigDecimal(BigInteger.ONE, 0);
 
    /**
-    * The constant ten as a BigDecimal with scale zero.
+    * The constant ten as a <code>BigDecimal</code> with scale zero.
     */
    public static final BigDecimal TEN = new BigDecimal(BigInteger.TEN, 0);
 
-   /** RoundingMode */
+   /** 
+    * Rounding mode to round away from zero. 
+    */
    public static final int ROUND_UP = 0;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to round towards zero. 
+    */
    public static final int ROUND_DOWN = 1;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to round towards positive infinity. 
+    */
    public static final int ROUND_CEILING = 2;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to round towards negative infinity.
+    */
    public static final int ROUND_FLOOR = 3;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to round towards the "nearest neighbor" unless both neighbors are equidistant, in which case round up.
+    */
    public static final int ROUND_HALF_UP = 4;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to round towards the "nearest neighbor" unless both neighbors are equidistant, in which case round down.
+    */
    public static final int ROUND_HALF_DOWN = 5;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to round towards the "nearest neighbor" unless both neighbors are equidistant, in which case round towards the even neighbor.
+    */
    public static final int ROUND_HALF_EVEN = 6;
-   /** RoundingMode */
+   
+   /** 
+    * Rounding mode to assert that the requested operation has an exact result, hence no rounding is necessary. 
+    */
    public static final int ROUND_UNNECESSARY = 7;
 
+   /**
+    * Translates the string representation of a <code>BigDecimal</code> into a <code>BigDecimal</code> object.
+    *
+    * @param num The <code>BigDecimal</code> as a string.
+    * @throws InvalidNumberException If the given number is not a valid representation of a <code>BigDecimal</code>.
+    */
    public BigDecimal(String num) throws InvalidNumberException
    {
       int len = num.length();
@@ -168,10 +201,9 @@ public class BigDecimal implements Comparable
    }
 
    /**
-    * Constructs a new BigDecimal whose unscaled value is val and whose scale is zero.
+    * Constructs a new <code>BigDecimal</code> whose unscaled value is <code>val</code> and whose scale is zero.
     * 
-    * @param val
-    *           the value of the new BigDecimal
+    * @param val The value of the new <code>BigDecimal</code>.
     */
    public BigDecimal(int val)
    {
@@ -179,10 +211,9 @@ public class BigDecimal implements Comparable
    }
 
    /**
-    * Constructs a new BigDecimal whose unscaled value is val and whose scale is zero.
+    * Constructs a new <code>BigDecimal</code> whose unscaled value is <code>val</code> and whose scale is zero.
     * 
-    * @param val
-    *           the value of the new BigDecimal
+    * @param val The value of the new <code>BigDecimal</code>.
     */
    public BigDecimal(long val)
    {
@@ -190,10 +221,9 @@ public class BigDecimal implements Comparable
    }
 
    /**
-    * Constructs a BigDecimal whose unscaled value is num and whose scale is zero.
+    * Constructs a new <code>BigDecimal</code> whose unscaled value is <code>num</code> and whose scale is zero.
     * 
-    * @param num
-    *           the value of the new BigDecimal
+    * @param num The value of the new <code>BigDecimal</code>.
     */
    public BigDecimal(BigInteger num)
    {
@@ -201,10 +231,10 @@ public class BigDecimal implements Comparable
    }
 
    /**
-    * Constructs a BigDecimal whose unscaled value is num and whose scale is scale.
+    * Constructs a new <code>BigDecimal</code> whose unscaled value is <code>num</code> and with the given scale.
     * 
-    * @param num
-    * @param scale
+    * @param num The unscaled value of the new <code>BigDecimal</code>.
+    * @param scale The given scale.
     */
    public BigDecimal(BigInteger num, int scale)
    {
@@ -212,6 +242,14 @@ public class BigDecimal implements Comparable
       this.scale = scale;
    }
 
+   /**
+    * Translates a <code>double</code> into a <code>BigDecimal</code> which is the exact decimal representation of the <code>double</code>s binary 
+    * floating-point value. The scale of the returned <code>BigDecimal</code> is the smallest value such that 
+    * <tt>(10<sup>scale</sup> &times; val)</tt> is an integer.
+    * 
+    * @param num The number to be converted
+    * @throws InvalidNumberException If the number passed is infinite or NaN.
+    */
    public BigDecimal(double num) throws InvalidNumberException
    {
       long bits = Convert.doubleToLongBits(num);
@@ -263,6 +301,15 @@ public class BigDecimal implements Comparable
       }
    }
 
+   /**
+    * Translates a <code>long</code> value into a <code>BigDecimal</code> object with a scale of zero. This "static factory method"
+    * is provided in preference to a ({@code long}) constructor
+    * because it allows for reuse of frequently used
+    * {@code BigDecimal} values.
+    *
+    * @param val value of the {@code BigDecimal}.
+    * @return a {@code BigDecimal} whose value is {@code val}.
+    */
    public static BigDecimal valueOf(long val) throws InvalidNumberException
    {
       return valueOf(val, 0);
