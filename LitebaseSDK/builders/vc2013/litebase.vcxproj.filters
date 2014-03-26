@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{adb11e21-79bd-4d37-bccd-52168bf67631}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{4188d5a7-e1da-4e16-a45d-325cd6b8e881}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -12,95 +8,6 @@
     <Filter Include="Extras">
       <UniqueIdentifier>{dcdba20d-de60-41be-917d-c0785b78cdeb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Testsuite">
-      <UniqueIdentifier>{659769e6-5380-4574-8cc7-f620a2463e20}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.c">
-      <Filter>Testsuite</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h">
@@ -192,9 +99,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h">
-      <Filter>Testsuite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

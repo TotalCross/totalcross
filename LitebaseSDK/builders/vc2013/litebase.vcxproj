@@ -372,7 +372,7 @@
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>$(IntDir)litebase.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -492,10 +492,9 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <StructMemberAlignment>8Bytes</StructMemberAlignment>
       <PrecompiledHeaderOutputFile>$(IntDir)litebase.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -964,8 +963,8 @@
       <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/nm/ui/wp8;P:\gitrepo\angleproject\samples\gles2_book\Common;P:\gitrepo\angleproject\include;P:\gitrepo\angleproject\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LB_EXPORTS;LITTLE_ENDIAN;WIN32;WP8;DEBUG;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP;UNICODE;_UNICODE;_WINDLL;_USRDLL;$(PlatformTarget)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeaderOutputFile>$(IntDir)litebase.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -1124,120 +1123,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.c">
-      <CompileAsWinRT>false</CompileAsWinRT>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h" />
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h" />
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h" />
@@ -1268,7 +1153,6 @@
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h" />
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h" />
     <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h" />
-    <ClInclude Include="..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Litebase\LitebaseSDK\src\LitebaseParser.y" />
