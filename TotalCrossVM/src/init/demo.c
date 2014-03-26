@@ -38,12 +38,36 @@ bool getElapsed(int32 *value);
 bool setElapsed(int32 value);
 #else
 
+#ifdef WP8
+char demoFN[MAX_PATH];
+CharP getDemoFileName()
+{
+   if (demoFN[0] == 0)
+   {
+      char* c;
+      xstrcpy(demoFN, appPath);
+      xstrcat(demoFN, "\\vm.par");
+      while ((c = xstrchr(demoFN, '/')) != null)
+         *c = '\\';
+   }
+   return demoFN;
+}
+#endif
+
 bool getElapsed(int32 *value)
 {
    int32 err = 0;
 
-//XXX WP8 should not use registry
-#if defined WIN32 && ! defined WP8
+#ifdef WP8
+   FILE* f = fopen(getDemoFileName(), "rb");
+   if (f)
+   {
+      int n = fread(value, 1, 4, f);
+      if (n < 4)
+         *value = 0;
+      fclose(f);
+   }
+#elif defined WIN32
    uint32 size=4;
    HKEY handle=(HKEY)0;
    err = RegOpenKeyEx(HKEY_CURRENT_USER, getKey(), 0, KEY_READ, &handle);
@@ -61,8 +85,14 @@ bool setElapsed(int32 value)
 {
    int32 err = 0;
 
-//XXX WP8 should not use registry
-#if defined WIN32 && !defined WP8
+#ifdef WP8
+   FILE* f = fopen(getDemoFileName(), "wb");
+   if (f)
+   {
+      fwrite(&value, 4, 1, f);
+      fclose(f);
+   }
+#elif defined WIN32
    uint32 size=4;
    HKEY handle=(HKEY)0;
    err = RegCreateKeyEx(HKEY_CURRENT_USER, getKey(), 0, 0, 0, KEY_WRITE, 0, &handle, &size);
