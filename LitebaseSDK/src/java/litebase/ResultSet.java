@@ -634,8 +634,10 @@ public class ResultSet
                   tableAux.readValue(value, offsets[column], types[column], false, false); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+                  // juliana@270_31: Corrected bug of ResultSet.getStrings() don't working properly when there is a data function in the columns 
+                  // being fetched.
                   if (field.isDataTypeFunction)
-                     applyDataTypeFunction(field, field.parameter.dataType);
+                     applyDataTypeFunction(field, SQLElement.UNDEFINED);
                   else 
                      createString(types[column], decimals == null? - 1: decimals[column]);
                   
@@ -1052,6 +1054,75 @@ public class ResultSet
       return privateIsNull(col + 1); // Is the column null?  
    }
 
+   // juliana@270_30: added ResultSet.rowToString().
+   /**
+    * Transforms a <code>ResultSet</code> row in a string.
+    *
+    * @return Returns a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. With a column has a 
+    * <code>null</code> or empty value, the string will have two consecutive tabs "<code>\t\t</code>". Blobs are treated as nulls. 
+    * @throws DriverException If the ResultSet position is invalid or an <code>IOException</code> occurs.
+    */
+   public String rowToString() throws DriverException
+   {
+      verifyResultSet(); // The driver or result set can't be closed.
+      
+      if (pos < 0 || pos > lastRecordIndex) // The position of the cursor must be greater then 0 and less then the last position.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
+      
+      Table tableAux = table;
+      boolean isTemporary = (allRowsBitmap == null && !isSimpleSelect);
+      short[] offsets = tableAux.columnOffsets;
+      byte[] types = tableAux.columnTypes;
+      byte[] decimals = decimalPlaces;
+      byte[] nulls = tableAux.columnNulls[0];
+      SQLResultSetField[] rsFields = fields;
+      SQLResultSetField field;
+      SQLValue value = vrs;
+      int columns = rsFields.length,
+          column,
+          i = -1;
+      StringBuffer sBuffer = driver.sBuffer;
+      
+      sBuffer.setLength(0);
+      
+      while  (++i < columns)
+      {
+         field = rsFields[i];
+         if (isTemporary)
+            column = i;
+         else
+            column = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
+            
+         try
+         {
+            // Only reads the column if it is not null and not a BLOB.
+            if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
+            {
+               // juliana@220_3
+               tableAux.readValue(value, offsets[column], types[column], false, false); 
+               
+               // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+               if (field.isDataTypeFunction)
+                  applyDataTypeFunction(field, SQLElement.UNDEFINED);
+               else 
+                  createString(types[column], decimals == null? - 1: decimals[column]);
+               
+               sBuffer.append(value.asString).append('\t');
+            }
+            else
+               sBuffer.append('\t');
+         }
+         catch (InvalidDateException exception) {} // Never occurs.
+         catch (IOException exception)
+         {
+            throw new DriverException(exception);
+         }
+      }
+
+      sBuffer.setLength(sBuffer.length() - 1);
+      return sBuffer.toString();
+   }
+   
    /**
     * Returns a column value of the result set given its type and column index. DATE and DATETIME values will be returned as a single int or as a 
     * short and an int, respectivelly.

@@ -398,6 +398,15 @@ public class ResultSet4D
     */
    public native boolean isNull(String colName) throws NullPointerException;
 
+   // juliana@270_30: added ResultSet.rowToString().
+   /**
+    * Transforms a <code>ResultSet</code> row in a string.
+    *
+    * @return Returns a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. 
+    * @throws DriverException If the ResultSet position is invalid.
+    */
+   public native String rowToString() throws DriverException;
+   
    /**
     * Finalizes the <code>ResultSet</code> object.
     */

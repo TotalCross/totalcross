@@ -103,6 +103,13 @@ public class RowIterator4D
     * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
     */
    public native void setSynced();
+   
+   // juliana@270_29: added RowIterator.setNotSynced().
+   /**
+    * Forces the attribute to be NEW. This method will be useful if a row was marked as synchronized but was not sent to server for some problem.
+    * If the row is marked as DELETED, its attribute won't be changed.
+    */
+   public native void setNotSynced();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
