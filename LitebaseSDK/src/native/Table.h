@@ -629,7 +629,7 @@ bool setModified(Context context, Table* table);
  * @param high The second and greater number.
  * @return a pseudo-random number between them.
  */
-inline_ int32 randBetween(int32 low, int32 high);
+int32 randBetween(int32 low, int32 high);
 
 #ifdef ENABLE_TEST_SUITE
 
