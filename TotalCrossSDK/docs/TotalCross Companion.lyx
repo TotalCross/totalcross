@@ -5342,6 +5342,19 @@ When you generate a
 \family default
  of your application, which includes TotalCross and Litebase, you can install
  it yourself if you enable development mode on your device.
+ Follow the instructions in
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset CommandInset href
+LatexCommand href
+name "http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff769508(v=vs.105).aspx"
+target "http://msdn.microsoft.com/en-us/library/windowsphone/develop/ff769508(v=vs.105).aspx"
+
+\end_inset
+
+ in order to register your phone for development.
  To do this, firstly you MUST have a computer running a Windows 8.
  Then, you need to download and install Windows Phone SDK 8.0, which can
  be downloaded from 
