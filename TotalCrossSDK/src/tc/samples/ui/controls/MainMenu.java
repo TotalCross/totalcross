@@ -145,11 +145,10 @@ public class MainMenu extends BaseContainer
 
    private void showSample(int idx) throws Exception
    {
-      if (itemInstances[idx] == null)
-         itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
-      itemInstances[idx].show();
-      itemInstances[idx].setInfo("Press Back for main menu");
-      if (itemClasses[idx] == ImageControlSample.class || itemClasses[idx] == ListContainerSample.class || itemClasses[idx] == ProgressBarSample.class) // these samples will change each time it is called
+      BaseContainer c = itemInstances[idx] == null ? itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance() : itemInstances[idx];
+      c.show();
+      c.setInfo("Press Back for main menu");
+      if (c.isSingleCall)         
          itemInstances[idx] = null;
    }
 }

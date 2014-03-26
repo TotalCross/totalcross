@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.cipher;
 
 import totalcross.crypto.*;
@@ -18,12 +16,10 @@ import totalcross.io.ByteArrayStream;
 
 /**
  * This class provides the functionality of a cryptographic cipher for encryption
- * and decryption.
-    <p>
-    If you get a <code>totalcross.crypto.CryptoException: Illegal key size</code>, you must
-    download the strong cryptography files from <a href='http://www.totalcross.com/etc/securejars.zip' class=mail>here</a> <b>AFTER</b>
-    understanding that you are elligible to do so as stated in <a href='http://java.sun.com/j2se/1.4.2/jre/README' class=mail>here</a> 
-    (search for 'Unlimited Strength Java Cryptography Extension' - installation instructions are inside that topic).
+ *
+ * <p>If you get a <code>totalcross.crypto.CryptoException: Illegal key size</code>, you must download the strong cryptography files from Oracle 
+ * site. In order to do that, go to the ReadMe file whole link is below the download link. In this file, search for "Unlimited Strength Java 
+ * Cryptography Extension" and follow the instructions. 
  */
 public abstract class Cipher
 {
@@ -40,55 +36,72 @@ public abstract class Cipher
    private ByteArrayStream input = new ByteArrayStream(128);
    private byte[] oneByte = new byte[1];
    
-   /** Constant used to initialize cipher to encrypt. */
+   /** 
+    * Constant used to initialize cipher to encrypt. 
+    */
    public static final int OPERATION_ENCRYPT = 0;
    
-   /** Constant used to initialize cipher to decrypt. */
+   /** 
+    * Constant used to initialize cipher to decrypt. 
+    */
    public static final int OPERATION_DECRYPT = 1;
    
-   /** Constant used to initialize cipher using no chaining. */
+   /** 
+    * Constant used to initialize cipher using no chaining. 
+    */
    public static final int CHAINING_NONE = 0;
    
-   /** Constant used to initialize cipher using ECB chaining. */
+   /** 
+    * Constant used to initialize cipher using ECB chaining. 
+    */
    public static final int CHAINING_ECB = 1;
    
-   /** Constant used to initialize cipher using CBC chaining. */
+   /** 
+    * Constant used to initialize cipher using CBC chaining. 
+    */
    public static final int CHAINING_CBC = 2;
    
-   /** Constant used to initialize cipher using no padding. */
+   /** 
+    * Constant used to initialize cipher using no padding. 
+    */
    public static final int PADDING_NONE = 0;
    
-   /** Constant used to initialize cipher using PKCS #1 padding. */
+   /** 
+    * Constant used to initialize cipher using PKCS #1 padding. 
+    */
    public static final int PADDING_PKCS1 = 1;
    
-   /** Constant used to initialize cipher using PKCS #5 padding.<br> 
+   /** 
+    * Constant used to initialize cipher using PKCS #5 padding.<br> 
     * Comment about PKCS#5 padding:<br><br> 
     * 
-    * PKCS#5 padding is a padding scheme that always adds padding bytes even if the input 
-    * size is a multiple of the blocksize (ie. 16 bytes). The value of the padding bytes is the number
-    * of bytes added to get a multiple of the block size. Thus, once deciphered, you can immediately
-    * find out how many padding bytes have been added by looking the value of the last byte of 
-    * the output buffer. This is always true since there must always be at least one padding byte.<br><br>
+    * PKCS#5 padding is a padding scheme that always adds padding bytes even if the input size is a multiple of the block size (i. e. 16 bytes). The 
+    * value of the padding bytes is the number of bytes added to get a multiple of the block size. Thus, once deciphered, you can immediately find 
+    * out how many padding bytes have been added by looking the value of the last byte of the output buffer. This is always true since there must 
+    * always be at least one padding byte.<br><br>
     *   
-    * See http://tools.ietf.org/html/rfc3852#section-6.3 for more details.<br><br>
+    * See <a href='http://tools.ietf.org/html/rfc3852#section-6.3'>http://tools.ietf.org/html/rfc3852#section-6.3</a> for more details.<br><br>
     * 
-    * For instance, if you use PKCS#5 with a 16 bytes input buffer, 16 values of 0x10 will be added resulting in 2
-    * input blocks of 16 bytes each (32 bytes). Once deciphered, the 16 bytes padding block will be removed 
-    * to resume the initial 16 bytes input buffer.
+    * For instance, if you use PKCS#5 with a 16 bytes input buffer, 16 values of 0x10 will be added resulting in 2 input blocks of 16 bytes each 
+    * (32 bytes). Once deciphered, the 16 bytes padding block will be removed to return to the initial 16 bytes input buffer.
     */
    public static final int PADDING_PKCS5 = 2;
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return The name of the algorithm whose class heirs from Cipher. 
+    */
    public final String toString()
    {
       return getAlgorithm();
    }
    
    /**
-    * Returns the initialization vector (IV) in a new buffer. This is useful in the
-    * case where a random IV was created.
+    * Returns the initialization vector (IV) in a new buffer. This is useful in the case where a random IV was created.
     *  
-    * @return the initialization vector in a new buffer, or null if the underlying
-    * algorithm does not use an IV, or if the IV has not yet been set.
+    * @return The initialization vector in a new buffer, or <code>null</code> if the underlying algorithm does not use an IV, or if the IV has not 
+    * been set yet.
     */
    public final byte[] getIV()
    {
@@ -96,17 +109,13 @@ public abstract class Cipher
    }
    
    /**
-    * Initializes this cipher in encryption or decryption mode, without chaining
-    * or padding. If this algorithm requires an initialization vector, it will be
-    * generated using random values. Calling this method will also reset the input
-    * data buffer.
+    * Initializes this cipher in encryption or decryption mode, without chaining or padding. If this algorithm requires an initialization vector, it 
+    * will be generated using random values. Calling this method will also reset the input data buffer.
     * 
-    * @param operation the operation mode of this cipher (OPERATION_ENCRYPT or
-    * OPERATION_DECRYPT).
-    * @param key the key.
+    * @param operation The operation mode of this cipher (<code>OPERATION_ENCRYPT</code> or <code>OPERATION_DECRYPT</code>).
+    * @param key The key.
     * 
-    * @throws CryptoException if one or more initialization parameters are invalid
-    * or the cipher fails to initialize with the given parameters. 
+    * @throws CryptoException If one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters. 
     */
    public final void reset(int operation, Key key) throws CryptoException
    {
@@ -114,19 +123,15 @@ public abstract class Cipher
    }
    
    /**
-    * Initializes this cipher in encryption or decryption mode, with the given chaining
-    * mode and without a padding. If this algorithm requires an initialization vector,
-    * it will be generated using random values. Calling this method will also reset the input
-    * data buffer.
+    * Initializes this cipher in encryption or decryption mode, with the given chaining mode and without a padding. If this algorithm requires an 
+    * initialization vector, it will be generated using random values. Calling this method will also reset the input data buffer.
     * 
-    * @param operation the operation mode of this cipher (OPERATION_ENCRYPT or
-    * OPERATION_DECRYPT).
-    * @param key the key.
-    * @param chaining the chaining mode of this cipher (CHAINING_NONE, CHAINING_ECB or
-    * CHAINING_CBC).
+    * @param operation The operation mode of this cipher (<code>OPERATION_ENCRYPT</code> or <code>OPERATION_DECRYPT</code>).
+    * @param key The key.
+    * @param chaining The chaining mode of this cipher (<code>CHAINING_NONE</code>, <code>CHAINING_ECB</code>, or
+    * <code>CHAINING_CBC</code>).
     * 
-    * @throws CryptoException if one or more initialization parameters are invalid
-    * or the cipher fails to initialize with the given parameters.
+    * @throws CryptoException If one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters.
     */
    public final void reset(int operation, Key key, int chaining) throws CryptoException
    {
@@ -134,20 +139,17 @@ public abstract class Cipher
    }
    
    /**
-    * Initializes this cipher in encryption or decryption mode, with the given chaining
-    * mode, initialization vector and without a padding. If this algorithm requires an
-    * initialization vector and an invalid value was supplied, it will be generated using
-    * random values. Calling this method will also reset the input data buffer.
+    * Initializes this cipher in encryption or decryption mode, with the given chaining mode, initialization vector and without a padding. If this 
+    * algorithm requires an initialization vector and an invalid value was supplied, it will be generated using random values. Calling this method 
+    * will also reset the input data buffer.
     * 
-    * @param operation the operation mode of this cipher (OPERATION_ENCRYPT or
-    * OPERATION_DECRYPT).
-    * @param key the key.
-    * @param chaining the chaining mode of this cipher (CHAINING_NONE, CHAINING_ECB or
-    * CHAINING_CBC).
-    * @param iv the initialization vector.
+    * @param operation The operation mode of this cipher (<code>OPERATION_ENCRYPT</code> or <code>OPERATION_DECRYPT</code>).
+    * @param key The key.
+    * @param chaining The chaining mode of this cipher (<code>CHAINING_NONE</code>, <code>CHAINING_ECB</code>, or
+    * <code>CHAINING_CBC</code>).
+    * @param iv The initialization vector.
     * 
-    * @throws CryptoException if one or more initialization parameters are invalid
-    * or the cipher fails to initialize with the given parameters.
+    * @throws CryptoException if one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters.
     */
    public final void reset(int operation, Key key, int chaining, byte[] iv) throws CryptoException
    {
@@ -160,17 +162,14 @@ public abstract class Cipher
     * vector and an invalid value was supplied, it will be generated using random values.
     * Calling this method will also reset the input data buffer.
     * 
-    * @param operation the operation mode of this cipher (OPERATION_ENCRYPT or
-    * OPERATION_DECRYPT).
-    * @param key the key.
-    * @param chaining the chaining mode of this cipher (CHAINING_NONE, CHAINING_ECB or
-    * CHAINING_CBC).
-    * @param iv the initialization vector.
-    * @param padding the padding mode of this cipher (PADDING_NONE, PADDING_PKCS1 or
-    * PADDING_PKCS5).
+    * @param operation The operation mode of this cipher (<code>OPERATION_ENCRYPT</code> or <code>OPERATION_DECRYPT</code>).
+    * @param key The key.
+    * @param chaining The chaining mode of this cipher (<code>CHAINING_NONE</code>, <code>CHAINING_ECB</code>, or
+    * <code>CHAINING_CBC</code>).
+    * @param iv The initialization vector.
+    * @param padding The padding mode of this cipher (<code>PADDING_NONE</code>, <code>PADDING_PKCS1</code>, or <code>PADDING_PKCS5</code>).
     * 
-    * @throws CryptoException if one or more initialization parameters are invalid
-    * or the cipher fails to initialize with the given parameters.
+    * @throws CryptoException if one or more initialization parameters are invalid or the cipher fails to initialize with the given parameters.
     */
    public final void reset(int operation, Key key, int chaining, byte[] iv, int padding) throws CryptoException
    {
@@ -196,11 +195,10 @@ public abstract class Cipher
    }
    
    /**
-    * Updates the input data that will be processed by this cipher algorithm. The data
-    * will be accumulated in an input buffer to be processed when {@link #getOutput()}
-    * is finally called.
+    * Updates the input data that will be processed by this cipher algorithm. The data will be accumulated in an input buffer to be processed when 
+    * {@link #getOutput()} is finally called.
     * 
-    * @param data the input data.
+    * @param data The input data.
     */
    public final void update(int data)
    {
@@ -209,11 +207,10 @@ public abstract class Cipher
    }
    
    /**
-    * Updates the input data that will be processed by this cipher algorithm. The data
-    * will be accumulated in an input buffer to be processed when {@link #getOutput()}
-    * is finally called.
+    * Updates the input data that will be processed by this cipher algorithm. The data will be accumulated in an input buffer to be processed when 
+    * {@link #getOutput()} is finally called.
     * 
-    * @param data the input data.
+    * @param data The input data.
     */
    public final void update(byte[] data)
    {
@@ -221,13 +218,12 @@ public abstract class Cipher
    }
    
    /**
-    * Updates the input data that will be processed by this cipher algorithm. The data
-    * will be accumulated in an input buffer to be processed when {@link #getOutput()}
-    * is finally called.
+    * Updates the input data that will be processed by this cipher algorithm. The data will be accumulated in an input buffer to be processed when 
+    * {@link #getOutput()} is finally called.
     * 
-    * @param data the input data.
-    * @param start the offset in <code>data</code> where the data starts.
-    * @param count the input length.
+    * @param data The input data.
+    * @param start The offset in <code>data</code> where the data starts.
+    * @param count The input length.
     */
    public final void update(byte[] data, int start, int count)
    {
@@ -235,11 +231,10 @@ public abstract class Cipher
    }
    
    /**
-    * Finalizes the encryption or decryption operation (depending on how this cipher
-    * was initialized) by processing all the accumulated input data and returning the
-    * result in a new buffer.
+    * Finalizes the encryption or decryption operation (depending on how this cipher was initialized) by processing all the accumulated input data
+    * and returning the result in a new buffer.
     * 
-    * @return the operation result in a new buffer.
+    * @return The operation result in a new buffer.
     */
    public byte[] getOutput() throws CryptoException
    {
@@ -250,13 +245,16 @@ public abstract class Cipher
    }
    
    /**
-    * @return the algorithm name of this cipher. 
+    * Returns the name of the algorithm.
+    * 
+    * @return The name of the algorithm whose class heirs from Cipher. 
     */
    public abstract String getAlgorithm();
    
    /**
-    * @return the block length (in bytes), or 0 if the underlying algorithm is not a
-    * block cipher.
+    * Returns the block length.
+    * 
+    * @return The block length (in bytes), or 0 if the underlying algorithm is not a block cipher.
     */
    public abstract int getBlockLength();
    

@@ -74,7 +74,7 @@ static bool privateDebug(char* str)
          fflush(fdebug);
       }
    }
-#ifdef WP8
+#if defined(WP8) && defined(DEBUG)
    OutputDebugStringA(str);
    OutputDebugStringA("\n");
 #endif

@@ -14,6 +14,9 @@ public class MultitouchSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
+      isSingleCall = true;
+      
       if (!Settings.isOpenGL && !Settings.onJavaSE)
          add(new Label("This sample works only on iOS, Android and Windows Phone."),CENTER,CENTER);
       else

@@ -22,6 +22,7 @@ using System.Diagnostics;
 using Windows.UI.ViewManagement;
 using System.IO;
 using Windows.Storage;
+using System.IO.IsolatedStorage;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -34,6 +35,7 @@ namespace PhoneDirect3DXamlAppInterop
    {
       // Workarround vars
       Grid root;
+      bool setAutoOffCalled;
 
       // RadioDevice
       private int turnedState;
@@ -67,6 +69,10 @@ namespace PhoneDirect3DXamlAppInterop
       public int currentSipH;
       public bool sipVisible;
       private bool alertIsVisible;
+      // camera support
+      private CameraCaptureTask cameraCaptureTask;
+      private String cameraName;
+      private int cameraResult;
 
       public CSWrapper(Grid g)
       {
@@ -84,6 +90,48 @@ namespace PhoneDirect3DXamlAppInterop
             : new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0);  // to bottom
       }
 
+      void cameraCaptureTask_Completed(object sender, PhotoResult e)
+      {
+         if (e.TaskResult == TaskResult.Cancel)
+            cameraResult = 0;
+         else
+         if (e.TaskResult == TaskResult.OK)
+         {
+            String photoFullPath = e.OriginalFileName;
+            int idx = photoFullPath.LastIndexOf('\\');
+            String photoName = photoFullPath.Substring(idx + 1);
+            using (IsolatedStorageFile myIsolatedStorage = IsolatedStorageFile.GetUserStoreForApplication())
+            {
+               if (myIsolatedStorage.FileExists(photoName))
+                  myIsolatedStorage.DeleteFile(photoName);
+               IsolatedStorageFileStream fileStream = myIsolatedStorage.CreateFile(photoName);
+               e.ChosenPhoto.CopyTo(fileStream);
+               fileStream.Close();
+            }
+            cameraName = "device/" + photoName;
+            cameraResult = 1;
+         }
+      }
+      public void cameraClick()
+      {
+         if (cameraCaptureTask == null)
+         {
+            cameraCaptureTask = new CameraCaptureTask();
+            cameraCaptureTask.Completed += cameraCaptureTask_Completed;
+         }
+         cameraResult = -1;
+         cameraName = null;
+         cameraCaptureTask.Show();
+      }
+      public int cameraStatus()
+      {
+         return cameraResult;
+      }
+      public String cameraFilename()
+      {
+         return cameraName;
+      }
+      
       public bool isSipSet()
       {
          bool isPortrait = MainPage.isPortrait;
@@ -146,7 +194,9 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void vmSetAutoOffCS(bool enable) // Vm
       {
-         PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode = enable ? IdleDetectionMode.Enabled : IdleDetectionMode.Disabled;
+         if (!setAutoOffCalled)
+            PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode = enable ? IdleDetectionMode.Enabled : IdleDetectionMode.Disabled;
+         setAutoOffCalled = true;
       }
 
       public void dialNumberCS(String number) // Dial
@@ -194,6 +244,10 @@ namespace PhoneDirect3DXamlAppInterop
                   break;
                }
          }
+      }
+      public void appExit()
+      {
+         Application.Current.Terminate();
       }
 
       public bool nativeStartGPSCS() // GPS
@@ -405,7 +459,7 @@ namespace PhoneDirect3DXamlAppInterop
         void MainPage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
            e.Handled = true;
-           double scale = e.DeltaManipulation.Scale.Y;
+           double scale = isPortrait ? e.DeltaManipulation.Scale.Y : e.DeltaManipulation.Scale.X;
            if (scale != 0)
            {
               if (!manipulating)

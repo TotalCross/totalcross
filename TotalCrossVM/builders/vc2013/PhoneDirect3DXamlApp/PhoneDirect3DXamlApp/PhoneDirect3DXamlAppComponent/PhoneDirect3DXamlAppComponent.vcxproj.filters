@@ -531,6 +531,90 @@
     <ClCompile Include="..\..\..\..\..\src\sqlite\sqlite3.c">
       <Filter>TCVM\sqlite</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c">
+      <Filter>TCVM\Litebase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\tests\tc_testsuite.c">
+      <Filter>TCVM\Litebase\Testsuite</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\src\zlib\crc32.h">
@@ -901,6 +985,9 @@
     <ClInclude Include="..\..\..\..\..\src\dx\DirectXHelper.h" />
     <ClInclude Include="..\..\..\..\..\src\dx\PhoneDirect3DXamlAppComponent.h" />
     <ClInclude Include="..\..\..\..\..\src\dx\cswrapper.h" />
+    <ClInclude Include="..\..\..\..\..\src\tests\tc_testsuite.h">
+      <Filter>TCVM\Litebase\Testsuite</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="TCVM">
@@ -1061,6 +1148,12 @@
     </Filter>
     <Filter Include="TCVM\sqlite">
       <UniqueIdentifier>{10717db5-9cc4-4027-aaf4-53badceb14df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCVM\Litebase">
+      <UniqueIdentifier>{2b5cd908-aa7b-43f2-b881-280e478f5cd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCVM\Litebase\Testsuite">
+      <UniqueIdentifier>{ba401ef9-03a4-435a-9c39-43133c0d92af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

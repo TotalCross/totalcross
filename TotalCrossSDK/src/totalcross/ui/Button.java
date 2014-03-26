@@ -497,10 +497,13 @@ public class Button extends Control
       if (skipPaint) return;
       if (isAndroidStyle)
       {
-/*         g.getClip(clip);
-         g.backColor = parent.backColor;//g.getPixel(clip.x,clip.y); // use color painted by the parent
-         g.fillRect(0,0,width,height);
-*/      }
+         if (!Settings.isOpenGL)
+         {
+            g.getClip(clip);
+            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+            g.fillRect(0,0,width,height);
+         }
+      }
       else
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);
