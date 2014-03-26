@@ -1347,7 +1347,8 @@ class Table
                   else
                      vals[k++][0].asLong = i;
             }
-         
+            
+            rows = k; // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
             if (!index.isOrdered)
             {
                // A radix sort is done for integer types. It is much more efficient than quick sort.

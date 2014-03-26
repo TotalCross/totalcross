@@ -13,6 +13,10 @@
  * Declares functions to deal with important Litebase funcionalities.
  */
 
+#ifdef WP8
+#define inline 
+#endif
+
 #ifndef LITEBASE_H
 #define LITEBASE_H
 

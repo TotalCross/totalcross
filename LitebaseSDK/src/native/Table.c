@@ -1959,6 +1959,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 					(*values[k++])->asTime = i;
       }
 
+      rows = k; // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
 		if (!index->isOrdered)
 		{
          // A radix sort is done for integer types. It is much more efficient than quick sort.
@@ -2972,7 +2973,7 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
 
    // juliana@230_12
    return readValue(context, &table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db.basbuf, !*table->name, 
-                                                                             isBitSet(table->columnNulls, column), true, -1, null);
+                                                isBitSet(table->columnNulls, column), true, table->columnSizes[column], null);
 }
 
 /**
@@ -3254,7 +3255,7 @@ bool setModified(Context context, Table* table)
 }
 
 
-inline_ int32 randBetween(int32 low, int32 high)
+int32 randBetween(int32 low, int32 high)
 {
    TRACE("randBetween")
 

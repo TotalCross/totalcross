@@ -342,7 +342,7 @@ nbvspace[5]
 
 
 \backslash
-large  Version 2.63 
+large  Version 2.7 
 \end_layout
 
 \begin_layout Plain Layout
@@ -443,8 +443,8 @@ litebase.*
 
 \begin_layout Standard
 It is possible to run Litebase on desktop, either as a Java application,
- a Linux application, as a windows 2000 (and up) application, or on all
- the supported TotalCross platforms.
+ a Linux application, as a windows XP (and up) application, or on all the
+ supported TotalCross platforms.
  So, its easy to create table files on the desktop that can be later synchronize
 d with the device.
  The files created are interchangeable on all supported platforms.
@@ -544,15 +544,6 @@ photodb
 \family default
 : a small sample application showing how to use blobs to store and recover
  pictures in a database.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-conduit
-\family default
-: a conduit application to synchronize tables between the desktop and palm
- devices.
 \end_layout
 
 \begin_layout Itemize
@@ -760,25 +751,6 @@ ry).
  records have fixed-size length.
  A similar approach is used for blob fields: they are stored in the same
  file.
-\end_layout
-
-\begin_layout Standard
-When using Palm OS devices, it's now IMPOSSIBLE to synchronize data using
- hotsync since hotsync does not support the installation of anything besides
- pdb/prc (this is a stupid limitation).
- To bypass this problem, there is a conduit that will install the files
- in the flash-memory on device, and also get the data from it, just like
- hotsync.
- The 
-\family typewriter
-tablecopier
-\family default
-/
-\family typewriter
-LitebaseConduit
-\family default
- uses the Conduit API to perform this task.
- Please read the chapter that describes this program.
 \end_layout
 
 \begin_layout Standard
@@ -1498,9 +1470,8 @@ The table's file name is prefixed with the creator id.
 It is possible to use multiple connections.
  That is, it is possible to access two databases at the same time in different
  directories or in the same directory with different creator ids.
- When using Palm OS, Windows Mobile, BlackBerry and Android, it is possible
- to access tables in the flash memory and in the memory card at the same
- time.
+ When using Android, it is possible to access tables in the flash memory
+ and in the memory card at the same time.
 \end_layout
 
 \begin_layout Itemize
@@ -1584,14 +1555,14 @@ columns can be created, but it is much more efficient to use a short column
 
 \begin_layout Itemize
 The tables should not be opened at the same time by two different connections.
- On Java SE, BlackBerry, Windows 32, Windows Mobile, and Palm OS, a file
- cannot be opened twice at the same time.
+ On Java SE, Windows 32, and Windows Phone 8, a file cannot be opened twice
+ at the same time.
  So, an exception will be thrown if a table is opened at the same time by
  two different connections.
  This happens because these platforms don't allow a file to be opened twice
  at the same time.
- However, on Android, Linux, iPhone, and iPad it is possible to open a file
- twice at the same time.
+ However, on Android, Linux, and iOS it is possible to open a file twice
+ at the same time.
  Therefore, if a table is opened at the same time by two different connections,
  your application may behave unexpectedly.
  Table files should also not be opened while using the tables with Litebase
@@ -1604,9 +1575,8 @@ There are some limits that must be respected:
 
 \begin_deeper
 \begin_layout Itemize
-It is not possible to create a table with more than 128 columns, nor using
- more than 128 fields or columns in a clause on palm OS.
- On the other devices, this value can be up to 254.
+It is not possible to create a table with more than 254 columns, nor using
+ more than 254 fields or columns.
 \end_layout
 
 \begin_layout Itemize
@@ -1619,29 +1589,12 @@ A string field can't be declared to be have more than 65535 characters;
 
 \begin_layout Itemize
 It is not possible to create a table name with more than 23 characters.
- This limitation is due to the compatibility with Palm OS;
+ This limitation was due to the compatibility with old Palm OS and should
+ be removed in the near future.
 \end_layout
 
 \begin_layout Itemize
 A table can't have more than 32 composed indices;
-\end_layout
-
-\begin_layout Itemize
-It is not possible to open more than 256 files on Android, Linux, iPhone,
- and iPad.
- Therefore, if an error such as 
-\series bold
-
-\begin_inset Quotes sld
-\end_inset
-
-
-\series default
-Too many open files
-\begin_inset Quotes srd
-\end_inset
-
- occurs, the only solution is to close and reopen the connection with Litebase;
 \end_layout
 
 \begin_layout Itemize
@@ -1670,41 +1623,11 @@ Memory Card Support
 \end_layout
 
 \begin_layout Standard
-It is possible to store databases on memory cards on the devices that support
- it: Palm OS, Windows Mobile, BlackBerry, and Android.
- 
-\end_layout
-
-\begin_layout Standard
-Except for BlackBerry, it is NOT a good idea to create the tables on the
- card using the PDA: table writes are very much slower than in flash memory,
- and it will be noticeble that it is UNFEASIBLE to do that with even a few
- records.
- The idea is to create the databases using a desktop computer with a card
- reader.
- On BlackBerry, writing operations using the memory card are faster than
- using the main memory (flash).
- So, when using this device, it is highly recommended to create and populate
- the tables on the card and then copy the files to the main memory.
-\end_layout
-
-\begin_layout Standard
-On Palm OS, it is possible to use the memory card by giving its volume number
- in the data path passed to a new connection.
- Moreover, one can pass -1 as the volume number to use the last volume.
- To see how to store tables on it, take a look at the 
-\family typewriter
-TestPalmMemoryCard
-\family default
- test case.
-\end_layout
-
-\begin_layout Standard
-On BlackBerry, Android, and Windows Mobile, there is no slot.
- It is only necessary to pass the card path to the new connection or to
- the data path.
- If it is necessary to fetch Litebase tables from an Android device, it
- is a good idea to create the data base on the memory card by using the
+It is possible to store databases on memory cards on the device that supports
+ it.
+ Currently, only Android supports it.
+ If it is necessary to fetch Litebase tables or logs from an Android device,
+ it is a good idea to create the data base on the memory card by using the
  path 
 \family typewriter
 /sdcard
@@ -1718,37 +1641,21 @@ adb
 \end_layout
 
 \begin_layout Standard
-Finally, when using Palm OS devices, if slot 0 (zero) is used, the device
- will reset because it is not possible to store tables in the internal memory
- using Litebase.
-\end_layout
-
-\begin_layout Standard
-Example for Palm OS:
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-// Use LitebaseConnection.getInstance(<creator id>, path).
-\end_layout
-
-\begin_layout Plain Layout
-
-LitebaseConnection driver = LitebaseConnection.getInstance("Test", "-1:
-\backslash
-
-\backslash
-data");
-\end_layout
+Although Windows Phone 8 supports a memory card, it's read-only.
+ You can't create a database on it.
+ The only way to fetch database files and other application files is using
+ the Isolated Storage Explorer command-line tool for Windows Phone.
+ This is inside the Windows Phone SDK.
+ You can also use it to put files in the application folder on the device.
+ To know how to use it, read the following tutorial: 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh286408(v=vs.105).aspx"
+target "http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh286408(v=vs.105).aspx"
 
 \end_inset
 
-
+.
 \end_layout
 
 \begin_layout Subsection
@@ -2514,7 +2421,7 @@ Litebase
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.7
+1.7 to 2.1
 \end_layout
 
 \end_inset
@@ -2523,7 +2430,7 @@ Litebase
 \begin_inset Text
 
 \begin_layout Plain Layout
-2.7 2.7TC2
+2.7
 \end_layout
 
 \end_inset
@@ -12175,17 +12082,12 @@ DriverException
 null
 \family default
  is passed as this parameter, the default folder will be used.
- For Java and BlackBerry, the default path is 
+ For Java, the default path is 
 \family typewriter
 Settings.dataPath
 \family default
 .
- For Palm OS, the default is 
-\family typewriter
-/Litebase_DBs/
-\family default
-.
- Finally, for the other systems, the default path is given by 
+ For the other systems, the default path is given by 
 \family typewriter
 Settings.appPath
 \family default
@@ -12257,7 +12159,7 @@ getInstance()
 
 \begin_layout Standard
 A very important thing to be noticed is that two different connections will
- be created on Java SE and on BlackBerry if one of the 
+ be created on Java SE if one of the 
 \family typewriter
 getInstance()
 \family default
@@ -12295,12 +12197,7 @@ getSourcePath
 \begin_layout Standard
 Returns the source path used by the Litebase connection.
  This path is where the tables of this connection are stored.
- This path won't return the slot used on Palm OS.
- To see the slot being used, use 
-\family typewriter
-LitebaseConnection.getSlot()
-\family default
-.
+ 
 \end_layout
 
 \begin_layout Subsection
@@ -15975,8 +15872,9 @@ Returns:
 \end_layout
 
 \begin_layout Itemize
-The slot being used on Palm OS.
- On the other devices, it returns -1.
+Deprecated .
+ It was the slot being used on Palm OS.
+ It just returns -1.
 \end_layout
 
 \begin_layout Subsection
@@ -16075,8 +15973,8 @@ sourcePath
 \family typewriter
 slot
 \family default
-: The slot on Palm OS where the source path folder is stored.
- Ignored on the other platforms.
+: It was the slot on Palm OS where the source path folder was stored.
+ Not used anymore.
 \end_layout
 
 \begin_layout Labeling
@@ -19250,6 +19148,52 @@ true
 false
 \family default
 , otherwise.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+rowToString()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String 
+\series bold
+rowToString
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Returns a whole current row of a 
+\family typewriter
+ResultSet
+\family default
+ in a string with column data separated by tab.
+ With a column has a 
+\family typewriter
+null
+\family default
+ or empty value, the string will have two consecutive tabs (
+\begin_inset Quotes sld
+\end_inset
+
+
+\family typewriter
+
+\backslash
+t
+\backslash
+t
+\family default
+
+\begin_inset Quotes srd
+\end_inset
+
+).
+ Blobs are treated as nulls.
 \end_layout
 
 \begin_layout Section
@@ -22516,6 +22460,47 @@ false
 , otherwise.
 \end_layout
 
+\begin_layout Subsection
+
+\family typewriter
+setNotSynced()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public void 
+\series bold
+setNotSynced
+\series default
+() 
+\end_layout
+
+\begin_layout Standard
+If the attribute is currently 
+\family typewriter
+SYNCED
+\family default
+ or 
+\family typewriter
+UPDATED
+\family default
+, this method sets them to 
+\family typewriter
+NEW
+\family default
+.
+ Note that if the row is 
+\family typewriter
+DELETED
+\family default
+, the change will be ignored.
+ That is, deleted rows will not be resurrected.
+ This method will be useful if a row was marked as synchronized but was
+ not sent to server for some problem.
+ Use this carefully.
+\end_layout
+
 \begin_layout Chapter
 Migration from Different Table Formats
 \begin_inset CommandInset label
@@ -22639,576 +22624,6 @@ status open
 
 \end_layout
 
-\begin_layout Chapter
-Litebase Conduit
-\end_layout
-
-\begin_layout Section
-Palm OS
-\end_layout
-
-\begin_layout Standard
-Since HotSync does not support the installation of anything besides 
-\family typewriter
-.pdb
-\family default
- and 
-\family typewriter
-.prc
-\family default
- files, it's impossible to synchronize the Litebase files without a Conduit
- built specifically for this purpose.
-\end_layout
-
-\begin_layout Standard
-Litebase Conduit (
-\family typewriter
-samples.sys.tablecopier.LitebaseConduit
-\family default
-) uses the Conduit API to perform this task, allowing the installation and
- retrieval of Litebase files during the HotSync.
-\end_layout
-
-\begin_layout Standard
-Requirements:
-\end_layout
-
-\begin_layout Standard
-HotSync Manager version 6.0.1.
- (It may work with older or newer versions, but officially only this version
- of the HotSync Manager is supported).
- For Windows Vista and 7, one can try using a newer HotSync Manager version
- or running version 6.0.1 on a XP emulator.
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-LitebaseConduit.prc
-\family default
- must be installed on the device.
- The Litebase installer for Palm OS already includes this file.
-\end_layout
-
-\begin_layout Section
-Win CE and Windows Mobile
-\end_layout
-
-\begin_layout Standard
-Unlike PALM OS devices, it is possible to manually install and retrieve
- the Litebase files from WinCE and Windows Mobile devices.
- Litebase Conduit automates this task, synchronizing the Litebase files
- every time the device is connected to the computer and detected by the
- device management software.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Requirements:
-\end_layout
-
-\begin_layout Itemize
-On Windows Vista and 7, the latest version of Windows Mobile Center is required.
-\end_layout
-
-\begin_layout Itemize
-Previous Windows versions (Windows 2000 and above) require the installation
- of the Microsoft ActiveSync.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Frameless
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100col%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Plain Layout
-ATTENTION: Make sure the device is supported by Windows Mobile Center, or
- that the appropriate version of Microsoft ActiveSync is being used before
- using Litebase Conduit.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Usage
-\end_layout
-
-\begin_layout Itemize
-There are the following folders on device and on desktop:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-On device:
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-
-\backslash
-Litebase_DBs
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-On desktop:
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-c:
-\backslash
-Litebase_DBs
-\backslash
-from
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-c:
-\backslash
-Litebase_DBs
-\backslash
-to
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-These folders will be created on the first time Litebase Conduit is run.
- The 
-\family typewriter
-from
-\family default
- and 
-\family typewriter
-to
-\family default
- folders are relative to device, so: 
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
-from
-\family default
- means from pda to desktop.
- The files from the folder (
-\family typewriter
-
-\backslash
-Litebase_DBs
-\family default
-) on the PDA will be copied to the folder (
-\family typewriter
-c:
-\backslash
-Litebase_DBs
-\backslash
-from
-\family default
-) on the desktop;
-\end_layout
-
-\begin_layout Enumerate
-
-\family typewriter
-to
-\family default
- means to pda from desktop.
- The files from the folder (
-\family typewriter
-c:
-\backslash
-Litebase_DBs
-\backslash
-to
-\family default
-) on the desktop will be copied to the folder (
-\family typewriter
-
-\backslash
-Litebase_DBs
-\family default
-) on the PDA;
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-Litebase Conduit is available with the LitebaseSDK on the path:
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-(LitebaseSDK folder)
-\backslash
-dist
-\backslash
-samples
-\backslash
-LitebaseConduit
-\backslash
-install
-\backslash
-win32
-\family default
-
-\begin_inset Newline newline
-\end_inset
-
-(The default path is 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-C:
-\backslash
-LitebaseSDK
-\backslash
-dist
-\backslash
-samples
-\backslash
-LitebaseConduit
-\backslash
-install
-\backslash
-win32
-\family default
-)
-\end_layout
-
-\begin_layout Itemize
-Litebase Conduit is configured using the Conduit command line options:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-
-\family typewriter
-/rp
-\family default
-  Registers the conduit for Palm OS devices.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/rw
-\family default
-  Registers the conduit for WinCE and Windows Mobile devices.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/ra
-\family default
-  Registers the conduit for Palm OS, WinCE and Windows Mobile devices.
- (It's the same as running the conduit twice with the options 
-\family typewriter
-/rp
-\family default
- and 
-\family typewriter
-/rw
-\family default
-).
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/sp
-\family default
-  Synchronizes the files from a Palm OS device.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/sw
-\family default
-  Synchronizes the files from a WinCE or Windows Mobile device.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/cp
-\family default
-, 
-\family typewriter
-/cw
-\family default
- or 
-\family typewriter
-/ca
-\family default
-  Shows Litebase Conduit configuration window.
- This configuration is shared to all registered platforms, so it doesn't
- matter which of the three options is used.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/up
-\family default
-  Unregisters the conduit for Palm OS devices.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/uw
-\family default
-  Unregisters the conduit for WinCE and Windows Mobile devices.
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-/ua
-\family default
-  Unregisters the conduit for Palm OS, WinCE and Windows Mobile devices.
- (It's the same as running the conduit twice with the options 
-\family typewriter
-/up
-\family default
- and 
-\family typewriter
-/uw
-\family default
-).
-\end_layout
-
-\end_deeper
-\begin_layout Standard
-Although one can use the 
-\family typewriter
-/sp
-\family default
- or the 
-\family typewriter
-/sw
-\family default
- options to force a synchronization, this is not necessary.
- The Litebase files will be automatically synchronized whenever a Palm OS
- device performs a HotSync operation, or a WinCE/Windows Mobile device is
- connected to the computer and detected by the device management software.
-\end_layout
-
-\begin_layout Standard
-If there is a HotSync installed, it is possible to open the Litebase Conduit
- configuration window through the Customize menu option (
-\emph on
-Personalizar
-\emph default
- in portuguese).
- Look for the LitebaseConduit entry and double-click it, or click on the
- button labeled Change (
-\emph on
-Mudar
-\emph default
- in portuguese).
-\end_layout
-
-\begin_layout Standard
-On TotalCross, Conduit is an abstract class which extends 
-\family typewriter
-totalcross.ui.MainWindow
-\family default
-.
- A conduit application must extend this class and implement the methods
- 
-\family typewriter
-protected abstract void doConfig()
-\family default
- and 
-\family typewriter
-protected abstract void doSync()
-\family default
-.
- These methods are used to handle the two states of a conduit: configuration
- and synchronization.
- In the Palm Desktop Conduits, the configuration occurs when the user selects
- the customize option from the HotSync menu icon.
- The synchronization happens when the user presses the hotsync button on
- the cradle or on the PDA.
-\end_layout
-
-\begin_layout Standard
-The user interface creation must be handled inside the two conduit methods.
- A good way to separate the synchronization's logic from the configuration's
- is to create two classes that extend 
-\family typewriter
-totalcross.ui.container
-\family default
- and implement the logic inside each class.
- In the methods 
-\family typewriter
-doConfig()
-\family default
- and 
-\family typewriter
-doSync()
-\family default
- a swap to these classes must be done.
-\end_layout
-
-\begin_layout Standard
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-public class LitebaseConduit extends Conduit
-\end_layout
-
-\begin_layout Plain Layout
-
-{
-\end_layout
-
-\begin_layout Plain Layout
-
-	static
-\end_layout
-
-\begin_layout Plain Layout
-
-	{
-\end_layout
-
-\begin_layout Plain Layout
-
-		totalcross.sys.Settings.applicationId = "LBcn";
-\end_layout
-
-\begin_layout Plain Layout
-
-	}
-\end_layout
-
-\begin_layout Plain Layout
-
-	public LitebaseConduit()
-\end_layout
-
-\begin_layout Plain Layout
-
-	{
-\end_layout
-
-\begin_layout Plain Layout
-
-		super("LitebaseConduit", "LBcn", "TotalCross/AllTests", 
-\end_layout
-
-\begin_layout Plain Layout
-
-		TAB_ONLY_BORDER);
-\end_layout
-
-\begin_layout Plain Layout
-
-	}
-\end_layout
-
-\begin_layout Plain Layout
-
-	protected void doConfig()
-\end_layout
-
-\begin_layout Plain Layout
-
-	{
-\end_layout
-
-\begin_layout Plain Layout
-
-		setTitle("Litebase Conduit - Configuration");
-\end_layout
-
-\begin_layout Plain Layout
-
-		swap(new SetupPanel());
-\end_layout
-
-\begin_layout Plain Layout
-
-	}
-\end_layout
-
-\begin_layout Plain Layout
-
-	protected void doSync()
-\end_layout
-
-\begin_layout Plain Layout
-
-	{
-\end_layout
-
-\begin_layout Plain Layout
-
-		setTitle("Litebase Conduit - Synchronization");
-\end_layout
-
-\begin_layout Plain Layout
-
-		SyncPanel sp = new SyncPanel();
-\end_layout
-
-\begin_layout Plain Layout
-
-		sp.targetAppPath = this.targetAppPath;
-\end_layout
-
-\begin_layout Plain Layout
-
-		swap(sp);
-\end_layout
-
-\begin_layout Plain Layout
-
-	}
-\end_layout
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The application and the conduit must have the same application creator ID,
- which should be used in the creation and registration of the conduit.
- 
-\end_layout
-
 \begin_layout Part
 APPENDIXES 
 \end_layout
@@ -23235,486 +22650,75 @@ The use of the source code examples is only permitted by the company that
 News
 \end_layout
 
+\begin_layout Itemize
+Removed everything concerning BlackBerry, Palm OS, and Windows CE, since
+ these platfroms are not supported anymore.
+\end_layout
+
+\begin_layout Itemize
+Added information concerning Windows Phone 8 memory card, which can't be
+ used to create databases.
+ 
+\end_layout
+
 \begin_layout Section
-Table Format
+ResultSet
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+rowToString()
 \end_layout
 
 \begin_layout Standard
-All database data is written directly to the non-volatile memory (AKA flash-memo
-ry).
- In the past, each database table file could have at most four kinds of
- files: 
+
 \family typewriter
-.db
-\family default
- (table header and data), 
+public String 
+\series bold
+rowToString
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Returns a whole current row of a 
 \family typewriter
-.dbo
+ResultSet
 \family default
- (database objects), 
+ in a string with column data separated by tab.
+ With a column has a 
 \family typewriter
-.idk
+null
 \family default
- (index keys), and 
+ or empty value, the string will have two consecutive tabs (
+\begin_inset Quotes sld
+\end_inset
+
+
 \family typewriter
-.idr
+
+\backslash
+t
+\backslash
+t
 \family default
- (index repetitions).
- There would be an 
-\family typewriter
-.idk
-\family default
- file for each index and an 
-\family typewriter
-.idr
-\family default
- file if the index field has repeated data.
- Otherwise, the 
-\family typewriter
-.idr
-\family default
- file would be missing.
- On the current versions, the 
-\family typewriter
-.idr
-\family default
- files do not exist anymore.
- It makes index searches faster.
- On the other hand, if there are too many key repetitions, an index that
- was possible to be created in previous versions may not be able to be created
- with the current versions because the number of maximum index keys may
- exceed even though the maximum number of keys have been duplicated.
- The string fields of a table are stored in a separate file (
-\family typewriter
-.dbo
-\family default
+
+\begin_inset Quotes srd
+\end_inset
+
 ).
- This was necessary to save space from the records, since strings may use
- much less space than the one declared when creating a table and all the
- records have fixed-size length.
- A similar approach is used for blob fields: they are stored in the same
- file.
+ Blobs are treated as nulls.
 \end_layout
 
 \begin_layout Section
-Cryptography
-\end_layout
-
-\begin_layout Standard
-If the application demands that no one can find anything meaningful when
- opening a table file, simple cryptography can be used.
- This makes Litebase operations a little bit slower.
- However, information is safer.
- Notice that a table that uses cryptography can't be used in a connection
- that does not use cryptography and vice-versa.
- 
-\end_layout
-
-\begin_layout Standard
-To use ASCII tables or cryptography, the parameters must have the format:
- 
-\family typewriter
-
-\begin_inset Newline newline
-\end_inset
-
-chars_type = type; path = path_name[; crypto]
-\family default
-
-\begin_inset Newline newline
-\end_inset
-
-where 
-\family typewriter
-chars_type
-\family default
- can be 
-\family typewriter
-ascii
-\family default
- to store ASCII strings or 
-\family typewriter
-unicode
-\family default
- to use unicode strings in the tables, path has the same format of the preceding
- case, and 
-\family typewriter
-crypto
-\family default
- must be used if the tables of the connection use cryptography.
- It is also possible to use just one parameter (
-\family typewriter
-chars_type = type
-\family default
-, 
-\family typewriter
-path = path_name
-\family default
-, or 
-\family typewriter
-crypto
-\family default
-) or combinations of two parameters.
- The parameters can be entered in any order.
- If only the path is passed, the default format is unicode and no cryptography
- is used.
- This is also the format used for the above versions of this method.
-\end_layout
-
-\begin_layout Section
-Logging and Debugging
-\end_layout
-
-\begin_layout Itemize
-To reduce log size, one can omit Litebase operations that don't change the
- database.
- These includes:
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.executeQuery()
-\family default
-;
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.getCurrentRowId()
-\family default
-; 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.getRowCount()
-\family default
-;
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.getRowCountDeleted()
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.getRowIterator()
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.prepareStatement()
-\family default
-, and 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-PreparedStatement.executeQuery()
-\family default
-.
-\end_layout
-
-\begin_layout Standard
-To do that, it is only necessary to set 
-\family typewriter
-LitebaseConnection.logOnlyChanges
-\family default
- to true.
- This is interesting when some error occurs that corrupts the database after
- a long system run.
- Since the operations listed above don't change the database, they can't
- cause table or index corruption (the most usual Litebase problem).
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-If the default logger is used, it will be saved in 
-\family typewriter
-Settings.appPath
-\family default
-.
- On Android, it is not always possible to fetch the log file unless changing
- some access permissions or even rooting the device.
- Since this may be undesirable, the log file can be saved on the external
- card so that it can be easily fetched.
- In order to change its place, it is necessary to create it using 
-\family typewriter
-totalCross.util.Logger
-\family default
-.
- Here is an example for Android using the default path for the external
- card:
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-File log = new File(Convert.appendPath("/sdcard/", "Litebase_" + new Time().getTim
-eLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, -1);
-\end_layout
-
-\begin_layout Plain Layout
-
-LitebaseConnection.logger = Logger.getLogger("litebase", -1, log);
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-ResultSetMetaData
+RowIterator
 \end_layout
 
 \begin_layout Subsection
 
 \family typewriter
-getDefaultValue()
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-public String 
-\series bold
-getDefaultValue
-\series default
-(int columnIndex) 
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Parameters: 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-columnIdx
-\family default
-: The column index (starting at 1).
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Returns:
-\end_layout
-
-\begin_layout Itemize
-The default value of the column as a string or 
-\family typewriter
-null
-\family default
- if it does not have a default value.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Throws:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-DriverException
-\family default
-: If the column does not have an underlining table column, such as 
-\family typewriter
-count(*)
-\family default
-.
-\end_layout
-
-\begin_layout Subsection
-
-\family typewriter
-getDefaultValue()
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-public String 
-\series bold
-getDefaultValue
-\series default
-(String columnName) 
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Parameters: 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-columnName
-\family default
-: The column name or alias.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Returns:
-\end_layout
-
-\begin_layout Itemize
-The default value of the column as a string or 
-\family typewriter
-null
-\family default
- if it does not have a default value.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Throws:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-DriverException
-\family default
-: If the column does not have an underlining table column, such as 
-\family typewriter
-count(*)
-\family default
-.
-\end_layout
-
-\begin_layout Subsection
-
-\family typewriter
-getPKColumnIndices()
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-public byte[] 
-\series bold
-getPKColumnIndices
-\series default
-(String tableName)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Parameters: 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-tableName
-\family default
-: The table name or alias.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Returns:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-null
-\family default
- if the given table does not have primary key or an array with the column
- indices of the primary key.
-\end_layout
-
-\begin_layout Standard
-Throws:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-DriverException
-\family default
-: If the given table name is not part of the query of this result set.
-\end_layout
-
-\begin_layout Subsection
-
-\family typewriter
-getPKColumnNames()
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-public String[] 
-\series bold
-getPKColumnNames
-\series default
-(String tableName)
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Parameters: 
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-tableName
-\family default
-: The table name or alias.
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
-Returns:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-null
-\family default
- if the given table does not have primary key or an array with the column
- names of the primary key.
-\end_layout
-
-\begin_layout Standard
-Throws:
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-DriverException
-\family default
-: If the given table name is not part of the query of this result set.
-\end_layout
-
-\begin_layout Section
-PreparedStatement
-\end_layout
-
-\begin_layout Subsection
-
-\family typewriter
-close()
+setNotSynced()
 \end_layout
 
 \begin_layout Standard
@@ -23722,77 +22726,34 @@ close()
 \family typewriter
 public void 
 \series bold
-close
+setNotSynced
 \series default
-()
+() 
 \end_layout
 
 \begin_layout Standard
-Closes a prepared statement.
- This is important if the application creates too many prepared statements
- during one run, since they are only closed if their connection is closed.
-\end_layout
-
-\begin_layout Subsection
-
+If the attribute is currently 
 \family typewriter
-isValid()
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-public boolean 
-\series bold
-isValid
-\series default
-()
-\end_layout
-
-\begin_layout Standard
-Checks if a prepared statement is still valid.
- This happens if the driver and the prepared statement have not been closed
- and the table was not dropped.
- 
-\end_layout
-
-\begin_layout Section
-Other Changes
-\end_layout
-
-\begin_layout Itemize
-
-\family typewriter
-LitebaseConnection.exists()
+SYNCED
 \family default
- now throws a 
+ or 
 \family typewriter
-DriverException
+UPDATED
 \family default
- If the 
+, this method sets them to 
 \family typewriter
-.db
+NEW
 \family default
- file exists but not the 
+.
+ Note that if the row is 
 \family typewriter
-.dbo
+DELETED
 \family default
- file.
-\end_layout
-
-\begin_layout Itemize
-Added 
-\family typewriter
-ALTER TABLE ADD
-\family default
- column, which adds a column to a table.
- The syntax is similar to a column declaration when a table is being created.
- However, it is not possible to add a column declaring it a primary key,
- because all rows will have the same value, being null or equal to the declared
- default value, which violates the primary key constraints.
- Moreover, if the column is declared as not null, there must be a default
- value different from null, because otherwise all the rows would have a
- null value in the new column.
+, the change will be ignored.
+ That is, deleted rows will not be resurrected.
+ This method will be useful if a row was marked as synchronized but was
+ not sent to server for some problem.
+ Use this carefully.
 \end_layout
 
 \end_body
