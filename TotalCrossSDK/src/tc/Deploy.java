@@ -82,6 +82,9 @@ public class Deploy
             System.out.println("TCZ file created, but no target platforms specified. Type \"java tc.Deploy\" for help.");
          else
          {
+            if (DeploySettings.etcDir == null || !new File(DeploySettings.etcDir).exists())
+               throw new DeployerException("Can't find path for etc folder. Add TotalCrossSDK to the classpath or set the TOTALCROSS_HOME environment variable.");
+
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first

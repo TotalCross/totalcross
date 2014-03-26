@@ -63,6 +63,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <math.h>
 
 #if defined(DISABLE_RAS)
 #include "../init/noras_ids/noras.inc"
