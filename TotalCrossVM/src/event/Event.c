@@ -45,10 +45,8 @@ static void checkTimer(Context currentContext)
    }
 }
 
-#define INITIAL_TICK 5000
-
 #ifdef ENABLE_DEMO
-static int32 demoTick = INITIAL_TICK;
+static int32 demoTick;
 #endif
 extern bool wokeUp();
 #ifdef WINCE
@@ -83,7 +81,10 @@ static bool pumpEvent(Context currentContext)
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
 #ifdef ENABLE_DEMO
-   if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
+   {
+      int32 cur = getTimeStamp();
+      if ((cur-demoTick) > 15000) { demoTick = cur; updateDemoTime(); } // update after 15 seconds
+   }
 #endif
 sleep:
 #ifndef darwin   
