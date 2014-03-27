@@ -34,6 +34,7 @@ import android.os.*;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.*;
+import android.content.res.*;
 
 public class CameraViewer extends Activity // guich@tc126_34
 {
@@ -42,7 +43,23 @@ public class CameraViewer extends Activity // guich@tc126_34
       Preview(Context context)
       {
          super(context);
-         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+		 if (allowRotation) 
+		 { 
+			switch (getResources().getConfiguration().orientation)
+			{
+			   case Configuration.ORIENTATION_PORTRAIT:
+			      setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				  break;
+			   case Configuration.ORIENTATION_LANDSCAPE:
+			      AndroidUtils.debug("" + getWindowManager().getDefaultDisplay().getRotation());
+			      if (getWindowManager().getDefaultDisplay().getRotation() == Surface.ROTATION_270)
+				     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE); 
+				  else 
+				     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
+		    }
+		 }
+		 else
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
          // Install a SurfaceHolder.Callback so we get notified when the
          // underlying surface is created and destroyed.
          holder = getHolder(); 
@@ -68,7 +85,36 @@ public class CameraViewer extends Activity // guich@tc126_34
       { 
          if (camera != null)
          {
-            Camera.Parameters parameters=camera.getParameters();
+            Camera.Parameters parameters = camera.getParameters();
+			
+   			Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(cameraId, info);
+            int rotation = getWindowManager().getDefaultDisplay().getRotation();
+            int degrees = 0;
+            switch (rotation) 
+            {
+               case Surface.ROTATION_0: 
+                  degrees = 0; 
+                  break;
+               case Surface.ROTATION_90: 
+                  degrees = 90; 
+                  break;
+               case Surface.ROTATION_180: 
+                  degrees = 180; 
+                  break;
+               case Surface.ROTATION_270: 
+                  degrees = 270;
+            }
+
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) 
+            {
+               result = (info.orientation + degrees) % 360;
+               result = (360 - result) % 360;  // compensate the mirror
+            } else {  // back-facing
+               result = (info.orientation - degrees + 360) % 360;
+            }
+            camera.setDisplayOrientation(result);
+		
             parameters.setPictureFormat(PixelFormat.JPEG);
             if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
@@ -94,10 +140,13 @@ public class CameraViewer extends Activity // guich@tc126_34
    SurfaceHolder holder; 
    Camera camera; 
    boolean isMovie;
+   boolean allowRotation;
    String fileName;
    int stillQuality, width,height;
    Preview preview; 
    MediaRecorder recorder;
+   int cameraId;
+   int result;
 
    private void startPreview()
    {
@@ -115,7 +164,10 @@ public class CameraViewer extends Activity // guich@tc126_34
                   if (open != null)
                      while (--i >= 0)
                         if ((camera = (Camera) open.invoke(null, i)) != null)
-                           break;
+                        {
+						   cameraId = i;
+						   break;
+						}
                }
             }
             camera.setPreviewDisplay(holder);
@@ -139,31 +191,36 @@ public class CameraViewer extends Activity // guich@tc126_34
    }
    
    private void startRecording() throws IllegalStateException, IOException
-   {
-      stopPreview(); // stop camera's preview
-      recorder = new MediaRecorder();
+   {     
+      try {camera.stopPreview();} catch (Exception e) {e.printStackTrace();} // stop camera's preview
+	   recorder = new MediaRecorder();
+	   camera.unlock();
+	   recorder.setCamera(camera);
       recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
       recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
       recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
       recorder.setVideoEncoder (MediaRecorder.VideoEncoder.DEFAULT);
-      recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
-      recorder.setVideoSize(320,240);
+      recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);     
+	   recorder.setVideoSize(320,240);
      
       recorder.setOutputFile(fileName);
       recorder.setPreviewDisplay(holder.getSurface());
+
       recorder.prepare();
-      recorder.start();   // Recording is now started
+      recorder.start();   // Recording is now started	  
    }
    
    private void stopRecording()
    {
       if (recorder != null)
       {
-         try {recorder.stop();} catch (Exception e) {}
-         try {recorder.reset();} catch (Exception e) {}   // You can reuse the object by going back to setAudioSource() step
-         try {recorder.release();} catch (Exception e) {} // Now the object cannot be reused
-         recorder = null;
-      }
+         try {recorder.stop();} catch (Exception e) {e.printStackTrace();}         
+		   try {recorder.reset();} catch (Exception e) {e.printStackTrace();}   // You can reuse the object by going back to setAudioSource() step
+		   try {recorder.release();} catch (Exception e) {e.printStackTrace();} // Now the object cannot be reused
+		   recorder = null;
+		   camera.lock();	
+		   stopPreview();
+      }  
    }
    
    /** Called when the activity is first created. */
@@ -176,6 +233,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       stillQuality = b.getInt("quality");
       width = b.getInt("width");
       height = b.getInt("height");
+	  allowRotation = b.getBoolean("allowRotation");
 
       isMovie = fileName.endsWith(".3gp");
 
@@ -187,6 +245,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       {
          public void onClick(View v)
          {
+			   stopRecording();
             setResult(RESULT_CANCELED);
             finish();
          }

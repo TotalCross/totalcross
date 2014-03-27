@@ -151,7 +151,7 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
 
-   private void captureCamera(String s, int quality, int width, int height)
+   private void captureCamera(String s, int quality, int width, int height, boolean allowRotation)
    {
       try
       {
@@ -160,6 +160,7 @@ public class Loader extends Activity implements BarcodeReadListener
          intent.putExtra("quality",quality);
          intent.putExtra("width",width);
          intent.putExtra("height",height);
+		 intent.putExtra("allowRotation", allowRotation);
          startActivityForResult(intent, TAKE_PHOTO);
       }
       catch (Throwable e)
@@ -241,8 +242,9 @@ public class Loader extends Activity implements BarcodeReadListener
                dialNumber(b.getString("dial.number"));
                break;
             case CAMERA:
-               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
-               break;
+               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
+                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"));
+			   break;
             case TITLE:
                setTitle(b.getString("setDeviceTitle.title"));
                break;

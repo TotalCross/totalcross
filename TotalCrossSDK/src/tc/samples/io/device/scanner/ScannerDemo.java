@@ -95,6 +95,7 @@ public class ScannerDemo extends MainWindow
          
          if (Scanner.isPassive())
             add(trigger = new Button(" TRIGGER "), CENTER, BOTTOM); // support SocketCom              
+         scannerStop();
       }
    }
 
