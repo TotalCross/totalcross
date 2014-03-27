@@ -316,16 +316,21 @@ public class Utils
    public static void fillExclusionList()
    {
       String path = null;
-      String etcDir = DeploySettings.etcDir.toLowerCase();
-      if (java.io.File.separatorChar != '/')
-         etcDir = etcDir.replace('/', '\\'); // use the platform default separator
+      String etcDir = null;
+
+      if (DeploySettings.etcDir != null)
+      {
+         etcDir = DeploySettings.etcDir.toLowerCase();
+         if (java.io.File.separatorChar != '/')
+            etcDir = etcDir.replace('/', '\\'); // use the platform default separator
+      }
       try
       {
          if (DeploySettings.classPath != null) // search in the classpath
             for (int i =0; i < DeploySettings.classPath.length ; i++)
             {
                path = DeploySettings.classPath[i].toLowerCase();
-               if (path.endsWith(".jar") && !path.startsWith(etcDir)) // it's a jar file and not one of ours.
+               if (path.endsWith(".jar") && (etcDir == null || !path.startsWith(etcDir))) // it's a jar file and not one of ours.
                   try
                   {
                      java.io.File f = new java.io.File(path);
