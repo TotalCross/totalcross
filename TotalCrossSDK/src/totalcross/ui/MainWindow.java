@@ -113,10 +113,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       canDrag = false; // we can't drag the mainwindow.
       
       if (Settings.isIOS() && Settings.romVersion >= 700)
-      {
-         taskbarHeight = fmH;
-         taskbarColor = backColor;
-      }
+         taskbarHeight = fmH; // it doesn't matter if the user change this afterwards, since we're interested in the system's font height
    }
    
    /** Returns true if this is the main thread.
@@ -479,6 +476,8 @@ public class MainWindow extends Window implements totalcross.MainClass
    private void startProgram()
    {
       initUICalled = Window.needsPaint = true;
+      if (Settings.isIOS() && Settings.romVersion >= 700)
+         taskbarColor = backColor;
       initUI();
       Window.needsPaint = Graphics.needsUpdate = true; // required by device
       started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
