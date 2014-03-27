@@ -303,18 +303,24 @@ public class BigDecimal implements Comparable
 
    /**
     * Translates a <code>long</code> value into a <code>BigDecimal</code> object with a scale of zero. This "static factory method"
-    * is provided in preference to a ({@code long}) constructor
-    * because it allows for reuse of frequently used
-    * {@code BigDecimal} values.
+    * is provided in preference to a <code>(long)</code> constructor because it allows for reuse of frequently used <code>BigDecimal</code> values.
     *
-    * @param val value of the {@code BigDecimal}.
-    * @return a {@code BigDecimal} whose value is {@code val}.
+    * @param val The value of the <code>BigDecimal</code>.
+    * @return A <code>BigDecimal</code> whose value is <code>val</code>.
     */
    public static BigDecimal valueOf(long val) throws InvalidNumberException
    {
       return valueOf(val, 0);
    }
 
+   /**
+    * Translates a <code>long</code> unscaled value and an <code>int</code> scale into a <code>BigDecimal</code>. This "static factory method" is 
+    * provided in preference to a <code>(long, int)</code> constructor because it allows for reuse of frequently used <code>BigDecimal</code> values.
+    *
+    * @param unscaledVal Unscaled value of the <code>BigDecimal</code>.
+    * @param scale Scale of the <code>BigDecimal</code>.
+    * @return A <code>BigDecimal</code> whose value is <tt>(unscaledVal &times; 10<sup>-scale</sup>)</tt>.
+    */
    public static BigDecimal valueOf(long val, int scale) throws InvalidNumberException
    {
       if ((scale == 0) && ((int) val == val)) 
@@ -328,6 +334,12 @@ public class BigDecimal implements Comparable
       return new BigDecimal(BigInteger.valueOf(val), scale);
    }
 
+   /**
+    * Returns a <code>BigDecimal</code> whose value is <code>(this + val)</code>, and whose scale is <code>max(this.scale(), val.scale())</code>.
+    *
+    * @param val The value to be added to this <code>BigDecimal</code>.
+    * @return <code>(this + val)</code>.
+    */
    public BigDecimal add(BigDecimal val)
    {
       // For addition, need to line up decimals. Note that the movePointRight
@@ -345,6 +357,12 @@ public class BigDecimal implements Comparable
       return new BigDecimal(op1.add(op2), Math.max(scale, val.scale));
    }
 
+   /**
+    * Returns a <code>BigDecimal</code> whose value is <code>(this - val)</code>, and whose scale is <code>max(this.scale(), val.scale())</code>.
+    *
+    * @param val The value to be subtracted from this <code>BigDecimal</code>.
+    * @return <code>(this - val)</code>.
+    */
    public BigDecimal subtract(BigDecimal val)
    {
       if (scale == val.scale)
@@ -352,16 +370,44 @@ public class BigDecimal implements Comparable
       return this.add(val.negate());
    }
 
+   /**
+    * Returns a <code>BigDecimal</code> whose value is <tt>(this &times; val)</tt>, and whose scale is <code>(this.scale() + val.scale())</code>.
+    *
+    * @param  val The value to be multiplied by this <code>BigDecimal</code>.
+    * @return <code>(this * val)</code>.
+    */
    public BigDecimal multiply(BigDecimal val)
    {
       return new BigDecimal(intVal.multiply(val.intVal), scale + val.scale);
    }
 
+   /**
+    * Returns a <code>BigDecimal</code> whose value is <code>(this / val)</code>, and whose scale is <code>this.scale()</code>. If rounding must be 
+    * performed to generate a result with the given scale, the specified rounding mode is applied.
+    * 
+    * @param val The value by which this <code>BigDecimal</code> is to be divided.
+    * @param roundingMode The rounding mode to apply.
+    * @return <code>(this / val)</code>.
+    * @throws ArithmeticException If <code>val == 0</code>, or <code>roundingMode == ROUND_UNNECESSARY</code> and <code>this.scale()</code> is 
+    * insufficient to represent the result of the division exactly.
+    * @throws IllegalArgumentException If <code>roundingMode</code> does not represent a valid rounding mode.
+    */
    public BigDecimal divide(BigDecimal val, int roundingMode) throws ArithmeticException, IllegalArgumentException
    {
       return divide(val, scale, roundingMode);
    }
 
+   /**
+    * Returns a <code>BigDecimal</code> whose value is <code>(this / val)</code>, and whose scale is as specified. If rounding must be 
+    * performed to generate a result with the given scale, the specified rounding mode is applied.
+    * 
+    * @param val The value by which this <code>BigDecimal</code> is to be divided.
+    * @param roundingMode The rounding mode to apply.
+    * @return <code>(this / val)</code>.
+    * @throws ArithmeticException If <code>val == 0</code>, or <code>roundingMode == ROUND_UNNECESSARY</code> and <code>this.scale()</code> is 
+    * insufficient to represent the result of the division exactly.
+    * @throws IllegalArgumentException If <code>roundingMode</code> does not represent a valid rounding mode.
+    */
    public BigDecimal divide(BigDecimal val, int newScale, int roundingMode) throws ArithmeticException, IllegalArgumentException
    {
       if (roundingMode < 0 || roundingMode > 7) throw new IllegalArgumentException("illegal rounding mode: " + roundingMode);
@@ -434,27 +480,28 @@ public class BigDecimal implements Comparable
    }
 
    /**
-    * Performs division, if the resulting quotient requires rounding (has a nonterminating decimal expansion), an
-    * ArithmeticException is thrown. 
-    * @see #divide(BigDecimal, int, int)
+    * Returns a <code>BigDecimal</code> whose value is <code>(this / val)</code>, and whose scale is <code>this.scale()</code>. If rounding must be 
+    * performed to generate a result with the given scale, an <code>ArithmeticException</code> is thrown.
     * 
+    * @param val The value by which this <code>BigDecimal</code> is to be divided.
+    * @return <code>(this / val)</code>.
+    * @throws ArithmeticException If <code>val == 0</code>, or <code>this.scale()</code> is insufficient to represent the result of the division 
+    * exactly.
     */
-   public BigDecimal divide(BigDecimal divisor) throws ArithmeticException, IllegalArgumentException
+   public BigDecimal divide(BigDecimal divisor) throws ArithmeticException
    {
       return divide(divisor, scale, ROUND_UNNECESSARY);
    }
 
    /**
-    * Returns a BigDecimal whose value is the remainder in the quotient this / val. This is obtained by
-    * subtract(divideToIntegralValue(val).multiply(val)).
+    * Returns a <code>BigDecimal</code> whose value is the remainder in the quotient <code>this / val</code>. This is obtained by
+    * <code>subtract(divideToIntegralValue(val).multiply(val))</code>.
     * 
-    * @param val
-    *           the divisor
-    * @return a BigDecimal whose value is the remainder
-    * @throws InvalidNumberException 
-    * @throws IllegalArgumentException 
-    * @throws ArithmeticException
-    *            if val == 0
+    * @param val The divisor.
+    * @return A <code>BigDecimal</code> whose value is the remainder
+    * @throws InvalidNumberException If an internal method throws it.
+    * @throws IllegalArgumentException If an internal method throws it. 
+    * @throws ArithmeticException If <code>val == 0</code>.
     */
    public BigDecimal remainder(BigDecimal val) throws ArithmeticException, IllegalArgumentException, InvalidNumberException
    {
@@ -462,17 +509,14 @@ public class BigDecimal implements Comparable
    }
 
    /**
-    * Returns a BigDecimal array, the first element of which is the integer part of this / val, and the second element
-    * of which is the remainder of that quotient.
+    * Returns a <code>BigDecimal</code> array, where its first element is the integer part of <code>this / val</code>, and its second element is the 
+    * remainder of the division.
     * 
-    * @param val
-    *           the divisor
-    * @return the above described BigDecimal array
-    * @throws InvalidNumberException 
-    * @throws IllegalArgumentException 
-    * @throws ArithmeticException 
-    * @throws ArithmeticException
-    *            if val == 0
+    * @param val The divisor.
+    * @return The above described <code>BigDecimal</code> array.
+    * @throws InvalidNumberException If an internal method throws it.
+    * @throws IllegalArgumentException If an internal method throws it.
+    * @throws ArithmeticException If <code>val == 0</code>.
     */
    public BigDecimal[] divideAndRemainder(BigDecimal val) throws ArithmeticException, IllegalArgumentException, InvalidNumberException
    {
