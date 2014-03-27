@@ -3080,7 +3080,6 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
    }
 #else
    int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
-   if (true) return;
    pc1.pixel = c1;
    pc2.pixel = c2;
    dim = rotate ? width : height; dim0 = dim;
