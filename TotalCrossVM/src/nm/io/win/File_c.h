@@ -22,16 +22,6 @@
    #define IS_DEBUG_CONSOLE(path) (strstr(path,"DebugConsole") != null)
 #endif
 
-// Must use SetFilePointer is not defined on the ARM headers
-#if defined WP8 && defined ARM
-DWORD WINAPI SetFilePointer(
-      HANDLE hFile,
-      LONG lDistanceToMove,
-      PLONG lpDistanceToMoveHigh,
-      DWORD dwMoveMethod
-   );
-#endif
-
 /*
  *
  * Always return true on WinCE and Win32.
@@ -426,10 +416,10 @@ static Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
-#if defined WP8 && !defined ARM
-   LARGE_INTEGER off = { 0 };
+#if defined WP8
+   LARGE_INTEGER off = { 0 },cur;
    off.LowPart = position;
-   return ((SetFilePointerEx(fref.handle, off, null, FILE_BEGIN) != 0) ?
+   return ((SetFilePointerEx(fref.handle, off, &cur, FILE_BEGIN) != 0) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 #else
    return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
@@ -706,12 +696,12 @@ static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 		return NO_ERROR;
 
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
-#if defined WP8 && !defined ARM
+#if defined WP8
    {
-      LARGE_INTEGER off = { 0 };
+      LARGE_INTEGER off = { 0 }, cur;
       off.LowPart = newSize;
 
-      if (SetFilePointerEx(fref->handle, off, NULL, FILE_BEGIN) == false)
+      if (SetFilePointerEx(fref->handle, off, &cur, FILE_BEGIN) == false)
          return GetLastError();
    }
 #else
