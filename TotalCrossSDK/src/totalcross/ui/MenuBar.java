@@ -25,12 +25,11 @@ import totalcross.sys.*;
 /** Constructs a Menu with the given items. 
    * A menu can be opened by the user in a couple of ways:
    * <ul>
-   * <li> By clicking in the Menu button on Palm OS devices
+   * <li> By clicking in the Menu button
    * <li> By clicking in the title of a Window
-   * <li> By holding during 1 second the middle button of the 5-way navigation buttons.
    * </ul>
    * The Menu supports disabled and checked items.
-   * Here is an example of how to build the menu for the Palm OS' DateBook:<br>
+   * Here is an example of how to build the menu:<br>
    * <pre>
    * MenuItem miBeamEvent,miNewEvent,miDeleteEvent;
    * MenuItem col0[] =
