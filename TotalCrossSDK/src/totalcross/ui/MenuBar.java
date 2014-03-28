@@ -178,7 +178,7 @@ public class MenuBar extends Window
    {
       if (b)
       {
-         setRect(0,0,FILL,fmH+4+titleGap); // update the bounds, because the screen may have been changed
+         setRect(0,taskbarHeight,FILL,fmH+4+titleGap); // update the bounds, because the screen may have been changed
          popupNonBlocking();
       }
    }
