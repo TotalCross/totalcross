@@ -6701,6 +6701,16 @@ For Windows Phone 8, DirectX is used instead of the old scheme of bitmaps.
  However, older Windows 32 releases won't be supported anymore.
 \end_layout
 
+\begin_layout Standard
+On iOS 7 or above use the field 
+\family typewriter
+Windows.taskbarColor
+\family default
+ in order to paint the iOS floating task bar.
+ It defaults to the application's background color.
+ 
+\end_layout
+
 \begin_layout Section
 Font
 \end_layout
@@ -7626,6 +7636,12 @@ Graphics.drawCursor()
 Graphics.drawDottedCursor()
 \end_layout
 
+\begin_layout Itemize
+
+\family typewriter
+Graphics.getPixel()
+\end_layout
+
 \begin_layout Standard
 We also deprecated these: 
 \end_layout
@@ -7710,7 +7726,509 @@ Please notice that all indices files must be erased in order to use Litebase
 \end_layout
 
 \begin_layout Chapter
-SuperWaba to TotalCross conversion
+Litebase to SQLite Conversion
+\end_layout
+
+\begin_layout Standard
+Since TotalCross now supports SQLite using TDBC, some programmers might
+ want to migrate a program that uses Litebase to use SQLite.
+ Here is a guide to help the conversion process:
+\end_layout
+
+\begin_layout Enumerate
+The supported SQL commands are described in the link 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://sqlite.org/lang.html"
+target "http://sqlite.org/lang.html"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Use 
+\family typewriter
+totalcross.db.sqlite.ui.DBListBox
+\family default
+ instead of 
+\family typewriter
+litebase.ui.DBListBox
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+The class 
+\family typewriter
+totalcross.db.sqlite.SQLiteUtil
+\family default
+ methods will make the process much easier.
+ Take a look at them.
+\end_layout
+
+\begin_layout Enumerate
+There is no way to go back when navigating in a 
+\family typewriter
+ResultSet
+\family default
+ using something such as 
+\family typewriter
+ResultSet.prev()
+\family default
+.
+ You can only navigate forward (using 
+\family typewriter
+ResultSet.next()
+\family default
+), never backward.
+ There are also no 
+\family typewriter
+first()
+\family default
+, 
+\family typewriter
+last()
+\family default
+, 
+\family typewriter
+beforeFirst()
+\family default
+, 
+\family typewriter
+afterLast()
+\family default
+, 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+absolute()
+\family default
+, or 
+\family typewriter
+relative()
+\family default
+.
+ All result set pointers are before the first result set record when created.
+ If it is necessary to go backwards in a result set, you must close and
+ recreate it.
+\end_layout
+
+\begin_layout Enumerate
+When fetching a DATETIME field with 
+\family typewriter
+ResultSet.getString()
+\family default
+, notice that Litebase will return the field in the format 
+\family typewriter
+YYYY/MM/DD HH:MM:SS
+\family default
+ whereas SQLite returns in the format 
+\family typewriter
+YYYYMMDDHHMMSSmmm
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+The class which deals with connections is called 
+\family typewriter
+Connection
+\family default
+, not 
+\family typewriter
+LitebaseConnection
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+There is no multiple languages in SQLite messages.
+ All messages from database exceptions are only in English.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+litebase.DriverException
+\family default
+ must be changed to 
+\family typewriter
+java.sql.SQLException
+\family default
+.
+ It won't work if you use 
+\family typewriter
+totalcross.sql.SQLException
+\family default
+!
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+LitebaseConnection.getInstance(XXXX)
+\family default
+ must be changed to 
+\family typewriter
+DriverManager.
+\begin_inset Newline newline
+\end_inset
+
+getConnection("jdbc:sqlite:XXXX
+\backslash
+YYYY.db")
+\family default
+, where 
+\family typewriter
+XXXX
+\family default
+ is the desired path and 
+\family typewriter
+YYYY
+\family default
+ is the database name.
+ 
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+LitebaseConnection.closeAll()
+\family default
+ must be changed to 
+\family typewriter
+Connection.close()
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+
+\family typewriter
+LitebaseConnection.execute
+\family default
+/
+\family typewriter
+executeUpdate()
+\family default
+ must be changed to 
+\family typewriter
+Connection.
+\begin_inset Newline newline
+\end_inset
+
+createStatement().execute
+\family default
+/
+\family typewriter
+executeUpdate()
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+All methods throws 
+\family typewriter
+SQLException
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+In Litebase, in order to not create a table if it exists, you should do
+ something such as
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+if (!conn.exists("table_name"))
+\end_layout
+
+\begin_layout Plain Layout
+
+   conn.execute("create table table_name...");
+\end_layout
+
+\end_inset
+
+In SQLite, there is a single command that does it: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+create table if not exists table_name
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+There is also a command to only drop a table if it exists: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+drop table if exists table_name
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+Use 
+\family typewriter
+SQLiteUtil.getColCount()
+\family default
+ to get the number of columns of a 
+\family typewriter
+ResultSet
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+There is no way to get the total number of rows of a 
+\family typewriter
+ResultSet
+\family default
+ using SQLite.
+\end_layout
+
+\begin_layout Enumerate
+Use 
+\family typewriter
+SQLiteUtil.tableExists()
+\family default
+ instead of 
+\family typewriter
+LitebaseConnection.exists()
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+Use 
+\family typewriter
+ResultSet.getMetaData()
+\family default
+ instead of 
+\family typewriter
+ResultSet.getResultSetMetaData()
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+All data returned in the SQLite metadata methods are in uppercase, whereas
+ in Litebase they are always in lowercase.
+\end_layout
+
+\begin_layout Enumerate
+There is no cryptography in the free SQLite version, the one included in
+ TotalCross.
+\end_layout
+
+\begin_layout Enumerate
+Change 
+\family typewriter
+nocase
+\family default
+ to 
+\family typewriter
+collate nocase
+\family default
+ in order to make a field case insensitive.
+ You can also use 
+\family typewriter
+collate nocase
+\family default
+ to make a comparison case insensitive.
+ However, the first option is preferable if the column will always be used
+ in a case insensitive way because it is faster.
+\end_layout
+
+\begin_layout Enumerate
+Change from 
+\family typewriter
+ResultSetMetaData.XXXX_TYPE
+\family default
+ to 
+\family typewriter
+Types.XXXX
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+Change from 
+\family typewriter
+ResultSet.getBlob()
+\family default
+ to 
+\family typewriter
+ResultSet.getBytes()
+\family default
+ when dealing with a blob column.
+\end_layout
+
+\begin_layout Enumerate
+Change from 
+\family typewriter
+ResultSet.getStrings()
+\family default
+ to one of the methods 
+\family typewriter
+SQLUtil.
+\begin_inset Newline newline
+\end_inset
+
+getStrings()
+\family default
+ to fetch all rows from the current result set pointer.
+ To fetch only some rows, you must implement it yourself, or use the keywords
+ 
+\family typewriter
+LIMIT
+\family default
+ and 
+\family typewriter
+OFFSET
+\family default
+ in your SQLite select statement.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Change from 
+\family typewriter
+LitebaseConnection.listAllTables()
+\family default
+ to 
+\family typewriter
+SQLUtil.
+\begin_inset Newline newline
+\end_inset
+
+ListAllTables()
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+To create a memory database, use 
+\family typewriter
+DriverManager.
+\begin_inset Newline newline
+\end_inset
+
+getConnection("jdbc:sqlite::memory:")
+\family default
+.
+ By default, the database is created in the application folder (
+\family typewriter
+/device
+\family default
+).
+\end_layout
+
+\begin_layout Enumerate
+Change from 
+\family typewriter
+LitebaseConnection.getRowCount()
+\family default
+ to 
+\family typewriter
+SQLiteUtil.
+\begin_inset Newline newline
+\end_inset
+
+getRowCount()
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+There is nothing similar to 
+\family typewriter
+RowIterator
+\family default
+.
+ You must simulate the updates in the table manually, creating new columns
+ or moving data to another table and then select it.
+ Just remember that the space used by a deleted row might be reused if SQLite
+ needs it.
+\end_layout
+
+\begin_layout Enumerate
+Change from 
+\family typewriter
+LitebaseConnection.purge()
+\family default
+ to 
+\family typewriter
+Connection.
+\begin_inset Newline newline
+\end_inset
+
+execute("vacuum;")
+\family default
+.
+ In SQLite you do a 
+\begin_inset Quotes eld
+\end_inset
+
+purge
+\begin_inset Quotes erd
+\end_inset
+
+ in all tables in the database, not in a specific table such as in Litebase.
+\end_layout
+
+\begin_layout Enumerate
+In SQLite the 
+\family typewriter
+PreparedStatement
+\family default
+ index begin with 1, not 0.
+\end_layout
+
+\begin_layout Enumerate
+There is no size definition when creating a blob column.
+\end_layout
+
+\begin_layout Enumerate
+Use 
+\family typewriter
+Time.getSQLString()
+\family default
+ or 
+\family typewriter
+Date.getSQLString()
+\family default
+ to format time and date in the SQL format, respectively.
+\end_layout
+
+\begin_layout Enumerate
+There is no type checking in SQLite.
+ You can put whatever you want in any column.
+ If you don't want to insert data in a column with wrong data type, your
+ program must ensure that it behaves as expected.
+\end_layout
+
+\begin_layout Enumerate
+All string data inserted is stored in unicode.
+ It's not possible to create an ascii database in order to save space.
+\end_layout
+
+\begin_layout Chapter
+SuperWaba to TotalCross Conversion
 \end_layout
 
 \begin_layout Standard
