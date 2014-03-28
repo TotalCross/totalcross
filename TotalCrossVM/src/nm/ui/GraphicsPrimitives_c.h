@@ -452,22 +452,37 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-         glDrawLine(x,y,x+width,y,pixel1,255);
-         if (pixel1 != pixel2 && checkGLfloatBuffer(currentContext, width/2+1))
+#ifdef WP8 // in wp8 drawing is not buffered, so we can use this
+         if (pixel1 == pixel2)
+            glDrawLine(x, y, x + width, y, pixel1, 255);
+         else
+         if (checkGLfloatBuffer(currentContext, width/2+2))
          {
             float *glC = glcolors;
             float *glV = glcoords;
-            for (x++; width > 0; width -= 2, x += 2)
+            int32 xx, ww;
+            for (xx = x, ww = width; ww > 0; ww -= 2, xx += 2)
             {
-               // alpha
-               *glC++ = 1;
-               // vertices
-               *glV++ = (float)x;
-               *glV++ = (float)y;
+               *glC++ = 1; // alpha
+               *glV++ = (float)xx;   *glV++ = (float)y; // vertices
             }
-            if (glC != glcolors) // flush vertices buffer
-               glDrawPixels(((int32)(glC-glcolors)),pixel2);
+            if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel1);
+
+            glC = glcolors;
+            glV = glcoords;
+            for (xx = x + 1, ww = width - 1; ww > 0; ww -= 2, xx += 2)
+            {
+               *glC++ = 1; // alpha
+               *glV++ = (float)xx;   *glV++ = (float)y; // vertices
+            }
+            if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel2);
          }
+#else
+         glDrawLine(x,y,x+width,y,pixel1,255);
+         if (pixel1 != pixel2)
+            for (x++; width > 0; width -= 2, x += 2)
+               glDrawPixel(x,y, pixel2,255);
+#endif         
          currentContext->fullDirty = true;
       }
       else
@@ -518,22 +533,37 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-         glDrawLine(x,y,x,y+height,pixel1,255);
-         if (pixel1 != pixel2 && checkGLfloatBuffer(currentContext, height/2+1))
+#ifdef WP8
+         if (pixel1 == pixel2)
+            glDrawLine(x, y, x, y + height, pixel1, 255);
+         else
+         if (checkGLfloatBuffer(currentContext, height/2+2))
          {
             float *glC = glcolors;
             float *glV = glcoords;
-            for (y++; height > 0; height -= 2, y += 2)
+            int32 yy, hh;
+            for (yy=y,hh=height; hh > 0; hh -= 2, yy += 2)
             {
-               // alpha
-               *glC++ = 1;
-               // vertices
-               *glV++ = (float)x;
-               *glV++ = (float)y;
+               *glC++ = 1; // alpha
+               *glV++ = (float)x;  *glV++ = (float)yy; // vertices
             }
-            if (glC != glcolors) // flush vertices buffer
-               glDrawPixels(((int32)(glC - glcolors)), pixel2);
+            if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel1);
+
+            glC = glcolors;
+            glV = glcoords;
+            for (yy = y+1, hh = height-1; hh > 0; hh -= 2, yy += 2)
+            {
+               *glC++ = 1; // alpha
+               *glV++ = (float)x;  *glV++ = (float)yy; // vertices
+            }
+            if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel2);
          }
+#else         
+         glDrawLine(x,y,x,y+height,pixel1,255);
+         if (pixel1 != pixel2)
+            for (y++; height > 0; height -= 2, y += 2)
+               glDrawPixel(x,y, pixel2,255);
+#endif               
          currentContext->fullDirty = true;
       }
       else

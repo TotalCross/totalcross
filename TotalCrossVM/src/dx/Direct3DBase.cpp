@@ -363,6 +363,7 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    int i;
    int n = count * 2;
    VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
+   setColor(color);
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
    for (i = count; --i >= 0;)
    {
@@ -404,7 +405,6 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
    d3dcontext->IASetIndexBuffer(pixelsIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
    d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
-   setColor(color);
    d3dcontext->DrawIndexed(n, 0, 0);
 
    delete cubeVertices;
