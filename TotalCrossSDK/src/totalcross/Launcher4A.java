@@ -23,7 +23,6 @@ import totalcross.android.Loader;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
-
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -77,7 +76,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   gps = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
                   gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, instance);
                   gps.addGpsStatusListener(instance);
-                  gpsStatus = gps.getGpsStatus(null);
                   break;
                case GPSFUNC_STOP:
                   if (gps != null)
@@ -889,7 +887,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    private static LocationManager gps;
-   private static GpsStatus gpsStatus;
    private static String lastGps = "*";
    public static String gpsFunc(int what)
    {
