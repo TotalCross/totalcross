@@ -615,6 +615,9 @@
     <ClCompile Include="..\..\..\..\..\src\tests\tc_testsuite.c">
       <Filter>TCVM\Litebase\Testsuite</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\ras\ras_Utils.c">
+      <Filter>TCVM\ras</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\src\zlib\crc32.h">
@@ -1154,6 +1157,9 @@
     </Filter>
     <Filter Include="TCVM\Litebase\Testsuite">
       <UniqueIdentifier>{ba401ef9-03a4-435a-9c39-43133c0d92af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCVM\ras">
+      <UniqueIdentifier>{b6477cc9-f710-4553-81a8-aaaee688378e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
