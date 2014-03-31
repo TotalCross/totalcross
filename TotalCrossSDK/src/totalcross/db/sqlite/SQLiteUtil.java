@@ -155,6 +155,12 @@ public class SQLiteUtil
       con.commit();
       con.setAutoCommit(true);
    }
+   
+   public void rollback() throws SQLException
+   {
+      con.rollback();
+      con.setAutoCommit(true);
+   }
 
    public PreparedStatement prepareStatement(String sql) throws SQLException
    {
