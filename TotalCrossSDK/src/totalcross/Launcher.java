@@ -1832,6 +1832,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          this.descent = ubase.descent * maxHeight / ubase.maxHeight;
          this.ascent = size - this.descent;
          this.numberWidth = ubase.numberWidth * maxHeight / ubase.maxHeight;
+         this.spaceWidth = ubase.spaceWidth * maxHeight / ubase.maxHeight;
       }
       
       private UserFont(String fontName, String sufix) throws Exception
