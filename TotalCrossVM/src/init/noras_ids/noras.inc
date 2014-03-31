@@ -1,3 +1,4 @@
+#ifndef DISABLE_RAS
 #if NORASID == 274
    #include "../init/noras_ids/noras_274.inc"
 #else
@@ -15,3 +16,4 @@
 "54434C42020C2363FE9B87CB" /* 1081 Open Net */ \
 "54434C42052D4A1927E38AFA" /*  828 Redes    */
 #endif
+#endif // DISABLE_RAS
