@@ -35,6 +35,7 @@ namespace PhoneDirect3DXamlAppInterop
    {
       // Workarround vars
       Grid root;
+      bool setAutoOffCalled;
 
       // RadioDevice
       private int turnedState;
@@ -193,7 +194,9 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void vmSetAutoOffCS(bool enable) // Vm
       {
-         PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode = enable ? IdleDetectionMode.Enabled : IdleDetectionMode.Disabled;
+         if (!setAutoOffCalled)
+            PhoneApplicationService.Current.ApplicationIdleDetectionMode = PhoneApplicationService.Current.UserIdleDetectionMode = enable ? IdleDetectionMode.Enabled : IdleDetectionMode.Disabled;
+         setAutoOffCalled = true;
       }
 
       public void dialNumberCS(String number) // Dial

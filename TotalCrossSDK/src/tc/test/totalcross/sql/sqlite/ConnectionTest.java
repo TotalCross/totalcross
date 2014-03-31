@@ -11,7 +11,7 @@ import totalcross.sql.Statement;
 import totalcross.unit.*;
 
 /**
- * These tests check whether access to files is woring correctly and some Connection.close() cases.
+ * These tests check whether access to files is working correctly and some Connection.close() cases.
  */
 public class ConnectionTest extends TestCase
 {

@@ -15,7 +15,7 @@ public class SQLiteUtil
    public Connection con;
    public int vectorInitialSize = 50;
 
-   public static Connection getConnectionAtAppPath(String table, String path) throws SQLException
+   public static Connection getConnectionAtAppPath(String table) throws SQLException
    {
       return DriverManager.getConnection("jdbc:sqlite:"+table);
    }

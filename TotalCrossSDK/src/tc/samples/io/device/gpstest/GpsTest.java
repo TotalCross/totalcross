@@ -19,49 +19,164 @@
 package tc.samples.io.device.gpstest;
 
 import totalcross.io.device.gps.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 
 public class GpsTest extends MainWindow
 {
-   Container gpsCont;
-   GPSView gps;
-   Button btnExit,btnGo;
+   private static final int SECONDS = 30;
    
-   public GpsTest()
+   static class GpsThread implements Runnable 
    {
-      super("GpsTest", TAB_ONLY_BORDER);
+      public static boolean running;
+      public static Thread thread;
+      public static boolean gpsDesligado;
+      private boolean stopThread;
+      public static boolean colectingGps;
+
+      public void start() 
+      {
+         stopThread = false;
+         if (!running) 
+         {
+            running = true;
+            if (thread == null)
+               thread = new Thread(this);
+            thread.start();
+         }
+      }
+
+      public void stop() 
+      {
+         stopThread = true;
+      }
+
+      public void run() 
+      {
+         try 
+         {
+            while (true)
+            {
+               if (stopThread) 
+               {
+                  stopThread = false;
+                  return;
+               }
+               try 
+               {
+                  if (!colectingGps) 
+                  {
+                     colectingGps = true;
+                     int ini = Vm.getTimeStamp();
+                     try 
+                     {
+                        GPS gps = new GPS();
+                        int endTime = Vm.getTimeStamp() + Math.min(3*60*1000,SECONDS*1000*2/3); // try for some seconds, but a max of 3 minutes
+                        do
+                        {
+                           if (gps.retrieveGPSData())
+                           {
+                              log(gps.lastFix+": "+gps.getLatitude()+", "+ gps.getLongitude()+". sat: "+gps.satellites+", err dist: "+gps.pdop);
+                              break;
+                           }
+                           Vm.sleep(50);
+                        }
+                        while (Vm.getTimeStamp() < endTime);
+                        gps.stop();
+                     } 
+                     catch (Exception e) 
+                     {
+                     }
+                     int end = Vm.getTimeStamp();
+                     
+                     Vm.sleep(SECONDS*1000 - (end-ini)); // dont consider the time took to get the coords again
+                  }
+               } 
+               finally 
+               {
+                  colectingGps = false;
+               }
+            }
+         } 
+         catch (Exception e) 
+         {
+            log(new Time()+" ERRO"+e.getMessage());
+         } 
+         finally 
+         {
+            running = false;
+         }
+      }
+
+   }
+   
+   private static void log(final String s)
+   {
+      // since a thread cannot update the screen, we run this on the main thread
+      MainWindow.getMainWindow().runOnMainThread(new Runnable() {public void run() {lbLog.add(s); lbLog.selectLast();}});
    }
 
-   public void initUI()
+   public static GpsThread gpsThread;
+
+   MenuBar mbar;
+   Button btnGps;
+   public static ListBox lbLog;
+
+   public GpsTest() 
    {
-      add(btnExit = new Button("  Exit  "),RIGHT,TOP,PARENTSIZE+10,PREFERRED);
-      add(btnGo = new Button("Connect"),LEFT,TOP,PARENTSIZE+80,PREFERRED);
-      add(gpsCont = new Container(),LEFT,AFTER,FILL,FILL);
+      super("GPS Test", Window.VERTICAL_GRADIENT);
+      setUIStyle(Settings.Android);
+      setBackColor(Color.WHITE);
    }
-   
-   public void onEvent(Event e)
+
+   public void initUI() 
    {
-      if (e.type == ControlEvent.PRESSED)
-         if (e.target == btnExit)
-            exit(0);
-         else
-         if (e.target == btnGo)
-         try
+      try 
+      {
+         titleColor = Color.getRGB(30, 50, 0);
+         gradientTitleStartColor = Color.getRGB(120,120, 120);
+         gradientTitleEndColor = Color.WHITE;
+
+         add(btnGps = new Button("  Start GPS Logger  "), CENTER, TOP + 10);
+         btnGps.setBackColor(Color.getRGB(188, 238, 104));
+         add(lbLog = new ListBox(), LEFT, AFTER+10, FILL, FILL);
+         // add close button
+         final Button bx = new Button("  x  ");
+         bx.setBorder(Button.BORDER_NONE);
+         bx.transparentBackground = true;
+         add(bx, RIGHT, 0);
+         bx.addPressListener(new PressListener() {public void controlPressed(ControlEvent e) {exit(0);}});
+      } 
+      catch (Exception e) 
+      {
+         MessageBox.showException(e, false);
+      }
+   }
+
+   public void onEvent(final Event e) 
+   {
+      try 
+      {
+         switch (e.type) 
          {
-            if (gps != null)
-            {
-               gps.stop();
-               gpsCont.remove(gps);
-               gps = null;
+            case ControlEvent.PRESSED:
+               if (e.target == btnGps) 
+               {
+                  lbLog.add("Gps started with intervals of "+SECONDS+" seconds");
+                  lbLog.selectLast();
+                  if (gpsThread == null) 
+                     gpsThread = new GpsThread();
+                  gpsThread.start();
+               } 
+               break;
             }
-            gps = new GPSView(500);
-            gpsCont.add(gps, LEFT+2,TOP+2,FILL-2,FILL-2);
-         }
-         catch (Exception ee)
-         {
-            MessageBox.showException(ee, true);
-         }
+      } 
+      catch (Exception ex) 
+      {
+         MessageBox.showException(ex,true);
+      }
    }
 }

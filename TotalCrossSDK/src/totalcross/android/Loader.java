@@ -54,6 +54,7 @@ public class Loader extends Activity implements BarcodeReadListener
          AndroidUtils.initialize(this);
          if (isSingleApk() && savedInstanceState != null) // bypass bug that will cause a new instance each time the app is minimized and called again
          {
+            AndroidUtils.debug("Quitting from relaunch");
             System.exit(2);
             return;
          }
@@ -86,7 +87,7 @@ public class Loader extends Activity implements BarcodeReadListener
       {
          //AndroidUtils.debug("Exception ignored:");
          //AndroidUtils.handleException(t,false);
-         AndroidUtils.debug("Litebase not installed or single apk.");
+         //AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
    }
