@@ -84,7 +84,9 @@ public class Image extends GfxSurface
     * is the same of the algorithm used in smooth instances. 
     * 
     * Works only if <code>Settings.isOpenGL</code> or on JavaSE. 
-    * If you set this in non-opengl environments, nothing will happen.
+    * If you set this in non-opengl environments, nothing will happen; you should use the 
+    * hwScaledBy, getHwScaledInstance and hwScaledFixedAspectRatio methods.
+    * 
     * To apply the changes, just call <code>repaint()</code>.
     * @see #setHwScaleFixedAspectRatio(int,boolean)
     * @see #hwScaledBy(double, double)
@@ -95,6 +97,7 @@ public class Image extends GfxSurface
    public double hwScaleW=1,hwScaleH=1;
 
    /** Sets the hwScaleW and hwScaleH fields based on the given new size.
+    * Does not work on Win32.
     * @see #hwScaleH
     * @see #hwScaleW
     * @since TotalCross 2.0

@@ -568,6 +568,8 @@ public class Image4D extends GfxSurface
    
    public Image4D hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException
    {
+      if (!Settings.isOpenGL)
+         return smoothScaledFixedAspectRatio(newSize, isHeight);
       Image4D copy = new Image4D(this);
       copy.setHwScaleFixedAspectRatio(newSize,isHeight);
       gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
@@ -576,6 +578,8 @@ public class Image4D extends GfxSurface
 
    public Image4D getHwScaledInstance(int width, int height) throws ImageException
    {
+      if (!Settings.isOpenGL)
+         return getSmoothScaledInstance(width,height);
       Image4D copy = new Image4D(this);
       copy.hwScaleW = (double)width / this.width;
       copy.hwScaleH = (double)height / this.height;
@@ -585,6 +589,8 @@ public class Image4D extends GfxSurface
 
    public Image4D hwScaledBy(double scaleX, double scaleY) throws ImageException
    {
+      if (!Settings.isOpenGL)
+         return smoothScaledBy(scaleX,scaleY);
       Image4D copy = new Image4D(this);
       copy.hwScaleW = scaleX;
       copy.hwScaleH = scaleY;
