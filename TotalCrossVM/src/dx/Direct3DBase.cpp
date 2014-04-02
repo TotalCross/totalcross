@@ -1,4 +1,4 @@
-﻿#include "Direct3DBase.h"
+#include "Direct3DBase.h"
 #include <thread>
 #include <mutex>
 #include "PhoneDirect3DXamlAppComponent.h"
