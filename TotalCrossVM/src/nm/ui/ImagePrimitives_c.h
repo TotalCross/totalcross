@@ -699,7 +699,7 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
 
 void freeTexture(TCObject img, bool updateList)
 {                                       
-   glDeleteTexture(img,Image_instanceCount(img) <= 0 ? Image_textureId(img) : null, updateList);
+   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null, updateList); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
 }
 
 extern VoidPs* imgTextures;
