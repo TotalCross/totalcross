@@ -698,20 +698,43 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
 }
 
 void freeTexture(TCObject img, bool updateList)
-{            
+{                                       
    glDeleteTexture(img,Image_instanceCount(img) <= 0 ? Image_textureId(img) : null, updateList);
 }
 
 extern VoidPs* imgTextures;
 void resetFontTexture(); // PalmFont_c.h
+#ifdef ANDROID
+void recreateTextures(bool delTex) // called by opengl when the application changes the opengl surface
+{
+   VoidPs* current = imgTextures;        
+   if (current)
+      do
+      {    
+         TCObject img = (TCObject)current->value;
+         if (delTex)
+            glDeleteTexture(img, Image_textureId(img), false);
+         else
+         {
+            Image_textureId(img)[0] = 0;
+            Image_textureId(img)[1] = 0;
+         }
+         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
+         current = current->next;      
+      } while (imgTextures != current);
+   if (!delTex)
+      resetFontTexture();
+}
+#else
 void recreateTextures() // called by opengl when the application changes the opengl surface
 {
-   VoidPs* current = imgTextures;
+   VoidPs* current = imgTextures;        
    if (current)
       do
       {    
          TCObject img = (TCObject)current->value;
 #ifndef WP8 // in wp8 we have to delete the texture when applying the changes
+         // glDeleteTexture(img, Image_textureId(img), false); - TODO test this on iOS
          Image_textureId(img)[0] = 0;
          Image_textureId(img)[1] = 0;
 #endif
@@ -720,6 +743,7 @@ void recreateTextures() // called by opengl when the application changes the ope
       } while (imgTextures != current);
    resetFontTexture();
 }
+#endif // ANDROID
 #endif
 
 static bool nativeEquals(TCObject thisObj, TCObject otherObj)

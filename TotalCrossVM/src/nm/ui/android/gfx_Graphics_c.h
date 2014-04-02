@@ -14,8 +14,6 @@
 #ifdef ANDROID
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
-#include <android/log.h>
-#define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
 #endif
 
 bool checkGlError(const char* op, int line)
@@ -189,7 +187,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(); // imagePrimitives_c.h
+void recreateTextures(bool delTex); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);  
 int32 desiredglShiftY;
@@ -206,13 +204,18 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       {                
          if (needsPaint != null)
          {
-            //debug("changing sip. appH: %d, heigth: %d, glShiftY: %d",appH,height,glShiftY);
             desiredglShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
             setShiftYonNextUpdateScreen = true;
             *needsPaint = true; // schedule a screen paint to update the shiftY values
             setTimerInterval(1);      
          }
       }
+      else
+      if (width == -998)
+         recreateTextures(true); // first we delete the textures before the gl context is invalid
+      else
+      if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
+         recreateTextures(false); // now we set the changed flag for all textures
       else
          surfaceWillChange = true; // block all screen updates
       return;
@@ -228,7 +231,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    {  
       destroyEGL();
       initGLES(&screen);
-      recreateTextures();
+      recreateTextures(false); // now we set the changed flag for all textures
    }
    lastWindow = window;
 }
@@ -367,7 +370,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       if (err)
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       else
-      {
+      {   
          if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
             imgTextures = VoidPsAdd(imgTextures, img, null);
          glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
@@ -378,12 +381,12 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
-	 if (textureId)        
-	 {
+   if (textureId != null && textureId[0] != 0)        
+   {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
       *textureId = 0;                               
    }
-   if (updateList)
+   if (updateList && VoidPsContains(imgTextures, img))
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
 void glClearClip()
@@ -413,7 +416,9 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
-{         
+{                 
+   if (textureId[0] == 0) return;
+      
    GLfloat* coords = texcoords;
    PixelConv pcolor;
    if (pixcolors != (int32*)glcolors) flushPixels(6);

@@ -1128,16 +1128,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static void appPaused()
    {
       appPaused = true;
+      instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
       {
          setSIP(SIP_HIDE);
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
       }
-   }
+   }   
    
    public static void appResumed()
    {
       appPaused = false;
+      instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
    }
