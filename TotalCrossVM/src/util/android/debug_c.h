@@ -66,12 +66,7 @@ static bool privateDebug(char* str)
       debugMode = debugMode == MODE_TXT ? MODE_ADB : MODE_TXT;
       return;
    }
-   if (debugMode == MODE_ADB)
-   {         
-      __android_log_write(ANDROID_LOG_INFO, "TotalCross", stripUnicode(str));
-      return true;
-   }
-   else
+   if (debugMode != MODE_ADB)
    {
       static char debugPath[MAX_PATHNAME];
       bool err = true;
