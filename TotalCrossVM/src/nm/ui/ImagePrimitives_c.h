@@ -733,8 +733,8 @@ void recreateTextures() // called by opengl when the application changes the ope
       do
       {    
          TCObject img = (TCObject)current->value;
-#ifndef WP8 // in wp8 we have to delete the texture when applying the changes
-         // glDeleteTexture(img, Image_textureId(img), false); - TODO test this on iOS
+#ifndef WP8 // in wp8 we have to delete the texture when applying the changes - only for iOS
+         glDeleteTexture(img, Image_textureId(img), false);
          Image_textureId(img)[0] = 0;
          Image_textureId(img)[1] = 0;
 #endif
