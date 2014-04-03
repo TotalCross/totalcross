@@ -140,6 +140,7 @@ static int lastOrientationIsPortrait = true;
 - (bool)isEventAvailable;
 {
    unsigned int num = [_events count];
+   Sleep(5); // prevent 100% cpu as shown in XCode. 5ms=0%cpu, 2ms=3%cpu
    return num > 0;
 }
 
