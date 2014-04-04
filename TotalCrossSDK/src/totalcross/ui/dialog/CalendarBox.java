@@ -159,11 +159,9 @@ public class CalendarBox extends Window
       titleAlign = CENTER;
 
       // buttons
-      Button.commonGap = 2;
-      add(btnToday, LEFT+4, BOTTOM-4, bw, PREFERRED);
-      add(btnClear, CENTER, SAME, bw, PREFERRED);
-      add(btnCancel, RIGHT-4, SAME, bw, PREFERRED);
-      Button.commonGap = 0;
+      add(btnToday, LEFT+4, BOTTOM-4, PARENTSIZEMIN+30, PREFERRED);
+      add(btnClear, CENTER, SAME, PARENTSIZEMIN+30, PREFERRED);
+      add(btnCancel, RIGHT-4, SAME, PARENTSIZEMIN+30, PREFERRED);
 
       // days
       add(pbgDays);
