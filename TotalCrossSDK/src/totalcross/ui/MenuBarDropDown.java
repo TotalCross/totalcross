@@ -144,7 +144,7 @@ public class MenuBarDropDown extends Window
          popX = Settings.screenWidth-w;
       if (popX < 0)
          popX = 0;
-      setRect(popX,popY+taskbarHeight,w,y+2);
+      setRect(popX,popY,w,y+2);
    }
 
    public void screenResized()
