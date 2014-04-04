@@ -242,7 +242,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try
             {
-               img = img.getSmoothScaledInstance(
+               img = img.getHwScaledInstance(
                      img.getWidth() * imageS / img.getHeight(),
                      imageS);
             }
@@ -281,6 +281,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
 
    public void initUI()
    {
+      bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
       if (super.sbH != null && super.sbH instanceof ScrollPosition) ((ScrollPosition)super.sbH).barColor = pressedColor != -1 ? pressedColor : foreColor;
       if (super.sbV != null && super.sbV instanceof ScrollPosition) ((ScrollPosition)super.sbV).barColor = pressedColor != -1 ? pressedColor : foreColor;
       if (btns != null && btns[0].isChildOf(this)) // if button was already added to this container, remove it (may occur during rotation)
