@@ -21,10 +21,11 @@ bool setupGL(int width, int height);
 
 - (id)init:(UIViewController*) ctrl
 {                                    
-   controller = ctrl;
    self = [ super init ];
-   [self setOpaque:YES];
-   self.contentMode = UIViewContentModeCenter;
+   controller = ctrl;
+   taskbarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
+   self.opaque = YES;
+   self.contentMode = UIViewContentModeScaleToFill;
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution
    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
    [self addGestureRecognizer:pinchGesture];
@@ -37,13 +38,13 @@ extern int32 deviceFontHeight,iosScale;
 - (void)setScreenValues: (void*)scr
 {
    ScreenSurface screen = gscreen == null ? gscreen = scr : gscreen;
-   iosScale = [UIScreen mainScreen].scale;//([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ( == 2.0)) ?2:1;
+   iosScale = [UIScreen mainScreen].scale;
    screen->screenW = self.bounds.size.width *iosScale;
    screen->screenH = self.bounds.size.height*iosScale;
    screen->pitch = screen->screenW*4;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
-   if (iosScale == 2) deviceFontHeight = 38;
+   deviceFontHeight = [UIFont labelFontSize] * iosScale;
 }
 
 - (void)doRotate
@@ -56,10 +57,40 @@ void graphicsSetupIOS()
    [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
 }
 
+extern int lastOrientationIsPortrait;
 void recreateTextures();
+
+- (CGRect)getBounds
+{
+   CGRect r = [[UIScreen mainScreen] bounds];
+   if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
+   {
+      switch ([[UIDevice currentDevice] orientation])
+      {
+         case UIDeviceOrientationPortraitUpsideDown:
+            r.origin.y = 0;
+            r.size.height -= taskbarHeight;
+            break;
+         case UIDeviceOrientationLandscapeLeft:
+            r.origin.x = 0;
+            r.size.width  -= taskbarHeight;
+            break;
+         case UIDeviceOrientationLandscapeRight:
+            r.origin.x = taskbarHeight;
+            r.size.width  -= taskbarHeight;
+            break;
+         default: // UIDeviceOrientationPortrait and others
+            r.origin.y = taskbarHeight;
+            r.size.height -= taskbarHeight;
+            break;
+      }
+   }
+   return r;
+}
 
 - (void)createGLcontext
 {
+   self.frame = [self getBounds];
    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
    eaglLayer.opaque = TRUE;
    if (glcontext != null)
@@ -81,10 +112,11 @@ void recreateTextures();
    int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
-   setupGL(gscreen->screenW,gscreen->screenH);
+   setupGL(self.bounds.size.width*2,self.bounds.size.height*2);
    realAppH = appH;
    recreateTextures();
 }
+
 - (void)updateScreen
 {
    [glcontext presentRenderbuffer:GL_RENDERBUFFER];

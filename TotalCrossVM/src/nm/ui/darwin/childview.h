@@ -25,9 +25,11 @@
    UIViewController* controller;
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
+   int taskbarHeight;
 @public
    UIDocumentInteractionController *uidController;
 }
+- (CGRect)getBounds;
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
 - (void)doRotate;

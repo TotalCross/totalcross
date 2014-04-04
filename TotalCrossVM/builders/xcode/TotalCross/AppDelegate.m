@@ -16,7 +16,7 @@
 
 @implementation AppDelegate
 
-//#define APPNAME "TCSamples"
+//#define APPNAME "UIControls"
 
 -(void) initApp
 {
@@ -67,11 +67,13 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     [self initApp];
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     [self initApp];
     return YES;
 }
