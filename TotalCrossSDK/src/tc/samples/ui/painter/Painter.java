@@ -50,23 +50,6 @@ public class Painter extends MainWindow
 
    public void initUI()
    {
-      save = new Button("Save");
-      clear = new Button("Clear");
-      load = new Button("Load");
-      paint = new Whiteboard();
-      status = new Label("Status", CENTER);
-
-      // center the save/load/clear buttons on screen
-      add(load, CENTER, BOTTOM - 5,PREFERRED+fmH,PREFERRED+fmH);
-      add(save, BEFORE - 5, SAME,PREFERRED+fmH,PREFERRED+fmH); // before the load button
-      add(clear, AFTER + 5, SAME,PREFERRED+fmH,PREFERRED+fmH, load); // after the load button add the paint control with a specified width
-      add(paint);
-      paint.borderColor = Color.BLACK;
-      paint.setRect(CENTER, TOP + 5, SCREENSIZEMIN+90, SCREENSIZEMIN+50); // add the status
-      add(status);
-      status.setRect(0, AFTER + 5, FILL, PREFERRED);
-      add(cbColors = new ComboBox(new ColorList()), CENTER, AFTER + 5);
-      cbColors.setSelectedIndex(cbColors.indexOf(new ColorList.Item(Color.BLACK))); // select color 0
    }
 
    public void onEvent(Event event)

@@ -32,6 +32,48 @@ public class MainMenu extends BaseContainer
       "Scale with ImageControl",
       "Multi touch",
       "Other controls",
+      
+      "Chart",
+      "Switching containers",
+      "Dyn ScrollContainer",
+      "Font sizes",
+      "Grid",
+      "Image Animation",
+      "Image modifiers",
+      "Image book",
+      "Handwrite signature",
+   };
+   
+   Class[] itemClasses =
+   {
+      AlignedLabelsSample.class,
+      ButtonSample.class,
+      ButtonMenuSample.class,
+      CheckRadioSample.class,
+      ComboListSample.class,
+      EditSample.class,
+      ListContainerSample.class,
+      MessageBoxSample.class,
+      MultiButtonSample.class,
+      MultiEditSample.class,
+      ProgressBarSample.class,
+      ProgressBoxSample.class,
+      ScrollContainerSample.class,
+      SpinnerSample.class,
+      TabbedContainerSample.class,
+      ImageControlSample.class,
+      MultitouchSample.class,
+      OtherControlsSample.class,
+      
+      ChartSample.class,
+      ContainerSwitchSample.class,
+      DynScrollContainerSample.class,
+      FontSample.class,
+      GridSample.class,
+      AnimationSample.class,
+      ImageModifiersSample.class,
+      ImageBookSample.class,
+      SignatureSample.class,      
    };
    
    String[] tips = 
@@ -55,30 +97,17 @@ public class MainMenu extends BaseContainer
       "Realtime scale using ImageControl", 
       "Zoom in and out using fingers and ImageControl", 
       "Other controls shows other controls that doesn't belong to these ones",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
    };
 
-   Class[] itemClasses =
-   {
-      AlignedLabelsSample.class,
-      ButtonSample.class,
-      ButtonMenuSample.class,
-      CheckRadioSample.class,
-      ComboListSample.class,
-      EditSample.class,
-      ListContainerSample.class,
-      MessageBoxSample.class,
-      MultiButtonSample.class,
-      MultiEditSample.class,
-      ProgressBarSample.class,
-      ProgressBoxSample.class,
-      ScrollContainerSample.class,
-      SpinnerSample.class,
-      TabbedContainerSample.class,
-      ImageControlSample.class,
-      MultitouchSample.class,
-      OtherControlsSample.class,
-   };
-   
    BaseContainer[] itemInstances = new BaseContainer[itemClasses.length];
    
    public MainMenu()

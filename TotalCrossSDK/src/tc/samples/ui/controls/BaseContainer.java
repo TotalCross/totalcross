@@ -24,6 +24,7 @@ public class BaseContainer extends Container
 
    public void initUI()
    {
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       try
       {
          gap = fmH/2;

@@ -29,6 +29,7 @@ public class UIControls extends MainWindow
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
       Vm.debug(Vm.ALTERNATIVE_DEBUG);
+      Settings.uiAdjustmentsBasedOnFontHeight = true;
       //ScrollPosition.AUTO_HIDE = false;
    }
    
