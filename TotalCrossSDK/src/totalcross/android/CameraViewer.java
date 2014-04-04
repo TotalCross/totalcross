@@ -47,7 +47,7 @@ public class CameraViewer extends Activity // guich@tc126_34
          // underlying surface is created and destroyed.
          holder = getHolder(); 
          holder.addCallback(this); 
-         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); 
+         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS); // DON'T REMOVE THIS! 2.3 (LEVEL 10) STILL REQUIRES IT 
       }
 
       // Called once the holder is ready
@@ -61,6 +61,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       {
          stopPreview();
          stopRecording();
+         holder.removeCallback(this);
       }
 
       // Called when holder has changed
