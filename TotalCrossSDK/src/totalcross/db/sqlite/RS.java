@@ -533,7 +533,6 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
           default:
              // guich: always store as long
              long l = db.column_long(stmt.pointer, markCol(col));
-             Vm.debug("getTime returning "+l);
              int millis = 0;
              //if (db.conn.datePrecision == DatePrecision.MILLISECONDS)
              {
