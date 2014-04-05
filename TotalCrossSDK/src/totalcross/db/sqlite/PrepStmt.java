@@ -499,7 +499,6 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
       long l = t.getTimeLong();
       //if (conn.datePrecision == DatePrecision.MILLISECONDS)
          l = l * 1000 + t.millis;
-         Vm.debug("setting date "+l);
       batch(pos, new Long(l));
 /*       if (conn.dateClass == SQLiteConfig.DateClass.TEXT)
           batch(pos, conn.dateFormat.format(new Date(value)));
