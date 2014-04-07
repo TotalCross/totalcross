@@ -94,7 +94,7 @@ import totalcross.util.zip.*;
  * for (int i = 0; i &lt; 100000; i++)
  * {
  *    ds.writeInt(0x123456);
- *    ds.writeString(&quot;Michelle&quot;);
+ *    ds.writeString(&quot;Natasha&quot;);
  *    ds.writeDouble(123.456d);
  * }
  * // well, now we do something with these!
@@ -104,7 +104,7 @@ import totalcross.util.zip.*;
  * for (int i = 0; i &lt; 100000; i++)
  * {
  *    int i = ds.readInt();
- *    String love = ds.readString(); // Michelle
+ *    String love = ds.readString(); // Natasha
  *    double d = ds.readDouble();
  * }
  * </pre>
