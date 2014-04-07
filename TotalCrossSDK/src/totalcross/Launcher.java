@@ -1668,8 +1668,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    static final int AA_NO = 0;
    static final int AA_4BPP = 1;
    static final int AA_8BPP = 2;
-   static int []realSizes = {20,40,60,80};
-   static totalcross.ui.font.Font []baseFontN = new totalcross.ui.font.Font[4], baseFontB = new totalcross.ui.font.Font[4];
+   static int []realSizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
+   static totalcross.ui.font.Font []baseFontN = new totalcross.ui.font.Font[realSizes.length], baseFontB = new totalcross.ui.font.Font[realSizes.length];
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
    private boolean useRealFont;
    private void loadBaseFonts()

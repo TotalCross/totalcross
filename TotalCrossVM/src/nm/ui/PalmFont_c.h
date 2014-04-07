@@ -15,9 +15,9 @@
 
 static char defaultFontName[16];
 
-#define SIZE_LEN 4
+static int32 realSizes[] = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
+#define SIZE_LEN (sizeof(realSizes)/sizeof(realSizes[0]))
 UserFont baseFontN[SIZE_LEN],baseFontB[SIZE_LEN];
-static int32 realSizes[] = {20,40,60,80};
 bool useRealFont;
 
 bool fontInit(Context currentContext)
