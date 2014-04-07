@@ -119,6 +119,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private int []wplains,wbolds;
    private boolean scScrolled;
 
+   /** Enables or not the arrows if scroll is needed. */
+   public boolean showArrows = true;
    /** This color is the one used to paint the background of the active tab.
     * This is specially useful for image tabs.
     * @see #setBackColor
@@ -172,7 +174,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     */
    public boolean allSameWidth;
    
-   /** Define an extra height for the tabs. Use something line fmH*2.
+   /** Define an extra height for the tabs. Use something line fmH/2.
     * Required when setIcons is called.
     * @see #setIcons(Image[]) 
     * @since TotalCross 1.3.4
@@ -497,12 +499,12 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private void addArrows()
    {
       boolean scroll = mustScroll();
-      if (scroll)
+      if (scroll && showArrows)
       {
          int c = parent != null ? parent.backColor : UIColors.controlsBack; // guich@573_4
          if (btnLeft == null)
          {
-            int hh = Math.max(fmH/2,tabH/4); // guich@tc110_90: use tab height if its larger than font's height
+            int hh = Settings.fingerTouch ? fmH*3/4 : Math.max(fmH/2,tabH/4); // guich@tc110_90: use tab height if its larger than font's height
             btnRight = new ArrowButton(Graphics.ARROW_RIGHT, hh, arrowsColor);
             btnRight.setBackColor(c);
             btnRight.setBorder(Button.BORDER_NONE);
@@ -510,8 +512,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             btnLeft.setBackColor(c);
             btnLeft.setBorder(Button.BORDER_NONE);
             int yy = (tabH+btnRight.getPreferredHeight()) >> 1;
-            super.add(btnRight,RIGHT,atTop ? (tabH-yy) : (this.height-yy));
-            super.add(btnLeft,BEFORE-2,SAME);
+            super.add(btnRight,RIGHT,atTop ? (tabH-yy) : (this.height-yy),PREFERRED+(Settings.fingerTouch ? fmH : 0),PREFERRED);
+            super.add(btnLeft,BEFORE-2,SAME,SAME,SAME);
             btnLeft.setEnabled(false);
             btnLeft.setFocusLess(true); // guich@570_39
             btnRight.setFocusLess(true); // guich@570_39
@@ -628,7 +630,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       for (int i = count; --i >= 0;)
       {
          if (uiAndroid)
-            rSel[i] = rNotSel[i] = new Rect(0,0,allSameWidth ? wp : wplains[i]+12,tabH);
+         {
+            rSel[i] = new Rect(0,0,allSameWidth ? wp : wplains[i]+12,tabH);
+            rNotSel[i] = new Rect(0,extraTabHeight/2,allSameWidth ? wp : wplains[i]+12,tabH-extraTabHeight/2);
+         }
          else
          {
             rSel[i]    = new Rect(0,0,allSameWidth ? wb : wbolds[i]+5,tabH);
