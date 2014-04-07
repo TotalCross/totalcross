@@ -329,7 +329,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       void setInterval(int millis)
       {
          //System.out.println("setInterval "+millis);
-         interval = millis<55 ? 55 : millis; // guich@230_3
+         interval = millis<10 ? 10 : millis; // guich@230_3
          interrupt();
       }
 
@@ -832,6 +832,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                eventThread.pushEvent(MultiTouchEvent.SCALE, 0, x,y, modifiers, Vm.getTimeStamp());
          }
          else
+         if (!eventThread.hasEvent(PenEvent.PEN_DRAG))
             eventThread.pushEvent(PenEvent.PEN_DRAG, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
       }
    }
