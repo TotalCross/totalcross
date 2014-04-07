@@ -632,7 +632,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (uiAndroid)
          {
             rSel[i] = new Rect(0,0,allSameWidth ? wp : wplains[i]+12,tabH);
-            rNotSel[i] = new Rect(0,extraTabHeight/2,allSameWidth ? wp : wplains[i]+12,tabH-extraTabHeight/2);
+            rNotSel[i] = imgCaptions == null ? new Rect(0,atTop ? extraTabHeight/2 : 0,allSameWidth ? wp : wplains[i]+12,tabH-extraTabHeight/2) : new Rect(0,0,allSameWidth ? wp : wplains[i]+12,tabH);
          }
          else
          {
