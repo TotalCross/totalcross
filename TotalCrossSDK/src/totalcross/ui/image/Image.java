@@ -400,7 +400,7 @@ public class Image extends GfxSurface
    * Note this replaces a single solid color by another solid color. If you want to change
    * a gradient, or colorize an image, use the applyColor method instead.
    * 
-   * In OpenGL platforms, you must pass the color with the alpha channel (usually, 0xFF).
+   * You must pass the color with the alpha channel (usually, 0xFF).
    * For example, to change a red to green, use from=0xFFFF0000 (0xFF0000 with alpha=0xFF), to=0xFF00FF00.
    * 
    * @see #applyColor(int)
@@ -410,8 +410,8 @@ public class Image extends GfxSurface
    {
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
       for (int n = pixels.length; --n >= 0;)
-         if ((pixels[n] & 0xFFFFFF) == from) 
-            pixels[n] = (pixels[n] & 0xFF000000) | to;
+         if (pixels[n] == from) 
+            pixels[n] = to;
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
    }
    
