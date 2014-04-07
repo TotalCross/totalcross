@@ -225,7 +225,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    appW = width;
    appH = height;
    surfaceWillChange = false;
-   if (window)                
+   if (window) // fixed memory leak
       ANativeWindow_release(window);
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
