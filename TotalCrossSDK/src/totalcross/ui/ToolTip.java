@@ -154,7 +154,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
       int hh = getPreferredHeight()+ insideGap;
       
       // can we place it below the control?
-      if (r.y2()+hh < size.y && r.height != 0)
+      if (r.y2()+distY+hh < size.y && r.height != 0)
          yy = r.y2()+distY-w.y; // guich@tc126_48: decrease window's y
       else
          yy = Math.max(0,r.y-hh-distY-w.y); // guich@tc126_48: decrease window's y
