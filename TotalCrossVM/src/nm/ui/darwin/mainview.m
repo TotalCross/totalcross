@@ -28,13 +28,13 @@ bool initGLES(ScreenSurface screen)
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
    // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
+   CGRect rect = [[UIScreen mainScreen] bounds];
    window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
+   window.autoresizesSubviews = NO;
    [window makeKeyAndVisible];
    [DEVICE_CTX->_childview setScreenValues: screen];
    [DEVICE_CTX->_childview createGLcontext];
-   screen->pixels = (void*)1;
    return true;
 }
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -44,7 +44,7 @@ bool initGLES(ScreenSurface screen)
    return YES;
 }
 
-static int lastOrientationIsPortrait = true;
+int lastOrientationIsPortrait = true;
 - (void) setFirstOrientation
 {
    int orientation = [[UIDevice currentDevice] orientation];
@@ -64,11 +64,12 @@ static int lastOrientationIsPortrait = true;
       if (lastOrientationIsPortrait != isPortrait)
       {
          [self destroySIP];
+         lastOrientationIsPortrait = isPortrait;
+         CGRect s = child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
          [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
-                  [NSNumber numberWithInt:child_view.bounds.size.width *iosScale], @"width",
-                  [NSNumber numberWithInt:child_view.bounds.size.height*iosScale], @"height", nil] ];
+                           [NSNumber numberWithInt:(isPortrait ? s.size.width  : s.size.height) *iosScale], @"width",
+                           [NSNumber numberWithInt:(isPortrait ? s.size.height : s.size.width ) *iosScale], @"height", nil] ];
       }
-      lastOrientationIsPortrait = isPortrait;
    }
 }
 
@@ -140,6 +141,7 @@ static int lastOrientationIsPortrait = true;
 - (bool)isEventAvailable;
 {
    unsigned int num = [_events count];
+   Sleep(5); // prevent 100% cpu as shown in XCode. 5ms=0%cpu, 2ms=3%cpu
    return num > 0;
 }
 

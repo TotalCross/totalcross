@@ -398,7 +398,7 @@ void glClearClip()
 // note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
 // note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
-{  
+{
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
       {glClearClip(); GL_CHECK_ERROR}
    else
