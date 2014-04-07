@@ -27,6 +27,8 @@ public class ImageControlSample extends BaseContainer
    TimerEvent timer;
    boolean grow=true;
    ImageControl ic;
+   Label lab;
+   boolean stopped;
    
    public void initUI()
    {
@@ -36,7 +38,7 @@ public class ImageControlSample extends BaseContainer
          isSingleCall = true;
          
          setTitle("Scale with ImageControl");
-         add(new Label("To Natasha"),CENTER,TOP);
+         add(lab = new Label("To Natasha",CENTER),LEFT,TOP,FILL,PREFERRED);
          img = new Image("images/heart.png");
          int nw = parent.getWidth()/2, nh = parent.getHeight()/2;
          if (img.getWidth() > nw || img.getHeight() > nh)
@@ -53,7 +55,7 @@ public class ImageControlSample extends BaseContainer
    }
    public void onEvent(Event e)
    {
-      if (e.type == TimerEvent.TRIGGERED && timer != null && timer.triggered)
+      if (e.type == TimerEvent.TRIGGERED && timer != null && timer.triggered && !stopped)
       {
          if (img.hwScaleH > 5)
             grow = false;
@@ -61,6 +63,17 @@ public class ImageControlSample extends BaseContainer
          if (!grow && img.hwScaleH <= 0.5)
             grow = true;
          ic.setImage(img); // this actually just computes the center position
+      }
+      else
+      if (e.type == PenEvent.PEN_UP && e.target == ic)
+      {
+         stopped = true;
+         InputBox ib = new InputBox("Change name","(don't type \"To\")","");
+         ib.popup();
+         String s = ib.getValue();
+         if (s != null)
+            lab.setText("To "+s);
+         stopped = false;
       }
    }
    public void onRemove()

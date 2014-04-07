@@ -104,7 +104,7 @@ public class MainMenu extends BaseContainer
       "Shows the way to enter text in a single line, in several formats",
       "Shows the internal font in several sizes",
       "Shows some options available in Grid",
-      "Shows hardware realtime scale using ImageControl", 
+      "Shows hardware realtime scale using ImageControl. Click heart to change the name", 
       "Shows an animated Gif with some image transformations",
       "Shows a book with images that load and frees the images dynamically",
       "Shows an image that can be rotated, scaled, change contrast and brightness",
