@@ -462,7 +462,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastType = type;
          lastX = x;
          lastY = y;
-         eventThread.pushEvent(type, 0, x, y, 0, 0);
+         if (type != PEN_DRAG || !eventThread.hasEvent(PEN_DRAG))         
+            eventThread.pushEvent(type, 0, x, y, 0, 0);
       }
       return true;
    }
