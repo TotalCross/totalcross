@@ -113,7 +113,6 @@ public class PieChart extends Chart
          return;
 
       // Update points
-      g.useAA = true;
       int xx = clientRect.x + clientRect.width/2;
       int yy = clientRect.y + clientRect.height/2;
       int rr = Math.min(clientRect.width, clientRect.height)/2 - distanceOfSelectedPie;
@@ -124,7 +123,6 @@ public class PieChart extends Chart
             drawPie(g, xx+perspectiveH, yy+perspectiveV, rr, true);
          drawPie(g, xx, yy, rr, false);
       }
-      g.useAA = false;
    }
 
    private void drawPie(Graphics g, int xx, int yy, int rr, boolean is3d)
@@ -188,14 +186,14 @@ public class PieChart extends Chart
    {
       switch (e.type)
       {
-         case PenEvent.PEN_DOWN:
-         case PenEvent.PEN_DRAG:
-         {
-            PenEvent pe = (PenEvent)e;
-            lastPenX = pe.x;
-            lastPenY = pe.y;
+         case PenEvent.PEN_UP:
+            if (!hadParentScrolled())
+            {
+               PenEvent pe = (PenEvent)e;
+               lastPenX = pe.x;
+               lastPenY = pe.y;
+            }
             break;
-         }
          case ControlEvent.PRESSED:
             if (e.target == tip)
             {

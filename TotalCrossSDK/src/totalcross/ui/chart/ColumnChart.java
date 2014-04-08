@@ -76,7 +76,6 @@ public class ColumnChart extends Chart
    {
       if (columns.size() != series.size())
          columns.removeAllElements();
-      g.useAA = true;
 
       if (!draw(g)) // draw axis, title, etc
          return;
@@ -178,44 +177,45 @@ public class ColumnChart extends Chart
    {
       switch (e.type)
       {
-         case PenEvent.PEN_DOWN:
-         {
-            PenEvent pe = (PenEvent) e;
-            pe.consumed = true;
-
-            if (pe.x >= xAxisX1 && pe.x <= xAxisX2 && pe.y >= yAxisY2 && pe.y <= yAxisY1)
+         case PenEvent.PEN_UP:
+            if (!hadParentScrolled())
             {
-               selection = -1;
-               int len = columns.size();
-               int i;
-
-               for (i = 0; i < len; i ++)
+               PenEvent pe = (PenEvent) e;
+               pe.consumed = true;
+   
+               if (pe.x >= xAxisX1 && pe.x <= xAxisX2 && pe.y >= yAxisY2 && pe.y <= yAxisY1)
                {
-                  Rect r = (Rect) columns.items[i];
-                  if (r.contains(pe.x, pe.y))
-                     break;
-               }
-
-               if (i < len)
-               {
-                  if ((type & IS_3D) != 0 && i < len - 1) // check overlaping with next column if 3D
+                  selection = -1;
+                  int len = columns.size();
+                  int i;
+   
+                  for (i = 0; i < len; i ++)
                   {
-                     Rect r = (Rect) columns.items[i + 1];
-                     if (r.contains(pe.x, pe.y)) // overlaping - use the next column
-                        i ++;
+                     Rect r = (Rect) columns.items[i];
+                     if (r.contains(pe.x, pe.y))
+                        break;
                   }
-
-                  selection = i;
+   
+                  if (i < len)
+                  {
+                     if ((type & IS_3D) != 0 && i < len - 1) // check overlaping with next column if 3D
+                     {
+                        Rect r = (Rect) columns.items[i + 1];
+                        if (r.contains(pe.x, pe.y)) // overlaping - use the next column
+                           i ++;
+                     }
+   
+                     selection = i;
+                  }
+                  Window.needsPaint = true;
                }
-               Window.needsPaint = true;
-            }
-            else if (selection >= 0) // there is a column selected, invalidate
-            {
-               selection = -1;
-               Window.needsPaint = true;
+               else if (selection >= 0) // there is a column selected, invalidate
+               {
+                  selection = -1;
+                  Window.needsPaint = true;
+               }
             }
             break;
-         }
          case KeyEvent.SPECIAL_KEY_PRESS:
             if (Settings.keyboardFocusTraversable)
             {
