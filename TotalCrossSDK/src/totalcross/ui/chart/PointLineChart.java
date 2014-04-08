@@ -74,7 +74,6 @@ public abstract class PointLineChart extends Chart
       // Draw lines
       if (showLines)
       {
-         g.useAA = Settings.screenBPP > 8; 
          int thick = lineThickness;
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
@@ -93,11 +92,10 @@ public abstract class PointLineChart extends Chart
                   }
             }
          }
-         g.useAA = false;
       }
 
       // Draw points
-      if (!showLines || showPoints || hasFocus)
+      if (!showLines || showPoints || hasFocus || Settings.fingerTouch)
       {
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
