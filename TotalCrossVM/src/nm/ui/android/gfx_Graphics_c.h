@@ -264,38 +264,31 @@ void glDrawPixels(int32 n, int32 rgb)
    glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
    glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
    glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
-   clearPixels();
 }
 
-void glDrawLines(Context currentContext, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb)
+void glDrawLines(Context currentContext, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
 {
+   PixelConv pc;
    ty += glShiftY;
-   if (pixcolors != (int32*)glcolors) flushPixels();
-   setCurrentProgram(pointsProgram);
-   if (pixLastRGB != rgb)
-   {
-      PixelConv pc;
-      pc.pixel = pixLastRGB = rgb;
-      glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
-   }                               
-   if (checkGLfloatBuffer(currentContext, n))
+   //if (pixcolors != (int32*)glcolors) flushPixels(); - cannot call flushPixels from here!
+   setCurrentProgram(lrpProgram);
+   pc.pixel = rgb;
+   glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],1.0f); GL_CHECK_ERROR
+   float* v0 = (float*)xmalloc(sizeof(float) * n * 2);     // TODO remove this when removing add2pipe!
+   if (v0)
    {
       int32 i;
-      float *glC = glcolors;
-      float *glV = glcoords;
+      float *glV = v0;
       for (i = 0; i < n; i++)
       {
          *glV++ = (float)(*x++ + tx);
          *glV++ = (float)(*y++ + ty);
-         *glC++ = 1;
       }
-      glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
-      glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, v0); GL_CHECK_ERROR
       // note: GL_TRIANGLE_FAN would fill, but when the pie is outside the screen bounds, it draws incorrectly
-      glDrawArrays(GL_LINE_LOOP, 0,n); GL_CHECK_ERROR  
-      glFlush();
-      clearPixels();
+      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINE_LOOP, 0,n); GL_CHECK_ERROR  
    }
+   xfree(v0);
 }
 
 

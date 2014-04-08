@@ -1369,6 +1369,20 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
    if (!xPoints1 || !yPoints1 || nPoints1 < 2)
       return;
 
+#ifdef __gl2_h_
+   if (!gradient)
+   {
+      glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
+      if (nPoints1 > 0)
+         glDrawLines(currentContext, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1, true);
+      if (nPoints2 > 0)
+         glDrawLines(currentContext, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), c1, true);
+      glClearClip();
+      return;
+   }
+#endif
+
+
    axPoints[0] = xPoints1; ayPoints[0] = yPoints1; anPoints[0] = nPoints1;
    axPoints[1] = xPoints2; ayPoints[1] = yPoints2; anPoints[1] = nPoints2;
 
@@ -1500,9 +1514,9 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #ifdef __gl2_h_
    glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    if (nPoints1 > 0)
-      glDrawLines(currentContext, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel);
+      glDrawLines(currentContext, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel, false);
    if (nPoints2 > 0)
-      glDrawLines(currentContext, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), pixel);
+      glDrawLines(currentContext, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), pixel, false);
    glClearClip();
 #else   
    for (i=1; i < nPoints1; i++)
