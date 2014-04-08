@@ -52,7 +52,7 @@ public class ButtonSample extends BaseContainer
          c.setBackColor(SELCOLOR);
    
          
-         img = new Image("images/find.png").smoothScaledFromResolution(640);
+         img = new Image("images/find.png").hwScaledFixedAspectRatio(fmH*2,true);
          Font f = Font.getFont(true, Font.NORMAL_SIZE+2);
    
          sc.add(new Label("Text with\nimage: "),LEFT,AFTER+gap);

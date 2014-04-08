@@ -44,6 +44,11 @@ public class AnimationSample extends BaseContainer
       cbEffect.setSelectedIndex(0);
       next(false);
    }
+   
+   public void onAddAgain()
+   {
+      next(false);
+   }
 
    public void onEvent(Event event)
    {

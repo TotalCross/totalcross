@@ -28,6 +28,7 @@ public class ImageBookSample extends BaseContainer
 {
    GridContainer gc;
    static boolean isVert;
+   RadioGroupController rg;
    
    // saves the files that contains the images
    // always store the reference to the file, NEVER the image bytes! can also be the rowid or primary key if the image is inside a database
@@ -270,11 +271,17 @@ public class ImageBookSample extends BaseContainer
       {
          super.initUI();
          setTitle("Image Book");
+         
+         rg = new RadioGroupController();
+         add(new Label("Orientation: "),LEFT+gap,TOP+gap);
+         add(new Radio("Horizontal",rg),AFTER+gap,SAME);
+         add(new Radio("Vertical",rg),AFTER+gap,SAME);
+         rg.setSelectedIndex(isVert ? 1 : 0);
 
          // folder that contains the images. can be "/sdcard", for example
          imageFolder = Settings.appPath;
          if (Settings.onJavaSE)
-            imageFolder += "/src/tc/samples/ui/controls";
+            imageFolder += "/src/tc/samples/ui";
          imageFolder += "/books/";
          // list images in the folder
          String[] arqs0 = new File(imageFolder).listFiles();
@@ -283,29 +290,34 @@ public class ImageBookSample extends BaseContainer
          for (int i = 0; i < imageNames.length; i++)
             imageNames[i] = arqs0[i % arqs0.length];
          // defines orientation
-         int dir = isVert ? GridContainer.VERTICAL_ORIENTATION : GridContainer.HORIZONTAL_ORIENTATION;
-         isVert = !isVert;
          // starts the ImageLoader
          imgload = new ImageLoader(GRID_LINES*GRID_COLS*CACHE_PAGES, GRID_LINES*GRID_COLS, imageNames);
          imgload.start();
 
          setBackColor(Color.WHITE);
-            
-         // defines the orientation: VERTICAL_ORIENTATION ou HORIZONTAL_ORIENTATION
-         add(gc = new GridContainer(dir),LEFT,TOP,FILL,FILL);
-         gc.setBackColor(Color.WHITE);
-         Flick f = gc.getFlick();
-         f.shortestFlick = 1000; // increases because the image's load time affects the flick
-         f.longestFlick = TOTAL_ITEMS > 500 ? 6000 : 2500;
-         gc.setPageSize(GRID_LINES,GRID_COLS);
-         gc.setRowsPerPage(LINES_PER_PAGE);
-         addCells();
-         info = "Click book: details. Reopen: scroll "+(isVert ? "vertical" : "horizontal");
+         
+         addBook();
+         info = "Click a book for details";
       }
       catch (Exception ee)
       {
          MessageBox.showException(ee,true);
       }
+   }
+   
+   private void addBook()
+   {
+      if (gc != null) remove(gc);
+      // defines the orientation: VERTICAL_ORIENTATION ou HORIZONTAL_ORIENTATION
+      int dir = isVert ? GridContainer.VERTICAL_ORIENTATION : GridContainer.HORIZONTAL_ORIENTATION;
+      add(gc = new GridContainer(dir),LEFT,TOP+fmH+gap*2,FILL,FILL);
+      gc.setBackColor(Color.WHITE);
+      Flick f = gc.getFlick();
+      f.shortestFlick = 1000; // increases because the image's load time affects the flick
+      f.longestFlick = TOTAL_ITEMS > 500 ? 6000 : 2500;
+      gc.setPageSize(GRID_LINES,GRID_COLS);
+      gc.setRowsPerPage(LINES_PER_PAGE);
+      addCells();
    }
    
    private void addCells()
@@ -320,12 +332,21 @@ public class ImageBookSample extends BaseContainer
    public void onEvent(Event e)
    {
       super.onEvent(e);
-      if (e.type == ControlEvent.PRESSED && e.target instanceof ImgCell)
+      if (e.type == ControlEvent.PRESSED)
       {
-         int idx = ((ImgCell)e.target).idx;
-         CellBox mc = new CellBox(idx);
-         mc.setRect(CENTER,CENTER,SCREENSIZE+80,SCREENSIZE+80);
-         mc.popup();
+         if (e.target instanceof ImgCell)
+         {
+            int idx = ((ImgCell)e.target).idx;
+            CellBox mc = new CellBox(idx);
+            mc.setRect(CENTER,CENTER,SCREENSIZE+80,SCREENSIZE+80);
+            mc.popup();
+         }
+         else
+         if (e.target instanceof Radio)
+         {
+            isVert = rg.getSelectedIndex() == 1;
+            addBook();
+         }
       }
    }
    
