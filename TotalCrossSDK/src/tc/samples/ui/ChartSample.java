@@ -73,6 +73,7 @@ public class ChartSample extends BaseContainer
       sc.add(new Radio("Column ",rgType), AFTER, SAME);
       sc.add(new Radio("Line ", rgType), AFTER, SAME);
       sc.add(new Radio("Pie ", rgType), AFTER, SAME);
+      rgType.setSelectedIndex(0);
       sc.add(bt = new Button("100x"),RIGHT,SAME,PREFERRED,SAME);
 
       int gap =Settings.screenWidth > 320 ? fmH/2 : 0;
