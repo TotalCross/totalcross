@@ -63,6 +63,7 @@ static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
 static int32 *pixcoords, *pixcolors, *pixEnd;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
+static void clearPixels();
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -259,11 +260,44 @@ void glDrawPixels(int32 n, int32 rgb)
       PixelConv pc;
       pc.pixel = pixLastRGB = rgb;
       glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
-   }                               
+   }
    glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
    glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
    glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
+   clearPixels();
 }
+
+void glDrawLines(Context currentContext, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb)
+{
+   ty += glShiftY;
+   if (pixcolors != (int32*)glcolors) flushPixels();
+   setCurrentProgram(pointsProgram);
+   if (pixLastRGB != rgb)
+   {
+      PixelConv pc;
+      pc.pixel = pixLastRGB = rgb;
+      glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
+   }                               
+   if (checkGLfloatBuffer(currentContext, n))
+   {
+      int32 i;
+      float *glC = glcolors;
+      float *glV = glcoords;
+      for (i = 0; i < n; i++)
+      {
+         *glV++ = (float)(*x++ + tx);
+         *glV++ = (float)(*y++ + ty);
+         *glC++ = 1;
+      }
+      glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
+      glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+      // note: GL_TRIANGLE_FAN would fill, but when the pie is outside the screen bounds, it draws incorrectly
+      glDrawArrays(GL_LINE_LOOP, 0,n); GL_CHECK_ERROR  
+      glFlush();
+      clearPixels();
+   }
+}
+
 
 static void initShade()
 {         
@@ -278,7 +312,7 @@ static void initShade()
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   if (pixcolors != (int32*)glcolors) flushPixels(4);
+   if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(shadeProgram);
    glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
@@ -423,7 +457,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       
    GLfloat* coords = texcoords;
    PixelConv pcolor;
-   if (pixcolors != (int32*)glcolors) flushPixels(6);
+   if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 
@@ -475,7 +509,7 @@ static void clearPixels()
    pixcolors = (int32*)glcolors;
 }
 
-void flushPixels(int q)
+void flushPixels()
 {         
    if (pixcolors != (int32*)glcolors)
    {
@@ -539,7 +573,7 @@ static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
    bool isPixel = (x & IS_PIXEL) != 0;
    if ((pixcoords+(isPixel ? 2 : 4)) > pixEnd)
-      flushPixels(7);
+      flushPixels();
    *pixcoords++ = x;
    *pixcoords++ = y;
    if (!isPixel)
@@ -589,7 +623,7 @@ typedef union
 int32 glGetPixel(int32 x, int32 y)
 {                
    glpixel gp;
-   if (pixcolors != (int32*)glcolors) flushPixels(8);
+   if (pixcolors != (int32*)glcolors) flushPixels();
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
@@ -601,7 +635,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    glpixel gp;
    int32 i;
    GLint ext_format, ext_type;
-   if (pixcolors != (int32*)glcolors) flushPixels(9);
+   if (pixcolors != (int32*)glcolors) flushPixels();
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &ext_format);
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &ext_type);
    if (ext_format == GL_BGRA && ext_type == GL_UNSIGNED_BYTE) 
@@ -636,7 +670,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
 
 void flushAll()
 {
-   flushPixels(10);
+   flushPixels();
    glFlush(); GL_CHECK_ERROR
 }
 
@@ -853,7 +887,7 @@ void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 { 
    if (surfaceWillChange) {clearPixels(); return;}
-   if (pixcolors != (int32*)glcolors) flushPixels(11);
+   if (pixcolors != (int32*)glcolors) flushPixels();
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)
 #else

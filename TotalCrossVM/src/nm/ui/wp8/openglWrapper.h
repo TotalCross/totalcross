@@ -74,7 +74,7 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 int32 glGetPixel(int32 x, int32 y);
 //void applyChanges(Context currentContext, TCObject obj, bool updateList);
-void flushPixels(int q);
+void flushPixels();
 bool checkGLfloatBuffer(Context c, int32 n);
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip);

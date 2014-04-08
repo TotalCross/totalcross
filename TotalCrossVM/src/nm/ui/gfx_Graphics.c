@@ -18,6 +18,7 @@ void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a);
 void glDrawPixels(int32 n, int32 rgb);
+void glDrawLines(Context currentContext, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb);
 int32 glGetPixel(int32 x, int32 y);
 void glDeleteTexture(TCObject img, int32* textureId, bool removeFromList);
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
@@ -25,7 +26,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 void applyChanges(Context currentContext, TCObject obj, bool updateList);
 void freeTexture(TCObject obj, bool updateList);
 bool checkGLfloatBuffer(Context c, int32 n);
-void flushPixels(int q);
+void flushPixels();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
 void glSetLineWidth(int32 w);

@@ -26,6 +26,8 @@
 extern int32 appW,appH,glShiftY,desiredglShiftY;
 extern float ftransp[16];
 extern float *glcoords, *glcolors;
+void glClearClip();
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
@@ -1489,16 +1491,25 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 
 ////////////////////////////////////////////////////////////////////////////
 // draws a polygon. if the polygon is not closed, close it
-
 static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel pixel)
 {
    int32 i;
    if (!xPoints1 || !yPoints1 || nPoints1 < 2)
       return;
+
+#ifdef __gl2_h_
+   glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
+   if (nPoints1 > 0)
+      glDrawLines(currentContext, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel);
+   if (nPoints2 > 0)
+      glDrawLines(currentContext, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), pixel);
+   glClearClip();
+#else   
    for (i=1; i < nPoints1; i++)
       drawLine(currentContext, g,xPoints1[i-1], yPoints1[i-1], xPoints1[i], yPoints1[i], pixel);
    for (i=1; i < nPoints2; i++)
       drawLine(currentContext, g,xPoints2[i-1], yPoints2[i-1], xPoints2[i], yPoints2[i], pixel);
+#endif      
 }
 ////////////////////////////////////////////////////////////////////////////
 // draw an elliptical arc from startAngle to endAngle.

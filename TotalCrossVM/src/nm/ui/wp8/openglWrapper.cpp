@@ -53,7 +53,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 	return screen->pixels != null;
 }
 
-void flushPixels(int q)
+void flushPixels()
 {
 }
 

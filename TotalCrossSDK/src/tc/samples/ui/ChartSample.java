@@ -27,12 +27,12 @@ public class ChartSample extends BaseContainer
    ColumnChart column;
    LineChart line;
    PieChart pie;
-   RadioGroupController rgType;
    Slider sh,sv;
 
    Check is3D,showTitle,showCategories,showHGrids,
      showVGrids, isVGrad, isHGrad, isInvGrad, isDarker, showYValues;
    ComboBox legendPosition;
+   TabbedContainer tp;
    Button bt;
 
    public void initUI()
@@ -67,15 +67,7 @@ public class ChartSample extends BaseContainer
       isVGrad = new Check("Vert");
       isInvGrad = new Check("Invert");
       isDarker = new Check("Dark");
-      rgType = new RadioGroupController();
       
-      sc.add(new Label("Type: "), LEFT, TOP);
-      sc.add(new Radio("Column ",rgType), AFTER, SAME);
-      sc.add(new Radio("Line ", rgType), AFTER, SAME);
-      sc.add(new Radio("Pie ", rgType), AFTER, SAME);
-      rgType.setSelectedIndex(0);
-      sc.add(bt = new Button("100x"),RIGHT,SAME,PREFERRED,SAME);
-
       int gap =Settings.screenWidth > 320 ? fmH/2 : 0;
       sc.add(showTitle, LEFT, AFTER+ 2+gap);
       sc.add(legendPosition, AFTER + 2, SAME,PREFERRED,SAME);
@@ -96,17 +88,22 @@ public class ChartSample extends BaseContainer
       sh.setLiveScrolling(true);
       sv.setLiveScrolling(true);
 
-      sc.add(new Label("Gradient"), LEFT, AFTER+2+gap, PREFERRED, SAME, is3D);
+      sc.add(new Label("Shade"), LEFT, AFTER+gap, PREFERRED, SAME, is3D);
       sc.add(isHGrad, AFTER+2, SAME);
       sc.add(isVGrad, AFTER+2, SAME);
       sc.add(isInvGrad, AFTER+2, SAME);
       sc.add(isDarker, AFTER+2, SAME);
-      sc.add(new Ruler(),LEFT,AFTER+gap);
-      isInvGrad.setEnabled(false);
-      isDarker.setEnabled(false);
+      isInvGrad.setVisible(false);
+      isDarker.setVisible(false);
 
-      sc.add(column, CENTER, AFTER+gap, PARENTSIZE+100,PARENTSIZE+90);
-      column.setBackColor(Color.darker(backColor,16));
+      int bg = Color.darker(backColor,16);
+      tp = new TabbedContainer(new String[]{" Column "," Line "," Pie "});
+      tp.extraTabHeight = fmH/2;
+      sc.add(tp, LEFT,AFTER+gap*2,FILL,PARENTSIZE+90);
+      sc.add(bt = new Button("100x"),RIGHT,SAME+fmH/4);
+
+      tp.getContainer(0).add(column, LEFT,TOP,FILL,FILL);
+      column.setBackColor(bg);
 
       // setup the line chart
       line = new LineChart(names);
@@ -116,9 +113,8 @@ public class ChartSample extends BaseContainer
       line.lineThickness = 2;
       line.setTitle("Sales Projection");
       line.setYAxis(0, 200, 10);
-      sc.add(line, SAME, SAME, SAME, SAME);
-      line.setVisible(false);
-      line.setBackColor(Color.darker(backColor,16));
+      tp.getContainer(1).add(line, LEFT,TOP,FILL,FILL);
+      line.setBackColor(bg);
 
       // setup the pie chart
       pie = new PieChart();
@@ -129,12 +125,13 @@ public class ChartSample extends BaseContainer
       pie.yDecimalPlaces = 1; // 1 decimal place
       pie.setTitle("Profit Share");
       pie.legendValueSuffix = "%"; // show % instead of the value in the tooltip
-      sc.add(pie, SAME, SAME, SAME, SAME);
-      pie.setBackColor(Color.darker(backColor,16));
-      pie.setVisible(false);
+      tp.getContainer(2).add(pie, LEFT,TOP,FILL,FILL);
+      pie.setBackColor(bg);
       pie.type = Chart.IS_3D;
       column.xDecimalPlaces = column.yDecimalPlaces = line.yDecimalPlaces = 0;
       line.legendPerspective = pie.legendPerspective = column.legendPerspective = 6;
+      tp.activeTabBackColor = Color.ORANGE;
+      tp.pressedColor = Color.YELLOW;
    }
 
    public void onEvent(Event e)
@@ -150,26 +147,25 @@ public class ChartSample extends BaseContainer
             setInfo("Paint 100x elapsed: "+(fim-ini)+"ms");
          }
          else
-         if (e.target instanceof Radio)
+         if (e.target == tp)
          {
-            char caption = rgType.getSelectedItem().getText().charAt(0);
-            boolean c,l,p;
-            column.setVisible(c = caption == 'C');
-            line  .setVisible(l = caption == 'L');
-            pie   .setVisible(p = caption == 'P');
-            is3D.setEnabled(!l);
-            showHGrids.setEnabled(!p);
-            showVGrids.setEnabled(!p);
-            showCategories.setEnabled(!p);
-            showYValues.setEnabled(!p);
-            isHGrad.setEnabled(c);
-            isVGrad.setEnabled(c || p);
-            isInvGrad.setEnabled(c || p);
-            isDarker.setEnabled(c || p);
-            isInvGrad.setEnabled(isHGrad.isChecked() || isVGrad.isChecked());
-            isDarker.setEnabled(isHGrad.isChecked() || isVGrad.isChecked());
-            sv.setEnabled(is3D.isChecked() && !l);
-            sh.setEnabled(is3D.isChecked() && !l);
+            int sel = tp.getActiveTab();
+            boolean c = sel == 0;
+            boolean l = sel == 1;
+            boolean p = sel == 2;
+            is3D.setVisible(!l);
+            showHGrids.setVisible(!p);
+            showVGrids.setVisible(!p);
+            showCategories.setVisible(!p);
+            showYValues.setVisible(!p);
+            isHGrad.setVisible(c);
+            isVGrad.setVisible(c || p);
+            isInvGrad.setVisible(c || p);
+            isDarker.setVisible(c || p);
+            isInvGrad.setVisible(isHGrad.isChecked() || isVGrad.isChecked());
+            isDarker.setVisible(isHGrad.isChecked() || isVGrad.isChecked());
+            sv.setVisible(is3D.isChecked() && !l);
+            sh.setVisible(is3D.isChecked() && !l);
             if (c)
             {
                sv.setMinimum(0);
@@ -192,8 +188,8 @@ public class ChartSample extends BaseContainer
             else
             if (e.target == isVGrad && isHGrad.isChecked() && isVGrad.isChecked())
                isHGrad.setChecked(false);
-            isInvGrad.setEnabled(isHGrad.isChecked() || isVGrad.isChecked());
-            isDarker.setEnabled(isHGrad.isChecked() || isVGrad.isChecked());
+            isInvGrad.setVisible(isHGrad.isChecked() || isVGrad.isChecked());
+            isDarker.setVisible(isHGrad.isChecked() || isVGrad.isChecked());
             pie.showTitle = line.showTitle = column.showTitle = showTitle.isChecked();
             pie.showLegend = line.showLegend = column.showLegend = legendPosition.getSelectedIndex() != 0;
             pie.legendPosition = line.legendPosition = column.legendPosition = getLegendPosition();
@@ -207,8 +203,8 @@ public class ChartSample extends BaseContainer
                (isVGrad.isChecked() ? Chart.GRADIENT_VERTICAL : 0) |
                (isInvGrad.isChecked() ? Chart.GRADIENT_INVERT : 0) |
                (isDarker.isChecked() ? Chart.GRADIENT_DARK : 0);
-            sv.setEnabled(is3D.isChecked() && !line.isVisible());
-            sh.setEnabled(is3D.isChecked() && !line.isVisible());
+            sv.setVisible(is3D.isChecked() && !line.isVisible());
+            sh.setVisible(is3D.isChecked() && !line.isVisible());
             repaint();
          }
          else
