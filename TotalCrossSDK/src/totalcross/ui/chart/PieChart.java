@@ -186,14 +186,14 @@ public class PieChart extends Chart
    {
       switch (e.type)
       {
-         case PenEvent.PEN_UP:
-            if (!hadParentScrolled())
-            {
-               PenEvent pe = (PenEvent)e;
-               lastPenX = pe.x;
-               lastPenY = pe.y;
-            }
+         case PenEvent.PEN_DOWN:
+         case PenEvent.PEN_DRAG:
+         {
+            PenEvent pe = (PenEvent)e;
+            lastPenX = pe.x;
+            lastPenY = pe.y;
             break;
+         }
          case ControlEvent.PRESSED:
             if (e.target == tip)
             {
