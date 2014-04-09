@@ -1601,8 +1601,6 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
          else d2 += t5 - t8;  // move straight left
          ++size;
       } while (x >= 0);
-      if (!gradient)
-         size /= 2;
       nq = size;
       size *= 4;
       // step 2: computes how many points per degree
@@ -1636,32 +1634,25 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       d2 = (t1>>1) - t8 + t5;
       x = rx;
       i=0;
-      bool skip=false;
       while (d2 < 0)          // til slope = -1
       {
          // save 4 points using symmetry
-         if (skip)
-            skip = false;
-         else
-         {
-            index = nq*0+i;      // 0/3
-            xPoints[index]=+x;
-            yPoints[index]=-y;
+         index = nq*0+i;      // 0/3
+         xPoints[index]=+x;
+         yPoints[index]=-y;
 
-            index = (nq<<1)-i-1;    // 1/3
-            xPoints[index]=-x;
-            yPoints[index]=-y;
+         index = (nq<<1)-i-1;    // 1/3
+         xPoints[index]=-x;
+         yPoints[index]=-y;
 
-            index = (nq<<1)+i;      // 2/3
-            xPoints[index]=-x;
-            yPoints[index]=+y;
+         index = (nq<<1)+i;      // 2/3
+         xPoints[index]=-x;
+         yPoints[index]=+y;
 
-            index = (nq<<2)-i-1;    // 3/3
-            xPoints[index]=+x;
-            yPoints[index]=+y;
-            i++;
-            skip = !gradient;
-         }
+         index = (nq<<2)-i-1;    // 3/3
+         xPoints[index]=+x;
+         yPoints[index]=+y;
+         i++;
          y++;        // always move up here
          t9 += t3;
          if (d1 < 0)  // move straight up
@@ -1678,33 +1669,26 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
          }
       }
 
-      skip = false;
       do             // rest of top right quadrant
       {
          // save 4 points using symmetry
-         if (skip)
-            skip = false;
-         else
-         {
-            index = nq*0+i;    // 0/3
-            xPoints[index]=+x;
-            yPoints[index]=-y;
+         index = nq*0+i;    // 0/3
+         xPoints[index]=+x;
+         yPoints[index]=-y;
 
-            index = (nq<<1)-i-1;  // 1/3
-            xPoints[index]=-x;
-            yPoints[index]=-y;
+         index = (nq<<1)-i-1;  // 1/3
+         xPoints[index]=-x;
+         yPoints[index]=-y;
 
-            index = (nq<<1)+i;    // 2/3
-            xPoints[index]=-x;
-            yPoints[index]=+y;
+         index = (nq<<1)+i;    // 2/3
+         xPoints[index]=-x;
+         yPoints[index]=+y;
 
-            index = (nq<<2)-i-1;  // 3/3
-            xPoints[index]=+x;
-            yPoints[index]=+y;
+         index = (nq<<2)-i-1;  // 3/3
+         xPoints[index]=+x;
+         yPoints[index]=+y;
 
-            ++i;
-            skip = !gradient;
-         }
+         ++i;
          --x;        // always move left here
          t8 -= t6;
          if (d2 < 0)  // move up and left
@@ -1716,8 +1700,8 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
          else d2 += t5 - t8;   // move straight left
       } while (x >= 0);
       // save last arguments
-      Graphics_lastXC(g)   = xc;
-      Graphics_lastYC(g)   = yc;
+      //Graphics_lastXC(g)   = xc; no longer
+      //Graphics_lastYC(g)   = yc;  needed
       Graphics_lastRX(g)   = rx;
       Graphics_lastRY(g)   = ry;
       Graphics_lastPPD(g)  = ppd;
