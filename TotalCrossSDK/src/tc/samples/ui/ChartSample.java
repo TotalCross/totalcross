@@ -158,12 +158,12 @@ public class ChartSample extends BaseContainer
             showVGrids.setVisible(!p);
             showCategories.setVisible(!p);
             showYValues.setVisible(!p);
-            isHGrad.setVisible(c);
-            isVGrad.setVisible(c || p);
+            isHGrad.setVisible(c); if (!c) isHGrad.setChecked(false);
+            isVGrad.setVisible(c || p); if (!c && !p) isHGrad.setChecked(false);
             isInvGrad.setVisible(c || p);
             isDarker.setVisible(c || p);
             isInvGrad.setVisible(isHGrad.isChecked() || isVGrad.isChecked());
-            isDarker.setVisible(isHGrad.isChecked() || isVGrad.isChecked());
+            isDarker.setVisible(isInvGrad.isVisible());
             sv.setVisible(is3D.isChecked() && !l);
             sh.setVisible(is3D.isChecked() && !l);
             if (c)
