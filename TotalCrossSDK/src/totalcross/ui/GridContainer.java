@@ -274,4 +274,10 @@ public class GridContainer extends Container
             sc.scrollPage(false);
       }
    }
+   
+   public void onColorsChanged(boolean colorsChanged)
+   {
+      super.onColorsChanged(colorsChanged);
+      sc.setBackForeColors(getBackColor(),getForeColor());
+   }
 }
