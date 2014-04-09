@@ -187,7 +187,8 @@ public abstract class PointLineChart extends Chart
                selectedValue = -1;
 
                Rect r = new Rect();
-               r.width = r.height = pointR * 2;
+               int dim = fmH;
+               r.width = r.height = fmH*2;
 
                for (int i = series.size() - 1; i >= 0; i --) // for each series
                {
@@ -197,8 +198,8 @@ public abstract class PointLineChart extends Chart
                      for (int j = v.size() - 1; j >= 0; j --) // for each series point
                      {
                         Coord c = (Coord) v.items[j];
-                        r.x = c.x - pointR;
-                        r.y = c.y - pointR;
+                        r.x = c.x - dim;
+                        r.y = c.y - dim;
 
                         if (r.contains(xx, yy))
                         {
