@@ -2248,18 +2248,23 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
                if (table->version == VERSION_TABLE)
                {  
-                  if (!readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null))
-                     goto finish;
-                  
-                  j = columnCount;
-                  while (--j)
-                     if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
-                     else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
-                     {
-                        dataLength = record[j]->length;
-                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
-                     }
+                  if (readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null))
+                  {                                   
+                     j = columnCount;
+                     while (--j)
+                        if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
+                           crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
+                        else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
+                        {
+                           dataLength = record[j]->length;
+                           crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
+                        }
+                  }
+                  else
+                  {
+                     context->thrownException = null;
+                     crc32Calc = crc32Lido + 1;
+                  }
                }
                
                if (useOldCrypto)
