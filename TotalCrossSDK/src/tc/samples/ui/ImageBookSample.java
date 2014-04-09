@@ -315,7 +315,7 @@ public class ImageBookSample extends BaseContainer
       Flick f = gc.getFlick();
       f.shortestFlick = 1000; // increases because the image's load time affects the flick
       f.longestFlick = TOTAL_ITEMS > 500 ? 6000 : 2500;
-      gc.setPageSize(GRID_LINES,GRID_COLS);
+      gc.setPageSize(GRID_COLS,GRID_LINES);
       gc.setRowsPerPage(LINES_PER_PAGE);
       addCells();
    }
