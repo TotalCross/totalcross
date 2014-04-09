@@ -287,10 +287,10 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
          *glV++ = (float)(*x++ + tx);
          *glV++ = (float)(*y++ + ty);
       }
-      //glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
+      glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
       glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINE_LOOP, 0,n); GL_CHECK_ERROR  
-      //glClearClip();
+      glClearClip();
    }
 }
 
@@ -450,7 +450,6 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    if (textureId[0] == 0) return;
       
    GLfloat* coords = texcoords;
-   PixelConv pcolor;
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 

@@ -1353,7 +1353,7 @@ static TCObject growIntArray(Context currentContext, TCObject oldArrayObj, int32
    return newArrayObj;
 }
 
-static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel c1, Pixel c2, bool gradient)
+static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isConvex)
 {
    int32 x1, y1, x2, y2,y,n=0,temp, i,j, miny, maxy, a, numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
    int32 *yp;
@@ -1366,16 +1366,15 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
       return;
 
 #ifdef __gl2_h_
-   if (!gradient)
+   if (!gradient && isConvex) // opengl doesnt fills non-convex polygons well
    {
       if (nPoints1 > 0)
-         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1, true);
+         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
       if (nPoints2 > 0)
-         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), c1, true);
+         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
       return;
    }
 #endif
-
 
    axPoints[0] = xPoints1; ayPoints[0] = yPoints1; anPoints[0] = nPoints1;
    axPoints[1] = xPoints2; ayPoints[1] = yPoints2; anPoints[1] = nPoints2;
@@ -1393,6 +1392,8 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
       if (*yp < miny) miny = *yp;
       if (*yp > maxy) maxy = *yp;
    }
+   miny += ty;
+   maxy += ty;
 
    if (ints == null)
    {
@@ -1433,8 +1434,8 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
          j = nPoints-1;
          for (i = 0; i < nPoints; j=i,i++)
          {
-            y1 = yPoints[j];
-            y2 = yPoints[i];
+            y1 = yPoints[j]+ty;
+            y2 = yPoints[i]+ty;
             if (y1 == y2)
                continue;
             if (y1 > y2) // invert
@@ -1457,13 +1458,13 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
                }
                if (yPoints[j] < yPoints[i])
                {
-                  x1 = xPoints[j];
-                  x2 = xPoints[i];
+                  x1 = xPoints[j]+tx;
+                  x2 = xPoints[i]+tx;
                }
                else
                {
-                  x2 = xPoints[j];
-                  x1 = xPoints[i];
+                  x2 = xPoints[j]+tx;
+                  x1 = xPoints[i]+tx;
                }
                ints[n++] = (y - y1) * (x2 - x1) / (y2 - y1) + x1;
             }
@@ -1499,23 +1500,23 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 
 ////////////////////////////////////////////////////////////////////////////
 // draws a polygon. if the polygon is not closed, close it
-static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, Pixel pixel)
+static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
 {
-   int32 i;
-   if (!xPoints1 || !yPoints1 || nPoints1 < 2)
-      return;
-
-#ifdef __gl2_h_
-   if (nPoints1 > 0)
-      glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel, false);
-   if (nPoints2 > 0)
-      glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), pixel, false);
-#else   
-   for (i=1; i < nPoints1; i++)
-      drawLine(currentContext, g,xPoints1[i-1], yPoints1[i-1], xPoints1[i], yPoints1[i], pixel);
-   for (i=1; i < nPoints2; i++)
-      drawLine(currentContext, g,xPoints2[i-1], yPoints2[i-1], xPoints2[i], yPoints2[i], pixel);
-#endif      
+   if (xPoints1 && yPoints1 && nPoints1 >= 2)
+   {
+      #ifdef __gl2_h_
+      if (nPoints1 > 0)
+         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+      if (nPoints2 > 0)
+         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+      #else
+      int32 i;
+      for (i=1; i < nPoints1; i++)
+         drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+      for (i=1; i < nPoints2; i++)
+         drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+      #endif
+   }
 }
 ////////////////////////////////////////////////////////////////////////////
 // draw an elliptical arc from startAngle to endAngle.
@@ -1523,16 +1524,10 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 // (if in fill mode - otherwise, c = outline color)
 static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
 {
-   int32 limitx1 = Graphics_clipX1(g) - Graphics_transX(g); // guich@501_13: store these for faster computation
-   int32 limitx2 = Graphics_clipX2(g) - Graphics_transX(g);
-   int32 limity1 = Graphics_clipY1(g) - Graphics_transY(g);
-   int32 limity2 = Graphics_clipY2(g) - Graphics_transY(g);
    // this algorithm was created by Guilherme Campos Hazan
    double ppd;
    int32 startIndex,endIndex,index,i,nq,size=0,oldX1=0,oldY1=0,last,oldX2=0,oldY2=0;
-   bool sameR, sameC;
-   bool checkClipX = (bool)((xc+rx) > limitx2 || (xc-rx) < limitx1); // guich@340_3 - guich@401_2: added transX/Y
-   bool checkClipY = (bool)((yc+ry) > limity2 || (yc-ry) < limity1);
+   bool sameR;
    TCObject *xPointsObj = &Graphics_xPoints(g);
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
@@ -1564,8 +1559,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
 
    // step 0: if possible, use cached results
    sameR = rx == Graphics_lastRX(g) && ry == Graphics_lastRY(g);
-   sameC = xc == Graphics_lastXC(g) && yc == Graphics_lastYC(g);
-   if (!sameR || !sameC)
+   if (!sameR)
    {
       // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
       // intermediate terms to speed up loop
@@ -1577,41 +1571,38 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       int32 x = rx;                 // ellipse points
       int32 y = 0;                  // ellipse points
 
-      if (sameR)
-         size = (Graphics_lastSize(g)-2)/4;
-      else
+      while (d2 < 0)              // til slope = -1
       {
-         while (d2 < 0)              // til slope = -1
+         t9 += t3;
+         if (d1 < 0)             // move straight up
+         {
+            d1 += t9 + t2;
+            d2 += t9;
+         }
+         else                   // move up and left
+         {
+            --x;
+            t8 -= t6;
+            d1 += t9 + t2 - t8;
+            d2 += t9 + t5 - t8;
+         }
+         ++size;
+      }
+
+      do             // rest of top right quadrant
+      {
+         --x;         // always move left here
+         t8 -= t6;
+         if (d2 < 0)  // move up and left
          {
             t9 += t3;
-            if (d1 < 0)             // move straight up
-            {
-               d1 += t9 + t2;
-               d2 += t9;
-            }
-            else                   // move up and left
-            {
-               --x;
-               t8 -= t6;
-               d1 += t9 + t2 - t8;
-               d2 += t9 + t5 - t8;
-            }
-            ++size;
+            d2 += t9 + t5 - t8;
          }
-
-         do             // rest of top right quadrant
-         {
-            --x;         // always move left here
-            t8 -= t6;
-            if (d2 < 0)  // move up and left
-            {
-               t9 += t3;
-               d2 += t9 + t5 - t8;
-            }
-            else d2 += t5 - t8;  // move straight left
-            ++size;
-         } while (x >= 0);
-      }
+         else d2 += t5 - t8;  // move straight left
+         ++size;
+      } while (x >= 0);
+      if (!gradient)
+         size /= 2;
       nq = size;
       size *= 4;
       // step 2: computes how many points per degree
@@ -1637,41 +1628,40 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
 
       // step 4: stores all the circle in the array. the odd arcs are drawn in reverse order
       // intermediate terms to speed up loop
-      if (!sameR)
-      {
-         t2 = t1<<1;
-         t3 = t2<<1;
-         t8 = t7<<1;
-         t9 = 0;
-         d1 = t2 - t7 + (t4>>1); // error terms
-         d2 = (t1>>1) - t8 + t5;
-         x = rx;
-      }
+      t2 = t1<<1;
+      t3 = t2<<1;
+      t8 = t7<<1;
+      t9 = 0;
+      d1 = t2 - t7 + (t4>>1); // error terms
+      d2 = (t1>>1) - t8 + t5;
+      x = rx;
       i=0;
+      bool skip=false;
       while (d2 < 0)          // til slope = -1
       {
          // save 4 points using symmetry
-         // guich@340_3: added clipping
-         #define doClipX(x) ( ((x) < limitx1) ? limitx1 : ((x) >= limitx2) ? limitx2 : (x) ) // guich@401_2: added transX/Y
-         #define doClipY(y) ( ((y) < limity1) ? limity1 : ((y) >= limity2) ? limity2 : (y) )
+         if (skip)
+            skip = false;
+         else
+         {
+            index = nq*0+i;      // 0/3
+            xPoints[index]=+x;
+            yPoints[index]=-y;
 
-         index = nq*0+i;      // 0/3
-         xPoints[index]=checkClipX?doClipX(xc+x):(xc+x);
-         yPoints[index]=checkClipY?doClipY(yc-y):(yc-y);
+            index = (nq<<1)-i-1;    // 1/3
+            xPoints[index]=-x;
+            yPoints[index]=-y;
 
-         index = (nq<<1)-i-1;    // 1/3
-         xPoints[index]=checkClipX?doClipX(xc-x):(xc-x);
-         yPoints[index]=checkClipY?doClipY(yc-y):(yc-y);
+            index = (nq<<1)+i;      // 2/3
+            xPoints[index]=-x;
+            yPoints[index]=+y;
 
-         index = (nq<<1)+i;      // 2/3
-         xPoints[index]=checkClipX?doClipX(xc-x):(xc-x);
-         yPoints[index]=checkClipY?doClipY(yc+y):(yc+y);
-
-         index = (nq<<2)-i-1;    // 3/3
-         xPoints[index]=checkClipX?doClipX(xc+x):(xc+x);
-         yPoints[index]=checkClipY?doClipY(yc+y):(yc+y);
-
-         i++;
+            index = (nq<<2)-i-1;    // 3/3
+            xPoints[index]=+x;
+            yPoints[index]=+y;
+            i++;
+            skip = !gradient;
+         }
          y++;        // always move up here
          t9 += t3;
          if (d1 < 0)  // move straight up
@@ -1688,27 +1678,33 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
          }
       }
 
+      skip = false;
       do             // rest of top right quadrant
       {
          // save 4 points using symmetry
-         // guich@340_3: added clipping
-         index = nq*0+i;    // 0/3
-         xPoints[index]=checkClipX?doClipX(xc+x):(xc+x);
-         yPoints[index]=checkClipY?doClipY(yc-y):(yc-y);
+         if (skip)
+            skip = false;
+         else
+         {
+            index = nq*0+i;    // 0/3
+            xPoints[index]=+x;
+            yPoints[index]=-y;
 
-         index = (nq<<1)-i-1;  // 1/3
-         xPoints[index]=checkClipX?doClipX(xc-x):(xc-x);
-         yPoints[index]=checkClipY?doClipY(yc-y):(yc-y);
+            index = (nq<<1)-i-1;  // 1/3
+            xPoints[index]=-x;
+            yPoints[index]=-y;
 
-         index = (nq<<1)+i;    // 2/3
-         xPoints[index]=checkClipX?doClipX(xc-x):(xc-x);
-         yPoints[index]=checkClipY?doClipY(yc+y):(yc+y);
+            index = (nq<<1)+i;    // 2/3
+            xPoints[index]=-x;
+            yPoints[index]=+y;
 
-         index = (nq<<2)-i-1;  // 3/3
-         xPoints[index]=checkClipX?doClipX(xc+x):(xc+x);
-         yPoints[index]=checkClipY?doClipY(yc+y):(yc+y);
+            index = (nq<<2)-i-1;  // 3/3
+            xPoints[index]=+x;
+            yPoints[index]=+y;
 
-         ++i;
+            ++i;
+            skip = !gradient;
+         }
          --x;        // always move left here
          t8 -= t6;
          if (d2 < 0)  // move up and left
@@ -1752,8 +1748,8 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       oldY1 = yPoints[endIndex];
       oldX2 = xPoints[endIndex+1];
       oldY2 = yPoints[endIndex+1];
-      xPoints[endIndex] = xc;
-      yPoints[endIndex] = yc;
+      xPoints[endIndex] = 0;
+      yPoints[endIndex] = 0;
       xPoints[endIndex+1] = xPoints[startIndex];
       yPoints[endIndex+1] = yPoints[startIndex];
       endIndex+=2;
@@ -1763,14 +1759,14 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    {
       int p1 = last-startIndex;
       if (fill)
-         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, gradient ? c : c2, c2, gradient); // lower half, upper half
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, c);
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient,true); // lower half, upper half
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, c);
    }
    else
    {
       if (fill)
-         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, gradient ? c : c2, c2, gradient);
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, c);
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, c);
    }
    if (pie)  // restore saved points
    {
