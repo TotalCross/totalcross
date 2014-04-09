@@ -1484,15 +1484,15 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
          if (n == 2) // most of the times
          {
             if (ints[1] > ints[0])
-               drawHLine(currentContext, g,ints[0],y,ints[1]-ints[0]+1,c.pixel,c.pixel);
+               drawHLine(currentContext, g,ints[0],y,ints[1]-ints[0],c.pixel,c.pixel);
             else
-               drawHLine(currentContext, g,ints[1],y,ints[0]-ints[1]+1,c.pixel,c.pixel);
+               drawHLine(currentContext, g,ints[1],y,ints[0]-ints[1],c.pixel,c.pixel);
          }
          else
          {
             qsortInts(ints, 0, n-1);
             for (n>>=1, yp = ints; --n >= 0; yp+=2)
-               drawHLine(currentContext, g,yp[0],y,yp[1]-yp[0]+1,c.pixel,c.pixel);
+               drawHLine(currentContext, g,yp[0],y,yp[1]-yp[0],c.pixel,c.pixel);
          }
       }
    }
