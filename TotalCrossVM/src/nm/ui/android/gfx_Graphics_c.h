@@ -15,6 +15,11 @@
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
 #endif
+#ifdef darwin
+bool isIpad;
+#else
+bool isIpad = false;
+#endif
 
 bool checkGlError(const char* op, int line)
 {
@@ -441,7 +446,7 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
       int32 h = y2-y1, w = x2-x1;
       if (h < 0) h = 0;
       if (w < 0) w = 0;
-      glScissor(x1,appH-y2,w,h); GL_CHECK_ERROR
+      glScissor(x1,(isIpad ? appH/2 : appH) - y2,w,h); GL_CHECK_ERROR
    }
 }
 

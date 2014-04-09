@@ -20,6 +20,7 @@ int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
 extern int32 iosScale;
+extern bool isIpad;
 
 @implementation MainViewController
 
@@ -27,6 +28,7 @@ bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
+   isIpad = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
    // initialize the screen bitmap with the full width and height
    CGRect rect = [[UIScreen mainScreen] bounds];
    window = [[UIWindow alloc] initWithFrame: rect];
