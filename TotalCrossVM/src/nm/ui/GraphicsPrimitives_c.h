@@ -917,10 +917,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    fcG = fc.g;
    fcB = fc.b;
 
-#ifdef __gl2_h_
-   flushPixels(1);
-#endif
-
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
    if (uf == null) return;
    rowWIB = uf->rowWidthInBytes;
@@ -1372,12 +1368,10 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 #ifdef __gl2_h_
    if (!gradient)
    {
-      glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
       if (nPoints1 > 0)
-         glDrawLines(currentContext, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1, true);
+         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), c1, true);
       if (nPoints2 > 0)
-         glDrawLines(currentContext, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), c1, true);
-      glClearClip();
+         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), c1, true);
       return;
    }
 #endif
@@ -1512,12 +1506,10 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
       return;
 
 #ifdef __gl2_h_
-   glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    if (nPoints1 > 0)
-      glDrawLines(currentContext, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel, false);
+      glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, Graphics_transX(g), Graphics_transY(g), pixel, false);
    if (nPoints2 > 0)
-      glDrawLines(currentContext, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), pixel, false);
-   glClearClip();
+      glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, Graphics_transX(g), Graphics_transY(g), pixel, false);
 #else   
    for (i=1; i < nPoints1; i++)
       drawLine(currentContext, g,xPoints1[i-1], yPoints1[i-1], xPoints1[i], yPoints1[i], pixel);
@@ -2946,7 +2938,6 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
 #endif
    pc.a = 255;      
 #ifdef __gl2_h_
-   flushPixels(2);
    glSetLineWidth(2);
    for (i = 0; i < numSteps; i++)
    {
@@ -2958,7 +2949,6 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
       sy = startY+i;
       drawThickRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
    }
-   flushPixels(3);
    glSetLineWidth(1);
    if (Surface_isImage(Graphics_surface(g)))
       Image_changed(Graphics_surface(g)) = true;

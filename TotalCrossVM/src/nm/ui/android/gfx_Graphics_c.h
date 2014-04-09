@@ -57,13 +57,11 @@ VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
 GLfloat ftransp[16], f255[256];
 int32 flen;
-GLfloat* glcoords;//[flen*2]; x,y
-GLfloat* glcolors;//[flen];   alpha
+GLfloat *glcoords;//[flen*2]; x,y
+GLfloat *glcolors;//[flen];   alpha
 static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
-static int32 *pixcoords, *pixcolors, *pixEnd;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
-static void clearPixels();
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -160,11 +158,13 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
+static Pixel lrpLastRGB = -2;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
    {
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
+      lrpLastRGB = -2;
    }
 }
 
@@ -266,29 +266,32 @@ void glDrawPixels(int32 n, int32 rgb)
    glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
 }
 
-void glDrawLines(Context currentContext, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
+void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
 {
    PixelConv pc;
    ty += glShiftY;
-   //if (pixcolors != (int32*)glcolors) flushPixels(); - cannot call flushPixels from here!
    setCurrentProgram(lrpProgram);
    pc.pixel = rgb;
-   glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],1.0f); GL_CHECK_ERROR
-   float* v0 = (float*)xmalloc(sizeof(float) * n * 2);     // TODO remove this when removing add2pipe!
-   if (v0)
+   pc.a = 255;
+   if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
+   {          
+      lrpLastRGB = pc.pixel;
+      glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+   }
+   if (checkGLfloatBuffer(currentContext, n))
    {
       int32 i;
-      float *glV = v0;
+      float *glV = glcoords;
       for (i = 0; i < n; i++)
       {
          *glV++ = (float)(*x++ + tx);
          *glV++ = (float)(*y++ + ty);
       }
-      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, v0); GL_CHECK_ERROR
-      // note: GL_TRIANGLE_FAN would fill, but when the pie is outside the screen bounds, it draws incorrectly
+      //glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
       glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINE_LOOP, 0,n); GL_CHECK_ERROR  
+      //glClearClip();
    }
-   xfree(v0);
 }
 
 
@@ -305,7 +308,6 @@ static void initShade()
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(shadeProgram);
    glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
@@ -422,7 +424,6 @@ void glClearClip()
 {            
    glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
 }   
-// note: glSetClip cannot be used for points, lines and rectangles, since they are cached and drawn later
 // note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
 {
@@ -450,7 +451,6 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       
    GLfloat* coords = texcoords;
    PixelConv pcolor;
-   if (pixcolors != (int32*)glcolors) flushPixels();
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 
@@ -493,118 +493,64 @@ void glSetLineWidth(int32 w)
    glLineWidth(w); GL_CHECK_ERROR
 }
 
-#define IS_PIXEL (1<<28)
-#define IS_DIAGONAL  (1<<27)
-
-static void clearPixels()
-{
-   pixcoords = (int32*)glcoords;
-   pixcolors = (int32*)glcolors;
-}
-
-void flushPixels()
+void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiagonal)
 {         
-   if (pixcolors != (int32*)glcolors)
-   {
-      int32 n = pixcolors-(int32*)glcolors, i;
-      PixelConv pc;
-      GLfloat* coords = lrcoords;
-      setCurrentProgram(lrpProgram);
-      pixcoords = (int32*)glcoords;
-      pixcolors = (int32*)glcolors;
-      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
-      int32 lastRGBA = ~*pixcolors;
-      int32 x,y,w,h,x2,y2;
-      int32 ty = glShiftY;
-      for (i = 0; i < n; i++)
-      {  
-         // color
-         int32 rgba = *pixcolors++;
-         if (lastRGBA != rgba) // prevent color change = performance x2 in galaxy tab2
-         {
-            pc.pixel = lastRGBA = rgba;
-            glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
-         }
-         // coord
-         x = *pixcoords++;
-         y = *pixcoords++;
-         y += ty;
-         if (x & IS_DIAGONAL)
-         {                    
-            x2 = *pixcoords++;
-            y2 = *pixcoords++ + ty;
-            coords[0] = x & ~IS_DIAGONAL;
-            coords[1] = y;
-            coords[2] = x2;
-            coords[3] = y2;
-            glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
-         }
-         else
-         {
-            if (x & IS_PIXEL)
-            {
-               x &= ~IS_PIXEL;
-               w = h = 1;
-            }
-            else
-            {
-               w = *pixcoords++;
-               h = *pixcoords++;
-            }
-            coords[0] = coords[2] = x;
-            coords[1] = coords[7] = y;
-            coords[3] = coords[5] = y+h;
-            coords[4] = coords[6] = x+w;
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
-         }
-      }
-      clearPixels();
-   }
-}
-
-static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
-{
-   bool isPixel = (x & IS_PIXEL) != 0;
-   if ((pixcoords+(isPixel ? 2 : 4)) > pixEnd)
-      flushPixels();
-   *pixcoords++ = x;
-   *pixcoords++ = y;
-   if (!isPixel)
-   {
-      *pixcoords++ = w;
-      *pixcoords++ = h;
-   }
+   float* coords = lrcoords;
+   setCurrentProgram(lrpProgram);
+   glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
+   int32 ty = glShiftY;
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
-   *pixcolors++ = pc.pixel;
+   if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
+   {          
+      lrpLastRGB = pc.pixel;
+      glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+   }
+   y += ty;
+   if (isDiagonal)
+   {                    
+      coords[0] = x;
+      coords[1] = y;
+      coords[2] = w;    // x2
+      coords[3] = h+ty; // y2
+      glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
+   }
+   else
+   {
+      coords[0] = coords[2] = x;
+      coords[1] = coords[7] = y;
+      coords[3] = coords[5] = y+h;
+      coords[4] = coords[6] = x+w;
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+   }
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {   
-   add2pipe(x|IS_PIXEL,y,1,1,rgb,a);
+   drawLRP(x,y,1,1,rgb,a, false);
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
-   add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);
+   drawLRP(x1,y1,x2,y2,rgb,a, true);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
-      add2pipe(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb,a);
+      drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,a, false);
    else
    if (y1 == y2) 
-      add2pipe(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb,a);
+      drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,a, false);
    else              
-      add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);
+      drawLRP(x1,y1,x2,y2,rgb,a, true);
 }
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-   add2pipe(x,y,w,h,rgb,a);
+   drawLRP(x,y,w,h,rgb,a, false);
 }
 
 typedef union
@@ -616,7 +562,6 @@ typedef union
 int32 glGetPixel(int32 x, int32 y)
 {                
    glpixel gp;
-   if (pixcolors != (int32*)glcolors) flushPixels();
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
@@ -628,7 +573,6 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    glpixel gp;
    int32 i;
    GLint ext_format, ext_type;
-   if (pixcolors != (int32*)glcolors) flushPixels();
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &ext_format);
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &ext_type);
    if (ext_format == GL_BGRA && ext_type == GL_UNSIGNED_BYTE) 
@@ -663,7 +607,6 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
 
 void flushAll()
 {
-   flushPixels();
    glFlush(); GL_CHECK_ERROR
 }
 
@@ -699,9 +642,8 @@ bool checkGLfloatBuffer(Context c, int32 n)
       xfree(glcolors);
       flen = n*3/2;
       int len = flen*2;
-      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); pixcoords = (int32*)glcoords;
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); pixcolors = (int32*)glcolors;
-      pixEnd = pixcoords + len;
+      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); 
+      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); 
       if (!glcoords || !glcolors)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
@@ -740,8 +682,7 @@ bool setupGL(int width, int height)
     ftransp[15] = 1;
     for (i = 0; i <= 255; i++)
         f255[i] = (GLfloat)i/(GLfloat)255;
-    clearPixels();
-    return checkGLfloatBuffer(mainContext,10000);
+    return checkGLfloatBuffer(mainContext,1000);
 }
 
 #ifdef ANDROID
@@ -808,7 +749,6 @@ void privateScreenChange(int32 w, int32 h)
     appW = w;
     appH = h;
 #endif
-   clearPixels();
    setProjectionMatrix(w,h); 
 }
 
@@ -879,8 +819,7 @@ extern int32 desiredScreenShiftY;
 void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 { 
-   if (surfaceWillChange) {clearPixels(); return;}
-   if (pixcolors != (int32*)glcolors) flushPixels();
+   if (surfaceWillChange) return;
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)
 #else
