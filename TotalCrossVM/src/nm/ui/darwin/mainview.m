@@ -191,6 +191,16 @@ int lastOrientationIsPortrait = true;
       NSURL *url = [NSURL URLWithString:number];
       [[UIApplication sharedApplication] openURL:url];
    });
+   [self updateLayout];
+}
+
+-(void) updateLayout
+{
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      lastOrientationIsPortrait = -1;
+      [self viewDidLayoutSubviews];
+   });
 }
 
 static bool callingCamera;
@@ -213,6 +223,7 @@ static bool callingCamera;
    });
    while (callingCamera)
       Sleep(100);
+   [self updateLayout];
    return imageFileName != null;
 }
 
@@ -273,6 +284,7 @@ static bool callingCamera;
       NSURL *url = [NSURL URLWithString:stringURL];
       [[UIApplication sharedApplication] openURL:url];
    });
+   [self updateLayout];
    return TRUE;
 }
 
