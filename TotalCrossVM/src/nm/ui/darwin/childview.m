@@ -23,7 +23,7 @@ bool setupGL(int width, int height);
 {                                    
    self = [ super init ];
    controller = ctrl;
-   taskbarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
+   taskbarHeight = MIN([UIApplication sharedApplication].statusBarFrame.size.width,[UIApplication sharedApplication].statusBarFrame.size.height);
    self.opaque = YES;
    self.contentMode = UIViewContentModeScaleToFill;
    self.contentScaleFactor = [UIScreen mainScreen].scale; // support for high resolution

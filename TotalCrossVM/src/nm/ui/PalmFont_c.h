@@ -447,7 +447,7 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
       int32 offset = uf->bitIndexTable[ch], y, x;
       int32 id[2];
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
-      bool isLow = uf->fontP.maxHeight < 18;
+      bool isLow = uf->fontP.maxHeight < 20;
       id[0] = id[1] = 0;
       p += width; // skip a line at top
       for (y = 0; y < height; y++)

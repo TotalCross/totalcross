@@ -54,6 +54,7 @@
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
+- (void) updateLayout;
 - (void) dialNumber:(NSString*) number;
 - (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
 - (int) gpsStart;
