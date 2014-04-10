@@ -31,7 +31,6 @@ public class BaseContainer extends Container
    public static final int BKGCOLOR = 0x0A246A;
    public static final int SELCOLOR = 0x829CE2; // Color.brighter(BKGCOLOR,120);
    protected Bar headerBar,footerBar;
-   protected String helpMessage;
    private static Vector containerStack = new Vector(5);
    private static Image infoImg,camImg;
    private String defaultTitle = "User Interface Controls";
@@ -39,6 +38,11 @@ public class BaseContainer extends Container
    public boolean isSingleCall;
    public String info;
 
+   protected String getHelpMessage()
+   {
+      return null;
+   }
+   
    public void initUI()
    {
       try
@@ -88,6 +92,7 @@ public class BaseContainer extends Container
                         boolean isMainMenu = containerStack.size() == 1;
                         if (isMainMenu)
                         {
+                           String helpMessage = getHelpMessage();
                            if (helpMessage == null) 
                               return;
                            MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
