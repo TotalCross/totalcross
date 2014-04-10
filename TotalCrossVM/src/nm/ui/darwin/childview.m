@@ -22,6 +22,7 @@ bool setupGL(int width, int height);
 - (id)init:(UIViewController*) ctrl
 {                                    
    self = [ super init ];
+   firstCall = true;
    controller = ctrl;
    taskbarHeight = MIN([UIApplication sharedApplication].statusBarFrame.size.width,[UIApplication sharedApplication].statusBarFrame.size.height);
    self.opaque = YES;
@@ -65,6 +66,15 @@ void recreateTextures();
    CGRect r = [[UIScreen mainScreen] bounds];
    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
    {
+      if ([UIApplication sharedApplication].statusBarHidden)
+      {
+         if (firstCall) // fix a problem that, if there's no statusbar, the viewDidLayoutSubviews is not called. So we force it by using at setup a smaller size, which will be fixed at a later call
+         {
+            r.size.height--;
+            firstCall = false;
+         }
+      }
+      else
       switch ([[UIDevice currentDevice] orientation])
       {
          case UIDeviceOrientationPortraitUpsideDown:

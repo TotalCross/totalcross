@@ -26,6 +26,7 @@
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
    int taskbarHeight;
+   bool firstCall;
 @public
    UIDocumentInteractionController *uidController;
 }
