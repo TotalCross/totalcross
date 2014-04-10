@@ -29,6 +29,7 @@ public class ImageBookSample extends BaseContainer
    GridContainer gc;
    static boolean isVert;
    RadioGroupController rg;
+   String[] images = {"books/book1.png","books/book2.png","books/book3.png","books/book4.png","books/book5.png","books/book6.png","books/book7.png","books/book8.png",};
    
    // saves the files that contains the images
    // always store the reference to the file, NEVER the image bytes! can also be the rowid or primary key if the image is inside a database
@@ -153,25 +154,10 @@ public class ImageBookSample extends BaseContainer
    class DynImage extends Control
    {
       int idx;
-      Image imgq;
-      boolean highQuality;
       
-      public DynImage(int idx, boolean highQ)
+      public DynImage(int idx)
       {
          this.idx = idx;
-         this.highQuality = highQ;
-      }
-      
-      public Image getHighQ(int w, int h) throws Exception
-      {
-         if (imgq == null)
-         {
-            File f = new File(imageFolder+imageNames[idx],File.READ_WRITE);
-            imgq = new Image(f);
-            f.close();
-            imgq = imgq.getSmoothScaledInstance(w,h); // dont use getHwScaledInstance or the image will not work well on an ImageControl
-         }
-         return imgq;
       }
       
       public void onPaint(Graphics g)
@@ -180,7 +166,7 @@ public class ImageBookSample extends BaseContainer
          Image img = null;
          try
          {
-            img = highQuality ? getHighQ(s,s) : imgload.getImage(idx,s,s);
+            img = imgload.getImage(idx,s,s);
             if (img != null)
                g.drawImage(img,(width-s)/2,(height-s)/2);
          }
@@ -193,13 +179,6 @@ public class ImageBookSample extends BaseContainer
             g.drawLine(0,0,width,height);
             g.drawLine(width,0,0,height);
          }
-      }
-      
-      public void reposition()
-      {
-         // loads a new image when repositioned
-         imgq = null;
-         super.reposition();
       }
    }
    
@@ -233,11 +212,11 @@ public class ImageBookSample extends BaseContainer
          add(l2,LEFT,BOTTOM,FILL,PREFERRED); l2.reposition();
          try 
          {
-            img = new DynImage(idx,highQuality);
+            img = new DynImage(idx);
             if (highQuality)
             {
                int s = width < height ? width : height;
-               ImageControl ic = new ImageControl(((DynImage)img).getHighQ(s,s));
+               ImageControl ic = new ImageControl(imgload.getImage(idx,s,s).getHwScaledInstance(s,s));
                img = ic;
                ic.setEventsEnabled(true);
                ic.centerImage = true;
@@ -269,6 +248,7 @@ public class ImageBookSample extends BaseContainer
          fadeOtherWindows = true;
          add(new ImgCell(idx,true),LEFT,TOP,FILL,FILL);
       }
+      
       protected boolean onClickedOutside(PenEvent event)
       {
          unpop();
@@ -282,6 +262,29 @@ public class ImageBookSample extends BaseContainer
       {
          super.initUI();
          setTitle("Image Book");
+         
+         if (Settings.isIOS()) // hack for ios: extract the files and write into the folder
+         {
+            File dir = new File("device/books");
+            if (!dir.exists())
+            {
+               try {dir.createDir();} catch (Exception e) {}
+               for (int i = 0; i < 8; i++)
+               {
+                  byte[] b = Vm.getFile(images[i]);
+                  if (b != null)
+                     try
+                     {
+                        File f = new File("device/"+images[i], File.CREATE_EMPTY);
+                        f.writeBytes(b);
+                        f.close();
+                     }
+                     catch (Exception e) {e.printStackTrace();}
+                  else
+                     Vm.debug(images[i]+" not found in pkg!");
+               }
+            }
+         }
          
          rg = new RadioGroupController();
          add(new Label("Orientation: "),LEFT+gap,TOP+gap);
