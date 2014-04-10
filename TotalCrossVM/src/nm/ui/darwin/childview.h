@@ -21,16 +21,18 @@
 {
    int lastEventTS;
    int shiftY;
-   int lastOrientation;
    UIViewController* controller;
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
    int taskbarHeight;
    bool firstCall;
+   UIDeviceOrientation lastKnownOrientation;
 @public
    UIDocumentInteractionController *uidController;
 }
 - (CGRect)getBounds;
+- (CGSize)getResolution;
+- (UIDeviceOrientation)getOrientation;
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
 - (void)doRotate;

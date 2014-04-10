@@ -46,32 +46,23 @@ bool initGLES(ScreenSurface screen)
    return YES;
 }
 
-int lastOrientationIsPortrait = true;
 - (void) setFirstOrientation
 {
-   int orientation = [[UIDevice currentDevice] orientation];
-   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
-   if (lastOrientationIsPortrait == -1 && orientation != UIDeviceOrientationUnknown)
-      lastOrientationIsPortrait = isPortrait;
+   lastOrientationSentToVM = [child_view getOrientation];
 }
 
 - (void)viewDidLayoutSubviews
 {
-   int orientation = [[UIDevice currentDevice] orientation];
-   if (orientation == UIDeviceOrientationUnknown)
-      lastOrientationIsPortrait = -1;
-   else
+   int orientation = [child_view getOrientation];
+   if (orientation != lastOrientationSentToVM)
    {
-      bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
-      if (lastOrientationIsPortrait != isPortrait)
-      {
-         [self destroySIP];
-         lastOrientationIsPortrait = isPortrait;
-         CGRect s = child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
-         [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
-                           [NSNumber numberWithInt:(isPortrait ? s.size.width  : s.size.height) *iosScale], @"width",
-                           [NSNumber numberWithInt:(isPortrait ? s.size.height : s.size.width ) *iosScale], @"height", nil] ];
-      }
+      [self destroySIP];
+      lastOrientationSentToVM = orientation;
+      child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
+      CGSize res = [child_view getResolution];
+      [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
+                        [NSNumber numberWithInt: res.width], @"width",
+                        [NSNumber numberWithInt: res.height], @"height", nil] ];
    }
 }
 
@@ -200,7 +191,7 @@ int lastOrientationIsPortrait = true;
 {
    dispatch_sync(dispatch_get_main_queue(), ^
    {
-      lastOrientationIsPortrait = -1;
+      lastOrientationSentToVM = -1;
       [self viewDidLayoutSubviews];
    });
 }
