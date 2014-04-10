@@ -156,30 +156,31 @@ public class ImageBookSample extends BaseContainer
       Image imgq;
       boolean highQuality;
       
-      public DynImage(int idx, boolean comQualidade)
+      public DynImage(int idx, boolean highQ)
       {
          this.idx = idx;
-         this.highQuality = comQualidade;
+         this.highQuality = highQ;
+      }
+      
+      public Image getHighQ(int w, int h) throws Exception
+      {
+         if (imgq == null)
+         {
+            File f = new File(imageFolder+imageNames[idx],File.READ_WRITE);
+            imgq = new Image(f);
+            f.close();
+            imgq = imgq.getHwScaledInstance(w,h);
+         }
+         return imgq;
       }
       
       public void onPaint(Graphics g)
       {
-         final int s = width < height ? width : height;
+         int s = width < height ? width : height;
          Image img = null;
          try
          {
-            if (highQuality)
-            {
-               if (imgq == null)
-               {
-                  File f = new File(imageFolder+imageNames[idx],File.READ_WRITE);
-                  imgq = new Image(f);
-                  f.close();
-                  imgq = imgq.getHwScaledInstance(s,s);
-               }
-               img = imgq;
-            }
-            else img = imgload.getImage(idx,s,s);
+            img = highQuality ? getHighQ(s,s) : imgload.getImage(idx,s,s);
             if (img != null)
                g.drawImage(img,(width-s)/2,(height-s)/2);
          }
@@ -209,7 +210,7 @@ public class ImageBookSample extends BaseContainer
       int idx;
       boolean highQuality;
       Label l1,l2;
-      DynImage img;
+      Control img;
       
       public ImgCell(int idx)
       {
@@ -232,8 +233,17 @@ public class ImageBookSample extends BaseContainer
          add(l2,LEFT,BOTTOM,FILL,PREFERRED); l2.reposition();
          try 
          {
-            add(img = new DynImage(idx,highQuality),LEFT,AFTER+IMAGE_GAP,FILL,FIT-IMAGE_GAP,l1);
-         } catch (RuntimeException re) {img = null;}
+            img = new DynImage(idx,highQuality);
+            if (highQuality)
+            {
+               int s = width < height ? width : height;
+               ImageControl ic = new ImageControl(((DynImage)img).getHighQ(s,s));
+               img = ic;
+               ic.setEventsEnabled(true);
+               ic.centerImage = true;
+            }
+            add(img,LEFT,AFTER+IMAGE_GAP,FILL,FIT-IMAGE_GAP,l1);
+         } catch (Throwable t) {img = null;}
       }      
       
       public void reposition()
@@ -252,16 +262,17 @@ public class ImageBookSample extends BaseContainer
       public CellBox(int idx)
       {
          this.idx = idx;
+         titleGap = 0;
       }
       public void initUI()
       {
+         fadeOtherWindows = true;
          add(new ImgCell(idx,true),LEFT,TOP,FILL,FILL);
       }
-      public void onEvent(Event e)
+      protected boolean onClickedOutside(PenEvent event)
       {
-         super.onEvent(e);
-         if (e.type == PenEvent.PEN_UP)
-            unpop();
+         unpop();
+         return true;
       }
    }
 
