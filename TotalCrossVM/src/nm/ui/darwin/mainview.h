@@ -29,6 +29,7 @@
 {
    NSMutableArray* _events;
    ChildView *child_view;
+   int lastOrientationSentToVM;
    // keyboard
    UITextView* kbd;
    NSRange lastRange;

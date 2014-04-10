@@ -58,24 +58,52 @@ void graphicsSetupIOS()
    [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
 }
 
-extern int lastOrientationIsPortrait;
 void recreateTextures();
+
+- (UIDeviceOrientation)getOrientation
+{
+   int o = [[UIDevice currentDevice] orientation];
+   if (o == UIDeviceOrientationFaceDown || o == UIDeviceOrientationFaceUp || o == UIDeviceOrientationUnknown)
+      o = lastKnownOrientation;
+   else
+      lastKnownOrientation = o;
+   //debug("orientation: %s",o == UIDeviceOrientationPortrait ? "Portrait" : o == UIDeviceOrientationLandscapeLeft ? "Landscape Left" : o == UIDeviceOrientationLandscapeRight ? "Landscape Right" : o == UIDeviceOrientationPortraitUpsideDown ? "Portrait UpsideDown" : "Unknown");
+   return o;
+}
+
+- (CGSize)getResolution
+{
+   CGRect r = [[UIScreen mainScreen] bounds];
+   int w = r.size.width;
+   int h = r.size.height;
+   CGSize s;
+   UIDeviceOrientation o = [self getOrientation];
+   switch (o)
+   {
+      case UIDeviceOrientationLandscapeLeft:
+      case UIDeviceOrientationLandscapeRight:
+         s = CGSizeMake(h * iosScale, (w - taskbarHeight) * iosScale);
+         break;
+      default:
+         s = CGSizeMake(w * iosScale, (h - taskbarHeight) * iosScale);
+         break;
+   }
+   //debug("getRes: %dx%d", (int)s.width, (int)s.height);
+   return s;
+}
 
 - (CGRect)getBounds
 {
    CGRect r = [[UIScreen mainScreen] bounds];
    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
    {
-      if ([UIApplication sharedApplication].statusBarHidden)
+      if (firstCall && taskbarHeight == 0) // fix a problem that, if there's no statusbar, the viewDidLayoutSubviews is not called. So we force it by using at setup a smaller size, which will be fixed at a later call
       {
-         if (firstCall) // fix a problem that, if there's no statusbar, the viewDidLayoutSubviews is not called. So we force it by using at setup a smaller size, which will be fixed at a later call
-         {
-            r.size.height--;
-            firstCall = false;
-         }
+         r.size.height--;
+         firstCall = false;
       }
       else
-      switch ([[UIDevice currentDevice] orientation])
+      switch ([self getOrientation])
       {
          case UIDeviceOrientationPortraitUpsideDown:
             r.origin.y = 0;
@@ -95,6 +123,7 @@ void recreateTextures();
             break;
       }
    }
+   //debug("bounds: %d,%d,%d,%d",(int)r.origin.x,(int)r.origin.y,(int)r.size.width,(int)r.size.height);
    return r;
 }
 
@@ -122,7 +151,8 @@ void recreateTextures();
    int stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
    if (stat != GL_FRAMEBUFFER_COMPLETE)
       NSLog(@"Failed to make complete framebuffer object %x", stat);
-   setupGL(self.bounds.size.width*2,self.bounds.size.height*2);
+   CGSize res = [self getResolution];
+   setupGL(res.width,res.height);
    realAppH = appH;
    recreateTextures();
 }
