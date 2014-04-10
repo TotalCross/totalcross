@@ -169,7 +169,7 @@ public class ImageBookSample extends BaseContainer
             File f = new File(imageFolder+imageNames[idx],File.READ_WRITE);
             imgq = new Image(f);
             f.close();
-            imgq = imgq.getHwScaledInstance(w,h);
+            imgq = imgq.getSmoothScaledInstance(w,h); // dont use getHwScaledInstance or the image will not work well on an ImageControl
          }
          return imgq;
       }
