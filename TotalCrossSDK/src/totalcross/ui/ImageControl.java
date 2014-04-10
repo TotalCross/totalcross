@@ -253,13 +253,13 @@ public class ImageControl extends Control
    /** Returns the image's width; when scaling, returns the scaled width. */
    public int getImageWidth()
    {
-      return img == null ? 0 : tempHwScale != NOTEMP ? (int)(img.getWidth()*tempHwScale) : img.getWidth();
+      return img == null ? 0 : tempHwScale != NOTEMP ? (int)(img.getWidth()/img.hwScaleW*tempHwScale) : (int)(img.getWidth()/img.hwScaleW);
    }
    
    /** Returns the image's height; when scaling, returns the scaled height. */
    public int getImageHeight()
    {
-      return img == null ? 0 : tempHwScale != NOTEMP ? (int)(img.getHeight()*tempHwScale) : img.getHeight();
+      return img == null ? 0 : tempHwScale != NOTEMP ? (int)(img.getHeight()/img.hwScaleH*tempHwScale) : (int)(img.getHeight()/img.hwScaleH);
    }
    
    public int getPreferredWidth()
