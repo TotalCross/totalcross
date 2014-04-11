@@ -145,6 +145,10 @@ bool initGLES(ScreenSurface screen)
    return events;
 }
 
+- (bool)hasEvents
+{
+   return _events != nil && _events.count > 0;
+}
 - (void)addEvent:(NSDictionary*)event
 {
    if(_events == nil)

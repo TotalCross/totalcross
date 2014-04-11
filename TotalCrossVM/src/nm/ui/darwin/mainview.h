@@ -45,6 +45,7 @@
    double locationLat, locationLon;
 }
 
+- (bool)hasEvents;
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;
 - (NSArray*)getEvents;

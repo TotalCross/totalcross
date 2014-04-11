@@ -19,7 +19,6 @@
 
 @interface ChildView : UIView
 {
-   int lastEventTS;
    int shiftY;
    UIViewController* controller;
    EAGLContext *glcontext;

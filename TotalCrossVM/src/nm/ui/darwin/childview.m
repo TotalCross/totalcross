@@ -171,10 +171,8 @@ void recreateTextures();
       UITouch *touch = [ touches anyObject ];
       if (touch != nil && (touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseMoved || touch.phase == UITouchPhaseEnded))
       {
-         int ts = getTimeStamp();
-         if (touch.phase == UITouchPhaseMoved && (ts-lastEventTS) < 20) // ignore events if sent too fast
+         if (touch.phase == UITouchPhaseMoved && [(MainViewController*)controller hasEvents]) // ignore move events if the last one was not yet consumed
             return;
-         lastEventTS = ts;
          CGPoint point = [touch locationInView: self];
          [ (MainViewController*)controller addEvent:
           [[NSDictionary alloc] initWithObjectsAndKeys:
@@ -233,6 +231,8 @@ void recreateTextures();
 
 -(void)handlePinch:(UIPinchGestureRecognizer*)sender
 {
+   if ([(MainViewController*)controller hasEvents]) // ignore move events if the last one was not yet consumed
+      return;
    // note: unlike android, that sends the step since the last value, ios sends the actual scale value, as the docs says:
    // The scale value is an absolute value that varies over time. It is not the delta value from the last time that the
    // scale was reported. Apply the scale value to the state of the view when the gesture is first recognized—
