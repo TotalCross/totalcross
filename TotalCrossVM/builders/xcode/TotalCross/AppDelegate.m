@@ -16,7 +16,9 @@
 
 @implementation AppDelegate
 
-//#define APPNAME "UIControls"
+#ifdef DEBUG
+#define APPNAME "UIControls"
+#endif
 
 -(void) initApp
 {
