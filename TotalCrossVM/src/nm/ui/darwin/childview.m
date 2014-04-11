@@ -159,7 +159,9 @@ void recreateTextures();
 
 - (void)updateScreen
 {
-   [glcontext presentRenderbuffer:GL_RENDERBUFFER];
+   static int ignoreWhiteBackground = 2;
+   if (--ignoreWhiteBackground < 0) // issued by the first screenChange posted by viewDidLayoutSubviews
+      [glcontext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 - (void)processEvent:(NSSet *)touches withEvent:(UIEvent *)event
