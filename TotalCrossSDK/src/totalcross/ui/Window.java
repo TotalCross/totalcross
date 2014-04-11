@@ -1188,7 +1188,7 @@ public class Window extends Container
       if (!started && this instanceof MainWindow) // guich@567_17: if the user call this method in the initUI method, repaintNow so that the back of the screen is stored correctly
       {
          started = true; // don't let this repaintNow be called again if more than one popup is called in sequence in the initUI of the MainWindow
-         repaintNow();
+         //repaintNow(); - guich@tc210 - prevent an empty white background on startup.
       }
       if (!enableUpdateScreen) // guich@tc114_57: if we need interaction, make sure that the screen was updated.
       {

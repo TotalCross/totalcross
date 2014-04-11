@@ -463,6 +463,11 @@ public class MainWindow extends Window implements totalcross.MainClass
          setBackForeColors(timeAvailable == 0 ? Color.RED : Color.BLUE,Color.WHITE);
          setFont(font.asBold());
       }
+      public void onPopup()
+      {
+         super.onPopup();
+         needsPaint = false; // guich@210 - prevent an empty white background on startup.
+      }
       
       public void postPressedEvent()
       {
