@@ -19,7 +19,7 @@
 
 @interface ChildView : UIView
 {
-   int lastEventTS;
+   bool isMultitouching;
    int shiftY;
    UIViewController* controller;
    EAGLContext *glcontext;
