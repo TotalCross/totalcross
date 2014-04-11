@@ -108,7 +108,8 @@ public class ImageBookSample extends BaseContainer
                buf = new byte[s];
             f.readBytes(buf,0,s);
             f.close();
-            img = new Image(buf).getHwScaledInstance(imgW,imgH);
+            img = new Image(buf);
+            if (imgW > 0 && imgH > 0) img = img.getHwScaledInstance(imgW,imgH);
          }
          catch (IOException ioe)
          {
@@ -216,7 +217,7 @@ public class ImageBookSample extends BaseContainer
             if (highQuality)
             {
                int s = width < height ? width : height;
-               ImageControl ic = new ImageControl(imgload.getImage(idx,s,s).getHwScaledInstance(s,s));
+               ImageControl ic = new ImageControl(imgload.getImage(idx,-1,-1).getSmoothScaledInstance(s,s));
                img = ic;
                ic.setEventsEnabled(true);
                ic.centerImage = true;
