@@ -171,6 +171,8 @@ void recreateTextures();
       UITouch *touch = [ touches anyObject ];
       if (touch != nil && (touch.phase == UITouchPhaseBegan || touch.phase == UITouchPhaseMoved || touch.phase == UITouchPhaseEnded))
       {
+         if (isMultitouching)
+            [self gestureShouldEnd];
          if (touch.phase == UITouchPhaseMoved && [(MainViewController*)controller hasEvents]) // ignore move events if the last one was not yet consumed
             return;
          CGPoint point = [touch locationInView: self];
@@ -203,6 +205,7 @@ void recreateTextures();
 {
 	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
    {
+      isMultitouching = true;
       [ (MainViewController*)controller addEvent:
        [[NSDictionary alloc] initWithObjectsAndKeys:
         @"multitouchScale", @"type",
@@ -215,17 +218,23 @@ void recreateTextures();
 	return YES;
 }
 
+- (void)gestureShouldEnd
+{
+   isMultitouching = false;
+   [ (MainViewController*)controller addEvent:
+    [[NSDictionary alloc] initWithObjectsAndKeys:
+     @"multitouchScale", @"type",
+     [NSNumber numberWithInt:(int)2], @"key",
+     [NSNumber numberWithInt:(int)0], @"x",
+     [NSNumber numberWithInt:(int)0], @"y",
+     nil]
+    ];
+}
+
 - (BOOL)gestureRecognizerShouldEnd:(UIGestureRecognizer *)gestureRecognizer
 {
 	if ( [gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]] )
-      [ (MainViewController*)controller addEvent:
-       [[NSDictionary alloc] initWithObjectsAndKeys:
-        @"multitouchScale", @"type",
-        [NSNumber numberWithInt:(int)2], @"key",
-        [NSNumber numberWithInt:(int)0], @"x",
-        [NSNumber numberWithInt:(int)0], @"y",
-        nil]
-       ];
+      [self gestureShouldEnd];
 	return YES;
 }
 
