@@ -60,9 +60,6 @@ static bool privateDebug(char* str)
          fsync(fileno(fdebug));
       }
    }
-#ifdef darwin
-    iphoneDebug(str);
-#endif
     return err;
 }
 

@@ -71,6 +71,9 @@ TC_API bool debug(const char *s, ...)
 
    vsprintf(buf, s, args);
    va_end(args);
+#ifdef darwin
+   iphoneDebug(buf);
+#endif
    return debugStr(buf);
 }
 
