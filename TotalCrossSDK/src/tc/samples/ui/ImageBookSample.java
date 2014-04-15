@@ -59,7 +59,6 @@ public class ImageBookSample extends BaseContainer
       int current=-1;
       String[] arqs;
       Image[] loaded;
-      int imgW,imgH;
       int lastIni,lastEnd;
       IOException ex;
       
@@ -109,7 +108,6 @@ public class ImageBookSample extends BaseContainer
             f.readBytes(buf,0,s);
             f.close();
             img = new Image(buf);
-            if (imgW > 0 && imgH > 0) img = img.getHwScaledInstance(imgW,imgH);
          }
          catch (IOException ioe)
          {
@@ -133,14 +131,12 @@ public class ImageBookSample extends BaseContainer
       }
       
       /** Returns the image in the given size */ 
-      public Image getImage(int idx, int imgW, int imgH) throws IOException
+      public Image getImage(int idx) throws IOException
       {
          if (ex != null)
             throw ex;
          try
          {
-            this.imgW = imgW;
-            this.imgH = imgH;
             setCurrent(idx);
             while (loaded[idx] == null)
                Vm.sleep(10);
@@ -163,13 +159,18 @@ public class ImageBookSample extends BaseContainer
       
       public void onPaint(Graphics g)
       {
-         int s = width < height ? width : height;
          Image img = null;
          try
          {
-            img = imgload.getImage(idx,s,s);
+            img = imgload.getImage(idx);
             if (img != null)
-               g.drawImage(img,(width-s)/2,(height-s)/2);
+            {
+               double ratio = Math.min((double)width / img.getWidth(), (double)height / img.getHeight());
+               double oldH = img.hwScaleH, oldW = img.hwScaleW;
+               img.hwScaleH = img.hwScaleW = ratio;
+               g.drawImage(img,(width - img.getWidth())/2,(height - img.getHeight())/2);
+               img.hwScaleH = oldH; img.hwScaleW = oldW;
+            }
          }
          catch (Exception ioe) {}
          if (img == null)
@@ -216,8 +217,9 @@ public class ImageBookSample extends BaseContainer
             img = new DynImage(idx);
             if (highQuality)
             {
-               int s = width < height ? width : height;
-               ImageControl ic = new ImageControl(imgload.getImage(idx,-1,-1).getSmoothScaledInstance(s,s));
+               Image image = imgload.getImage(idx);
+               double ratio = Math.min((double)width / image.getWidth(), (double)height / image.getHeight());
+               ImageControl ic = new ImageControl(image.getSmoothScaledInstance((int)(image.getWidth()*ratio),(int)(image.getHeight()*ratio)));
                img = ic;
                ic.setEventsEnabled(true);
                ic.centerImage = true;
