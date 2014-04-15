@@ -94,6 +94,8 @@ public class Image4D extends GfxSurface
 
    private Image4D(Image4D src)
    {
+      if (Settings.isOpenGL && src.changed[0]) // if the original image's texture was not yet loaded, do that now to ensure it will be added to the list, otherwise, the original image may be collected and the cloned image will be turned black
+         src.applyChanges();
       this.surfaceType = src.surfaceType;
       this.width = src.width;
       this.height = src.height;
