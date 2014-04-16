@@ -254,6 +254,11 @@ void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
 }
 
+void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int color, bool fill)
+{
+   Direct3DBase::getLastInstance()->drawLines(currentContext, g, x, y, n, tx, ty, color, fill);
+}
+
 void dxDrawLine(int x1, int y1, int x2, int y2, int color)
 {
 	Direct3DBase::getLastInstance()->drawLine(x1, y1, x2, y2, color);

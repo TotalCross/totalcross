@@ -1365,7 +1365,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
    if (!xPoints1 || !yPoints1 || nPoints1 < 2)
       return;
 
-#ifdef __gl2_h_
+#if defined __gl2_h_ && !defined WP8
    if (!gradient && isConvex) // opengl doesnt fills non-convex polygons well
    {
       if (nPoints1 > 0)
@@ -1504,7 +1504,7 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 {
    if (xPoints1 && yPoints1 && nPoints1 >= 2)
    {
-      #ifdef __gl2_h_
+      #if defined __gl2_h_ && !defined WP8
       if (nPoints1 > 0)
          glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
       if (nPoints2 > 0)

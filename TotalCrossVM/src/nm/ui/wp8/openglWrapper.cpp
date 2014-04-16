@@ -157,6 +157,12 @@ void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
    dxDrawPixels(coords, colors, 1, colour);
 }
 
+void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
+{
+   Pixel colour = getGlColor(rgb, 0xFF);
+   dxDrawLines(currentContext, g, x, y, n, tx, ty, colour, fill);
+}
+
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    Pixel colour = getGlColor(rgb, a);
