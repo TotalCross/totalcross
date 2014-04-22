@@ -55,8 +55,8 @@ void destroyDebug()
 TC_API bool debug(const char *s, ...)
 {
 #ifdef ANDROID   
-   if (debugMode == MODE_ADB && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
-   {         
+   if (debugMode == MODE_ADB && s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
+   {  
       __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
       return true;
    }
