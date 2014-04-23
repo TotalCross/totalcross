@@ -28,7 +28,7 @@ class Key
    /**
     * Represents a key that has no values attached to it.
     */
-   static final int NO_VALUE = 0xFFFFFFF; // juliana@230_21
+   static final int NO_VALUE = 0xFFFFFFFF; // juliana@230_21
 
    /**
     * The values stored in the key.
