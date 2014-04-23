@@ -113,6 +113,20 @@ public class TestIndexRebalance extends TestCase
       resultSet.close();
       assertEquals(1960, driver.executeUpdate("delete from cliente"));
       driver.executeUpdate("drop table cliente");
+      
+      // Solved a index bug which could cause its corruption.
+      if (driver.exists("t"))
+         driver.executeUpdate("drop table t");
+      driver.execute("create table t (x short)");
+      driver.execute("create index idx on t(x)");
+      i = 30;
+      while (--i >= 0)
+         driver.executeUpdate("insert into t values (1)");
+      driver.executeUpdate("delete from t where rowid < 16");
+      driver.executeUpdate("delete from t where rowid > 16");
+      driver.executeUpdate("insert into t values (1)");
+      driver.executeUpdate("delete from t where rowid = 16");
+      
       driver.closeAll();
    }
 }
