@@ -232,7 +232,9 @@ class Index
             
             if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0) 
             {
-               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);             
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
+                   && (keyFound.record >= record || keyFound.record == Key.NO_VALUE))
+                  pos--;
                while (++pos < size && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
                    && (keyFound.record <= record || keyFound.record == Key.NO_VALUE))
                {
