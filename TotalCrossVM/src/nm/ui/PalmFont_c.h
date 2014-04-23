@@ -71,10 +71,22 @@ bool fontInit(Context currentContext)
    return defaultFont != null;
 }
 
+static void destroyUF(UserFont uf)
+{
+   xfree(uf->tempbufs);
+}
+
 void fontDestroy()
 {
    VoidPs *list, *head;
+   int32 i;
    list = head = openFonts;
+   for (i = 0; i < SIZE_LEN; i++)
+   {
+      destroyUF(baseFontN[i]);
+      destroyUF(baseFontB[i]);
+   }
+
    if (head != null)
    do
    {
