@@ -261,7 +261,9 @@ bool indexRemoveValue(Context context, Key* key, int32 record)
          
          if (pos < (size = curr->size) && keyEquals(context, key, keyFound, numberColumns, plainDB)) 
          {
-            while (pos >= 0 && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos--].record >= record);             
+            while (pos >= 0 && keyEquals(context, key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record >= record || keyFound->record == NO_VALUE))
+               pos--;
             while (++pos < size && keyEquals(context, key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
                 && (keyFound->record <= record || keyFound->record == NO_VALUE))
             {
