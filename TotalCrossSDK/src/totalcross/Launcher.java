@@ -2193,7 +2193,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    
    public void vibrate(final int millis)
    {
-      if (isApplication)
+      if (isApplication && frame != null)
       {
          new Thread() {
             public void run()
