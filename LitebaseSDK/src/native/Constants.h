@@ -145,7 +145,7 @@
 // juliana@noidr_1: removed .idr files from all indices and changed its format.
 // Constants for keys.
 #define VALREC_SIZE                 4         // The size of the record of a key: always an int.
-#define NO_VALUE                    0xFFFFFFF // Represents a key that has no values attached to it.
+#define NO_VALUE                    0xFFFFFFFF // Represents a key that has no values attached to it.
 #define LEAF                        0xFFFF    // A leaf node.
 
 // juliana@noidr_1: removed .idr files from all indices and changed its format.
