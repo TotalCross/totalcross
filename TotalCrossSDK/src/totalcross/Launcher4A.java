@@ -876,7 +876,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void onGpsStatusChanged(int event) 
    {
-      if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) 
+      if (gps != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
       {
          GpsStatus status = gps.getGpsStatus(null);
          Iterable<GpsSatellite> sats = status.getSatellites();
