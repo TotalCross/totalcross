@@ -51,6 +51,8 @@ public class ClippedContainer extends Container
       int yf = y0 + parent.height;
       int x0 = -this.x;
       int xf = x0 + parent.width;
+      Window pw = getParentWindow();
+      if (pw == Window.topMost) pw = null; // no need to check if we're already at the top
       
       if (verticalOnly)
       {
@@ -70,7 +72,7 @@ public class ClippedContainer extends Container
             Control child = (Control)items[i];
             if (!child.isVisibleAndInside(y0,yf))
                break;
-            else
+            if (pw == null || !child.isObscured(pw))            
             {
                child.onPaint(child.getGraphics());
                if (child.asContainer != null)
@@ -82,7 +84,7 @@ public class ClippedContainer extends Container
       else
       {
          for (Control child = children; child != null; child = child.next)
-            if (child.isVisibleAndInside(x0,y0,xf,yf))
+            if (child.isVisibleAndInside(x0,y0,xf,yf) && (pw == null || !child.isObscured(pw)))
             {
                child.onPaint(child.getGraphics());
                if (child.asContainer != null)

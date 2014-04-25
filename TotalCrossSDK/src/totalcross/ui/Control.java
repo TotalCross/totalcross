@@ -1688,12 +1688,12 @@ public class Control extends GfxSurface
     */
    public boolean isVisibleAndInside(int x0, int y0, int xf, int yf) // guich@tc115_40
    {
-      return this.visible && this.y <= yf && (this.y+this.height) >= y0 && this.x <= xf && (this.x+this.width) >= x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+      return this.visible && this.y < yf && (this.y+this.height) > y0 && this.x < xf && (this.x+this.width) > x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
    }
 
    boolean isVisibleAndInside(int y0, int yf) // guich@tc115_40
    {
-      return this.visible && this.y <= yf && (this.y+this.height) >= y0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+      return this.visible && this.y < yf && (this.y+this.height) > y0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
    }
 
    public int getGap(int gap)
@@ -1793,4 +1793,24 @@ public class Control extends GfxSurface
       Window w = getParentWindow();
       return w != null && w == Window.topMost;
    }
+
+   /** Returns true if this control is obscured by the topmost window. 
+    * Note: parentWindow is retrieved with getParentWindow.
+    * @since TotalCross 2.1
+    */
+   public boolean isObscured(Window parentWindow)
+   {
+      if (parentWindow == Window.topMost)
+         return false;
+      int cx1 = Window.topMost.x, cy1 = Window.topMost.y, cx2 = cx1 + Window.topMost.width, cy2 = cy1 + Window.topMost.height;
+      int x1 = this.x, y1 = this.y, x2,y2;
+      for (Control c = parent; c != null; c = c.parent)
+      {
+         x1 += c.x;
+         y1 += c.y;
+      }
+      x2 = x1 + this.width; y2 = y1 + this.height;
+      return x1 >= cx1 && x2 < cx2 && y1 >= cy1 && y2 < cy2; 
+   }
+
 }

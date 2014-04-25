@@ -211,6 +211,7 @@ public class GridContainer extends Container
       if (rpp != 0)
          setFont(Font.getFont(font.isBold(),Math.min(height,width)/rows/rpp));
       this.cells = cells;
+      boolean singleCell = cols == 1 && rows == 1;
       int percX = PARENTSIZE - cols;
       int percY = PARENTSIZE - rows;
       int px = LEFT, py = TOP;
@@ -235,7 +236,7 @@ public class GridContainer extends Container
          {
             sc.add(cells[z-1],px,py,percX,percY,last);
             last = null;
-            if ((z%cols) != 0) // same row
+            if (singleCell || (z%cols) != 0) // same row
                {px = AFTER; py = SAME;}
             else // change row
             if (z < cr)
@@ -272,5 +273,11 @@ public class GridContainer extends Container
          if (e.target == btNext)
             sc.scrollPage(false);
       }
+   }
+   
+   public void onColorsChanged(boolean colorsChanged)
+   {
+      super.onColorsChanged(colorsChanged);
+      sc.setBackForeColors(getBackColor(),getForeColor());
    }
 }

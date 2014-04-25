@@ -41,7 +41,7 @@ import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
 
-final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
+final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
    public static boolean canQuit = true;
    public static Launcher4A instance;
@@ -76,12 +76,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                case GPSFUNC_START:
                   gps = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
                   gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, instance);
+                  gps.addGpsStatusListener(instance);
                   gpsStatus = gps.getGpsStatus(null);
                   break;
                case GPSFUNC_STOP:
                   if (gps != null)
                   {
                      gps.removeUpdates(instance);
+                     gps.removeGpsStatusListener(instance);
+                     validSatellites = 0;
                      gps = null;
                   }
                   break;
@@ -461,7 +464,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastType = type;
          lastX = x;
          lastY = y;
-         eventThread.pushEvent(type, 0, x, y, 0, 0);
+         if (type != PEN_DRAG || !eventThread.hasEvent(PEN_DRAG))
+            eventThread.pushEvent(type, 0, x, y, 0, 0);
       }
       return true;
    }
@@ -868,8 +872,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       java.io.File sd = Environment.getExternalStorageDirectory();
       return sd.canWrite() ? sd.toString() : null;
    }
-   
+
    // gps stuff
+   public static int validSatellites;
+
+   public void onGpsStatusChanged(int event) 
+   {
+      if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX) 
+      {
+         GpsStatus status = gps.getGpsStatus(null);
+         Iterable<GpsSatellite> sats = status.getSatellites();
+         validSatellites = 0;
+         for (GpsSatellite sat : sats)
+            if (sat.usedInFix())
+               validSatellites++;
+      }
+   }
+
    private static LocationManager gps;
    private static GpsStatus gpsStatus;
    private static String lastGps = "*";
@@ -910,18 +929,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       try
       {
-         String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
-         String lon = Double.toString(loc.getLongitude());
-         
-         Calendar fix = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //flsobral@tc126_57: Date is deprecated, and apparently bugged for some devices. Replaced with Calendar.
-         fix.setTimeInMillis(loc.getTime());
-         int satellites = gps.getGpsStatus(gpsStatus).getMaxSatellites();
-         String sat = satellites < 255 && satellites > 0 ? String.valueOf(satellites) : "";
-         String vel = loc.hasSpeed() && loc.getSpeed() != 0d ? String.valueOf(loc.getSpeed())   : "";
-         String dir = loc.hasBearing() ? String.valueOf(loc.getBearing()) : "";
-         String sfix = fix.get(Calendar.YEAR)+"/"+(fix.get(Calendar.MONTH)+1)+"/"+fix.get(Calendar.DAY_OF_MONTH)+" "+fix.get(Calendar.HOUR_OF_DAY)+":"+fix.get(Calendar.MINUTE)+":"+fix.get(Calendar.SECOND);
-         float pdop = loc.hasAccuracy() ? loc.getAccuracy() : 0; // guich@tc126_66
-         lastGps = lat+";"+lon+";"+sfix+";"+sat+";"+vel+";"+dir+";"+pdop+";";
+         int sats = loc.getExtras().getInt("satellites");
+         String provider = loc.getProvider();
+         if (provider == null || provider.equals("gps"))
+         {
+            String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
+            String lon = Double.toString(loc.getLongitude());
+            
+            Calendar fix = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //flsobral@tc126_57: Date is deprecated, and apparently bugged for some devices. Replaced with Calendar.
+            fix.setTimeInMillis(loc.getTime());
+            String sat = String.valueOf(Math.max(sats, validSatellites));
+            String vel = loc.hasSpeed() && loc.getSpeed() != 0d ? String.valueOf(loc.getSpeed())   : "";
+            String dir = loc.hasBearing() ? String.valueOf(loc.getBearing()) : "";
+            String sfix = fix.get(Calendar.YEAR)+"/"+(fix.get(Calendar.MONTH)+1)+"/"+fix.get(Calendar.DAY_OF_MONTH)+" "+fix.get(Calendar.HOUR_OF_DAY)+":"+fix.get(Calendar.MINUTE)+":"+fix.get(Calendar.SECOND);
+            float pdop = loc.hasAccuracy() ? loc.getAccuracy() : 0; // guich@tc126_66
+            lastGps = lat+";"+lon+";"+sfix+";"+sat+";"+vel+";"+dir+";"+pdop+";";
+         }
       }
       catch (Exception exception)
       {
@@ -929,17 +952,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
-   public void onProviderDisabled(String provider)
-   {
-   }
-
-   public void onProviderEnabled(String provider)
-   {
-   }
-
-   public void onStatusChanged(String provider, int status, Bundle extras)
-   {
-   }
+   public void onProviderDisabled(String provider)   {}
+   public void onProviderEnabled(String provider)    {}
+   public void onStatusChanged(String provider, int status, Bundle extras)   {}
 
    private static double[] getLatLon(String address) throws IOException
    {
