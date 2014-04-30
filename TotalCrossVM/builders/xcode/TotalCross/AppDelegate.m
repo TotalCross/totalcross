@@ -22,49 +22,42 @@
 
 -(void) initApp
 {
-   // This is the first launch ever
-   NSString* currentVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
-   NSString* storedVersion  = [[NSUserDefaults standardUserDefaults] stringForKey:@"LastVersion"];
-   
-   if (!storedVersion || ![currentVersion isEqualToString:storedVersion])
+   // list all files in the pkg folder. if there are new files or files with a newer creation date, copy it to the appPath
+   NSString *pkgDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"pkg"];
+   if ([[NSFileManager defaultManager] fileExistsAtPath:pkgDirectory]) // First check if the pkg directory exists
    {
       NSString *documentsDirectory = [NSHomeDirectory() stringByAppendingPathComponent:  @"Documents"];
-      NSString *pkgDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"pkg"];
       NSError *error = nil;
-
-      // First check if the pkg directory exists
-      if ([[NSFileManager defaultManager] fileExistsAtPath:pkgDirectory])
+      NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pkgDirectory error:&error];
+      for (NSString *s in fileList)
       {
-         NSArray *fileList = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pkgDirectory error:&error];
-         for (NSString *s in fileList)
+         NSString *targetFilePath = [documentsDirectory stringByAppendingPathComponent:s];
+         NSString *sourceFilePath = [pkgDirectory stringByAppendingPathComponent:s];
+         bool targetExists = [[NSFileManager defaultManager] fileExistsAtPath:targetFilePath];
+         NSDate *sourceDate = [[[NSFileManager defaultManager] attributesOfItemAtPath:sourceFilePath error:&error] objectForKey:NSFileCreationDate];
+         NSDate *targetDate = !targetExists ? nil : [[[NSFileManager defaultManager] attributesOfItemAtPath:targetFilePath error:&error] objectForKey:NSFileCreationDate];
+         if (!targetExists || [sourceDate compare:targetDate] == NSOrderedAscending) // pkg date is more recent than target?
          {
-            NSString *targetFilePath = [documentsDirectory stringByAppendingPathComponent:s];
-            NSString *sourceFilePath = [pkgDirectory stringByAppendingPathComponent:s];
-            if ([[NSFileManager defaultManager] fileExistsAtPath:targetFilePath]) //File exist, delete it
+            if (targetExists) //File exist, delete it
                [[NSFileManager defaultManager] removeItemAtPath:targetFilePath error:&error];
             [[NSFileManager defaultManager] copyItemAtPath:sourceFilePath toPath:targetFilePath error:&error];
          }
       }
-       
-      [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"LastVersion"];
-      [[NSUserDefaults standardUserDefaults] synchronize];
    }
    
-    // setup for device orientation change events
-    [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
+   // setup for device orientation change events
+   [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
-    NSString* appNameKey = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-
-    const char* name = 
+   const char* name =
 #ifdef APPNAME
        APPNAME;
 #else
-       [[appNameKey stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
+       [[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
-    [tcvm startVM:&context appName:(char*)name];
-    [Litebase fillNativeProcAddressesLB];
+   [tcvm startVM:&context appName:(char*)name];
+   [Litebase fillNativeProcAddressesLB];
     
-    [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
+   [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
