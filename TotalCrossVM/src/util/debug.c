@@ -54,18 +54,14 @@ void destroyDebug()
 /* Displays the given char ptr in stdout (or somewhere else). */
 TC_API bool debug(const char *s, ...)
 {
-#ifdef ANDROID   
-   if (debugMode == MODE_ADB && s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
-   {  
-      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
-      return true;
-   }
-#endif   
-   
    va_list args;
    char* buf = debugstr ? debugstr : debugstrSmall;
    if (debugstr == null) // guich@tc120_3: check disableDebug
-      return false;
+   {
+      if (debugMode == MODE_ADB) // allow vm debugging
+         debugStr((char*)s);
+      return false;  
+   }
 
    va_start(args, s);
 
@@ -79,6 +75,13 @@ TC_API bool debug(const char *s, ...)
 
 bool debugStr(char *s)
 {
+#ifdef ANDROID   
+   if (debugMode == MODE_ADB && s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
+   {  
+      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
+      return true;
+   }
+#endif   
    if (tcSettings.disableDebug && *tcSettings.disableDebug) // guich@tc120_3
       return false;
    return privateDebug(s);
