@@ -58,8 +58,10 @@ TC_API bool debug(const char *s, ...)
    char* buf = debugstr ? debugstr : debugstrSmall;
    if (debugstr == null) // guich@tc120_3: check disableDebug
    {
+#ifdef ANDROID   
       if (debugMode == MODE_ADB) // allow vm debugging
          debugStr((char*)s);
+#endif         
       return false;  
    }
 
