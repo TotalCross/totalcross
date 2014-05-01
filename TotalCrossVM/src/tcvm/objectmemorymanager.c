@@ -395,6 +395,7 @@ TCObject allocObject(Context currentContext, uint32 size)
       size = 4;
    size = ((size+3)>>2)<<2; // make power of 4
 
+   LOCKVAR(omm);
    o = allocObjWith(size);
    if (!o) // no more memory to create this object? Run the GC to free up memory
    {
@@ -467,6 +468,7 @@ tryAgain:
       xmemzero(o, size);
    }
 end:
+   UNLOCKVAR(omm);
    return o;
 }
 
@@ -476,7 +478,6 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
    uint32 objectSize;
    TCObject o=null;
 
-   LOCKVAR(omm);
    c = loadClass(currentContext, className, true);
    if (!c)
       goto end;
@@ -498,7 +499,6 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
          executeMethod(currentContext, defaultConstructor, o);
    }
 end:
-   UNLOCKVAR(omm);
    return o;
 }
 
@@ -521,7 +521,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    if (len < 0)
       return null;
 
-   LOCKVAR(omm);
    c = loadClass(currentContext, type, true);
    if (!c)
       goto end;
@@ -537,7 +536,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    ARRAYOBJ_LEN(o) = len;
    OBJ_CLASS(o) = c;
 end:
-   UNLOCKVAR(omm);
    return o;
 }
 
