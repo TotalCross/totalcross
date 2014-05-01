@@ -70,7 +70,8 @@ Context newContext(ThreadHandle thread, TCObject threadObj, bool bigContextSizes
       }
    UNLOCKVAR(omm);
    if (i == MAX_CONTEXTS)
-   {
+   {                     
+      debug("*** NO MORE CONTEXT SLOTS!");
       heapDestroy(heap);
       return null;
    }
