@@ -279,7 +279,7 @@ TC_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner na
 
    if (string)
    {
-      const CharP charP = (*env)->GetStringUTFChars(env, string, 0);
+      const CharP charP = (const CharP)(*env)->GetStringUTFChars(env, string, 0);
       
       if (charP) 
       {
