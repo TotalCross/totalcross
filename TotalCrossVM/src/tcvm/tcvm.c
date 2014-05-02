@@ -691,6 +691,7 @@ popStackFrame:
                boundHead = &macArray[thisClass->hash&15];
                goto notYetLinked;
             }
+            LOCKVAR(metAndCls);
             boundHead = &macArray[thisClass->hash&15];
             for (last=mac, mac = mac ? mac->next : null; mac != null; last = mac, mac = mac->next)
                if (mac->c == thisClass)
@@ -702,8 +703,10 @@ popStackFrame:
                   *boundHead = mac;
                   // get the method's address and execute it.
                   newMethod = mac->m;
+                  UNLOCKVAR(metAndCls);
                   goto contCall;
                }
+            UNLOCKVAR(metAndCls);
 notYetLinked:
             originalClassIsInterface = false;
             sym = cp->mtd[ code->mtd.sym ]; // virtual methods are directly referenced: mtd.sym is the index to an array that will point to the mtd table
