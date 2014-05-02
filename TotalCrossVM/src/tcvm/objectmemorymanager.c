@@ -922,6 +922,8 @@ void gc(Context currentContext)
    int32 iniT,endT, elapsed;
    int32 nfree,nused,compIni;
 
+   LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
+
    iniT = getTimeStamp();
    elapsed = iniT - lastGC;
 #ifdef WINCE // guich@tc113_20
@@ -937,14 +939,18 @@ void gc(Context currentContext)
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
+      UNLOCKVAR(omm);
       return;
    }
 #endif
    if (destroyingApplication)
+   {
+      UNLOCKVAR(omm);
       return;
+   }
+   lastGC = getTimeStamp(); // guich@tc210: moving to here will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads
 
-   while (runningGC) Sleep(1);
-   LOCKVAR(omm);
+//   while (runningGC) Sleep(1);
    runningGC = true;
 
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
@@ -962,7 +968,9 @@ void gc(Context currentContext)
    if (tcSettings.gcCount) (*tcSettings.gcCount)++;
 
    IF_HEAP_ERROR(objStack->heap)
+   {
       goto heaperror;
+   }
    IF_HEAP_ERROR(chunksHeap)
    {
 heaperror:
@@ -1028,7 +1036,7 @@ heaperror:
    heapFreeAsking(chunksHeap, joinAdjacentObjects);
 #endif
 end:
-   lastGC = endT = getTimeStamp();
+   endT = getTimeStamp();
    //if (endT != iniT) debug("G GC elapsed: %d",endT-iniT);
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
