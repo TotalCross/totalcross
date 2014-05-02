@@ -12,6 +12,7 @@
     <RootNamespace>PhoneDirect3DXamlAppInterop</RootNamespace>
     <AssemblyName>PhoneDirect3DXamlAppInterop</AssemblyName>
     <TargetFrameworkIdentifier>WindowsPhone</TargetFrameworkIdentifier>
+    <TargetPlatformVersion>8.0</TargetPlatformVersion>
     <TargetFrameworkVersion>v8.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <SilverlightApplication>true</SilverlightApplication>
