@@ -20,7 +20,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import tc.tools.converter.*;
 import tc.tools.deployer.*;
-
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -45,6 +44,7 @@ public class Deploy
    public static final int BUILD_IPHONE  = 128;
    public static final int BUILD_ANDROID = 256;
    public static final int BUILD_WINMO   = 512; // guich@tc125_17
+   public static final int BUILD_WP8     = 1024; // guich@tc125_17
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
@@ -91,6 +91,7 @@ public class Deploy
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
+            if ((options & BUILD_WP8)  != 0) new Deployer4WP8();
             if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
@@ -242,6 +243,7 @@ public class Deploy
       iht.put("ios"    .hashCode(), BUILD_IPHONE);
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
       iht.put("android".hashCode(), BUILD_ANDROID);
+      iht.put("wp8"    .hashCode(), BUILD_WP8);
       iht.put("all"    .hashCode(), BUILD_ALL);
 
       // parse the parameters
@@ -403,6 +405,7 @@ public class Deploy
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
             "   -iphone or -ios: create the iPhone 4.x (and up) installer packages\n" +
             "   -android: create the apk file for Android\n" +
+            "   -wp8: create the xap file for Windows Phone 8\n" +
             "\n"+
             "   -all : single parameter to deploy to all supported platforms\n"+
             "\n"+

@@ -626,6 +626,23 @@ class IconStore extends Hashtable
          throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + size + "x" + size);
       return img;
    }
+   
+   public static Image getIcon(int width, int height) throws ImageException, IOException
+   {
+      Image img;
+      IconStore store = getInstance();
+      byte[] b = (byte[]) store.get(width + "x" + height);
+      if (b != null)
+         img = new Image(b);
+      else
+      if (store.largestSquareIcon == null)
+         img =  whiteImage(width,height);
+      else
+         img = store.largestSquareIcon.getSmoothScaledInstance(width, height, store.largestSquareIcon.transparentColor);
+      if (img.getHeight() != height || img.getWidth() != width)
+         throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + height + "x" + width);
+      return img;
+   }
 
    private static Image whiteImage(int w, int h) throws ImageException
    {
