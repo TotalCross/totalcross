@@ -23,6 +23,7 @@ using Windows.UI.ViewManagement;
 using System.IO;
 using Windows.Storage;
 using System.IO.IsolatedStorage;
+using System.Xml.Linq;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -73,6 +74,7 @@ namespace PhoneDirect3DXamlAppInterop
       private CameraCaptureTask cameraCaptureTask;
       private String cameraName;
       private int cameraResult;
+      public String appName;
 
       public CSWrapper(Grid g)
       {
@@ -414,6 +416,11 @@ namespace PhoneDirect3DXamlAppInterop
       {
          return MainPage.screenSize;
       }
+
+       public String getAppName()
+      {
+          return appName;
+      }
    }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -583,6 +590,7 @@ namespace PhoneDirect3DXamlAppInterop
             if (d3dBackground == null)
             {
                 cs = new CSWrapper(LayoutRoot);
+                cs.appName = ReadManifest();
                 d3dBackground = new Direct3DBackground(cs);
 
                 cs.tbox.KeyDown += MainPage_KeyDown;
@@ -594,6 +602,17 @@ namespace PhoneDirect3DXamlAppInterop
                 d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
                 DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
             }
+        }
+
+        public static string ReadManifest()
+        {
+            XElement xml = XElement.Load("TotalCrossManifest.xml");
+            var manifestElement = (from manifest in xml.Descendants("App") select manifest).SingleOrDefault();
+            if (manifestElement != null)
+            {
+                return manifestElement.Attribute("Name").Value;
+            }
+            return string.Empty;
         }
     }
 }
