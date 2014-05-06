@@ -187,15 +187,15 @@ target: compile
         <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-        <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-        <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-        <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
+        <pathelement location="${tools}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+        <pathelement location="${tools}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+        <pathelement location="${tools}/libs/commons/commons-io-2.2.jar"/>
         <pathelement location="${tools}/ipa/dd-plist.jar"/>
-        <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-        <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+        <pathelement location="${tools}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+        <pathelement location="${tools}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+        <pathelement location="${tools}/libs/truezip/truezip-file-7.5.1.jar"/>
+        <pathelement location="${tools}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+        <pathelement location="${tools}/libs/truezip/truezip-swing-7.5.1.jar"/>
      </classpath>
   </javac>
 
@@ -246,15 +246,15 @@ target: compile
        <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-       <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-       <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-       <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
+       <pathelement location="${tools}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+       <pathelement location="${tools}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+       <pathelement location="${tools}/libs/commons/commons-io-2.2.jar"/>
        <pathelement location="${tools}/ipa/dd-plist.jar"/>
-       <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-       <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-       <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-       <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-       <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+       <pathelement location="${tools}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+       <pathelement location="${tools}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+       <pathelement location="${tools}/libs/truezip/truezip-file-7.5.1.jar"/>
+       <pathelement location="${tools}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+       <pathelement location="${tools}/libs/truezip/truezip-swing-7.5.1.jar"/>
     </classpath>  	
   </javac>
 
