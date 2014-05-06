@@ -10,16 +10,16 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="etc/tools/ipa/bcpkix-jdk15on-147.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/bcprov-jdk15on-147.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/truezip-driver-file-7.5.1.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/truezip-driver-zip-7.5.1.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/truezip-file-7.5.1.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/truezip-kernel-7.5.1.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/truezip-swing-7.5.1.jar"/>
 	<classpathentry kind="lib" path="etc/tools/ipa/dd-plist.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/commons-io-2.2.jar"/>
-	<classpathentry kind="lib" path="etc/tools/ipa/commons-compress-1.4.jar"/>
 	<classpathentry kind="lib" path="etc/tools/sqlite/sqlite-jdbc-3.7.15-M1.jar" sourcepath="etc/tools/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+	<classpathentry kind="lib" path="etc/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="etc/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="etc/libs/commons/commons-compress-1.4.jar"/>
+	<classpathentry kind="lib" path="etc/libs/commons/commons-io-2.2.jar"/>
+	<classpathentry kind="lib" path="etc/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+	<classpathentry kind="lib" path="etc/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+	<classpathentry kind="lib" path="etc/libs/truezip/truezip-file-7.5.1.jar"/>
+	<classpathentry kind="lib" path="etc/libs/truezip/truezip-kernel-7.5.1.jar"/>
+	<classpathentry kind="lib" path="etc/libs/truezip/truezip-swing-7.5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

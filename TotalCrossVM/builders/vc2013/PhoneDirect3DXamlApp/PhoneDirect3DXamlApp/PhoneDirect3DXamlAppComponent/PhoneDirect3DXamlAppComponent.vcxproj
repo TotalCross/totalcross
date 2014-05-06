@@ -142,14 +142,17 @@
   <PropertyGroup>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'">
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;USE_DX;__gl2_h_;PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);DISABLE_RAS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LB_EXPORTS;_DEBUG;DEBUG;USE_DX;__gl2_h_;PSAPI_VERSION=2;WP8;_WINRT_DLL;WIN32;TOTALCROSS;TC_EXPORTS;FORCE_LIBC_ALLOC;$(PlatformTarget);DISABLE_RAS;ENABLE_DEMO;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>P:\gitrepo\TotalCross\TotalCrossVM\src\dx;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\launchers\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\util;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\ui\wp8;P:\gitrepo\TotalCross\TotalCrossVM\src\init;P:\gitrepo\TotalCross\TotalCrossVM\src\tcvm;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;P:\gitrepo\TotalCross\TotalCrossVM\src\axtls;P:\gitrepo\TotalCross\TotalCrossVM\src\nm;P:\gitrepo\TotalCross\TotalCrossVM\src\nm\io;P:\gitrepo\TotalCross\TotalCrossVM\src\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -6354,6 +6357,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">NotUsing</PrecompiledHeader>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'">false</CompileAsWinRT>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\src\sqlite\sqlite3.c">
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</BufferSecurityCheck>

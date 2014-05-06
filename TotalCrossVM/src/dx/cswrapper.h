@@ -7,6 +7,8 @@ namespace PhoneDirect3DXamlAppComponent
 {
 	public interface class CSwrapper {
 	public:
+		Platform::String^ getAppName();
+
       // Vm
       void privateAlertCS(Platform::String^ alertMsg);
       bool isAlertVisible();

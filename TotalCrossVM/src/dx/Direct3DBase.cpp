@@ -44,7 +44,11 @@ void Direct3DBase::setBufAndLen(Platform::Array<byte>^ fileData, byte** buf, int
 // Initialize the Direct3D resources required to run.
 void Direct3DBase::initialize()
 {
-   int exitCode = startVM("UIControls", &localContext);
+	const wchar_t* wide_chars = csharp->getAppName()->Data();
+	char chars[512];
+	wcstombs(chars, wide_chars, 512);
+		
+	int exitCode = startVM(chars, &localContext);
    if (exitCode != 0)
    {
       wchar_t exitMsg[64];

@@ -249,6 +249,7 @@
     <Content Include="Assets\Tiles\IconicTileSmall.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TotalCrossManifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PhoneDirect3DXamlAppComponent\PhoneDirect3DXamlAppComponent.vcxproj">

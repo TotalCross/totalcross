@@ -66,7 +66,8 @@ IMPORTANT:
 <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 <property name="target.vms.path"   value="${base.target.path}/TotalCrossVMS"/>
 <property name="target.noras.path" value="${base.target.path}/TotalCrossVMS_NORAS"/>
-<property name="tools"             value="${source.sdk.path}/etc/tools"/>
+<property name="etc"               value="${source.sdk.path}/etc"/>
+<property name="tools"             value="${etc}/tools"/>
 
 <property name="noras_dir"         value="${source.vms.path}/src/init/noras_ids" />
 
@@ -425,15 +426,15 @@ target: IPhone builds
       <classpath>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
          <pathelement location="${tools}/ipa/dd-plist.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
       </classpath>
    </javac>
    <java
@@ -444,16 +445,16 @@ target: IPhone builds
          <pathelement location="${path.to.invalidator}"/>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
-         <pathelement location="${tools}/ipa/commons-compress-1.4.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-compress-1.4.jar"/>
          <pathelement location="${tools}/ipa/dd-plist.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
       </classpath>
       <arg line="${tools} ${ipa.files}" />
    </java>
