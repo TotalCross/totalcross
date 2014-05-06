@@ -358,6 +358,7 @@ public class NativeMethodsPrototypeGenerator
             fw.write("void fillNativeProcAddresses" + nativeHTSuffix + "()\n{\n");
             for (int i = 0; i < iosarray.size(); i++)
                fw.write("   " + iosarray.elementAt(i).toString());
+            fw.write("   htPutPtr(&htNativeProcAddresses, hashCode(\"getMainContext\"), &getMainContext);\n");
             fw.write("}\n");
 
             fw.close();

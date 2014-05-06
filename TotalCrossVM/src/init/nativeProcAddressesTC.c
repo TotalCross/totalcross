@@ -532,4 +532,5 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_restore_ssp"), &tdsNDB_restore_ssp);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_column_metadata_l"), &tdsNDB_column_metadata_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_load"), &tdsNDB_load);
+   htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }
