@@ -395,6 +395,7 @@ TCObject allocObject(Context currentContext, uint32 size)
       size = 4;
    size = ((size+3)>>2)<<2; // make power of 4
 
+   LOCKVAR(omm);
    o = allocObjWith(size);
    if (!o) // no more memory to create this object? Run the GC to free up memory
    {
@@ -467,6 +468,7 @@ tryAgain:
       xmemzero(o, size);
    }
 end:
+   UNLOCKVAR(omm);
    return o;
 }
 
@@ -476,7 +478,6 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
    uint32 objectSize;
    TCObject o=null;
 
-   LOCKVAR(omm);
    c = loadClass(currentContext, className, true);
    if (!c)
       goto end;
@@ -498,7 +499,6 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
          executeMethod(currentContext, defaultConstructor, o);
    }
 end:
-   UNLOCKVAR(omm);
    return o;
 }
 
@@ -521,7 +521,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    if (len < 0)
       return null;
 
-   LOCKVAR(omm);
    c = loadClass(currentContext, type, true);
    if (!c)
       goto end;
@@ -537,7 +536,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    ARRAYOBJ_LEN(o) = len;
    OBJ_CLASS(o) = c;
 end:
-   UNLOCKVAR(omm);
    return o;
 }
 
@@ -924,6 +922,8 @@ void gc(Context currentContext)
    int32 iniT,endT, elapsed;
    int32 nfree,nused,compIni;
 
+   LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
+
    iniT = getTimeStamp();
    elapsed = iniT - lastGC;
 #ifdef WINCE // guich@tc113_20
@@ -939,14 +939,18 @@ void gc(Context currentContext)
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
+      UNLOCKVAR(omm);
       return;
    }
 #endif
    if (destroyingApplication)
+   {
+      UNLOCKVAR(omm);
       return;
+   }
+   lastGC = getTimeStamp(); // guich@tc210: moving to here will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads
 
-   while (runningGC) Sleep(1);
-   LOCKVAR(omm);
+//   while (runningGC) Sleep(1);
    runningGC = true;
 
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
@@ -964,7 +968,9 @@ void gc(Context currentContext)
    if (tcSettings.gcCount) (*tcSettings.gcCount)++;
 
    IF_HEAP_ERROR(objStack->heap)
+   {
       goto heaperror;
+   }
    IF_HEAP_ERROR(chunksHeap)
    {
 heaperror:
@@ -1030,7 +1036,7 @@ heaperror:
    heapFreeAsking(chunksHeap, joinAdjacentObjects);
 #endif
 end:
-   lastGC = endT = getTimeStamp();
+   endT = getTimeStamp();
    //if (endT != iniT) debug("G GC elapsed: %d",endT-iniT);
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
