@@ -87,6 +87,15 @@ public class Deploy
 
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
+            //flsobral@tc210: dynamically load some useful libs for handling files and compression 
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-io-2.2.jar");
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-compress-1.4.jar");
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-file-7.5.1.jar");
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-zip-7.5.1.jar");
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-file-7.5.1.jar");
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-kernel-7.5.1.jar");
+            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-swing-7.5.1.jar");
+            
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
@@ -95,16 +104,9 @@ public class Deploy
             if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/bcprov-jdk15on-147.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/bcpkix-jdk15on-147.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/commons-io-2.2.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/commons-compress-1.4.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-147.jar");
+               JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-147.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/dd-plist.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-driver-file-7.5.1.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-driver-zip-7.5.1.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-file-7.5.1.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-kernel-7.5.1.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/truezip-swing-7.5.1.jar");
 
                //if (DeploySettings.buildIPA)
                if (DeploySettings.certStorePath == null)
