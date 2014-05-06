@@ -1606,7 +1606,8 @@ int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juli
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
 		   return 0;
 		}   
-      tcscpy(sourcePath, tstrTrim(pathParam));
+      //tcscpy(sourcePath, tstrTrim(pathParam)); - guich: was crashing on LaudoMovel
+      {TCHARP src = tstrTrim(pathParam); xmemmove(sourcePath, src, sizeof(TCHAR) * (tcslen(src)+1));}
 
 		if (!sourcePath[0])
 		{
