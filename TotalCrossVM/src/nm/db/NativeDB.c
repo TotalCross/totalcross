@@ -32,8 +32,6 @@ static TCClass fclass;
 static TCClass aclass;
 static TCClass pclass;
 
-MUTEX_TYPE* getSqlite3Mutex(void* db_);
-
 #define TRACE(x)
 //#define TRACE(x) bool xxx = debug("%s: i64: %X, obj: %X",x,(int)p->i64[0],(int)p->obj[0]);
 
@@ -96,25 +94,19 @@ static void sethandle(Context currentContext, TCObject this_, sqlite3 * ref)
 #define LOCKDB int32 dumbmutex = lockdb(p->obj[0]);
 #define UNLOCKDB unlockdb(p->obj[0],dumbmutex);
 
+int32 lockSqlite3(void* handle);
+void unlockSqlite3(void* handle);
+void initSqlite3Mutex(void* db_);
+void destroySqlite3Mutex(void* db_);
+
 static int32 lockdb(TCObject this_)
 {
-   void* handle = gethandle(null,this_);
-   if (handle)
-   {
-      MUTEX_TYPE mutex = *getSqlite3Mutex(handle);
-      RESERVE_MUTEX_VAR(mutex);   
-   }
-   return 0;
+   return lockSqlite3(gethandle(null,this_));
 }
 
 static void unlockdb(TCObject this_, int32 dumb)
 {
-   void* handle = gethandle(null,this_);
-   if (handle)
-   {
-      MUTEX_TYPE mutex = *getSqlite3Mutex(handle);
-      RELEASE_MUTEX_VAR(mutex);
-   }
+   unlockSqlite3(gethandle(null,this_));
 }
 
 // INITIALISATION ///////////////////////////////////////////////////
@@ -160,9 +152,7 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
     TCObject this_ = p->obj[0];
     TCObject file = p->obj[1];
     sqlite3 *db = gethandle(p->currentContext, this_);
-    MUTEX_TYPE mutex;
     CharP str;
-    SETUP_MUTEX;
 
     if (db)
     {
@@ -182,8 +172,7 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
     xfree(str);
 
     sethandle(p->currentContext, this_, db);
-    INIT_MUTEX_VAR(mutex);
-    *getSqlite3Mutex(db) = mutex;
+    initSqlite3Mutex(db);
 }
 
 TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
@@ -193,16 +182,10 @@ TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected
    sqlite3* db = gethandle(p->currentContext, this_);
    if (db)
    {
-      LOCKDB
-      MUTEX_TYPE mutex = *getSqlite3Mutex(db);
-      UNLOCKDB
-       if (sqlite3_close(db) == SQLITE_OK)
-       {
-          DESTROY_MUTEX_VAR(mutex);
-          //throwex(p->currentContext, this_);
-          sethandle(p->currentContext, this_, 0);
-       }
-   }       
+      destroySqlite3Mutex(db);
+      if (sqlite3_close(db) == SQLITE_OK)
+         sethandle(p->currentContext, this_, 0);
+   }
 }
 
 TC_API void tdsNDB_interrupt(NMParams p) // totalcross/db/sqlite/NativeDB native void interrupt();

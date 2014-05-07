@@ -18,11 +18,6 @@
 
 package totalcross;
 
-import totalcross.android.Loader;
-
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -34,11 +29,17 @@ import android.os.*;
 import android.provider.*;
 import android.telephony.*;
 import android.telephony.gsm.*;
+import android.text.*;
 import android.util.*;
 import android.view.*;
 import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
+
+import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
@@ -312,42 +313,110 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int MULTITOUCHEVENT_SCALE = 10;
    public static final int BARCODE_READ = 11;
 
+   ///////////////////////// ANDROID 4.4 BACK KEY BUG ///////////////////////////////
+   // https://code.google.com/p/android/issues/detail?id=62306
+   // http://stackoverflow.com/questions/18581636/android-cannot-capture-backspace-delete-press-in-soft-keyboard/19980975#19980975
+
+   class EditableAccomodatingLatinIMETypeNullIssues extends SpannableStringBuilder 
+   {
+      EditableAccomodatingLatinIMETypeNullIssues(CharSequence source) 
+      {
+         super(source);
+      }
+
+      public SpannableStringBuilder replace(final int spannableStringStart, final int spannableStringEnd, CharSequence replacementSequence, int replacementStart, int replacementEnd) 
+      {
+         if (replacementEnd > replacementStart) 
+         {
+            super.replace(0, length(), "", 0, 0);
+            return super.replace(0, 0, replacementSequence, replacementStart, replacementEnd);
+         }
+         if (spannableStringEnd > spannableStringStart) 
+         {
+            super.replace(0, length(), "", 0, 0);
+            return super.replace(0, 0, "/", 0, 1);
+         }
+         return super.replace(spannableStringStart, spannableStringEnd, replacementSequence, replacementStart, replacementEnd);
+      }
+   }
+   
+   class InputConnectionAccomodatingLatinIMETypeNullIssues extends BaseInputConnection 
+   {
+      Editable myEditable;
+      String dummy;
+      KeyEvent delUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL);
+      KeyEvent delDn = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+      
+      public InputConnectionAccomodatingLatinIMETypeNullIssues(View targetView, boolean fullEditor) 
+      {
+         super(targetView, fullEditor);
+      }
+      
+      public Editable getEditable() 
+      {
+         if (Build.VERSION.SDK_INT >= 14) 
+         {
+            if (dummy == null)
+            {
+               char[] c = new char[65535]; // guich: set a reasonable size for the buffer
+               for (int i = 1; i < c.length; i++)
+                  c[i-1] = (char)i;
+               dummy = new String(c);      
+            }
+            if (myEditable == null) 
+            {
+               myEditable = new EditableAccomodatingLatinIMETypeNullIssues(dummy);
+               Selection.setSelection(myEditable, dummy.length());
+            }
+            else 
+            {
+               int myEditableLength = myEditable.length(); 
+               if (myEditableLength == 0) 
+               {
+                  myEditable.append(dummy);
+                  Selection.setSelection(myEditable, dummy.length());
+               }
+            }
+            return myEditable;
+         }
+         return super.getEditable();
+      }
+
+      public boolean deleteSurroundingText(int beforeLength, int afterLength) 
+      {
+         for (int i =0; i < beforeLength; i++)
+         {
+            sendKeyEvent(delDn);
+            sendKeyEvent(delUp);
+         }
+         return true;
+      }
+
+      public boolean performPrivateCommand(java.lang.String action, android.os.Bundle data)
+      {
+         if (action != null && action.contains("hideSoftInputView")) // for LG's special "hide keyboard" key
+         {
+            sendCloseSIPEvent();
+            sipVisible = false;
+         }
+         return super.performPrivateCommand(action, data);
+      }
+      
+      public boolean reportFullscreenMode(boolean enabled)
+      {
+         return false;
+      }      
+   }
+
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
-
-      return new BaseInputConnection(this, false)
-      {
-         public boolean deleteSurroundingText(int leftLength, int rightLength)
-         {
-            for (int i =0; i < leftLength; i++)
-            {
-               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-            }
-
-            return true;
-         }
-         
-         // public boolean finishComposingText() - does not work in a standard way! in samsung with swiftkeys, each key sends this, and in the std keyboard, it is sent BEFORE the keyboard appears
-
-         public boolean performPrivateCommand(java.lang.String action, android.os.Bundle data)
-         {
-            if (action != null && action.contains("hideSoftInputView")) // for LG's special "hide keyboard" key
-            {
-               sendCloseSIPEvent();
-               sipVisible = false;
-            }
-            return super.performPrivateCommand(action, data);
-         }
-         
-         public boolean reportFullscreenMode(boolean enabled)
-         {
-            return false;
-         }      
-      };
+      outAttrs.inputType = InputType.TYPE_NULL;
+      outAttrs.actionLabel = null;
+      return new InputConnectionAccomodatingLatinIMETypeNullIssues(this, false);
    }
+   //////////////////////////////////////////////////////////////////////////////////
    
    private static boolean altNext;
    private static boolean shiftNext;

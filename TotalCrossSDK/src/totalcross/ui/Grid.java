@@ -2297,8 +2297,13 @@ public class Grid extends Container implements Scrollable
          qsortInt(col,low,last,ascending);
    }
 
+   private double getDoubleValue(String s, double def)
+   {
+      return s.equals("") ? -1 : Convert.toDouble(s,def); // guich@tc210: support empty cells
+   }
    private void qsortDouble(int col, int first, int last, boolean ascending) throws InvalidNumberException // guich@220_34
    {
+      
       if (first >= last)
          return;
       int low = first;
@@ -2307,21 +2312,21 @@ public class Grid extends Container implements Scrollable
       Object []items = vItems.items;
       int[] ints = checkEnabled ? ivChecks.items : null;
 
-      double mid = Convert.toDouble(((String[])items[(first+last) >> 1])[col], Convert.MIN_DOUBLE_VALUE);
+      double mid = getDoubleValue(((String[])items[(first+last) >> 1])[col], Convert.MIN_DOUBLE_VALUE);
       while (true)
       {
          if (ascending)
          {
-            while (high >= low && mid > Convert.toDouble(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
+            while (high >= low && mid > getDoubleValue(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid < Convert.toDouble(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
+            while (high >= low && mid < getDoubleValue(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          else
          {
-            while (high >= low && mid < Convert.toDouble(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
+            while (high >= low && mid < getDoubleValue(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid > Convert.toDouble(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
+            while (high >= low && mid > getDoubleValue(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          if (low <= high)
