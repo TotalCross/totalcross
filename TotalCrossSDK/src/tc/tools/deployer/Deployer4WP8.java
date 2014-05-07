@@ -32,6 +32,12 @@ public class Deployer4WP8
       File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
             DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
             "wp8/TotalCross.xap"));
+      
+      // create the output folder
+      final String targetDir = Convert.appendPath(DeploySettings.targetDir, "/wp8/");
+      File f = new File(targetDir);
+      if (!f.exists())
+         f.mkdirs();
 
       File tempFile = File.createTempFile(DeploySettings.appTitle, ".zip");
       tempFile.deleteOnExit();
@@ -41,7 +47,7 @@ public class Deployer4WP8
       // open new file with truezip
       TFile templateZip = new TFile(tempFile);
 
-      SilverlightZip sz = new SilverlightZip(new File(DeploySettings.targetDir, "/wp8/" + DeploySettings.appTitle + ".xap"));
+      SilverlightZip sz = new SilverlightZip(new File(targetDir, DeploySettings.appTitle + ".xap"));
       String manifestContent =
             "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n" +
                   "<Deployment>\r\n" +
