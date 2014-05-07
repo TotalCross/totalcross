@@ -127,6 +127,7 @@ public class DynamicScrollContainer extends ScrollContainer
 	 */
 	protected void updateVisibleViews(int scrollDirection)
 	{
+	   if (datasource == null) return;
 		int yStart = bag.y * -1;
 		int yEnd = ((bag.y * -1) + height);
 

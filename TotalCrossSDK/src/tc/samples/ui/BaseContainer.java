@@ -183,7 +183,7 @@ public class BaseContainer extends Container
       }
       catch (ElementNotFoundException enfe)
       {
-         MainWindow.exit(0); // we're the last screen, so just exit the application
+         //MainWindow.exit(0); // we're the last screen, so just exit the application
       }
    }
    
