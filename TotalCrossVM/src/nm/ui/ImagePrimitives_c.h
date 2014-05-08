@@ -10,6 +10,12 @@
  *********************************************************************************/
 
 #include <math.h>
+#ifdef ANDROID
+#undef __gl2_h_
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#endif
 
 #if defined WP8
 #include "openglWrapper.h"

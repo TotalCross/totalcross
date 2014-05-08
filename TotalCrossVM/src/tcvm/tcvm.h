@@ -27,9 +27,7 @@
 
 #ifdef ANDROID
 #include <jni.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
+#define __gl2_h_
 #endif
 
 #if HAVE_CONFIG_H
