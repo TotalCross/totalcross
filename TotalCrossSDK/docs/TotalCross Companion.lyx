@@ -61701,6 +61701,14 @@ Overview
 \end_layout
 
 \begin_layout Standard
+In this part, two ways of decoding information from a barcode will be seen.
+\end_layout
+
+\begin_layout Chapter
+Scanner
+\end_layout
+
+\begin_layout Standard
 The 
 \family typewriter
 totalcross.io.device.Scanner
@@ -61918,13 +61926,35 @@ totalcross.io.device.scanner.Scanner
 \family default
  and 
 \family typewriter
-totalcross.io.
+totalcross.
 \begin_inset Newline newline
 \end_inset
 
-device.scanner.ScanEvent
+io.device.scanner.ScanEvent
 \family default
  JavaDocs.
+\end_layout
+
+\begin_layout Chapter
+ZXing
+\end_layout
+
+\begin_layout Standard
+The classes in the package 
+\family typewriter
+totalcross.zxing
+\family default
+ can be used to decode an image of a barcode in some format into the string
+ it encodes.
+ The sample 
+\family typewriter
+tc.samples.io.device.zxing.
+\begin_inset Newline newline
+\end_inset
+
+ZXingScanner
+\family default
+ shows how to use it.
 \end_layout
 
 \begin_layout Part
