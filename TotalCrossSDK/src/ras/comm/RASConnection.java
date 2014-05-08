@@ -25,7 +25,8 @@ public class RASConnection
    public static RASConnection connect(int openTimeout, int readWriteTimeout) throws IOException
    {
       RASConnection connection = null;
-      ConnectionManager.open();
+      if (!ConnectionManager.isInternetAccessible())
+         ConnectionManager.open();
 
       try
       {
