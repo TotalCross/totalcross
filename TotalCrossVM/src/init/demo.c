@@ -109,8 +109,9 @@ bool setElapsed(int32 value)
 
 int32 checkDemo()
 {
-#ifdef ENABLE_DEMO
    int32 value=0,secs,hours,mins;
+   if (!isDemo)
+      return -1;
 #if defined(WIN32) && !defined(WINCE)
    if (!isMainWindow) // don't show the copyright in window-less applications on windows (to allow CreateInstallAPK work)
       return -1;
@@ -126,9 +127,6 @@ int32 checkDemo()
    mins = (secs - hours * 3600) / 60;
    
    return hours*100 + mins;
-#else
-   return -1;
-#endif
 }
 
 bool updateDemoTime()

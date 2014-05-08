@@ -4,16 +4,6 @@ include $(CLEAR_VARS)
 
 TYPE ?= release
 
-ifeq ($(TYPE), noras)
-	include $(LOCAL_PATH)/options_noras.mk
-endif
-ifeq ($(TYPE), release)
-	include $(LOCAL_PATH)/options_nodemo.mk
-endif
-ifeq ($(TYPE), demo)
-	include $(LOCAL_PATH)/options_demo.mk
-endif
-
 TC_SRCDIR := ..
 TC_INCLUDEDIR := $(TC_SRCDIR)/src
 

@@ -63,10 +63,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#if defined(DISABLE_RAS)
-#include "../init/noras_ids/noras.inc"
-#endif
-
 #ifdef darwin
 #define inline
 #endif

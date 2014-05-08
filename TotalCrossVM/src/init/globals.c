@@ -49,6 +49,7 @@ jmethodID jshowRoute;
 #endif
 
 // startup.c
+bool isDemo;
 bool traceOn = false;
 char commandLine[256] = { 0 };
 int32 exitCode = 0;

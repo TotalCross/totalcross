@@ -24,10 +24,6 @@
  #include "posix/startup_c.h"
 #endif
 
-#if !defined(ENABLE_DEMO) && !defined(DISABLE_RAS)
- #define ENABLE_RAS
-#endif
-
 void rebootDevice(); // implemented in nm/sys/<plat>/Vm_c.h
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr);
 bool initGraphicsAfterSettings(Context currentContext);
@@ -199,130 +195,101 @@ static void checkFullScreenPlatform() // guich@tc120_59
    }
 }
 
-static int32* litebaseAllowedPtr; // don't make it global
-
-bool canLoadLitebase()
+#include "noras_ids/noras.inc"
+#define ISDEMO 0
+#define ISNOTACTIVATED -1
+#define ISACTIVATED -2
+#define ISNORAS -3
+static int checkActivation(Context currentContext)
 {
-#ifdef ENABLE_RAS
-   return litebaseAllowedPtr && *litebaseAllowedPtr;
-#else
-   return true;
-#endif
+   TCClass c;
+   TCObject rasClientInstance, ret;
+   Method m;
+   char buf[4];
+   uint8 *allowedKey, *allowedKeysBase = NORAS_KEYS, *signedKey;
+
+   // load ActivationClient
+   c = loadClass(currentContext, "ras.ActivationClient", true);
+   if (currentContext->thrownException)
+      return ISDEMO;
+   m = getMethod(c, true, "getInstance", 0);
+   rasClientInstance = executeMethod(currentContext, m).asObj;
+   if (!rasClientInstance || currentContext->thrownException)
+      return ISDEMO;
+   
+   // noras has priority over ras
+   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
+   ret = executeMethod(currentContext, m, rasClientInstance).asObj;
+   // if readKey is null, the application was not signed!
+   if (ret == null || currentContext->thrownException)
+      return ISDEMO;
+   // check the key
+   for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) 
+   {
+      uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
+      for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
+      {
+         int2hex(*signedKey, 2, buf);
+         if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
+            break;
+         if (allowedKey == allowedKeysBase + 22) // noras confirmed!
+            return ISNORAS;
+      }
+   }
+   // could not activate noras, try ras
+   m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
+   return executeMethod(currentContext, m, rasClientInstance).asInt32 == 1 ? ISACTIVATED : ISNOTACTIVATED;
 }
 
 TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
-   bool mustActivate = false;
-#if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
-   TCObject rasClientInstance;
-   Method m;
+   int32 retc;
+   
+   retc = checkActivation(currentContext);
+   isDemo = retc == ISDEMO;
 
-   // 2. Check activation
-   c = loadClass(currentContext, "ras.ActivationClient", true);
-   if (!c || currentContext->thrownException)
-      return exitProgram(111);
-   m = getMethod(c, true, "getInstance", 0);
-   if (!m)
-      return exitProgram(112);
-   rasClientInstance = executeMethod(currentContext, m).asObj;
-   if (!rasClientInstance || currentContext->thrownException)
-      return exitProgram(113);
-
- #ifdef ENABLE_RAS // when RAS is enabled, we just call the activation process
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
-   if (!m)
-      return exitProgram(114);
-
-   mustActivate = !executeMethod(currentContext, m, rasClientInstance).asInt32;
-   {
-      // get the product id to see if litebase is allowed
-      litebaseAllowedPtr = getStaticFieldInt(c, "litebaseAllowed");
- #else // when NORAS is enabled, we must check if this specialized vm can run with the current key
- #ifndef DEBUG // only validate the NORAS key on release
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
-   if (!m)
-      return exitProgram(114);
-   else
-   {
-      char buf[4];
-      uint8 *allowedKey, *allowedKeysBase = ENABLE_NORAS, *signedKey;
-      TCObject ret = executeMethod(currentContext, m, rasClientInstance).asObj;
-      if (currentContext->thrownException || ret == null)
-      {
-         alert("Invalid key (1).");
-         return exitProgram(1141);
-      }
-      // check the key
-      for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) {
-	     uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
-         for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
-         {
-            int2hex(*signedKey, 2, buf);
-            if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
-            {
-               break;
-            }
-            if (allowedKey == allowedKeysBase + 22)
-            {
-               goto jumpArgument;
-            }
-         }
-      }
-      alert("Invalid key (2).");
-      return exitProgram(1442);
-
-// activation ok, the name is misleading on purpose
-jumpArgument:
- #endif //#ifndef DEBUG
- #endif
-#endif
-      // load libraries
-      if (!loadLibraries(currentContext, vmPath, true))
-         return exitProgram(115);
+   // load libraries
+   if (!loadLibraries(currentContext, vmPath, true))
+      return exitProgram(115);
          
 #if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
-      if (canLoadLitebase())
+   {
+      TCHAR litebasePath[MAX_PATHNAME];
+      if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
       {
-         TCHAR litebasePath[MAX_PATHNAME];
-         if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
-         {
-            tcscat(litebasePath, TEXT("/dist/lib/LitebaseLib.tcz")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
-            tczLoad(currentContext, litebasePath);
-         }
+         tcscat(litebasePath, TEXT("/dist/lib/LitebaseLib.tcz")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
+         tczLoad(currentContext, litebasePath);
       }
-#endif
-      // 3. Load the main class (also calls its static initializer)
-      c = loadClass(currentContext, mainClassName, true); // some fields of totalcross.sys.Settings may be set by the programmer at the static initializer, called now
-      if (c == null)
-      {
-         if (currentContext->thrownException != null)
-            showUnhandledException(currentContext,true);
-         else
-            alert("Class not found or corrupted: %s",mainClassName);
-         return exitProgram(116);
-      }
-      else
-      if (currentContext->thrownException == null && keepRunning)
-      {
-         checkFullScreenPlatform();
-         if (*tcSettings.isFullScreenPtr) // Settings.isFullScreen is set at the static initializer
-            setFullScreen();
-         // 4. Retrieve user settings
-         retrieveSettingsChangedAtStaticInitializer(currentContext);
-         // 5. create an instance and call the constructor
-         mainClass = createObject(currentContext, mainClassName); // keep it locked
-      }
-#if !defined(DEBUG) && (defined(ENABLE_NORAS) || defined(ENABLE_RAS))
    }
 #endif
+   // 3. Load the main class (also calls its static initializer)
+   c = loadClass(currentContext, mainClassName, true); // some fields of totalcross.sys.Settings may be set by the programmer at the static initializer, called now
+   if (c == null)
+   {
+      if (currentContext->thrownException != null)
+         showUnhandledException(currentContext,true);
+      else
+         alert("Class not found or corrupted: %s",mainClassName);
+      return exitProgram(116);
+   }
+   else
+   if (currentContext->thrownException == null && keepRunning)
+   {
+      checkFullScreenPlatform();
+      if (*tcSettings.isFullScreenPtr) // Settings.isFullScreen is set at the static initializer
+         setFullScreen();
+      // 4. Retrieve user settings
+      retrieveSettingsChangedAtStaticInitializer(currentContext);
+      // 5. create an instance and call the constructor
+      mainClass = createObject(currentContext, mainClassName); // keep it locked
+   }
    if (currentContext->thrownException == null && mainClass != null) // no unhandled exception was thrown?
    {
       // 6. call appStarting
-#ifndef ENABLE_DEMO // in demo mode, the MessageBox already does what waitUntilStarted does. Calling this in demo mode blocks the vm.
-      if (isMainWindow) waitUntilStarted(); // guich@tc115_27 - guich@tc120_7: only if MainWindow
-#endif
-      executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN), mainClass, mustActivate ? -999999 : checkDemo());
+      if (!isDemo && isMainWindow) waitUntilStarted(); // guich@tc115_27 - guich@tc120_7: only if MainWindow - in demo mode, the MessageBox already does what waitUntilStarted does. Calling this in demo mode blocks the vm.
+      executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN), mainClass, 
+         retc == ISNORAS || retc == ISACTIVATED ? -1 : retc == ISNOTACTIVATED ? -999999 : checkDemo());
       // 7. call the main event loop
       if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding
@@ -529,11 +496,6 @@ jumpArgument:
    else
    {
       CharP mainClassName = loadedTCZ->header->names[0];
-#if defined (WIN32) && !defined (WINCE) && defined ENABLE_NORAS && defined TARGET_MAINCLASS && defined DEFAULT_BOUNDS // tweak for IBGE desktop app
-      if (strEq(TARGET_MAINCLASS, mainClassName))
-         if (!parseScreenBounds(DEFAULT_BOUNDS, &defScrX, &defScrY, &defScrW, &defScrH))
-            return exitProgram(110);
-#endif
 #if !defined(ANDROID) && !defined (PALMOS) && !defined (darwin) || defined (THEOS) // we load libraries in the application's path too (guich@tc139: all platforms except palm)
       loadLibraries(currentContext, appPath, false);
 #endif      

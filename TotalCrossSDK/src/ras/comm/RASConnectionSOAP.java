@@ -1,16 +1,13 @@
 package ras.comm;
 
-import ras.ActivationClient;
-import ras.ui.ActivationHtml;
-import totalcross.io.ByteArrayStream;
-import totalcross.io.DataStream;
-import totalcross.io.IOException;
-import totalcross.net.Base64;
+import ras.*;
+import ras.ui.*;
+
+import totalcross.io.*;
+import totalcross.net.*;
 import totalcross.sys.*;
-import totalcross.ui.dialog.InputBox;
-import totalcross.util.Hashtable;
-import totalcross.xml.soap.SOAP;
-import totalcross.xml.soap.SOAPException;
+import totalcross.util.*;
+import totalcross.xml.soap.*;
 
 public class RASConnectionSOAP extends RASConnection
 {

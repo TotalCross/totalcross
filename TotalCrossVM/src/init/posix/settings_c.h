@@ -275,15 +275,10 @@ void updateDaylightSavings(Context currentContext)
 #include "sys/system_properties.h"
 bool fillSettings(Context currentContext)
 {
-#ifdef ENABLE_RAS
-   bool isActivationVM = true;
-#else
-   bool isActivationVM = false;   
-#endif
    JNIEnv* env = getJNIEnv();
    jclass jSettingsClass = androidFindClass(env, "totalcross/android/Settings4A");
-   jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "(Z)V");
-   (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod, isActivationVM);
+   jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "()V");
+   (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod);
 
    jfieldID jfID;
    jstring jStringField;

@@ -31,9 +31,6 @@ typedef int32 (*executeProgramFunc)(CharP args);
 TC_API int32 startVM(CharP argsOriginal, Context* cOut);
 TC_API int32 startProgram(Context currentContext);
 
-/** True if the class loader can load a Litebase class. */
-bool canLoadLitebase();
-
 bool wokeUp();  
 
 #ifdef __cplusplus

@@ -86,7 +86,7 @@ public final class Settings4A
 	   
 	}
 	
-	static void fillSettings(boolean isActivationVM)
+	static void fillSettings()
 	{
 	   Context ctx = Launcher4A.instance.getContext();
 	   String id1,id2;

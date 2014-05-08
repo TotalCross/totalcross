@@ -1,8 +1,4 @@
-#ifndef DISABLE_RAS
-#if NORASID == 274
-   #include "../init/noras_ids/noras_274.inc"
-#else
-   #define ENABLE_NORAS \
+#define NORAS_KEYS \
 "4D54434F4B779232C5CB1E2B" /*   20 GREG     */ \
 "4D544C4223A9256F3C8F92A8" /*  338 PK       */ \
 "54434C42070417BF103F8C89" /*  577          */ \
@@ -14,5 +10,3 @@
 "54434C424A8085D84B21CF89" /*  901 CISS     */ \
 "54434C42020C2363FE9B87CB" /* 1081 Open Net */ \
 "54434C42052D4A1927E38AFA" /*  828 Redes    */
-#endif
-#endif // DISABLE_RAS

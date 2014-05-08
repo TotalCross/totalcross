@@ -690,13 +690,6 @@ TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFou
    volatile TCClass ret;
    int32 hc;
    Method staticInitializer = null;
-//   if (strEq("java.lang.StringBuilder",className))  - this would work - but what about the other pitfalls?
-//      xstrcpy(className, "java.lang.StringBuffer");
-   if (strEq(className,"litebase.LitebaseConnection") && !canLoadLitebase())
-   {
-      throwException(currentContext, RuntimeException, "This product was not signed with a key that allows Litebase.");
-      return null;
-   }
    // check if we already have loaded it
    LOCKVAR(classLoaderLock);
    hc = hashCodeSlash2Dot(className);

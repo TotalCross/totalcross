@@ -45,13 +45,8 @@ static void checkTimer(Context currentContext)
    }
 }
 
-#ifdef ENABLE_DEMO
 static int32 demoTick;
-#endif
 extern bool wokeUp();
-#ifdef WINCE
-static int32 nextAutoOffTick;
-#endif
 
 static bool pumpEvent(Context currentContext)
 {          
@@ -61,31 +56,14 @@ static bool pumpEvent(Context currentContext)
       ok = false;
       goto sleep;
    }
-#ifdef WINCE 
-   {
-    int32 ts;
-	if (oldAutoOffValue != 0 && (ts=getTimeStamp()) >= nextAutoOffTick) // guich@tc120_67
-	{
-      keybd_event(VK_LBUTTON, 0, KEYEVENTF_SILENT, 0);
-      keybd_event(VK_LBUTTON, 0, KEYEVENTF_KEYUP | KEYEVENTF_SILENT, 0);
-      SystemIdleTimerReset();
-      nextAutoOffTick = ts + 15 * 1000; // get next time
-	}
-   }
-#endif
-#if (defined(WINCE) && _WIN32_WCE >= 300)
-   if (wokeUp())
-      postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_POWER_ON, 0,0,-1);
-#endif
    if (privateIsEventAvailable())
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
-#ifdef ENABLE_DEMO
+   if (isDemo)
    {
       int32 cur = getTimeStamp();
       if ((cur-demoTick) > 15000) { demoTick = cur; updateDemoTime(); } // update after 15 seconds
    }
-#endif
 sleep:
 #ifndef darwin   
    Sleep(1); // avoid 100% cpu - important on Android!
@@ -127,8 +105,6 @@ void mainEventLoop(Context currentContext)
 
 #ifdef darwin
     graphicsSetupIOS(); // start the opengl context in the same thread of the events
-#elif defined WP8
-
 #endif
    if (_onTimerTick == null || _postEvent == null || onMinimize == null || onRestore == null) // unlikely to occur...
       throwException(currentContext, RuntimeException, "Can't find event methods.");
@@ -159,9 +135,8 @@ bool initEvent()
 
 void destroyEvent()
 {
-#ifdef ENABLE_DEMO
-   updateDemoTime();
-#endif
+   if (isDemo)
+      updateDemoTime();
    if (oldAutoOffValue != 0) // if user changed the state, restore the old value of the auto-off timer
       vmSetAutoOff(true);
    privateDestroyEvent();

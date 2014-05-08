@@ -11,10 +11,6 @@
  *                                                                               *
  *********************************************************************************/
 
-IMPORTANT:
-           SDK -> SDK WITH DEMO VIRTUAL MACHINES WITH TRIAL PERIOD
-           VMS -> ONLY VIRTUAL MACHINES WITHOUT TRIAL PERIOD
-
 -->
 
 <project name="TotalCross SDK deploy" default="help" basedir=".">
@@ -64,12 +60,8 @@ IMPORTANT:
 <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="base.target.path"  value="${basedir}/../../../output/release"/>
 <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
-<property name="target.vms.path"   value="${base.target.path}/TotalCrossVMS"/>
-<property name="target.noras.path" value="${base.target.path}/TotalCrossVMS_NORAS"/>
 <property name="etc"               value="${source.sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
-
-<property name="noras_dir"         value="${source.vms.path}/src/init/noras_ids" />
 
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
@@ -146,24 +138,6 @@ target: makeNativeHT - updates the native methods hash table.
 target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWin32_vms" >
-   <echo message="GENERATING WIN32 FILES - VMS"/>
-
-   <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "RAS Release|Win32"'/>
-      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "RAS Release|Win32"'/>
-   </exec>
-</target>
-
-<target name="buildWin32_vms_noras" >
-   <echo message="GENERATING WIN32 FILES - VMS"/>
-
-   <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "NO RAS Release|Win32"'/>
-      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "NO RAS Release|Win32"'/>
-   </exec>
-</target>
-
 <target name="buildWin32_sdk" >
    <echo message="GENERATING WIN32 FILES - SDK"/>
    
@@ -188,8 +162,6 @@ target: createSkeleton - Create the folders from scratch
 <target name="createSkeleton" depends="updateCompilerDate" description="copy the changed files to the SDK">
    <delete dir="${base.target.path}/TotalCross*" failonerror="yes" />
    <mkdir dir="${target.sdk.path}/dist/vm"/>
-   <mkdir dir="${target.vms.path}/dist/vm"/>
-   <mkdir dir="${target.noras.path}/dist/vm"/>
 
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
@@ -278,20 +250,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
   </antcall>
 </target>
 
-<target name="buildInstalls_vms" >
-  <antcall target="buildInstalls">
-      <param name="type" value="VMS" />
-      <param name="target.path" value="${target.vms.path}" />
-  </antcall>
-</target>
-
-<target name="buildInstalls_vms_noras" >
-  <antcall target="buildInstalls">
-      <param name="type" value="VMS_NORAS" />
-      <param name="target.path" value="${target.noras.path}" />
-  </antcall>
-</target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: IPhone builds
 
@@ -301,33 +259,6 @@ target: IPhone builds
   4. create a rep for the tcvm and the samples
   5. ftp to the sw.com.br
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="build-theos-launcher">
-   <property name="remote.path" value="~/ios_workspace/theos-launcher/${env.COMPUTERNAME}" />
-   <property name="launcher.path" value="${target.sdk.path}/etc/launchers/iphone2" />
-
-   <tar
-      basedir="${basedir}/../../.."
-      includes="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**"
-      destfile="${base.temp.path}/Launcher_theos.tgz"
-      compression="gzip"
-      longfile="gnu" />
-   <sshexec command="
-      rm -Rf ${remote.path};
-      mkdir -p ${remote.path}"
-      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
-   <scp
-      file="${base.temp.path}/Launcher_theos.tgz"
-      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
-      trust="yes" password="${buildserver.pass}" port="22" />
-
-   <sshexec command="
-      tar -zxpf ${remote.path}/Launcher_theos.tgz -C ${remote.path};
-      bash -l ${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/build.sh;"
-      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
-
-   <mkdir dir="${launcher.path}" />
-   <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/obj/Launcher" todir="${launcher.path}" trust="yes" password="${buildserver.pass}" port="22" />
-</target>
 
 <target name="buildIPhone_sdk_base" >
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
@@ -339,18 +270,7 @@ target: IPhone builds
   </else>
   </if>
   
-    <if><equals arg1="${type}" arg2="demo" /><then>
-      <property name="extra_args" value="-demo" />
-    </then>
-    <elseif><equals arg1="${type}" arg2="noras" /><then>
-      <property name="extra_args" value="-noras" />
-    </then></elseif>
-   <elseif><equals arg1="${type}" arg2="release" /><then>
-     <property name="extra_args" value="" />
-   </then></elseif>
-    </if>
-  
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="ios_build">
@@ -385,15 +305,6 @@ target: IPhone builds
    <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/builders/${build.name}/${copy.from}" todir="${copy.to}" trust="yes" password="${buildserver.pass}" port="22" />
 </target>
 
-<target name="ios_theos" >
-   <antcall target="ios_build">
-      <param name="build.name"      value="theos" />
-      <param name="build.includes"  value="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**" />
-      <param name="copy.from"       value="demo/libtcvm.dylib" />
-      <param name="copy.to"         value="${basedir}/theos/demo" />
-   </antcall>
-</target>
-
 <target name="ios_xcode" >
    <antcall target="ios_build">
       <param name="build.name"      value="xcode" />
@@ -409,7 +320,7 @@ target: IPhone builds
 <target name="invalidate-ipas" >
    <property name="path.to.invalidator" value="${base.temp.path}/invalidator" />
    <mkdir dir="${path.to.invalidator}" />
-   <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa ${target.vms.path}\dist\vm\ios\TotalCross.ipa ${target.noras.path}\dist\vm\ios\TotalCross.ipa" />
+   <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa" />
 
    <javac
       srcdir="${source.sdk.path}/src/tc/tools/"
@@ -490,42 +401,6 @@ target: IPhone builds
    </antcall>
 </target>
 
-<target name="copyIPhoneTCVM_vms" >
-   <echo message="retrieve remote release builds" />
-  <antcall target="copyIPhoneTCVM">
-      <param name="type" value="ras" />
-      <param name="target.path" value="${target.vms.path}" />
-  </antcall>
-</target>
-   
-<target name="copyIPhoneTCVM_vms_noras" >
-   <echo message="retrieve remote NORAS release builds" />
-   <antcall target="copyIPhoneTCVM">
-       <param name="type" value="noras" />
-       <param name="target.path" value="${target.noras.path}" />
-   </antcall>
-</target>   
-
-<target name="buildIPhone_vms" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <antcall target="copyIPhoneTCVM_vms" />
-
-</target>
-
-<target name="buildIPhone_vms_noras" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-  
-   <antcall target="copyIPhoneTCVM_vms_noras" />
-
-</target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: Linux builds
 
@@ -574,40 +449,6 @@ target: Linux builds
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
-</target>
-	
-<target name="packageLinux_vms" >
-   <antcall target="packageLinux">
-    <param name="type" value="release" />
-    <param name="target.path" value="${target.vms.path}" />
-   </antcall>
-</target>
-   
-<target name="packageLinux_vms_noras" >
-   <antcall target="packageLinux">
-       <param name="type" value="noras" />
-       <param name="target.path" value="${target.noras.path}" />
-   </antcall>
-</target>   
-
-<target name="buildLinux_vms" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <antcall target="packageLinux_vms" />
-
-</target>
-
-<target name="buildLinux_vms_noras" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-   
-   <antcall target="packageLinux_vms_noras" />
-   
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -683,22 +524,6 @@ target: Android builds
 
 <target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
 
-<target name="buildAndroid_vms" depends="clean_android_native">
-  <delete dir="${android.project.path}/out/src" />
-  <antcall target="build_android" >
-	<param name="type" value="release" />
-	</antcall>	
-  <copy file="${android.temp}/TotalCross.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
-</target>   
-
-<target name="buildAndroid_vms_noras" depends="clean_android_native">
-  <delete dir="${android.project.path}/out/src" />
-  <antcall target="build_android" >
-	<param name="type" value="noras" />
-	</antcall>
-  <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
-</target>   
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -714,10 +539,6 @@ target: checks if we must update the versions of the files prior to a build.
 
   <fail unless="version.updated" message="************************************* Please update the project version information on vc2008, EVC, gcc-arm/vm/resources.rcp!!! **********"/>
 </target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: builds NORAS sdks for all companys.
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildPostInstall" >
 
@@ -761,5 +582,21 @@ target: build targets
 <target name="buildWinCE_sdk_ARM" />
 <target name="buildWinCECabsSingle" />
 <target name="buildWinCECabsSingle_PocketPC_ARM" />
+<target name="buildWin32_vms" />
+<target name="buildWin32_vms_noras" />
+<target name="buildInstalls_vms" />
+<target name="buildInstalls_vms_noras" />
+<target name="build-theos-launcher" />
+<target name="ios_theos" />
+<target name="copyIPhoneTCVM_vms" />
+<target name="copyIPhoneTCVM_vms_noras" />
+<target name="buildIPhone_vms" />
+<target name="buildIPhone_vms_noras" />
+<target name="packageLinux_vms" />
+<target name="packageLinux_vms_noras" />
+<target name="buildLinux_vms" />
+<target name="buildLinux_vms_noras" />
+<target name="buildAndroid_vms" />
+<target name="buildAndroid_vms_noras" />
 
 </project>

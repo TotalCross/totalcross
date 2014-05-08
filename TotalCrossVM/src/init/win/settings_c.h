@@ -874,15 +874,8 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    {
       if (*(tcSettings.romVersionPtr) < 501)
          GetMacAddress(romSerialNumber);
-      if (romSerialNumber[0] == 0)
-      {
-#if !defined(ENABLE_RAS)
-         xstrcpy(romSerialNumber, "unknown");
-#endif
-#if !defined(ENABLE_NORAS)
-         debug("Unable to retrieve device registration information, please make sure the network interfaces are enabled and try again or contact support if the problem persists. (%X)", hres);
-#endif
-      }
+//      if (romSerialNumber[0] == 0)
+//         xstrcpy(romSerialNumber, "unknown");
    }
 #endif
 
