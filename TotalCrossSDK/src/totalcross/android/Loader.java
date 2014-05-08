@@ -42,6 +42,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
    private static final int ZXING_RETURN = 1234324333;
+   private static final int CAMERA_PIC_REQUEST = 1337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -107,6 +108,9 @@ public class Loader extends Activity implements BarcodeReadListener
          case TAKE_PHOTO:
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
+         case CAMERA_PIC_REQUEST:
+            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            break;
          case MAP_RETURN:
             Launcher4A.showingMap = false;
             break;
@@ -156,12 +160,23 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       try
       {
-         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".CameraViewer"));
-         intent.putExtra("file",s);
-         intent.putExtra("quality",quality);
-         intent.putExtra("width",width);
-         intent.putExtra("height",height);
-         startActivityForResult(intent, TAKE_PHOTO);
+         String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+         if ("SK GT-7340".equals(deviceId))
+         {
+            Uri outputFileUri = Uri.fromFile(new File(s));
+            Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
+            startActivityForResult(intent, CAMERA_PIC_REQUEST);
+         }
+         else
+         {
+            Intent intent = new Intent(this, Class.forName(totalcrossPKG+".CameraViewer"));
+            intent.putExtra("file",s);
+            intent.putExtra("quality",quality);
+            intent.putExtra("width",width);
+            intent.putExtra("height",height);
+            startActivityForResult(intent, TAKE_PHOTO);
+         }
       }
       catch (Throwable e)
       {
