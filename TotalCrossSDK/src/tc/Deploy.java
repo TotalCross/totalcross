@@ -100,7 +100,7 @@ public class Deploy
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
-            if ((options & BUILD_WP8)  != 0) new Deployer4WP8();
+            if ((options & BUILD_WP8)     != 0) new Deployer4WP8();
             if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
