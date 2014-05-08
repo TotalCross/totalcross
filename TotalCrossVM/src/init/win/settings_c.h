@@ -103,7 +103,7 @@ static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // gu
 
 #ifndef WINCE
    ret = RegCreateKeyEx(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,NULL,0,KEY_ALL_ACCESS,NULL,&handle,&disp);
-   if (ret != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
+   if (isHKLM && (ret || RegOpenKeyEx(HKEY_LOCAL_MACHINE, buf, 0, KEY_READ, &handle))) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
 #endif
       ret = RegCreateKeyEx(HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,NULL,0,KEY_ALL_ACCESS,NULL,&handle,&disp);
    if (ret == NO_ERROR)
