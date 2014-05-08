@@ -26,11 +26,10 @@ import android.view.*;
 import android.view.inputmethod.*;
 import java.io.*;
 import java.util.*;
-
 import totalcross.*;
 import totalcross.android.compat.*;
-
 import com.intermec.aidc.*; 
+import java.util.concurrent.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -156,7 +155,7 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
 
-   private void captureCamera(String s, int quality, int width, int height)
+   private void captureCamera(String s, int quality, int width, int height, boolean allowRotation)
    {
       try
       {
@@ -175,6 +174,7 @@ public class Loader extends Activity implements BarcodeReadListener
             intent.putExtra("quality",quality);
             intent.putExtra("width",width);
             intent.putExtra("height",height);
+            intent.putExtra("allowRotation", allowRotation);
             startActivityForResult(intent, TAKE_PHOTO);
          }
       }
@@ -257,8 +257,9 @@ public class Loader extends Activity implements BarcodeReadListener
                dialNumber(b.getString("dial.number"));
                break;
             case CAMERA:
-               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
-               break;
+               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
+                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"));
+			   break;
             case TITLE:
                setTitle(b.getString("setDeviceTitle.title"));
                break;
@@ -520,10 +521,18 @@ public class Loader extends Activity implements BarcodeReadListener
    }
 
    String strBarcodeData;    
+   static Semaphore semaphore = new Semaphore(1);
 
    public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
    {
-      strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+      try
+	   {
+         semaphore.acquire();		 
+      }
+	   catch (InterruptedException exception) {}
+	   strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+	   semaphore.release();
+
       Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }

@@ -114,9 +114,12 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       case totalcross_Launcher4A_BARCODE_READ:
       {
          static Method scannerPostEvent;
+         static Context cont;
+         if (cont == null)
+            cont = newContext(null,null,false);
          if (scannerPostEvent == null)
             scannerPostEvent = getMethod(loadClass(mainContext,"totalcross.io.device.scanner.Scanner",false),false,"_onEvent",1,J_INT);
-         executeMethod(mainContext, scannerPostEvent, 1);
+         executeMethod(cont, scannerPostEvent, 1);
          break;
       }
    }
