@@ -143,7 +143,6 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    
    <exec executable="${msvc.path}" failonerror="yes">
       <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
-      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "DEMO Release|Win32"'/>
    </exec>
 </target>
 
@@ -190,7 +189,6 @@ target: buildSkeleton - Build the folders
    <!-- copy the changed files to the release folder -->
    <mkdir dir="${target.sdk.path}/dist/vm" />
    <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
-   <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
    <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
    <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
    <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tcweb.jar" />

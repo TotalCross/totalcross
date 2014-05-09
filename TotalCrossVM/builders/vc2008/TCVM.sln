@@ -7,11 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCVM", "TCVM.vcproj", "{B6D
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Litebase", "..\..\..\..\Litebase\LitebaseSDK\builders\vc2008\Litebase.vcproj", "{66EE456C-E926-4933-8F55-C2F572CE7444}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Conduit", "Conduit.vcproj", "{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B6DC7204-DD8B-4A7B-995F-368B82F630DE} = {B6DC7204-DD8B-4A7B-995F-368B82F630DE}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DEMO Debug|Pocket PC 2003 (ARMV4) = DEMO Debug|Pocket PC 2003 (ARMV4)
@@ -123,26 +118,6 @@ Global
 		{66EE456C-E926-4933-8F55-C2F572CE7444}.TestSuite|Pocket PC 2003 (ARMV4).Deploy.0 = TestSuite|Pocket PC 2003 (ARMV4)
 		{66EE456C-E926-4933-8F55-C2F572CE7444}.TestSuite|Win32.ActiveCfg = TestSuite|Win32
 		{66EE456C-E926-4933-8F55-C2F572CE7444}.TestSuite|Win32.Build.0 = TestSuite|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.DEMO Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.DEMO Debug|Win32.ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.DEMO Debug|Win32.Build.0 = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.DEMO Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.DEMO Release|Win32.ActiveCfg = DEMO Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.DEMO Release|Win32.Build.0 = DEMO Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.NO RAS Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.NO RAS Debug|Win32.ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.NO RAS Debug|Win32.Build.0 = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.NO RAS Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.NO RAS Release|Win32.ActiveCfg = NO RAS Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.NO RAS Release|Win32.Build.0 = NO RAS Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.RAS Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.RAS Debug|Win32.ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.RAS Debug|Win32.Build.0 = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.RAS Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.RAS Release|Win32.ActiveCfg = Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.RAS Release|Win32.Build.0 = Release|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.TestSuite|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
-		{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}.TestSuite|Win32.ActiveCfg = TestSuite|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

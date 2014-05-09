@@ -127,7 +127,7 @@ target: build
         build everything
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build" depends="info,device,desktop,desktop_web,conduit" description="build everything">
+<target name="build" depends="info,device,desktop,desktop_web" description="build everything">
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -511,40 +511,6 @@ target: device
 
   <copy file="${output}/install/win32/TCBase.tcz" todir="${dist}/vm"/>
   <copy file="${fonts}/TCFont.tcz" todir="${dist}/vm"/>
-
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: conduit
-
--description:
-        build the TotalCross TCSyncLib.tcz (WINDOWS 32 ONLY!)
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="conduit" depends="compile-device" description="build the TCSyncLib.tcz">
-
-  <echo message="create the TCSyncLib.tcz file" />
-  <mkdir dir="${dist}" />
-  <delete file="${output}/tcsync.jar"/>
-  <jar destfile="${output}/tcsync.jar" compress="no" update="no">
-    <fileset dir="${output}/classes"
-    includes="totalcross/io/sync/*.class"
-    />
-  </jar>
-
-  <echo message="deploy the conduit jar package file" />
-  <java classname="tc.Deploy" fork="yes" dir="${output}">
-    <classpath>
-        <pathelement location="${output}/classes"/>
-        <pathelement location="${sdk.root}"/>
-    </classpath>
-    <arg value="${output}/tcsync.jar"/>
-    <arg line="/n TCSyncLib"/>
-    <arg line="-win32"/>
-    <arg line="${tcdeploy_line}"/>
-  </java>
-
-  <move file="${output}/install/win32/TCSyncLib.tcz" todir="${dist}/vm/win32"/>
 
 </target>
 
