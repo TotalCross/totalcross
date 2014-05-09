@@ -11,6 +11,13 @@
 
 #include "tcvm.h"	
 
+#ifdef ANDROID
+#undef __gl2_h_
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#endif
+
 #ifdef __gl2_h_
 #define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
 #define Graphics_backPixel(o)      makePixelARGB(Graphics_backColor(o) | Graphics_alpha(o))

@@ -26,11 +26,10 @@ import android.view.*;
 import android.view.inputmethod.*;
 import java.io.*;
 import java.util.*;
-
 import totalcross.*;
 import totalcross.android.compat.*;
-
 import com.intermec.aidc.*; 
+import java.util.concurrent.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -42,6 +41,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
    private static final int ZXING_RETURN = 1234324333;
+   private static final int CAMERA_PIC_REQUEST = 1337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -107,6 +107,9 @@ public class Loader extends Activity implements BarcodeReadListener
          case TAKE_PHOTO:
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
+         case CAMERA_PIC_REQUEST:
+            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            break;
          case MAP_RETURN:
             Launcher4A.showingMap = false;
             break;
@@ -152,16 +155,28 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
 
-   private void captureCamera(String s, int quality, int width, int height)
+   private void captureCamera(String s, int quality, int width, int height, boolean allowRotation)
    {
       try
       {
-         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".CameraViewer"));
-         intent.putExtra("file",s);
-         intent.putExtra("quality",quality);
-         intent.putExtra("width",width);
-         intent.putExtra("height",height);
-         startActivityForResult(intent, TAKE_PHOTO);
+         String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+         if ("SK GT-7340".equals(deviceId))
+         {
+            Uri outputFileUri = Uri.fromFile(new File(s));
+            Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, outputFileUri);
+            startActivityForResult(intent, CAMERA_PIC_REQUEST);
+         }
+         else
+         {
+            Intent intent = new Intent(this, Class.forName(totalcrossPKG+".CameraViewer"));
+            intent.putExtra("file",s);
+            intent.putExtra("quality",quality);
+            intent.putExtra("width",width);
+            intent.putExtra("height",height);
+            intent.putExtra("allowRotation", allowRotation);
+            startActivityForResult(intent, TAKE_PHOTO);
+         }
       }
       catch (Throwable e)
       {
@@ -242,8 +257,9 @@ public class Loader extends Activity implements BarcodeReadListener
                dialNumber(b.getString("dial.number"));
                break;
             case CAMERA:
-               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
-               break;
+               captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
+                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"));
+			   break;
             case TITLE:
                setTitle(b.getString("setDeviceTitle.title"));
                break;
@@ -505,10 +521,18 @@ public class Loader extends Activity implements BarcodeReadListener
    }
 
    String strBarcodeData;    
+   static Semaphore semaphore = new Semaphore(1);
 
    public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
    {
-      strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+      try
+	   {
+         semaphore.acquire();		 
+      }
+	   catch (InterruptedException exception) {}
+	   strBarcodeData = aBarcodeReadEvent.getBarcodeData();
+	   semaphore.release();
+
       Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
    }
 }
