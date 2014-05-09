@@ -100,7 +100,6 @@ public class Deploy
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
-            if ((options & BUILD_WP8)     != 0) new Deployer4WP8();
             if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
@@ -121,6 +120,7 @@ public class Deploy
                   new Deployer4IPhoneIPA();
                }
             }
+            if ((options & BUILD_WP8)     != 0) new Deployer4WP8();
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
             
             if (!DeploySettings.testClass && (options & BUILD_APPLET)  != 0 && DeploySettings.isJarOrZip)
