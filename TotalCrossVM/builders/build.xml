@@ -56,12 +56,12 @@
 
 <!-- properties regarding the TC paths -->
 <!--property name="target.sdk.path"   value="t:/SDK/TotalCrossSDK"/-->
-<property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 
+<property name="base.target.path"  value="${basedir}/../../../output/release"/>
+<property name="source.vm.path"    value="${basedir}/.."/>
+<property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 <property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
-<property name="source.vm.path"    value="${basedir}/.."/>
-<property name="base.target.path"  value="${basedir}/../../../output/release"/>
 <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="etc"               value="${source.sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
@@ -144,6 +144,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 <target name="buildWin32_sdk" >
    <echo message="GENERATING WIN32 FILES - SDK"/>
    
+   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
    <exec executable="${msvc.path}" failonerror="yes">
       <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
    </exec>
