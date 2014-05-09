@@ -353,7 +353,7 @@ large
 
 \begin_layout Plain Layout
 
-Version 2.1
+Version 3.0
 \end_layout
 
 \begin_layout Plain Layout
@@ -498,7 +498,7 @@ The term “
 \family typewriter
 C:
 \backslash
-TotalCross2SDK
+TotalCross3SDK
 \family default
 .
  But you can change it during installation.
@@ -1214,6 +1214,7 @@ The SDK has the following structure:
 \end_layout
 
 \end_deeper
+\end_deeper
 \begin_layout Description
 
 \family typewriter
@@ -1232,7 +1233,6 @@ The SDK has the following structure:
 + src
 \end_layout
 
-\end_deeper
 \begin_layout Standard
 Inside 
 \family typewriter
@@ -1244,7 +1244,7 @@ dist
 \begin_layout Itemize
 
 \family typewriter
-TotalCrossSDK/dist/tc.jar
+tc.jar
 \family default
  : This file contains all 
 \family typewriter
@@ -1262,7 +1262,7 @@ TCFont.tcz
 \begin_layout Itemize
 
 \family typewriter
-TotalCrossSDK/dist/tcweb.jar
+tcweb.jar
 \family default
  : This file contains all 
 \family typewriter
@@ -1283,13 +1283,26 @@ TCFont.tcz.
 \begin_layout Itemize
 
 \family typewriter
-TotalCrossSDK
-\backslash
-dist
-\backslash
+litebase.jar
+\family default
+ : This file contains all 
+\family typewriter
+litebase.*
+\family default
+ base classes, and it should be added to the classpath of your chosen IDE.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 samples
 \family default
 : Installation files for all samples.
+ Litebase samples are also inside, prefixed by 
+\family typewriter
+LB_
+\family default
+.
  Lets take the UIControls sample, located at 
 \family typewriter
 TotalCrossSDK
@@ -1298,6 +1311,10 @@ dist
 \backslash
 samples
 \backslash
+
+\begin_inset Newline newline
+\end_inset
+
 UIControls
 \family default
 .
@@ -1458,14 +1475,10 @@ iOS
 \begin_layout Itemize
 
 \family typewriter
-TotalCrossSDK
-\backslash
-dist
-\backslash
 vm
 \family default
 : virtual machine files that which will interpret your TotalCross code on
- the device.
+ the device and Litebase library.
  Below are instructions of how to install them in each platform:
 \end_layout
 
@@ -1473,17 +1486,36 @@ vm
 \begin_layout Itemize
 
 \family typewriter
+TCBase.tcz
+\family default
+, 
+\family typewriter
+TCFont.tcz
+\family default
+, and 
+\family typewriter
+LitebaseLib.tcz
+\family default
+.
+ These files are necessary to run TotalCross and Litebase on Windows 32
+ and Linux.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 iOS
 \family default
-: contains an 
+: contains the 
 \family typewriter
-.ipa
+TotalCross.ipa
 \family default
  file which must be used to generate the 
 \family typewriter
 .ipa
 \family default
  file for your application and the samples if you have an Apple key.
+ It already includes Litebase.
 \end_layout
 
 \begin_layout Itemize
@@ -1493,23 +1525,11 @@ win32
 \family default
 : have the files 
 \family typewriter
-TCSync.dll
-\family default
-, 
-\family typewriter
-TCSyncLib.tcz
-\family default
-, 
-\family typewriter
 TCVM.dll
 \family default
-, 
+ and 
 \family typewriter
-TCBase.tcz
-\family default
-, and 
-\family typewriter
-TCFont.tcz
+Litebase.dll
 \family default
  on the same folder of the application or install TotalCross properly in
  your operational system.
@@ -1529,7 +1549,7 @@ TotalCross.xap
 .xap
 \family default
  of your application.
- 
+ It already includes Litebase.
 \end_layout
 
 \begin_layout Itemize
@@ -1537,7 +1557,7 @@ TotalCross.xap
 \family typewriter
 android
 \family default
-: just install the file 
+: just install the files 
 \family typewriter
 TotalCross.apk
 \family default
@@ -1545,7 +1565,27 @@ TotalCross.apk
 \family typewriter
 adb install -r TotalCross.apk
 \family default
-).
+) and 
+\family typewriter
+Litebase.apk
+\family default
+ (
+\family typewriter
+adb install -r Litebase.apk
+\family default
+) .
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+linux
+\family default
+: executables (
+\family typewriter
+.deb
+\family default
+) for TotalCross and Litebase to be used on linuxes.
 \end_layout
 
 \end_deeper
@@ -1566,16 +1606,36 @@ TotalCross Companion.pdf
 \end_layout
 
 \begin_layout Itemize
-The folder 
+
 \family typewriter
-html
+Litebase Companion.pdf
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+The folders 
+\family typewriter
+lb
+\family default
+ and 
+\family typewriter
+tc
 \family default
 , which contains the generated javadocs.
- Open the file 
+ Open the files 
 \family typewriter
 index.html
 \family default
  to see the javadocs start page.
+\end_layout
+
+\begin_layout Itemize
+An ant build sample (
+\family typewriter
+build.xml
+\family default
+) to deploy a TotalCross application.
 \end_layout
 
 \begin_layout Standard
@@ -1641,7 +1701,15 @@ src
 \family typewriter
 tc/samples:
 \family default
- the sources files of all samples.
+ the sources files of all TotalCross samples.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+lb/samples:
+\family default
+ the sources files of all Litebase samples.
 \end_layout
 
 \begin_layout Itemize
@@ -1667,7 +1735,7 @@ The TotalCross SDK comes with various sample applications along with their
 \begin_layout Standard
 The built samples can be found on 
 \family typewriter
-TotalCrossSDK/dist/samples
+%TOTALCROSS_HOME%/dist/samples
 \family default
 .
  Just follow the installation instructions from chapter 6 and run the sample
@@ -6615,7 +6683,7 @@ erial);
 \end_layout
 
 \begin_layout Chapter
-TotalCross 2.1 Differences
+TotalCross 3.0 Differences
 \end_layout
 
 \begin_layout Section
@@ -6623,20 +6691,24 @@ Platforms
 \end_layout
 
 \begin_layout Standard
-In TotalCross 2.1 we dropped support for Windows CE and Windows Mobile platforms,
+In TotalCross 3.0 we dropped support for Windows CE and Windows Mobile platforms,
  since these platforms are discontinued and replaced by Windows Phones.
 \end_layout
 
 \begin_layout Standard
 If you want to support these platforms, you must download TotalCross 2.0,
  which still supports these platforms.
- Note that Litebase 2.7 works for TotalCross 1.7 (and up), TotalCross 2.0 (and
- up), and TotalCross 2.1 (and up).
+ Note that Litebase 2.7 works for TotalCross 1.7 (and up), and TotalCross
+ 2.0 (and up).
+ TotalCross 3.0 (and up) uses Litebase 2.8.
+ Litebase differences for TotalCross 3.0 are just some small path changes
+ to run on WP8.
+ 
 \end_layout
 
 \begin_layout Standard
 What we recommend is that you use TotalCross 2.0 only for those two platforms,
- and use TotalCross 2.1 for all other platforms.
+ and use TotalCross 3.0 for all other platforms.
  Many SDKs can coexist in the same machine, just rename them.
 \end_layout
 
@@ -6653,7 +6725,7 @@ So:
 \begin_layout Enumerate
 Developing for all currently supported platforms: use 
 \family typewriter
-TotalCross2.1/dist/tc.jar
+TotalCross3/dist/tc.jar
 \family default
  
 \end_layout
@@ -6666,7 +6738,7 @@ Deploying for Android, iOS, Windows 32, Linux, Windows Phone 8, and browser:
 \begin_inset Newline newline
 \end_inset
 
-TotalCross2.1/dist/tc.jar
+TotalCross3/dist/tc.jar
 \family default
  
 \end_layout
@@ -6684,7 +6756,7 @@ TotalCross1.7/dist/tc.jar
 \end_layout
 
 \begin_layout Standard
-The great main improvement in TotalCross 2.1 is the support of the new and
+The great main improvement in TotalCross 3.0 is the support of the new and
  rapidly growing Windows Phone 8.
  We opt to not give support to Windows Phone 7 since its market share is
  small and Microsoft decided to develop WP8 just some time later.
@@ -61718,7 +61790,7 @@ totalcross.io.device.Scanner
 \end_layout
 
 \begin_layout Standard
-For TotalCross 2.1 only Intermec Android scanner is supported.
+For TotalCross 3.0 only Intermec Android scanner is supported.
 \end_layout
 
 \begin_layout Standard
