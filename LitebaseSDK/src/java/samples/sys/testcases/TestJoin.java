@@ -38,6 +38,8 @@ public class TestJoin extends TestCase
       testComparisonsWithIndices(); // Tests comparison between fields, using index.
       testPrimaryKeyAndOrdering(); // Tests join with primary key, clause and table orders.
       testComparisonInTheSameTable(); // Tests comparison of columns of the same table.
+      testOrWithFalseConstantComparison(); // Tests join with or and false comparisons with constants.
+      testOrderGroupBy(); // Tests join with order and group by.
       driver.closeAll();
    }
 
@@ -1271,6 +1273,105 @@ public class TestJoin extends TestCase
       resultSet.close();
       
       assertEquals(1, (resultSet = driverAux.executeQuery("select * from M_MATERIAL MM, M_META_GRUPO_MATERIAL MGM where MM.GMF_CODIGO=MGM.GMF_CODIGO and MM.CODIGO_MATERIAL=1 and MGM.QTD_CONSUMIDA = 350.5")).getRowCount());
+      resultSet.close();
+   }
+   
+   /**
+    * Tests join with or and false comparisons with constants.
+    */
+   private void testOrWithFalseConstantComparison()
+   {
+      LitebaseConnection driverAux = driver;
+      
+      // Drops existing tables.
+      if (driverAux.exists("tbpedido"))
+         driverAux.executeUpdate("drop table tbpedido");
+      if (driverAux.exists("tbcliente"))
+         driverAux.executeUpdate("drop table tbcliente");
+      
+      // Creates the tables.
+      driverAux.execute("create table tbpedido (cdpedido short, totalpedido double, cdcliente short)");
+      driverAux.execute("create table tbcliente (cdcliente short, nmcliente char(10), flativo char(1))");
+      
+      // Populates the tables.
+      driverAux.executeUpdate("insert into tbpedido values (1, 11.30, 1)");
+      driverAux.executeUpdate("insert into tbpedido values (2, 19.30, 1)");  
+      driverAux.executeUpdate("insert into tbpedido values (3, 17.20, 2)"); 
+      driverAux.executeUpdate("insert into tbpedido values (4, 50.00, 2)");  
+      driverAux.executeUpdate("insert into tbpedido values (5, 45.70, 3)");  
+      driverAux.executeUpdate("insert into tbpedido values (6, 78.00, 4)");  
+      driverAux.executeUpdate("insert into tbpedido values (7, 79.10, 5)");  
+      driverAux.executeUpdate("insert into tbpedido values (8, 80.00, 3)");  
+      driverAux.executeUpdate("insert into tbpedido values (9, 2.50, 4)");
+      
+      driverAux.executeUpdate("insert into tbcliente values (1, 'José', 'S')");  
+      driverAux.executeUpdate("insert into tbcliente values (2, 'Maria', 'S')");  
+      driverAux.executeUpdate("insert into tbcliente values (3, 'João', 'S')");  
+      driverAux.executeUpdate("insert into tbcliente values (4, 'Antonio', 'S')");  
+      driverAux.executeUpdate("insert into tbcliente values (5, 'Lucia', 'S')");
+
+      // Normal select.
+      ResultSet resultSet 
+              = driverAux.executeQuery("select * from tbpedido ped, tbcliente cli where cli.cdcliente = ped.cdcliente and (ped.cdcliente = 1)");
+      assertEquals(2, resultSet.getRowCount());
+      resultSet.close();
+      
+      // Selects with false constant comparisons.
+      assertEquals(2, (resultSet = driverAux.executeQuery("select * from tbpedido ped, tbcliente cli where cli.cdcliente = ped.cdcliente and " 
+                                                        + "(ped.cdcliente = 1 or '1' = '0')")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(2, (resultSet = driverAux.executeQuery("select * from tbpedido ped, tbcliente cli where cli.cdcliente = ped.cdcliente and " 
+                                                        + "('1' = '0' or ped.cdcliente = 1)")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(2, (resultSet = driverAux.executeQuery("select * from tbpedido ped, tbcliente cli where (ped.cdcliente = 1 or '1' = '0') and " 
+                                                        + "cli.cdcliente = ped.cdcliente")).getRowCount());
+      resultSet.close();
+
+      assertEquals(2, (resultSet = driverAux.executeQuery("select * from tbpedido ped, tbcliente cli where ('1' = '0' or ped.cdcliente = 1) and " 
+                                                        + "cli.cdcliente = ped.cdcliente")).getRowCount());
+      resultSet.close();
+   }
+   
+   /**
+    * Tests join with order and group by.
+    */
+   void testOrderGroupBy()
+   {
+      LitebaseConnection driverAux = driver;
+      
+      // Drops existing tables.
+      if (driverAux.exists("PERGUNTA"))
+         driverAux.executeUpdate("drop table PERGUNTA");
+      if (driverAux.exists("ASSGRUPOPERGUNTA"))
+         driverAux.executeUpdate("drop table ASSGRUPOPERGUNTA");
+      if (driverAux.exists("ASSGRPPERGTITULOCHK"))
+         driverAux.executeUpdate("drop table ASSGRPPERGTITULOCHK");
+      
+      // Creates the tables.
+      driverAux.execute("CREATE TABLE PERGUNTA (IDPERGUNTA LONG PRIMARY KEY, DESCRICAO VARCHAR(115) NOT NULL, SITUACAO INT NOT NULL, " 
+                                             + "FOTO INT NOT NULL)");
+      driverAux.execute("CREATE TABLE ASSGRUPOPERGUNTA(IDASSGRUPOPERGUNTA LONG PRIMARY KEY, IDPERGUNTA LONG NOT NULL, " + 
+                                                      "IDGRUPOPERGUNTA LONG NOT NULL, ORDEM INT NOT NULL, SITUACAO INT NOT NULL)");
+      driverAux.execute("CREATE TABLE ASSGRPPERGTITULOCHK(IDASSGRPPERGTITULOCHK LONG PRIMARY KEY, IDFORMULARIO LONG NOT NULL, " 
+                                                       + "IDASSGRUPOPERGUNTA LONG NOT NULL, SITUACAO INT NOT NULL)");
+      
+      // Populates the tables.
+      driverAux.executeUpdate("insert into pergunta values (57, 'Desligar todas as fontes de tensao', 1, 0)");
+      driverAux.executeUpdate("insert into ASSGRUPOPERGUNTA values (262, 57, 14, 1, 1)");
+      driverAux.executeUpdate("insert into ASSGRPPERGTITULOCHK values (441, 4, 262, 1)");
+      
+      // The joins.
+      ResultSet resultSet = driverAux.executeQuery("select ASS.IDASSGRUPOPERGUNTA, P.IDPERGUNTA, P.DESCRICAO, P.FOTO from PERGUNTA P, " 
++ "ASSGRUPOPERGUNTA ASS, ASSGRPPERGTITULOCHK ASS1 where ASS.IDGRUPOPERGUNTA=14 AND ASS1.IDFORMULARIO = 4 AND ASS.SITUACAO = 1 AND ASS1.SITUACAO = 1 " 
++ "AND P.SITUACAO = 1 AND ASS.IDPERGUNTA = P.IDPERGUNTA AND ASS1.IDASSGRUPOPERGUNTA = ASS.IDASSGRUPOPERGUNTA order by ASS.ORDEM");
+      assertEquals(1, resultSet.getRowCount());
+      resultSet.close();
+     
+      assertEquals(1, (resultSet = driverAux.executeQuery("select ASS.IDASSGRUPOPERGUNTA, P.IDPERGUNTA, P.DESCRICAO, P.FOTO from PERGUNTA P, " 
++ "ASSGRUPOPERGUNTA ASS, ASSGRPPERGTITULOCHK ASS1 where ASS.IDGRUPOPERGUNTA=14 AND ASS1.IDFORMULARIO = 4 AND ASS.SITUACAO = 1 AND ASS1.SITUACAO = 1 " 
++ "AND P.SITUACAO = 1 AND ASS.IDPERGUNTA = P.IDPERGUNTA AND ASS1.IDASSGRUPOPERGUNTA = ASS.IDASSGRUPOPERGUNTA group by ASS.IDASSGRUPOPERGUNTA, P.IDPERGUNTA, P.DESCRICAO, P.FOTO")).getRowCount());
       resultSet.close();
    }
 }

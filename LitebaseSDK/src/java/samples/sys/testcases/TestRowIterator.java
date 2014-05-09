@@ -251,12 +251,28 @@ public class TestRowIterator extends TestCase
       
       // Tests row iterator with null values.
       assertEquals(20, driver.executeUpdate("update person set name = null"));
-      it.reset();
+      it = driver.getRowIterator("person"); // It is necessary to get a new one.
       while (it.next()) // Iterates through the iterator.
       {
          assertNull(it.getString(1));
          assertTrue(it.isNull(1));
+         assertTrue(it.attr == RowIterator.ROW_ATTR_UPDATED || it.attr == RowIterator.ROW_ATTR_NEW);
       }
+
+      it.reset();
+      
+      assertEquals(1, driver.executeUpdate("delete person where rowid = 1"));
+      
+      // All non-deleted rows are marked as new.
+      while (it.next())
+         it.setNotSynced();
+      it.reset();
+      while (it.next())
+         if (it.rowid == 1)
+            assertEquals(it.attr, RowIterator.ROW_ATTR_DELETED);
+         else
+            assertEquals(it.attr, RowIterator.ROW_ATTR_NEW);
+      
       driver.closeAll();
       it.reset();
       

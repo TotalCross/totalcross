@@ -79,7 +79,7 @@ public class RowIterator
    /**
     * The data stream to read data from the current row.
     */
-   protected DataStreamLE basds;
+   protected DataStreamLB basds; // juliana@253_8: now Litebase supports weak cryptography.
 
    /**
     * An iterator cannot be constructed directly; it must be created throught the method <code>LitebaseConnection.getRowIterator()</code>.
@@ -93,7 +93,9 @@ public class RowIterator
    {
       table = driver.getTable(tableName);
       rowNumber = -1;
-      basds = new DataStreamLE(bas = new ByteArrayStream(data = new byte[table.db.rowSize]));
+      
+      // juliana@253_8: now Litebase supports weak cryptography.
+      basds = new DataStreamLB(bas = new ByteArrayStream(data = new byte[table.db.rowSize]), table.db.useCrypto);
    }
 
    /**
@@ -189,6 +191,38 @@ public class RowIterator
          int id = plainDb.basds.readInt();
          int oldAttr = (((id & Utils.ROW_ATTR_MASK) >> ROW_ATTR_SHIFT) & 3); // guich@560_19
          int newAttr = attr = ROW_ATTR_SYNCED;
+         if (newAttr != oldAttr && oldAttr != ROW_ATTR_DELETED)
+         {
+            plainDb.bas.reset();
+            plainDb.basds.writeInt((id & Utils.ROW_ID_MASK) | newAttr); // Sets the new attribute.
+            plainDb.rewrite(rowNumber);
+         }
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+   }
+   
+   // juliana@270_29: added RowIterator.setNotSynced().
+   /**
+    * Forces the attribute to be NEW. This method will be useful if a row was marked as synchronized but was not sent to server for some problem.
+    * If the row is marked as DELETED, its attribute won't be changed.
+    *
+    * @throws DriverException If an <code>IOException</code> occurs.
+    */
+   public void setNotSynced()
+   {
+      checkState(); // juliana@230_27
+      
+      PlainDB plainDb = table.db;
+      plainDb.bas.reset();
+   
+      try 
+      {
+         int id = plainDb.basds.readInt();
+         int oldAttr = (((id & Utils.ROW_ATTR_MASK) >> ROW_ATTR_SHIFT) & 3); // guich@560_19
+         int newAttr = attr = Utils.ROW_ATTR_NEW;
          if (newAttr != oldAttr && oldAttr != ROW_ATTR_DELETED)
          {
             plainDb.bas.reset();
@@ -384,7 +418,7 @@ public class RowIterator
             return null;
          
          PlainDB db = table.db;
-         DataStreamLE ds = db.dsdbo;
+         DataStreamLB ds = db.dsdbo; // juliana@253_8: now Litebase supports weak cryptography.
          db.dbo.setPos(basds.readInt()); // Finds the blob position in the .dbo.
 
          // Reads it.

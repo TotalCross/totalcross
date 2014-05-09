@@ -47,6 +47,8 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lLC_dropDatabase_ssi"), &lLC_dropDatabase_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("lLC_isTableProperlyClosed_s"), &lLC_isTableProperlyClosed_s);
    htPutPtr(&htNativeProcAddresses, hashCode("lLC_listAllTables"), &lLC_listAllTables);
+   htPutPtr(&htNativeProcAddresses, hashCode("lLC_encryptTables_ssi"), &lLC_encryptTables_ssi);
+   htPutPtr(&htNativeProcAddresses, hashCode("lLC_decryptTables_ssi"), &lLC_decryptTables_ssi);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_getResultSetMetaData"), &lRS_getResultSetMetaData);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_close"), &lRS_close);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_beforeFirst"), &lRS_beforeFirst);
@@ -114,4 +116,6 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_setNull_i"), &lPS_setNull_i);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_clearParameters"), &lPS_clearParameters);
    htPutPtr(&htNativeProcAddresses, hashCode("lPS_toString"), &lPS_toString);
+   htPutPtr(&htNativeProcAddresses, hashCode("lPS_close"), &lPS_close);
+   htPutPtr(&htNativeProcAddresses, hashCode("lPS_isValid"), &lPS_isValid);
 }

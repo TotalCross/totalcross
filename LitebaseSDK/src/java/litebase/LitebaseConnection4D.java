@@ -33,22 +33,27 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.63";
+   public static String versionStr = "2.7";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 263;
+   public static int version = 270;
    
    /** 
     * Current build number.
     */
-   public static int buildNumber = 2;
+   public static int buildNumber = 1;
    
    /**
     * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+   
+   /**
+    * Indicates if the tables of this connection use cryptography.
+    */
+   private boolean useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * A flag that indicates that this class has already been finalized.
@@ -86,6 +91,11 @@ public class LitebaseConnection4D
    long htPS; // juliana@226_16
    
    /**
+    * An array of node indices. 
+    */
+   long nodes; // juliana@253_6: the maximum number of keys of a index was duplicated. 
+   
+   /**
     * Indicates if the native library is already attached.
     */
    private static boolean isDriverLoaded;
@@ -106,6 +116,12 @@ public class LitebaseConnection4D
     * The language of the Litebase messages.
     */
    public static int language = LANGUAGE_EN;
+   
+   // juliana@253_18: now it is possible to log only changes during Litebase operation.
+   /**
+    * Indicates if only changes during Litebase operation must be logged or not.
+    */
+   public static boolean logOnlyChanges;
    
    // juliana@222_10: corrected a bug that would possibly not load Litebase native library on Android inside a thread. 
    static
@@ -181,9 +197,10 @@ public class LitebaseConnection4D
     *
     * @param appCrid The creator id, which may be the same one of the current application and MUST be 4 characters long.
     * @param params Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
-    * path, or <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or 
-    * <code>unicode</code>, and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If
-    * only the path is passed as a parameter, unicode is used. Notice that path must be absolute, not relative. 
+    * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+    * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+    * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+    * cryptography. Notice that path must be absolute, not relative.
     * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
     * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
     * slot.
@@ -211,9 +228,10 @@ public class LitebaseConnection4D
     *
     * @param appCrid The creator id, which may be the same one of the current application and MUST be 4 characters long.
     * @param params Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
-    * path, or <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or 
-    * <code>unicode</code>, and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If
-    * only the path is passed as a parameter, unicode is used. Notice that path must be absolute, not relative. 
+    * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+    * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+    * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+    * cryptography. Notice that path must be absolute, not relative.
     * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
     * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
     * slot.
@@ -659,4 +677,23 @@ public class LitebaseConnection4D
     * @throws OutOfMemoryError If a memory allocation fails.
     */
    public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+
+   // juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
+   /**
+    * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public native static void encryptTables(String crid, String sourcePath, int slot);
+   
+   /**
+    * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public native static void decryptTables(String crid, String sourcePath, int slot);
 }

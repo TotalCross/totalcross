@@ -2,6 +2,7 @@
 TC_API void lRI_next(NMParams p);
 TC_API void lRI_nextNotSynced(NMParams p);
 TC_API void lRI_setSynced(NMParams p);
+TC_API void lRI_setNotSynced(NMParams p);
 TC_API void lRI_close(NMParams p);
 TC_API void lRI_reset(NMParams p);
 TC_API void lRI_getShort_i(NMParams p);
@@ -42,6 +43,8 @@ TC_API void lLC_isOpen_s(NMParams p);
 TC_API void lLC_dropDatabase_ssi(NMParams p);
 TC_API void lLC_isTableProperlyClosed_s(NMParams p);
 TC_API void lLC_listAllTables(NMParams p);
+TC_API void lLC_encryptTables_ssi(NMParams p);
+TC_API void lLC_decryptTables_ssi(NMParams p);
 TC_API void lRS_getResultSetMetaData(NMParams p);
 TC_API void lRS_close(NMParams p);
 TC_API void lRS_beforeFirst(NMParams p);
@@ -79,6 +82,7 @@ TC_API void lRS_setDecimalPlaces_ii(NMParams p);
 TC_API void lRS_getRowCount(NMParams p);
 TC_API void lRS_isNull_i(NMParams p);
 TC_API void lRS_isNull_s(NMParams p);
+TC_API void lRS_rowToString(NMParams p);
 TC_API void lRSMD_getColumnCount(NMParams p);
 TC_API void lRSMD_getColumnDisplaySize_i(NMParams p);
 TC_API void lRSMD_getColumnLabel_i(NMParams p);
@@ -109,6 +113,8 @@ TC_API void lPS_setDateTime_it(NMParams p);
 TC_API void lPS_setNull_i(NMParams p);
 TC_API void lPS_clearParameters(NMParams p);
 TC_API void lPS_toString(NMParams p);
+TC_API void lPS_close(NMParams p);
+TC_API void lPS_isValid(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next();
@@ -280,6 +286,14 @@ TC_API void lLC_isTableProperlyClosed_s(NMParams p) // litebase/LitebaseConnecti
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void lLC_listAllTables(NMParams p) // litebase/LitebaseConnection public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_encryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void encryptTables(String crid, String sourcePath, int slot); 
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_decryptTables_ssi(NMParams p) // litebase/LitebaseConnection public native void decryptTables(String crid, String sourcePath, int slot);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -548,5 +562,13 @@ TC_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native String toString();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_close(NMParams p) // litebase/PreparedStatement public native void close();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lPS_isValid(NMParams p) // litebase/PreparedStatement public native boolean isValid();
 {
 }

@@ -708,7 +708,8 @@ Table Format
 \begin_layout Standard
 All database data is written directly to the non-volatile memory (AKA flash-memo
 ry).
- Each database table file can have at most four kinds of files: 
+ In the past, each database table file could have at most four kinds of
+ files: 
 \family typewriter
 .db
 \family default
@@ -725,7 +726,7 @@ ry).
 .idr
 \family default
  (index repetitions).
- There will be an 
+ There would be an 
 \family typewriter
 .idk
 \family default
@@ -738,7 +739,17 @@ ry).
 \family typewriter
 .idr
 \family default
- file will be missing.
+ file would be missing.
+ On the current versions, the 
+\family typewriter
+.idr
+\family default
+ files do not exist anymore.
+ It makes index searches faster.
+ On the other hand, if there are too many key repetitions, an index that
+ was possible to be created in previous versions may not be able to be created
+ with the current versions because the number of maximum index keys may
+ exceed even though the maximum number of keys have been duplicated.
  The string fields of a table are stored in a separate file (
 \family typewriter
 .dbo
@@ -860,7 +871,7 @@ try
 
 \begin_layout Plain Layout
 
-   String[] files = new File(sourcePath, File.READ_WRITE, 1).listFiles();
+   String[] files = new File(sourcePath, File.DONT_OPEN, 1).listFiles();
 \end_layout
 
 \begin_layout Plain Layout
@@ -1534,6 +1545,16 @@ If Unicode characters are not to be used in the tables, it is possible to
 \end_layout
 
 \begin_layout Itemize
+If the application demands that no one can find anything meaningful when
+ opening a table file, simple cryptography can be used.
+ This makes Litebase operations a little bit slower.
+ However, information is safer.
+ Notice that a table that uses cryptography can't be used in a connection
+ that does not use cryptography and vice-versa.
+ 
+\end_layout
+
+\begin_layout Itemize
 Relative paths can't be used with Litebase.
  That is, a relative path can't be passed to 
 \begin_inset Newline newline
@@ -1633,8 +1654,7 @@ The
 \end_layout
 
 \begin_layout Itemize
-A table with an index can't have more than ~1,3 million records with different
- index keys.
+A table with an index can't have more than ~2,6 million index keys.
  Again, this will be changed as the PDAs are improved.
 \end_layout
 
@@ -1683,6 +1703,18 @@ TestPalmMemoryCard
 On BlackBerry, Android, and Windows Mobile, there is no slot.
  It is only necessary to pass the card path to the new connection or to
  the data path.
+ If it is necessary to fetch Litebase tables from an Android device, it
+ is a good idea to create the data base on the memory card by using the
+ path 
+\family typewriter
+/sdcard
+\family default
+, unless the device is rooted and it is possible to fetch the table files
+ using 
+\family typewriter
+adb
+\family default
+ from the application folder.
 \end_layout
 
 \begin_layout Standard
@@ -1883,7 +1915,116 @@ If it is prefered using logging all the time, the PDA WILL run out of storage
  This may cause a Litebase operation failure and inconsistency between files
  and tables if using Litebase is not stopped for a while to erase log files
  before running out of space.
+\end_layout
+
+\begin_layout Enumerate
+To reduce log size, one can omit Litebase operations that don't change the
+ database.
+ These includes:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.executeQuery()
+\family default
+;
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getCurrentRowId()
+\family default
+; 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getRowCount()
+\family default
+;
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getRowCountDeleted()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getRowIterator()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.prepareStatement()
+\family default
+, and 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+PreparedStatement.executeQuery()
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+To do that, it is only necessary to set 
+\family typewriter
+LitebaseConnection.logOnlyChanges
+\family default
+ to true.
+ This is interesting when some error occurs that corrupts the database after
+ a long system run.
+ Since the operations listed above don't change the database, they can't
+ cause table or index corruption (the most usual Litebase problem).
  
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+If the default logger is used, it will be saved in 
+\family typewriter
+Settings.appPath
+\family default
+.
+ On Android, it is not always possible to fetch the log file unless changing
+ some access permissions or even rooting the device.
+ Since this may be undesirable, the log file can be saved on the external
+ card so that it can be easily fetched.
+ In order to change its place, it is necessary to create it using 
+\family typewriter
+totalCross.util.Logger
+\family default
+.
+ Here is an example for Android using the default path for the external
+ card:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File log = new File(Convert.appendPath("/sdcard/", "Litebase_" + new Time().getTim
+eLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, -1);
+\end_layout
+
+\begin_layout Plain Layout
+
+LitebaseConnection.logger = Logger.getLogger("litebase", -1, log);
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
@@ -1904,7 +2045,7 @@ Litebase needs TotalCross to run on the devices.
 \begin_layout Standard
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="16" columns="2">
+<lyxtabular version="3" rows="24" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0">
@@ -2209,11 +2350,171 @@ Litebase
 </cell>
 </row>
 <row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.60
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.60
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.61
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.61
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.62
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.62
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.63
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.63
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.64
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.64
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.65
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.65
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.66
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.66
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.67
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.67
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.53
+1.7
 \end_layout
 
 \end_inset
@@ -2222,7 +2523,7 @@ Litebase
 \begin_inset Text
 
 \begin_layout Plain Layout
-2.53
+2.7
 \end_layout
 
 \end_inset
@@ -2233,6 +2534,13 @@ Litebase
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Please notice that all indices files must be erased in order to use Litebase
+ tables created with version 2.67 with Litebase 2.7 and vice-versa.
+ Moreover, tables using cryptography created in version 2.7 can't be used
+ with version 2.67.
 \end_layout
 
 \begin_layout Section
@@ -11885,13 +12193,14 @@ Settings.appPath
 \end_layout
 
 \begin_layout Standard
-To use ASCII tables, the parameters must have the format: 
+To use ASCII tables or cryptography, the parameters must have the format:
+ 
 \family typewriter
 
 \begin_inset Newline newline
 \end_inset
 
-chars_type = type; path = path_name
+chars_type = type; path = path_name[; crypto]
 \family default
 
 \begin_inset Newline newline
@@ -11909,19 +12218,28 @@ ascii
 \family typewriter
 unicode
 \family default
- to use unicode strings in the tables, and path has the same format of the
- preceding case.
+ to use unicode strings in the tables, path has the same format of the preceding
+ case, and 
+\family typewriter
+crypto
+\family default
+ must be used if the tables of the connection use cryptography.
  It is also possible to use just one parameter (
 \family typewriter
 chars_type = type
 \family default
- or 
+, 
 \family typewriter
 path = path_name
 \family default
-).
+, or 
+\family typewriter
+crypto
+\family default
+) or combinations of two parameters.
  The parameters can be entered in any order.
- If only the path is passed, the default format is unicode.
+ If only the path is passed, the default format is unicode and no cryptography
+ is used.
  This is also the format used for the above versions of this method.
 \end_layout
 
@@ -12925,6 +13243,30 @@ ALTER TABLE person RENAME age TO years
 \end_inset
 
 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+ALTER TABLE table_name ADD column_name column_data_type [(type_size [multiplier]
+)][DEFAULT value_default] [NOT NULL]
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Description
+\end_layout
+
+\begin_layout Itemize
+Adds a column to a table.
+ The syntax is similar to a column declaration when a table is being created.
+ However, it is not possible to add a column declaring it a primary key,
+ because all rows will have the same value, being null or equal to the declared
+ default value, which violates the primary key constraints.
+ Moreover, if the column is declared as not null, there must be a default
+ value different from null, because otherwise all the rows would have a
+ null value in the new column.
 \end_layout
 
 \end_deeper
@@ -14567,6 +14909,27 @@ true
 false
 \family default
 , otherwise.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+ If the 
+\family typewriter
+.db
+\family default
+ file exists but not the 
+\family typewriter
+.dbo
+\family default
+ file.
 \end_layout
 
 \begin_layout Labeling
@@ -20132,6 +20495,51 @@ public void setPreparedStatement()
 
 \end_layout
 
+\begin_layout Subsection
+
+\family typewriter
+close()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public void 
+\series bold
+close
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Closes a prepared statement.
+ This is important if the application creates too many prepared statements
+ during one run, since they are only closed if their connection is closed.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+isValid()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public boolean 
+\series bold
+isValid
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Checks if a prepared statement is still valid.
+ This happens if the driver and the prepared statement have not been closed
+ and the table was not dropped.
+ 
+\end_layout
+
 \begin_layout Section
 
 \family typewriter
@@ -22827,10 +23235,564 @@ The use of the source code examples is only permitted by the company that
 News
 \end_layout
 
+\begin_layout Section
+Table Format
+\end_layout
+
 \begin_layout Standard
-All the companion was updated.
- Please take an overall look at it.
+All database data is written directly to the non-volatile memory (AKA flash-memo
+ry).
+ In the past, each database table file could have at most four kinds of
+ files: 
+\family typewriter
+.db
+\family default
+ (table header and data), 
+\family typewriter
+.dbo
+\family default
+ (database objects), 
+\family typewriter
+.idk
+\family default
+ (index keys), and 
+\family typewriter
+.idr
+\family default
+ (index repetitions).
+ There would be an 
+\family typewriter
+.idk
+\family default
+ file for each index and an 
+\family typewriter
+.idr
+\family default
+ file if the index field has repeated data.
+ Otherwise, the 
+\family typewriter
+.idr
+\family default
+ file would be missing.
+ On the current versions, the 
+\family typewriter
+.idr
+\family default
+ files do not exist anymore.
+ It makes index searches faster.
+ On the other hand, if there are too many key repetitions, an index that
+ was possible to be created in previous versions may not be able to be created
+ with the current versions because the number of maximum index keys may
+ exceed even though the maximum number of keys have been duplicated.
+ The string fields of a table are stored in a separate file (
+\family typewriter
+.dbo
+\family default
+).
+ This was necessary to save space from the records, since strings may use
+ much less space than the one declared when creating a table and all the
+ records have fixed-size length.
+ A similar approach is used for blob fields: they are stored in the same
+ file.
+\end_layout
+
+\begin_layout Section
+Cryptography
+\end_layout
+
+\begin_layout Standard
+If the application demands that no one can find anything meaningful when
+ opening a table file, simple cryptography can be used.
+ This makes Litebase operations a little bit slower.
+ However, information is safer.
+ Notice that a table that uses cryptography can't be used in a connection
+ that does not use cryptography and vice-versa.
  
+\end_layout
+
+\begin_layout Standard
+To use ASCII tables or cryptography, the parameters must have the format:
+ 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+chars_type = type; path = path_name[; crypto]
+\family default
+
+\begin_inset Newline newline
+\end_inset
+
+where 
+\family typewriter
+chars_type
+\family default
+ can be 
+\family typewriter
+ascii
+\family default
+ to store ASCII strings or 
+\family typewriter
+unicode
+\family default
+ to use unicode strings in the tables, path has the same format of the preceding
+ case, and 
+\family typewriter
+crypto
+\family default
+ must be used if the tables of the connection use cryptography.
+ It is also possible to use just one parameter (
+\family typewriter
+chars_type = type
+\family default
+, 
+\family typewriter
+path = path_name
+\family default
+, or 
+\family typewriter
+crypto
+\family default
+) or combinations of two parameters.
+ The parameters can be entered in any order.
+ If only the path is passed, the default format is unicode and no cryptography
+ is used.
+ This is also the format used for the above versions of this method.
+\end_layout
+
+\begin_layout Section
+Logging and Debugging
+\end_layout
+
+\begin_layout Itemize
+To reduce log size, one can omit Litebase operations that don't change the
+ database.
+ These includes:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.executeQuery()
+\family default
+;
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getCurrentRowId()
+\family default
+; 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getRowCount()
+\family default
+;
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getRowCountDeleted()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.getRowIterator()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.prepareStatement()
+\family default
+, and 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+PreparedStatement.executeQuery()
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+To do that, it is only necessary to set 
+\family typewriter
+LitebaseConnection.logOnlyChanges
+\family default
+ to true.
+ This is interesting when some error occurs that corrupts the database after
+ a long system run.
+ Since the operations listed above don't change the database, they can't
+ cause table or index corruption (the most usual Litebase problem).
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+If the default logger is used, it will be saved in 
+\family typewriter
+Settings.appPath
+\family default
+.
+ On Android, it is not always possible to fetch the log file unless changing
+ some access permissions or even rooting the device.
+ Since this may be undesirable, the log file can be saved on the external
+ card so that it can be easily fetched.
+ In order to change its place, it is necessary to create it using 
+\family typewriter
+totalCross.util.Logger
+\family default
+.
+ Here is an example for Android using the default path for the external
+ card:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+File log = new File(Convert.appendPath("/sdcard/", "Litebase_" + new Time().getTim
+eLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, -1);
+\end_layout
+
+\begin_layout Plain Layout
+
+LitebaseConnection.logger = Logger.getLogger("litebase", -1, log);
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+ResultSetMetaData
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getDefaultValue()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String 
+\series bold
+getDefaultValue
+\series default
+(int columnIndex) 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+columnIdx
+\family default
+: The column index (starting at 1).
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+The default value of the column as a string or 
+\family typewriter
+null
+\family default
+ if it does not have a default value.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the column does not have an underlining table column, such as 
+\family typewriter
+count(*)
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getDefaultValue()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String 
+\series bold
+getDefaultValue
+\series default
+(String columnName) 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+columnName
+\family default
+: The column name or alias.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+The default value of the column as a string or 
+\family typewriter
+null
+\family default
+ if it does not have a default value.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the column does not have an underlining table column, such as 
+\family typewriter
+count(*)
+\family default
+.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getPKColumnIndices()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public byte[] 
+\series bold
+getPKColumnIndices
+\series default
+(String tableName)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+tableName
+\family default
+: The table name or alias.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+null
+\family default
+ if the given table does not have primary key or an array with the column
+ indices of the primary key.
+\end_layout
+
+\begin_layout Standard
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the given table name is not part of the query of this result set.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+getPKColumnNames()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public String[] 
+\series bold
+getPKColumnNames
+\series default
+(String tableName)
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Parameters: 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+tableName
+\family default
+: The table name or alias.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+Returns:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+null
+\family default
+ if the given table does not have primary key or an array with the column
+ names of the primary key.
+\end_layout
+
+\begin_layout Standard
+Throws:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DriverException
+\family default
+: If the given table name is not part of the query of this result set.
+\end_layout
+
+\begin_layout Section
+PreparedStatement
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+close()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public void 
+\series bold
+close
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Closes a prepared statement.
+ This is important if the application creates too many prepared statements
+ during one run, since they are only closed if their connection is closed.
+\end_layout
+
+\begin_layout Subsection
+
+\family typewriter
+isValid()
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+public boolean 
+\series bold
+isValid
+\series default
+()
+\end_layout
+
+\begin_layout Standard
+Checks if a prepared statement is still valid.
+ This happens if the driver and the prepared statement have not been closed
+ and the table was not dropped.
+ 
+\end_layout
+
+\begin_layout Section
+Other Changes
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LitebaseConnection.exists()
+\family default
+ now throws a 
+\family typewriter
+DriverException
+\family default
+ If the 
+\family typewriter
+.db
+\family default
+ file exists but not the 
+\family typewriter
+.dbo
+\family default
+ file.
+\end_layout
+
+\begin_layout Itemize
+Added 
+\family typewriter
+ALTER TABLE ADD
+\family default
+ column, which adds a column to a table.
+ The syntax is similar to a column declaration when a table is being created.
+ However, it is not possible to add a column declaring it a primary key,
+ because all rows will have the same value, being null or equal to the declared
+ default value, which violates the primary key constraints.
+ Moreover, if the column is declared as not null, there must be a default
+ value different from null, because otherwise all the rows would have a
+ null value in the new column.
 \end_layout
 
 \end_body

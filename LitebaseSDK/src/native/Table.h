@@ -207,7 +207,9 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
  * @param vals1 The first record of the comparison.
  * @param vals2 The second record of the comparison.
  * @param types The types of the record values.
- * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
+ * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise. It will return <code>MAX_INT_VALUE</code> if both records are 
+ * equal but the record of the first is greater than the second, and <code>MIN_INT_VALUE</code> if both records are equal but the record of the 
+ * first is less than the second. 
  */
 int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8* types); 
 
@@ -220,8 +222,9 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
+ * @param vector A temporary array to use in the recursion.
  */
-void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last); 
+void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last, int32* vector); 
 
 /** 
  * Does a radix sort on the given SQLValue array. Only integral types are allowed (SHORT, INT, LONG). This is faster than quicksort. Also used to 
@@ -257,11 +260,14 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+ * @param useCrypto Indicates if the table uses cryptography.
+ * @param nodes An array of nodes indices.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool throwException, Heap heap); 
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+                                                                                                         bool throwException, Heap heap); 
 
 /**
  * Creates a table, which can be stored on disk or on memory (result set table).
@@ -328,6 +334,7 @@ bool renameTableColumn(Context context, Table* table, CharP oldColumn, CharP new
  */
 bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation, ComposedIndex* composedIndex);
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Creates a simple index for the table for the given column.
  *
@@ -337,14 +344,14 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
  * @param columnIndex The column of the index.
  * @param columnSizes The sizes of the columns.
  * @param columnTypes The types of the columns.
- * @param hasIdr Indicates if the index has the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool hasIdr, 
-                                                                                                                 bool exist, Heap heap);
+bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool exist, 
+                                                                                                                                    Heap heap);
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Creates a composed index for a given table.
  *
@@ -357,14 +364,13 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
  * @param numberColumns The number of columns of the index.
  * @param newIndexNumber An id for the composed index.
  * @param increaseArray Indicates if the composed indices array must be increased.
- * @param hasIdr Indicates if the index has the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the maximum number of composed indices was achieved.
  */
 bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int8* columnTypes, 
-                                               int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool hasIdr, bool exist, Heap heap);
+                                                             int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool exist, Heap heap);
 
 /**
  * Reads the entire record from a table.
@@ -445,7 +451,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
  * @throws SQLParseException If a conversion from string to a number or date/datetime fails.
  * @throws DriverException If a blob is passed in a statement that is not prepared.
  */
-bool convertStringsToValues(Context context, Table* table, SQLValue** record, int32 nValues);
+bool convertStringsToValues(Context context, Table* table, SQLValue** record, uint32 nValues);
 
 /** 
  * Updates the CRC32 value with the values of the given buffer. 

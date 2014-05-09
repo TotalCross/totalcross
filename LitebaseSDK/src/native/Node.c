@@ -9,6 +9,8 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@253_5: removed .idr files from all indices and changed its format.
+// juliana@253_6: the maximum number of keys of a index was duplicated.
 /**
  * Defines functions to manipulate a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.
@@ -35,7 +37,7 @@ Node* createNode(Index* index)
    Key* key;
 
    node->idx = -1;
-	node->children = (int16*)TC_heapAlloc(heap, (i + 1) << 1);
+	node->children = (uint16*)TC_heapAlloc(heap, (i + 1) << 1);
 
    while (--i >= 0)
    {
@@ -63,7 +65,7 @@ bool nodeLoad(Context context, Node* node)
    Index* index = node->index;
    XFile* fnodes = &index->fnodes;
    uint8* dataStream = index->basbuf;
-   int16* children = node->children;
+   uint16* children = node->children;
    Key* keys = node->keys;
    int32 i = index->nodeRecSize,
          n = 0;
@@ -83,7 +85,7 @@ bool nodeLoad(Context context, Node* node)
 	xmemmove(children, dataStream, ((node->size = n) + 1) << 1); // Loads the node children.
 
 	// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-	xmemset(&children[n + 1], 0xFF, (index->btreeMaxNodes - n) << 1); // Fills the non-used indexes with TERMINAL.
+	xmemset(&children[n + 1], LEAF, (index->btreeMaxNodes - n) << 1); // Fills the non-used indexes with TERMINAL.
  
    node->isDirty = false;
    return true;
@@ -106,7 +108,7 @@ bool nodeSaveDirtyKey(Context context, Node* node, int32 currPos)
    // Positions the file pointer at the insert position.
    nfSetPos(fnodes, node->idx * index->nodeRecSize + 2 + index->keyRecSize * currPos + (index->keyRecSize - VALREC_SIZE)); 
    
-   xmove4(index->basbuf, &node->keys[currPos].valRec);
+   xmove4(index->basbuf, &node->keys[currPos].record);
    return nfWriteBytes(context, fnodes, index->basbuf, 4);
 }
 
@@ -143,7 +145,7 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
 
       if (index->isWriteDelayed) // Grows more than 1 record per time.
       {
-         if ((idx & (RECGROWSIZE - 1)) == 0 && !nfGrowTo(context, fnodes, (idx + RECGROWSIZE) * nodeRecSize))
+         if (idx * nodeRecSize == fnodes->size && !nfGrowTo(context, fnodes, (idx + RECGROWSIZE) * nodeRecSize))
             return -1;
       }
 		else if (!nfGrowTo(context, fnodes, (idx + 1) * nodeRecSize)) // Opens space for the node.
@@ -224,17 +226,10 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
 	TRACE("nodeFindIn")
    Index* index = node->index;
    PlainDB* plainDB = &index->table->db;
-   XFile* dbo = &plainDB->dbo;
    Key* keys = node->keys;
-   Key* keyAux;
-   SQLValue* sqlValues;
-   SQLValue* sqlValue;
-   int32* sizes = index->colSizes;
 	int32 right = node->size - 1, 
-         i,
          middle, 
          comp,
-         length = 0,
          numberColumns = index->numberColumns,
 
    // juliana@201_3: If the insertion is ordered, the position being seached is the last.
@@ -242,26 +237,7 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
 
    while (left <= right)
    {
-      sqlValues = (keyAux = &keys[middle = (left + right) >> 1])->keys;
-      i = numberColumns;
-
-      while (--i >= 0) // A string may not be loaded.
-      {
-         sqlValue = &sqlValues[i];
-			if (!sqlValue->length && sizes[i])
-			{
-            nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
-				
-				// Reads the string length and the string itself.
-				if (!nfReadBytes(context, dbo, (uint8*)&length, 2)
-				 || !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
-               return false;
-               
-            sqlValue->asChars[length] = 0; // juliana@202_8
-			}
-      }
-
-      if (!(comp = keyCompareTo(key, keyAux, numberColumns)))
+      if (!(comp = keyCompareTo(context, key, &keys[middle = (left + right) >> 1], numberColumns, plainDB)))
          return middle;
       else if (comp < 0)
          right = middle - 1;
@@ -286,7 +262,7 @@ bool nodeInsert(Context context, Node* node, Key* key, int32 leftChild, int32 ri
 {
 	TRACE("nodeInsert")
    Key* keys = node->keys;
-   int16* children = node->children;
+   uint16* children = node->children;
    int32 i = node->size - insPos;
    if (i > 0)
    {

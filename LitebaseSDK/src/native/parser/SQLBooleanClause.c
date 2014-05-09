@@ -62,7 +62,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
    bool appliedComposedIndex,
         isLeft = false;
    uint8 columns[MAXIMUMS + 1];
-   int8 operators[MAXIMUMS + 1];
+   uint8 operators[MAXIMUMS + 1];
    SQLBooleanClauseTree* curTree;
    SQLBooleanClauseTree* leftTree;
    SQLBooleanClauseTree* rightTree;
@@ -134,7 +134,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                      getBranchProperties(leftTree, columns, operators, indexesValueTree, count, fieldsCount);
 
                      // Limitation; Composed index only for EQUALS. A composed index can't be applied if the column is not part of the index.
-                     if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == -1) 
+                     if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == 255) 
                      {
                         count = 0;
                         break; // Doesn't apply the composed index.
@@ -155,7 +155,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                         getBranchProperties(rightTree, columns, operators, indexesValueTree, count, fieldsCount);
                         
                         // Limitation: composed index only for EQUALS.
-                        if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == -1)  
+                        if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == 255)  
                         {
                            count = 0;
                            break; // Doesn't apply the composed index.
@@ -281,8 +281,8 @@ void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* b
       SQLBooleanClauseTree** appliedIndexesValueTree = booleanClause->appliedIndexesValueTree;
       SQLResultSetField** fieldList = booleanClause->fieldList;
 
-      while (--i >= 0)
-         if (fieldList[i]->tableColIndex == column && fieldList[i]->isDataTypeFunction)
+      while (--i >= 0) // An index cannot be applied to a function in the where clause.
+         if (fieldList[i]->tableColIndex == column && fieldList[i]->isDataTypeFunction) 
             return;
 
       if (indexesMap[column]) // Checks if the column is indexed.
@@ -373,6 +373,7 @@ SQLBooleanClauseTree* applyComposedIndexToBranch(SQLBooleanClause* booleanClause
    }
 }
 
+// juliana@253_7: improved index application on filters when using joins.
 // juliana@226_3: improved index application.
 /**
  * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be 
@@ -390,6 +391,8 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
    int32 curOperandType,
          leftOperandType,
          countAppliedIndices = 0;
+   bool isLeft = false;      
+         
    if (!booleanClause->isWhereClause) // Indexes can only be applied to a where clause.
       return false;
 
@@ -431,7 +434,7 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
             if ((leftOperandType >= OP_REL_EQUAL && leftOperandType <= OP_REL_LESS_EQUAL)
              || ((leftOperandType == OP_PAT_MATCH_LIKE || leftOperandType == OP_PAT_MATCH_NOT_LIKE) 
               && leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
-               applyIndexToBranchJoin(booleanClause, leftTree);
+               applyIndexToBranchJoin(booleanClause, leftTree, isLeft);
 
             if (curTree->rightTree->indexRs != booleanClause->appliedIndexRs)
             {
@@ -444,7 +447,10 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
                   break;
                }
             }
-            curTree = rightTree; // Goes to the right tree.
+            if (isLeft)
+               curTree = leftTree;
+            else
+               curTree = rightTree;
             break;
          }
             
@@ -465,7 +471,7 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
          case OP_REL_LESS:
          case OP_REL_LESS_EQUAL:
             countAppliedIndices = booleanClause->appliedIndexesCount;
-            applyIndexToBranchJoin(booleanClause, curTree);
+            applyIndexToBranchJoin(booleanClause, curTree, isLeft);
             if (countAppliedIndices == booleanClause->appliedIndexesCount)
                curTree = null;
             else
@@ -479,17 +485,25 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
       // If the number of indexes to be applied reached the limit, leaves the loop.
       if (booleanClause->appliedIndexesCount == MAX_NUM_INDEXES_APPLIED)
          break;
+      
+      if (!curTree && !booleanClause->appliedIndexesCount && !isLeft)
+      {
+         isLeft = true;
+         curTree = booleanClause->expressionTree;
+      }
    }
    return booleanClause->appliedIndexesCount > 0;
 }
 
+// juliana@253_7: improved index application on filters when using joins.
 /**
  * Tries to apply an index to a branch of the expression tree that contains a relational expression.
  *
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param branch The branch of the expression tree.
+ * @param isLeft Indicates if the index is being applied to the left branch.
  */
-void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch)
+void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, bool isLeft)
 {
 	TRACE("applyIndexToBranchJoin")
    int32 relationalOp = branch->operandType;
@@ -542,8 +556,13 @@ void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTre
 
             // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
             if (grandParent)
-               grandParent->rightTree = sibling; 
-            else
+            {
+               if (isLeft)
+                  grandParent->leftTree = sibling;
+               else
+                  grandParent->rightTree = sibling;
+            }   
+            else                  
                booleanClause->expressionTree = sibling;
             sibling->parent = grandParent;
          }

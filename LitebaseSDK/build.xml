@@ -216,7 +216,12 @@ target: desktop
          <field  access="public protected" />
          <method access="public protected" />
        </keep>
-
+       
+       <keep name="litebase.DataStreamLB" >
+         <field  access="public protected" />
+         <method access="public protected" />
+       </keep>           
+                  
        <keep name="litebase.XFile" >
          <field  access="public protected" />
          <method access="public protected" />
@@ -225,7 +230,8 @@ target: desktop
        <keep extends="litebase.XFile" >
          <field  access="public protected" />
          <method access="public protected" />
-       </keep>
+       </keep> 
+
 
        <!-- Preserve all .class method names. -->
 

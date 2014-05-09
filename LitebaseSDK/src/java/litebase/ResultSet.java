@@ -225,7 +225,7 @@ public class ResultSet
          byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
-         DataStreamLE basds = plainDB.basds;
+         DataStreamLB basds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
@@ -302,7 +302,7 @@ public class ResultSet
          byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
-         DataStreamLE basds = plainDB.basds;
+         DataStreamLB basds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
          ByteArrayStream bas = plainDB.bas;
          
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
@@ -634,8 +634,10 @@ public class ResultSet
                   tableAux.readValue(value, offsets[column], types[column], false, false); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+                  // juliana@270_31: Corrected bug of ResultSet.getStrings() don't working properly when there is a data function in the columns 
+                  // being fetched.
                   if (field.isDataTypeFunction)
-                     applyDataTypeFunction(field, field.parameter.dataType);
+                     applyDataTypeFunction(field, SQLElement.UNDEFINED);
                   else 
                      createString(types[column], decimals == null? - 1: decimals[column]);
                   
@@ -762,7 +764,7 @@ public class ResultSet
          byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
-         DataStreamLE basds = plainDB.basds;
+         DataStreamLB basds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
@@ -855,7 +857,7 @@ public class ResultSet
          }
          else if (tableAux.deletedRowsCount > 0)
          {
-            DataStreamLE basds = plainDB.basds;
+            DataStreamLB basds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
             
             // Continues searching the position until finding the right row or the end or the beginning of the result set table.
             if (rows > 0)
@@ -912,6 +914,7 @@ public class ResultSet
       return true;
    }
 
+   // juliana@265_1: corrected getRow() behavior, which must match with absolute(). 
    /**
     * Returns the current physical row of the table where the cursor is. It must be used with <code>absolute()</code> method.
     *
@@ -920,7 +923,56 @@ public class ResultSet
    public int getRow() 
    {
       verifyResultSet(); // The driver or result set can't be closed.
-      return pos; // Returns the current position of the cursor.
+
+      if (pos == -1 || pos == lastRecordIndex)
+         return pos;
+      
+      try
+      {
+         byte[] rowsBitmap = allRowsBitmap;
+         Table tableAux = table;
+         PlainDB plainDB = tableAux.db;
+         DataStreamLE basds = plainDB.basds;
+         ByteArrayStream bas = plainDB.bas;
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rowsBitmap != null)
+         {            
+            int i = -1,
+                absolute = 0;
+            
+            while (++i < pos)
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+                  absolute++;
+            return absolute;
+         }
+         
+         // juliana@114_10: if it is a simple select, there may be deleted rows, which must be skiped.
+         if (tableAux.deletedRowsCount > 0)
+         {
+            int i = -1,
+                absolute = 0;
+   
+            // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
+            while (++i < pos) 
+            {
+               plainDB.read(i); 
+               if (!((basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED))
+                  absolute++;
+            }
+
+            plainDB.read(i - 1);
+            bas.setPos(0);
+            tableAux.readNullBytesOfRecord(0, false, 0);
+            return absolute;
+         }
+         
+         return pos;
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
    }
 
    /**
@@ -1002,6 +1054,74 @@ public class ResultSet
       return privateIsNull(col + 1); // Is the column null?  
    }
 
+   // juliana@270_30: added ResultSet.rowToString().
+   /**
+    * Transforms a <code>ResultSet</code> row in a string.
+    *
+    * @return Returns a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. 
+    * @throws DriverException If the ResultSet position is invalid or an <code>IOException</code> occurs.
+    */
+   public String rowToString() throws DriverException
+   {
+      verifyResultSet(); // The driver or result set can't be closed.
+      
+      if (pos < 0 || pos > lastRecordIndex) // The position of the cursor must be greater then 0 and less then the last position.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
+      
+      Table tableAux = table;
+      boolean isTemporary = (allRowsBitmap == null && !isSimpleSelect);
+      short[] offsets = tableAux.columnOffsets;
+      byte[] types = tableAux.columnTypes;
+      byte[] decimals = decimalPlaces;
+      byte[] nulls = tableAux.columnNulls[0];
+      SQLResultSetField[] rsFields = fields;
+      SQLResultSetField field;
+      SQLValue value = vrs;
+      int columns = rsFields.length,
+          column,
+          i = -1;
+      StringBuffer sBuffer = driver.sBuffer;
+      
+      sBuffer.setLength(0);
+      
+      while  (++i < columns)
+      {
+         field = rsFields[i];
+         if (isTemporary)
+            column = i;
+         else
+            column = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
+            
+         try
+         {
+            // Only reads the column if it is not null and not a BLOB.
+            if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
+            {
+               // juliana@220_3
+               tableAux.readValue(value, offsets[column], types[column], false, false); 
+               
+               // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+               if (field.isDataTypeFunction)
+                  applyDataTypeFunction(field, SQLElement.UNDEFINED);
+               else 
+                  createString(types[column], decimals == null? - 1: decimals[column]);
+               
+               sBuffer.append(value.asString).append('\t');
+            }
+            else
+               sBuffer.append('\t');
+         }
+         catch (InvalidDateException exception) {} // Never occurs.
+         catch (IOException exception)
+         {
+            throw new DriverException(exception);
+         }
+      }
+
+      sBuffer.setLength(sBuffer.length() - 1);
+      return sBuffer.toString();
+   }
+   
    /**
     * Returns a column value of the result set given its type and column index. DATE and DATETIME values will be returned as a single int or as a 
     * short and an int, respectivelly.
@@ -1292,9 +1412,11 @@ public class ResultSet
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
       int typeCol = table.columnTypes[column - 1];
       
+      // juliana@270_28: now it is not allowed to fetch a string field in ResultSet with methods that aren't getString() or getChars().
       if (type != SQLElement.UNDEFINED)
          if (!(field.isDataTypeFunction && type == SQLElement.SHORT && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
-          && (typeCol != type && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
+          && (typeCol != type 
+          && ((typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS) || (type != SQLElement.CHARS_NOCASE && type != SQLElement.CHARS))))
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       
       if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.

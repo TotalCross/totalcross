@@ -38,7 +38,6 @@
 		0F91CD0A154EDFA8000868DA /* LitebaseMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */; };
 		0F91CD0B154EDFA8000868DA /* LitebaseParser.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCCE154EDFA8000868DA /* LitebaseParser.c */; };
 		0F91CD0C154EDFA8000868DA /* LitebaseParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCCF154EDFA8000868DA /* LitebaseParser.h */; };
-		0F91CD0D154EDFA8000868DA /* LitebaseParser.tab.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD0154EDFA8000868DA /* LitebaseParser.tab.c */; };
 		0F91CD0E154EDFA8000868DA /* SQLBooleanClause.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD1154EDFA8000868DA /* SQLBooleanClause.c */; };
 		0F91CD0F154EDFA8000868DA /* SQLBooleanClause.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCD2154EDFA8000868DA /* SQLBooleanClause.h */; };
 		0F91CD10154EDFA8000868DA /* SQLBooleanClauseTree.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD3154EDFA8000868DA /* SQLBooleanClauseTree.c */; };
@@ -67,8 +66,6 @@
 		0F91CD27154EDFA8000868DA /* TCVMLib.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCEA154EDFA8000868DA /* TCVMLib.h */; };
 		0F91CD28154EDFA8000868DA /* UtilsLB.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCEB154EDFA8000868DA /* UtilsLB.c */; };
 		0F91CD29154EDFA8000868DA /* UtilsLB.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCEC154EDFA8000868DA /* UtilsLB.h */; };
-		0F91CD2A154EDFA8000868DA /* Value.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCED154EDFA8000868DA /* Value.c */; };
-		0F91CD2B154EDFA8000868DA /* Value.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCEE154EDFA8000868DA /* Value.h */; };
 		0F91CD2E154EE3D6000868DA /* liblitebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CD2C154EE3D6000868DA /* liblitebase.h */; };
 		0F91CD2F154EE3D6000868DA /* liblitebase.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CD2D154EE3D6000868DA /* liblitebase.m */; };
 /* End PBXBuildFile section */
@@ -109,7 +106,6 @@
 		0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseMessage.h; sourceTree = "<group>"; };
 		0F91CCCE154EDFA8000868DA /* LitebaseParser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseParser.c; sourceTree = "<group>"; };
 		0F91CCCF154EDFA8000868DA /* LitebaseParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseParser.h; sourceTree = "<group>"; };
-		0F91CCD0154EDFA8000868DA /* LitebaseParser.tab.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseParser.tab.c; sourceTree = "<group>"; };
 		0F91CCD1154EDFA8000868DA /* SQLBooleanClause.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLBooleanClause.c; sourceTree = "<group>"; };
 		0F91CCD2154EDFA8000868DA /* SQLBooleanClause.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLBooleanClause.h; sourceTree = "<group>"; };
 		0F91CCD3154EDFA8000868DA /* SQLBooleanClauseTree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLBooleanClauseTree.c; sourceTree = "<group>"; };
@@ -138,8 +134,6 @@
 		0F91CCEA154EDFA8000868DA /* TCVMLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCVMLib.h; sourceTree = "<group>"; };
 		0F91CCEB154EDFA8000868DA /* UtilsLB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = UtilsLB.c; sourceTree = "<group>"; };
 		0F91CCEC154EDFA8000868DA /* UtilsLB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UtilsLB.h; sourceTree = "<group>"; };
-		0F91CCED154EDFA8000868DA /* Value.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Value.c; sourceTree = "<group>"; };
-		0F91CCEE154EDFA8000868DA /* Value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Value.h; sourceTree = "<group>"; };
 		0F91CD2C154EE3D6000868DA /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = liblitebase.h; sourceTree = "<group>"; };
 		0F91CD2D154EE3D6000868DA /* liblitebase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = liblitebase.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -243,8 +237,6 @@
 				0F91CCEA154EDFA8000868DA /* TCVMLib.h */,
 				0F91CCEB154EDFA8000868DA /* UtilsLB.c */,
 				0F91CCEC154EDFA8000868DA /* UtilsLB.h */,
-				0F91CCED154EDFA8000868DA /* Value.c */,
-				0F91CCEE154EDFA8000868DA /* Value.h */,
 			);
 			name = native;
 			path = ../../src/native;
@@ -259,7 +251,6 @@
 				0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */,
 				0F91CCCE154EDFA8000868DA /* LitebaseParser.c */,
 				0F91CCCF154EDFA8000868DA /* LitebaseParser.h */,
-				0F91CCD0154EDFA8000868DA /* LitebaseParser.tab.c */,
 				0F91CCD1154EDFA8000868DA /* SQLBooleanClause.c */,
 				0F91CCD2154EDFA8000868DA /* SQLBooleanClause.h */,
 				0F91CCD3154EDFA8000868DA /* SQLBooleanClauseTree.c */,
@@ -315,7 +306,6 @@
 				0F91CD25154EDFA8000868DA /* Table.h in Headers */,
 				0F91CD27154EDFA8000868DA /* TCVMLib.h in Headers */,
 				0F91CD29154EDFA8000868DA /* UtilsLB.h in Headers */,
-				0F91CD2B154EDFA8000868DA /* Value.h in Headers */,
 				0F91CD2E154EE3D6000868DA /* liblitebase.h in Headers */,
 				0F7CBA071552CC8600E9BD43 /* nativeProcAddressesLB.h in Headers */,
 			);
@@ -385,7 +375,6 @@
 				0F91CD07154EDFA8000868DA /* LitebaseLex.c in Sources */,
 				0F91CD09154EDFA8000868DA /* LitebaseMessage.c in Sources */,
 				0F91CD0B154EDFA8000868DA /* LitebaseParser.c in Sources */,
-				0F91CD0D154EDFA8000868DA /* LitebaseParser.tab.c in Sources */,
 				0F91CD0E154EDFA8000868DA /* SQLBooleanClause.c in Sources */,
 				0F91CD10154EDFA8000868DA /* SQLBooleanClauseTree.c in Sources */,
 				0F91CD12154EDFA8000868DA /* SQLColumnListClause.c in Sources */,
@@ -400,7 +389,6 @@
 				0F91CD24154EDFA8000868DA /* Table.c in Sources */,
 				0F91CD26154EDFA8000868DA /* TCVMLib.c in Sources */,
 				0F91CD28154EDFA8000868DA /* UtilsLB.c in Sources */,
-				0F91CD2A154EDFA8000868DA /* Value.c in Sources */,
 				0F91CD2F154EE3D6000868DA /* liblitebase.m in Sources */,
 				0F7CBA061552CC8600E9BD43 /* nativeProcAddressesLB.c in Sources */,
 			);

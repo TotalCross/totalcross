@@ -39,15 +39,17 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
 /**
  * Compares 2 values.
  *
+ * @param context The thread context where the function is being executed. 
  * @param value1 The fist value used in the comparison.
  * @param value1 The second value used in the comparison.
  * @param type The types of the values being compared.
  * @param isNull1 Indicates if the value being compared is null.
  * @param isNull2 Indicates if the value being compared against is null.
+ * @param plainDB the plainDB of a table if it is necessary to load a string.
  * @return 0 if the values are identical; a positive number if the value being compared is greater than the one being compared against; otherwise,
  * a negative number.
  */
-int32 valueCompareTo(SQLValue* value1, SQLValue* value2, int32 type, bool isNull1, bool isNull2);
+int32 valueCompareTo(Context context, SQLValue* value1, SQLValue* value2, int32 type, bool isNull1, bool isNull2, PlainDB* plainDB);
 
 #ifdef ENABLE_TEST_SUITE
 

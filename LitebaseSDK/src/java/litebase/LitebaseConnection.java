@@ -34,17 +34,17 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.63";
+   public static String versionStr = "2.7";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 263;
+   public static int version = 270;
 
    /** 
     * Current build number.
     */
-   public static int buildNumber = 2;
+   public static int buildNumber = 1;
    
    /**
     * The key which identifies one Litebase connection instance.
@@ -66,6 +66,12 @@ public class LitebaseConnection
     * The language of the Litebase messages.
     */
    public static int language = LANGUAGE_EN;
+   
+   // juliana@253_18: now it is possible to log only changes during Litebase operation.
+   /**
+    * Indicates if only changes during Litebase operation must be logged or not.
+    */
+   public static boolean logOnlyChanges;
 
    /**
     * Given the table name, returns the Table object.
@@ -75,7 +81,7 @@ public class LitebaseConnection
    /** 
     * A hash table of prepared statements.
     */
-   private Hashtable htPS = new Hashtable(30); // guich@201_3
+   Hashtable htPS = new Hashtable(30); // guich@201_3 // juliana@253_20: added PreparedStatement.close().
    
    /**
     * The creator id for the tables managed by Litebase.
@@ -97,6 +103,11 @@ public class LitebaseConnection
     */
    private boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
+   /**
+    * Indicates if the tables of this connection use cryptography.
+    */
+   private boolean useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
+   
    // juliana@224_2: improved memory usage on BlackBerry.
    /**
     * A temporary date object.
@@ -112,16 +123,12 @@ public class LitebaseConnection
     * An auxiliary value.
     */
    SQLValue sqlv = new SQLValue();
-   
-   /**
-    * A temporary value for index manipulation.
-    */
-   Value tempVal = new Value();
  
+   // juliana@253_6: the maximum number of keys of a index was duplicated. 
    /**
-    * An array of ancestors of index nodes.
+    * An array used for nodes indices.
     */
-   int[] ancestors = new int[8];
+   int[] nodes = new int[Node.MAX_IDX];
    
    /**
     * A temporary buffer for strings.
@@ -133,11 +140,7 @@ public class LitebaseConnection
     */
    SQLValue[] oneValue = new SQLValue[1];
    
-   /**
-    * A buffer to store the value.
-    */
-   byte[] valueBuf = new byte[Value.VALUERECSIZE];
-   
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
     * A byte for saving table meta data.
@@ -204,15 +207,17 @@ public class LitebaseConnection
       return getInstance(appCrid, null);
    }
 
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
     * one instance with the same creator id and parameters, which would lead to performance and memory problems.
     *
     * @param appCrid The creator id, which may be the same one of the current application and MUST be 4 characters long.
     * @param params Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
-    * path, or <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or 
-    * <code>unicode</code>, and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If
-    * only the path is passed as a parameter, unicode is used. Notice that path must be absolute, not relative.
+    * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+    * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+    * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+    * cryptography. Notice that path must be absolute, not relative.
     * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
     * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
     * slot.
@@ -265,8 +270,12 @@ public class LitebaseConnection
                      conn.isAscii = tempParam.indexOf("ascii") != -1;
                   else if (tempParam.startsWith("path")) // Path param.
                      path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
+                  else if (tempParam.startsWith("crypto")) // Cryptography param.
+                     conn.useCrypto = true;
                   else if (paramsSeparated.length == 1)
                      path = params; // Things do not change if there is only one parameter that is the path.
+                  else // Invalid parameter // juliana@253_11: now a DriverException will be throw if an incorrect parameter is passed in LitebaseConnection.getInstance().
+                     throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER) + "tempParam");
                }
             }
            
@@ -274,8 +283,9 @@ public class LitebaseConnection
             validatePath(path = conn.sourcePath = (path != null)? path : Settings.dataPath != null && Settings.dataPath.length() != 0? Settings.dataPath : Settings.appPath);
             
             // If the source folder does not exist, it is created. This creation is recursive.
-            if (path.length() > 0 && !new File(path).exists())
-               new File(path).createDir();
+            File file = new File(path);
+            if (path.length() > 0 && !file.exists())
+               file.createDir();
 
             if (!path.endsWith("\\") && !path.endsWith("/")) // Appends a "/" if the datapath does not end with "\\" or "/".
                conn.sourcePath = path + '/';
@@ -349,11 +359,18 @@ public class LitebaseConnection
          int i;
          LitebaseParser parser = new LitebaseParser();
          parser.tableList = new SQLResultSetTable[1];
+         String sqlAux = sql.toLowerCase().trim();
          
-         if ((sql.toLowerCase().trim()).startsWith("create table"))
-            parser.fieldList = new SQLFieldDefinition[SQLElement.MAX_NUM_COLUMNS];
-         parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
-         
+         // juliana@270_18: Solved NPE being thrown instead of a SQLParseException when an insert is passed to LitebaseConnection.execute().
+         if (sqlAux.startsWith("create "))
+         {
+            if (sqlAux.startsWith("create table"))
+               parser.fieldList = new SQLFieldDefinition[SQLElement.MAX_NUM_COLUMNS];
+            parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
+         }
+         else
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED));
+                        
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does de parsing.
         
@@ -382,7 +399,8 @@ public class LitebaseConnection
             byte[] columnAttrs = new byte[count];
             SQLFieldDefinition field;
             Date tempDateAux = tempDate; // juliana@224_2: improved memory usage on BlackBerry.
-   
+            String defaultValue; 
+            
             // Creates column 0 (rowid).
             names[0] = "rowid";
             types[0] = SQLElement.INT;
@@ -399,11 +417,10 @@ public class LitebaseConnection
                if (field.isPrimaryKey) // Checks if there is a primary key definition.
                   primaryKeyCol = i; // Only one primary key can be defined per table: this is verified during the parsing.
    
-               if (field.defaultValue != null) // Default values: default null has no effect. This is handled by the parser.
+               if ((defaultValue = field.defaultValue) != null) // Default values: default null has no effect. This is handled by the parser.
                {
                   defaultValues[i] = new SQLValue();
                   columnAttrs[i] |= Utils.ATTR_COLUMN_HAS_DEFAULT;  // Sets the default bit.
-                  String defaultValue = field.defaultValue.trim();
                   
                   // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
                   // the type range.
@@ -414,9 +431,6 @@ public class LitebaseConnection
                         if (defaultValue.length() > sizes[i]) // The default value size can't be larger than the size of the field definition.
                            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
                         defaultValues[i].asString = defaultValue;
-                        break;
-                     case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
-                        defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
                         break;
                      case SQLElement.SHORT:
                         defaultValues[i].asShort = Convert.toShort(defaultValue);
@@ -432,6 +446,9 @@ public class LitebaseConnection
                         break;
                      case SQLElement.DOUBLE:
                         defaultValues[i].asDouble = Convert.toDouble(defaultValue);
+                        break;
+                     case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
+                        defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
                         break;
                      case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
                         int pos = defaultValue.lastIndexOf(' ');
@@ -515,8 +532,6 @@ public class LitebaseConnection
             
             driverCreateIndex(tableName, indexNames, null, false);
          }
-         else
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED));
       }
       catch (IOException exception)
       {
@@ -580,14 +595,14 @@ public class LitebaseConnection
          else
          if (tempSQL.startsWith("drop index"))
             parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];
-         else
-         if (tempSQL.startsWith("alter table")) 
+         else if (tempSQL.startsWith("alter table")) 
             if (tempSQL.indexOf("rename") != -1)
                parser.fieldNames = new String[2];
-            else
-            if (tempSQL.indexOf("add primary key") != -1)
+            else if (tempSQL.indexOf("add primary key") != -1)
                parser.fieldNames = new String[SQLElement.MAX_NUM_COLUMNS];   
-         
+            else if (tempSQL.indexOf("add") != -1) // juliana@253_22: added command ALTER TABLE ADD column.
+               parser.fieldList = new SQLFieldDefinition[1];
+            
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does the parsing.
          
@@ -609,6 +624,7 @@ public class LitebaseConnection
             case SQLElement.CMD_ALTER_ADD_PK: // ADD PRIMARY KEY
             case SQLElement.CMD_ALTER_RENAME_TABLE: // RENAME TABLE
             case SQLElement.CMD_ALTER_RENAME_COLUMN: // RENAME COLUMN
+            case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN // juliana@253_22: added command ALTER TABLE ADD column.
                litebaseExecuteAlter(parser); 
                return 0;
          }
@@ -628,6 +644,7 @@ public class LitebaseConnection
       return -1;
    }
 
+   // juliana@253_22: added command ALTER TABLE ADD column.
    /**
     * Executes an alter statement.
     *
@@ -638,9 +655,10 @@ public class LitebaseConnection
     * @throws SQLParseException If there is a blob in a primary key definition.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
     */
    private void litebaseExecuteAlter(LitebaseParser parser) throws DriverException, AlreadyCreatedException, SQLParseException, IOException, 
-                                                                                                                                InvalidDateException
+                                                                                    InvalidDateException, InvalidNumberException
    {
       String tableName = parser.tableList[0].tableName;
       Table table = getTable(tableName);
@@ -751,7 +769,228 @@ public class LitebaseConnection
 
          case SQLElement.CMD_ALTER_RENAME_COLUMN: // RENAME COLUMN
             table.renameTableColumn(parser.fieldNames[1], parser.fieldNames[0]);
-      }
+            break;
+            
+         case SQLElement.CMD_ALTER_ADD_COLUMN: // ADD COLUMN
+            SQLFieldDefinition field = parser.fieldList[0];
+            int oldCount = table.columnCount,
+                newCount = oldCount + 1,
+                bytes = (oldCount + 7) >> 3,
+                hash = field.fieldName.hashCode();
+
+            if (table.htName2index.exists(hash)) // The column name can't exist yet.
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DUPLICATED_COLUMN_NAME) + field.fieldName);
+            
+            if (oldCount == SQLElement.MAX_NUM_COLUMNS) // The maximum number of columns can't be exceeded.
+               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMNS_OVERFLOW) + field.fieldName);
+            
+            if (((oldCount + 8) >> 3) > bytes) // Increases the nulls fields if the number of bytes must be increased.
+            {
+               byte[][] columnNulls = table.columnNulls;
+               columnNulls[0] = new byte[++bytes];
+               columnNulls[1] = new byte[bytes];
+               
+               if (columnNulls[2] != null)
+                  columnNulls[2] = new byte[bytes];
+               table.storeNulls = new byte[bytes]; 
+            }
+            
+            // Increases all the columns.  
+            table.ghas = new byte[newCount];
+            table.gvOlds = new SQLValue[newCount];
+            
+            // Column attrs.
+            byte[] newAttrs = new byte[newCount];
+            Vm.arrayCopy(table.columnAttrs, 0, newAttrs, 0, oldCount);
+            (table.columnAttrs = newAttrs)[oldCount] = (byte)((field.defaultValue != null? Utils.ATTR_COLUMN_HAS_DEFAULT : 0)
+                                                                                         | (field.isNotNull? Utils.ATTR_COLUMN_IS_NOT_NULL : 0)); 
+            
+            // Column hashes.
+            int[] newHashes = new int[newCount];
+            Vm.arrayCopy(table.columnHashes, 0, newHashes, 0, oldCount);
+            table.htName2index.put((table.columnHashes = newHashes)[oldCount] = hash, oldCount);
+            
+            // Column offsets.
+            short[] newOffsets = new short[newCount + 1];
+            Vm.arrayCopy(table.columnOffsets, 0, newOffsets, 0, newCount);
+            (table.columnOffsets = newOffsets)[newCount] = (short)(newOffsets[oldCount] + Utils.typeSizes[field.fieldType]);
+            
+            // Column types.
+            byte[] newTypes = new byte[newCount];
+            Vm.arrayCopy(table.columnTypes, 0, newTypes, 0, oldCount);
+            (table.columnTypes = newTypes)[oldCount] = (byte)field.fieldType;
+            
+            // Column sizes.
+            int[] newSizes = new int[newCount];
+            Vm.arrayCopy(table.columnSizes, 0, newSizes, 0, oldCount);
+            (table.columnSizes = newSizes)[oldCount] = field.fieldSize;
+            
+            // Column names.
+            String[] newNames = new String[newCount];
+            Vm.arrayCopy(table.columnNames, 0, newNames, 0, oldCount);
+            (table.columnNames = newNames)[oldCount] = field.fieldName;
+            
+            // Default values.
+            SQLValue[] newDefaultValues = new SQLValue[newCount];
+            SQLValue newDefaultValue = null;
+            Vm.arrayCopy(table.defaultValues, 0, newDefaultValues, 0, oldCount);            
+            table.defaultValues = newDefaultValues;
+            String defaultValue = field.defaultValue;
+            
+            if (defaultValue != null) // Sets the new default value if it exists.
+            {
+               newDefaultValue = newDefaultValues[oldCount] = new SQLValue();
+               
+               // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than 
+               // the type range.
+               switch (field.fieldType) 
+               {
+                  case SQLElement.CHARS:
+                  case SQLElement.CHARS_NOCASE:
+                     if (defaultValue.length() > field.fieldSize) // The default value size can't be larger than the size of the field definition.
+                        throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
+                     newDefaultValue.asString = defaultValue;
+                     break;
+                  case SQLElement.SHORT:
+                     newDefaultValue.asShort = Convert.toShort(defaultValue);
+                     break;
+                  case SQLElement.INT:
+                     newDefaultValue.asInt = Convert.toInt(defaultValue);
+                     break;
+                  case SQLElement.LONG:
+                     newDefaultValue.asLong = Convert.toLong(defaultValue);
+                     break;
+                  case SQLElement.FLOAT:
+                     newDefaultValue.asDouble = Utils.toFloat(defaultValue);
+                     break;
+                  case SQLElement.DOUBLE:
+                     newDefaultValue.asDouble = Convert.toDouble(defaultValue);
+                  case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
+                     newDefaultValue.asInt = tempDate.set(defaultValue, Settings.DATE_YMD);
+                     break;
+                  case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
+                     int pos = defaultValue.lastIndexOf(' ');
+                     if (pos == -1) // There is no time here.
+                     {
+                        newDefaultValue.asInt = tempDate.set(defaultValue, Settings.DATE_YMD);
+                        newDefaultValue.asShort = 0;
+                     }
+                     else
+                     {
+                        newDefaultValue.asInt = tempDate.set(defaultValue.substring(0, pos), Settings.DATE_YMD);
+                        newDefaultValue.asShort = Utils.testAndPrepareTime(defaultValue.substring(pos + 1).trim());
+                     }
+                     break;
+               } 
+            }
+            
+            // Column indices.
+            Index[] newIndices = new Index[newCount];
+            Vm.arrayCopy(table.columnIndices, 0, newIndices, 0, oldCount);
+            table.columnIndices = newIndices; 
+                  
+            // Sets the new plain db.
+            PlainDB newDB = new PlainDB(table.name + '_', sourcePath, true),
+                    oldDB = table.db; 
+            newDB.isAscii = oldDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+            newDB.headerSize = oldDB.headerSize;
+            newDB.driver = this; 
+            boolean useCrypto = newDB.useCrypto = oldDB.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+            int newRowSize = newOffsets[newCount] + ((newCount + 7) >> 3) + 4;
+            byte[] newBuffer = newDB.basbuf = new byte[newRowSize];
+            newDB.setRowSize(newRowSize, newBuffer);
+            newDB.rowInc = oldDB.rowCount;
+
+            // Sets the new streams.
+            ByteArrayStream newBas = newDB.bas; 
+            DataStreamLB newBasds = newDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+            
+            // Sets some variables for reading and writing the records.
+            SQLValue[] record = SQLValue.newSQLValues(newCount);
+            byte[] columnNulls0 = table.columnNulls[0];
+            int length = columnNulls0.length;
+            boolean isNull = (record[oldCount] = newDefaultValue) == null;
+                        
+            // Saves the new meta data.
+            table.db = newDB;
+            table.columnCount++;
+            table.tableSaveMetaData(Utils.TSMD_EVERYTHING); 
+            table.db = oldDB;
+            table.columnCount--;
+            
+            // juliana@230_12
+            int crc32,
+                k;
+            int[] intArray = new int[1];
+            
+            size = oldDB.rowCount;
+            i = -1;  
+            while (++i < size)
+            {
+               table.readRecord(record, i, 0, null, null, false, null); // juliana@220_3 juliana@227_20
+               j = -1;
+               
+               if (isNull)
+                  columnNulls0[oldCount >> 3] |= (1 << (oldCount & 7)); // Sets the column as null.
+               
+               // juliana@230_44: solved a NullPointerException when purging a table with a null value on a CHAR or VARCHAR column.
+               // juliana@220_3
+               while (++j < newCount)
+                  newDB.writeValue(newTypes[j], record[j], newBasds, (columnNulls0[j >> 3] & (1 << (j & 7))) == 0, true, newSizes[j], 0, false); 
+               
+               newBasds.writeBytes(columnNulls0, 0, length); 
+               
+               // juliana@230_12: improved recover table to take .dbo data into consideration.
+               // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
+               // juliana@220_4: added a crc32 code for every record. Please update your tables.
+               k = (useCrypto? newBuffer[3] ^ 0xAA : newBuffer[3]);
+               newBuffer[3] = (useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
+               newDB.useOldCrypto = false;
+               
+               // Computes the crc for the record and stores at the end of the record.
+               crc32 = Table.updateCRC32(newBuffer, newBas.getPos(), 0, useCrypto);
+               if (table.version == Table.VERSION)
+               {
+                  byte[] byteArray;
+                  
+                  j = newCount;
+                  while (--j > 0)
+                     if ((newTypes[j] == SQLElement.CHARS || newTypes[j] == SQLElement.CHARS_NOCASE) 
+                      && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                     {
+                        byteArray = Utils.toByteArray(record[j].asString);
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
+                     }
+                     else if (newTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                     {  
+                        intArray[0] = record[j].asBlob.length;
+                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
+                     }
+               }
+               newBasds.writeInt(crc32); 
+               newBuffer[3] = (byte)k;
+               
+               newDB.add();
+               newDB.write();
+            }
+            
+            // Puts the new plain db in the table and deletes the old one.            
+            newDB.rowInc = Utils.DEFAULT_ROW_INC;
+            ((NormalFile)oldDB.db).f.delete();
+            ((NormalFile)oldDB.dbo).f.delete();
+            newDB.rename(table.name, sourcePath);
+            table.db = newDB;
+            table.columnCount++;
+            
+            i = newCount;
+            while (--i >= 0) // Recreates the simple indices.
+               if (newIndices[i] != null && (newTypes[i] == SQLElement.CHARS || newTypes[i] == SQLElement.CHARS_NOCASE))
+                  table.tableReIndex(i, null, false);
+
+            if ((i = table.numberComposedIndices) > 0) // Recreates the composed indices.  
+               while (--i >= 0)
+                  table.tableReIndex(i, table.composedIndices[i], false);
+      }             
    }
 
    /**
@@ -774,6 +1013,7 @@ public class LitebaseConnection
          htTables.remove(tableName);
       }
       
+      // juliana@253_5: removed .idr files from all indices and changed its format.
       if (table != null) // The table is open.
       {
          Index idx;
@@ -781,11 +1021,11 @@ public class LitebaseConnection
          // Drops its simple indices.
          while (--i >= 0)
             if ((idx = table.columnIndices[i]) != null)
-               idx.remove();
+               idx.fnodes.f.delete();
          // Drops its composed indices.
          if ((i = table.numberComposedIndices) > 0)
             while (--i >= 0)
-               table.composedIndices[i].index.remove();
+               table.composedIndices[i].index.fnodes.f.delete();
          table.db.remove(); // Drops the table.
       }
       else // The table is closed.
@@ -897,7 +1137,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             logger.log(Logger.INFO, sql, false);
@@ -908,7 +1149,8 @@ public class LitebaseConnection
          LitebaseParser parser = new LitebaseParser();
          parser.tableList = new SQLResultSetTable[SQLElement.MAX_NUM_COLUMNS];
          parser.select = new SQLSelectClause();
-         parser.tables = new IntHashtable(4);
+         
+         // juliana@253_9: improved Litebase parser.
          
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does de parsing.
@@ -947,7 +1189,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -998,7 +1241,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1035,7 +1279,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1154,7 +1399,13 @@ public class LitebaseConnection
       try // Tests if the .db file exists.
       {
          sBuffer.setLength(0);
-         return new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(name).append(NormalFile.DB_EXT).toString()).exists();
+         boolean ret = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(name).append(NormalFile.DB_EXT).toString()).exists();
+         
+         // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
+         if (ret && !new File(name = sBuffer.append('o').toString()).exists())
+            throw new FileNotFoundException(name);
+         
+         return ret;
       }
       catch (IOException exception)
       {
@@ -1211,7 +1462,8 @@ public class LitebaseConnection
 
       while (--n >= 0)
       {
-         (table = (Table)v.items[n]).db.close(table.db.isAscii, true); // Closes the table files.
+         // juliana@253_8: now Litebase supports weak cryptography.
+         (table = (Table)v.items[n]).db.close(true); // Closes the table files.
          table.db = null;
 
          // Closes the simple indices.
@@ -1269,7 +1521,7 @@ public class LitebaseConnection
          // Removes the deleted records from the table.
          int deleted = table.deletedRowsCount;
 
-         if (deleted > 0)
+         if (deleted > 0 || table.wasUpdated) // juliana@270_27: now purge will also really purge the table if it only suffers updates.
          {
             PlainDB plainDB = table.db;
             NormalFile dbFile = (NormalFile)plainDB.db;
@@ -1297,11 +1549,12 @@ public class LitebaseConnection
             {
                // rnovais@570_75: inserts all records at once.
                PlainDB newdb = new PlainDB(table.name + '_', sourcePath, true);
-               DataStreamLE oldBasds = plainDB.basds;
+               DataStreamLB oldBasds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
                int[] columnSizes = table.columnSizes;
                byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
-
+               
+               boolean useCrypto = newdb.useCrypto = plainDB.useCrypto; // juliana@253_8: now Litebase supports weak cryptography. 
                SQLValue[] record = SQLValue.newSQLValues(table.columnCount);
                int length = columnNulls0.length;
                
@@ -1309,6 +1562,7 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+               
                newdb.driver = this; 
                
                // rnovais@570_61: verifies if it needs to store the currentRowId.
@@ -1320,7 +1574,7 @@ public class LitebaseConnection
                newdb.rowInc = willRemain;
                
                ByteArrayStream newBas = newdb.bas; 
-               DataStreamLE newBasds = newdb.basds;
+               DataStreamLB newBasds = newdb.basds; // juliana@253_8: now Litebase supports weak cryptography.
                byte[] oldBuffer = plainDB.bas.getBuffer();
                
                // juliana@230_12
@@ -1344,10 +1598,10 @@ public class LitebaseConnection
                      // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                      // juliana@220_4: added a crc32 code for every record. Please update your tables.
                      k = oldBuffer[3];
-                     oldBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+                     oldBuffer[3] = (useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
                      
                      // Computes the crc for the record and stores at the end of the record.
-                     crc32 = Table.updateCRC32(oldBuffer, newBas.getPos(), 0);
+                     crc32 = Table.updateCRC32(oldBuffer, newBas.getPos(), 0, useCrypto);
                      
                      if (table.version == Table.VERSION)
                      {
@@ -1359,12 +1613,12 @@ public class LitebaseConnection
                             && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                            {
                               byteArray = Utils.toByteArray(record[j].asString);
-                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                            }
                            else if (columnTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                            {  
                               intArray[0] = record[j].asBlob.length;
-                              crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                              crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                            }
                      }
                      
@@ -1380,6 +1634,7 @@ public class LitebaseConnection
                dbFile.f.delete();
                ((NormalFile)plainDB.dbo).f.delete();
                newdb.rename(table.name, sourcePath);
+               newdb.useOldCrypto = false;
                table.db = newdb;
             }
 
@@ -1387,6 +1642,7 @@ public class LitebaseConnection
 
             // Empties the deletedRows and update the metadata.
             table.deletedRowsCount = 0;
+            table.wasUpdated = false; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
             table.tableSaveMetaData(Utils.TSMD_EVERYTHING); // guich@560_24
 
             Vm.gc(); // Frees some memory.
@@ -1427,7 +1683,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1465,7 +1722,8 @@ public class LitebaseConnection
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
-      if (logger != null)
+      // juliana@253_18: now it is possible to log only changes during Litebase operation.
+      if (logger != null && !logOnlyChanges)
          synchronized (logger)
          {
             sBuffer.setLength(0);
@@ -1696,6 +1954,7 @@ public class LitebaseConnection
                                                                                                                         File.READ_WRITE, -1);
          
          byte[] buffer = oneByte; 
+         boolean useCryptoAux = useCrypto;
          
          // juliana@222_2: the table must be not closed properly in order to recover it.
          tableDb.setPos(6);
@@ -1704,6 +1963,10 @@ public class LitebaseConnection
             tableDb.close();
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
+         
+         if (useCryptoAux) // juliana@253_8: now Litebase supports weak cryptography.
+            buffer[0] ^= 0xAA;
+         
          if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
          {  
             tableDb.close(); 
@@ -1717,16 +1980,17 @@ public class LitebaseConnection
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
-         
+         // juliana@253_8: now Litebase supports weak cryptography.
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
+
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
-         DataStreamLE dataStream = plainDB.basds; 
+         DataStreamLB dataStream = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography. 
          buffer = bas.getBuffer();
          int rows = plainDB.rowCount,
              crc32,
              rowid,
-             i = -1,
+             i = rows,
              
          // juliana@230_12: improved recover table to take .dbo data into consideration.
              j,
@@ -1740,23 +2004,34 @@ public class LitebaseConnection
          byte[] byteArray;
          byte[] types = table.columnTypes;
          int[] intArray = new int[1];
+         boolean useOldCrypto = plainDB.useOldCrypto;
          
-         table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         int auxRowId = -1,
+             currentRowId = -1,
+             deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
-         while (++i < rows) // Checks all table records.
+         while (--i >= 0) // Checks all table records.
          {
             plainDB.read(i);
-            rowid = dataStream.readInt();
             
+            if (isZero(buffer)) // juliana@268_3: Now does not do anything if there are only zeros in a row and removes them.
+            {
+               rows--;
+               continue;
+            }
+            
+            rowid = dataStream.readInt();
+
             if ((rowid & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED) // Counts the number of deleted records.
-               table.deletedRowsCount++;
+               deletedRowsCount++;
             else
             {
                bas.reset();
-               buffer[3] = 0; // Erases rowid information.
+               buffer[3] = (useCryptoAux? (byte)0xAA : 0); // Erases rowid information.
                
                // juliana@230_12: improved recover table to take .dbo data into consideration.
-               crc32 = Table.updateCRC32(buffer, len, 0);
+               crc32 = Table.updateCRC32(buffer, len, 0, useCryptoAux);
                
                if (table.version == Table.VERSION)
                {
@@ -1772,30 +2047,55 @@ public class LitebaseConnection
                       && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {
                         byteArray = Utils.toByteArray(record[j].asString);
-                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                      }
                      else if (types[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {  
                         intArray[0] = record[j].asInt;
-                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                      }
                   
                }
                
                dataStream.skipBytes(len);
-               if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
+               if (useOldCrypto)
+               {
+                  dataStream.writeInt(crc32);
+                  plainDB.rewrite(i);
+                  table.auxRowId = (rowid & Utils.ROW_ID_MASK) + 1;                   
+               }
+               else if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
                {
                   bas.reset();
                   dataStream.writeInt(Utils.ROW_ATTR_DELETED);
                   plainDB.rewrite(i);
-                  table.deletedRowsCount++;
+                  deletedRowsCount++;
                   recovered = true;
+                  
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  if (currentRowId < 0)
+                     currentRowId = (rowid & Utils.ROW_ID_MASK) + 1;
                }
                else // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().
-                  table.auxRowId = (rowid & Utils.ROW_ID_MASK) + 1; 
+               {
+                  // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+                  rowid = (rowid & Utils.ROW_ID_MASK) + 1;
+                  if (currentRowId < 0)
+                     currentRowId = rowid;
+                  if (auxRowId < 0) 
+                     auxRowId = rowid;
+               }
+               
             }
          }
            
+         plainDB.rowCount = rows;
+         table.deletedRowsCount = deletedRowsCount;
+         
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         table.currentRowId = currentRowId;
+         table.auxRowId = auxRowId;
+         
          // Recreates the indices.
          // Simple indices.
          i = table.columnIndices.length;
@@ -1811,10 +2111,14 @@ public class LitebaseConnection
             table.tableReIndex(i, compIndices[i], false);
          
          // juliana@224_3: corrected a bug that would make Litebase not use the correct rowid after a recoverTable().
-         table.tableSaveMetaData(Utils.TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows and the auxiliary rowid.
+         // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         table.tableSaveMetaData(Utils.TSMD_EVERYTHING); // Saves information concerning deleted rows and the auxiliary rowid.
          
          // Closes the table.
-         plainDB.close(plainDB.isAscii, false); // Closes the table files.
+         // juliana@253_8: now Litebase supports weak cryptography.
+         plainDB.rowCount = rows;
+         plainDB.useOldCrypto = false;
+         plainDB.close(true); // Closes the table files.
          table.db = null;
          Index idx;
          
@@ -1871,8 +2175,8 @@ public class LitebaseConnection
       {
          byte[] bytes = new byte[2];
          Table table = new Table();
-         byte rowid;
-         int version;
+         int rowid,
+             version;
          
          sBuffer.setLength(0);
          
@@ -1888,6 +2192,12 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
+         if (useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
+         {
+            bytes[0] = bytes[0] ^= 0xAA;
+            bytes[1] = bytes[1] ^= 0xAA;
+         }
+         
          if ((version = (((bytes[1] & 0xFF) << 8) | (bytes[0] & 0xFF))) != Table.VERSION - 1 || version != Table.VERSION - 2)
          {
             tableDb.close(); // juliana@222_4: The table files must be closed if convert() fails().
@@ -1895,18 +2205,19 @@ public class LitebaseConnection
          }
          
          // Changes the version to be current one and closes it.
-         tableDb.setPos(7);
-         oneByte[0] = (byte)Table.VERSION;
+         tableDb.setPos(7);         
+         oneByte[0] = (byte)(useCrypto? Table.VERSION ^ 0xAA : Table.VERSION); // juliana@253_8         
          tableDb.writeBytes(oneByte, 0, 1);
          tableDb.close();
          
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
+         // juliana@253_8: now Litebase supports weak cryptography.
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          PlainDB plainDB = table.db;   
          NormalFile dbFile = (NormalFile)table.db.db;
-         DataStreamLE dataStream = plainDB.basds; 
+         DataStreamLB dataStream = plainDB.basds; 
          ByteArrayStream bas = plainDB.bas;
          byte[] buffer = bas.getBuffer();
          int headerSize = plainDB.headerSize, 
@@ -1922,18 +2233,19 @@ public class LitebaseConnection
          byte[] types = table.columnTypes;
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] byteArray;
+         boolean useCrypto = plainDB.useCrypto;
          
          while (--rows >= 0) // Converts all the records adding a crc code to them.
          {
             dbFile.setPos(rows * len + headerSize);
             dbFile.readBytes(buffer, 0, len);
-            rowid = buffer[3];
-            buffer[3] = 0;
+            rowid = (useCrypto? buffer[3] ^ 0xAA: buffer[3]);
+            buffer[3] = (useCrypto? (byte)0xAA : 0);
             bas.reset();
             dataStream.skipBytes(len);
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
-            crc32 = Table.updateCRC32(buffer, len, 0);
+            crc32 = Table.updateCRC32(buffer, len, 0, useCrypto);
             
             i = columnCount;
             while (--i > 0)
@@ -1947,21 +2259,22 @@ public class LitebaseConnection
                 && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
                {
                   byteArray = Utils.toByteArray(record[i].asString);
-                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
                }
                else if (types[i] == SQLElement.BLOB && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
                {  
                   intArray[0] = record[i].asInt;
-                  crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+                  crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
                }
             
             dataStream.writeInt(crc32);
-            buffer[3] = rowid;
+            buffer[3] = (byte)rowid;
             plainDB.rewrite(rows);
          }   
             
          // Closes the table.
-         plainDB.close(plainDB.isAscii, false); // Closes the table files.
+         // juliana@253_8: now Litebase supports weak cryptography.
+         plainDB.close(false); // Closes the table files.
          table.db = null;
       }
       catch (IOException exception)
@@ -2010,7 +2323,7 @@ public class LitebaseConnection
       while (--i >= 0)
       {
          // Column not found.
-         if ((idx = columns[i] = (numberColumns == null)? (byte) table.htName2index.get(columnNames[i].hashCode(), -1) : numberColumns[i]) == -1) 
+         if ((idx = columns[i] = (numberColumns == null)? (byte)table.htName2index.get(columnNames[i].hashCode(), -1) : numberColumns[i]) == -1) 
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + columnNames[i]);
          
          if (table.columnTypes[idx] == SQLElement.BLOB) // An index can't have a blob column.
@@ -2027,15 +2340,15 @@ public class LitebaseConnection
       // last oppening. 
       table.setModified(); // Sets the table as not closed properly.
       
+      // juliana@253_5: removed .idr files from all indices and changed its format.
       if (indexCount == 1)
       {
-         table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false, false);
+         table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false);
          saveType = Utils.TSMD_EVERYTHING;
       }
       else
       {
-         table.indexCreateComposedIndex(table.name, columns, columnSizes, columnTypes, newIndexNumber, isPK, appCrid, true, sourcePath, false, 
-                                                                                                                                        false);
+         table.indexCreateComposedIndex(table.name, columns, columnSizes, columnTypes, newIndexNumber, isPK, appCrid, true, sourcePath, false);
          saveType = Utils.TSMD_EVERYTHING;
       }
 
@@ -2108,8 +2421,9 @@ public class LitebaseConnection
       Table table = new Table();
       
       // juliana@224_2: improved memory usage on BlackBerry.
-      
-      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, true); // rnovais@570_75 juliana@220_5 
+      // rnovais@570_75 juliana@220_5 
+      // juliana@253_8: now Litebase supports weak cryptography.
+      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, useCrypto, true); 
       
       if (tableName == null) // juliana@201_14
       {
@@ -2156,8 +2470,8 @@ public class LitebaseConnection
          table = new Table();
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         
-         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, true); // juliana@220_5
+         // juliana@253_8: now Litebase supports weak cryptography.
+         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, useCrypto, true); // juliana@220_5
 
          PlainDB plainDB = table.db;
          
@@ -2250,11 +2564,13 @@ public class LitebaseConnection
          String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
          int i = files.length;
          
+         crid += '-';
+         
          // Deletes only the files of the chosen database.
          boolean deleted = false;
          while (--i >= 0)
          {
-            if (files[i].startsWith(crid + '-'))
+            if (files[i].startsWith(crid))
             {
                new File(sourcePath + files[i], File.DONT_OPEN, -1).delete();
                deleted = true;
@@ -2337,13 +2653,13 @@ public class LitebaseConnection
       {
          String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
          String fileName,
-                crid = appCrid;
+                crid = appCrid + '-';
          int i = files.length,
              count = 0;
                   
          while (--i >= 0) // Selects the .db files that are from the tables of the current connection.
          {
-            if ((fileName = files[i]).startsWith(crid + '-') && fileName.endsWith(".db"))
+            if ((fileName = files[i]).startsWith(crid) && fileName.endsWith(".db"))
             {
                files[i] = fileName.substring(5, fileName.length() - 3);
                count++;
@@ -2366,5 +2682,118 @@ public class LitebaseConnection
       {
          throw new DriverException(exception);
       }
+   }
+   
+   /**
+    * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public static void encryptTables(String crid, String sourcePath, int slot) 
+   {
+      encDecTables(crid, sourcePath, slot, true);
+   }
+   
+   // juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
+   /**
+    * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    */
+   public static void decryptTables(String crid, String sourcePath, int slot)
+   {
+      encDecTables(crid, sourcePath, slot, false);
+   }
+   
+   /**
+    * Encrypts or decrypts all the tables of a connection given from the application id.
+    * 
+    * @param crid The application id of the database.
+    * @param sourcePath The path where the files are stored.
+    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param toEncrypt Indicates if the tables are to be encrypted or decrypted.
+    * @throws DriverException If an <code>IOException</code> is thrown or not all the tables use the desired cryptography format.
+    */
+   private static void encDecTables(String crid, String sourcePath, int slot, boolean toEncrypt) throws DriverException
+   {
+      try
+      {
+         // Lists all the files of the folder.
+         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
+         int i = files.length,
+             j,
+             k;
+         File file;
+         byte[] bytes = new byte[NormalFile.CACHE_INITIAL_SIZE];
+         
+         crid += '-';
+         
+         // Before doing anything, checks if all the .db files are marked as decrypted or encrypted.
+         while (--i >= 0)
+         {
+            if (files[i].startsWith(crid) && files[i].endsWith(".db"))
+            {
+               (file = new File(sourcePath + files[i], File.READ_ONLY, -1)).readBytes(bytes, 0, 4);
+               file.close();
+               if ((toEncrypt? bytes[0] != 0 : (bytes[0] != 1 && bytes[0] != 3)) || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
+                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
+            }
+         }
+         
+         i = files.length;
+         int encByte = toEncrypt? 3 : 0;
+         while (--i >= 0)
+         {
+            if (files[i].startsWith(crid))
+            {          
+               file = new File(sourcePath + files[i], File.READ_WRITE, -1);
+               
+               if (files[i].endsWith(".db")) // Changes the .db file crypto information.
+               {
+                  file.readBytes(bytes, 0, 4);
+                  bytes[0] = (byte)encByte;
+                  file.setPos(0);
+                  file.writeBytes(bytes, 0, 4);
+               }
+               
+               // Encrypts or decrypts all the table files data.
+               while ((k = j = file.readBytes(bytes, 0, NormalFile.CACHE_INITIAL_SIZE)) != -1)
+               {
+                  while (--k >= 0)
+                     bytes[k] ^= 0xAA;
+                  file.setPos(-j, File.SEEK_CUR);
+                  file.writeBytes(bytes, 0, j);
+               }
+               
+               file.close();
+            }
+            
+         }
+         
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+   }
+
+   /**
+    * Indicates if a buffer is only composed by zeros or not.
+    * 
+    * @param buffer The buffer.
+    * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.
+    */
+   private boolean isZero(byte[] buffer)
+   {
+      int i = buffer.length;
+      
+      while (--i >= 0)
+         if (buffer[i] != 0)
+            return false;
+      return true;
    }
 }

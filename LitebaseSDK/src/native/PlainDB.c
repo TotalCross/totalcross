@@ -20,6 +20,7 @@
 
 #include "PlainDB.h"
 
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Creates a new <code>PlainDB</code>, loading or creating the table with the given name or creating a temporary table.
  *
@@ -27,11 +28,12 @@
  * @param plainDB Receives the new <code>PlainDB</code> or <code>null</code> if an error occurs.
  * @param name The name of the table.
  * @param create Defines if the file will be created if it doesn't exist.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot)
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, CharP sourcePath, int32 slot)
 {
    TRACE("createPlainDB")
    char buffer[DBNAME_SIZE];
@@ -53,9 +55,9 @@ bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, C
       plainDB->writeBytes = nfWriteBytes;
       plainDB->close = nfClose;
       // Opens or creates the .db and .dbo files.
-	   if (nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->db, -1)
+	   if (nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->db, -1)
        && xstrcat(buffer, "o")
-       && nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->dbo, -1))
+       && nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->dbo, -1))
          return true;
    }
    else
@@ -224,6 +226,15 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
       buffer[5] = (uint8)(headerSize >> 8);
    }
    nfSetPos(db, 0);
+        
+   if (db->useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
+   {
+      int32 i = 4;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA;
+      buffer -= 4; 
+   }
+   
    return nfWriteBytes(context, db, buffer, length);
 }
 
@@ -258,6 +269,15 @@ uint8* plainReadMetaData(Context context, PlainDB* plainDB, uint8* buffer)
          xfree(buffer);
       return null;
    }
+   
+   if (plainDB->db.useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
+   {
+      int32 i = 4;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA;
+      buffer -= 4; 
+   }
+   
    return buffer;
 }
 
@@ -276,7 +296,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
 
    if (plainDB)
    {
-      if (plainDB->db.fbuf || fileIsValid(plainDB->db.file))
+      if (plainDB->db.fbuf || fileIsValid(plainDB->db.file) || plainDB->db.cache)
       {
 			if (*plainDB->name)
          {
@@ -284,7 +304,9 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
             uint8* pointer = buffer;
 
             // Stores the changeable information.
+            // juliana@253_8: now Litebase supports weak cryptography.
             xmemzero(buffer, 4);
+            *pointer = (plainDB->db.useCrypto? (plainDB->useOldCrypto? 1 : USE_CRYPTO) : 0); 
             xmove2(pointer + 4, &plainDB->headerSize);
             pointer += 6;
 
@@ -298,7 +320,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
          }
          ret &= plainDB->close(context, &plainDB->db); // Closes .db.
       }
-		if (plainDB->dbo.fbuf || fileIsValid(plainDB->dbo.file)) // Closes .dbo if it's open.
+		if (plainDB->dbo.fbuf || fileIsValid(plainDB->dbo.file) || plainDB->dbo.cache) // Closes .dbo if it's open.
          ret &= plainDB->close(context, &plainDB->dbo);
    }
    return ret;
@@ -318,9 +340,9 @@ bool plainRemove(Context context, PlainDB* plainDB, CharP sourcePath, int32 slot
 	TRACE("plainRemove")
    bool ret = true;
 
-	if (fileIsValid(plainDB->db.file))
+	if (fileIsValid(plainDB->db.file) || plainDB->db.cache)
       ret = nfRemove(context, &plainDB->db, sourcePath, slot);
-   if (fileIsValid(plainDB->dbo.file))
+   if (fileIsValid(plainDB->dbo.file) || plainDB->dbo.cache)
       ret &= nfRemove(context, &plainDB->dbo, sourcePath, slot);
 
    return ret;
@@ -349,6 +371,8 @@ bool plainSetPos(Context context, PlainDB* plainDB, int32 record)
       plainDB->setPos(&plainDB->db, value);
       return true;
    }
+   if (record >= 0)
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), record);
 	return false;
 }
 
@@ -430,8 +454,21 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 		         xmoveptr(&plainDB, ptrStr);
             }
 
+            if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
+            {
+               TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), position);
+               return false;
+            } 
+
+            // juliana@253_8: now Litebase supports weak cryptography.
+            else if (position > (dbo = &plainDB->dbo)->finalPos)
+            {
+               value->length = 0;
+               return true; 
+            }
+            
             // Reads the string position in the .dbo and sets its position.
-            plainDB->setPos(dbo = &plainDB->dbo, value->asInt = position); 
+            plainDB->setPos(dbo, value->asInt = position); 
             
             value->asBlob = (uint8*)plainDB; // Holds the plainDB pointer so the string don't need to be loaded in the temporary table.
 
@@ -443,8 +480,12 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             if (size != -1 && length > size)
                length = size;
             
-            if (!(value->length = length))
+            // juliana@253_5: removed .idr files from all indices and changed its format. 
+            if (!(value->length = length) && !value->asChars)
+            {
+               value->asChars = (JCharP)"";
                return true;
+            }   
 
             if (!value->asChars) // Allocates the string if it was not previoulsy allocated.
                value->asChars = (JCharP)TC_heapAlloc(heap, length << 1);
@@ -496,11 +537,25 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 
                // Reads and sets the blob position in the .dbo.
 				   xmove4(&position, buffer);
+
+               if (position > dbo->finalPos)
+               {
+                  value->length = 0;
+                  return true; 
+               }
+               else if (position < 0) // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
+               {
+                  TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_POS), position);
+                  return false;
+               }
+
 				   plainDB->setPos(dbo, position);
 
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
 					   return false;
 
+               if (length < 0) // juliana@253_8: now Litebase supports weak cryptography.
+                  length = 0;
                if (size != -1 && length > size)
                   length = size;
                
@@ -542,13 +597,12 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                int32 size;
                XFile* dbo = &plainDB->dbo;
 
-               if ((dbo->finalPos + (size = PTRSIZE + 4)) >= ((int32)dbo->size + 1) 
+               if ((dbo->finalPos + (size = PTRSIZE + 4)) > (int32)dbo->size 
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
 					    return false;
 
                plainDB->setPos(dbo, dbo->finalPos);
                xmove4(buffer, &dbo->position);
-               buffer += 4;
 
                // Saves the .dbo position and the physical plainDB pointer. 
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
@@ -567,13 +621,11 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			      // juliana@201_20: only grows .dbo if it is going to be increased.
 			      // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
                // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
-               if ((dbo->finalPos + size) >= ((int32)dbo->size + 1))
-				      if (!plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
-                     return false;
+               if ((dbo->finalPos + size) > (int32)dbo->size && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
+                  return false;
                
                plainDB->setPos(dbo, dbo->finalPos);       
                xmove4(buffer, &dbo->position);
-               buffer += 4;
                value->asInt = dbo->position; // The string position for an index.
 
                // Writes the string.
@@ -645,13 +697,12 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			   {
                // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
                // If the .dbo is full, grows it. 
-				   if ((dbo->finalPos + (size = PTRSIZE + 4)) >= ((int32)dbo->size + 1) 
+				   if ((dbo->finalPos + (size = PTRSIZE + 4)) > (int32)dbo->size 
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
 					    return false;
 
                plainDB->setPos(dbo, dbo->finalPos);
                xmove4(buffer, &dbo->position);
-               buffer += 4;
 
                // Saves the .dbo position and the physical plainDB pointer. 
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
@@ -667,7 +718,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 				   size = length + 4; 
 					
 				   // juliana@201_20: only grows .dbo if it is going to be increased.
-               if (addingNewRecord && (dbo->finalPos + size) >= ((int32)dbo->size + 1) 
+               if (addingNewRecord && (dbo->finalPos + size) > (int32)dbo->size 
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc)))  // guich@201_8: grow using rowInc instead of 16 if rowInc > 16
 					    return false;
 				   
@@ -679,7 +730,6 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 
                // Writes its position in the buffer.
 				   xmove4(buffer, &dbo->position);
-               buffer += 4;
 
                // Writes the blob size to .dbo and the blob itself to .dbo.
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 4) 

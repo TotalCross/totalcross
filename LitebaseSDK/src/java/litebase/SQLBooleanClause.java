@@ -213,7 +213,7 @@ class SQLBooleanClause
                appliedComposedIndex = false;
 
                // juliana@250_2: corrected a problem of composed indices not returning the expected result.
-               if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
+               if ((leftOperandType >= SQLElement.OP_REL_LESS && leftOperandType <= SQLElement.OP_REL_DIFF)
                 || (leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH 
                  && (leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)))
                {
@@ -317,12 +317,12 @@ class SQLBooleanClause
                   break;
                }
                // else falls through.
-            case SQLElement.OP_REL_EQUAL:
-            case SQLElement.OP_REL_DIFF:
-            case SQLElement.OP_REL_GREATER:
-            case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_REL_LESS:
+            case SQLElement.OP_REL_EQUAL:
+            case SQLElement.OP_REL_GREATER:
+            case SQLElement.OP_REL_GREATER_EQUAL:            
             case SQLElement.OP_REL_LESS_EQUAL:
+            case SQLElement.OP_REL_DIFF:
                countAppliedIndices = appliedIndexesCount;
                sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
@@ -374,8 +374,8 @@ class SQLBooleanClause
          int column = (leftIsColumn? left.colIndex : right.colIndex);
 
          int i = fieldsCount;
-         while (--i >= 0)
-            if (list[i].tableColIndex == column && list[i].isDataTypeFunction)
+         while (--i >= 0) 
+            if (list[i].tableColIndex == column && list[i].isDataTypeFunction) // An index cannot be applied to a function in the where clause.
                return;
 
          if (indexesMap[column] != null) // Checks if the column is indexed.
@@ -458,6 +458,7 @@ class SQLBooleanClause
       return branch;
    }
 
+   // juliana@253_7: improved index application on filters when using joins.
    // juliana@226_3: improved index application.
    /**
     * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be 
@@ -478,6 +479,7 @@ class SQLBooleanClause
       int curOperandType, 
           leftOperandType,
           countAppliedIndices = 0;
+      boolean isLeft = false;
 
       appliedIndexesBooleanOp = SQLElement.OP_NONE;
       while (curTree != null)
@@ -509,12 +511,12 @@ class SQLBooleanClause
                if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
                  || ((leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE) 
                   && leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH))
-                  sqlbooleanclauseApplyIndexToBranchJoin(leftTree);
+                  sqlbooleanclauseApplyIndexToBranchJoin(leftTree, isLeft);
 
                if (curTree.rightTree.indexRs != appliedIndexRs)
                   if (curOperandType == SQLElement.OP_BOOLEAN_AND)
                      type = Utils.WC_TYPE_AND_DIFF_RS;
-                  else // 'OR' of different resultsets, leaves the loop.
+                  else // 'OR' of different result sets, leaves the loop.
                   
                   {
                      type = Utils.WC_TYPE_OR_DIFF_RS;
@@ -522,7 +524,10 @@ class SQLBooleanClause
                      break;
                   }
 
-               curTree = curTree.rightTree; // Goes to the right tree.
+               if (isLeft)
+                  curTree = leftTree;
+               else
+                  curTree = curTree.rightTree;
                break;
 
             // Reached the rightmost node. Tries to apply the index and ends the loop.
@@ -535,14 +540,14 @@ class SQLBooleanClause
                   break;
                }
                // else fall through.
-            case SQLElement.OP_REL_EQUAL:
-            case SQLElement.OP_REL_DIFF:
-            case SQLElement.OP_REL_GREATER:
-            case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_REL_LESS:
+            case SQLElement.OP_REL_EQUAL:
+            case SQLElement.OP_REL_GREATER:
+            case SQLElement.OP_REL_GREATER_EQUAL:            
             case SQLElement.OP_REL_LESS_EQUAL:
+            case SQLElement.OP_REL_DIFF:
                countAppliedIndices = appliedIndexesCount;
-               sqlbooleanclauseApplyIndexToBranchJoin(curTree);
+               sqlbooleanclauseApplyIndexToBranchJoin(curTree, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
                   curTree = null;
                else
@@ -555,17 +560,25 @@ class SQLBooleanClause
          
          if (appliedIndexesCount == MAX_NUM_INDEXES_APPLIED) // If the number of indexes to be applied reached the limit, leaves the loop.
             break;
+         
+         if (curTree == null && appliedIndexesCount == 0 && !isLeft)
+         {
+            isLeft = true;
+            curTree = expressionTree;
+         }
       }
 
       return appliedIndexesCount > 0;
    }
 
+   // juliana@253_7: improved index application on filters when using joins.
    /**
     * Tries to apply an index to a branch of the expression tree that contains a relational expression.
     *
     * @param branch The branch of the expression tree.
+    * @param isLeft Indicates if the index is being applied to the left branch.
     */
-   private void sqlbooleanclauseApplyIndexToBranchJoin(SQLBooleanClauseTree branch)
+   private void sqlbooleanclauseApplyIndexToBranchJoin(SQLBooleanClauseTree branch, boolean isLeft)
    {
       int relationalOp = branch.operandType;
 
@@ -623,6 +636,8 @@ class SQLBooleanClause
                // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
                if (grandParent == null)
                   expressionTree = sibling;
+               else if (isLeft)
+                  grandParent.leftTree = sibling;
                else
                   grandParent.rightTree = sibling;
                sibling.parent = grandParent;

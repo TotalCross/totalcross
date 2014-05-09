@@ -21,6 +21,7 @@
  * @param context The thread context where the function is being executed.
  * @param name The name of the file.
  * @param isCreation Indicates if the file must be created or just open.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the file will be created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param xFile A pointer to the normal file structure.
@@ -29,11 +30,11 @@
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
 {
 	TRACE("nfCreateFile")
    TCHAR buffer[MAX_PATHNAME];
-   int32 ret;
+   uint32 ret;
 
    xmemzero(xFile, sizeof(XFile));
    fileInvalidate(xFile->file);
@@ -56,12 +57,25 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
    // juliana@227_3: improved table files flush dealing.
    if (xstrchr(name, '$') || xstrchr(name, '&'))
       xFile->dontFlush = true;
+   
+   xFile->useCrypto = useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
       
    // Creates the file or opens it and gets its size.
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+#if defined(POSIX) || defined(ANDROID)
+   xstrcpy(xFile->fullPath, buffer);
+   if ((ret = openFile(context, xFile, isCreation? CREATE_EMPTY : READ_WRITE))
+#else
    if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
-    || (ret = lbfileGetSize(xFile->file, null, &xFile->size)))
+#endif
+    || (ret = lbfileGetSize(xFile->file, null, (int32*)&xFile->size)))
    {
       fileError(context, ret, name);
+
+#if defined(POSIX) || defined(ANDROID)
+      removeFileFromList(xFile);
+#endif
+      
       if (fileIsValid(xFile->file))
          lbfileClose(&xFile->file);
       return false;
@@ -91,10 +105,20 @@ bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
       return false;
    
    xmemmove(buffer, &xFile->cache[xFile->cachePos - xFile->cacheIni], count);
+   
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (xFile->useCrypto) // Decrypts data if asked.
+   {
+      int32 i = count;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA; 
+   }
+   
    xFile->cachePos += count; // do NOT update xf->pos here!
    return true;
 }
 
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Write bytes in a file.
  *
@@ -108,6 +132,15 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("nfWriteBytes")
    int32 cachePos;
+   uint8* bufferAux = buffer;
+
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (xFile->useCrypto) // Encrypts data if asked.
+   {
+      int32 i = count;
+      while (--i >= 0)
+         *bufferAux++ ^= 0xAA; 
+   }
 
 	// juliana@202_4: Removed a possible reset or GPF if there is not enough memory to create the file cache on Windows 32, Windows CE, Palm OS, 
    // and iPhone.
@@ -116,6 +149,15 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
       return false;
 
    xmemmove(&xFile->cache[(cachePos = xFile->cachePos) - xFile->cacheIni], buffer, count);
+   
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (xFile->useCrypto) // Decrypts data if asked.
+   {
+      int32 i = count;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA; 
+   }
+   
    xFile->cacheIsDirty = true;
    xFile->cacheDirtyIni = MIN(cachePos, xFile->cacheDirtyIni);
    xFile->cacheDirtyEnd = MAX(cachePos + count, xFile->cacheDirtyEnd);
@@ -137,6 +179,13 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 {
 	TRACE("nfGrowTo")
    int32 ret;
+
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
 
    // The index files grow a bunch per time, so it is necessary to check here if the growth is really needed.
    // If so, enlarges the file.
@@ -206,15 +255,32 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
    getFullFileName(xFile->name, sourcePath, oldPath);
    getFullFileName(newName, sourcePath, newPath);
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
+
    // Renames and reopens the file.
    if ((ret = lbfileRename(xFile->file, slot, oldPath, newPath, true))
     || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
    {
+
+#if defined(POSIX) || defined(ANDROID)
+error:
+#endif
+
       fileError(context, ret, xFile->name);
       return false;
    }
 
    xstrcpy(xFile->name, newName);
+
+#if defined(POSIX) || defined(ANDROID)
+   xstrcpy(xFile->fullPath, newPath);
+#endif
+
    return true;
 }
 
@@ -230,30 +296,37 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
-   bool retFlush = true;
+
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      fileError(context, ret, xFile->name);
+#endif
 
    if (fileIsValid(xFile->file))
    {
       // Flushes the cache if necessary and frees it.
       if (xFile->cacheIsDirty) 
-         ret &= flushCache(context, xFile);
+         flushCache(context, xFile);
       
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret = lbfileSetSize(&xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret |= lbfileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
-      if ((ret = lbfileClose(&xFile->file)))
-      {
+      if ((ret |= lbfileClose(&xFile->file)))
          fileError(context, ret, xFile->name);
-         fileInvalidate(xFile->file);
-         return false;
-      }
+   
       fileInvalidate(xFile->file);
-      return !ret && retFlush;
    }
-   return true;
+
+#if defined(POSIX) || defined(ANDROID)
+   removeFileFromList(xFile);
+#endif
+
+   return !ret;
 }
 
 /** 
@@ -270,17 +343,26 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
 {
 	TRACE("nfRemove")
    TCHAR buffer[MAX_PATHNAME]; 
-   int32 ret;
+   int32 ret = 0;
+
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      fileError(context, ret, xFile->name);
+#endif
 
    getFullFileName(xFile->name, sourcePath, buffer);
-   if ((ret = lbfileDelete(&xFile->file, buffer, slot, true)))
-   {
+   if ((ret |= lbfileDelete(&xFile->file, buffer, slot, true)))
       fileError(context, ret, xFile->name);
-      return false;
-   }
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
-   return true;
+
+#if defined(POSIX) || defined(ANDROID)
+   removeFileFromList(xFile);
+#endif
+
+   return !ret;
 }
 
 /**
@@ -310,9 +392,21 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
          return false;
 		}
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
+
    // Reads data from the file.
-   if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
+   if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, (CharP)xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
    {
+
+#if defined(POSIX) || defined(ANDROID)
+error:
+#endif
+
       fileError(context, ret, xFile->name);
       return false;
    }
@@ -338,14 +432,21 @@ bool flushCache(Context context, XFile* xFile)
    int32 written,
          ret;
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((ret = reopenFileIfNeeded(context, xFile)))
+      goto error;
+#endif
+
    if ((ret = lbfileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = lbfileWriteBytes(xFile->file, 
-                         &xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
+                         (CharP)&xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
       goto error;
    xFile->cacheIsDirty = false;
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
-#if defined(WINCE) || defined(POSIX) || defined(ANDROID)  
+#if defined(WINCE) || defined(POSIX) || defined(ANDROID)
    if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
       goto error;
 #endif
@@ -375,3 +476,94 @@ void fileError(Context context, int32 errorCode, CharP fileName)
    xstrcpy(&errorMsg[errorCode + 1], fileName);
    TC_throwExceptionNamed(context, "litebase.DriverException", errorMsg);
 }
+
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+#if defined(POSIX) || defined(ANDROID)
+/**
+ * Opens a disk file to store tables and put it in the files list.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @param mode Indicates if the file must be created or just opened. 
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32 openFile(Context context, XFile* xFile, int32 mode)
+{  
+   LOCKVAR(files);
+   if (filesList.count < MAX_OPEN_FILES)  // There is space in the list.
+   {
+      filesList.list[filesList.count++] = xFile;
+      xFile->timeStamp = TC_getTimeStamp();
+   }
+   else // No space: the last used file must be removed from the list and closed.
+   {
+      int32 ret = MAX_OPEN_FILES,
+            minStamp,
+            oldest = 0;
+      XFile** list = filesList.list;
+      XFile* file;
+
+      xFile->timeStamp = minStamp = TC_getTimeStamp();
+      while (--ret > 0)
+         if (list[ret]->timeStamp < minStamp)
+            minStamp = list[oldest = ret]->timeStamp;
+
+      if ((file = list[oldest])->cacheIsDirty && !(ret = flushCache(context, file)))
+      {
+         UNLOCKVAR(files);
+         return 1;
+      }
+
+      if ((ret = lbfileClose(&file->file)))
+      {
+         UNLOCKVAR(files);
+         return ret;
+      }
+      fileInvalidate(list[oldest]->file);
+      list[oldest] = xFile;      
+   }
+   UNLOCKVAR(files);
+   return lbfileCreate(&xFile->file, xFile->fullPath, mode, null);
+}
+
+/**
+ * Reopens a file if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32 reopenFileIfNeeded(Context context, XFile* xFile)
+{
+   if (fileIsValid(xFile->file)) // If the file is opened, just updates its time stamp.
+   {
+      xFile->timeStamp = TC_getTimeStamp();
+      return 0;
+   }
+   else
+      return openFile(context, xFile, READ_WRITE); // If the file was closed, reopens it.
+}
+
+/**
+ * Removes a file from the file list, which is open.
+ *
+ * @param xFile A pointer to the normal file structure.
+ */
+void removeFileFromList(XFile* xFile)
+{
+   int32 i;
+   XFile** list;
+
+   LOCKVAR(files);
+   i = filesList.count;
+   list = filesList.list;
+   while (--i >= 0 && xFile != list[i]);
+   if (i >= 0)
+   {
+      list[i] = list[--filesList.count];
+      list[filesList.count] = null;
+   }
+   UNLOCKVAR(files);
+}
+#endif
+

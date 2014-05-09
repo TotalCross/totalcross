@@ -24,7 +24,7 @@ public class TestBigJoins  extends TestCase
    /**
     * The connection with Litebase.
     */
-   private LitebaseConnection connection = LitebaseConnection.getInstance("Test");
+   private LitebaseConnection connection = AllTests.getInstance("Test");
    
    /**
     * Main test method.
@@ -47,6 +47,8 @@ public class TestBigJoins  extends TestCase
       hasTableName(tables, "componentdefinition");
       hasTableName(tables, "component");
       hasTableName(tables, "panel");
+      
+      connection.closeAll();
    }
 
    /**

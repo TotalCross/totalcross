@@ -15,6 +15,8 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
+// juliana@253_6: the maximum number of keys of a index was duplicated. 
 /**
  * This is the implementation of a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.
@@ -24,7 +26,7 @@ class Node
    /**
     * Indicates if a node is a leaf.
     */
-   static final int LEAF = -1;
+   static final int LEAF = 0xFFFF;
 
    /**
     * The grow size of the node, which must be a power of 2.
@@ -34,7 +36,7 @@ class Node
    /**
     * The maximum number of nodes in an index.
     */ 
-   private static final int MAX_IDX = 32767;
+   static final int MAX_IDX = 65534; // juliana@253_6: The maximum number of keys of a index was duplicated. 
    
    /**
     * The size of the node.
@@ -54,7 +56,7 @@ class Node
    /**
     * This children nodes.
     */
-   short[] children;
+   int [] children;
 
    /**
     * The index of this node.
@@ -79,7 +81,7 @@ class Node
       while (--i >= 0)
          keysAux[i] = new Key(index = anIndex);
 
-      children = new short[anIndex.btreeMaxNodes + 1]; // Each array has one extra component, to allow for possible overflow.
+      children = new int[anIndex.btreeMaxNodes + 1]; // Each array has one extra component, to allow for possible overflow.
    }
 
    /**
@@ -95,13 +97,13 @@ class Node
       Index indexAux = index;
       XFile fnodes = indexAux.fnodes;
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       fnodes.setPos(idx * indexAux.nodeRecSize);
       fnodes.readBytes(indexAux.basbuf, 0, indexAux.nodeRecSize); // Reads all the record at once.
 
       // Loads the keys.
-      DataStreamLE ds = indexAux.basds;
+      DataStreamLB ds = indexAux.basds; // juliana@253_8: now Litebase supports weak cryptography.
       indexAux.bas.reset();
       length = size = ds.readUnsignedShort();
       while (++i < length)
@@ -110,7 +112,7 @@ class Node
       // Loads the node children.
       i = -1;
       while (++i <= length)
-         childrenAux[i] = ds.readShort();
+         childrenAux[i] = ds.readUnsignedShort();
 
       Convert.fill(childrenAux, i + 1, indexAux.btreeMaxNodes + 1, LEAF); // Fills the non-used indexes with TERMINAL.
    }
@@ -129,7 +131,7 @@ class Node
       indexAux.fnodes.setPos(idx * indexAux.nodeRecSize + 2 + indexAux.keyRecSize * currPos + (indexAux.keyRecSize - Key.VALREC_SIZE));
 
       indexAux.bas.reset();
-      indexAux.basds.writeInt(keys[currPos].valRec);
+      indexAux.basds.writeInt(keys[currPos].record);
       indexAux.fnodes.writeBytes(indexAux.basbuf, 0, 4);
    }
 
@@ -158,7 +160,7 @@ class Node
 
          if (indexAux.isWriteDelayed)
          {
-            if ((idxAux & (NODEGROWSIZE - 1)) == 0) // Grows more than 1 record per time.
+            if (idxAux * recSize == fnodes.size) // Grows more than 1 record per time.
                fnodes.growTo((idxAux + NODEGROWSIZE) * recSize);
          }
          else
@@ -167,10 +169,10 @@ class Node
       }
       fnodes.setPos(idxAux * recSize); // Rewinds to insert position.
       
-      DataStreamLE ds = indexAux.basds;
+      DataStreamLB ds = indexAux.basds; // juliana@253_8: now Litebase supports weak cryptography.
       ByteArrayStream bas = indexAux.bas;
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       bas.reset();
       ds.writeShort(right - left);
@@ -199,7 +201,7 @@ class Node
          while (--i >= 0)
          {
             keys[i].set(keysAux[i + left].keys);
-            keys[i].valRec = keysAux[i + left].valRec;
+            keys[i].record = keysAux[i + left].record;
          }
          node.isDirty = false;
       }
@@ -220,13 +222,13 @@ class Node
    void set(Key item, int left, int right)
    {
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       size = 1;
       keysAux[0].set(item.keys);
-      keysAux[0].valRec = item.valRec;
-      childrenAux[0] = (short)left;
-      childrenAux[1] = (short)right;
+      keysAux[0].record = item.record;
+      childrenAux[0] = left;
+      childrenAux[1] = right;
    }
 
    /**
@@ -240,30 +242,18 @@ class Node
    int findIn(Key item, boolean isInsert) throws IOException
    {
       Index indexAux = index;
-      PlainDB db = indexAux.table.db;
-      int[] sizes = indexAux.colSizes;
-      byte[] types = indexAux.types;
+      PlainDB plainDB = indexAux.table.db;
       Key[] keysAux = keys;
-      SQLValue[] idxRec;
       SQLValue[] itemKeys = item.keys;
-      SQLValue sqlValue;
-      XFile dbo = db.dbo;
+      byte[] types = indexAux.types;
       int r = size - 1,
           l = (isInsert && indexAux.isOrdered && r > 0)? r : 0, // juliana@201_3: If the insertion is ordered, the position being seached is the last.
           m,
-          i,
           comp;
 
       while (l <= r)
-      {
-         i = (idxRec = keysAux[m = (l + r) >> 1].keys).length;
-         while (--i >= 0) // A string may not be loaded.
-            if ((sqlValue = idxRec[i]).asString == null && sizes[i] > 0)
-            {
-               dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
-               sqlValue.asString = db.loadString();
-            }
-         if ((comp = Utils.arrayValueCompareTo(itemKeys, idxRec, types)) == 0)
+      {        
+         if ((comp = Utils.arrayValueCompareTo(itemKeys, keysAux[m = (l + r) >> 1].keys, types, plainDB)) == 0)
             return m;
          else
          if (comp < 0)
@@ -288,7 +278,7 @@ class Node
       int sizeAux = size,
           l = sizeAux - ins;
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       if (l > 0)
       {
@@ -296,14 +286,14 @@ class Node
          while (--i > ins)
          {
             keysAux[i].set(keysAux[i - 1].keys);
-            keysAux[i].valRec = keysAux[i - 1].valRec;
+            keysAux[i].record = keysAux[i - 1].record;
          }
          Vm.arrayCopy(childrenAux, ins + 1, childrenAux, ins + 2, l);
       }
       keysAux[ins].set(item.keys);
-      keysAux[ins].valRec = item.valRec;
-      childrenAux[ins] = (short)leftChild;
-      childrenAux[ins + 1] = (short)rightChild;
+      keysAux[ins].record = item.record;
+      childrenAux[ins] = leftChild;
+      childrenAux[ins + 1] = rightChild;
       sizeAux = ++size;
 
       if (index.isWriteDelayed)  // Only saves the key if it is not to be saved later.

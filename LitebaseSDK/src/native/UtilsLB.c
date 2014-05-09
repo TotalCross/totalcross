@@ -29,7 +29,7 @@
 int32 str16CompareTo(JCharP string1, JCharP string2, int32 length1, int32 length2, bool isCaseless)
 {
 	TRACE("str16CompareTo")
-   int32 n = (length1 < length2)? length1 : length2;
+   uint32 n = (length1 < length2)? length1 : length2;
 
    if (isCaseless)
    {
@@ -107,8 +107,8 @@ int32 str16IndexOf(JCharP charsStr, JCharP subStr, int32 charsLen, int32 subLen,
 	TRACE("str16IndexOf")
    JChar c;
    int32 j = (charsLen - subLen),
-         i = 0,
-         len;
+         i = 0;
+   uint32 len;
    bool found = false;
    JCharP string1,
           string2;
@@ -359,6 +359,8 @@ int32 testAndPrepareTime(CharP chars)
          c = chars[i];
          if ('0' <= c && c <= '9')
             len++;
+		 else if (j == 3) // If there's already three separators, error!
+            break;
          else
          {
             chars[pos = start + len] = 0;
@@ -583,8 +585,7 @@ int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1
       index = (field = sortFieldList[i])->tableColIndex;
       
       // Compares the elements checking if they are null.
-      result = valueCompareTo(record1[index], record2[index], field->dataType, isBitSet(nullsRecord1, index), 
-                                                                                        isBitSet(nullsRecord2, index));
+      result = valueCompareTo(null, record1[index], record2[index], field->dataType, isBitSet(nullsRecord1, index), isBitSet(nullsRecord2, index), null);
 
       if (!field->isAscending)
          result = -result;
@@ -866,7 +867,7 @@ bool setTimeObject(NMParams params, int32 date, int32 time)
    return false;
 }
 
-/* 
+/** 
  * Creates a new hash table for the temporary tables size statistics. 
  * 
  * @param count The initial size. 
@@ -874,40 +875,40 @@ bool setTimeObject(NMParams params, int32 date, int32 time)
  */
 MemoryUsageHT muNew(int32 count)
 {
-   MemoryUsageHT iht;
+   MemoryUsageHT table;
    
-   iht.size = 0;
-   iht.items = (MemoryUsageEntry**)xmalloc(count * PTRSIZE);
-   iht.hash  = (iht.threshold = count) - 1;
+   table.size = 0;
+   table.items = (MemoryUsageEntry**)xmalloc(count * PTRSIZE);
+   table.hash  = (table.threshold = count) - 1;
    
-   return iht;
+   return table;
 }
 
-/* 
+/** 
  * Gets the stored statistics item with the given key.
  *
- * @param iht A hash table for the temporary tables size statistics.
+ * @param table A hash table for the temporary tables size statistics.
  * @param key The hash key.
  * @param dbSize Receives the stored .db file size.
  * @param dboSize Receives the stored .dbo file size.
  * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
  */
-bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize)
+bool muGet(MemoryUsageHT* table, int32 key, int32* dbSize, int32* dboSize)
 {
-   if (iht->items && iht->size > 0) // guich@tc113_14: check size
+   if (table->items && table->size > 0) // guich@tc113_14: check size
    {
-      int32 index = key & iht->hash;
-      MemoryUsageEntry* e = iht->items[index];
+      int32 index = key & table->hash;
+      MemoryUsageEntry* entry = table->items[index];
       
-      while (e)
+      while (entry)
       { 
-         if (e->key == key)
+         if (entry->key == key)
          {
-            *dbSize = e->dbSize;
-            *dboSize = e->dboSize;
+            *dbSize = entry->dbSize;
+            *dboSize = entry->dboSize;
             return true;
          }
-         e = e->next;
+         entry = entry->next;
       }
    }
    return false;
@@ -927,7 +928,7 @@ bool muRehash(MemoryUsageHT* table)
          newCapacity = oldCapacity << 1; 
    MemoryUsageEntry** oldTable = table->items;
    MemoryUsageEntry** newTable = (MemoryUsageEntry **)xmalloc(PTRSIZE * newCapacity);
-   MemoryUsageEntry* e;
+   MemoryUsageEntry* entry;
    MemoryUsageEntry* old;
   
    if (!newTable)
@@ -940,11 +941,11 @@ bool muRehash(MemoryUsageHT* table)
    while (i-- > 0)
    {
       old = oldTable[i];
-      while ((e = old))
+      while ((entry = old))
       {
          old = old->next;
-         e->next = newTable[index = e->key & table->hash];
-         newTable[index] = e;
+         entry->next = newTable[index = entry->key & table->hash];
+         newTable[index] = entry;
       }
    }
    xfree(oldTable);
@@ -952,73 +953,88 @@ bool muRehash(MemoryUsageHT* table)
    return true;
 }
 
-/* 
+/** 
  * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
  *
- * @param iht A hash table for the temporary tables size statistics.
+ * @param table A hash table for the temporary tables size statistics.
  * @param key The hash key.
  * @param dbSize The .db file size to be stored.
  * @param dboSize The .dbo file size to be stored.
  * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
  */
-bool muPut(MemoryUsageHT* iht, int32 key, int32 dbSize, int32 dboSize)
+bool muPut(MemoryUsageHT* table, int32 key, int32 dbSize, int32 dboSize)
 {  
-   int32 index = key & iht->hash;
-   MemoryUsageEntry* e = iht->items[index];
-   if (iht->size > 0) // Only searchs in non-empty hash tables.
+   int32 index = key & table->hash;
+   MemoryUsageEntry* entry = table->items[index];
+   if (table->size > 0) // Only searchs in non-empty hash tables.
    {
-      while (e) // Makes sure the key is not already in the hashtable.
+      while (entry) // Makes sure the key is not already in the hashtable.
       { 
-         if (e->key == key)
+         if (entry->key == key)
          {
-            e->dbSize = dbSize;
-            e->dboSize = dboSize;
+            entry->dbSize = dbSize;
+            entry->dboSize = dboSize;
             return true;
          }
-         e = e->next;
+         entry = entry->next;
       }
    }
-   if (iht->size >= iht->threshold) // Rehashs the table if the threshold is exceeded.
+   if (table->size >= table->threshold) // Rehashs the table if the threshold is exceeded.
    {      
-      muRehash(iht);
-      index = key & iht->hash;
+      muRehash(table);
+      index = key & table->hash;
    }
 
-   if (!(e = (MemoryUsageEntry*)xmalloc(sizeof(MemoryUsageEntry)))) // Creates the new entry.
+   if (!(entry = (MemoryUsageEntry*)xmalloc(sizeof(MemoryUsageEntry)))) // Creates the new entry.
       return false;
-   e->key = key;
-   e->dbSize = dbSize;
-   e->dboSize = dboSize;
-   e->next = iht->items[index];
-   iht->items[index] = e;
-   iht->size++;
+   entry->key = key;
+   entry->dbSize = dbSize;
+   entry->dboSize = dboSize;
+   entry->next = table->items[index];
+   table->items[index] = entry;
+   table->size++;
    return true;
 }
 
-/* 
+/** 
  * Frees the hashtable. 
  *
  * @param iht A hash table for the temporary tables size statistics.
  */
-void muFree(MemoryUsageHT* iht)
+void muFree(MemoryUsageHT* table)
 {
-   MemoryUsageEntry** tab = iht->items;
-   MemoryUsageEntry* e;
+   MemoryUsageEntry** tab = table->items;
+   MemoryUsageEntry* entry;
    MemoryUsageEntry* next;
-   int32 n = iht->hash;
+   int32 n = table->hash;
    
    if (!tab)
       return;
    while (n-- >= 0)
    {
-      e = *tab++;
-      while(e)
+      entry = *tab++;
+      while (entry)
       {
-         next = e->next;
-         xfree(e);
-         e = next;
+         next = entry->next;
+         xfree(entry);
+         entry = next;
       }
    }
-   xfree(iht->items);
-   iht->size = 0;
+   xfree(table->items);
+   table->size = 0;
+}
+
+/**
+ * Indicates if a buffer is only composed by zeros or not.
+ * 
+ * @param buffer The buffer.
+ * @param length The size of the buffer.
+ * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.
+ */
+bool isZero(uint8* buffer, int32 length)
+{
+   while (--length >= 0)
+      if (buffer[length])
+         return false;
+   return true;
 }

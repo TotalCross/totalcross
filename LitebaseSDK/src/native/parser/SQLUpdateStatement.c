@@ -74,7 +74,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 
 	// Alocates space for the record and the nulls.
 	updateStmt->record = (SQLValue**)TC_heapAlloc(heap, i = table->columnCount * PTRSIZE);
-	updateStmt->storeNulls = (uint8*)TC_heapAlloc(heap, i);
+	updateStmt->storeNulls = (uint8*)TC_heapAlloc(heap, NUMBEROFBYTES(i));
 
 	// Allocates space for the list of the parameters. Worst case: all fields are parameters.
 	updateStmt->paramIndexes = (uint8*)TC_heapAlloc(heap, i);
@@ -103,7 +103,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
          record->length = TC_JCharPLen(value);
       }
       else 
-			updateStmt->storeNulls[i] = true; 
+			setBit(updateStmt->storeNulls, i, true); 
    }
 
    return updateStmt;
@@ -141,7 +141,7 @@ bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
 		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
 
 		   // Sets the values of the parameter in its list.
-         updateStmt->storeNulls[i] = (record = updateStmt->record[i])->isNull = false;
+         setBit(updateStmt->storeNulls, i, (record = updateStmt->record[i])->isNull = false);
          switch (type)
          {
             case SHORT_TYPE: 
@@ -208,10 +208,10 @@ bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
             else 
                record->asBlob = value;
             record->length = length;
-            updateStmt->storeNulls[i] = record->isNull = false;
+            setBit(updateStmt->storeNulls, i, record->isNull = false);
          }
          else // The value is null.
-            record->isNull = updateStmt->storeNulls[i] = true;
+            setBit(updateStmt->storeNulls, i, record->isNull = true);
 
          return true;
       }
@@ -255,7 +255,7 @@ bool setNullUpd(Context context, SQLUpdateStatement* updateStmt, int32 index)
          (record = updateStmt->record[i = updateStmt->paramIndexes[index]])->asChars = null;
          record->asBlob = null;
          record->length = 0;
-         record->isNull = updateStmt->storeNulls[i] = true;
+         setBit(updateStmt->storeNulls, i, record->isNull = true);
 
          return true;
       }
@@ -299,13 +299,12 @@ void setUpdateRecord(SQLUpdateStatement* updateStmt, int32 index)
 {
    TRACE("setUpdateRecord")
    int32 i = updateStmt->paramIndexes[index];
-   SQLValue* record;
    
    // It is not necessary to re-alocate a record value.
    if (updateStmt->record[i])
-	   xmemzero(record = updateStmt->record[i], sizeof(SQLValue));
+	   xmemzero(updateStmt->record[i], sizeof(SQLValue));
    else
-      record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
+      updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
 
    // Sets the values of the parameter in its list.
    updateStmt->paramDefined[index] = true;
@@ -328,9 +327,8 @@ void clearParamValuesUpd(SQLUpdateStatement* updateStmt)
 	SQLBooleanClause* whereClause = updateStmt->whereClause;
 	while (--i >= 0) // Cleans the parameter values of the update clause.
    {
-		j = paramIndexes[i];
-      paramDefined[j] = storeNulls[j] = false;
-      xmemzero(record[j], sizeof(SQLValue));
+      xmemzero(record[j = paramIndexes[i]], sizeof(SQLValue));
+      setBit(storeNulls, j, paramDefined[j] = false);
 	   record[j]->isNull = true;
    }
 
@@ -479,8 +477,7 @@ bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt
 		return false;
 	
    updateStmt->record = record;
-	xmemset(storeNulls, false, table->columnCount);
-   xmemmove(storeNulls, table->storeNulls, table->columnCount);
+   xmemmove(storeNulls, table->storeNulls, NUMBEROFBYTES(table->columnCount));
 
    // Converts the values to be updated into its correct type and binds the where clause to its table. 
    if (!convertStringsToValues(context, table, record, updateStmt->nValues) 

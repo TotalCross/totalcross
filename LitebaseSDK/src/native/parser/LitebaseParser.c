@@ -13,16 +13,19 @@
  * Defines the functions to initialize, set, and process the parser structure.
  */
 
+// juliana@253_9: improved Litebase parser.
+
 #include "LitebaseParser.h"
 
 /**
- * Shows a parser error message when the error position is known.
+ * Shows a parser error message without an extra message.
  *
  * @param error An error code.
  * @param parser A pointer to the parser structure.
+ * @return <code>PARSER_ERROR<code> to indicate that an error has occurred.
  * @throws SQLParseException To throw an exception if the error message that occurred.
  */
-void lbError(int32 error, LitebaseParser* parser)
+int32 lbError(int32 error, LitebaseParser* parser)
 {
    TRACE("lbError")
    char errorMessage[1024];
@@ -30,23 +33,27 @@ void lbError(int32 error, LitebaseParser* parser)
    xstrcat(errorMessage, getMessage(error));
    xstrcat(errorMessage, getMessage(ERR_MESSAGE_POSITION));
    TC_throwExceptionNamed(parser->context, "litebase.SQLParseException", errorMessage, parser->yyposition);
+   return PARSER_ERROR;
 }
 
 /**
- * Shows a parser error message when the error position is unknown.
+ * Shows a parser error message with an extra message.
  *
- * @param error An error code.
- * @param extraMsg An extra error message.
+ * @param error An error message.
+ * @param message An extra error message.
  * @param parser A pointer to the parser structure.
+ * @return <code>PARSER_ERROR<code> to indicate that an error has occurred.
  * @throws SQLParseException To throw an exception if the error message that occurred.
  */
-void errorWithoutPosition(int32 error, CharP extraMsg, LitebaseParser* parser)
+int32 lbErrorWithMessage(CharP error, CharP message, LitebaseParser* parser)
 {
-   TRACE("errorWithoutPosition")
+   TRACE("lbErrorWithMessage")
    char errorMessage[1024];
    xstrcpy(errorMessage, getMessage(ERR_MESSAGE_START));
-   xstrcat(errorMessage, getMessage(error));
-	TC_throwExceptionNamed(parser->context, "litebase.SQLParseException", errorMessage, extraMsg);
+   xstrcat(errorMessage, error);
+   xstrcat(errorMessage, getMessage(ERR_MESSAGE_POSITION));
+   TC_throwExceptionNamed(parser->context, "litebase.SQLParseException", errorMessage, message, parser->yyposition);
+   return PARSER_ERROR;
 }
 
 /**
@@ -68,7 +75,10 @@ LitebaseParser* initLitebaseParser(Context context, JCharP sqlStr, int32 sqlLen,
    if (parser)
       xmemzero(parser, sizeof(LitebaseParser));
    else if (!(parser = context->litebasePtr = (LitebaseParser*)xmalloc(sizeof(LitebaseParser))))
-	   return null;
+	{
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+      return null;
+   }
    
 	// Initializes some parser structures.
 	parser->heap = heap;
@@ -106,29 +116,28 @@ SQLBooleanClauseTree* setOperandType(int32 operandType, LitebaseParser* parser)
 /** 
  * Adds a column field to the order or group by field list. 
  *
- * @param field The field to be added to the list.
  * @param isAscending Indicates if the order by or group by sorting is in ascending or descending order.
  * @param isOrderBy Indicates if the field list where to add a list is a order or group by.
  * @param parser A pointer to the parser structure, which contains the list(s).
  * @return <code>true</code> if the number of fields has not reached its limit; <code>false</code>, otherwise.
  */
-bool addColumnFieldOrderGroupBy(SQLResultSetField* field, bool isAscending, bool isOrderBy, LitebaseParser* parser)
+bool addColumnFieldOrderGroupBy(bool isAscending, bool isOrderBy, LitebaseParser* parser)
 {
 	TRACE("addColumnFieldOrderGroupBy")
    int32 hash;
-	SQLColumnListClause* listClause = isOrderBy? &parser->order_by : &parser->group_by;
+	SQLColumnListClause* listClause = isOrderBy? &parser->orderBy : &parser->groupBy;
 	SQLResultSetField** fieldList = isOrderBy? parser->orderByfieldList : parser->groupByfieldList;
+   SQLResultSetField* field = parser->auxField;
 
 	// The number of fields has reached the maximum.
    if (listClause->fieldsCount == MAXIMUMS)
    {
-      errorWithoutPosition(ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY, "", parser);
+      lbError(ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY, parser);
       return false;
    }
 
 	// Sets the field.
-   hash = TC_hashCode(field->tableColName);
-   field->tableColHashCode = hash;
+   field->tableColHashCode = hash = TC_hashCode(field->tableColName);
    field->aliasHashCode = hash;
    field->isAscending = isAscending;
    fieldList[listClause->fieldsCount++] = field;
@@ -153,19 +162,6 @@ SQLBooleanClause* getInstanceBooleanClause(LitebaseParser* parser)
    if (!parser->havingClause) // It is a having clause.
       parser->havingClause = initSQLBooleanClause(parser->heap);
    return parser->havingClause;
-}
-
-/**
- * Sets an expression tree in a where clause.
- *
- * @param tree An expression tree.
- * @param parser A pointer to the parser structure.
- */
-void setBooleanClauseTreeOnWhereClause(SQLBooleanClauseTree* tree, LitebaseParser* parser)
-{
-	TRACE("setBooleanClauseTreeOnWhereClause")
-   parser->whereClause->expressionTree = parser->whereClause->origExpressionTree = tree;
-   parser->whereClause->isWhereClause = true; // It indicates that it is a where clause.
 }
 
 /**
@@ -232,6 +228,1190 @@ SQLResultSetTable* initSQLResultSetTable(CharP tableName, CharP aliasTableName, 
 	return sqlResultSetTable;
 }
 
+/**
+ * The function that parses the sql string.
+ *
+ * @param parser The parser structure.
+ * @return <code>true</code> if there are parser errors; <code>false</code>, otherwise. 
+ */
+bool yyparse(LitebaseParser* parser)
+{
+   TRACE("yyparse")
+   int32 token = PARSER_EOF;
+   CharP tableName;
+   
+   switch (yylex(parser))
+   {
+      case TK_ALTER: // Alter table.
+         if (yylex(parser) != TK_TABLE || yylex(parser) != TK_IDENT)
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         parser->tableList[0] = initSQLResultSetTable(parser->yylval, null, parser->heap); // There's no alias table name here.
+         
+         switch (yylex(parser))
+         {
+            case TK_ADD: // Adds a primary key or a new column.
+
+                  // juliana@253_22: added command ALTER TABLE ADD column.
+                  if ((token = createColumn(parser)) == TK_PRIMARY) // Adds a primary key.
+                  {
+                     if (parser->fieldListSize == 1)
+                        return lbError(ERR_SYNTAX_ERROR, parser);
+                     if (yylex(parser) != TK_KEY || yylex(parser) != TK_OPEN || colnameCommaList(parser) != TK_CLOSE)
+                        return lbError(ERR_SYNTAX_ERROR, parser);                
+                     parser->command = CMD_ALTER_ADD_PK;
+                  }
+                  else if (token == -1) // Adds a new column.
+                  {
+                     SQLFieldDefinition* field = parser->fieldList[0];
+                     if (field->isNotNull && !field->defaultValue) // A field declared as not null must have a default value.
+                        return lbError(ERR_NOT_NULL_DEFAULT, parser);
+                     if (field->isPrimaryKey) // The new field can't be declared as a primary key when being added.
+                     {   
+                        if (field->defaultValue) // All the keys would be the same.
+                           return lbErrorWithMessage(getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), parser->tableList[0]->tableName, parser);
+                        return lbError(ERR_PK_CANT_BE_NULL, parser); // All the keys would be null.
+                     }
+                     parser->command = CMD_ALTER_ADD_COLUMN;
+                  }
+                  break;
+            
+            case TK_DROP: // Drops a primary key.
+               if (yylex(parser) != TK_PRIMARY || yylex(parser) != TK_KEY)
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->command = CMD_ALTER_DROP_PK;
+               break;
+            
+            case TK_RENAME: // Renames the table or a column.
+               if ((token = yylex(parser)) == TK_IDENT) // Rename column.
+               {
+                  parser->command = CMD_ALTER_RENAME_COLUMN;
+                  parser->fieldNames[1] = parser->yylval;
+                  token = yylex(parser);
+               }
+               else // Rename table.
+                  parser->command = CMD_ALTER_RENAME_TABLE;
+               
+               // New name.
+               if (token != TK_TO || yylex(parser) != TK_IDENT) 
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->fieldNames[0] = parser->yylval;
+               
+               break;
+            
+            default:
+               return lbError(ERR_SYNTAX_ERROR, parser);
+         }
+         
+         token = yylex(parser);
+         break;
+                     
+      case TK_CREATE:
+      {
+         switch (yylex(parser))
+         {
+            case TK_TABLE: // Create table.
+               if (yylex(parser) != TK_IDENT || yylex(parser) != TK_OPEN)
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->tableList[0] = initSQLResultSetTable(parser->yylval, null, parser->heap); // There's no alias table name here.
+               
+               // Primary key.
+               if ((token = createColumnCommalist(parser)) == TK_PRIMARY && yylex(parser) == TK_KEY && yylex(parser) == TK_OPEN && colnameCommaList(parser) == TK_CLOSE)
+               {
+                  if (parser->numberPK == 1)
+                     return lbError(ERR_PRIMARY_KEY_ALREADY_DEFINED, parser);
+                  token = yylex(parser);
+               }
+               
+               if (token != TK_CLOSE) // End of create table.
+                  return lbError(ERR_SYNTAX_ERROR, parser);                  
+
+               parser->command = CMD_CREATE_TABLE;
+               break;
+               
+            case TK_INDEX: // Create index.
+               if (yylex(parser) != TK_IDENT || yylex(parser) != TK_ON || yylex(parser) != TK_IDENT)
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->tableList[0] = initSQLResultSetTable(parser->yylval, null, parser->heap); // There's no alias table name here.
+               if (yylex(parser) != TK_OPEN || colnameCommaList(parser) != TK_CLOSE) // Column name list.
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->command = CMD_CREATE_INDEX;
+               break;
+               
+            default:
+               return lbError(ERR_SYNTAX_ERROR, parser);
+         }  
+         
+         token = yylex(parser);
+         break;
+      }
+      case TK_DELETE: // Delete.
+         if (!(((token = yylex(parser)) == TK_FROM && yylex(parser) == TK_IDENT) || token == TK_IDENT))
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         tableName = parser->yylval;
+         
+         if ((token = yylex(parser)) == TK_IDENT) // Alias table name.
+         {
+            parser->tableList[0] = initSQLResultSetTable(tableName, parser->yylval, parser->heap);
+            token = yylex(parser);
+         }
+         else 
+            parser->tableList[0] = initSQLResultSetTable(tableName, null, parser->heap);
+         
+         token = optWhereClause(token, parser); // Where clause.
+         parser->command = CMD_DELETE;
+         break;
+      
+      case TK_DROP:
+         switch (yylex(parser))
+         {
+            case TK_TABLE: // Drop table.
+               if (yylex(parser) == TK_IDENT)
+                  parser->tableList[0] = initSQLResultSetTable(parser->yylval, null, parser->heap); // There's no alias table name here.
+               else
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->command = CMD_DROP_TABLE;
+               break;
+            
+            case TK_INDEX: // Drop index.                             
+               if ((token = colnameCommaList(parser)) != TK_ON || yylex(parser) != TK_IDENT) 
+                  return lbError(ERR_SYNTAX_ERROR, parser);
+               parser->tableList[0] = initSQLResultSetTable(parser->yylval, null, parser->heap); // There's no alias table name here.                     
+               parser->command = CMD_DROP_INDEX;
+               break;
+            
+            default:
+               return lbError(ERR_SYNTAX_ERROR, parser);
+         } 
+         
+         token = yylex(parser);
+         break;
+         
+      case TK_INSERT: // Insert.
+         if (yylex(parser) != TK_INTO || yylex(parser) != TK_IDENT)
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         parser->tableList[0] = initSQLResultSetTable(parser->yylval, null, parser->heap); // There's no alias table name here.
+                     
+         if ((token = yylex(parser)) == TK_OPEN) // Reads the field list.
+         {
+            if (colnameCommaList(parser) != TK_CLOSE)
+               return lbError(ERR_SYNTAX_ERROR, parser);   
+            token = yylex(parser);
+         }
+         
+         if (token != TK_VALUES || yylex(parser) != TK_OPEN || listValues(parser) != TK_CLOSE) // Reads the value list.
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         
+         // If the default order is not used, the number of values must be equal to the number of fields.
+         if (parser->fieldNamesSize && parser->fieldNamesSize != parser->fieldValuesSize) 
+         {
+            char error[MAXIMUMS];
+            xstrprintf(error, "%s (%d != %d) ", getMessage(ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH), parserTP->fieldNamesSize, 
+                                                                                                        parserTP->fieldValuesSize);
+            xstrcat(error, "%s .");
+			return lbErrorWithMessage(error, "", parser);
+         }
+         parser->command = CMD_INSERT;
+         token = yylex(parser);
+         break;
+         
+      case TK_SELECT: // Select.
+         if ((token = yylex(parser)) == TK_DISTINCT) 
+            token = yylex(parser);
+         if (fieldExp(token, parser) != TK_FROM)
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         
+         token = optWhereClause(tableList(parser), parser); // Table list and where clause.
+         
+         // order by and group by.
+         if (token == TK_GROUP) 
+         {
+            if (yylex(parser) != TK_BY)
+               return lbError(ERR_SYNTAX_ERROR, parser);
+            token = groupByClause(parser);
+         } 
+         if (token == TK_ORDER) 
+         {
+            if (yylex(parser) != TK_BY)
+               return lbError(ERR_SYNTAX_ERROR, parser);
+            token = orderByClause(parser);
+         }
+         
+         parser->command = CMD_SELECT;
+
+         // Checks if the first field is the wild card. If so, assigns null to list, to indicate that all fields must be included.
+         if (parser->selectFieldList[0]->isWildcard)
+            parser->select.fieldsCount = 0;
+         break;
+   
+      case TK_UPDATE: // Update.
+      {
+         CharP tableAlias = null;
+         
+         // Table name.
+         if (yylex(parser) != TK_IDENT)
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         tableAlias = tableName = parser->yylval;
+         
+         if ((token = yylex(parser)) == TK_IDENT) // Alias table name.
+         {   
+            tableAlias = parser->yylval;
+            token = yylex(parser);
+         }
+         
+         if (token != TK_SET) // set key word.
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         
+         token = optWhereClause(updateExpCommalist(parser), parser); // Update expression list and where clause.
+         
+         if (parser->secondFieldUpdateTableName) // Verifies if there was an error on field.tableName.
+            return lbErrorWithMessage(getMessage(ERR_INVALID_COLUMN_NAME), xstrcmp(tableName, parser->firstFieldUpdateTableName)? 
+                                      parser->firstFieldUpdateAlias : parser->secondFieldUpdateAlias, parser);
+         else if (parser->firstFieldUpdateTableName && xstrcmp(tableAlias, parser->firstFieldUpdateTableName))
+            return lbErrorWithMessage(getMessage(ERR_INVALID_COLUMN_NAME), parser->firstFieldUpdateAlias, parser);
+
+         parser->command = CMD_UPDATE;
+         parser->tableList[0] = initSQLResultSetTable(tableName, tableAlias, parser->heap);
+         break;
+      }
+      
+      default:
+         return lbError(ERR_SYNTAX_ERROR, parser);        
+   }
+   
+   if (token != PARSER_EOF)
+      return lbError(ERR_SYNTAX_ERROR, parser); 
+   return false; 
+}
+
+/**
+ * Deals with a list of identifiers separated by commas.
+ * 
+ * @param parser The parser structure.
+ * @return The token after the list of identifiers. 
+ */
+int32 colnameCommaList(LitebaseParser* parser)
+{
+   int32 token,
+         fieldNamesSize = parser->fieldNamesSize;
+   CharP* fieldNames = parser->fieldNames;
+   
+   do
+   {
+      if ((token = yylex(parser)) == TK_ASTERISK) // This is necessary for dropping all indices.
+      {
+         fieldNames[fieldNamesSize++] = "*";
+         return yylex(parser);
+      }
+      
+      if (token != TK_IDENT)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      if (fieldNamesSize == MAXIMUMS)
+         return lbError(ERR_MAX_NUM_FIELDS_REACHED, parser);
+      fieldNames[fieldNamesSize++] = parser->yylval; // Adds the column name.  
+   }
+   while ((token = yylex(parser)) == TK_COMMA);          
+   parser->fieldNamesSize = fieldNamesSize;
+   return token;
+}
+
+/**
+ * Deals with a list of rows of a table being created.
+ * 
+ * @param parser The parser structure.
+ * @return The token after the list of rows. 
+ */
+int32 createColumnCommalist(LitebaseParser* parser) 
+{
+   int32 token;
+   
+   while ((token = createColumn(parser)) == TK_COMMA);
+   if (!parser->fieldListSize) // The number of columns can't be zero.
+      return lbError(ERR_SYNTAX_ERROR, parser);
+
+   return token;      
+}
+
+/**
+ * Deals with a column declaration.
+ * 
+ * @param parser The parser structure.
+ * @return The token after a column declaration. 
+ */
+int32 createColumn(LitebaseParser* parser) 
+{
+   int32 token,
+         type,
+         size = 0;
+   bool isPrimaryKey = false,
+        isNotNull = false;
+   CharP columnName;
+   JCharP strDefault = null;
+         
+   if ((token = yylex(parser)) == TK_PRIMARY) // The next token after ',' is a primary key declaration. This is not treated here.
+      return token;
+   
+   // Column name.
+   if (token != TK_IDENT)
+      return lbError(ERR_SYNTAX_ERROR, parser);
+   columnName = parser->yylval;
+   
+   // Column type.
+   if ((type = yylex(parser)) == BOOLEAN_TYPE || type > BLOB_TYPE || type < CHARS_TYPE)
+      return lbError(ERR_SYNTAX_ERROR, parser);
+   if (type == TK_VARCHAR)
+      type = CHARS_TYPE;
+   
+   if (type == CHARS_TYPE || type == BLOB_TYPE) // Size and multiplier. 
+   {
+      if (yylex(parser) == TK_OPEN && yylex(parser) == TK_NUMBER)
+      {
+         bool error;  
+         IntBuf buffer;       
+         if ((size = TC_str2int(TC_JCharP2CharPBuf((JCharP)parser->yylval, -1, buffer), &error)) <= 0 || error)
+            return lbError(ERR_FIELD_SIZE_IS_NOT_INT, parser);
+      }
+      else
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      
+      if (type == CHARS_TYPE && yylex(parser) != TK_CLOSE)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      else if (type == BLOB_TYPE) 
+      {   
+         if ((token = yylex(parser)) != TK_IDENT && token != TK_CLOSE)
+            return lbError(ERR_SYNTAX_ERROR, parser);   
+         if (token == TK_IDENT)
+         {
+            CharP multiplier = (CharP)parser->yylval;
+            if (multiplier[0] == 'k' && !multiplier[1]) // kilobytes.
+               size <<= 10;
+            else if (multiplier[0] == 'm' && !multiplier[1]) // megabytes.
+               size <<= 20;
+            else
+               return lbError(ERR_INVALID_MULTIPLIER, parser);
+            if (yylex(parser) != TK_CLOSE)
+               return lbError(ERR_SYNTAX_ERROR, parser);     
+         }
+         if (size > (10 << 20))  // There is a size limit for a blob!
+            return lbError(ERR_BLOB_TOO_BIG, parser);
+      }  
+      
+      // juliana@253_15: now an exception is thrown if the size of a CHAR or VARCHAR is greater than 65535. 
+      else if (type == CHARS_TYPE && size > (MAX_SHORT_VALUE << 1) + 1)
+         return lbErrorWithMessage(getMessage(ERR_INVALID_NUMBER), "unsigned short", parser);                
+   }   
+   
+   if ((token = yylex(parser)) == TK_NOCASE) // No case.
+   {   
+      if (type == CHARS_TYPE)
+         type = CHARS_NOCASE_TYPE;
+      else
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      token = yylex(parser);
+   }
+
+   if (token == TK_PRIMARY) // Simple primary key.
+   {
+      if (yylex(parser) != TK_KEY)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      if (parser->numberPK++ == 1)
+         return lbError(ERR_PRIMARY_KEY_ALREADY_DEFINED, parser);
+      if (type == BLOB_TYPE)
+         return lbError(ERR_BLOB_PRIMARY_KEY, parser);
+      token = yylex(parser);
+      isPrimaryKey = true;
+   }
+   
+   if (token == TK_DEFAULT) // Default value.
+   {
+      if ((token = yylex(parser)) == TK_NUMBER || token == TK_STR)
+         strDefault = parser->yylval;
+      else if (token != TK_NULL)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      
+      if (type == BLOB_TYPE) // A blob can't have a default value.
+         return lbError(ERR_BLOB_STRING, parser);
+      
+      // A numeric type must have a number as a default value. A string, date or datetime type must have a string as a default value.
+      if (((type == CHARS_TYPE || type == CHARS_NOCASE_TYPE || type == DATE_TYPE || type == DATETIME_TYPE) && token == TK_NUMBER)
+        || ((type > CHARS_TYPE && type < CHARS_NOCASE_TYPE) && token == TK_STR))
+         return lbError(ERR_SYNTAX_ERROR, parser);
+
+      token = yylex(parser);         
+   }
+   
+   if (token == TK_NOT) // Not null.
+   {
+      if (yylex(parser) != TK_NULL)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      token = yylex(parser);
+      isNotNull = true;
+   }
+   if (parser->fieldListSize == MAXIMUMS)
+      return lbError(ERR_MAX_NUM_FIELDS_REACHED, parser);
+   parser->fieldList[parser->fieldListSize++] = initSQLFieldDefinition(columnName, type, size, isPrimaryKey, strDefault, isNotNull, parser->heap);
+   return token;
+}
+
+/**
+ * Deals with an expression of an expression tree of a where clause.
+ * 
+ * @param token The first token of the expression.
+ * @param parser The parser structure.
+ * @return The token after the expression.
+ */
+int32 expression(int32 token, LitebaseParser* parser) 
+{     
+   if ((token = term(token, parser)) == TK_OR) // expression = term or expression | term
+   {
+      // juliana@213_1: changed the way a tree with ORs is built in order to speed up queries with indices.
+      SQLBooleanClauseTree* tree = setOperandType(OP_BOOLEAN_OR, parser);      
+      (tree->rightTree = parser->auxTree)->parent = tree;
+      token = expression(yylex(parser), parser);
+      (tree->leftTree = parser->auxTree)->parent = tree;         
+      parser->auxTree = tree;   
+   }
+
+   return token;
+}
+
+/**
+ * Deals with a term of an expression tree of a where clause.
+ * 
+ * @param token The first token of the term.
+ * @param parser The parser structure.
+ * @return The token after the term.
+ */
+int32 term(int32 token, LitebaseParser* parser)
+{      
+   if ((token = factor(token, parser)) == TK_AND) // term = factor or factor | term
+   {
+      SQLBooleanClauseTree* tree = setOperandType(OP_BOOLEAN_AND, parser);
+      (tree->rightTree = parser->auxTree)->parent = tree;
+      token = term(yylex(parser), parser);
+      (tree->leftTree = parser->auxTree)->parent = tree;
+      parser->auxTree = tree;
+   }
+
+   return token;
+}
+
+/**
+ * Deals with a factor of an expression tree of a where clause.
+ * 
+ * @param token The first token of the factor.
+ * @param parser The parser structure.
+ * @return The token after the factor.
+ */
+int32 factor(int32 token, LitebaseParser* parser)
+{
+   SQLBooleanClauseTree* tree = null;
+   SQLBooleanClauseTree* rightTree; 
+   SQLBooleanClause* booleanClause;
+   
+   if (token == TK_OPEN) // factor = (expression)
+   {
+      if ((token = expression(yylex(parser), parser)) != TK_CLOSE)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      return yylex(parser);
+   }
+   
+   if (token == TK_NOT)
+   {
+      if ((token = yylex(parser)) == TK_OPEN) // factor = not (expression)
+      {
+         if ((token = expression(yylex(parser), parser)) != TK_CLOSE)
+            return lbError(ERR_SYNTAX_ERROR, parser);
+         token = yylex(parser);
+      }
+      else // fator = not factor
+         token = factor(token, parser);
+      
+      // The parent node will be the negation operator and the expression will be the right tree.
+      tree = setOperandType(OP_BOOLEAN_NOT, parser);
+      (tree->rightTree = parser->auxTree)->parent = tree;
+      parser->auxTree = tree;
+      
+      return token;
+   }
+   
+   // factor = single expression (< | > | = | <> | != | <= | >=) single expression
+   if ((token = singleExp(token, parser)) == TK_EQUAL || token == TK_LESS || token == TK_DIFF || token == TK_GREATER || token == TK_GREATER_EQUAL 
+    || token == TK_LESS_EQUAL)         
+   {
+      switch (token)
+      {
+         case TK_LESS:
+            tree = setOperandType(OP_REL_LESS, parser);
+            break;
+         case TK_EQUAL:
+            tree = setOperandType(OP_REL_EQUAL, parser);
+            break;
+         case TK_GREATER:
+            tree = setOperandType(OP_REL_GREATER, parser);
+            break;
+         case TK_GREATER_EQUAL:
+            tree = setOperandType(OP_REL_GREATER_EQUAL, parser);
+            break;
+         case TK_LESS_EQUAL:
+            tree = setOperandType(OP_REL_LESS_EQUAL, parser);
+            break;
+         case TK_DIFF:
+            tree = setOperandType(OP_REL_DIFF, parser);
+      }
+      (tree->leftTree = parser->auxTree)->parent = tree;
+      token = singleExp(yylex(parser), parser);
+      (tree->rightTree = parser->auxTree)->parent = tree;
+      parser->auxTree = tree;
+      return token;
+   }
+   
+   if (token == TK_IS) // factor = single expression is [not] null.
+   {
+      if ((token = yylex(parser)) == TK_NOT)
+      {
+         tree = setOperandType(OP_PAT_IS_NOT, parser);
+         token = yylex(parser);
+      }
+      else
+         tree = setOperandType(OP_PAT_IS, parser);
+      if (token != TK_NULL)
+         return lbError(ERR_SYNTAX_ERROR, parser);  
+      
+      (tree->rightTree = setOperandType(OP_PAT_NULL, parser))->parent = (tree->leftTree = parser->auxTree)->parent = tree;
+      parser->auxTree = tree;
+      
+      return yylex(parser);
+   }
+   
+   if (token == TK_NOT) // factor = single expression not like [string | ?]
+   {
+      token = yylex(parser);
+      tree = setOperandType(OP_PAT_MATCH_NOT_LIKE, parser);
+   }
+   else // factor = single expression like [string | ?]
+      tree = setOperandType(OP_PAT_MATCH_LIKE, parser);
+   
+   booleanClause = getInstanceBooleanClause(parser);
+   rightTree = initSQLBooleanClauseTree(booleanClause, parser->heap);
+   
+   if (token == TK_LIKE)
+   {
+      if ((token = yylex(parser)) == TK_STR) // string
+         setOperandStringLiteral(rightTree, parser->yylval);
+      else if (token == TK_INTERROGATION) // ?
+      {
+         if (booleanClause->paramCount == MAXIMUMS) // There is a maximum number of parameters.
+            return lbError(ERR_MAX_NUM_PARAMS_REACHED, parser);
+         rightTree->isParameter = true;
+         if (parser->isWhereClause)
+            parser->whereParamList[booleanClause->paramCount++] = rightTree;
+         else
+            parser->havingParamList[booleanClause->paramCount++] = rightTree;
+      }
+      else
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      
+      (tree->rightTree = rightTree)->parent = (tree->leftTree = parser->auxTree)->parent = tree;
+      parser->auxTree = tree;   
+      
+      return yylex(parser);
+   }
+   
+   return lbError(ERR_SYNTAX_ERROR, parser);  
+}
+
+/**
+ * Deals with a single expression of an expression tree of a where clause.
+ * 
+ * @param token The first token of the single expression.
+ * @param parser The parser structure.
+ * @return The token after the single expression.
+ */
+int32 singleExp(int32 token, LitebaseParser* parser)
+{
+   int32 auxToken;
+   SQLBooleanClauseTree* tree;
+   
+   if (token == TK_NUMBER) // single expression = number
+   {
+      // juliana@226a_20
+      (tree = parser->auxTree = initSQLBooleanClauseTree(getInstanceBooleanClause(parser), parser->heap))->operandValue.asChars = parser->yylval; 
+      return yylex(parser);
+   }
+   else if (token == TK_STR) // single expression = string
+   {
+      setOperandStringLiteral((tree = parser->auxTree = initSQLBooleanClauseTree(getInstanceBooleanClause(parser), parser->heap)), (JCharP)parser->yylval);
+      return yylex(parser);
+   }
+   else if (token == TK_INTERROGATION) // single expression = ?
+   {
+      SQLBooleanClause* booleanClause = getInstanceBooleanClause(parser);
+
+      if (booleanClause->paramCount == MAXIMUMS) // There is a maximum number of parameters.
+         return lbError(ERR_MAX_NUM_PARAMS_REACHED, parser);
+      
+      if (parser->isWhereClause)
+         (parser->whereParamList[booleanClause->paramCount++] = parser->auxTree = initSQLBooleanClauseTree(booleanClause, parser->heap))->isParameter = true;
+      else
+         (parser->havingParamList[booleanClause->paramCount++] = parser->auxTree = initSQLBooleanClauseTree(booleanClause, parser->heap))->isParameter = true;
+      return yylex(parser);
+   }
+   else if ((auxToken = dataFunction(token, parser)) != -1) // single expression = function(...)
+   {
+      SQLBooleanClause* booleanClause = getInstanceBooleanClause(parser);
+      int32 i = 1,
+            index = booleanClause->fieldsCount,
+            hashCode;
+      SQLResultSetField* field = parser->auxField;
+      Hashtable* fieldName2Index = &booleanClause->fieldName2Index;
+      SQLResultSetField* paramField = field->parameter = initSQLResultSetField(parser->heap); // Creates the parameter field.
+ 
+      (parser->auxTree = tree = initSQLBooleanClauseTree(booleanClause, parser->heap))->operandType = OP_IDENTIFIER;
+      hashCode = tree->nameSqlFunctionHashCode = tree->nameHashCode = TC_hashCode((tree->operandName = field->tableColName));
+   
+      // generates different indexes to repeted columns on where clause.
+      // Ex: where year(birth) = 2000 and day(birth) = 3.
+      while (TC_htGet32Inv(fieldName2Index, tree->nameSqlFunctionHashCode) >= 0)
+         tree->nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
+              
+      if (index == MAXIMUMS) // There is a maximum number of columns.
+         return lbError(ERR_MAX_NUM_FIELDS_REACHED, parser);
+   
+      // Puts the hash code of the function name in the hash table.
+      TC_htPut32(fieldName2Index, tree->nameSqlFunctionHashCode, index);
+       
+      // Sets the field and function parameter fields.
+      paramField->alias = paramField->tableColName = field->alias = field->tableColName = tree->operandName;
+      paramField->aliasHashCode = paramField->tableColHashCode = field->tableColHashCode = field->aliasHashCode = tree->nameHashCode;
+      field->dataType = dataTypeFunctionsTypes[field->sqlFunction];
+      field->isDataTypeFunction = field->isVirtual = true;
+      
+      // Puts the field in the field list.
+      if (parser->isWhereClause)
+         parser->whereFieldList[booleanClause->fieldsCount++] = field; 
+      else
+         parser->havingFieldList[booleanClause->fieldsCount++] = field; 
+      
+      return auxToken;
+   }
+   else if (token != TK_NULL)// single expression = pure field.
+   {
+      SQLBooleanClause* booleanClause = getInstanceBooleanClause(parser);                  
+      int32 i = 1, 
+            index = booleanClause->fieldsCount,
+            hashCode;
+      SQLResultSetField* field;
+      Hashtable* fieldName2Index = &booleanClause->fieldName2Index;
+      
+      token = pureField(token, parser);
+      field = parser->auxField;
+
+      (parser->auxTree = tree = initSQLBooleanClauseTree(booleanClause, parser->heap))->operandType = OP_IDENTIFIER;
+      hashCode = field->tableColHashCode = tree->nameSqlFunctionHashCode = tree->nameHashCode 
+                                                                         = TC_hashCode((tree->operandName = field->tableColName));
+                                                                         
+      // rnovais@570_108: Generates different index to repeted columns on where
+      // clause. Ex: where year(birth) = 2000 and birth = '2008/02/11'.
+      while (TC_htGet32Inv(fieldName2Index, tree->nameSqlFunctionHashCode) >= 0)
+         tree->nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
+      
+      if (index == MAXIMUMS) // There is a maximum number of columns.
+         return lbError(ERR_MAX_NUM_FIELDS_REACHED, parser);
+
+      // Puts the hash code of the function name in the hash table.
+      TC_htPut32(fieldName2Index, tree->nameSqlFunctionHashCode, index);
+
+      field->aliasHashCode = TC_hashCode(field->alias); // Sets the hash code of the field alias.
+      
+      // Puts the field in the field list.
+      if (parser->isWhereClause)
+         parser->whereFieldList[booleanClause->fieldsCount++] = field; 
+      else
+         parser->havingFieldList[booleanClause->fieldsCount++] = field; 
+      
+      return token;
+   } 
+   return lbError(ERR_SYNTAX_ERROR, parser);
+}
+
+/**
+ * Deals with a list of values of an insert.
+ * 
+ * @param parser The parser structure.
+ * @return The token after the list of values.
+ */
+int32 listValues(LitebaseParser* parser)
+{
+   int32 token,
+       size = 0;
+   JCharP* values = parser->fieldValues;
+   
+   do
+      switch (token = yylex(parser))
+      {
+         case TK_NULL: // Null.
+            size++;
+            break;
+         case TK_INTERROGATION: // A variable for prepared statements.
+            values[size++] = questionMark;
+            break;
+         case TK_NUMBER: // A number.
+         case TK_STR: // A string.
+            values[size++] = (JCharP)parser->yylval;
+            break;
+         default: // The list of values is finished or an error occurred.
+         { 
+            if (!size) // There must be a value to be inserted.
+               return lbError(ERR_SYNTAX_ERROR, parser); 
+            return token;
+         }
+      }
+   while ((token = yylex(parser)) == TK_COMMA); 
+   parser->fieldValuesSize = size;
+   return token;      
+}
+
+/**
+ * Deals with a table list of a select.
+ * 
+ * @param parser The parser structure.
+ * @return The token after the list of tables.
+ */
+int32 tableList(LitebaseParser* parser)
+{
+   int32 token,
+       size = 0,
+       hash;
+   CharP tableName,
+         tableAlias;
+   Hashtable* tables = &parser->tables;
+   SQLResultSetTable** list = parser->tableList;
+   
+   do
+   {
+      if ((token = yylex(parser)) != TK_IDENT) // Not a table name, return.
+      {
+         if (!(parser->select.tableListSize = size)) // There must be at least a table.
+            return lbError(ERR_SYNTAX_ERROR, parser); 
+         return token;
+      }
+      tableName = tableAlias = (CharP)parser->yylval; // Table name.
+      
+      // Table alias.
+      if ((token = yylex(parser)) == TK_AS)
+         token = yylex(parser);
+      if (token == TK_IDENT)
+      {
+         tableAlias = (CharP)parser->yylval;
+         token = yylex(parser);
+      }
+   
+      // The table name alias must be unique.
+      if (TC_htGet32Inv(&parserTP->tables, (hash = TC_hashCode(tableAlias))) != -1)
+         return lbErrorWithMessage(getMessage(ERR_NOT_UNIQUE_ALIAS_TABLE), tableAlias, parser);
+      else
+         TC_htPut32(tables, hash, size);
+      
+      list[size++] = initSQLResultSetTable(tableName, tableAlias, parser->heap);
+   }
+   while (token == TK_COMMA);
+   parser->select.tableListSize = size;
+   return token;
+}
+
+/**
+ * Deals with a list of expressions of a select.
+ * 
+ * @param parser The parser structure.
+ * @return The token after the list of expressions.
+ */
+int32 fieldExp(int32 token, LitebaseParser* parser)
+{
+   SQLSelectClause* select = &parser->select;
+   SQLResultSetField** resultFieldList = parser->selectFieldList;  
+   int32 i; 
+   
+   if (token == TK_ASTERISK) // All fields.
+   {
+      // Adds a wildcard field.
+      (resultFieldList[select->fieldsCount++] = initSQLResultSetField(parser->heap))->isWildcard = true;
+      token = yylex(parser);
+   }
+   else if (token != PARSER_ERROR)
+   {
+      CharP alias = null;
+
+      do
+      {
+         if (token == TK_COMMA) // Gets the next field list token.
+            token = yylex(parser);
+         
+         if ((token = field(token, parser)) == TK_AS) // There is an alias.
+         {
+            if (yylex(parser) != TK_IDENT)
+               return lbError(ERR_SYNTAX_ERROR, parser); 
+            alias = (CharP)parser->yylval;
+            token = yylex(parser);
+         }
+         else if (token != PARSER_ERROR)
+         {
+            // If the alias_name is null, the alias must be the name of the column. This was already done before.
+            // If the alias is null and the field is a virtual column, raises an exception, since virtual columns require explicit aliases.
+            if (parser->auxField->isVirtual)
+               return lbError(ERR_REQUIRED_ALIAS, parser);
+                                         
+            alias = parser->auxField->alias; // The null alias name is filled as tableColName or tableName.tableColName, which was set before.
+         }
+         else
+            return PARSER_ERROR;
+         
+         // Checks if the alias has not already been used by a predecessor.
+         i = select->fieldsCount - 1;
+         
+         while (--i >= 0)
+            if (strEq(resultFieldList[i]->alias, alias))
+               return lbErrorWithMessage(getMessage(ERR_DUPLICATE_ALIAS), alias, parser);
+
+         parser->auxField->aliasHashCode = TC_hashCode(parser->auxField->alias = alias); // Assigns the alias.
+      }
+      while (token == TK_COMMA);
+   }
+   return token;
+}
+
+/**
+ * Deals with a list of update expressions.
+ * 
+ * @param parser The parser structure.
+ * @return The token after the list of update expressions.
+ */
+int32 updateExpCommalist(LitebaseParser* parser)
+{
+   int32 token,
+         size = 0;
+   JCharP* values = parser->fieldValues;
+   CharP* names = parser->fieldNames;
+   SQLResultSetField* field;
+   
+   do
+   {
+      if (pureField(yylex(parser), parser) != TK_EQUAL) // field being updated.
+         return lbError(ERR_SYNTAX_ERROR, parser); 
+      field = parser->auxField;
+      
+      // New value.
+      if ((token = yylex(parser)) == TK_STR || token == TK_NUMBER) // A string or a number.
+         values[size++] = (JCharP)parser->yylval;
+      else if (token == TK_NULL) // null
+         size++;
+      else if (token == TK_INTERROGATION) // A prepared statement parameter.
+         values[size++] = questionMark; 
+      else
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      
+      if (!parser->firstFieldUpdateTableName) // After the table name verification, the associated table name on the field name is discarded.
+      {
+         if (field->tableName)
+         {
+            parser->firstFieldUpdateTableName = field->tableName;
+            parser->firstFieldUpdateAlias = field->alias;
+         }
+      } 
+      else if (xstrcmp(field->tableName, parser->firstFieldUpdateTableName)) 
+      
+      // Verifies if it is different.
+      // There is an error: update has just one table. This error will raise an exception later on.        
+      {
+         parser->secondFieldUpdateTableName = field->tableName;
+         parser->secondFieldUpdateAlias = field->alias;
+      }
+      names[size - 1] = field->tableColName;
+   }
+   while ((token = yylex(parser)) == TK_COMMA);
+   if (!(parser->fieldNamesSize = parser->fieldValuesSize = size))
+      return lbError(ERR_SYNTAX_ERROR, parser);
+   return token;
+}
+
+/**
+ * Deals with a field.
+ *
+ * @param token A token to be used by the field.
+ * @param parser The parser structure.
+ * @return The token after the field.
+ */
+int32 field(int32 token, LitebaseParser* parser)
+{
+   int32 tokenAux;
+   SQLSelectClause* select = &parser->select;
+   SQLResultSetField* field = null;
+   
+   if (token == TK_IDENT) // A pure field.
+   {
+      token = pureField(token, parser);
+
+      if (select->fieldsCount == MAXIMUMS) // The  maximum number of fields can't be reached.
+         return lbError(ERR_FIELDS_OVERFLOW, parser);
+                                   
+      parser->selectFieldList[select->fieldsCount++] = field = parser->auxField;
+      field->tableColHashCode = TC_hashCode(field->tableColName);
+      select->hasRealColumns = true;
+      tokenAux = token;
+   }
+   else 
+   {
+      if ((tokenAux = dataFunction(token, parser)) >= 0) // A function applied to a field.
+      {
+         SQLResultSetField* paramField = (field = parser->auxField)->parameter = initSQLResultSetField(parser->heap);
+         
+         // Sets the field.
+         field->isDataTypeFunction = field->isVirtual = true;
+         field->dataType = dataTypeFunctionsTypes[field->sqlFunction];
+
+         // Sets the function parameter.
+         paramField->alias = paramField->tableColName = field->tableColName;
+         paramField->tableColHashCode = TC_hashCode(paramField->tableColName);
+         field->tableColHashCode = paramField->aliasHashCode = paramField->tableColHashCode; 
+      } 
+      else if ((tokenAux = aggFunction(token, parser)) >= 0) // An aggregation function applied to a field.
+      {
+         // Sets the field.
+         field = parser->auxField;
+         field->isAggregatedFunction = field->isVirtual = true;
+         field->dataType = aggregateFunctionsTypes[field->sqlFunction];
+
+         // Sets the parameter, if there is such one.
+         if (field->sqlFunction != FUNCTION_AGG_COUNT)
+         {
+            // Sets the function parameter.
+            SQLResultSetField* paramField = field->parameter = initSQLResultSetField(parser->heap);
+            paramField->alias = paramField->tableColName = field->tableColName;
+            paramField->tableColHashCode = TC_hashCode(paramField->tableColName);
+            field->tableColHashCode = paramField->aliasHashCode = paramField->tableColHashCode;
+         }
+
+         select->hasAggFunctions = true;
+      }
+      else
+         return lbError(ERR_SYNTAX_ERROR, parser); 
+      
+      if (select->fieldsCount == MAXIMUMS) // The maximum number of fields can't be reached. 
+         return lbError(ERR_FIELDS_OVERFLOW, parser);
+      parser->selectFieldList[select->fieldsCount++] = field; // Sets the select statement.
+   }
+
+   return tokenAux;
+}
+
+/**
+ * Deals with a pure field.
+ * 
+ * @param token A token to be used by the pure field.
+ * @param parser The parser structure.
+ * @return The token after the pure field.
+ */
+int32 pureField(int32 token, LitebaseParser* parser)
+{
+   SQLResultSetField* field = parser->auxField = initSQLResultSetField(parser->heap);
+   
+   if ((token = yylex(parser)) == TK_DOT) // table.fieldName
+   {
+      CharP alias;
+      
+      field->tableName = (CharP)parser->yylval;
+      if (yylex(parser) != TK_IDENT)
+         return lbError(ERR_SYNTAX_ERROR, parser); 
+      alias = field->alias = (CharP)TC_heapAlloc(parser->heap, xstrlen(field->tableName) + xstrlen(field->tableColName = (CharP)parser->yylval) + 2);
+      xstrcpy(alias, field->tableName);
+      xstrcat(alias, ".");
+      xstrcat(alias, field->tableColName);
+      token = yylex(parser);
+   }
+   else // A simple field.
+      field->tableColName = field->alias = (CharP)parser->yylval;
+   
+   return token;
+}
+
+/**
+ * Deals with a data function.
+ * 
+ * @param token A token witch is possibly a data function token.
+ * @param parser The parser structure.
+ * @return The next token or -1 if it is not a data function. 
+ */
+int32 dataFunction(int32 token, LitebaseParser* parser)
+{
+   int32 function;
+   
+   switch (token)
+   {
+      case TK_ABS: // Abs function.
+         function = FUNCTION_DT_ABS;
+         break;
+      case TK_DAY: // Day function.
+         function = FUNCTION_DT_DAY;
+         break;
+      case TK_HOUR: // Hour function.
+         function = FUNCTION_DT_HOUR;
+         break;
+      case TK_LOWER: // Lower function.
+         function = FUNCTION_DT_LOWER;
+         break;
+      case TK_MILLIS: // Millis function.
+         function = FUNCTION_DT_MILLIS;
+         break;
+      case TK_MINUTE: // Minute function.
+         function = FUNCTION_DT_MINUTE;
+         break;
+      case TK_MONTH: // Month function.
+         function = FUNCTION_DT_MONTH;
+         break;
+      case TK_SECOND: // Second function.
+         function = FUNCTION_DT_SECOND;
+         break;
+      case TK_UPPER: // Upper function.
+         function = FUNCTION_DT_UPPER;
+         break;
+      case TK_YEAR: // Year function.
+         function = FUNCTION_DT_YEAR;
+         break;
+      default:
+         return -1;
+   }
+   if (yylex(parser) != TK_OPEN || pureField(yylex(parser), parser) != TK_CLOSE)
+      return lbError(ERR_SYNTAX_ERROR, parser); 
+   parser->auxField->sqlFunction = function;
+   return yylex(parser);
+}
+
+/**
+ * Deals with a aggregation function.
+ * 
+ * @param token A token witch is possibly a data function token.
+ * @param parser The parser structure.
+ * @return The next token or -1 if it is not a data function. 
+ */
+int32 aggFunction(int32 token, LitebaseParser* parser)
+{
+   int function;
+   
+   switch (token)
+   {
+      case TK_AVG:
+         function = FUNCTION_AGG_AVG;
+         break;
+      case TK_COUNT:
+         function = FUNCTION_AGG_COUNT;
+         break;
+      case TK_MAX:
+         function = FUNCTION_AGG_MAX;
+         break;
+      case TK_MIN:
+         function = FUNCTION_AGG_MIN;
+         break;
+      case TK_SUM:
+         function = FUNCTION_AGG_SUM;
+         break;
+      default:
+         return -1;
+   }
+   if (token == TK_COUNT)
+   {
+      if (yylex(parser) != TK_OPEN || yylex(parser) != TK_ASTERISK || yylex(parser) != TK_CLOSE)
+         return lbError(ERR_SYNTAX_ERROR, parser);
+      parser->auxField = initSQLResultSetField(parser->heap);
+   }
+   else if (yylex(parser) != TK_OPEN || pureField(yylex(parser), parser) != TK_CLOSE)
+      return lbError(ERR_SYNTAX_ERROR, parser);
+   parser->auxField->sqlFunction = function; 
+   return yylex(parser);
+}
+
+/**
+ * Deals with a possible where clause.
+ * 
+ * @param token The token where if it is a where clause.
+ * @param parser The parser structure.
+ * @return The token received if it is not a where clause or the token after the where clause.
+ */
+int32 optWhereClause(int32 token, LitebaseParser* parser)
+{
+   if (token == TK_WHERE) // Where clause.
+   {
+      SQLBooleanClause* whereClause = getInstanceBooleanClause(parser);
+      token = expression(yylex(parser), parser); 
+      whereClause->expressionTree = whereClause->origExpressionTree = parser->auxTree;
+      whereClause->isWhereClause = true; // It indicates that it is a where clause.
+   }
+   return token;
+}
+
+/**
+ * Deals with an order by clause.
+ * 
+ * @param parser The parser structure.
+ * @return The first token after the order by clause.
+ */
+int32 orderByClause(LitebaseParser* parser)
+{
+   int32 token;
+   bool direction;
+   SQLSelectClause* select = &parser->select;
+   
+   do
+   {
+      direction = true;
+      
+      // Ascending or descending order.
+      if ((token = field(yylex(parser), parser)) == TK_ASC)
+         token = yylex(parser);
+      else if (token == TK_DESC)
+      {
+         direction = false;
+         token = yylex(parser);
+      }
+      else if (token == PARSER_ERROR)
+         return PARSER_ERROR;      
+      
+      select->fieldsCount--;
+      addColumnFieldOrderGroupBy(direction, true, parser);
+   }
+   while (token == TK_COMMA);
+   
+   return token;
+}
+
+/**
+ * Deals with a group by clause.
+ * 
+ * @param parser The parser structure.
+ * @return The first token after the group by clause.
+ */
+int32 groupByClause(LitebaseParser* parser)
+{
+   int32 token;
+   SQLSelectClause* select = &parser->select;
+   
+   do
+   {  
+      token = field(yylex(parser), parser);
+      select->fieldsCount--;
+      addColumnFieldOrderGroupBy(true, false, parser);
+   }
+   while (token == TK_COMMA);
+
+   if (token == TK_HAVING) // Adds the expression tree of the where clause.
+   {
+      parser->isWhereClause = false;  // Indicates if the clause is a where or a having clause.
+      token = expression(yylex(parser), parser);
+      parser->havingClause->expressionTree = parser->auxTree;
+   }
+   
+   return token;
+}
+
+
 #ifdef ENABLE_TEST_SUITE
 
 /**
@@ -250,25 +1430,25 @@ TESTCASE(lbError)
    currentContext->thrownException = null;
    xfree(parser);
 finish: ;
-}   
+}
 
 /**
- * Tests if the function <code>errorWithoutPosition()</code> in fact creates an exception.
+ * Tests if the function <code>lbErrorWithMessage()</code> in fact creates an exception.
  * 
  * @param testSuite The test structure.
  * @param currentContext The thread context where the test is being executed.
  */
-TESTCASE(errorWithoutPosition)
+TESTCASE(lbErrorWithMessage)
 {
    LitebaseParser* parser = (LitebaseParser*)xmalloc(sizeof(LitebaseParser));
    
    parser->context = currentContext;
-   errorWithoutPosition(2, "", parser);
+   lbErrorWithMessage(getMessage(2), "", parser);
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
    xfree(parser);
 finish: ;
-}
+}      
 
 /**
  * Tests if the function <code>initLitebaseParser()</code> works properly.

@@ -28,7 +28,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
 {
 	TRACE("initSQLInsertStatement")
 	Heap heap = parser->heap;
-	int32 i = parser->fieldNamesSize + 1;
+	uint32 i = parser->fieldNamesSize + 1;
 	JCharP value;
 	SQLValue* column;
 	SQLValue** record;
@@ -55,9 +55,9 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
       CharP* fieldNames = parser->fieldNames;
 		
       *fields = null;
-		insertStmt->storeNulls = TC_heapAlloc(heap, table->columnCount);
+		insertStmt->storeNulls = TC_heapAlloc(heap, NUMBEROFBYTES(table->columnCount));
 
-      while (--i > 0)
+      while (--i)
 			// A field cannot have the same hash code of the rowid.
          if (TC_hashCode(fields[i] = fieldNames[i - 1]) == HCROWID)
          {
@@ -66,7 +66,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
          }
 	} 
 	else // The nulls info does not need to be recreated when all the fields are used in the insert.
-		xmemset(insertStmt->storeNulls = table->storeNulls, false, table->columnCount);
+		xmemset(insertStmt->storeNulls = table->storeNulls, false, NUMBEROFBYTES(table->columnCount));
 
 	// Allocates the record: number of fields + rowid.
 	record = insertStmt->record = (SQLValue**)TC_heapAlloc(heap, (i = table->columnCount) * PTRSIZE);
@@ -76,14 +76,15 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
 	insertStmt->paramDefined = (uint8*)TC_heapAlloc(heap, i);
 
    // juliana@227_9: corrected a possible crash if the number of columns of the insert were greater than the one of table definition.
-   if ((i = insertStmt->nFields = parser->fieldValuesSize + 1) > table->columnCount)
+   if ((i = parser->fieldValuesSize + 1) > table->columnCount)
    {
       TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_NUMBER_VALUES_DIFF_TABLE_DEFINITION), 0);
       return null;
    }
+   insertStmt->nFields = i;
    
 	*record = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-   while (--i > 0)
+   while (--i)
    {
       if ((value = parser->fieldValues[i - 1])) // Only stores values that are not null.
       {
@@ -92,7 +93,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
          column->length = TC_JCharPLen(value);
       }
       else 
-			insertStmt->storeNulls[i] = true; 
+			setBit(insertStmt->storeNulls, i, true); 
    }
 	return insertStmt;
 }
@@ -125,7 +126,7 @@ bool setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, in
 
 	   // Sets the values of the parameter in its list.
       insertStmt->paramDefined[index] = true;
-      insertStmt->storeNulls[i] = (record = insertStmt->record[i])->isNull = false;
+      setBit(insertStmt->storeNulls, i, (record = insertStmt->record[i])->isNull = false);
       switch (type)
       {
          case SHORT_TYPE: 
@@ -187,10 +188,10 @@ bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, in
          else
             record->asBlob = value;
          record->length = length;
-         insertStmt->storeNulls[i] = record->isNull = false;
+         setBit(insertStmt->storeNulls, i, record->isNull = false);
       }
       else // The value is null. 
-		   record->isNull = insertStmt->storeNulls[i] = true;
+		   setBit(insertStmt->storeNulls, i, record->isNull = true);
 
       return true;
    }
@@ -221,7 +222,7 @@ bool setNullIns(Context context, SQLInsertStatement* insertStmt, int32 index)
       record->asBlob = null;
       
       // Sets the values of the parameter in its list.
-      insertStmt->paramDefined[index] = record->isNull = insertStmt->storeNulls[i] = true;
+      setBit(insertStmt->storeNulls, i, insertStmt->paramDefined[index] = record->isNull = true);
       
       return true;
    }
@@ -270,11 +271,13 @@ void clearParamValuesIns(SQLInsertStatement* insertStmt)
 	uint8* paramDefined = insertStmt->paramDefined;
 	uint8* storeNulls = insertStmt->storeNulls;
 	SQLValue** record = insertStmt->record;
+   
+   xmemzero(paramDefined, i);
+   
    while (--i >= 0)
    {
-		j = paramIndexes[i];
-      paramDefined[j] = storeNulls[j] = false;
-      xmemzero(record[j], sizeof(SQLValue));
+		xmemzero(record[j = paramIndexes[i]], sizeof(SQLValue));
+      setBit(storeNulls, j, paramDefined[j] = false);
 	   record[j]->isNull = true;
    }
 }
@@ -339,7 +342,7 @@ bool litebaseBindInsertStatement(Context context, SQLInsertStatement* insertStmt
    uint8* storeNulls = insertStmt->storeNulls;
    SQLValue** record = insertStmt->record;
    CharP* fields = insertStmt->fields;
-   int8* paramIndexes = insertStmt->paramIndexes;
+   uint8* paramIndexes = insertStmt->paramIndexes;
 
 	while (++i < valuesCount) // Checks if there are undefined values.
 	   // Identifies the values that are placeholders for parameters.

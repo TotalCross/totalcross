@@ -23,7 +23,6 @@ LITEBASE_SOURCES =                  \
 	$(sourcedir)/Table.c             \
 	$(sourcedir)/NativeMethods.c     \
 	$(sourcedir)/UtilsLB.c           \
-	$(sourcedir)/Value.c             \
 	$(sourcedir)/Key.c               \
 	$(sourcedir)/Node.c              \
 	$(sourcedir)/Index.c             \
@@ -38,7 +37,6 @@ PARSER_SOURCES =                                \
 	$(sourcedir)/parser/LitebaseLex.c            \
 	$(sourcedir)/parser/LitebaseMessage.c        \
 	$(sourcedir)/parser/LitebaseParser.c         \
-	$(sourcedir)/parser/LitebaseParser.tab.c     \
 	$(sourcedir)/parser/SQLBooleanClause.c       \
 	$(sourcedir)/parser/SQLBooleanClauseTree.c   \
 	$(sourcedir)/parser/SQLColumnListClause.c    \

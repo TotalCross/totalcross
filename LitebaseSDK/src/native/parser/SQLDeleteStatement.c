@@ -247,7 +247,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       uint8* nulls = table->columnNulls;
 		int32* columnSizes = table->columnSizes;
 		int8* columnTypes = table->columnTypes;
-      int32* colIdxSizes;
       int8* colIdxTypes;
       uint8* columns;
       int32 maxSize = 0,
@@ -329,7 +328,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 						compIndex = composedIndexes[i];
 						index = compIndex->index;
 						id = compIndex->numberColumns;
-                  colIdxSizes = index->colSizes;
                   colIdxTypes = index->types;
                   columns = compIndex->columns;
 						while (--id >= 0)
@@ -364,11 +362,15 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       table->deletedRowsCount += nn;
 		heapDestroy(heap);
 	}
+
+// juliana@270_32: corrected a bug of a delete not updating the number of total deleted rows in the metadata when there is an index corruption.
+error:
    if (nn > 0 && !tableSaveMetaData(context, table, TSMD_ONLY_DELETEDROWSCOUNT))
       return -1;
    
    // juliana@227_3: improved table files flush dealing.
-	if (plainDB->rowInc == DEFAULT_ROW_INC) // juliana@202_23: flushs the files to disk when row increment is the default.
+   // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
+   if (!dbFile->dontFlush) // juliana@202_23: flushs the files to disk when row increment is the default.
 	{
       if (dbFile->cacheIsDirty && !flushCache(context, dbFile)) // Flushs .db.
          return -1;
@@ -377,7 +379,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	}
 	return nn;
 	
-error:
    heapDestroy(heap);
    return -1;
 }

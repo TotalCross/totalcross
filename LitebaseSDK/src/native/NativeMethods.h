@@ -42,6 +42,14 @@ LB_API void lRI_nextNotSynced(NMParams p);
 LB_API void lRI_setSynced(NMParams p);
 
 /**
+ * Forces the attribute to be NEW. This method will be useful if a row was marked as synchronized but was not sent to server for some problem.
+ * If the row is marked as DELETED, its attribute won't be changed.
+ *
+ * @param p->obj[0] The row iterator. 
+ */
+LB_API void lRI_setNotSynced(NMParams p); // juliana@270_29: added RowIterator.setNotSynced().
+
+/**
  * Closes this iterator.
  *
  */
@@ -169,10 +177,11 @@ LB_API void lLC_privateGetInstance_s(NMParams p);
  * Creates a connection with Litebase.
  *
  * @param p->obj[0] The creator id, which may be the same one of the current application.
- * @param p->obj[1] Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data path, or 
- * <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or <code>unicode</code>, 
- * and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If only the path is passed as
- * a parameter, unicode is used. Notice that path must be absolute, not relative. 
+ * @param p->obj[1] Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
+ * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+ * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+ * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+ * cryptography. Notice that path must be absolute, not relative.
  * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
  * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
@@ -498,6 +507,24 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p);
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_listAllTables(NMParams p);
+
+/**
+ * Encrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_encryptTables_ssi(NMParams p);
+
+/**
+ * Decrypts all the tables of a connection given from the application id. All the files of the tables must be closed!
+ * 
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ */
+LB_API void lLC_decryptTables_ssi(NMParams p);
 
 /**
  * Returns the metadata for this result set.
@@ -846,6 +873,14 @@ LB_API void lRS_getRowCount(NMParams p);
 LB_API void lRS_isNull_i(NMParams p);
 
 /**
+ * Transforms a <code>ResultSet</code> row in a string.
+ *
+ * @param p->obj[0] The result set.
+ * @param p->retO receives a whole current row of a <code>ResultSet</code> in a string with column data separated by tab. 
+ */
+LB_API void lRS_rowToString(NMParams p); // juliana@270_30: added ResultSet.rowToString().
+
+/**
  * Given the column name (case insensitive), indicates if this column has a <code>NULL</code>.
  *
  * @param p->obj[0] The result set.
@@ -1156,6 +1191,21 @@ LB_API void lPS_clearParameters(NMParams p);
  */
 LB_API void lPS_toString(NMParams p);
 
+/**
+ * Closes a prepared statement.
+ * 
+ * @param p->obj[0] The prepared statement.
+ */
+LB_API void lPS_close(NMParams p);
+
 // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+
+/**
+ * Indicates if a prepared statement is valid or not: the driver is open and its SQL is in the hash table.
+ *
+ * @param p->obj[0] The prepared statement.
+ * @param p->retI receives <code>true</code> if the prepared statement is valid; <code>false</code>, otherwise.
+ */
+LB_API void lPS_isValid(NMParams p);
 
 #endif

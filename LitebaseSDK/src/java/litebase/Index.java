@@ -14,6 +14,7 @@ package litebase;
 import totalcross.io.*;
 import totalcross.util.*;
 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * Represents a B-Tree header.
  */
@@ -89,10 +90,11 @@ class Index
     */
    byte[] types;
 
+   // juliana@253_6: The maximum number of keys of a index was duplicated.
    /**
     * The cache of the index.
     */
-   private Node[] cache;
+   private Node[] cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.;
    
    /**
     * The first level of the index B-tree.
@@ -110,11 +112,6 @@ class Index
    NormalFile fnodes;
 
    /**
-    * The repeated values file.
-    */
-   NormalFile fvalues;
-
-   /**
     * A stream to be used to save and load data from the index.
     */
    ByteArrayStream bas;
@@ -122,7 +119,7 @@ class Index
    /**
     * A stream to be used to save and load data from the index.
     */
-   DataStreamLE basds;
+   DataStreamLB basds;
 
    /**
     * A buffer to be used to save and load data from the index.
@@ -147,7 +144,7 @@ class Index
    /**
     * An array for climbing on index nodes.
     */
-   Node[] nodes = new Node[4];
+   private Node[] nodes = new Node[4];
 
    /**
     * Constructs an index structure.
@@ -157,13 +154,12 @@ class Index
     * @param newColSizes The column sizes.
     * @param aName The name of the index table.
     * @param sourcePath The path of the index files.
-    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   Index(Table aTable, byte[] keyTypes, int[] newColSizes, String aName, String sourcePath, boolean hasIdr, boolean exist) 
-                                                                                           throws IOException, InvalidDateException
+   Index(Table aTable, byte[] keyTypes, int[] newColSizes, String aName, String sourcePath, boolean exist) 
+                                                                                            throws IOException, InvalidDateException
    {
       int numberColumns = keyTypes.length;
 
@@ -181,19 +177,14 @@ class Index
 
       // Creates the streams.
       basbuf = (bas = new ByteArrayStream(nodeRecSize)).getBuffer();
-      basds = new DataStreamLE(bas);
+      basds = new DataStreamLB(bas, aTable.db.useCrypto);
 
-      cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.
       firstLevel = new Node[btreeMaxNodes]; // Creates the first index level. // juliana@230_35
 
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
       fnodes = new NormalFile(fullFileName + ".idk", !exist, nodeRecSize);
-      if (hasIdr)
-      {
-         fvalues = new NormalFile(fullFileName + ".idr", !exist, NormalFile.CACHE_INITIAL_SIZE);
-         fvalues.finalPos = fvalues.size; // juliana@211_2: corrected a possible .idr corruption if it was used after a closeAll().
-      }
+      
       // Creates the root node.
       root = new Node(this);
       root.idx = 0;
@@ -222,33 +213,54 @@ class Index
       {
          Node curr = root; // 0 is always the root.
          int pos,
-             nodeCounter = nodeCount;
+             nodeCounter = nodeCount,
+             firstChild,
+             size,
+             count = 0;
          byte[] typesAux = types;
          SQLValue[] keys = key.keys;
+         int[] children;
+         Key[] currKeys;
          Key keyFound;
+         PlainDB plainDB = table.db;
+         int[] vector = plainDB.driver.nodes;
          
          while (true)
          {
-            keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3 // Finds the key position.
-
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0) 
+            keyFound = (currKeys = curr.keys)[pos = curr.findIn(key, false)]; // juliana@201_3 // Finds the key position.
+            firstChild = (children = curr.children)[0];
+            
+            if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0) 
             {
-               switch (keyFound.remove(record)) // Tries to remove the key.  
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
+                   && (keyFound.record >= record || keyFound.record == Key.NO_VALUE))
+                  pos--;
+               while (++pos < size && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
+                   && (keyFound.record <= record || keyFound.record == Key.NO_VALUE))
                {
-                  // It successfully removed the key.
-                  case Key.REMOVE_SAVE_KEY:
-                     curr.saveDirtyKey(pos); // no break!
-                  case Key.REMOVE_VALUE_ALREADY_SAVED:
+                  if (record == keyFound.record)
+                  {
+                     keyFound.record = Key.NO_VALUE; // Tries to remove the key.  
+                     curr.saveDirtyKey(pos);
                      return;
+                  }
+                  
+                  if (keyFound.record == Key.NO_VALUE && firstChild != Node.LEAF)
+                     vector[count++] = children[pos];
                }
             }
 
-            if (curr.children[0] == Node.LEAF)  // If there are children, load them if the key was not found yet.
-               break;
-            
+            // If there are children, load them if the key was not found yet.
+            if (firstChild != Node.LEAF)
+               vector[count++] = children[pos];
+               
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(curr.children[pos]);
+
+            if (count > 0)
+               curr = loadNode(vector[--count]);
+            else
+               break;
          }
          
       }
@@ -312,7 +324,7 @@ class Index
    }
 
    /**
-    * Finds the given key and make the monkey climb on the values.
+    * Finds the given key and marks the records that are going to the result set.
     *
     * @param key The key to be found.
     * @param markBits The rows which will be returned to the result set.
@@ -328,30 +340,51 @@ class Index
          Key keyFound;
          byte[] typesAux = types;
          SQLValue[] keys = key.keys;
+         Key[] currKeys;
+         int[] children;
+         PlainDB plainDB = table.db;
          int pos,
-             nodeCounter = nodeCount;
-         
+             nodeCounter = nodeCount,
+             firstChild,
+             size,
+             count = 0;
+         int[] vector = plainDB.driver.nodes;
+                
          while (true)
          {
-            keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
+            keyFound = (currKeys = curr.keys)[pos = curr.findIn(key, false)]; // juliana@201_3
+            firstChild = (children = curr.children)[0];
+            
+            if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
-               if (markBits == null)
+               if (markBits == null) // Only checks primary key violation.
                {
-                  if (keyFound.valRec != Key.NO_VALUE)
+                  if (keyFound.record != Key.NO_VALUE)
                      throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
-                                                                                     + table.name);
+                                                          + table.name);
                   break;
                }
-               markBits.onKey(keyFound);
-               break;
+               do
+                  pos--;
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0);                  
+               while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
+               {
+                  markBits.onKey(currKeys[pos]);
+                  if (firstChild != Node.LEAF)
+                     vector[count++] = children[pos];
+               }               
             }
-            if (curr.children[0] == Node.LEAF)
-               break;
+
+            if (firstChild != Node.LEAF)
+               vector[count++] = children[pos];
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(curr.children[pos]);
+               
+            if (count > 0)
+               curr = loadNode(vector[--count]);
+            else
+               break;
          }
       }
    }
@@ -371,7 +404,7 @@ class Index
    {
       int size = node.size;
       Key[] keys = node.keys;
-      short[] children = node.children;
+      int[] children = node.children;
       if (start >= 0)
          stop = !markBits.onKey(keys[start]);
       if (children[0] == Node.LEAF)
@@ -419,33 +452,39 @@ class Index
              nodeCounter = nodeCount,
              r,
              count = 0;
-         int[] ancestors = table.db.driver.ancestors;
+         PlainDB plainDB = table.db;             
+         int[] ancestors = plainDB.driver.nodes;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] leftKeys = left.keys;
+         Key[] currKeys;
+         int[] children;
          byte[] typesAux = types;
          
          while (true)
          {
-            pos = curr.findIn(left, false); // juliana@201_3
-            if (pos < curr.size)
+            children = curr.children;
+            currKeys = curr.keys;
+            
+            if ((pos = curr.findIn(left, false)) < curr.size) // juliana@201_3
             {
                // Compares left keys with curr keys.
-               // If this value is above or equal to the one being looked for, stores it.
-               if ((r = Utils.arrayValueCompareTo(leftKeys, curr.keys[pos].keys, typesAux)) <= 0) 
+               // If this value is above or equal to the one being looked for, stores it.               
+               while (--pos >= 0 && Utils.arrayValueCompareTo(leftKeys, currKeys[pos].keys, typesAux, plainDB) == 0);                  
+               if ((r = Utils.arrayValueCompareTo(leftKeys, currKeys[++pos].keys, typesAux, plainDB)) <= 0) 
                {
                   ancestors[count++] = curr.idx;
                   ancestors[count++] = pos;
                }
-               if (r >= 0) // left >= curr.keys[pos] ?
+               else if (r >= 0) // left >= curr.keys[pos] ?
                   break;
             }
-            if (curr.children[0] == Node.LEAF)
+            if (children[0] == Node.LEAF)
                break;
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(curr.children[pos]);
+            curr = loadNode(children[pos]);
          }
          if (count > 0)
          {
@@ -479,7 +518,7 @@ class Index
       Key keyFound,
           keyAux = tempKey;
       Node rootAux = root;
-      int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+      int[] ancestors = table.db.driver.nodes; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
       int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
@@ -488,7 +527,7 @@ class Index
       {
          keyFound = curr.keys[medPos];
          keyAux.set(keyFound.keys);
-         keyAux.valRec = keyFound.valRec;
+         keyAux.record = keyFound.record;
 
          // Right sibling - must be the first one to save!
          right = curr.save(true, medPos + 1, curr.size);
@@ -519,18 +558,6 @@ class Index
    }
 
    /**
-    * Removes the index files.
-    * 
-    * @throws IOException If an internal method throws it.
-    */
-   void remove() throws IOException 
-   {
-      fnodes.f.delete();
-      if (fvalues != null)
-         fvalues.f.delete();
-   }
-
-   /**
     * Closes the index files.
     * 
     * @throws IOException If an internal method throws it.
@@ -539,8 +566,6 @@ class Index
    {
       fnodes.finalPos = nodeCount * nodeRecSize; // Calculated the used space; the file will have no zeros at the end.
       fnodes.close();
-      if (fvalues != null)
-         fvalues.close();
    }
 
    /**
@@ -552,19 +577,12 @@ class Index
    {
       // It is faster truncating a file than re-creating it again. 
       NormalFile fnodesAux = fnodes;
-      NormalFile fvaluesAux = fvalues;
       Node[] cacheAux = cache;
       Node[] firstLevelAux = firstLevel;
       
       fnodesAux.growTo(0);
       fnodesAux.finalPos = fnodesAux.pos = fnodesAux.size = 0;
       fnodesAux.cacheIsDirty = false;
-      if (fvaluesAux != null)
-      {
-         fvaluesAux.growTo(0);
-         fvaluesAux.finalPos = fvaluesAux.pos = fvaluesAux.size = 0;
-         fvaluesAux.cacheIsDirty = false;
-      }
      
       isEmpty = true;
       int i = INDEX_CACHE_SIZE;
@@ -629,7 +647,7 @@ class Index
       boolean splitting = false;
       if (isEmpty)
       {
-         keyAux.addValue(record, isWriteDelayed);
+         keyAux.record = record;
          rootAux.set(keyAux, Node.LEAF, Node.LEAF);
          rootAux.save(true, 0, 1);
          isEmpty = false;
@@ -639,26 +657,30 @@ class Index
          Node curr = rootAux;
          Key keyFound;
          byte[] typesAux = types;
+         int[] children;
          SQLValue[] keys = keyAux.keys;
+         Key[] currKeys;         
+         PlainDB plainDB = table.db;
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
              maxSize = btreeMaxNodes - 1,
              pos,
+             size,         
              count = 0;
-         boolean isDelayed = isWriteDelayed;
-         int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         int[] ancestors = plainDB.driver.nodes; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
-            keyFound = curr.keys[pos = curr.findIn(keyAux, true)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
+            keyFound = (currKeys = curr.keys)[pos = curr.findIn(keyAux, true)]; // juliana@201_3
+            children = curr.children;
+            
+            if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
-               keyFound.addValue(record, isDelayed);  // Adds the repeated key to the currently stored one.
-               curr.saveDirtyKey(pos); // Key was dirty - save just it.
-               break;
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);  
+               while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos].record < record);
             }
-            else
-            if (curr.children[0] == Node.LEAF)
+
+            if (children[0] == Node.LEAF)
             {
                // If the node will becomes full, the insert is done again, this time keeping track of the ancestors. Note: with k = 50 and 200000 
                // values, there are about 1.1 million useless pushes without this redundant insert.
@@ -671,7 +693,7 @@ class Index
                }
                else
                {
-                  keyAux.addValue(record, isDelayed);
+                  keyAux.record = record;
                   curr.insert(keyAux, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.
@@ -689,7 +711,7 @@ class Index
                
                if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
                   throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-               curr = loadNode(curr.children[pos]);
+               curr = loadNode(children[pos]);
             }
          }
       }
@@ -707,18 +729,19 @@ class Index
    void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
       Node curr;
-      short[] vector = new short[nodeCount];
+      Key[] currKeys;
+      Key currKey;      
       int size,
           i,
-          valRec,
           nodeCounter = nodeCount + 1,
           count = 1;
-      LitebaseConnection driver = table.db.driver;
-      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = driver.valueBuf;
+      int[] vector = table.db.driver.nodes;
+      int[] children;
+      
+      // juliana@224_2: improved memory usage on BlackBerry.
       
       // Recursion using a stack. The array sole element is 0.
+      vector[0] = 0;
       while (count > 0)
       {
          if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -726,50 +749,23 @@ class Index
          curr = loadNode(vector[--count]);
          
          // Searches for the smallest key of the node marked in the result set or is not deleted. 
-         size = curr.size;
+         size = curr.size;         
          i = -1;
+         currKeys = curr.keys;
+         children = curr.children;
          
-         if (bitMap == null)
-         {
-            while (++i < size)
-               if (curr.keys[i].valRec != Key.NO_VALUE)
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
-         }
-         else  
-            while (++i < size)
-               if ((valRec = curr.keys[i].valRec) < 0)
-               {
-                  if (bitMap.isBitSet(-1 - valRec))
-                  {
-                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                     break;
-                  }
-               }
-               else if (valRec != Key.NO_VALUE)
-               {
-                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-                  {
-                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                     tempVal.load(fvaluesAux, valueBuf);
-                     if (bitMap.isBitSet(tempVal.record))
-                     {
-                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                        break;
-                     }
-                     valRec = tempVal.next;
-                  }
-                  if (valRec != Value.NO_MORE)
-                     break;
-               }
+         while (++i < size)
+            if ((currKey = currKeys[i]).record != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(currKey.record)))
+            {                  
+               currKey.keys[0].cloneSQLValue(sqlValue);
+               break;                  
+            }
          
          // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
          i++;   
-         if (curr.children[0] != Node.LEAF)
+         if (children[0] != Node.LEAF)
             while (--i >= 0)            
-               vector[count++] = curr.children[i];
+               vector[count++] = children[i];
       }
       
       if (sqlValue.isNull) // No record found.
@@ -789,18 +785,19 @@ class Index
    void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
       Node curr;
-      short[] vector = new short[nodeCount];
+      Key[] currKeys;
+      Key currKey;      
       int size,
           i,
-          valRec,
           count = 1,
           nodeCounter = nodeCount + 1;
-      LitebaseConnection driver = table.db.driver;
-      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = driver.valueBuf;
+      int[] vector = table.db.driver.nodes;
+      int[] children;
+      
+      // juliana@224_2: improved memory usage on BlackBerry.
       
       // Recursion using a stack. The array sole element is 0.
+      vector[0] = 0;
       while (count > 0)
       {
          if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -809,47 +806,20 @@ class Index
          
          // Searches for the greatest key of the node marked in the result set or is not deleted. 
          i = size = curr.size;
+         currKeys = curr.keys;
+         children = curr.children;
          
-         if (bitMap == null)
-         {
-            while (--i >= 0)
-               if (curr.keys[i].valRec != Key.NO_VALUE)
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
-         }
-         else  
-            while (--i >= 0)
-               if ((valRec = curr.keys[i].valRec) < 0)
-               {
-                  if (bitMap.isBitSet(-1 - valRec))
-                  {
-                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                     break;
-                  }
-               }
-               else if (valRec != Key.NO_VALUE)
-               {
-                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-                  {
-                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                     tempVal.load(fvaluesAux, valueBuf);
-                     if (bitMap.isBitSet(tempVal.record))
-                     {
-                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                        break;
-                     }
-                     valRec = tempVal.next;
-                  }
-                  if (valRec != Value.NO_MORE)
-                     break;
-               }
+         while (--i >= 0)
+            if ((currKey = currKeys[i]).record != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(currKey.record)))
+            {                  
+               currKey.keys[0].cloneSQLValue(sqlValue);
+               break;                  
+            }
          
          // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-         if (curr.children[0] != Node.LEAF)
+         if (children[0] != Node.LEAF)
             while (++i <= size)
-               vector[count++] = curr.children[i];
+               vector[count++] = children[i];
       }
       
       if (sqlValue.isNull) // No record found.
@@ -947,12 +917,13 @@ class Index
           count = 1;
           Node curr;
       int[] valRecs = new int[nodeCounter];
-      short[] nodes = new short[nodeCounter];
+      int[] nodes = table.db.driver.nodes;
       Key[] keys;
-      short[] children;
+      int[] children;
       
       // Recursion using a stack. The nodes array sole element is 0.
       valRecs[0] = Key.NO_VALUE;
+      nodes[0] = 0;
       while (count > 0)
       {
          // Gets the key and child node.
@@ -971,7 +942,7 @@ class Index
          {
             i = -1;
             while (++i < size)
-               writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+               writeKey(keys[i].record, bitMap, tempTable, record, columnIndexes, clause);
             writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
          }
          else // If not, push its key and process its children in the ascending order. 
@@ -983,7 +954,7 @@ class Index
             }
             while (--size >= 0)
             {
-               valRecs[count] = keys[size].valRec;
+               valRecs[count] = keys[size].record;
                nodes[count++] = children[size];
             }
          }
@@ -1013,13 +984,14 @@ class Index
           count = 1;
       Node curr;
       int[] valRecs = new int[nodeCounter];
-      short[] nodes = new short[nodeCounter];
+      int[] nodes = table.db.driver.nodes;
       Key[] keys;
-      short[] children;
-               
+      int[] children;
+
       // Recursion using a stack.
       // Recursion using a stack. The nodes array sole element is 0.
       valRecs[0] = Key.NO_VALUE;
+      nodes[0] = 0;
       while (count > 0)
       {
          // Gets the key and child node.
@@ -1039,15 +1011,14 @@ class Index
             writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
             i = size;
             while (--i >= 0)
-               writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
-            
+               writeKey(keys[i].record, bitMap, tempTable, record, columnIndexes, clause);            
          }
          else // If not, process its children in the descending order and then push its key. 
          {
             i = -1;
             while (++i < size)
             {
-               valRecs[count] = keys[i].valRec;
+               valRecs[count] = keys[i].record;
                nodes[count++] = children[i];
             }
             if (size > 0)
@@ -1062,7 +1033,7 @@ class Index
    /**
     * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
     * 
-    * @param valRec The negation of the record or a pointer to a list of values.
+    * @param valRec The record index.
     * @param bitMap The table bitmap which indicates which rows will be in the result set.
     * @param tempTable The temporary table for the result set.
     * @param record A record for writing in the temporary table.
@@ -1074,61 +1045,29 @@ class Index
    private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
                                                                                            throws IOException, InvalidDateException
    {
-      LitebaseConnection driver = table.db.driver;
-      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = driver.valueBuf;
-      
-      if (valRec < 0) // No repeated value, just cheks the record. 
+      if (valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(valRec)))
       {
-         if (bitMap == null || bitMap.isBitSet(-1 - valRec))
-            writeRecord(-1 - valRec, tempTable, record, columnIndexes, clause);
-      }
-      else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
-         while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+         Table tableAux = table;
+         byte[] tempNulls = tempTable.columnNulls[0];
+         byte[] origNulls = tableAux.columnNulls[0];
+         short[] offsets = tableAux.columnOffsets;
+         byte[] types = tableAux.columnTypes;
+         int i = tempTable.columnCount,
+             colIndex;
+         boolean isNull;
+         
+         tableAux.db.read(valRec); // Reads the record.
+         tableAux.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+         
+         while (--i >= 0) // Reads the fields for the temporary table.
          {
-            fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-            tempVal.load(fvaluesAux, valueBuf);
-            if (bitMap == null || bitMap.isBitSet(tempVal.record))
-               writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
-            valRec = tempVal.next;
-         }
-   }
-   
-   /**
-    * Reads from the selected record from the table and writes the necessary fields in the temporary table.
-    * 
-    * @param pos The position of the selected record.
-    * @param tempTable The temporary table for the result set.
-    * @param record A record for writing in the temporary table.
-    * @param columnIndexes Has the indices of the tables for each resulting column.
-    * @param clause The select clause of the query.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    */
-   void writeRecord(int pos, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
-                                                                                      throws IOException, InvalidDateException
-   {
-      Table tableAux = table;
-      byte[] tempNulls = tempTable.columnNulls[0];
-      byte[] origNulls = tableAux.columnNulls[0];
-      short[] offsets = tableAux.columnOffsets;
-      byte[] types = tableAux.columnTypes;
-      int i = tempTable.columnCount,
-          colIndex;
-      boolean isNull;
-      
-      tableAux.db.read(pos); // Reads the record.
-      tableAux.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-      
-      while (--i >= 0) // Reads the fields for the temporary table.
-      {
-         colIndex = columnIndexes[i];
-         if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
-            tableAux.readValue(record[i], offsets[colIndex], types[colIndex], false, true);
+            colIndex = columnIndexes[i];
+            if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
+               tableAux.readValue(record[i], offsets[colIndex], types[colIndex], false, true);
 
-         Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
-      } 
-      tempTable.writeRSRecord(record); // Writes the temporary table record.
+            Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+         } 
+         tempTable.writeRSRecord(record); // Writes the temporary table record.
+      }
    }
 }

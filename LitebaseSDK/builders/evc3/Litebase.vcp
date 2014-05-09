@@ -43,7 +43,7 @@ CFG=Litebase - Win32 (WCE ARM) Debug
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Debug"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Debug"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Debug"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC2000/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -87,7 +87,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC211/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -109,7 +109,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -124,7 +124,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.63 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.63 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/evc3/Litebase/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
@@ -132,7 +132,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/MIPS/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Release"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -154,7 +154,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Release"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/SH3/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Release"
 # PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -184,7 +184,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -221,7 +221,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC2000/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -255,7 +255,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC211/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -289,7 +289,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/MIPS/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Demo"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -323,7 +323,7 @@ LINK32=link.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Demo"
-# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/SH3/Demo"
+# PROP Intermediate_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Demo"
 # PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -580,35 +580,6 @@ DEP_CPP_LITEBAS=\
 DEP_CPP_LITEBAS=\
 	"..\..\src\native\parser\LitebaseParser.h"\
 	
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.tab.c
-
-!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 !ENDIF 
 
@@ -1205,50 +1176,48 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c
 !IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_KEY_C=\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zconf.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Key.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	
-NODEP_CPP_KEY_C=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	".\otify.h"\
+	{$(INCLUDE)}"notify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
@@ -1540,7 +1509,9 @@ DEP_CPP_KEY_C=\
 	"..\..\src\native\Key.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	{$(INCLUDE)}"notify.h"\
+	
+NODEP_CPP_KEY_C=\
+	".\otify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -1749,13 +1720,11 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c
 !IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LBFIL=\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\win\File_c.h"\
 	"..\..\src\native\lbFile.h"\
-	
-NODEP_CPP_LBFIL=\
-	"..\..\src\nm\io\palm\File_c.h"\
-	"..\..\src\nm\io\posix\File_c.h"\
-	"..\..\src\nm\io\win\File_c.h"\
-	".\rojects.h"\
+	{$(INCLUDE)}"Projects.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
@@ -1825,7 +1794,9 @@ DEP_CPP_LBFIL=\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\posix\File_c.h"\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\win\File_c.h"\
 	"..\..\src\native\lbFile.h"\
-	{$(INCLUDE)}"Projects.h"\
+	
+NODEP_CPP_LBFIL=\
+	".\rojects.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -1915,50 +1886,48 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c
 !IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBASE=\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zconf.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\LitebaseGlobals.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	
-NODEP_CPP_LITEBASE=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	".\otify.h"\
+	{$(INCLUDE)}"notify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
@@ -2250,7 +2219,9 @@ DEP_CPP_LITEBASE=\
 	"..\..\src\native\LitebaseGlobals.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	{$(INCLUDE)}"notify.h"\
+	
+NODEP_CPP_LITEBASE=\
+	".\otify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -3284,79 +3255,6 @@ DEP_CPP_UTILS=\
 !ENDIF 
 
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.c
-
-!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ENDIF 
-
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -3476,10 +3374,6 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h
 # Begin Source File
 
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

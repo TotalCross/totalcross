@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@253_5: removed .idr files from all indices and changed its format.
 /**
  * Defines functions to deal a B-Tree header. This has the implementation of a B-Tree. It is used to store the table indexes. It has some 
  * improvements for memory usage, disk space, and speed, targetting the creation of indexes, where the table's record is far greater than the index 
@@ -45,14 +46,12 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @param colSizes The column sizes.
  * @param name The name of the index table.
  * @param numberColumns The number of columns of the index.
- * @param hasIdr Indicates if the index fas the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return The index created or <code>null</code> if an error occurs.
  * @throws DriverException If is not possible to create the index files.
  */
-Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
-                                                                                                                                  Heap heap)
+Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool exist, Heap heap)
 {
 	TRACE("createIndex")
    Index* index = (Index*)TC_heapAlloc(heap, sizeof(Index));
@@ -61,7 +60,6 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    char buffer[DBNAME_SIZE];
    CharP sourcePath = table->sourcePath;
    XFile* fnodes = &index->fnodes;
-   XFile* fvalues = index->fvalues;
 
    index->numberColumns = numberColumns;
    index->table = table;
@@ -92,20 +90,10 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    
    xstrcpy(buffer, name);
    xstrcat(buffer, IDK_EXT);
-   if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fnodes, index->nodeRecSize << 1))
+   
+   // juliana@253_8: now Litebase supports weak cryptography.
+   if (!nfCreateFile(context, buffer, !exist, table->db.db.useCrypto, sourcePath, slot, fnodes, index->nodeRecSize << 1))
       return null;
-
-   if (hasIdr)
-   {
-      buffer[xstrlen(buffer) - 1] = 'r';
-      index->fvalues = fvalues = TC_heapAlloc(heap, sizeof(XFile));
-		if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fvalues, CACHE_INITIAL_SIZE))
-      {
-   	   nfRemove(context, &index->fnodes, sourcePath, slot); // close node file which was open
-         return null;
-	   }
-		fvalues->finalPos = fvalues->size; // juliana@211_2: Corrected a possible .idr corruption if it was used after a closeAll().
-   }
    
    index->nodeCount = index->fnodes.size / index->nodeRecSize;
 
@@ -113,7 +101,6 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
       if (!nodeLoad(context, index->root))
       {
          nfClose(context, &index->fnodes);
-         nfClose(context, index->fvalues);
          return null;
       }
    return index;
@@ -188,7 +175,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
 
    if (indexCount == 1)
    {
-      if (newIndexNumber < 0 || !indexCreateIndex(context, table, table->name, columns[0], columnSizes, columnTypes, false, false, heap))
+      if (newIndexNumber < 0 || !indexCreateIndex(context, table, table->name, columns[0], columnSizes, columnTypes, false, heap))
          goto error;
 
       saveType = TSMD_ATLEAST_INDEXES;
@@ -196,7 +183,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    else
    {
       if (newIndexNumber < 0 
-  || !indexCreateComposedIndex(context, table, table->name, columns, columnSizes, columnTypes, indexCount, newIndexNumber, true, false, false, heap))
+         || !indexCreateComposedIndex(context, table, table->name, columns, columnSizes, columnTypes, indexCount, newIndexNumber, true, false, heap))
          goto error;
       saveType = TSMD_EVERYTHING; 
    }
@@ -258,35 +245,56 @@ bool indexRemoveValue(Context context, Key* key, int32 record)
       Node* curr = index->root; // 0 is always the root.
 		int32 nodeCounter = index->nodeCount,
             pos,
-            numberColumns = index->numberColumns;
+            numberColumns = index->numberColumns,
+            size,
+            count = 0;
       Key* keyFound;
+      Key* currKeys;
+      uint16* children;
+      PlainDB* plainDB = &index->table->db;
+      int32* vector = index->table->nodes;
 
       while (true)
       {
-         keyFound = &curr->keys[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
-         if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
+         keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
+         children = curr->children;
+         
+         if (pos < (size = curr->size) && keyEquals(context, key, keyFound, numberColumns, plainDB)) 
          {
-            switch (keyRemove(context, keyFound, record)) // Tries to remove the key.
+            while (pos >= 0 && keyEquals(context, key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record >= record || keyFound->record == NO_VALUE))
+               pos--;
+            while (++pos < size && keyEquals(context, key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record <= record || keyFound->record == NO_VALUE))
             {
-               // It successfully removed the key.
-               case REMOVE_SAVE_KEY:
+               if (keyFound->record == record)
+               {
+                  keyFound->record = NO_VALUE;
                   if (!nodeSaveDirtyKey(context, curr, pos)) // no break!
                      return false;
-               case REMOVE_VALUE_ALREADY_SAVED:
                   return true;
+               }
+               
+               if (keyFound->record == NO_VALUE && !nodeIsLeaf(curr))
+                  vector[count++] = children[pos];
             }
-            return false;
          }
-         if (nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
-            break;
+         
+         if (!nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
+            vector[count++] = children[pos];
 
 			if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 			{
 				TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
 				return false;
 			}
-         if (!(curr = indexLoadNode(context, index, curr->children[pos])))
-            return false;
+			if (count) 
+         {
+            if (!(curr = indexLoadNode(context, index, vector[--count])))
+               return false;
+         }
+         else
+            break;
       }
    }
 
@@ -385,37 +393,58 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
       Node* curr = index->root; // 0 is always the root.
 		int32 nodeCounter = index->nodeCount,
             numberColumns = index->numberColumns,
-            pos;
+            pos,
+            size,
+            count = 0;
       Key* keyFound;
-
+      Key* currKeys;
+      uint16* children;
+      PlainDB* plainDB = &index->table->db;
+      int32* vector = index->table->nodes;
+      
       while (true) 
       {
-         keyFound = &curr->keys[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
-         if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
+         keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
+         children = curr->children;
+                  
+         if (pos < (size = curr->size) && keyEquals(context, key, keyFound, numberColumns, plainDB)) 
          {
             if (!markBits)
             {
-               if (keyFound->valRec != NO_VALUE)
+               if (keyFound->record != NO_VALUE)
                {
                   TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), 
-                                                                                                      index->table->name);
+                                                   index->table->name);
                   return false;
                }
-               break;                                                                                        
-            }  
-            if (markBitsOnKey(context, keyFound, markBits) == -1)
-               return false;
-            break;
+               break;
+            }
+            do
+               pos--;
+            while (pos >= 0 && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB));  
+            while (++pos < size && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB))
+            {
+               if (onKey(context, &currKeys[pos], markBits) == -1)
+                  return false;
+               if (!nodeIsLeaf(curr))
+                  vector[count++] = children[pos]; 
+            }
          }
-         if (nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
-            break;
+         if (!nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
+            vector[count++] = children[pos]; 
+            
 			if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 			{
 				TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
 				return false;
 			}
-         if (!(curr = indexLoadNode(context, index,curr->children[pos])))
-            return false;
+         if (count) 
+         {
+            if (!(curr = indexLoadNode(context, index, vector[--count])))
+               return false;
+         }
+         else
+            break;
       }
    }
    return true;
@@ -436,20 +465,20 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits
 	TRACE("indexClimbGreaterOrEqual")
    int32 ret,
          size = node->size;
-   int16* children = node->children;
+   uint16* children = node->children;
    Key* keys = node->keys;
    Index* index = node->index;
    
    if (start >= 0)
    {
-      *stop = !(ret = markBitsOnKey(context, &keys[start], markBits));  
+      *stop = !(ret = onKey(context, &keys[start], markBits));  
       if (ret == -1)
          return false;
    }
    if (nodeIsLeaf(node))
       while (!(*stop) && ++start < size)
       {
-         *stop = !(ret = markBitsOnKey(context, &keys[start], markBits)); 
+         *stop = !(ret = onKey(context, &keys[start], markBits)); 
          if (ret == -1)
             return false;
       }
@@ -475,7 +504,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits
             return false;
          if (start < size && !(*stop))
          {
-            *stop = !(ret = markBitsOnKey(context, &node->keys[start], markBits)); 
+            *stop = !(ret = onKey(context, &node->keys[start], markBits)); 
             if (ret == -1)
                return false;
          }
@@ -505,22 +534,28 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
       int32 pos,
             comp,
 			   nodeCounter = index->nodeCount,
-			   numberColumns = index->numberColumns,
-			   size = 0;
-      int32* intVector1 = index->table->ancestors;
+			   numberColumns = index->numberColumns;
+	   uint32 size = 0;
+      int32* intVector1 = index->table->nodes;
       Node* curr = index->root; // Starts from the root.
+      PlainDB* plainDB = &index->table->db;
+      Key* currKeys;
      
       while (true)
       {
+         currKeys = curr->keys;
+      
          if ((pos = nodeFindIn(context, curr, left, false)) < curr->size)  // juliana@201_3
          {
+            while (--pos >= 0 && keyEquals(context, left, &currKeys[pos], numberColumns, plainDB));               
+            
             // Compares left keys with curr keys. If this value is above or equal to the one being looked for, stores it.
-            if ((comp = keyCompareTo(left, &curr->keys[pos], numberColumns)) <= 0) 
+            if ((comp = keyCompareTo(context, left, &currKeys[++pos], numberColumns, plainDB)) <= 0) 
             {
                intVector1[size++] = pos;
                intVector1[size++] = curr->idx; 
             }
-            if (comp >= 0) // left >= curr.keys[pos] ?
+            else if (comp >= 0) // left >= curr.keys[pos] ?
                break;
          }
          if (nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet. 
@@ -534,12 +569,12 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
          if (!(curr = indexLoadNode(context, index, curr->children[pos])))
             return false;
       }
-      if (size > 0)
+      if (size)
       {
          bool stop;
          
          // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
-         while (size > 0)
+         while (size)
          {
             stop = false;
             if (!(curr = indexLoadNode(context, index, intVector1[--size])) 
@@ -568,7 +603,7 @@ bool indexSplitNode(Context context, Node* curr, int32 count)
    Key* med;
    Index* index = curr->index;
    Node* root = index->root;
-   int32* ancestors = index->table->ancestors;
+   int32* ancestors = index->table->nodes;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
    int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
@@ -619,8 +654,7 @@ bool indexRemove(Context context, Index* index)
 	TRACE("indexRemove")
    Table* table = index->table;
 
-   if (index->heap && (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
-                    || (index->fvalues && !nfRemove(context, index->fvalues, table->sourcePath, table->slot))))
+   if (index->heap && !nfRemove(context, &index->fnodes, table->sourcePath, table->slot))
       return false;
    
    heapDestroy(index->heap);
@@ -641,8 +675,6 @@ bool indexClose(Context context, Index* index)
       
    index->fnodes.finalPos = index->nodeCount * index->nodeRecSize; // Calculated the used space; the file will have no zeros at the end. 
    ret = nfClose(context, &index->fnodes);
-   if (index->fvalues)
-      ret &= nfClose(context, index->fvalues);
    heapDestroy(index->heap);
    return ret;
 }
@@ -666,22 +698,22 @@ bool indexDeleteAllRows(Context context, Index* index)
 #endif
    
    XFile* fnodes = &index->fnodes;
-   XFile* fvalues = index->fvalues;
+
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// Some files might have been closed if the maximum number of opened files was reached.
+#if defined(POSIX) || defined(ANDROID)
+   if ((i = reopenFileIfNeeded(context, fnodes)))
+   {
+      fileError(context, i, fnodes->name);
+      return false;
+   }
+#endif
 
    // It is faster truncating a file than re-creating it again. 
    if ((i = lbfileSetSize(&fnodes->file, 0)))
    {
       fileError(context, i, fnodes->name);
       return false;
-   }
-   if (fvalues)
-   {
-      if ((i = lbfileSetSize(&fvalues->file, 0)))
-      {
-         fileError(context, i, fvalues->name);
-         return false;
-      }
-      fvalues->size = fvalues->position = fvalues->finalPos = fvalues->cachePos = fvalues->cacheIsDirty = 0;
    }
    
    i = CACHE_SIZE;
@@ -764,8 +796,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
    // Inserts the key.
    if (!index->fnodes.size)
    {
-      if (!keyAddValue(context, &key, record, index->isWriteDelayed))
-         return false;
+      key.record = record;
       nodeSet(root, &key, LEAF, LEAF);
       if (nodeSave(context, root, true, 0, 1) < 0)
          return false;
@@ -774,23 +805,25 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
    {
       Node* curr = root;
       Key* keyFound;
-      int32* ancestors = index->table->ancestors;
+      Key* currKeys;
+      PlainDB* plainDB = &index->table->db;
+      int32* ancestors = index->table->nodes;
 		int32 nodeCounter = index->nodeCount,
             btreeMaxNodesLess1 = index->btreeMaxNodes - 1,
             pos,
+            size,
             count = 0;
 
       while (true)
       {
-         keyFound = &curr->keys[pos = nodeFindIn(context, curr, &key, true)]; // juliana@201_3
-         if (pos < curr->size && keyEquals(&key, keyFound, numberColumns)) 
+         keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, &key, true)]; // juliana@201_3
+         if (pos < (size = curr->size) && keyEquals(context, &key, keyFound, numberColumns, plainDB)) 
          {
-            // Adds the repeated key to the currently stored one.
-            if (!keyAddValue(context, keyFound, record, index->isWriteDelayed) || !nodeSaveDirtyKey(context, curr, pos)) 
-               return false;
-            break;
+            while (pos >= 0 && keyEquals(context, &key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos--].record >= record);  
+            while (++pos < size && keyEquals(context, &key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos].record < record);
          }
-         else if (nodeIsLeaf(curr))
+         
+         if (nodeIsLeaf(curr))
          {
             // If the node will becomes full, the insert is done again, this time keeping track of the ancestors. Note: with k = 50 and 200000 
             // values, there are about 1.1 million useless pushes without this redundant insert.
@@ -803,7 +836,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
             }
             else
             {
-               if (!keyAddValue(context, &key, record, index->isWriteDelayed) || !nodeInsert(context, curr, &key, LEAF, LEAF, pos))
+               key.record = record;
+               if (!nodeInsert(context, curr, &key, LEAF, LEAF, pos))
                   return false;
                if (splitting && !indexSplitNode(context, curr, count)) // Curr has overflown.
                      return false;
@@ -852,15 +886,6 @@ bool indexRename(Context context, Index* index, CharP newName)
    if (!nfRename(context, &index->fnodes, buffer, sourcePath, slot)) 
       return false;
 
-   // Renames the repeated values
-   buffer[xstrlen(buffer) - 1] = 'r';
-	if (index->fvalues && !nfRename(context, index->fvalues, buffer, sourcePath, slot)) 
-   {
-      // Renames .idk back if an error occurs when renaming .idr.
-      buffer[xstrlen(buffer) - 1] = 'k';
-      nfRename(context, &index->fnodes, buffer, sourcePath, slot);
-      return false;
-   }
    return true;
 }
 
@@ -921,29 +946,25 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
  * @param bitMap The table bitmap which indicates which rows will be in the result set. 
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap)
 {
    TRACE("findMinValue")
    Node* curr;
    Key* currKeys;
-   Key currKey;
-   int16* children;
-   int16* vector = TC_heapAlloc(heap, index->nodeCount << 1);
+   uint16* children;
+   uint16* vector = (uint16*)index->table->nodes;
    int32 size,
          idx = 0,
-         valRec,
          i,
          nodeCounter = index->nodeCount + 1,
-         record, 
-         next,
-         count = 1;
-   XFile* fvalues = index->fvalues;
+         record; 
+   uint32 count = 1;
       
    // Recursion using a stack. The array sole element is 0.
-   while (count > 0)
+   vector[0] = 0;
+   while (count)
    {
       idx = vector[--count];
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -959,43 +980,14 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       i = -1;
       currKeys = curr->keys;
       children = curr->children;
-      
-      if (bitMap)
-      {
-         while (++i < size)
-            if ((valRec = (currKey = currKeys[i]).valRec) < 0)
-            {
-               if (IntVectorisBitSet(bitMap, -1 - currKey.valRec))
-               {
-                  xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
-                  break;
-               }
-            }
-            else if (valRec != NO_VALUE)
-            {
-               while (valRec != NO_MORE)
-               {
-                  nfSetPos(fvalues, valRec * VALUERECSIZE);
-                  valueLoad(context, &record, &next, fvalues);
-                  if (IntVectorisBitSet(bitMap, record))
-                  {
-                     xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
-                     break;
-                  }
-                  valRec = next;
-               }
-               if (valRec != NO_MORE)
-                  break;
-            }
-      }
-      else
-         while (++i < size)
-            if ((currKey = currKeys[i]).valRec != NO_VALUE)
-            {
-               xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
-               break;
-            }
-         
+            
+      while (++i < size)
+         if ((record = currKeys[i].record) != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, record)))
+         {               
+            xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
+            break;               
+         }
+   
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
       i++;   
       if (!nodeIsLeaf(curr))
@@ -1013,29 +1005,25 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  * @param index The index where to find the minimum value.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param sqlValue The maximum value inside the given range to be returned.
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap)
 {
    TRACE("findMaxValue")
    Node* curr;
    Key* currKeys;
-   Key currKey;
-   int16* children;
-   int16* vector = TC_heapAlloc(heap, index->nodeCount << 1);
+   uint16* children;
+   uint16* vector = (uint16*)index->table->nodes;
    int32 size,
          idx = 0,
-         valRec,
          i,
          nodeCounter = index->nodeCount + 1,
-         record,
-         next,
-         count = 1;
-   XFile* fvalues = index->fvalues;
+         record;
+   uint32 count = 1;
 
    // Recursion using a stack. The array sole element is 0.  
-   while (count > 0)
+   vector[0] = 0;
+   while (count)
    {
       idx = vector[--count];
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1051,41 +1039,12 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       currKeys = curr->keys;
       children = curr->children;
       
-      if (bitMap)
-      {
-         while (--i >= 0)
-            if ((valRec = (currKey = currKeys[i]).valRec) < 0)
-            {
-               if (IntVectorisBitSet(bitMap, -1 - currKey.valRec))
-               {
-                  xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
-                  break;
-               }
-            }
-            else if (valRec != NO_VALUE)
-            {
-               while (valRec != NO_MORE)
-               {
-                  nfSetPos(fvalues, valRec * VALUERECSIZE);
-                  valueLoad(context, &record, &next, fvalues);
-                  if (IntVectorisBitSet(bitMap, record))
-                  {
-                     xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
-                     break;
-                  }
-                  valRec = next;
-               }
-               if (valRec != NO_MORE)
-                  break;
-            }
-      }
-      else
-         while (--i >= 0)
-            if ((currKey = currKeys[i]).valRec != NO_VALUE)
-            {
-               xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
-               break;
-            }
+      while (--i >= 0)
+         if ((record = currKeys[i].record) != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, record)))
+         {               
+            xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
+            break;               
+         }
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
       if (!nodeIsLeaf(curr))
@@ -1149,17 +1108,17 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
          i,
          valRec,
          node = 0,
-         nodeCounter = index->nodeCount + 1,
-         count = 1;
+         nodeCounter = index->nodeCount + 1;
+   uint32 count = 1;
    Node* curr;
-   int16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
-   int32* valRecs = TC_heapAlloc(heap, nodeCounter << 2);
+   uint16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
+   int32* valRecs = index->table->nodes;
    Key* keys;
-   int16* children;
+   uint16* children;
    
    // Recursion using a stack. The nodes array sole element is 0.
    valRecs[0] = NO_VALUE;
-   while (count > 0) 
+   while (count) 
    {
       node = nodes[--count]; // Gets the child node.
       valRec = valRecs[count]; // Gets the key node.
@@ -1181,7 +1140,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       {
          i = -1;
          while (++i < size)
-            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes))
+            if (!writeKey(context, index, keys[i].record, bitMap, tempTable, record, columnIndexes))
                return false;
          if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes))
             return false;
@@ -1195,7 +1154,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
          }
          while (--size >= 0)
          {
-            valRecs[count] = keys[size].valRec;
+            valRecs[count] = keys[size].record;
             nodes[count++] = children[size];
          }
       }
@@ -1222,17 +1181,17 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i,
          valRec,
          node = 0,
-         nodeCounter = index->nodeCount + 1,
-         count = 1;
+         nodeCounter = index->nodeCount + 1;
+   uint32 count = 1;
    Node* curr;
-   int16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
-   int32* valRecs = TC_heapAlloc(heap, nodeCounter << 2);
+   uint16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
+   int32* valRecs = index->table->nodes;
    Key* keys;
-   int16* children;
+   uint16* children;
    
    // Recursion using a stack. The nodes array sole element is 0.
    valRecs[0] = NO_VALUE;
-   while (count > 0) 
+   while (count) 
    {
       node = nodes[--count]; // Gets the child node.
       valRec = valRecs[count]; // Gets the key node.
@@ -1256,7 +1215,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
             return false;
          i = size;
          while (--i >= 0)
-            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes))
+            if (!writeKey(context, index, keys[i].record, bitMap, tempTable, record, columnIndexes))
                return false;
       }
       else // If not, push its key and process its children in the descending order. 
@@ -1264,7 +1223,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i = -1;
          while (++i < size)
          {
-            valRecs[count] = keys[i].valRec;
+            valRecs[count] = keys[i].record;
             nodes[count++] = children[i];
          }
          if (size > 0)
@@ -1282,7 +1241,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * 
  * @param context The thread context where the function is being executed.
  * @param index The index being used to sort the query results.
- * @param valRec The negation of the record or a pointer to a list of values.
+ * @param valRec The record index.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param tempTable The temporary table for the result set.
  * @param record A record for writing in the temporary table.
@@ -1292,74 +1251,38 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
 bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes) 
 {
    TRACE("writeKey")
-   XFile* fvalues = index->fvalues;
-   Table* table = index->table;
-   int32 valueRecord,
-         valueNext;
+   Table* origTable = index->table;
    
-   if (valRec < 0) // No repeated value, just cheks the record. 
+   if (valRec != NO_VALUE && (!bitMap->items || IntVectorisBitSet(bitMap, valRec))) 
    {
-      if (!bitMap->items || IntVectorisBitSet(bitMap, -1 - valRec)) 
-         if (!writeSortRecord(context, table, -1 - valRec, tempTable, record, columnIndexes))
-            return false;
-   }
-   else if (valRec != NO_VALUE) // Checks all the repeated values if the value was not deleted.
-      while (valRec != NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+      PlainDB* plainDB = &origTable->db;
+      int16* offsets = origTable->columnOffsets;
+      int8* types = origTable->columnTypes;
+      uint8* origNulls = origTable->columnNulls;
+      uint8* tempNulls = tempTable->columnNulls;
+      uint8* basbuf = plainDB->basbuf;
+      uint8* buffer = basbuf + offsets[origTable->columnCount];
+      
+      int32 i = tempTable->columnCount,
+                colIndex,
+            bytes = NUMBEROFBYTES(origTable->columnCount);
+      bool isNull;
+      
+      if (!plainRead(context, &origTable->db, valRec)) // Reads the record.
+         return false;
+      xmemmove(origNulls, buffer, bytes); // Reads the bytes of the nulls.
+      
+      while (--i >= 0) // Reads the fields for the temporary table.
       {
-         nfSetPos(fvalues, VALUERECSIZE * valRec);
-         if (!valueLoad(context, &valueRecord, &valueNext, fvalues))
-            return false;
-         if (!bitMap->items || IntVectorisBitSet(bitMap, valueRecord))
-            if (!writeSortRecord(context, table, valueRecord, tempTable, record, columnIndexes))
-               return false;
-         valRec = valueNext;
-      }
-   return true;
-}
-
-/**
- * Reads from the selected record from the table and writes the necessary fields in the temporary table.
- * 
- * @param context The thread context where the function is being executed.
- * @param origTable The table where data is read from.
- * @param pos The position of the selected record.
- * @param tempTable The temporary table for the result set.
- * @param record A record for writing in the temporary table.
- * @param columnIndexes Has the indices of the tables for each resulting column.
- * @param clause The select clause of the query.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes) 
-                                                                                   
-{
-   TRACE("writeSortRecord")
-   PlainDB* plainDB = &origTable->db;
-   int16* offsets = origTable->columnOffsets;
-   int8* types = origTable->columnTypes;
-   uint8* origNulls = origTable->columnNulls;
-   uint8* tempNulls = tempTable->columnNulls;
-   uint8* basbuf = plainDB->basbuf;
-   uint8* buffer = basbuf + offsets[origTable->columnCount];
-   
-   int32 i = tempTable->columnCount,
-             colIndex,
-         bytes = NUMBEROFBYTES(origTable->columnCount);
-   bool isNull;
-   
-   if (!plainRead(context, &origTable->db, pos)) // Reads the record.
-      return false;
-   xmemmove(origNulls, buffer, bytes); // Reads the bytes of the nulls.
-   
-   while (--i >= 0) // Reads the fields for the temporary table.
-   {
-      colIndex = columnIndexes[i];
-      if (!(isNull = isBitSet(origNulls, colIndex)) 
-       && !readValue(context, plainDB, record[i], offsets[colIndex], types[colIndex], basbuf, false, false, true, -1, null))
-         return false; 
-      setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
-   } 
-   if (!writeRSRecord(context, tempTable, record)) // Writes the temporary table record.
-      return false;
+         colIndex = columnIndexes[i];
+         if (!(isNull = isBitSet(origNulls, colIndex)) 
+          && !readValue(context, plainDB, record[i], offsets[colIndex], types[colIndex], basbuf, false, false, true, -1, null))
+            return false; 
+         setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+      } 
+      if (!writeRSRecord(context, tempTable, record)) // Writes the temporary table record.
+         return false;
+   }
    return true;
 }
 

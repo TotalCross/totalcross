@@ -24,6 +24,7 @@
  * @param context The thread context where the function is being executed.
  * @param name The name of the file.
  * @param isCreation Indicates if the file must be created or just open.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the file will be created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param xFile A pointer to the normal file structure.
@@ -32,7 +33,7 @@
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize);
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, CharP sourcePath, int32 slot, XFile* xFile, int32 cacheSize);
 
 /**
  * Reads file bytes.
@@ -141,5 +142,34 @@ bool flushCache(Context context, XFile* xFile);
  * @throws DriverException An exception with the error message.
  */
 void fileError(Context context, int32 errorCode, CharP fileName);
+
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+#if defined(POSIX) || defined(ANDROID)
+/**
+ * Opens a disk file to store tables and put it in the files list.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @param mode Indicates if the file must be created or just opened. 
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32 openFile(Context context, XFile* xFile, int32 mode);
+
+/**
+ * Reopens a file if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param xFile A pointer to the normal file structure.
+ * @return The error code if an error occurred or zero if the function succeeds.
+ */
+int32 reopenFileIfNeeded(Context context, XFile* xFile);
+
+/**
+ * Removes a file from the file list.
+ *
+ * @param xFile A pointer to the normal file structure.
+ */
+void removeFileFromList(XFile* xFile);
+#endif
 
 #endif

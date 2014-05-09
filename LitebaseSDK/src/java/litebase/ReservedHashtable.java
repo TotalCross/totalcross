@@ -22,51 +22,51 @@ class ReservedHashtable
    private Entry[] table;
 
    /**
-   * Constructs a new, empty hash table with the specified initial capacity.
-   *
-   * @param initialCapacity The number of elements you think the hash table will end with. 
-   */
+    * Constructs a new, empty hash table with the specified initial capacity.
+    *
+    * @param initialCapacity The number of elements the hash table will probably end with. 
+    */
    ReservedHashtable(int initialCapacity)
    {
       table = new Entry[initialCapacity];
    }
 
    /**
-   * Returns the value to which the specified hash is mapped in this hash table. 
-   * That is, return the token code if a reserved word is passed as a key which matches the identifier found.
-   *
-   * @param hash The key hash in the hash table.
-   * @param string The identifier with the passed hash code inside a <code>StringBuffer</code>.
-   * @return The value to which the key is mapped in this hash table; -1 if the key is not mapped to any value in this hash table.
-   */
+    * Returns the value to which the specified hash is mapped in this hash table. 
+    * That is, return the token code if a reserved word is passed as a key which matches the identifier found.
+    *
+    * @param hash The key hash in the hash table.
+    * @param string The identifier with the passed hash code inside a <code>StringBuffer</code>.
+    * @return The value to which the key is mapped in this hash table; -1 if the key is not mapped to any value in this hash table.
+    */
    int get(int hash, StringBuffer string)
    {
       int index = (hash & 0x7FFFFFFF) % table.length;
-      for (Entry e = table[index] ; e != null ; e = e.next)
-         if (e.hash == hash && equalsSB((String)e.key, string))
-            return e.value;
+      for (Entry entry = table[index]; entry != null; entry = entry.next)
+         if (entry.hash == hash && equalsSB(entry.key, string))
+            return entry.value;
       return -1;
    }
 
    /**
-   * Maps the specified key to the specified value in this hash table. That is, puts the pair <reserved word, token code> in the hash table.
-   *
-   * @param key The hash table key.
-   * @param value The value.
-   */
-   void put(Object key, int value)
+    * Maps the specified key to the specified value in this hash table. That is, puts the pair <reserved word, token code> in the hash table.
+    *
+    * @param key The hash table key.
+    * @param value The value.
+    */
+   void put(String key, int value)
    {
       Entry[] tab = table;
-      int hash = key.hashCode(), // flsobral@tc100b4_23: this operation throws NPE if key is null, no need to explicitly test that.
+      int hash = key.hashCode(), // flsobral@tc100b4_23: this operation throws NPE if key is null; no need to explicitly test that.
           index = (hash & 0x7FFFFFFF) % tab.length;
 
       // Creates the new entry.
-      Entry e = new Entry();
-      e.hash = hash;
-      e.key = key;
-      e.value = value;
-      e.next = tab[index];
-      tab[index] = e;
+      Entry entry = new Entry();
+      entry.hash = hash;
+      entry.key = key;
+      entry.value = value;
+      entry.next = tab[index];
+      tab[index] = entry;
    }
    
    /**

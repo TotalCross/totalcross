@@ -89,7 +89,7 @@ public class TestDeleteAndPurge extends TestCase
       driver.executeUpdate("INSERT INTO palm (cod) values (33)");
       driver.executeUpdate("INSERT INTO palm (cod) values (34)");
       driver.executeUpdate("INSERT INTO palm (cod) values (35)");
-      driver.executeUpdate("DELETE FROM palm where rowid=5"); // Deletes the last one.
+      driver.executeUpdate("DELETE FROM palm where palm.rowid=5"); // Deletes the last one.
       driver.purge("palm");
       driver.closeAll();
       driver = AllTests.getInstance("Test"); 

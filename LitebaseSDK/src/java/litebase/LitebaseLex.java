@@ -71,7 +71,7 @@ class LitebaseLex
    /**
     * This character denotes the end of file.
     */
-   private static final int YYEOF = -1;
+   static final int YYEOF = -1; // juliana@253_9: improved Litebase parser.
 
    /** 
     * The parser. 
@@ -200,6 +200,7 @@ class LitebaseLex
    }
 
    // juliana@224_2: improved memory usage on BlackBerry.
+   // juliana@253_9: improved Litebase parser.
    /**
     * The method which does the lexical analizys.
     *
@@ -232,7 +233,6 @@ class LitebaseLex
          if ((is[yycurrent] & IS_ALPHA) != 0) // The first character must be a letter.
          {
             int hashCode = 0;
-            boolean isLowerCase = true;
 
             initialPos = yyposition - 1;
             nameToken.setLength(0); // Initializes the current identifier token.
@@ -240,10 +240,7 @@ class LitebaseLex
             while (yycurrent >= 0 && (is[yycurrent] & IS_ALPHA_DIGIT) != 0) // The other characters must be a letter, digit, or '_'.
             { 
                if ('A' <= yycurrent && yycurrent <= 'Z') // Converts to lower case.
-               {
                   nameToken.append((char)(yycurrent += 32));
-                  isLowerCase = false;
-               }
                else
                   nameToken.append((char)yycurrent);
                hashCode = (hashCode << 5) - hashCode + yycurrent;
@@ -253,11 +250,8 @@ class LitebaseLex
             // juliana@213_7: changed to Hashtable and tests for colision.
             // Sees if the identifier is a reserved word or just an identifier.
             if ((value = reserved.get(hashCode, nameToken)) != -1)
-               return value;
-            if (isLowerCase)
-               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
-            else
-               yyparser.yylval.sval = nameToken.toString();
+               return value;           
+            yyparser.yylval = nameToken.toString();
             return LitebaseParser.TK_IDENT;
          }
 
@@ -285,7 +279,7 @@ class LitebaseLex
             if (yycurrent >= 0 && (is[yycurrent] & IS_END_NUM) != 0)
                yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
 
-            yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
+            yyparser.yylval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
             return LitebaseParser.TK_NUMBER;
          }
          
@@ -308,36 +302,15 @@ class LitebaseLex
                yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
                return LitebaseParser.TK_LESS_EQUAL; // <=.
             }
-            if (yybefore == '>')
-               return LitebaseParser.TK_GREATER; // >.
+            if (yybefore == '>' || yybefore == '<') // > or <.
+               return yybefore; 
 
-            if (yybefore == '<')
-               return LitebaseParser.TK_LESS; // <.
-
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
-                                      + LitebaseMessage.getMessage(LitebaseMessage.ERR_SYNTAX_ERROR) 
-                                      + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + yyposition);
+            yyparser.yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
          }
 
-         if ((is[yycurrent] & IS_PUNCT) != 0) // Finds tokens with one character, punctuators or '='.
-         {
-            yybefore = yycurrent;
-            yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
-            switch (yybefore)
-            {
-               case '.':
-                  return LitebaseParser.TK_DOT;
-               case ',':
-                  return LitebaseParser.TK_COMMA;
-               case '?':
-                  return LitebaseParser.TK_INTERROGATION;
-               case '=':
-                  return LitebaseParser.TK_EQUAL;
-            }
-         }
-
+         // Finds tokens with one character, punctuators or '='.
          // Sees if the tokens are arithmetic operators, '(', or ')'. In this case, returns the name of the token.
-         if ((is[yycurrent] & IS_OPERATOR) != 0)
+         if ((is[yycurrent] & (IS_PUNCT | IS_OPERATOR)) != 0) 
          {
             yybefore = yycurrent;
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
@@ -363,10 +336,9 @@ class LitebaseLex
                   yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
                   needsNewString = true;
                }
-               else 
-               if (yycurrent == YYEOF) // The string must be closed before the end of the file.
-                  return LitebaseParser.YYERRCODE;
-               else // Anything else can be inside the string .
+               else if (yycurrent == YYEOF) // The string must be closed before the end of the file.
+                  yyparser.yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+               else // Anything else can be inside the string.
                {
                   nameToken.append((char)yycurrent);
                   yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
@@ -375,17 +347,17 @@ class LitebaseLex
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
             
             if (nameToken.length() == 0)
-               yyparser.yylval.sval = "";
+               yyparser.yylval = "";
             else if (needsNewString) 
-               yyparser.yylval.sval = nameToken.toString();
+               yyparser.yylval = nameToken.toString();
             else
-               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 2 : 1));
+               yyparser.yylval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 2 : 1));
             return LitebaseParser.TK_STR;
          }
 
          // Error: invalid token.
          yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
-         return LitebaseParser.YYERRCODE;
+         yyparser.yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
       }
    }
 }

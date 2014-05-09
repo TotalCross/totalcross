@@ -22,6 +22,12 @@
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+// The list of table files currently opened.
+#if defined(POSIX) || defined(ANDROID)
+extern XFilesList filesList; 
+#endif
+
 // Globals for the parser.
 extern Hashtable reserved;              // Table containing the reserved words.
 extern MemoryUsageHT memoryUsage;       // Indicates how much memory a select sql command uses in its temporary .db.
@@ -29,32 +35,19 @@ extern uint8 is[256];                   // An array to help the selection of the
 extern int8 function_x_datatype[10][7]; // Matrix of data types which applies to the SQL functions.
 extern CharP names[10];                 // An array with the names of the SQL data functions.
 extern uint8 bitsInNibble[16];          // Used to count bits in an index bitmap.
-extern YYSTYPE yylval;                  // Variable where a token is stored.
-extern JChar questionMark[2];           // A jchar string representing "?".
-extern uint8 yytranslate[];             // YYTRANSLATE[YYLEX] -- Bison symbol number corresponding to YYLEX.
-extern uint8 yyr1[];                    // YYR1[YYN] -- Symbol number of symbol that rule YYN derives.
-extern uint8 yyr2[];                    // YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.
-extern int16 yypact[];                  // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing STATE-NUM.
-extern int16 yydefgoto[];               // YYDEFGOTO[NTERM-NUM].
-extern int16 yypgoto[];                 // YYPGOTO[NTERM-NUM].  
-extern int16 yycheck[];                 // Check table to see if the lexer state is correct.
-extern uint8 yystos[];                  // YYSTOS[STATE-NUM] -- The (internal number of the) accessing symbol of state STATE-NUM. 
-
-// YYDEFACT[STATE-NAME] -- Default rule to reduce with in state STATE-NUM when YYTABLE doesn't specify something else to do. Zero means the default 
-// is an error. 
-extern uint8 yydefact[];
-
-// YYTABLE[YYPACT[STATE-NUM]]. What to do in state STATE-NUM. If positive, shifts that token. If negative, reduces the rule which number is the 
-// opposite. If zero, does what YYDEFACT says. If YYTABLE_NINF, syntax error.  
-extern uint16 yytable[];                                      
+extern JChar questionMark[2];           // A jchar string representing "?".                                    
+                
+// juliana@parser_1: improved Litebase parser.                
                                                                                               
 // Classes used.                                                                              
 extern TCClass litebaseConnectionClass; // LitebaseConnection
 extern TCClass loggerClass;             // Logger
 
+// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
 extern DECLARE_MUTEX(log);    // Mutex for logging.
+extern DECLARE_MUTEX(files);  // Mutex for the Litebase files list.
 
 // rnovais@568_10 @570_1 
 extern int8 aggregateFunctionsTypes[FUNCTION_AGG_SUM + 1];  // Aggregate functions table. 

@@ -39,10 +39,12 @@ class SQLColumnListClause
     */
    boolean isComposed; // juliana@230_29: order by and group by now use indices on simple queries.
 
+   // juliana@266_1: corrected a possible AIOOBE when doing a order by or group by in a prepared statement in a table with more than 128 columns 
+   // on Java and BlackBerry.
    /**
     * Backup for the tableColIndexes, used in prepared statements.
     */
-   byte[] fieldTableColIndexesBak; // guich@554_37
+   short[] fieldTableColIndexesBak; // guich@554_37
 
    /**
     * Compares two SQL column lists clauses. They can only be considered equal if they list the same column list in the same sequence.

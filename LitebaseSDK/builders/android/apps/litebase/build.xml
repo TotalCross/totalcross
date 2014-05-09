@@ -95,7 +95,7 @@
     	
 	    <!-- update the tcfiles.zip with the tczs that will be installed -->
 	    <mkdir dir="${android.deploy}/assets" />
-	    <zip destfile="${android.deploy}/assets/tcfiles.zip" filesonly="true" level="9">
+	    <zip destfile="${android.deploy}/assets/tcfiles.zip" filesonly="true" compress="no">
 	      <zipfileset dir="${source.lb.path}/dist/lib"      includes="LitebaseLib.tcz" />
 	    </zip>    	
     </target>

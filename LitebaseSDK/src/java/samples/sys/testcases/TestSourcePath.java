@@ -82,16 +82,25 @@ public class TestSourcePath extends TestCase
       // Tests Windows CE memory card and folders with stress.
       try
       {
-         doTest(Convert.appendPath(File.getCardVolume().getPath(), "temporário/"));
-      } 
-      catch (IOException exception)
-      {
-         doTest(Convert.appendPath(Settings.appPath, "temporário/"));
+         String path = Convert.appendPath(Settings.appPath, "temporário/");
+         File file = new File(path);
+         file.createDir();
+         file.close();
+         
+         try
+         {
+            doTest(Convert.appendPath(File.getCardVolume().getPath(), "temporário/"));
+         } 
+         catch (IOException exception)
+         {
+            doTest(path);
+         }
+         catch (NullPointerException exception)
+         {
+            doTest(path);
+         }
       }
-      catch (NullPointerException exception)
-      {
-         doTest(Convert.appendPath(Settings.appPath, "temporário/"));
-      }
+      catch (IOException exception) {}
    	
    	// Tests that the an exception will be thrown if a relative path is used on the device.
    	try

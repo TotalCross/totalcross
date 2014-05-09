@@ -47,6 +47,7 @@ public class TestInvalidArguments extends TestCase
       driver.closeAll();
       testLongPath(); // Tests too long paths.
       testInvalidCrid(); // Tests invalid application id sizes.
+      testInvalidParameter(); // Tests invalid connection parameter. 
    }
 
    /**
@@ -657,6 +658,7 @@ public class TestInvalidArguments extends TestCase
          driver.execute("create index idx on person (rowid, u2)");
          fail("66");
       }
+      catch (ArrayIndexOutOfBoundsException exception) {}
       catch (DriverException exception) {}
       
       sBuffer.setLength(0);
@@ -733,6 +735,7 @@ public class TestInvalidArguments extends TestCase
          driver.prepareStatement(sBuffer.toString());
          fail("71");
       }
+      catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
       
       sBuffer.setLength(0);
@@ -746,6 +749,7 @@ public class TestInvalidArguments extends TestCase
          driver.executeQuery(sBuffer.toString());
          fail("72");
       }
+      catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
    }
    
@@ -1375,5 +1379,21 @@ public class TestInvalidArguments extends TestCase
             fail("141");  
          }
       }
+   }
+   
+   private void testInvalidParameter()
+   {
+      try
+      {
+         LitebaseConnection.getInstance("Test", "xpto; chars_type = ascii");
+         fail("140");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         LitebaseConnection.getInstance("Test", "crypto; xpto");
+         fail("141");
+      }
+      catch (DriverException exception) {}
    }
 }

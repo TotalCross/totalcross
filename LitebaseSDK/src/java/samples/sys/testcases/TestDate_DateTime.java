@@ -198,6 +198,12 @@ public class TestDate_DateTime extends TestCase
          fail("12");
       } 
       catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeUpdate("insert into person values ('Juliana Imperial', 29, '1979/26/06', '1979/06-26 2:00:00.000.0')");
+         fail("13");
+      } 
+      catch (SQLParseException exception) {}
    }
 
    /**
@@ -264,7 +270,7 @@ public class TestDate_DateTime extends TestCase
       try
       {
          ps.executeUpdate();
-         fail("13");
+         fail("14");
       }
       catch (SQLParseException exception) {}
       
@@ -276,7 +282,7 @@ public class TestDate_DateTime extends TestCase
       try
       {
          ps.executeUpdate();
-         fail("14");
+         fail("15");
       }
       catch (SQLParseException exception) {}
       
@@ -288,7 +294,7 @@ public class TestDate_DateTime extends TestCase
       try
       {
          ps.executeUpdate();
-         fail("15");
+         fail("16");
       }
       catch (SQLParseException exception) {}
       
@@ -300,7 +306,7 @@ public class TestDate_DateTime extends TestCase
       try
       {
          ps.executeUpdate();
-         fail("16");
+         fail("17");
       }
       catch (SQLParseException exception) {}
       
@@ -315,7 +321,7 @@ public class TestDate_DateTime extends TestCase
       }
       catch (SQLParseException exception) 
       {
-         fail("17");
+         fail("18");
       }
       catch (InvalidDateException exception) 
       {

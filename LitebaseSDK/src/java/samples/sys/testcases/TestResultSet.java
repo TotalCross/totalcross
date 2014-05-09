@@ -179,6 +179,13 @@ public class TestResultSet extends TestCase
          }
          catch (DriverException exception) {}
          catch (IllegalArgumentException exception) {}
+         try
+         {
+            resultSet.getInt("name");
+            fail("14");
+         }
+         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
       }
       
       // Tests first() and next().
@@ -411,65 +418,85 @@ public class TestResultSet extends TestCase
       
       // getStrings() with parameter beginning in the first record. 
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(3, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(0);
+      assertEquals(0, resultSet.getRow());
       assertEquals(4, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
       // getStrings() with parameter beginning in the second record. 
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(3, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(1);
+      assertEquals(1, resultSet.getRow());
       assertEquals(3, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
       // getStrings() with parameter beginning in the third record. 
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(2);
+      assertEquals(2, resultSet.getRow());
       assertEquals(2, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
       // getStrings() with parameter beginning in the fourth record. 
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(0, (matrix = resultSet.getStrings(0)).length);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(1)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(2)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(3)).length);
       assertBetween(4, matrix[0].length, 5);
       resultSet.absolute(3);
+      assertEquals(3, resultSet.getRow());
       assertEquals(1, (matrix = resultSet.getStrings(4)).length);
       assertBetween(4, matrix[0].length, 5);
       
@@ -492,7 +519,7 @@ public class TestResultSet extends TestCase
       try // It is not possible use getStrings() with negative numbers other than -1.
       {
          resultSet.getStrings(-2);
-         fail("14");
+         fail("15");
       }
       catch (IllegalArgumentException exception) {}
       
@@ -500,103 +527,103 @@ public class TestResultSet extends TestCase
       try
       {
          resultSet.absolute(1);
-         fail("15");
-      } 
-      catch (IllegalStateException exception) {}
-      try
-      {
-         resultSet.afterLast();
          fail("16");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.close();
+         resultSet.afterLast();
          fail("17");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.first();
+         resultSet.close();
          fail("18");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getString(1);
+         resultSet.first();
          fail("19");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getString("name");
+         resultSet.getString(1);
          fail("20");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getResultSetMetaData();
+         resultSet.getString("name");
          fail("21");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getRow();
+         resultSet.getResultSetMetaData();
          fail("22");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getRowCount();
+         resultSet.getRow();
          fail("23");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.getStrings();
+         resultSet.getRowCount();
          fail("24");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.isNull(1);
+         resultSet.getStrings();
          fail("25");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.isNull("name");
+         resultSet.isNull(1);
          fail("26");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.last();
+         resultSet.isNull("name");
          fail("27");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.next();
+         resultSet.last();
          fail("28");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.prev();
+         resultSet.next();
          fail("29");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.relative(1);
+         resultSet.prev();
          fail("30");
       } 
       catch (IllegalStateException exception) {}
       try
       {
-         resultSet.setDecimalPlaces(1, 1);
+         resultSet.relative(1);
          fail("31");
+      } 
+      catch (IllegalStateException exception) {}
+      try
+      {
+         resultSet.setDecimalPlaces(1, 1);
+         fail("32");
       } 
       catch (IllegalStateException exception) {} 
    } 

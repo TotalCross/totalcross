@@ -34,6 +34,11 @@ public class AllTests extends TestSuite
     */
    private static boolean isAscii;
    
+   /**
+    * Indicates if the connections of the tests except for <code>TestAsciiTables</code> and <code>TestSourcePath</code> use cryptography.
+    */
+   static boolean useCrypto;
+   
    static
    {
       Settings.useNewFont = true;
@@ -47,12 +52,14 @@ public class AllTests extends TestSuite
       super("Litebase Test Suite");
       if (Settings.platform.equals(Settings.ANDROID))
          Vm.debug(Vm.ALTERNATIVE_DEBUG);
+      addTestCase(TestAddColumn.class);
       addTestCase(TestAsciiTables.class); // juliana@210_2: now Litebase supports tables with ascii strings.
       addTestCase(TestBigJoins.class);
       addTestCase(TestBlob.class);
       addTestCase(TestCachedRows.class);
       addTestCase(TestClosedLitebaseAndProcessLogs.class);
       addTestCase(TestComposedIndexAndPK.class);
+      addTestCase(TestCryptoTables.class);
       addTestCase(TestDate_DateTime.class);
       addTestCase(TestDeleteAndMetaData.class);
       addTestCase(TestDeleteAndPurge.class);
@@ -95,14 +102,20 @@ public class AllTests extends TestSuite
    public void initUI() // rnovais@570_77
    {
       String appSecretKey = Settings.appSecretKey;
-      useLogger = appSecretKey != null && appSecretKey.startsWith("y");
-      isAscii = appSecretKey != null && appSecretKey.endsWith("y"); 
+      if (appSecretKey != null && appSecretKey.length() < 4)
+         appSecretKey = Settings.appSecretKey = null;   
+      useLogger = appSecretKey != null && appSecretKey.charAt(0) == 'y';
+      isAscii = appSecretKey != null && appSecretKey.charAt(1) == 'y';
+      useCrypto = appSecretKey != null && appSecretKey.charAt(2) == 'y';
+      LitebaseConnection.logOnlyChanges = appSecretKey != null && appSecretKey.charAt(3) == 'y';
       if (useLogger)
          LitebaseConnection.logger = LitebaseConnection.getDefaultLogger();
       super.initUI();
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{mbar.getMenuItems()[0], 
-                                   {new MenuItem("Config"), new MenuItem("isAscii", isAscii), new MenuItem("Drop all tables")}, 
-                                   {new MenuItem("Logs"), new MenuItem("Use Logger", useLogger), new MenuItem("Erase All Loggers")}}));
+                                   {new MenuItem("Config"), new MenuItem("isAscii", isAscii), new MenuItem("useCrypto", useCrypto), 
+                                    new MenuItem("Drop all tables")}, 
+                                   {new MenuItem("Logs"), new MenuItem("Use Logger", useLogger), 
+                                    new MenuItem("Log only changes", LitebaseConnection.logOnlyChanges), new MenuItem("Erase All Loggers")}}));
    }
 
    /** 
@@ -118,9 +131,11 @@ public class AllTests extends TestSuite
          {
             case 101:
                isAscii = !isAscii;
-               Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? "y" : "n");
                break;
-            case 102: // Drops All Tables. 
+            case 102:
+               useCrypto = !useCrypto;                                                                 
+               break;
+            case 103: // Drops All Tables. 
                dropAllTables();
                break;
             case 201: // Sets or unsets the logger usage.
@@ -135,11 +150,14 @@ public class AllTests extends TestSuite
                      LitebaseConnection.logger = null;
                   }
                }
-               Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? "y" : "n");
                break;
-            case 202: // Deletes all the logger files.
+            case 202:
+               LitebaseConnection.logOnlyChanges = !LitebaseConnection.logOnlyChanges;
+               break;
+            case 203: // Deletes all the logger files.
                LitebaseConnection.deleteLogFiles();
          }
+         Settings.appSecretKey = (useLogger? "y" : "n") + (isAscii? 'y' : 'n') + (useCrypto? 'y' : 'n') + (LitebaseConnection.logOnlyChanges? 'y' : 'n');
       } 
          
       super.onEvent(event);
@@ -225,7 +243,7 @@ public class AllTests extends TestSuite
    static LitebaseConnection getInstance()
    {
       return LitebaseConnection.getInstance(Settings.applicationId, 
-                                                     "chars_type =" + (isAscii? "ascii" : "unicode") + "; path = " + Settings.appPath);
+                                "chars_type =" + (isAscii? "ascii" : "unicode") + (useCrypto? "; crypto" : "") + "; path = " + Settings.appPath);
    }
    
    /**
@@ -236,7 +254,8 @@ public class AllTests extends TestSuite
     */
    static LitebaseConnection getInstance(String appCrid)
    {
-      return LitebaseConnection.getInstance(appCrid, "chars_type =" + (isAscii? "ascii" : "unicode") + "; path = " + Settings.appPath);
+      return LitebaseConnection.getInstance(appCrid,
+                                "chars_type =" + (isAscii? "ascii" : "unicode") + (useCrypto? "; crypto" : "") + "; path = " + Settings.appPath);
    }
    
    /**
@@ -248,7 +267,8 @@ public class AllTests extends TestSuite
     */
    static LitebaseConnection getInstance(String appCrid, String path)
    {
-      return LitebaseConnection.getInstance(appCrid, "chars_type =" + (isAscii? "ascii" : "unicode") + "; path = " + path);
+      return LitebaseConnection.getInstance(appCrid, 
+                                            "chars_type =" + (isAscii? "ascii" : "unicode") + (useCrypto? "; crypto" : "") + "; path = " + path);
    }
 }
 

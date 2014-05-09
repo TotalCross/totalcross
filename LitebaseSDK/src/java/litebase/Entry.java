@@ -29,7 +29,7 @@ class Entry
    /**
     * The reserved word string.
     */
-   Object key;
+   String key;
    
    /**
     * The next entry of the collision list.

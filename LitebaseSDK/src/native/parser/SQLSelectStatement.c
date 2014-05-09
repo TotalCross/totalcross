@@ -42,24 +42,24 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	xmemmove(selectClause, &parser->select, sizeof(SQLSelectClause));
 	selectClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = ((selectClause->fieldsCount? selectClause->fieldsCount : MAXIMUMS) << 2));
 	xmemmove(selectClause->fieldList, parser->selectFieldList, count);
-   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->tableListSize << 2));
+   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->select.tableListSize << 2));
 	xmemmove(selectClause->tableList, parser->tableList, count);
 
    if (isPrepared) // It is only necessary to re-allocate the parser structures if the statement is from a prepared statement.
 	{
-      if (parser->group_by.fieldsCount) // Sets the group by clause.
+      if (parser->groupBy.fieldsCount) // Sets the group by clause.
 		{
 			listClause = selectStmt->groupByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
-			xmemmove(listClause, &parser->group_by, sizeof(SQLColumnListClause));
-			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->group_by.fieldsCount << 2));
+			xmemmove(listClause, &parser->groupBy, sizeof(SQLColumnListClause));
+			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->groupBy.fieldsCount << 2));
 		   xmemmove(listClause->fieldList, parser->groupByfieldList, count);
 		}
 
-		if (parser->order_by.fieldsCount) // Sets the order by clause.
+		if (parser->orderBy.fieldsCount) // Sets the order by clause.
 		{
 			listClause = selectStmt->orderByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
-			xmemmove(listClause, &parser->order_by, sizeof(SQLColumnListClause));
-		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->order_by.fieldsCount << 2));
+			xmemmove(listClause, &parser->orderBy, sizeof(SQLColumnListClause));
+		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->orderBy.fieldsCount << 2));
 		   xmemmove(listClause->fieldList, parser->orderByfieldList, count);
 		}
 
@@ -81,14 +81,14 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	}
 	else
 	{
-		if (parser->group_by.fieldsCount) // Sets the group by clause.
+		if (parser->groupBy.fieldsCount) // Sets the group by clause.
 		{
-         selectStmt->groupByClause = &parser->group_by;
+         selectStmt->groupByClause = &parser->groupBy;
 			selectStmt->groupByClause->fieldList = parser->groupByfieldList;
 		}
-		if (parser->order_by.fieldsCount) // Sets the order by clause.
+		if (parser->orderBy.fieldsCount) // Sets the order by clause.
 		{
-         selectStmt->orderByClause = &parser->order_by;
+         selectStmt->orderByClause = &parser->orderBy;
          selectStmt->orderByClause->fieldList = parser->orderByfieldList;
 		}
    
@@ -636,8 +636,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	Table* tempTable3 = null; 
    CharP countAlias = null;
    int8 columnTypes[MAXIMUMS],
-        aggFunctionsCodes[MAXIMUMS],
-        colIndexesTable[MAXIMUMS];        
+        aggFunctionsCodes[MAXIMUMS];        
    uint8 nullsCurRecord[NUMBEROFBYTES(MAXIMUMS + 1)];     
    int16 columnIndexes[MAXIMUMS];	   
 	int32 columnHashes[MAXIMUMS], 
@@ -662,6 +661,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	SQLValue** record1;
 	SQLValue** record2;
    ResultSet* listRsTemp[MAXIMUMS]; //rnovais@200_4
+   Hashtable colHashesTable; // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
    Heap heap = null, 
 		  heap_1 = null, 
 		  heap_2 = null, 
@@ -704,7 +704,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
 
 	i = -1;	
-	xmemset(colIndexesTable, -1, MAXIMUMS);
+	colHashesTable = TC_htNew(selectFieldsCount, heap);
 	
    while (++i < selectFieldsCount)
    {
@@ -730,7 +730,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             columnHashes[size] = field->aliasHashCode;
             columnIndexes[size] = param->tableColIndex;
             columnIndexesTables[size++] = (int32)field->table;
-            colIndexesTable[param->tableColIndex] = 1; // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+
+            // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
+            TC_htPut32(&colHashesTable, param->aliasHashCode, 1);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
          }
          else // Uses the parameter hash and data type.
          {
@@ -746,7 +748,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          columnHashes[size] = field->tableColHashCode;
          columnIndexes[size] = field->tableColIndex;
          columnIndexesTables[size++] = (int32)field->table;
-         colIndexesTable[field->tableColIndex] = 0; // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+         
+         // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
+         TC_htPut32(&colHashesTable, field->aliasHashCode, 0);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+         TC_htPut32(&colHashesTable, field->tableColHashCode, 0);
       }
    }
 
@@ -764,7 +769,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         if (!colIndexesTable[(field = fieldList[i])->tableColIndex])
+         // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
+         if (!TC_htGet32Inv(&colHashesTable, (field = fieldList[i])->aliasHashCode))
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
@@ -990,8 +996,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    count = tempTable1->columnCount;
 
    // When creating the new temporary table, removes the extra fields that were created to perform the sorting.
+   // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
    if (sortListClause && count != selectFieldsCount)
-      size -= (count - selectFieldsCount);
+      size = selectFieldsCount;
 
    // Also updates the types and hashcodes to reflect the types and aliases of the
    // final temporary table, since they may still reflect the aggregated functions paramList types and hashcodes.
@@ -1022,8 +1029,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                                         duplicateByteArray(columnTypes, size, heap_2), duplicateIntArray(columnSizes, size, heap_2), null, null, 
                                                                                         NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_2)))
 	   goto error; // juliana@223_14: solved possible memory problems.
-
-   count = totalRecords; // Starts writing the records from the first temporary table into the second temporary table.
 	 
    if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {
@@ -1065,10 +1070,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             index = tempTable1->columnIndexes[field->index];
          if (field->sqlFunction == FUNCTION_AGG_MAX)
          {
-            if (!findMaxValue(context, index, curRecord[i], rowsBitmap, heap))
+            if (!findMaxValue(context, index, curRecord[i], rowsBitmap))
                goto error;
          }
-         else if (!findMinValue(context, index, curRecord[i], rowsBitmap, heap))
+         else if (!findMinValue(context, index, curRecord[i], rowsBitmap))
             goto error;
       }
       
@@ -1084,7 +1089,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
    
    prevRecord = record2 = newSQLValues(i, heap);
-   numOfBytes = NUMBEROFBYTES(count);
    nullsPrevRecord = tempTable1->columnNulls;
    writeDelayed = aggFunctionExist || groupByClause;
 
@@ -1465,7 +1469,7 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
       auxBitmap = newIntBits(recordCount, heap); 
    else
       xmemzero(&auxBitmap, sizeof(IntVector));
-      
+
    rsBag->indexCount = 0;
    table = rsBag->table;
    
@@ -1542,7 +1546,7 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
          {
             if (!getOperandValue(context, indexedValues[j + i + 1], &markBits.rightKey.keys[0]))
                return false;
-            markBits.rightKey.valRec = NO_VALUE;
+            markBits.rightKey.record = NO_VALUE;
             markBits.rightKey.index = index; 
             markBits.rightOp[j] = relationalOps[j + i++ + 1]; // The next operation is already processed.
          }
@@ -1572,7 +1576,7 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
          markBits.leftOp[j] = op;
       }
       markBits.leftKey.index = index;
-      markBits.leftKey.valRec = NO_VALUE;
+      markBits.leftKey.record = NO_VALUE;
 
       switch (op) // Finally, marks all rows that match this value / range of values.
       {
@@ -1904,7 +1908,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
             }
             else // Verifies if the column name in the field list is ambiguous.
             {
-               rsTableAux = rsTable = null;
+               rsTable = null;
                foundFirst = false;
                currentTable = auxTable = null;
                
@@ -2089,7 +2093,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    int32* rsSizes = rsTable->columnSizes;
    int16* items = rs2TableColIndexes? rs2TableColIndexes : null;
 	int32 countSelectedField = selectClause->fieldsCount, // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
-         i = countSelectedField, 
+         i, 
          j,
          totalRecords = 0,
          rowSize = tempDB->rowSize,
@@ -2390,7 +2394,7 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
                {
                   if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
                   {
-                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition && whereClause)
                      {
                         whereClause->resultSet = resultSet;
                         return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
@@ -2626,8 +2630,13 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                   switch (booleanTreeEvaluateJoin(context, rightTree, rsList, totalRs, heap))
                   {
                      case VALIDATION_RECORD_NOT_OK:
-                     case VALIDATION_RECORD_INCOMPLETE_OK: 
                         return VALIDATION_RECORD_NOT_OK;
+                     
+                     // juliana@270_21: solved a very old join problem when using OR and false constants comparison which would make the join 
+                     // return no results. 
+                     case VALIDATION_RECORD_INCOMPLETE_OK: 
+                        return VALIDATION_RECORD_INCOMPLETE_OK;
+
                      case VALIDATION_RECORD_OK: 
                         return VALIDATION_RECORD_OK; // The right side returned true.
                      case VALIDATION_RECORD_INCOMPLETE: 
@@ -2668,14 +2677,11 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
          colIndex,
          sqlAggFunction, 
          colType;
-   double doubleVal;
    SQLValue* aggValue;
    SQLValue* value;
 
    while (--i >= 0) // Performs the calculation of the aggregation functions.
    {
-      doubleVal = 0;
-
       if (!aggFunctionsCodes[i])
       {
          groupCountCols[i]++;
@@ -2907,17 +2913,14 @@ void findMaxMinIndex(SQLResultSetField* field)
        field->isComposed = false;
    }
    else
-   {
       while (--i >= 0)
-      {
          if (*composedIndices[i]->columns == column) // Else, if the field is the first field of a composed index, uses it.
          {
             field->index = i;
             field->isComposed = true;
             break;
          }
-      }
-   }
+
    if (i == -1)
       field->index = -1;
 }

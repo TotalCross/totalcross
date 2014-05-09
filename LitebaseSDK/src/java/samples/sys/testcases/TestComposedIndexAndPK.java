@@ -21,7 +21,14 @@ import totalcross.io.*;
  */
 public class TestComposedIndexAndPK extends TestCase
 {
+   /**
+    * The connection with Litebase.
+    */
    LitebaseConnection driver = AllTests.getInstance("Test");
+   
+   /**
+    * The path where table files are stored.
+    */
    String path = driver.getSourcePath();
 
    /**

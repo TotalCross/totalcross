@@ -338,8 +338,8 @@ void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree)
             if (leftIndex > rightIndex) // Puts the least index on the left. 
             {
                SQLBooleanClauseTree* auxTree = leftTree;
-               leftTree = booleanClauseTree->leftTree = rightTree;
-               rightTree = booleanClauseTree->rightTree = auxTree;
+               booleanClauseTree->leftTree = rightTree;
+               booleanClauseTree->rightTree = auxTree;
                booleanClauseTree->indexRs = leftIndex;
             }
             else
@@ -657,7 +657,7 @@ int32 compareNumericOperands(Context context, SQLBooleanClauseTree* booleanClaus
          return -1;
       }
       
-      leftValueType = rightValueType = booleanClauseTree->leftTree->valueType = booleanClauseTree->rightTree->valueType = DOUBLE_TYPE;
+      booleanClauseTree->leftTree->valueType = booleanClauseTree->rightTree->valueType = DOUBLE_TYPE;
       booleanClauseTree->isFloatingPointType = true;
       compareType = DOUBLE_TYPE;
    }
@@ -1003,7 +1003,7 @@ bool bindColumnsSQLBooleanClauseTree(Context context, SQLBooleanClauseTree* bool
       else
       {
          if (field->dataType == UNDEFINED_TYPE)  // rnovais@570_5
-            dtParameter = field->dataType = field->parameter->dataType;
+            field->dataType = field->parameter->dataType;
          dtParameter = field->dataType;
          
          if (booleanClauseTree->valueType != UNDEFINED_TYPE && booleanClauseTree->valueType != dtParameter)
@@ -1293,13 +1293,11 @@ SQLBooleanClauseTree* removeNots(SQLBooleanClauseTree* booleanClauseTree, Heap h
 {
 	TRACE("removeNots")
 	SQLBooleanClauseTree* tree;
-   SQLBooleanClauseTree* leftTree;
    SQLBooleanClauseTree* rightTree;
 
    if (!booleanClauseTree) // Does nothing with an empty expression is used.
       return null;
 
-   leftTree = booleanClauseTree->leftTree;
    rightTree = booleanClauseTree->rightTree;
       
    if (booleanClauseTree->operandType == OP_BOOLEAN_NOT)
@@ -1467,7 +1465,7 @@ SQLBooleanClauseTree* cloneTree(SQLBooleanClauseTree* booleanClauseTree, SQLBool
          tree = booleanClauseTree;
          break;
       }
-   if (i == -1)
+   if (!tree)
    {
       if (destTree != booleanClauseTree)
       {

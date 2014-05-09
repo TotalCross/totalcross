@@ -1,6 +1,7 @@
 litebase/RowIterator|public native boolean next();
 litebase/RowIterator|public native boolean nextNotSynced();
 litebase/RowIterator|public native void setSynced();
+litebase/RowIterator|public native void setNotSynced();
 litebase/RowIterator|public native void close();
 litebase/RowIterator|public native void reset();
 litebase/RowIterator|public native short getShort(int column);
@@ -41,6 +42,8 @@ litebase/LitebaseConnection|public boolean isOpen(String tableName) throws Drive
 litebase/LitebaseConnection|public native static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException, NullPointerException;
 litebase/LitebaseConnection|public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
 litebase/LitebaseConnection|public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+litebase/LitebaseConnection|public native void encryptTables(String crid, String sourcePath, int slot); 
+litebase/LitebaseConnection|public native void decryptTables(String crid, String sourcePath, int slot);
 litebase/ResultSet|public native litebase.ResultSetMetaData getResultSetMetaData();
 litebase/ResultSet|public native void close() throws IllegalStateException;
 litebase/ResultSet|public native void beforeFirst() throws IllegalStateException;
@@ -77,7 +80,8 @@ litebase/ResultSet|public native int getRow();
 litebase/ResultSet|public native void setDecimalPlaces(int col, int places) throws DriverException;
 litebase/ResultSet|public native int getRowCount();
 litebase/ResultSet|public native boolean isNull(int col);
-litebase/ResultSet|public native boolean isNull(String colName) throws NullPointerException;  
+litebase/ResultSet|public native boolean isNull(String colName) throws NullPointerException; 
+litebase/ResultSet|public native String rowToString() throws DriverException;   
 litebase/ResultSetMetaData|public native int getColumnCount();
 litebase/ResultSetMetaData|public native int getColumnDisplaySize(int column) throws IllegalArgumentException;
 litebase/ResultSetMetaData|public native String getColumnLabel(int column) throws IllegalArgumentException;
@@ -108,3 +112,5 @@ litebase/PreparedStatement|public native void setDateTime(int index, totalcross.
 litebase/PreparedStatement|public native void setNull(int index) throws SQLParseException;
 litebase/PreparedStatement|public native void clearParameters();
 litebase/PreparedStatement|public native String toString();
+litebase/PreparedStatement|public native void close();
+litebase/PreparedStatement|public native boolean isValid();

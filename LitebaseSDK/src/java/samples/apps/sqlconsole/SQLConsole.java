@@ -120,6 +120,7 @@ public class SQLConsole extends MainWindow
    private Button btCopyResults;
    
    private MenuItem miAscii; // guich@251_2: SQLConsole can now be used with ascii tables.
+   private MenuItem miCrypto;
    
    /**
     * The id of the database used in the current session.
@@ -170,6 +171,7 @@ public class SQLConsole extends MainWindow
             new MenuItem("Use default app id"),
             new MenuItem(),
             miAscii = new MenuItem("Is ascii", false), // guich@251_2: SQLConsole can now be used with ascii tables.
+            miCrypto = new MenuItem("Is Crypto", false),
             new MenuItem(),
             new MenuItem("Exit")
          };
@@ -186,6 +188,7 @@ public class SQLConsole extends MainWindow
             {
                databaseId = s.substring(0,4);
                miAscii.isChecked = s.charAt(5) == '1';
+               miCrypto.isChecked = s.length() == 7 && s.charAt(6) == '1';
             }
          }
          else databaseId = Settings.applicationId;
@@ -425,7 +428,12 @@ public class SQLConsole extends MainWindow
          if (res >= 0)
             status(res + " records affected.");
       }
-      
+      else if (command.equals("purge"))
+      {
+         int res = conn.purge(sql.substring(6).trim());
+         if (res >= 0)
+            status(res + " records affected.");
+      }
       else // Creates a table or an index.
       {
          conn.execute(sql);
@@ -517,9 +525,10 @@ public class SQLConsole extends MainWindow
                   break;
                }
                case 4: // set/unset isascii
+               case 5: // set/unset isascii
                   connChanged(); // guich@251_2: SQLConsole can now be used with ascii tables.
                   break;
-               case 6: // Exits the application.
+               case 7: // Exits the application.
                   exit(0);
                   break;
             }
@@ -590,9 +599,14 @@ public class SQLConsole extends MainWindow
    // guich@251_2: SQLConsole can now be used with ascii tables.
    private void connChanged()
    {
-      Settings.appSecretKey = databaseId + "|" + (miAscii.isChecked?"1":"0");
+      Settings.appSecretKey = databaseId + "|" + (miAscii.isChecked?"1":"0") + (miCrypto.isChecked?"1":"0");
       if (conn != null) conn.closeAll();
-      conn = LitebaseConnection.getInstance(databaseId,miAscii.isChecked ? "chars_type=chars_ascii" : null);
+      String pars = null;
+      if (miAscii.isChecked)
+         pars = "chars_type=chars_ascii";
+      if (miCrypto.isChecked)
+         pars = pars == null ? "crypto" : pars+";crypto";
+      conn = LitebaseConnection.getInstance(databaseId, pars);
    }
 
    /**

@@ -15,6 +15,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
+// juliana@253_5: removed .idr files from all indices and changed its format.
 /**
  * The structure of a table.
  */
@@ -77,6 +78,11 @@ class Table
    static final int IS_ASCII = 2;
 
    /**
+    * Indicates if the table uses cryptography.
+    */
+   static final int USE_CRYPTO = 3; // juliana@253_8: now Litebase supports weak cryptography.
+   
+   /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
     * one, even if elements are deleted. <p>The record attributes are stored in the first two bits of the <code>rowid</code>.
     */
@@ -138,6 +144,12 @@ class Table
     * Indicates that a table has been modified and must be marked as not closed properly after opened and before closed.
     */
    boolean isModified;
+   
+   // juliana@270_27: now purge will also really purge the table if it only suffers updates.
+   /**
+    * Indicates if the table was updated after the last time it was opened.
+    */
+   boolean wasUpdated;
 
    /**
     * The full name of the table.
@@ -157,7 +169,7 @@ class Table
    /**
     * Just for the case when the column has a default value but the user explicited the insert or update of a null.
     */
-   boolean[] storeNulls;
+   byte[] storeNulls;
 
    /**
     * The column attributes.
@@ -223,17 +235,17 @@ class Table
    /**
     * A data stream for the table meta data.
     */
-   private DataStreamLE tsmdDs;
+   private DataStreamLB tsmdDs; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * Stores old values read from the table. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
     */
-   private SQLValue[] gvOlds;
+   SQLValue[] gvOlds;
    
    /**
     * Stores flags from the record. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
     */
-   private byte[] ghas;
+   byte[] ghas;
    
    /**
     * An array to store the primary key values. Used in <code>writeRecord()</code>. 
@@ -244,8 +256,6 @@ class Table
     * An array to store the primary key old values when doing an update. Used in <code>writeRecord()</code>. 
     */
    private SQLValue[] primaryKeyOldValues;
-   
-   // juliana@224_2: improved memory usage on BlackBerry.   
    
    /**
     * A map with rows that satisfy totally the query WHERE clause.
@@ -294,16 +304,15 @@ class Table
 
             columns = currCompIndex.columns;
             j = columns.length;
-            
-            // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.
-            if (j == indexCount)  
+                        
+            if (j == indexCount) // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.  
             {
-               while (--j >= 0)
-                  if (columnNumbers[j] != columns[j])
-                  {
-                     alreadyExists = false;
-                     break;
-                  }
+            while (--j >= 0)
+               if (columnNumbers[j] != columns[j])
+               {
+                  alreadyExists = false;
+                  break;
+               }
             }
             else
                alreadyExists = false; 
@@ -342,11 +351,11 @@ class Table
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_DOESNOT_HAVE_AN_INDEX) + columnNames[column]);
 
       // Deletes the index of this table.
-      index.remove();
+      index.fnodes.f.delete();
       columnIndices[column] = null;
 
       // juliana@227_6
-      columnAttrs[column] &= Utils.ATTR_COLUMN_HAS_NO_INDICE; // Deletes the INDEX bit from the attributes.  
+      columnAttrs[column] &= ~Utils.ATTR_COLUMN_HAS_INDEX; // Deletes the INDEX bit from the attributes.  
       
       // Saves the meta data.
       tableSaveMetaData(Utils.TSMD_EVERYTHING); // guich@560_24
@@ -395,7 +404,7 @@ class Table
 
       if (found && ci != null) // Removes the index.
       {
-         ci.index.remove();
+         ci.index.fnodes.f.delete();
          ci.index = null;
          
          // juliana@201_16: When a composed index is deleted, its information is now deleted from the metadata.
@@ -438,9 +447,9 @@ class Table
       while (--i >= 0)
          if (i != pk && indices[i] != null)
          {
-            indices[i].remove();
+            indices[i].fnodes.f.delete();
             indices[i] = null;
-            attrs[i] &= Utils.ATTR_COLUMN_HAS_NO_INDICE;
+            attrs[i] &= ~Utils.ATTR_COLUMN_HAS_INDEX;
             count++;
          }
       
@@ -516,6 +525,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Loads the meta data of a table.
     *
@@ -538,29 +548,44 @@ class Table
       int flags;
       File idxFile;
 
-      DataStreamLE ds = new DataStreamLE(new ByteArrayStream(bytes));
+      DataStreamLB ds = new DataStreamLB(new ByteArrayStream(bytes), plainDB.useCrypto);
 
       // The currentRowId is found from the last non-empty record, not from the metadata.
+      if (!(((bytes[0] & USE_CRYPTO) == 0) ^ plainDB.useCrypto)  
+       && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 && (bytes[0] == 0 || bytes[0] == 1 || bytes[0] == 3)) 
+      {
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
+      }
+      
+      if (bytes[0] == 1)
+         plainDB.useOldCrypto = true;
       
       ds.skipBytes(4); // It is not necessary to read the last position of the blobs and strings file.
       plainDB.headerSize = ds.readShort(); // Reads the header size.
 
       if (plainDB.headerSize == 0) // The header size can't be zero.
       {
-         plainDB.close(plainDB.isAscii, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + '!');
       }
       
       // If the header needs to be bigger, re-creates the metadata buffer with the correct size and skips the bytes already read.
       if (plainDB.headerSize != bytes.length)
-         (ds = new DataStreamLE(new ByteArrayStream(bytes = plainDB.readMetaData()))).skipBytes(6);
+         (ds = new DataStreamLB(new ByteArrayStream(bytes = plainDB.readMetaData()), plainDB.useCrypto)).skipBytes(6);
       
       plainDB.dbo.finalPos = plainDB.dbo.size; // This does not let the user lose some database objects.
 
       // Checks if the table strings has the same format of the connection.
       if ((((flags = ds.readByte()) & IS_ASCII) != 0 && !plainDB.isAscii) || ((flags & IS_ASCII) == 0) && plainDB.isAscii) 
       {
-         plainDB.close(!plainDB.isAscii, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_STRING_FORMAT));
       }
       
@@ -578,7 +603,9 @@ class Table
       // juliana@230_12: improved recover table to take .dbo data into consideration.
       if ((version = ds.readShort()) < VERSION - 1) // The tables version must be the same as Litebase version.
       {
-         plainDB.close(plainDB.isAscii, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + (" (" + version) + ')');
       }
       
@@ -599,7 +626,9 @@ class Table
 
       if (n <= 0) // The column count can't be negative.
       {
-         plainDB.close(plainDB.isAscii, false); // juliana@220_8
+         // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
+         dbFile.close();
+         plainDB.dbo.close();
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + '!');
       }
       byte[] attrs = columnAttrs = new byte[n];
@@ -609,7 +638,7 @@ class Table
       SQLValue[] values = defaultValues = new SQLValue[n];
 
       columnIndices = new Index[n];
-      storeNulls = new boolean[n];
+      storeNulls = new byte[(n + 7) >> 3];
       
       // The number of bytes necessary to store the columns. Each column in a table corresponds to one bit.
       // juliana@201_21: The null columns information must be created before openning the indices when reading the table meta data.
@@ -645,17 +674,13 @@ class Table
       primaryKeyValues = new SQLValue[n]; 
       primaryKeyOldValues = SQLValue.newSQLValues(n);
       
-      boolean hasIdr;
-      
-      i = -1;
-      while (++i < n) // Loads the indices.
+      i = n;
+      nameAux = tableName + '$';
+      while (--i >= 0) // Loads the indices.
          if ((attrs[i] & Utils.ATTR_COLUMN_HAS_INDEX) != 0)
          {
-            // Verifies if the index file exists, otherwise makes the re-index.
-            hasIdr = (attrs[i] & Utils.ATTR_COLUMN_HAS_IDR) != 0;
-            
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-            if ((exist = new File(fullName = Utils.getFullFileName((nameAux = (tableName + '$') + i) + ".idk", sourcePath)).exists()) && flags == 0)
+            if ((exist = new File(fullName = Utils.getFullFileName(nameAux + i + ".idk", sourcePath)).exists()) && flags == 0)
             {
                idxFile = new File(fullName, File.READ_WRITE, -1);
                idxFile.setSize(0);
@@ -663,10 +688,7 @@ class Table
                idxFile.close();
             }
             
-            if (hasIdr)
-               exist &= new File(Utils.getFullFileName(nameAux + ".idr", sourcePath)).exists();
-
-            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
+            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
             {
                // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
@@ -678,7 +700,7 @@ class Table
       // Now the current rowid can be fetched.
       dbFile.setPos(plainDB.headerSize + (plainDB.rowCount > 0 ? plainDB.rowCount - 1 : 0) * plainDB.rowSize);
       currentRowId = (auxRowId != Utils.ATTR_DEFAULT_AUX_ROWID? auxRowId 
-                                       : ((new DataStreamLE(dbFile).readInt() & Utils.ROW_ID_MASK) + 1)) & Utils.ROW_ID_MASK;
+                                       : ((new DataStreamLB(dbFile, plainDB.useCrypto).readInt() & Utils.ROW_ID_MASK) + 1)) & Utils.ROW_ID_MASK;
       
       i = 0;
       while (++i < n) // Reads the default values.
@@ -734,11 +756,12 @@ class Table
          ComposedIndex[] compIndices = composedIndices;
 
          i = -1;
+         nameAux = tableName + '&';
          while (++i < numCompIndices)
          {
             indexId = ds.readByte(); // The composed index id.
             numColumns = ds.readByte(); // Number of columns on the composed index.
-            hasIdr = ds.readByte() == 1;
+            ds.skipBytes(1);
             columns = new byte[numColumns];
             columnSizes = new int[numColumns];
             columnTypes = new byte[numColumns];
@@ -752,7 +775,7 @@ class Table
             }
 
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-            if ((exist = new File(fullName = Utils.getFullFileName((nameAux = (tableName + '&') + indexId) + ".idk", sourcePath)).exists()) && flags == 0)
+            if ((exist = new File(fullName = Utils.getFullFileName(nameAux + indexId + ".idk", sourcePath)).exists()) && flags == 0)
             {
                idxFile = new File(fullName, File.READ_WRITE, -1);
                idxFile.setSize(0);
@@ -760,10 +783,7 @@ class Table
                idxFile.close();
             }
             
-            if (hasIdr)
-               exist &= new File(nameAux + ".idr").exists();
-            indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, hasIdr, 
-                                                                                                                                          exist);
+            indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, exist);
             if (!exist && flags != 0) // One of the files doesn't exist.
             {
                // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
@@ -783,7 +803,8 @@ class Table
             compPrimaryKeyCols[i] = ds.readByte(); // The composed primary key cols.
       }
    }
-
+ 
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Saves the table meta data
     *
@@ -801,21 +822,21 @@ class Table
       byte[] types = columnTypes;
       int[] sizes = columnSizes;
       byte[] attrs = columnAttrs;
-      Index[] indices = columnIndices;
       byte[] columns;
       SQLValue[] values = defaultValues;
       ComposedIndex[] compIndices = composedIndices;
       ComposedIndex ci;
       ByteArrayStream auxBas = tsmdBas;
-      DataStreamLE auxDs = tsmdDs;
+      DataStreamLB auxDs = tsmdDs;
       PlainDB plainDB = db;
-
+      
       if (auxBas != null) // If the buffer is not empty, only resets it.
          auxBas.reset();
-      else
-         auxDs = tsmdDs = new DataStreamLE(auxBas = tsmdBas = new ByteArrayStream(plainDB.headerSize)); // Otherwise, allocates it.
+      else // Otherwise, allocates it.
+         auxDs = tsmdDs = new DataStreamLB(auxBas = tsmdBas = new ByteArrayStream(plainDB.headerSize), plainDB.useCrypto); 
 
-      auxDs.pad(4); // The strings and blobs final position is deprecated.
+      auxBas.getBuffer()[0] = (byte)(plainDB.useCrypto? (plainDB.useOldCrypto? 1 : USE_CRYPTO) : 0);
+      auxDs.skipBytes(4); // The strings and blobs final position is deprecated.
       auxDs.writeShort(plainDB.headerSize); // Saves the header size.
       auxDs.writeByte(plainDB.isAscii? IS_ASCII | j : j); // juliana@226_4: table is not saved correctly if modified.
       auxDs.writeShort(version); // The table format version.
@@ -837,12 +858,7 @@ class Table
             if (saveType != Utils.TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
             {
                auxDs.writeShort(n); // Saves the number of columns.
-               while (++i < n) // Saves the column attributes.
-               {
-                  if (indices[i] != null && indices[i].fvalues != null)
-                     attrs[i] |= Utils.ATTR_COLUMN_HAS_IDR; 
-                  auxDs.writeByte(attrs[i]);
-               }
+               auxDs.writeBytes(attrs, 0, n); // Saves the column attributes.
                
                if (saveType == Utils.TSMD_EVERYTHING) // Stores the rest.
                {
@@ -897,7 +913,7 @@ class Table
                   {
                      auxDs.writeByte((ci = compIndices[i]).indexId); // The composed index id.
                      auxDs.writeByte(numberColumns = ci.columns.length); // Number of columns on the composed index.
-                     auxDs.writeByte(ci.index.fvalues != null? 1: 0); // juliana@201_16  
+                     auxDs.writeByte(0); // Ignored.
                      columns = ci.columns;
                      j = -1;
                      while (++j < numberColumns)
@@ -929,8 +945,8 @@ class Table
     */
    void reorder(SQLStatement stmt) throws SQLParseException, IOException
    {
-      boolean[] nulls;
-      boolean[] tableNulls = storeNulls;
+      byte[] nulls;
+      byte[] tableNulls = storeNulls;
       String[] fields;
       SQLValue[] record;
       short[] paramIndexes; // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
@@ -963,16 +979,16 @@ class Table
       SQLValue[] outRecord = new SQLValue[columnCount];
       IntHashtable hashTable = htName2index;
 
-      Convert.fill(tableNulls, 0, columnCount, false); // Cleans the storeNulls.
+      Convert.fill(tableNulls, 0, tableNulls.length, 0); // Cleans the storeNulls.
       
       // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
       while (++i < length) // Makes sure the fields are in db creation order.
          try
          {
             outRecord[idx = hashTable.get(fields[i].hashCode())] = record[i]; // Finds the index of the field on the table and reorders the record.
-            tableNulls[idx] = nulls[i];
+            Utils.setBit(tableNulls, idx, (nulls[i >> 3] & (1 << (i & 7))) != 0);
             if (record[i] != null && record[i].asString != null && record[i].asString.equals("?"))
-               paramIndexes[numParams++] = (byte)idx;
+               paramIndexes[numParams++] = (short)idx;
          }
          catch (ElementNotFoundException enfe)
          {
@@ -993,6 +1009,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Creates the table files and loads its meta data if it was already created.
     *
@@ -1002,12 +1019,13 @@ class Table
     * @param appCrid The application id of the table.
     * @param driver The connection with Litebase.
     * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+    * @param crypto Indicates if the table is to be stored encrypted or not.
     * @param throwException Indicates that a TableNotClosedException should be thrown.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, LitebaseConnection driver, boolean ascii, boolean throwException) 
-                                                                                                                  throws IOException, InvalidDateException 
+   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, LitebaseConnection driver, boolean ascii, boolean crypto, 
+                                                                       boolean throwException) throws IOException, InvalidDateException 
    {
       PlainDB plainDB = db = new PlainDB(newName, sourcePath, create); // Creates or opens the table files.      
       plainDB.driver = driver;
@@ -1015,6 +1033,7 @@ class Table
       {
          name = newName;
          plainDB.isAscii = ascii;
+         plainDB.useCrypto = crypto;
          if (plainDB.db.size != 0) // If the table is already created, loads its meta data.
             tableLoadMetaData(appCrid, sourcePath, throwException);
       }
@@ -1036,8 +1055,7 @@ class Table
       Index[] indices = columnIndices;
       String nameIndex,
              newFullName;
-      NormalFile fnodes,
-                 fvalues;
+      NormalFile fnodes;
 
       // Renames the table.
       db.rename(tableFullName, driver.sourcePath);
@@ -1056,11 +1074,6 @@ class Table
             
             (fnodes = index.fnodes).f.rename(newFullName + ".idk"); // Keys.
             fnodes.f = new File(newFullName + ".idk", File.READ_WRITE);
-            if ((fvalues = index.fvalues) != null)
-            {
-               fvalues.f.rename(newFullName + ".idr"); // Value repetitions.
-               fvalues.f = new File(newFullName + ".idr", File.READ_WRITE);
-            }
             index.name = nameIndex;
          }
       
@@ -1073,11 +1086,6 @@ class Table
          index = compIndices[i].index;
          (fnodes = index.fnodes).f.rename(newFullName + ".idk"); // Keys.
          fnodes.f = new File(newFullName + ".idk", File.READ_WRITE);
-         if ((fvalues = index.fvalues) != null)
-         {
-            fvalues.f.rename(newFullName + ".idr"); // Value repetitions.
-            fvalues.f = new File(newFullName + ".idr", File.READ_WRITE);
-         }
          index.name = nameIndex; 
       }
    }
@@ -1142,10 +1150,10 @@ class Table
       columnHashes = hashes; // Sets the column hashes.
       columnTypes = types; // Sets the column types.
       columnSizes = sizes; // Sets the column sizes.
-      storeNulls = new boolean[count]; // Initializes the arrays for the nulls.
+      storeNulls = new byte[bytes = (count + 7) >> 3]; // Initializes the arrays for the nulls.
       
       // The number of bytes necessary to store the nulls. Each column in a table correspond to one bit.
-      columnNulls[0] = new byte[bytes = (count + 7) >> 3]; 
+      columnNulls[0] = new byte[bytes]; 
       columnNulls[1] = new byte[bytes];
 
       computeColumnOffsets(); // Computes the column offests.
@@ -1339,7 +1347,8 @@ class Table
                   else
                      vals[k++][0].asLong = i;
             }
-         
+            
+            rows = k; // juliana@270_22: solved a possible crash when the table is corrupted on Android and possibly on other platforms.
             if (!index.isOrdered)
             {
                // A radix sort is done for integer types. It is much more efficient than quick sort.
@@ -1351,11 +1360,13 @@ class Table
                   sortRecords(vals, types, 0, rows - 1);
                index.isOrdered = true; // The index elements will be inserted in the right order.
             }   
-            int count = -1; 
+            int count = -1,
+                compare;
             while (++count < rows)
             {
                // if it is the primary key, checks first if there is violation.
-               if (isPrimaryKey && count > 0 && compareRecords(vals[count], vals[count - 1], types) == 0)
+               if (isPrimaryKey && count > 0 && ((compare = compareRecords(vals[count], vals[count - 1], types)) == 0 
+                                              || compare == Convert.MAX_INT_VALUE || compare == Convert.MIN_INT_VALUE))
                   throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) + name);
                
                if (types[0] == SQLElement.LONG)
@@ -1411,25 +1422,21 @@ class Table
     * @param columnTypes The types of the columns.
     * @param crid The application id of the table.
     * @param sourcePath The folder where the table files are stored.
-    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
    void indexCreateIndex(String fullTableName, int column, int[] columnSizes, byte[] columnTypes,
-                                               String crid, String sourcePath, boolean hasIdr, boolean exist) throws IOException, InvalidDateException
+                                                           String crid, String sourcePath, boolean exist) throws IOException, InvalidDateException
    {
       String name = (fullTableName + '$') + column; // The index name.
 
       // Creates a new index structure.
-      Index index = columnIndices[column] = new Index(this, columnTypes, columnSizes, name, sourcePath, hasIdr, exist);
+      Index index = columnIndices[column] = new Index(this, columnTypes, columnSizes, name, sourcePath, exist);
       
       index.isOrdered = (column == 0); // rowid is always an ordered index.
       
-      if (hasIdr) // Sets that the column has an index in its attributtes and an .idr if it does have one.
-         columnAttrs[column] |= Utils.ATTR_COLUMN_HAS_IDX_IDR;
-      else
-         columnAttrs[column] |= Utils.ATTR_COLUMN_HAS_INDEX; 
+      columnAttrs[column] |= Utils.ATTR_COLUMN_HAS_INDEX; 
    }
 
    /**
@@ -1444,14 +1451,13 @@ class Table
     * @param crid The application id of the table.
     * @param increaseArray Indicates if the composed indices array must be increased.
     * @param sourcePath The folder where the table files are stored.
-    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws DriverException If the maximum number of composed indices was achieved.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
    void indexCreateComposedIndex(String fullTableName, byte[] columnIndices, int[] columnSizes, byte[] columnTypes, int newIndexNumber, boolean isPK, 
-      String crid, boolean increaseArray, String sourcePath, boolean hasIdr, boolean exist) throws DriverException, IOException, InvalidDateException
+                   String crid, boolean increaseArray, String sourcePath, boolean exist) throws DriverException, IOException, InvalidDateException
    {
       ComposedIndex ci;
       int size = numberComposedIndices;
@@ -1463,8 +1469,9 @@ class Table
       
       ComposedIndex[] compIndices = composedIndices;
       ci = new ComposedIndex(newIndexNumber, columnIndices);
-      if (increaseArray && numberComposedIndices == SQLBooleanClause.MAX_NUM_INDEXES_APPLIED)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_COMP_INDICES));
+      
+      // juliana@253_9: improved Litebase parser.
+      
       if (increaseArray)
       {
          compIndices[size] = ci; // New composed index.
@@ -1472,7 +1479,7 @@ class Table
       }
       else
          compIndices[newIndexNumber - 1] = ci;   
-      ci.index = new Index(this, columnTypes, columnSizes, name, sourcePath, hasIdr, exist); // Creates the index of the composed index.
+      ci.index = new Index(this, columnTypes, columnSizes, name, sourcePath, exist); // Creates the index of the composed index.
       ci.index.isOrdered = (columnIndices[0] == 0); // The rowid is the column 0.
    }
    
@@ -1489,7 +1496,7 @@ class Table
       int n = columnCount, 
            i;
       PlainDB plainDB = db;
-      DataStreamLE ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@253_8: now Litebase supports weak cryptography.
       int[] sizes = columnSizes;
       byte[] types = columnTypes;
       byte[] nulls = columnNulls[0];
@@ -1545,7 +1552,7 @@ class Table
             readValue(values[i], offsets[columns[i]], types[i], false, false); // juliana@220_3 juliana@230_14
             
             // Tests if the primary key has not changed.
-            hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false) != 0;
+            hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false, null) != 0;
             
             if (vals[i] == null) // Uses the old value.
                vals[i] = values[i];
@@ -1575,17 +1582,17 @@ class Table
     *           <code>SQLElement.STMT_UPDATE</code>.
     * @throws DriverException If a primary key is or a <code>NOT NULL</code> field is is <code>null</code>.
     */
-   void verifyNullValues(SQLValue[] record, boolean[] storeNullsStmt, int statementType) throws DriverException
+   void verifyNullValues(SQLValue[] record, byte[] storeNullsStmt, int statementType) throws DriverException
    {
       int len = record.length;
       byte[] attrs = columnAttrs;
-      boolean[] nulls = storeNulls;
+      byte[] nulls = storeNulls;
 
       if (statementType == SQLElement.CMD_INSERT) // Insert statement.
       {
          SQLValue[] defaults = defaultValues;
          
-         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && nulls[primaryKeyCol]) // The primary key can't be null.
+         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && (nulls[primaryKeyCol >> 3] & (1 << (primaryKeyCol & 7))) != 0) // The primary key can't be null.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PK_CANT_BE_NULL));
 
          while (--len > 0) // A not null field can't have a null.
@@ -1594,10 +1601,10 @@ class Table
       }
       else // Update statement.
       {
-         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && nulls[primaryKeyCol]) // The primary key can't be null.
+         if (primaryKeyCol != Utils.NO_PRIMARY_KEY && (nulls[primaryKeyCol >> 3] & (1 << (primaryKeyCol & 7))) != 0) // The primary key can't be null.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PK_CANT_BE_NULL));
-         while (--len > 0)
-            if (nulls[len] && (attrs[len] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0) // If it is to store a null but a null can't be stored.
+         while (--len > 0) // If it is to store a null but a null can't be stored.
+            if ((nulls[len >> 3] & (1 << (len & 7))) != 0 && (attrs[len] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0) 
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_CANT_BE_NULL) + columnNames[len]);
       }
    }
@@ -1971,12 +1978,12 @@ class Table
       switch (tree.operandType) // Checks what is the operand type of the tree.
       {
          // Relational operand.
-         case SQLElement.OP_REL_EQUAL:
-         case SQLElement.OP_REL_DIFF:
-         case SQLElement.OP_REL_GREATER:
          case SQLElement.OP_REL_LESS:
+         case SQLElement.OP_REL_EQUAL:               
+         case SQLElement.OP_REL_GREATER:               
          case SQLElement.OP_REL_GREATER_EQUAL:
          case SQLElement.OP_REL_LESS_EQUAL:
+         case SQLElement.OP_REL_DIFF:
             switch (tree.valueType) // Calls the right operation accordingly to the values type.
             {
                case SQLElement.SHORT:
@@ -2064,8 +2071,12 @@ class Table
                      switch (booleanTreeEvaluateJoin(list, rightTree))
                      {
                         case VALIDATION_RECORD_NOT_OK:
-                        case VALIDATION_RECORD_INCOMPLETE_OK:
                            return VALIDATION_RECORD_NOT_OK;
+                        
+                        // juliana@270_21: solved a very old join problem when using OR and false constants comparison which would make the join 
+                        // return no results.
+                        case VALIDATION_RECORD_INCOMPLETE_OK: 
+                           return VALIDATION_RECORD_INCOMPLETE_OK;
                         case VALIDATION_RECORD_OK:
                            return VALIDATION_RECORD_OK; // Ther right side returned true.
                         case VALIDATION_RECORD_INCOMPLETE:
@@ -2097,7 +2108,7 @@ class Table
     */
    void readNullBytesOfRecord(int whichColumnNull, boolean dataStreamIsDislocated, int col) throws IOException
    {
-      DataStreamLE ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@253_8: now Litebase supports weak cryptography.
       int offset = columnOffsets[columnCount];
       if (dataStreamIsDislocated)
          offset -= columnOffsets[col];
@@ -2161,11 +2172,11 @@ class Table
                                                  SQLResultSetField[] fieldList, LitebaseConnection driver) throws IOException, InvalidDateException
    {
       Random r = new Random();
-      int[] intVector = new int[128]; // The size will never be greater than 128 for a table with 2^32 rows.
+      int[] intVector = db.driver.nodes;
       PlainDB plainDB = db;
       byte[] basbuf = db.basbuf;
       int rowSize = plainDB.rowSize,
-          size = 0,
+          size = 2,
           low, 
           high,
           pivotIndex; // guich@212_3: now using random partition (improves worst case 2000x).
@@ -2175,8 +2186,8 @@ class Table
       String[][] strings = new String[last - first + 1][fieldList.length];
       String[] tempString;
       
-      intVector[size++] = first;
-      intVector[size++] = last;
+      intVector[0] = first;
+      intVector[1] = last;
       
       while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
       {
@@ -2398,11 +2409,11 @@ class Table
           writePos = -1, 
           offset = 2;
       ByteArrayStream bas = db.bas;
-      DataStreamLE ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@253_8: now Litebase supports weak cryptography.
       Index idx;
       boolean addingNewRecord = recPos == -1, 
                changePos = false;
-      boolean[] nulls = storeNulls;
+      byte[] nulls = storeNulls;
       byte[] columnNulls0 = columnNulls[0];
       SQLValue[] defaults = defaultValues;
       SQLValue[] auxValues = primaryKeyValues;
@@ -2426,7 +2437,7 @@ class Table
          
          if (addingNewRecord)
          {
-            if (!nulls[i]) // If not explicit to store null.
+            if ((nulls[i >> 3] & (1 << (i & 7))) == 0) // If not explicit to store null.
             {
                if ((attrs[i] & Utils.ATTR_COLUMN_IS_NOT_NULL) == 0) // Can be null.
                {
@@ -2445,7 +2456,7 @@ class Table
                columnNulls0[i >> 3] |= (1 << (i & 7));
          }
          else // Update Statement.
-         if (nulls[i])
+         if ((nulls[i >> 3] & (1 << (i & 7))) != 0)
             columnNulls0[i >> 3] |= (1 << (i & 7));
       }
             
@@ -2460,8 +2471,10 @@ class Table
       {
          i = composedPKCols.length;
          while (--i >= 0) // A field of the composed primary key can't be null.
-         {
-            if (nulls[composedPKCols[i]] || (values[composedPKCols[i]] != null && values[composedPKCols[i]].isNull))
+         {   
+            j = composedPKCols[i];
+            
+            if ((nulls[j >> 3] & (1 << (j & 7))) != 0 || (values[j] != null && values[j].isNull))
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PK_CANT_BE_NULL));
             auxValues[i] = values[composedPKCols[i]];
          }
@@ -2480,6 +2493,7 @@ class Table
          plainDB.read(writePos = recPos);
          rowid = ds.readInt();
          bas.reset();
+         wasUpdated = true; // juliana@270_27: now purge will also really purge the table if it only suffers updates.
       }
 
       int type;
@@ -2558,9 +2572,11 @@ class Table
       // juliana@220_4: added a crc32 code for every record. Please update your tables.
       byte[] buffer = bas.getBuffer();
       byte[] byteArray;
-      buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-      int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
-      
+
+      j = buffer[3]; // juliana@270_23: Corrected a RowIterator bug of an update changing an updated row to synced again.
+      buffer[3] = (plainDB.useCrypto? (byte)0xAA : 0); // juliana@222_5: The crc was not being calculated correctly for updates.
+      int crc32 = updateCRC32(buffer, bas.getPos(), 0, plainDB.useCrypto); 
+
       if (version == Table.VERSION)
       {
          int[] intArray = oneInt;
@@ -2572,12 +2588,12 @@ class Table
            	   if (values[i] != null && !values[i].isNull)
            	   {
        	         byteArray = Utils.toByteArray(values[i].asString);
-       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
            	   }
        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
        	      {
        	         byteArray = Utils.toByteArray(vOlds[i].asString); 
-       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
        	      }
             }
             else if (types[i] == SQLElement.BLOB)
@@ -2586,17 +2602,20 @@ class Table
            	   {
            	      // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
            	      intArray[0] = ((values[i].asBlob.length > sizes[i])? sizes[i] : values[i].asBlob.length);
-           	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+           	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
            	   }
-        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull)
+           	   // juliana@265_2: corrected a problem where a row could be wrongly deleted by recovering a table when an update was done and the 
+               // column which was of type blob remained null on Java SE and BlackBerry.
+        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asInt != -1)
         	      {
         	         intArray[0] = vOlds[i].asInt;
-        	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+        	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
         	      }
             }
       }
       ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.
-
+      buffer[3] = (byte)j; // juliana@270_23: Corrected a RowIterator bug of an update changing an updated row to synced again.
+      
       if (rowid > 0) // Now the record's attribute has to be updated.
       {
          bas.reset();
@@ -2625,7 +2644,7 @@ class Table
                }
             }
             else // Updating key? Removes the old one and adds the new one.
-            if (values[n].valueCompareTo(vOlds[n], types[n], isNull, hasvolds = (has[n] & ISNULL_VOLDS) != 0) != 0)
+            if (values[n].valueCompareTo(vOlds[n], types[n], isNull, hasvolds = (has[n] & ISNULL_VOLDS) != 0, null) != 0)
             {
                if (!hasvolds)
                {
@@ -2712,11 +2731,11 @@ class Table
       }
       
       // juliana@227_3: improved table files flush dealing.
-      if (plainDB.rowInc == Utils.DEFAULT_ROW_INC) // juliana@202_23: Flushs the files to disk when row increment is the default.
-      {  
-         NormalFile dbFile = (NormalFile)plainDB.db,
-                    dboFile = (NormalFile)plainDB.dbo;
-         
+      // juliana@270_25: corrected a possible lose of records in recover table when 10 is passed to LitebaseConnection.setRowInc().
+      NormalFile dbFile = (NormalFile)plainDB.db,
+                 dboFile = (NormalFile)plainDB.dbo;
+      if (!dbFile.dontFlush) // juliana@202_23: Flushs the files to disk when row increment is the default.
+      {           
          if (dbFile.cacheIsDirty)
             dbFile.flushCache(); // Flushs .db.
          if (dboFile.cacheIsDirty)
@@ -2732,16 +2751,21 @@ class Table
     * @param buffer The buffer.
     * @param length The number of bytes to be used to update the CRC code.
     * @param oldCRC The previous CRC32 value.
+    * @param useCrypto Indicates if cryptography is to be used or not.
     * @return The CRC32 code updated to include the buffer data.
     */
-   static int updateCRC32(byte[] buffer, int length, int oldCRC)
+   static int updateCRC32(byte[] buffer, int length, int oldCRC, boolean useCrypto)
    {
      int[] crcTable = CRC32Stream.crcTable;
      int offset = 0;
      
      oldCRC = ~oldCRC;
-     while (--length >= 0)
-    	 oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (oldCRC >>> 8);
+     if (useCrypto)
+        while (--length >= 0)
+           oldCRC = crcTable[(oldCRC ^ (buffer[offset++] ^ 0xAA)) & 0xff] ^ (oldCRC >>> 8);
+     else   
+        while (--length >= 0)
+           oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (oldCRC >>> 8);
      
      return ~oldCRC;
    }
@@ -2783,18 +2807,33 @@ class Table
     * @param vals1 The first record of the comparison.
     * @param vals2 The second record of the comparison.
     * @param types The types of the record values.
-    * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
+    * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise. It will return <code>MAX_INT_VALUE</code> if both records are 
+    * equal but the record of the first is greater than the second, and <code>MIN_INT_VALUE</code> if both records are equal but the record of the 
+    * first is less than the second. 
+    * @throws IOException If an internal method throws it.
     */
-   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) 
+   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) throws IOException 
    {
       int n = vals1.length,
           i = -1,
           result;
   
       while (++i < n) // Does the comparison between the values till one of them is different from zero.
-         if ((result = vals1[i].valueCompareTo(vals2[i], types[i], false, false)) != 0)
+         if ((result = vals1[i].valueCompareTo(vals2[i], types[i], false, false, null)) != 0)
             return result;
-      return 0;   
+      if (types[0] != SQLElement.LONG)
+      {
+         if (vals1[0].asLong > vals2[0].asLong)
+            return Convert.MAX_INT_VALUE;
+         if (vals1[0].asLong < vals2[0].asLong)
+            return Convert.MIN_INT_VALUE;
+         return 0;
+      }
+      if (vals1[0].asInt > vals2[0].asInt)
+         return Convert.MAX_INT_VALUE;
+      if (vals1[0].asInt < vals2[0].asInt)
+         return Convert.MIN_INT_VALUE;
+      return 0;
    }
    
    /**
@@ -2805,8 +2844,9 @@ class Table
     * @param types The types of the record values. 
     * @param first The first element of current partition.
     * @param last The last element of the current.
+    * @throws IOException If an internal method throws it.
     */
-   private static void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last)
+   private void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last) throws IOException
    {
       // guich@212_3: checks if the values are already in order.
       SQLValue[] tempValues;
@@ -2819,15 +2859,15 @@ class Table
       
       // juliana@250_1: corrected a possible crash when doing ordering operations.
       // Not fully sorted.
-      int size = 0,
+      int size = 2,
           low,
           high;
-      int[] intVector = new int[128]; // The size will never be greater than 64 for a table with 2^32 rows.
+      int[] intVector = db.driver.nodes;
       Random r = new Random();
       SQLValue[] mid;
       
-      intVector[size++] = first;
-      intVector[size++] = last;
+      intVector[0] = first;
+      intVector[1] = last;
       while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
       {
          high = last = intVector[--size];
@@ -3069,38 +3109,6 @@ class Table
          }
       }
    }
-
-   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-   /**
-    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
-    * 
-    * @param resultSet The result set of the table.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    * @throws InvalidNumberException If an internal method throws it.
-    */
-   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
-   {
-      int i;
-      byte[] rowsBitmap = allRowsBitmap;
-    
-      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && deletedRowsCount == 0)
-      {
-         i = answerCount = db.rowCount;
-         while (--i >= 0)
-            Utils.setBit(rowsBitmap, i, true);
-      }
-      else
-      {
-         i = 0;
-         while (resultSet.getNextRecord()) // No preverify needed.
-         {
-            Utils.setBit(rowsBitmap, resultSet.pos, true);   
-            i++;
-         }
-         answerCount = i;
-      }
-   }
    
    /**
     * Changes a table to the modified state whenever it is modified.
@@ -3117,6 +3125,8 @@ class Table
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
       oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+      if (plainDB.useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
+         oneByte[0] = oneByte[0] ^= 0xAA;
       dbFile.writeBytes(oneByte, 0, 1);
       
       dbFile.flushCache();

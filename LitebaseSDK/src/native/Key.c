@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * Defines functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -31,7 +32,7 @@ void keySet(Key* key, SQLValue** SQLValues, Index* index, int32 size)
 	// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
    while (--size >= 0)
       key->keys[size] = *SQLValues[size];
-   key->valRec = NO_VALUE; // The record key is not stored yet.
+   key->record = NO_VALUE; // The record key is not stored yet.
 }
 
 /**
@@ -69,7 +70,7 @@ void keySetFromKey(Key* to, Key* from)
       }
    }
    to->index = from->index;
-   to->valRec = from->valRec;
+   to->record = from->record;
 }
 
 /**
@@ -103,6 +104,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
 			{
 				keyAux->asInt = pos;
 				keyAux->length = 0;
+				keyAux->asChars[0] = 0;
 			}
       }
       else
@@ -115,7 +117,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
          dataStream += typeSizes[types[i]]; 
       }
    }
-   xmove4(&key->valRec, dataStream); // Reads the number that represents the record.
+   xmove4(&key->record, dataStream); // Reads the number that represents the record.
    return dataStream + 4;
 }
 
@@ -151,166 +153,23 @@ uint8* keySave(Key* key, uint8* dataStream)
          dataStream += typeSizes[types[i]];
       }
    }
-   xmove4(dataStream, &key->valRec); // Writes the number that represents the record.
+
+   xmove4(dataStream, &key->record); // Writes the number that represents the record.
    return dataStream + 4;
-}
-
-/**
- * Adds a value in the repeated key structure.
- *
- * @param context The thread context where the function is being executed.
- * @param key The repeated key whose repeated value is being inserted.
- * @param record The value record to be inserted in the key.
- * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
-{
-	TRACE("keyAddValue")
-
-   // This key will be dirty after calling this function and must be saved.
-   if (key->valRec == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
-      key->valRec = -record - 1; // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
-   else
-   {
-      Index* index = key->index;
-      Table* table = index->table;
-		if (!index->fvalues)
-      {
-         char name[DBNAME_SIZE];
-			xstrcpy(name, index->fnodes.name);
-			name[xstrlen(name) - 1] = 'r';
-			index->fvalues = TC_heapAlloc(index->heap, sizeof(XFile));
-	      if (!nfCreateFile(context, name, true, table->sourcePath, table->slot, index->fvalues, CACHE_INITIAL_SIZE))
-            return false;
-			if (!tableSaveMetaData(context, table, TSMD_EVERYTHING))
-            return false;
-      }
-      if (key->valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
-      {
-         if ((key->valRec = valueSaveNew(context, index->fvalues,-key->valRec -1, NO_MORE, isWriteDelayed)) == -1)
-            return false;
-      }
-      
-      // Links to the next value and stores the value record.
-      if ((key->valRec = valueSaveNew(context, index->fvalues, record, key->valRec, isWriteDelayed)) == -1) 
-         return false;
-   }
-   return true;
-}
-
-/**
- * Climbs on the key.
- *
- * @param context The thread context where the function is being executed.
- * @param key The key being climbed.
- * @param markBits The rows which will be returned to the result set.
- * @return <code>-1</code> if an error occurs; <code>true</code>, otherwise.
- */
-int32 defaultOnKey(Context context, Key* key, MarkBits* markBits)
-{
-	TRACE("defaultOnKey")
-   int32 idx = key->valRec;
-
-   if (idx == NO_VALUE)
-      return true;
-   if (idx < 0) // If there are no values, there is nothing to be done.
-      markBitsOnValue(-idx - 1, markBits);
-   else // Is it a value with no repetitions?
-   {
-      XFile* fvalues = key->index->fvalues;
-      int32 record,
-            next;
-
-      while (idx != NO_MORE) // If there are repetitions, climbs on all the values.
-      {
-         nfSetPos(fvalues, VALUERECSIZE * idx);
-         if (!valueLoad(context, &record, &next, fvalues))
-            return -1;
-         markBitsOnValue(record, markBits);
-         idx = next;
-      }
-   }
-   return true;
-}
-
-/**
- * Removes a value of the repeated key structure.
- *
- * @param context The thread context where the function is being executed.
- * @param key The key whose repeated value will be removed.
- * @param record The value record to be removed.
- * @return <code>REMOVE_SAVE_KEY</code>, <code>REMOVE_VALUE_ALREADY_SAVED</code>, or <code>REMOVE_ERROR</code>.
- * @throws DriverException If its not possible to find the key record to delete.
- */
-int32 keyRemove(Context context, Key* key, int32 record)
-{
-	TRACE("keyRemove")
-   int32 idx = key->valRec;
-
-   if (idx != NO_VALUE)
-   {
-      if (idx < 0) // Is it a value with no repetitions?
-      {
-         if (record == -idx - 1) // If this is the record, all that is done is to set the key as empty.
-         {
-            key->valRec = NO_VALUE;
-            return REMOVE_SAVE_KEY;
-         }
-      }
-      else // Otherwise, it is necessary to find the record.
-      {
-         int32 lastRecord = -1,
-               lastNext,
-               auxRecord;
-         XFile* fvalues = key->index->fvalues;
-         int32 lastPos = 0,
-               pos;
-
-         while (idx != NO_MORE)
-         {
-            nfSetPos(fvalues, pos = VALUERECSIZE * idx);
-            if (!valueLoad(context, &auxRecord, &idx, fvalues))
-               return REMOVE_ERROR;
-
-            if (auxRecord == record)
-            {
-               if (lastRecord == -1) // The value removed is the last one.
-               {
-                  key->valRec = idx;
-                  return REMOVE_SAVE_KEY;
-               }
-               else
-               {
-                  lastNext = idx;
-                  nfSetPos(fvalues, lastPos);
-                  if (!valueSave(context, lastRecord, lastNext, fvalues))
-                     return REMOVE_ERROR;
-                  return REMOVE_VALUE_ALREADY_SAVED;
-               }
-            }
-
-            // Sets a new last value.
-            lastPos = pos;
-            lastRecord = auxRecord;
-            lastNext = idx;
-         }
-      }
-   }
-   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_IDX_RECORD_DEL));
-   return REMOVE_ERROR;
 }
 
 /**
  * Compares two keys.
  *
+ * @param context The thread context where the function is being executed.
  * @param key1 The first key to be compared.
  * @param key2 The second key to be compared.
  * @param isNull1 Indicates if the fist key is null.
+ * @param plainDB the plainDB of a table if it is necessary to load a string.
  * @return 0 if the keys are identical; a positive number if <code>key1</code> keys are greater than <code>key2</code> keys; otherwise, a negative 
- * number.  
+ * number.
  */
-int32 keyCompareTo(Key* key1, Key* key2, int32 size)
+int32 keyCompareTo(Context context, Key* key1, Key* key2, int32 size, PlainDB* plainDB)
 {
 	TRACE("keyCompareTo")
    int32 r, 
@@ -320,7 +179,7 @@ int32 keyCompareTo(Key* key1, Key* key2, int32 size)
    SQLValue* keys2 = key2->keys;
    
    while (++i < size) // Compares each key of the key. If a pair is not equal to each other, returns.
-      if ((r = valueCompareTo(&keys1[i], &keys2[i], types[i], false, false)) != 0)
+      if ((r = valueCompareTo(context, &keys1[i], &keys2[i], types[i], false, false, plainDB)) != 0)
          return r;
 
    return 0;

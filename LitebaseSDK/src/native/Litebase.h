@@ -47,8 +47,8 @@
 #include "Table.h"
 #include "TCVMLib.h"
 #include "UtilsLB.h"
-#include "Value.h"
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
  * Loads the necessary data when using Litebase for the first time.
  *
@@ -67,7 +67,7 @@ LB_API void LibClose();
  *
  * @param params Some parameters and function pointers in order to load a .dll.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- * @throws OutOfMemoryError if a memory allocation fails.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
 bool initVars(OpenParams params);
 
@@ -78,9 +78,10 @@ bool initVars(OpenParams params);
  * @param context The thread context where the function is being executed.
  * @param crid The creator id, which may be the same one of the current application and MUST be 4 characters long.
  * @param objParams Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
- * path, or <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or 
- * <code>unicode</code>, and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If
- * only the path is passed as a parameter, unicode is used. Notice that path must be absolute, not relative.
+ * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+ * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+ * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+ * cryptography. Notice that path must be absolute, not relative.
  * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
  * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
  * slot.
@@ -264,6 +265,16 @@ CharP dataTypeFunctionsName(int32 sqlFunction);
  * @throws NullPointerException If the table name is null.
  */
 bool checkParamAndDriver(NMParams params, CharP parameter);
+
+/**
+ * Encrypts or decrypts all the tables of a connection given from the application id.
+ *
+ * @param p->obj[0] The application id of the database.
+ * @param p->obj[1] The path where the files are stored.
+ * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
+ * @throws DriverException If a file error occurs or not all the tables use the desired cryptography format.
+ */
+void encDecTables(NMParams params, bool toEncrypt);
 
 #ifdef ENABLE_TEST_SUITE
 

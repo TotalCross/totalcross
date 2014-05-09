@@ -367,8 +367,16 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
    loadPlainDBAndPosition(&plainDB->basbuf[table->columnOffsets[column]], &plainDB, &position);
    
    nfSetPos(dbo = &plainDB->dbo, position);
-   if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
+   if (position >= dbo->finalPos)
+      length = 0;
+   else if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
       return null;
+
+   if (length > table->columnSizes[column]) // juliana@270_22: solved a possible crash when the table is corrupted.
+   {
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), table->name);
+      return null;
+   }
 
    // Creates the returning object and loads the string inside it.
    if ((object = TC_createArrayObject(context, CHAR_ARRAY, length))) // guich@570_97: Checks often.
@@ -432,8 +440,16 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
    loadPlainDBAndPosition(&plainDB->basbuf[table->columnOffsets[column]], &plainDB, &position);
    
    nfSetPos(&plainDB->dbo, position);
-   if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4))
+   if (position >= plainDB->dbo.finalPos)
+      length = 0;
+   else if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4))
       return null;
+
+   if (length > table->columnSizes[column]) // juliana@270_22: solved a possible crash when the table is corrupted.
+   {
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), table->name);
+      return null;
+   }
 
    // guich@570_97: checks often.
    // Creates the returning object and copies the blob to it.
@@ -500,8 +516,16 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
          loadPlainDBAndPosition(ptr, &plainDB, &position);
 
 			nfSetPos(dbo = &plainDB->dbo, position);
-         if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
+         if (position >= dbo->finalPos)
+            length = 0;
+         else if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
             return null;
+
+         if (length > table->columnSizes[column]) // juliana@270_22: solved a possible crash when the table is corrupted.
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), table->name);
+            return null;
+         }
 
          // Creates the returning object and loads the string inside it.
          if ((object = TC_createStringObjectWithLen(context, length))) // guich@570_97: check often
@@ -614,10 +638,18 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
                   *strings = rsGetString(context, resultSet, column, &value);
                   
-                  if (!(*strings))
+                  // juliana@270_31: Corrected bug of ResultSet.getStrings() don't working properly when there is a data function in the columns 
+                  // being fetched.
+                  if (!(*strings) || field->isDataTypeFunction)
                   {
                      if (field->isDataTypeFunction)
-                        rsApplyDataTypeFunction(params, &value, field, columnTypes[column]);
+                     {
+                        rsApplyDataTypeFunction(params, &value, field, UNDEFINED_TYPE);
+                        if (!(columnTypes[column] == CHARS_TYPE || columnTypes[column] == CHARS_NOCASE_TYPE))
+                           *strings++ = params->retO;
+                        else
+                           TC_setObjectLock(*strings++, UNLOCKED);
+                     }
                      else 
                      {
                         createString(params, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
@@ -637,7 +669,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
             }
 			   validRecords++; // juliana@211_4: solved bugs with result set dealing.
          }
-		   while (--count > 0 && resultSetNext(context, resultSet));         
+		   while (--count && resultSetNext(context, resultSet));         
 
          TC_setObjectLock(params->retO = result, UNLOCKED); 
          if ((int32)ARRAYOBJ_LEN(result) > validRecords) // juliana@211_4: solved bugs with result set dealing.
@@ -707,8 +739,10 @@ void rsGetByName(NMParams p, int32 type)
       TC_throwNullArgumentException(p->currentContext, "colName");
    else if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1;
-      rsPrivateGetByIndex(p, type);
+      if ((p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1) >= 0)
+         rsPrivateGetByIndex(p, type);
+      else // juliana@266_2: corrected exception message when an unknown column name was passed to a ResultSet method.
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NAME), colName);
    }
 }
 
@@ -751,9 +785,11 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
    // NOCASE, VARCHAR, or VARCHAR NOCASE.
    typeCol = rsBag->table->columnTypes[col];
+   
+   // juliana@270_28: now it is not allowed to fetch a string field in ResultSet with methods that aren't getString() or getChars().
 	if (type != UNDEFINED_TYPE)
 	   if (!(field->isDataTypeFunction && type == SHORT_TYPE && (typeCol == DATE_TYPE || typeCol == DATETIME_TYPE))
-       && (typeCol != type && typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE))
+       && (typeCol != type && ((typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE) || (type != CHARS_NOCASE_TYPE && type != CHARS_TYPE))))
 	   {
 		   TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
          return;
@@ -1078,10 +1114,10 @@ void formatTime(CharP buffer, int32 intTime)
  * @param order The decimal order of the value being inserted in the string.
  * @return The buffer string address offset by the number of decimal orders.
  */
-CharP zeroPad(CharP buffer, int32 value, int32 order) // rnovais@567_2
+CharP zeroPad(CharP buffer, int32 value, uint32 order) // rnovais@567_2
 {
 	TRACE("zeroPad")
-   while (order > 0)
+   while (order)
    {
       *buffer++ = ((value / order) % 10) + '0';
       order /= 10;
@@ -1099,10 +1135,10 @@ int32 identHashCode(Object stringObj)
 {
 	TRACE("identHashCode")
    int32 hash = 0,
-         length = String_charsLen(stringObj),
          value;
+   uint32 length = String_charsLen(stringObj);
    JCharP chars = String_charsStart(stringObj);
-   while (length-- > 0)
+   while (length--)
    {
       value = (int32)*chars++;
       if (value >= (int32)'A' && value <= (int32)'Z') // guich@104
@@ -1328,7 +1364,7 @@ bool testRSClosed(Context context, Object resultSet)
    return true;
 }
 
-// juliana@newmeta_1: added methods to return the primary key columns of a table.
+// juliana@253_3: added methods to return the primary key columns of a table.
 /**
  * Returns a table used in a select given its name.
  * 
@@ -1353,6 +1389,7 @@ Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName)
    return getTable(context, resultSet->driver, tableName);  
 }
 
+//juliana@253_4: added methods to return the default value of a column.
 /**
  * Gets the default value of a column.
  * 
@@ -1372,7 +1409,7 @@ Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 
       int32 type = table->columnTypes[index];
       SQLValue* value = table->defaultValues[index];  
       DoubleBuf buffer;
-      CharP valueCharP;     
+      CharP valueCharP = "";     
                 
       if (!value) // No default value, returns null.
          return null;

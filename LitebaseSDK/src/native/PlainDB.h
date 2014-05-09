@@ -30,11 +30,12 @@
  * @param plainDB Receives the new <code>PlainDB</code> or <code>null</code> if an error occurs.
  * @param name The name of the table.
  * @param create Defines if the file will be created if it doesn't exist.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot);
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, CharP sourcePath, int32 slot);
 
 /**
  * Sets the size of a row.

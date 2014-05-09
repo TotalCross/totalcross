@@ -322,7 +322,7 @@ bool setDateObject(NMParams params, int32 date);
  */
 bool setTimeObject(NMParams params, int32 date, int32 time);
 
-/* 
+/** 
  * Creates a new hash table for the temporary tables size statistics. 
  * 
  * @param count The initial size.
@@ -330,16 +330,16 @@ bool setTimeObject(NMParams params, int32 date, int32 time);
  */
 MemoryUsageHT muNew(int32 count);
 
-/* 
+/** 
  * Gets the stored statistics item with the given key.
  *
- * @param iht A hash table for the temporary tables size statistics.
+ * @param table A hash table for the temporary tables size statistics.
  * @param key The hash key.
  * @param dbSize Receives the stored .db file size.
  * @param dboSize Receives the stored .dbo file size.
  * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
  */
-bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize);
+bool muGet(MemoryUsageHT* table, int32 key, int32* dbSize, int32* dboSize);
 
 /**
  * Once the number of elements gets above the load factor, rehashes the hash table.
@@ -349,22 +349,31 @@ bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize);
  */
 bool muRehash(MemoryUsageHT* table);
 
-/* 
+/** 
  * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
  *
- * @param iht A hash table for the temporary tables size statistics.
+ * @param table A hash table for the temporary tables size statistics.
  * @param key The hash key.
  * @param dbSize The .db file size to be stored.
  * @param dboSize The .dbo file size to be stored.
  * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
  */
-bool muPut(MemoryUsageHT* iht, int32 key, int32 dbSize, int32 dboSize);
+bool muPut(MemoryUsageHT* table, int32 key, int32 dbSize, int32 dboSize);
 
-/* 
+/** 
  * Frees the hashtable. 
  *
- * @param iht A hash table for the temporary tables size statistics.
+ * @param table A hash table for the temporary tables size statistics.
  */
-void muFree(MemoryUsageHT* iht);
+void muFree(MemoryUsageHT* table);
+
+/**
+ * Indicates if a buffer is only composed by zeros or not.
+ * 
+ * @param buffer The buffer.
+ * @param length The size of the buffer.
+ * @return <code>true</code> if the buffer is only composed by zeros; <code>false</code>, otherwise.
+ */
+bool isZero(uint8* buffer, int32 length);
 
 #endif

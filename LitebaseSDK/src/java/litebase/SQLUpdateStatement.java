@@ -58,7 +58,7 @@ class SQLUpdateStatement extends SQLStatement
    /**
     * An array that indicates if a null value will be stored in a field.
     */
-   boolean[] storeNulls;
+   byte[] storeNulls;
 
    /**
     * Constructs an update statement given the result of the parsing process.
@@ -75,7 +75,7 @@ class SQLUpdateStatement extends SQLStatement
       
       // Creates an array to store the fact that a value is null or not.
       SQLValue[] recordAux = record = SQLValue.newSQLValues(nValues);
-      boolean[] nulls = storeNulls = new boolean[nValues];
+      byte[] nulls = storeNulls = new byte[(nValues + 7) >> 3];
       
       type = SQLElement.CMD_UPDATE;
       rsTable = parser.tableList[0]; // Sets the result table.
@@ -98,7 +98,7 @@ class SQLUpdateStatement extends SQLStatement
          if (value != null) // Only stores values that are not null.
             recordAux[nValues].asString = value;
          else 
-            nulls[nValues] = recordAux[nValues].isNull = true;
+            Utils.setBit(nulls, nValues, recordAux[nValues].isNull = true);
       }
       
       if (clause != null) // Process the where clause, if it exists.
@@ -136,7 +136,7 @@ class SQLUpdateStatement extends SQLStatement
          SQLValue value = record[idx]; 
          value.asShort = val;
          paramDefined[index] = true;
-         value.isNull = storeNulls[idx] = false; // The value is not null.
+         Utils.setBit(storeNulls, idx, value.isNull = false); // The value is not null. 
       
          // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
          value.asString = null;
@@ -166,7 +166,7 @@ class SQLUpdateStatement extends SQLStatement
          SQLValue value = record[idx]; 
          value.asInt = val;
          paramDefined[index] = true;
-         value.isNull = storeNulls[idx] = false; // The value is not null.
+         Utils.setBit(storeNulls, idx, value.isNull = false); // The value is not null. 
       
          // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
          value.asString = null;
@@ -196,7 +196,7 @@ class SQLUpdateStatement extends SQLStatement
          SQLValue value = record[idx]; 
          value.asLong = val;
          paramDefined[index] = true;
-         value.isNull = storeNulls[idx] = false; // The value is not null.
+         Utils.setBit(storeNulls, idx, value.isNull = false); // The value is not null. 
          
          // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
          value.asString = null;            
@@ -226,7 +226,7 @@ class SQLUpdateStatement extends SQLStatement
          SQLValue value = record[idx];
          value.asDouble = val;
          paramDefined[index] = true;
-         value.isNull = storeNulls[idx] = false; // The value is not null.
+         Utils.setBit(storeNulls, idx, value.isNull = false); // The value is not null.
       
          // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
          value.asString = null;         
@@ -256,7 +256,7 @@ class SQLUpdateStatement extends SQLStatement
          SQLValue value = record[idx];
          value.asDouble = val;
          paramDefined[index] = true;
-         value.isNull = storeNulls[idx] = false; // The value is not null.
+         Utils.setBit(storeNulls, idx, value.isNull = false); // The value is not null.
       
          // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
          value.asString = null;  
@@ -287,10 +287,7 @@ class SQLUpdateStatement extends SQLStatement
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_STRING));
          
          record[idx].asString = val; // Sets the values of the parameter in its list.
-         if (val != null) // The value is not null.
-            record[idx].isNull = storeNulls[idx] = false;
-         else // The value is null.
-            record[idx].isNull = storeNulls[idx] = true;
+         Utils.setBit(storeNulls, idx, record[idx].isNull = (val == null)); // Sets whether the value is or not null.
          paramDefined[index] = true;
       }
       else // The parameter is in the where clause.
@@ -324,11 +321,7 @@ class SQLUpdateStatement extends SQLStatement
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       
       record[idx].asBlob = val; // Stores the value.
-      
-      if (val != null) // The value is not null.
-         record[idx].isNull = storeNulls[idx] = false;
-      else // The value is null.
-         record[idx].isNull = storeNulls[idx] = true;
+      Utils.setBit(storeNulls, idx, record[idx].isNull = (val == null)); // Sets whether the value is or not null.
       paramDefined[index] = true;
    }
    
@@ -351,7 +344,7 @@ class SQLUpdateStatement extends SQLStatement
          // Sets the null value in its list.
          value.asString = null; 
          value.asBlob = null;
-         value.isNull = storeNulls[idx] = paramDefined[index] = true;
+         Utils.setBit(storeNulls, idx, value.isNull = paramDefined[index] = true);
       }
       else // The parameter is in the where clause.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PARAM_NULL)); 
@@ -362,19 +355,24 @@ class SQLUpdateStatement extends SQLStatement
     */
    void clearParamValues()
    {
-      int i = paramCount;
+      int i = paramCount,
+          j;
       SQLValue value;
+      SQLValue[] recordAux = record;
       SQLBooleanClause clause = whereClause;
-
+      
+      // juliana@253_14: corrected a possible AIOBE if the number of parameters of a prepared statement were greater than 128.
+      short[] paramIndexesAux = paramIndexes; 
+      
+      byte[] storeNullsAux = storeNulls;
+      
       Convert.fill(paramDefined, 0, paramDefined.length, false); // Cleans the parameter values of the update clause.
-
+      
       while (--i >= 0)
       {
-         int j = paramIndexes[i] & 0xFF;
-         value = record[j];
-         value.asString = null;
+         (value = recordAux[j = paramIndexesAux[i] & 0xFF]).asString = null;
+         Utils.setBit(storeNullsAux, j, value.isNull = false);
          value.asBlob = null;
-         value.isNull = storeNulls[j] = false;
       }
 
       if (clause != null) // Cleans the parameter values of the where clause.
