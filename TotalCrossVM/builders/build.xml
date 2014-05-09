@@ -62,7 +62,7 @@
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="source.vm.path"    value="${basedir}/.."/>
 <property name="base.target.path"  value="${basedir}/../../../output/release"/>
-<property name="base.temp.path"    value="t:/SDK/${basedir}/../../../temp"/>
+<property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="etc"               value="${source.sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
 
