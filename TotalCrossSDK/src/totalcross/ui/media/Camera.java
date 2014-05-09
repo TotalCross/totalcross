@@ -93,6 +93,13 @@ public class Camera
     * @see #CAMERACAPTURE_MODE_VIDEOWITHAUDIO
     */
    public int captureMode = CAMERACAPTURE_MODE_STILL;
+   
+   /**
+    * This field is false by default so that the default camera orientation is still landscape. 
+	 * If this is set to true, the camera orientation will follow the device orientation.
+	 * Used on Android only.
+	 */
+   public boolean allowRotation;
 
    /** Used in the cameraMode member. */
    public static final int CAMERACAPTURE_MODE_STILL = 0;

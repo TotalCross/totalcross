@@ -356,7 +356,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          }
       } while (changed);
    }
-
+   
    /** Called by the VM when the application is starting. Setups a
      * timer that will call initUI after the event loop is started.
      * Never call this method directly; this method is not private
@@ -669,7 +669,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
       return img;
    }
-
 
    // stuff to let a thread update the screen
    private Object[] getRunners()

@@ -36,6 +36,12 @@ public class Camera4D
    public int videoTimeLimit;
 
    public int captureMode = CAMERACAPTURE_MODE_STILL;
+   
+   /**
+    * This field is false by default so that the default camera orientation is still landscape. 
+	* If this is set to true, the camera orientation will follow the device orientation.
+	*/
+   public boolean allowRotation;
 
    public static final int CAMERACAPTURE_MODE_STILL = 0;
    public static final int CAMERACAPTURE_MODE_VIDEOONLY = 1;
