@@ -52,9 +52,7 @@ public class Deployer4IPhoneIPA
       Security.addProvider(new BouncyCastleProvider());
 
       // locate template and target
-      File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
-            DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
-            "ios/TotalCross.ipa"));
+      File templateFile = new File(Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "ios/TotalCross.ipa"));
       File targetFile = File.createTempFile(DeploySettings.appTitle, ".zip");
       targetFile.deleteOnExit();
       // create a copy of the original file
@@ -98,8 +96,7 @@ public class Deployer4IPhoneIPA
       // TCFont
       new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
       // Litebase
-      if (DeploySettings.folderLitebaseSDKDistLIB != null)
-         new TFile(DeploySettings.folderLitebaseSDKDistLIB, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
+      new TFile(DeploySettings.distDir, "vm/LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
       
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22

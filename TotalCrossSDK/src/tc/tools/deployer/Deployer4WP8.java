@@ -29,9 +29,7 @@ public class Deployer4WP8
    public Deployer4WP8() throws Exception
    {
       // locate template and target
-      File templateFile = new File(Convert.appendPath(DeploySettings.rasKey == null ?
-            DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM,
-            "wp8/TotalCross.xap"));
+      File templateFile = new File(Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "wp8/TotalCross.xap"));
       
       // create the output folder
       final String targetDir = Convert.appendPath(DeploySettings.targetDir, "/wp8/");
@@ -63,8 +61,7 @@ public class Deployer4WP8
       // TCFont
       sz.putEntry(new File(DeploySettings.fontTCZ).getName(), new File(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ));
       // Litebase
-      if (DeploySettings.folderLitebaseSDKDistLIB != null)
-         sz.putEntry("LitebaseLib.tcz", new File(DeploySettings.folderLitebaseSDKDistLIB, "LitebaseLib.tcz"));
+      sz.putEntry("LitebaseLib.tcz", new File(DeploySettings.distDir, "vm/LitebaseLib.tcz"));
 
       // add pkg files
       Hashtable ht = new Hashtable(13);

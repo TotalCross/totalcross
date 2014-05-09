@@ -668,7 +668,7 @@ public class Utils
       copyFile(DeploySettings.tczFileName, targetDir+"/"+Utils.getFileName(DeploySettings.tczFileName), false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   // currentDir: "O:/TotalCrossSDK/classes/tc"
+   // currentDir: "w:/TotalCross3/classes/tc"
    // passed: "samples/ui/gadgets/UIGadgets.class"
    // className   "tc/samples/ui/gadgets/UIGadgets"
    public static String getBaseFolder(String currentDir, String passed, String className)
@@ -761,7 +761,7 @@ public class Utils
    public static void jarSigner(String jar, String targetDir) throws Exception
    {
       // Certificate fingerprint (MD5): 0D:79:8E:42:A9:CD:50:AC:29:72:85:F8:12:3C:22:0E
-      // jarsigner -keystore P:\TotalCrossSDK\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
+      // jarsigner -keystore P:\TotalCross3\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
       if (jarsignerExe == null)
          throw new DeployerException("Could not find the file "+DeploySettings.appendDotExe("jarsigner")+". Make sure you have installed a JDK that has this file in the bin folder. If so, make sure that the %JAVA_HOME%/bin is in the PATH.");

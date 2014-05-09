@@ -83,7 +83,7 @@ public class Deploy
          else
          {
             if (DeploySettings.etcDir == null || !new File(DeploySettings.etcDir).exists())
-               throw new DeployerException("Can't find path for etc folder. Add TotalCrossSDK to the classpath or set the TOTALCROSS_HOME environment variable.");
+               throw new DeployerException("Can't find path for etc folder. Add TotalCross3 folder to the classpath or set the TOTALCROSS3_HOME environment variable.");
 
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
@@ -223,7 +223,7 @@ public class Deploy
       }
       catch (ClassNotFoundException cd)
       {
-         throw new DeployerException("You must also add /TotalCrossSDK/lib/TotalCross.jar to the classpath!");
+         throw new DeployerException("You must also add /TotalCross3/lib/TotalCross.jar to the classpath!");
       }
    }
 
@@ -344,33 +344,13 @@ public class Deploy
                          break; // guich@tc115_37: missing break
                case 'w': waitIfError = true;
                          break;
-               case 'p': if (i >= args.length-1)
-                            throw new DeployerException("You must provide the package type for /p");
-                         String type = args[++i].toLowerCase();
-                         if (type.startsWith("release"))
-                         {
-                            DeploySettings.packageType = DeploySettings.PACKAGE_RELEASE;
-                            if (DeploySettings.folderTotalCrossVMSDistVM == null)
-                               throw new DeployerException("Could not find the path for TotalCrossVMS, so its impossible to create a single installation package.");
-                         }
-                         else
-                         if (type.startsWith("demo"))
-                         {
-                            DeploySettings.packageType = DeploySettings.PACKAGE_DEMO;
-                            if (DeploySettings.folderTotalCrossSDKDistVM == null)
-                               throw new DeployerException("Could not find the path for TotalCrossSDK, so its impossible to create a single installation package.");
-                         }
-                         else
-                            throw new DeployerException("Invalid package option: "+type);
-                         boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
-                         if (type.endsWith("litebase"))
-                         {
-                            DeploySettings.packageType |= DeploySettings.PACKAGE_LITEBASE;
-                            String lbfolder = DeploySettings.folderLitebaseSDKDistLIB;
-                            if (lbfolder == null)
-                               throw new DeployerException("Could not find the path for LitebaseSDK, so its impossible to create a single installation package.");                               
-                         }
-                         System.out.println("Creating single installation package: "+(isDemo?"DEMO TCVM":"ACTIVATION TCVM")+((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0 ? " + LITEBASE" : ""));
+               case 'p': String type = args[i+1].toLowerCase();
+                         if (type.startsWith("release") || type.startsWith("demo")) // keep compatibility with old sdk by ignoring the parameter after /p
+                            i++;                     
+                         DeploySettings.packageVM = true;
+                         if (DeploySettings.folderTotalCross3DistVM == null)
+                            throw new DeployerException("Could not find the path for TotalCross3, so its impossible to create a single installation package.");
+                         System.out.println("Creating single installation package");
                          break;
                case 'i': DeploySettings.installPlatforms = args[++i].toLowerCase()+",";
                          break;
@@ -428,18 +408,9 @@ public class Deploy
             "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +
-            "   /p type : Package the vm (and optionally litebase) with the application, creating a single installation file. " +
-                         "The type parameter can be one of the following: demo, demo+litebase, release, release+litebase " +
-                         "(where demo/release are the virtual machine types you want to include, the time-limited demonstration, " +
-                         "or the release that requires activation). The DEMO SDKs must be in the path or in the " +
-                         "TOTALCROSS2_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
-                         "same parent folder of the DEMO ones. Example: if TOTALCROSS2_HOME points to t:\\sdks\\TotalCrossSDK, " +
-                         "then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS2_HOME and LITEBASE_HOME are not set," +
-                         "then all SDKs must be at the top-level folder of the TotalCrossSDK\\etc folder. " +
-                         "The files are always installed at the same folder of the application, so each application will have its own vm/litebase." +
-                         "You can optionally set four environment variables, pointing to the folder of each SDK (these will have priority over the " +
-                         "other locations): TOTALCROSS2_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
-                         "LITEBASE_DEMO or LITEBASE_RELEASE (must point to LitebaseSDK folder).\n" +
+            "   /p      : Package the vm and litebase with the application, creating a single installation file. " +
+                         "The SDK must be in the path or in the TOTALCROSS3_HOME environment variable. " +
+                         "The files are always installed at the same folder of the application, so each application will have its own vm.\n" +
             "   /r key  : Specify a registration key to be used to activate TotalCross when required\n" +
             "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n" +
             "   /v      : Verbose output for information messages\n" +

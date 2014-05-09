@@ -89,7 +89,7 @@ public class ConnectionTest extends TestCase
 
    public void openFile() throws Exception
    {
-      File testDB = copyToTemp("J:\\_SWDevelop\\gitrepo\\TotalCross\\TotalCrossSDK\\src\\tc\\test\\totalcross\\sql\\sqlite\\", "sample.db");
+      File testDB = copyToTemp("g:\\TotalCross\\TotalCross3\\src\\tc\\test\\totalcross\\sql\\sqlite\\", "sample.db");
       new TempFile(testDB);
       assertTrue(testDB.exists());
       Connection conn = DriverManager.getConnection("jdbc:sqlite:" + testDB);

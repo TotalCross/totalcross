@@ -1774,7 +1774,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          else
          if (appletInitialized) // guich@500_1: when retroguard is loaded, Applet.init is never called, so we just skip here.
          {
-            System.err.println("No fonts found! be sure to place the file "+totalcross.ui.font.Font.DEFAULT+".tcz in the same directory from where you're running your application"+(isApplication ? " or put a reference to TotalCrossSDK/etc folder in the classpath!" : "or in your applet's codebase or in a jar file!"));
+            System.err.println("No fonts found! be sure to place the file "+totalcross.ui.font.Font.DEFAULT+".tcz in the same directory from where you're running your application"+(isApplication ? " or put a reference to TotalCross3/etc folder in the classpath!" : "or in your applet's codebase or in a jar file!"));
             System.exit(2);
          }
       } catch (Exception e) {System.out.println(""+e);}

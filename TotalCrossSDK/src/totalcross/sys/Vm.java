@@ -40,7 +40,7 @@ public final class Vm
     * this command are:
     * <ul>
     *  <li> Android: use the logging window throught ADB, which can be viewed by calling
-    * <code>\TotalCrossSDK\etc\tools\android\debug_console.bat</code>
+    * <code>\TotalCross3\etc\tools\android\debug_console.bat</code>
     * </ul>
     * This flag can be used only once, at the Application's constructor. Calling it afterwards can result in debugging data loss.
     */

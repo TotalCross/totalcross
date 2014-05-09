@@ -90,8 +90,8 @@ public class Deployer4Android
 {
    private static final boolean DEBUG = false;
    private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
-   private String tcFolder = null, lbFolder = null;
-   private boolean isDemo,singleApk;
+   private String tcFolder;
+   private boolean singleApk;
 
    byte[] buf = new byte[8192];
    
@@ -105,7 +105,7 @@ public class Deployer4Android
       File f = new File(targetDir);
       if (!f.exists())
          f.mkdirs();
-      singleApk = DeploySettings.packageType != 0;
+      singleApk = DeploySettings.packageVM;
       if (!singleApk)
       {
          targetPackage = "totalcross/app/"+fileName.toLowerCase();
@@ -114,10 +114,7 @@ public class Deployer4Android
       }
       else
       {
-         isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
-         tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"android/";
-         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-            lbFolder = DeploySettings.folderLitebaseSDKDistLIB + "android/";
+         tcFolder = DeploySettings.folderTotalCross3DistVM+"android/";
          // source and target packages must have the exact length
          sourcePackage = "totalcross/android";
          targetTCZ = "app"+DeploySettings.applicationId.toLowerCase();
@@ -183,7 +180,7 @@ public class Deployer4Android
    
    private void jar2dex() throws Exception
    {
-      // java -classpath P:\TotalCrossSDK\etc\tools\android\dx.jar com.android.dx.command.Main --dex --output=classes.dex UIGadgets.jar
+      // java -classpath P:\TotalCross3\etc\tools\android\dx.jar com.android.dx.command.Main --dex --output=classes.dex UIGadgets.jar
       String dxjar = Utils.findPath(DeploySettings.etcDir+"tools/android/dx.jar",false);
       if (dxjar == null)
          throw new DeployerException("File android/dx.jar not found!");
@@ -277,9 +274,10 @@ public class Deployer4Android
       }
       // include the vm and litebase
       if (tcFolder != null)
+      {
          copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
-      if (lbFolder != null)
-         copyZipEntry(lbFolder+"Litebase.apk", "lib/armeabi/liblitebase.so", zos);
+         copyZipEntry(tcFolder+"Litebase.apk", "lib/armeabi/liblitebase.so", zos);
+      }
       
       zis.close();
       zos.close();      
@@ -579,10 +577,9 @@ public class Deployer4Android
       {
          // tc is always included
          // include non-binary files
-         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
-         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
-         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-            vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
       }         
 
       Utils.preprocessPKG(vLocals,true);

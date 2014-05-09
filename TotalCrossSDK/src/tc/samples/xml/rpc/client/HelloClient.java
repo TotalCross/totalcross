@@ -56,7 +56,7 @@ public class HelloClient extends MainWindow
       catch (ClassNotFoundException e)
       {
          Label l;
-         add(l = new Label("This sample must be run at\ndesktop, as a win32 TotalCross app\nor as a java app. It\nrequires a server to be running\n(/TotalCrossSDK/src/samples/\n/xml/webservice/server/HelloServer).\nCheck XmlRpcClient javadocs for\ndetailed install information."));
+         add(l = new Label("This sample must be run at\ndesktop, as a win32 TotalCross app\nor as a java app. It\nrequires a server to be running\n(/TotalCross3/src/samples/\n/xml/webservice/server/HelloServer).\nCheck XmlRpcClient javadocs for\ndetailed install information."));
          l.setRect(LEFT,TOP,FILL,FILL);
       }
    }

@@ -33,7 +33,7 @@ import totalcross.ui.dialog.*;
  * <code>Image.getRotatedScaledInstance</code> method, after retrieving the image. 
  * 
  * To use this class with the Hand Held Dolphin barcode scanners, you must install
- * TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Dolphin.dll. Only 640x480 photos are supported, and you may change the
+ * TotalCross3/dist/vm/wince/POCKETPC/ARM/Dolphin.dll. Only 640x480 photos are supported, and you may change the
  * following options:
  * <ul>
  * <li>initialDir

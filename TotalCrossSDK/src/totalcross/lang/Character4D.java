@@ -68,7 +68,7 @@ public class Character4D
             byte[] v = new byte[65536];
             for(int i=0; i <= 65535;i++)
                v[i] = (byte)Character.getType((char)i);
-            File f = new File("G:\\TotalCross\\TotalCrossSDK\\src\\totalcross\\chartypes.bin", File.CREATE_EMPTY);
+            File f = new File("G:\\TotalCross\\TotalCross3\\src\\totalcross\\chartypes.bin", File.CREATE_EMPTY);
             f.writeBytes(v,0,v.length);
             f.close();
          }

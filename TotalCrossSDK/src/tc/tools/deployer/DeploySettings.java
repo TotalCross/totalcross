@@ -22,12 +22,8 @@ public class DeploySettings
    public static final String UnknownVendor = "Unknown Vendor"; // fdie@570_96
 
    // constants for including the vm and/or litebase in a package 
-   public static final int PACKAGE_DEMO = 1;
-   public static final int PACKAGE_RELEASE = 2;
-   public static final int PACKAGE_LITEBASE = 4;
-   public static int packageType;
-   public static String folderTotalCrossSDKDistVM, folderTotalCrossVMSDistVM,
-                        folderLitebaseSDKDistLIB;
+   public static boolean packageVM;
+   public static String folderTotalCross3DistVM;
    
    public static String tczFileName;
    public static String targetDir;
@@ -136,29 +132,30 @@ public class DeploySettings
       if (new File(currentDir+"/etc").exists())
          etcDir = currentDir+"/etc";
       else
-      if (new File(System.getenv("GIT_HOME")+"/TotalCross/TotalCrossSDK/etc").exists()) // check first at p:
-         etcDir = System.getenv("GIT_HOME")+"/TotalCross/TotalCrossSDK/etc";
+      if (new File(System.getenv("GIT_HOME")+"/TotalCross/TotalCross3/etc").exists()) // check first at p:
+         etcDir = System.getenv("GIT_HOME")+"/TotalCross/TotalCross3/etc";
       else
       if ((etcDir = Utils.findPath("etc",false)) == null)
       {
-         String tchome = System.getenv("TOTALCROSS2_HOME");
+         String tchome = System.getenv("TOTALCROSS3_HOME");
          if (tchome == null)
             tchome = System.getenv("TOTALCROSS_HOME");
+         
          if (tchome != null)
             etcDir = tchome.replace('\\','/')+"/etc";
          else
          if (isWindows()) // if in windows, search in all drives
          {
             for (char i = 'c'; i <= 'z'; i++)
-               if (new File(i+":/TotalCrossSDK/etc").exists())
+               if (new File(i+":/TotalCross3/etc").exists())
                {
-                  etcDir = i+":/TotalCrossSDK/etc";
+                  etcDir = i+":/TotalCross3/etc";
                   break;
                }
          }
          else
-         if (new File("/TotalCrossSDK/etc").exists()) // check on the root of the current drive
-            etcDir = "/TotalCrossSDK/etc";
+         if (new File("/TotalCross3/etc").exists()) // check on the root of the current drive
+            etcDir = "/TotalCross3/etc";
       }
       if (etcDir != null)
       {
@@ -174,59 +171,25 @@ public class DeploySettings
       System.out.println("Classpath: "+cp0);
 
       // find the demo and release folders for totalcross and litebase
-      String f;
-      f = System.getenv("TOTALCROSS2_DEMO");
+      String f = System.getenv("TOTALCROSS3_HOME");
       if (f == null)
-         f = System.getenv("TOTALCROSS_DEMO");
+         f = System.getenv("TOTALCROSS3");
       if (f != null)
       {
-         folderTotalCrossSDKDistVM = Convert.appendPath(f, "dist/vm/");
-         if (!new File(folderTotalCrossSDKDistVM).isDir())
+         folderTotalCross3DistVM = Convert.appendPath(f, "dist/vm/");
+         if (!new File(folderTotalCross3DistVM).isDir())
          {
-            folderTotalCrossSDKDistVM = Convert.appendPath(f, "vm/");
-            if (!new File(folderTotalCrossSDKDistVM).isDir())
-               folderTotalCrossSDKDistVM = f;
+            folderTotalCross3DistVM = Convert.appendPath(f, "vm/");
+            if (!new File(folderTotalCross3DistVM).isDir())
+               folderTotalCross3DistVM = f;
          }
       }
-      f = System.getenv("TOTALCROSS2_RELEASE");
-      if (f == null)
-         f = System.getenv("TOTALCROSS_RELEASE");
-      if (f != null)
-      {
-         folderTotalCrossVMSDistVM = Convert.appendPath(f, "dist/vm/");
-         if (!new File(folderTotalCrossVMSDistVM).isDir())
-         {
-            folderTotalCrossVMSDistVM = Convert.appendPath(f, "vm/");
-            if (!new File(folderTotalCrossVMSDistVM).isDir())
-               folderTotalCrossVMSDistVM = f;
-         }
-      }
-      f = System.getenv("LITEBASE_DEMO"); // either one works
-      if (f == null)
-         f = System.getenv("LITEBASE_RELEASE");
-      if (f != null)
-         folderLitebaseSDKDistLIB = Convert.appendPath(f, "dist/lib/");
 
-      if (folderTotalCrossSDKDistVM == null)
-         folderTotalCrossSDKDistVM = distDir+"vm/";
-      if (folderTotalCrossVMSDistVM == null)
-         folderTotalCrossVMSDistVM = Convert.replace(folderTotalCrossSDKDistVM, "SDK","VMS");
-      String lbhome = System.getenv("LITEBASE_HOME");
-      if (lbhome == null && etcDir != null)
-         lbhome = Utils.getParent(Utils.getParentFolder(etcDir))+"/LitebaseSDK";
-      if (lbhome != null)
-      {
-         lbhome = lbhome.replace('\\','/');
-         if (folderLitebaseSDKDistLIB == null)
-            folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
-      }
+      if (folderTotalCross3DistVM == null)
+         folderTotalCross3DistVM = distDir+"vm/";
       // check if folders exist
-      if (folderLitebaseSDKDistLIB == null || !new File(folderLitebaseSDKDistLIB).exists())
-         folderLitebaseSDKDistLIB = null;
-      if (folderTotalCrossSDKDistVM == null || !new File(folderTotalCrossSDKDistVM).exists()) 
-         folderTotalCrossSDKDistVM = null;
-      if (folderTotalCrossVMSDistVM == null || !new File(folderTotalCrossVMSDistVM).exists()) 
-         folderTotalCrossVMSDistVM = null;
+      if (folderTotalCross3DistVM == null || !new File(folderTotalCross3DistVM).exists()) 
+         folderTotalCross3DistVM = null;
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
    }

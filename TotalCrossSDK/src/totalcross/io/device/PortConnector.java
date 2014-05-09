@@ -228,7 +228,7 @@ public class PortConnector extends Stream
       }
       catch (java.lang.NoClassDefFoundError e)
       {
-         throw new java.lang.NoClassDefFoundError(e.getClass().getName()+" - "+e.getMessage() + "\nCannot find javax.comm.CommPortIdentifier. You must add the /TotalCrossSDK/etc/tools/commapi/comm.jar file to your classpath. If you're not using Windows, then you must download the respective Comm api at http://java.sun.com/products/javacomm");
+         throw new java.lang.NoClassDefFoundError(e.getClass().getName()+" - "+e.getMessage() + "\nCannot find javax.comm.CommPortIdentifier. You must add the /TotalCross3/etc/tools/commapi/comm.jar file to your classpath. If you're not using Windows, then you must download the respective Comm api at http://java.sun.com/products/javacomm");
       }
       catch (Throwable t)
       {
