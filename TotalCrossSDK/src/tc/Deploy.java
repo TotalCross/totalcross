@@ -344,7 +344,7 @@ public class Deploy
                          break; // guich@tc115_37: missing break
                case 'w': waitIfError = true;
                          break;
-               case 'p': String type = args[i+1].toLowerCase();
+               case 'p': String type = i >= args.length-1 ? "" : args[i+1].toLowerCase();
                          if (type.startsWith("release") || type.startsWith("demo")) // keep compatibility with old sdk by ignoring the parameter after /p
                             i++;                     
                          DeploySettings.packageVM = true;
