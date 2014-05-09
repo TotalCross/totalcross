@@ -1283,7 +1283,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y /I &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\win32&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
