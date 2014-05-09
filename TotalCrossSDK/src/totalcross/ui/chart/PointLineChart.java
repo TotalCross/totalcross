@@ -83,7 +83,7 @@ public abstract class PointLineChart extends Chart
             Vector v = (Vector) points.items[i]; // the series' points
             if (v != null)
             {
-               for (int j = 0, n = v.size() - 2; j < n; j++) // for each series point
+               for (int j = 0, n = v.size() - 1; j < n; j++) // for each series point
                   if (s.yValues[j] != UNSET && s.yValues[j+1] != UNSET)
                   {
                      Coord c1 = (Coord) v.items[j];
