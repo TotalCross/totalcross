@@ -34,12 +34,12 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.7";
+   public static String versionStr = "2.8";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 270;
+   public static int version = 280;
 
    /** 
     * Current build number.
