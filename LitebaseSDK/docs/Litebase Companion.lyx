@@ -342,7 +342,7 @@ nbvspace[5]
 
 
 \backslash
-large  Version 2.7 
+large  Version 2.8
 \end_layout
 
 \begin_layout Plain Layout
@@ -1952,7 +1952,7 @@ Litebase needs TotalCross to run on the devices.
 \begin_layout Standard
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="24" columns="2">
+<lyxtabular version="3" rows="25" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0">
@@ -2417,11 +2417,31 @@ Litebase
 </cell>
 </row>
 <row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.7 to 2.0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.7
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.7 to 2.1
+3.0
 \end_layout
 
 \end_inset
@@ -2430,7 +2450,7 @@ Litebase
 \begin_inset Text
 
 \begin_layout Plain Layout
-2.7
+2.8
 \end_layout
 
 \end_inset
@@ -2445,9 +2465,10 @@ Litebase
 
 \begin_layout Standard
 Please notice that all indices files must be erased in order to use Litebase
- tables created with version 2.67 with Litebase 2.7 and vice-versa.
- Moreover, tables using cryptography created in version 2.7 can't be used
+ tables created with version 2.67 with Litebase 2.7/2.8 and vice-versa.
+ Moreover, tables using cryptography created in version 2.7/2.8 can't be used
  with version 2.67.
+ 
 \end_layout
 
 \begin_layout Section
