@@ -1328,7 +1328,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                zis.close();
                sis.close();
                // now we open the file again, with random access, and search for the filenames to get the correct offset to them
-               byte[] buf = new byte[Math.max(1024,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
+               byte[] buf = new byte[Math.max(4096,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
                RandomAccessFile raf = new RandomAccessFile(apk,"r");
                for (int i = base, n = tczs.size(); i < n; i++)
                {
