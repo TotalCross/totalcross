@@ -75,7 +75,6 @@ target: init
    <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 	<property name="base.target.path"  value="${basedir}/../../../output/release"/>
   <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
-  <property name="target.vms.path"    value="${base.target.path}/LitebaseVMS"/>
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
@@ -152,13 +151,7 @@ target: makeNativeHT - updates the native methods hash table.
 target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWin32_vms" >
-   <echo message="GENERATING WIN32 FILES - VMS"/>
-
-   <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.sln /project Litebase /rebuild "RAS Release|Win32"'/>
-   </exec>
-</target>
+<target name="buildWin32_vms" />
 
 <target name="buildWin32_sdk" >
    <echo message="GENERATING WIN32 FILES - SDK"/>
@@ -175,7 +168,6 @@ target: createSkeleton - Create the folders from scratch
 <target name="createSkeleton" >
   <delete dir="${base.target.path}/Litebase*" failonerror="yes" />
    <mkdir dir="${target.sdk.path}/dist/lib"/>
-   <mkdir dir="${target.vms.path}/dist/lib"/>
    <copy todir="${target.sdk.path}">
       <fileset dir="${source.lb.path}" includes="src/java/samples/**,License.txt,setup.bat" excludes="src/java/samples/sys/joins/**" />
       </copy>
@@ -227,28 +219,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 </target>
 
-<target name="buildInstalls_vms">
-
-  <property name="vms.file"  value="${target.vms.path}/../LitebaseVMS"/>
-
-  <!-- delete old files -->
-  <delete file="${vms.file}*.*" />
-
-  <!-- update readme files -->
-  <copy file="vms_sfx.diz" toDir="${rootpath}/">
-    <filterset>
-      <filter token="VERSION" value="${lb.version}"/>
-    </filterset>
-  </copy>
-
-  <echo message="Creating ${vms.file} file..."/>
-  <!-- create the splitted rar then the full sfx -->
-  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes"><arg line='a -sfx -y -ep1 -m5 -r -s -idq -zvms_sfx.diz ${vms.file} ${target.vms.path}\*.*'/></exec>
-
-  <!-- delete temp files -->
-  <delete file="${rootpath}/vms_sfx.diz"/>
-
-</target>
+<target name="buildInstalls_vms" />
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildIPhone
@@ -263,10 +234,6 @@ target: buildIPhone
    <antcall target="package-deb-release">
       <param name="release.type"      value="demo" />
       <param name="output.path"      value="${target.sdk.path}" />
-   </antcall>
-   <antcall target="package-deb-release">
-      <param name="release.type"      value="ras" />
-      <param name="output.path"      value="${target.vms.path}" />
    </antcall>
 </target>
 
@@ -355,20 +322,9 @@ target: Linux builds
    </antcall>
 </target>
    
-<target name="packageLinux_vms">
-   <antcall target="packageLinux">
-      <param name="type" value="release" />
-      <param name="target.path" value="${target.vms.path}" />
-   </antcall>
-</target>
+<target name="packageLinux_vms" />
 
-<target name="buildLinux_vms">
-
-  <sshexec command="bash -l ~/build.sh -litebase -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-
-
-</target>
+<target name="buildLinux_vms" />
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: Android builds
@@ -441,13 +397,7 @@ target: Android builds
 
 <target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
 
-<target name="buildAndroid_vms" depends="clean_android_native">
-  <delete dir="${android.project.path}/out/src" />
-  <antcall target="build_android" >
-   <param name="type" value="release" />
-   </antcall>
-  <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
-</target>
+<target name="buildAndroid_vms" depends="" />
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: companion
@@ -526,10 +476,10 @@ target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
-<target name="build_vms" depends="checkVersionOnProjects,createSkeleton,build-deb,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
+<target name="build_vms" />
 
 <target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
-<target name="build_all" depends="build_sdk,build_vms" description="builds sdk and vms" />
+<target name="build_all" depends="build_sdk" description="builds sdk" />
 
 <target name="buildBB_sdk" />
 <target name="buildBB_vms" />
