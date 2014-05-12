@@ -1,5 +1,6 @@
 package tc.tools.deployer.zip;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -17,7 +18,7 @@ public class BlackHoleOutputStream extends OutputStream
       super();
    }
 
-   public void write(final int b)
+   public void write(int b) throws IOException
    {
       // do nothing
    }
