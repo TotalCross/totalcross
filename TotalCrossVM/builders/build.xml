@@ -602,6 +602,7 @@ target: Android builds
 
 <target name="mergeAPKlocal" >
    <property name="out" value="${base.temp.path}/tcapk" />
+   <delete dir="${out}" />
    <unzip src="${apk}" dest="${out}"/>   
    <zip destfile="${out}/assets/tcfiles.zip"  includes="LitebaseLib.tcz" basedir="${source.lb.path}/dist/lib" update="yes" compress="no" keepcompression="no" />
    <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
