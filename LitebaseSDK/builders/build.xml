@@ -161,11 +161,18 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    </exec>
 </target>
 
+<!-- updates the version. -->
+<target name="updateCompilerDate" >
+    <property name="buildNumber" value="-1" />
+	<replace file="${source.lb.path}/src/java/litebase/LitebaseConnection.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+    <replace file="${source.lb.path}/src/java/litebase/LitebaseConnection4D.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+</target>
+    
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="createSkeleton" >
+<target name="createSkeleton" depends="updateCompilerDate" >
   <delete dir="${base.target.path}/Litebase*" failonerror="yes" />
    <mkdir dir="${target.sdk.path}/dist/lib"/>
    <copy todir="${target.sdk.path}">
