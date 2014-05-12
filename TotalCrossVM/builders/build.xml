@@ -216,6 +216,8 @@ target: buildSkeleton - Build the folders
         <property name="sdk.root" value="${source.sdk.path}"/>
        <fileset dir="${source.sdk.path}/src" includes="${samples.includes}/**/subbuild.xml" />
     </subant>
+    
+    <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>
     
 <target name="deploy-app">
