@@ -201,51 +201,8 @@ target: buildSkeleton - Build the folders
 </target>
 
 <target name="buildSamples_sdk" >
-    <copy todir="${source.sdk.path}/dist/vm" file="${source.lb.path}/dist/lib/LitebaseLib.tcz" /> 
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="compile-device" inheritAll="false"/>
-
-    <delete dir="${target.sdk.path}/dist/samples" failonerror="no" />
-    <mkdir dir="${target.sdk.path}/dist/samples" />
-
-    <property name="samples.includes" value="tc/samples"/>
-    <copy todir="${base.temp.path}/classes" verbose="true">
-       <fileset dir="${source.sdk.path}/src" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
-    </copy>
-
-    <subant target="deploy-app" inheritall="yes">
-        <property name="sdk.root" value="${source.sdk.path}"/>
-       <fileset dir="${source.sdk.path}/src" includes="${samples.includes}/**/subbuild.xml" />
-    </subant>
-    
-    <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
-</target>
-    
-<target name="deploy-app">
-
-   <echo message="deploy the ${app.name} package file" />
-   <property name="target.dir" value="${target.sdk.path}/dist/samples/${app.name}" />
-   <mkdir dir="${target.dir}" />
-
-   <!-- win32 packaging not supported on Linux -->
-   <condition property="supportedPlatforms" value="-iphone -linux">
-	<os family="unix"/>
-   </condition>
-   <property name="supportedPlatforms" value="-all"/>	
-	
-	<java classname="tc.Deploy" fork="yes" dir="${target.dir}">
-      <classpath>
-           <pathelement location="${base.temp.path}/classes"/>
-           <pathelement location="${source.sdk.path}"/>
-	       <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-	       <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-	       <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
- 	       <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-       </classpath>
-       <arg value="${base.temp.path}/classes/tc/samples/${app.srcdir}/${app.name}.class"/>
-       <arg line="${tcdeploy_line}"/>
-       <arg line="${supportedPlatforms}"/>
-   </java>
-   <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
+	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
+	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>
 
 <target name="buildJava_sdk" >
