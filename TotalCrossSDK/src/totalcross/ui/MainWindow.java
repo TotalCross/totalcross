@@ -498,11 +498,13 @@ public class MainWindow extends Window implements totalcross.MainClass
          {
             if (/*!Settings.isIOS() || */timeAvailable == 0) // show only for non iOS or if trial time was elapsed.
                new DemoBox().popup();
+            
             if (timeAvailable == 0)
             {
                exit(0);
                return;
             }
+            else Vm.debug("TotalCross "+Settings.versionStr+" DEMO VM.\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"));
          }
          else
          if (Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
