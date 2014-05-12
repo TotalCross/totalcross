@@ -48,8 +48,6 @@ VoidP privateLoadLibrary(CharP libName)
 #ifdef ANDROID
    if (library == null)
       library = tryAt(vmPath,"/lib/",libName); // needed for single apk applications
-   if (library == null && strEq(libName,"litebase"))
-      library = tryAt("/data/data/litebase.android/lib/","","litebase");
 #endif      
    if (library == null)
       library = tryAt("","",libName);

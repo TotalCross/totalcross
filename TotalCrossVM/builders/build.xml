@@ -55,17 +55,22 @@
 <property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
 
 <!-- properties regarding the TC paths -->
-<property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
-<property name="source.vms.path"   value="${basedir}/.."/>
-<property name="base.temp.path"    value="${basedir}/../../../temp"/>
+<!--property name="target.sdk.path"   value="t:/SDK/TotalCrossSDK"/-->
+
 <property name="base.target.path"  value="${basedir}/../../../output/release"/>
+<property name="source.vm.path"    value="${basedir}/.."/>
 <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
+<property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
+<property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
+<property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="etc"               value="${source.sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
 
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
+
+<property name="source.lb.path"   value="${basedir}/../../../Litebase/LitebaseSDK"/>
 
 <!-- installshield paths -->
 <property file="${rootpath}/ishield.properties"/>
@@ -130,7 +135,7 @@ target: makeNativeHT - updates the native methods hash table.
       classpath="${path.to.prototypeGenerator}"
       fork="yes"
    >
-      <arg line="makeNativeHT TC ${source.vms.path}\src\init ${source.vms.path}\src\nm\NativeMethods.txt" />
+      <arg line="makeNativeHT TC ${source.vm.path}\src\init ${source.vm.path}\src\nm\NativeMethods.txt" />
    </java>
 </target>
    
@@ -141,6 +146,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 <target name="buildWin32_sdk" >
    <echo message="GENERATING WIN32 FILES - SDK"/>
    
+   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
    <exec executable="${msvc.path}" failonerror="yes">
       <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
    </exec>
@@ -150,8 +156,11 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 <target name="updateCompilerDate" >
    <tstamp />
    <echo message="Compiler date: ${DSTAMP}" />
-   <concat destfile="${source.vms.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
+   <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
    <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+
+    <property name="buildNumber" value="-1" />
+	<replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -195,8 +204,9 @@ target: buildSkeleton - Build the folders
 </target>
 
 <target name="buildSamples_sdk" >
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
+	<copy todir="${source.sdk.path}/dist/vm" file="${source.lb.path}/dist/lib/LitebaseLib.tcz" />
+	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
+	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>
 
 <target name="buildJava_sdk" >
@@ -217,35 +227,93 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildInstalls" >
+<target name="mergeAPK" >
+   <unzip src="${target.sdk3.path}/dist/vm/android/Litebase.apk" dest="${target.sdk3.path}/dist/vm/android/lb"/>
+   <unzip src="${target.sdk3.path}/dist/vm/android/TotalCross.apk" dest="${target.sdk3.path}/dist/vm/android/tc"/>
+   <unzip src="${target.sdk3.path}/dist/vm/android/lb/assets/tcfiles.zip" dest="${target.sdk3.path}/dist/vm/android/tc/assets"/>
+   
+   <zip destfile="${target.sdk3.path}/dist/vm/android/tc/assets/tcfiles.zip"  includes="LitebaseLib.tcz" 
+      basedir="${target.sdk3.path}/dist/vm/android/tc/assets" update="yes" compress="no" keepcompression="no" />
+   <delete file="${target.sdk3.path}/dist/vm/android/tc/assets/LitebaseLib.tcz" />
 
-  <property name="target.file"  value="${target.path}/../TotalCross${type}"/>
+   <copy todir="${target.sdk3.path}/dist/vm/android/tc/lib">  <fileset dir="${target.sdk3.path}/dist/vm/android/lb/lib"/>               </copy>
+
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
+
+   <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
+   <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
+   <delete file="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
+   
+   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw">
+    <path><fileset dir="${target.sdk3.path}/dist/vm/android" includes="TotalCross.apk" /></path>
+   </signjar>
+
+</target>
+
+<target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
+
+  <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
+
+   <delete dir="${target.sdk3.path}"/>
+   <mkdir dir="${target.sdk3.path}"/>
+   
+   <!-- totalcross -->
+   <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
+   <move todir="${target.sdk3.path}/docs/tc" > <fileset dir="${target.sdk3.path}/docs/html"/>    </move>
+   
+   <!-- litebase -->
+   <unzip src="${target.litebase.path}/dist/litebase.jar" dest="${base.temp.path}/jar"/>
+   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="true" includes="**" basedir="${base.temp.path}/jar"  />
+   <delete dir="${base.temp.path}/jar" />
+   
+   <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
+   <copy todir="${target.sdk3.path}/dist/samples" includeEmptyDirs="No" failonerror="No">
+      <fileset dir="${target.litebase.path}/dist/samples" />
+      <mapper type="glob" from="*" to="LB_*"/>
+   </copy>
+   <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
+   <copy todir="${target.sdk3.path}/docs/lb" ><fileset dir="${target.litebase.path}/docs/html"/></copy>
+   <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
+   
+   <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
+   
+   <antcall target="mergeAPK" />
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   merge TotalCrossSDK + LitebaseSDK into TotalCross3 
+   and create file TotalCross3.exe
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildInstalls_sdk" >
+  <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
+  
+  <antcall target="createTotalCross3" />
+
+  <property name="target.file"  value="${target.sdk.path}/../TotalCross3"/>
 
   <!-- delete old files -->
   <delete file="${target.file}.exe" />
 
   <!-- update readme files -->
-  <copy file="${type}_sfx.diz" toDir="${rootpath}/">
+  <copy file="SDK_sfx.diz" toDir="${rootpath}/">
     <filterset>
       <filter token="VERSION" value="${tc.version}"/>
     </filterset>
   </copy>
 
   <echo message="Creating ${target.file} file..."/>
-  <!-- create the splitted rar then the full sfx -->
-  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes"><arg line='a -sfx -y -ep1 -m5 -r -s -idq -z${type}_sfx.diz ${target.file} ${target.path}\*.*'/></exec>
+  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -sfx -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file} ${target.sdk3.path}\*.*'/>
+  </exec>
 
   <!-- delete temp files -->
-  <delete file="${rootpath}/${type}_sfx.diz"/>
-
-</target>
-
-<target name="buildInstalls_sdk" >
-  <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
-  <antcall target="buildInstalls">
-      <param name="type" value="SDK" />
-      <param name="target.path" value="${target.sdk.path}" />
-  </antcall>
+  <delete file="${rootpath}/SDK_sfx.diz"/>
+  
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -261,7 +329,7 @@ target: IPhone builds
 <target name="buildIPhone_sdk_base" >
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
     <property name="arg_clean" value="-clean" />
-    <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+    <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   </then>
   <else>
     <property name="arg_clean" value="" />
@@ -371,7 +439,7 @@ target: IPhone builds
 
 <target name="buildIPhone_sdk_clean" >
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -409,7 +477,7 @@ target: Linux builds
 
 <target name="buildLinux_sdk_clean" >
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -459,7 +527,7 @@ target: Android builds
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
    <property name="type" value="demo" />
-   <exec dir="${source.vms.path}/src" executable="cmd.exe" failonerror="true">
+   <exec dir="${source.vm.path}/src" executable="cmd.exe" failonerror="true">
       <env key="TYPE" value="${type}" />
       <env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
       <arg line="/c ${android.ndk.path}/ndk-build"/>
@@ -477,22 +545,11 @@ target: Android builds
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="release" inheritAll="false"/>
 
-  <!-- test if the apk contains the needed files -->
-  <delete dir="${android.temp}/apk" />
-  <unjar src="${apk}" dest="${android.temp}/apk" overwrite="yes"/>
-  <available file="${android.temp}/apk/META-INF/TCANDROI.SF" property="apk.is.signed"/>
-  <fail unless="apk.is.signed" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: NOT SIGNED. TRY TO RUN THIS TASK AGAIN."/>
-  <available file="${android.temp}/apk/AndroidManifest.xml" property="apk.has.xml"/>
-  <fail unless="apk.has.xml" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: XML NOT FOUND. TRY TO RUN THIS TASK AGAIN."/>
-  <available file="${android.temp}/apk/classes.dex" property="apk.has.dex"/>
-  <fail unless="apk.has.dex" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: DEX NOT FOUND. TRY TO RUN THIS TASK AGAIN."/>
-  <delete dir="${android.temp}/apk" />
-
 </target>
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
    <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
-      <fileset dir="${source.vms.path}/src/jni/libs" >
+      <fileset dir="${source.vm.path}/src/jni/libs" >
          <include name="**/*.so" />
       </fileset>
    </copy>
@@ -508,7 +565,22 @@ target: Android builds
   </exec>
 </target>
 
-<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs TotalCross on Android." />
+<target name="mergeAPKlocal" >
+   <property name="out" value="${base.temp.path}/tcapk" />
+   <delete dir="${out}" />
+   <unzip src="${apk}" dest="${out}"/>   
+   <zip destfile="${out}/assets/tcfiles.zip"  includes="LitebaseLib.tcz" basedir="${source.lb.path}/dist/lib" update="yes" compress="no" keepcompression="no" />
+   <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
+   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip" basedir="${out}" />
+   <zip destfile="${apk}"  includes="assets/tcfiles.zip" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
+   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw">
+    <path><fileset dir="${android.temp}" includes="TotalCross.apk" /></path>
+   </signjar>
+
+</target>
+
+<target name="install_android" depends="buildAndroid_sdkNoClean,mergeAPKlocal,adb" description="Builds and installs TotalCross on Android." />
 
 <target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
@@ -559,7 +631,6 @@ target: checks if we must update the versions of the files prior to a build.
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
  
 <target name="build_iphone" >
   <fail unless="type" />

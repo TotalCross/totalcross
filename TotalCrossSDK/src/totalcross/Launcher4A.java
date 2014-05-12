@@ -130,7 +130,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       // read all apk names, before loading the vm
       if (!isSingleAPK)
       {
-         loadAPK("/data/data/litebase.android/apkname.txt",false); // litebase
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
       }
       loadAPK(appPath+"/apkname.txt",true);
@@ -354,13 +353,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       public Editable getEditable() 
       {
-         if (Build.VERSION.SDK_INT >= 14) 
+         if (Build.VERSION.SDK_INT >= 19) 
          {
             if (dummy == null)
             {
-               char[] c = new char[65535]; // guich: set a reasonable size for the buffer
-               for (int i = 1; i < c.length; i++)
-                  c[i-1] = (char)i;
+               char[] c = new char[1024]; // guich: set a reasonable size for the buffer
+               for (int i = 0; i < c.length; i++)
+                  c[i] = (i & 1) == 0 ? (char)255 : (char)257;
                dummy = new String(c);      
             }
             if (myEditable == null) 
@@ -1329,7 +1328,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                zis.close();
                sis.close();
                // now we open the file again, with random access, and search for the filenames to get the correct offset to them
-               byte[] buf = new byte[Math.max(1024,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
+               byte[] buf = new byte[Math.max(4096,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
                RandomAccessFile raf = new RandomAccessFile(apk,"r");
                for (int i = base, n = tczs.size(); i < n; i++)
                {

@@ -103,6 +103,8 @@ public class Deployer4WP8
       // close template and final output files      
       TVFS.umount(templateZip);
       sz.close();
+      
+      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/wp8/"));
    }
 
    private byte[] readIcon(int width, int height) throws ImageException, IOException

@@ -437,23 +437,11 @@ public class MainWindow extends Window implements totalcross.MainClass
    private static class DemoBox extends MessageBox
    {
       private static String tit,msg;
-      private static boolean hasLitebase()
-      {
-         try
-         {
-            Class.forName("litebase+DriverException".replace('+','.')); // bypass deploy issue
-            return true;
-         }
-         catch (ClassNotFoundException e)
-         {
-            return false;
-         }
-      }
       
       DemoBox()
       {
          super(tit = " TotalCross Virtual Machine "+Settings.versionStr+" ",
-               msg = "Copyright (c) 2008-2012\nSuperWaba Ltda\n\n"+(hasLitebase()?"TotalCross and Litebase\n":"")+"DEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"),
+               msg = "Copyright (c) 2008-2014\nTotalCross MGP\n\nDEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"),
                new String[]{"   Ok   "});
          Vm.debug(tit);
          Vm.debug(msg);
@@ -508,13 +496,15 @@ public class MainWindow extends Window implements totalcross.MainClass
          removeTimer(t);
          if (timeAvailable >= 0) // guich@tc126_46
          {
-            if (!Settings.isIOS() || timeAvailable == 0) // show only for non iOS or if trial time was elapsed.
+            if (/*!Settings.isIOS() || */timeAvailable == 0) // show only for non iOS or if trial time was elapsed.
                new DemoBox().popup();
+            
             if (timeAvailable == 0)
             {
                exit(0);
                return;
             }
+            else Vm.debug("TotalCross "+Settings.versionStr+" DEMO VM.\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"));
          }
          else
          if (Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))

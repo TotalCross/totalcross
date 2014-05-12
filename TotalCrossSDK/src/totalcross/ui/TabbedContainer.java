@@ -577,7 +577,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                xOfs = 0;
             else
             {
-               xOfs = 7*fmH/11; // keep part of the previous tab on screen
+               xOfs = Settings.fingerTouch ? fmH*2 : 7*fmH/11; // keep part of the previous tab on screen
                for (int i =0; i < toIdx; i++)
                   xOfs -= rNotSel[i].width-1;
             }
