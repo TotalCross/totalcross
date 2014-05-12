@@ -158,6 +158,9 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <echo message="Compiler date: ${DSTAMP}" />
    <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
    <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+
+    <property name="buildNumber" value="-1" />
+	<replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
