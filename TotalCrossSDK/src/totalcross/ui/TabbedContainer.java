@@ -89,6 +89,12 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private int activeIndex=-1;
    private String []strCaptions;
    private Image []imgCaptions,imgDis, imgCaptions0;
+   private Image activeIcon, activeIcon0;
+   
+   public void setActiveIcon(Image newActiveIcon)
+   {
+      activeIcon0 = newActiveIcon;
+   }
    private boolean isTextCaption=true;
    private Container containers[];
    private int count;
@@ -298,6 +304,20 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          throw new RuntimeException("Image array passed in setIcons must have the same length of the captions.");
       imgCaptions0 = icons;
       imgCaptions = new Image[icons.length];
+      setupImageProps();
+   }
+   
+   /** Set the given icons to appear at the top (or bottom, if TABS_BOTTOM) of a text TabbedContainer.
+    * The icon images must be squared. You must also set the extraTabHeight, because the icons
+    * will be resized to (extraTabHeight-fmH) in both directions. Also, sets the active icon.
+    */
+   public void setIcons(Image[] icons, Image activeIcon)
+   {
+      if (icons.length != count)
+         throw new RuntimeException("Image array passed in setIcons must have the same length of the captions.");
+      imgCaptions0 = icons;
+      imgCaptions = new Image[icons.length];
+      this.activeIcon0 = activeIcon;
       setupImageProps();
    }
    
@@ -641,8 +661,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          else
          try
          {
-            for (int size = extraTabHeight-fmH/2, i = 0; i < count; i++)
+        	int size = extraTabHeight-fmH/2;
+            for (int i = 0; i < count; i++)
                imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size);
+            if (activeIcon0 != null)
+               activeIcon = activeIcon0.getSmoothScaledInstance(size,size);
+            else
+               activeIcon = null;
          }
          catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
    }
@@ -784,11 +809,19 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (disabled[i])
                g.foreColor = Color.getCursorColor(cColor);
             if (imgCaptions != null && imgCaptions[i] != null)
-               g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
+            {
+               if (i == activeIndex && activeIcon != null)
+                  g.drawImage(activeIcon, r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
+               else
+                  g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
+            }
          }
          else
          {
-            g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
+            if (i == activeIndex && activeIcon != null)
+            	g.drawImage(activeIcon, r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
+            else
+            	g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
          }
          if (uiFlat)
             g.drawRect(r.x,r.y,r.width,r.height);
