@@ -36,7 +36,6 @@ public class Loader extends Activity implements BarcodeReadListener
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
    private boolean runningVM;
-   private static final int CHECK_LITEBASE = 1234324329;
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
@@ -59,36 +58,13 @@ public class Loader extends Activity implements BarcodeReadListener
             return;
          }
          AndroidUtils.checkInstall();
-         checkLitebase(); // calls runVM() on close
+         runVM();
       }
       catch (Throwable e)
       {
          String stack = Log.getStackTraceString(e);
          AndroidUtils.debug(stack);
          AndroidUtils.error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
-      }
-   }
-   
-   private void checkLitebase()
-   {
-      // launch the vm's intent
-      Intent intent = new Intent("android.intent.action.MAIN");
-      intent.setClassName("litebase.android","litebase.android.Loader");
-      intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-      try
-      {
-         startActivityForResult(intent, CHECK_LITEBASE);
-      }
-      catch (ActivityNotFoundException anfe) // occurs when litebase is not installed
-      {
-         runVM();
-      }
-      catch (Throwable t)
-      {
-         //AndroidUtils.debug("Exception ignored:");
-         //AndroidUtils.handleException(t,false);
-         //AndroidUtils.debug("Litebase not installed or single apk.");
-         runVM();
       }
    }
    
@@ -101,9 +77,6 @@ public class Loader extends Activity implements BarcodeReadListener
             break;
          case JUST_QUIT:
             finish();
-            break;
-         case CHECK_LITEBASE:
-            runVM();
             break;
          case TAKE_PHOTO:
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);

@@ -221,6 +221,31 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
+<target name="mergeAPK" >
+   <unzip src="${target.sdk3.path}/dist/vm/android/Litebase.apk" dest="${target.sdk3.path}/dist/vm/android/lb"/>
+   <unzip src="${target.sdk3.path}/dist/vm/android/TotalCross.apk" dest="${target.sdk3.path}/dist/vm/android/tc"/>
+   <unzip src="${target.sdk3.path}/dist/vm/android/lb/assets/tcfiles.zip" dest="${target.sdk3.path}/dist/vm/android/tc/assets"/>
+   
+   <zip destfile="${target.sdk3.path}/dist/vm/android/tc/assets/tcfiles.zip"  includes="LitebaseLib.tcz" 
+      basedir="${target.sdk3.path}/dist/vm/android/tc/assets" update="yes" />
+   <delete file="${target.sdk3.path}/dist/vm/android/tc/assets/LitebaseLib.tcz" />
+
+   <copy todir="${target.sdk3.path}/dist/vm/android/tc/lib">  <fileset dir="${target.sdk3.path}/dist/vm/android/lb/lib"/>               </copy>
+
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" 
+      basedir="${target.sdk3.path}/dist/vm/android/tc"  />
+
+   <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
+   <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
+   <delete dir="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
+   
+   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw">
+    <path><fileset dir="${target.sdk3.path}/dist/vm/android" includes="TotalCross.apk" /></path>
+   </signjar>
+
+</target>
+
 <target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
 
   <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
@@ -245,6 +270,8 @@ target: buildInstalls - run installshield to create the SDK and Samples
    
    <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
+   
+   <antcall target="mergeAPK" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -255,7 +282,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <target name="buildInstalls_sdk" >
   <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
   
-  <antcall target="createTotalCross3"></antcall>
+  <antcall target="createTotalCross3" />
 
   <property name="target.file"  value="${target.sdk.path}/../TotalCross3"/>
 

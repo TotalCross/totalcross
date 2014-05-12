@@ -130,7 +130,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       // read all apk names, before loading the vm
       if (!isSingleAPK)
       {
-         loadAPK("/data/data/litebase.android/apkname.txt",false); // litebase
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
       }
       loadAPK(appPath+"/apkname.txt",true);
