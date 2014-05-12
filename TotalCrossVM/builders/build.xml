@@ -55,11 +55,11 @@
 <property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
 
 <!-- properties regarding the TC paths -->
-<property name="target.sdk.path"   value="t:/SDK/TotalCrossSDK"/>
+<!--property name="target.sdk.path"   value="t:/SDK/TotalCrossSDK"/-->
 
 <property name="base.target.path"  value="${basedir}/../../../output/release"/>
 <property name="source.vm.path"    value="${basedir}/.."/>
-<!--property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/-->
+<property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 <property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="base.temp.path"    value="${basedir}/../../../temp"/>
