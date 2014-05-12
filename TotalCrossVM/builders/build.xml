@@ -70,6 +70,8 @@
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
 
+<property name="source.lb.path"   value="${basedir}/../../../Litebase/LitebaseSDK"/>
+
 <!-- installshield paths -->
 <property file="${rootpath}/ishield.properties"/>
 
@@ -227,13 +229,13 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <unzip src="${target.sdk3.path}/dist/vm/android/lb/assets/tcfiles.zip" dest="${target.sdk3.path}/dist/vm/android/tc/assets"/>
    
    <zip destfile="${target.sdk3.path}/dist/vm/android/tc/assets/tcfiles.zip"  includes="LitebaseLib.tcz" 
-      basedir="${target.sdk3.path}/dist/vm/android/tc/assets" update="yes" />
+      basedir="${target.sdk3.path}/dist/vm/android/tc/assets" update="yes" compress="no" keepcompression="no" />
    <delete file="${target.sdk3.path}/dist/vm/android/tc/assets/LitebaseLib.tcz" />
 
    <copy todir="${target.sdk3.path}/dist/vm/android/tc/lib">  <fileset dir="${target.sdk3.path}/dist/vm/android/lb/lib"/>               </copy>
 
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" 
-      basedir="${target.sdk3.path}/dist/vm/android/tc"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
 
    <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
    <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
@@ -555,7 +557,21 @@ target: Android builds
   </exec>
 </target>
 
-<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs TotalCross on Android." />
+<target name="mergeAPKlocal" >
+   <property name="out" value="${base.temp.path}/tcapk" />
+   <unzip src="${apk}" dest="${out}"/>   
+   <zip destfile="${out}/assets/tcfiles.zip"  includes="LitebaseLib.tcz" basedir="${source.lb.path}/dist/lib" update="yes" compress="no" keepcompression="no" />
+   <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
+   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip" basedir="${out}" />
+   <zip destfile="${apk}"  includes="assets/tcfiles.zip" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
+   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw">
+    <path><fileset dir="${android.temp}" includes="TotalCross.apk" /></path>
+   </signjar>
+
+</target>
+
+<target name="install_android" depends="buildAndroid_sdkNoClean,mergeAPKlocal,adb" description="Builds and installs TotalCross on Android." />
 
 <target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
