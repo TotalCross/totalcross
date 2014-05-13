@@ -5441,6 +5441,12 @@ tc.Deploy
 .
 \end_layout
 
+\begin_layout Standard
+Phones registered for development can only have one TotalCross application
+ installed whereas WP8 emulator can have at most two TotalCross applications
+ at the same time.
+\end_layout
+
 \begin_layout Subsection
 Windows Store
 \end_layout
