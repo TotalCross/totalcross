@@ -448,18 +448,6 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -tcvm -2 -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyIPhoneLauncher_sdk" >
-   <if><equals arg1="${iphone.version_2}" arg2="YES" /><then>
-      <scp file="${buildserver.tc.iphone2.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/iphone2" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-   </then></if>
-</target>
-
-<target name="copyIPhoneTCVM" >
-
-  <!-- iphone 2 -->
-
-</target>
-
 <target name="copyIPhoneTCVM_sdk" >
    <antcall target="copyIPhoneTCVM">
       <param name="type" value="demo" />
@@ -638,6 +626,8 @@ target: build targets
   <antcall target="copyIPhoneLauncher_sdk" />
 </target>
 
+<target name="copyIPhoneLauncher_sdk" />
+<target name="copyIPhoneTCVM" />
 <target name="buildBB_sdk" />
 <target name="buildBB_vms" />
 <target name="buildBB_vms_noras" />
