@@ -25,10 +25,11 @@ package tc.samples.game.breakout;
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 import totalcross.game.*;
-import totalcross.ui.gfx.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 
 /**<pre>
 ///////////////////////////// TotalCross Breakout ///////////////////////////////////
@@ -94,7 +95,7 @@ public class Breakout extends GameEngine
        	racket = new Racket();
          level = new Level(2 + levelRenderer.getHeight());
          ball = new Ball(this,racket,level);
-      } catch (Exception e) {/* Not enough memory to create screen buffer */}
+      } catch (Exception e) {MessageBox.showException(e,true); MainWindow.exit(0);}
 
       levelX = Settings.screenWidth * PERC / 100;
       tilesX = Settings.screenWidth - tilesRenderer.getWidth() - levelX;
