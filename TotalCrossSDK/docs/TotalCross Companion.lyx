@@ -1257,6 +1257,7 @@ totalcross.*
 TCFont.tcz
 \family default
  is needed to run an application on Java.
+ It also contains Litebase classes.
 \end_layout
 
 \begin_layout Itemize
@@ -1278,18 +1279,9 @@ tc.jar
  That is, it is not necessary to add 
 \family typewriter
 TCFont.tcz.
-\end_layout
 
-\begin_layout Itemize
-
-\family typewriter
-litebase.jar
 \family default
- : This file contains all 
-\family typewriter
-litebase.*
-\family default
- base classes, and it should be added to the classpath of your chosen IDE.
+ It also contains Litebase classes.
 \end_layout
 
 \begin_layout Itemize
@@ -1557,7 +1549,7 @@ TotalCross.xap
 \family typewriter
 android
 \family default
-: just install the files 
+: just install the file 
 \family typewriter
 TotalCross.apk
 \family default
@@ -1565,15 +1557,7 @@ TotalCross.apk
 \family typewriter
 adb install -r TotalCross.apk
 \family default
-) and 
-\family typewriter
-Litebase.apk
-\family default
- (
-\family typewriter
-adb install -r Litebase.apk
-\family default
-) .
+), which already includes Litebase.
 \end_layout
 
 \begin_layout Itemize
@@ -6760,6 +6744,20 @@ The great main improvement in TotalCross 3.0 is the support of the new and
  rapidly growing Windows Phone 8.
  We opt to not give support to Windows Phone 7 since its market share is
  small and Microsoft decided to develop WP8 just some time later.
+\end_layout
+
+\begin_layout Section
+Installation Package
+\end_layout
+
+\begin_layout Standard
+Now it is only needed to download and install one 
+\family typewriter
+.exe
+\family default
+ for TotalCross and Litebase SDK and VM.
+ Make sure to change the paths used in your deploying process to reflect
+ this change.
 \end_layout
 
 \begin_layout Section

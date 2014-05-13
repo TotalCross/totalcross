@@ -1677,13 +1677,13 @@ public class Edit extends Control
          }
             
          ke.type = KeyEvent.KEY_PRESS;
-         char ch[] = pasted.toCharArray();
-         for (int i =0; i < ch.length; i++)
+         int n = pasted.length();
+         for (int i =0; i < n; i++)
          {
-            ke.key = ch[i];
+            ke.key = pasted.charAt(i);
             _onEvent(ke);
          }
-         try {setCursorPos(insertPos+ch.length, insertPos+ch.length);} catch (Exception e) {}
+         try {setCursorPos(insertPos+n, insertPos+n);} catch (Exception e) {}
       }
    }
 

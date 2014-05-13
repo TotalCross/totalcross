@@ -243,7 +243,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
    <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
    <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
-   <delete dir="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
+   <delete file="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
    
    <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
     storepass="@ndroid$w" keypass="@ndroidsw">
@@ -264,7 +264,10 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <move todir="${target.sdk3.path}/docs/tc" > <fileset dir="${target.sdk3.path}/docs/html"/>    </move>
    
    <!-- litebase -->
-   <copy file="${target.litebase.path}/dist/litebase.jar" todir="${target.sdk3.path}/dist" />
+   <unzip src="${target.litebase.path}/dist/litebase.jar" dest="${base.temp.path}/jar"/>
+   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="true" includes="**" basedir="${base.temp.path}/jar"  />
+   <delete dir="${base.temp.path}/jar" />
+   
    <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
    <copy todir="${target.sdk3.path}/dist/samples" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
@@ -278,6 +281,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
    
    <antcall target="mergeAPK" />
+
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

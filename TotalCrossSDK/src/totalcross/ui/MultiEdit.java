@@ -1089,6 +1089,17 @@ public class MultiEdit extends Container implements Scrollable
             pasted = pasted.substring(0,Math.min(pasted.length(),Math.max(0,maxLength - chars.length())));
             n = pasted.length();
          }
+         if (validChars != null) // check against the valid chars
+         {
+            StringBuffer sb = new StringBuffer(n);
+            for (int i = 0; i < n; i++)
+            {
+               char c = pasted.charAt(i);
+               if (isCharValid(c))
+                  sb.append(c);
+            }
+            pasted = sb.toString();
+         }
          if (chars.length() == 0)
          {
             chars.append(pasted);
