@@ -398,6 +398,9 @@ target: javadoc
 	<replacefilter
 		token=",${str} "
 		value=",totalcross.lang.${str} "/>
+  	<replacefilter
+  		token=" class ${str} "
+  		value=" class%%${str} "/>
 	<replacefilter
 		token=" ${str} "
 		value=" totalcross.lang.${str} "/>
@@ -407,6 +410,9 @@ target: javadoc
 	<replacefilter
 		token="java.lang.${str}"
 		value="totalcross.lang.${str}"/>
+	<replacefilter
+		token=" class%%${str} "
+		value=" class ${str} "/>
   </replace>
 </target>
 
