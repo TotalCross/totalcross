@@ -64,7 +64,6 @@ public class Breakout extends GameEngine
    private static final int BACKG = 0x000099;
 
    private boolean levelChanged=true;
-   private boolean racketPosChanged;
 
    public Breakout()
   	{
@@ -74,11 +73,9 @@ public class Breakout extends GameEngine
       gameVersion = 140;
    	gameRefreshPeriod = (Settings.keyboardFocusTraversable?70:50);
    	gameDoClearScreen = false;
-   	gameHasUI = false;
+   	gameHasUI = true;
 
    	MainWindow.setDefaultFont(MainWindow.getDefaultFont().asBold());
-	  	Vm.interceptSpecialKeys(new int[]{SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.LEFT, SpecialKeys.RIGHT,
-            SpecialKeys.HARD1, SpecialKeys.HARD2, SpecialKeys.HARD3, SpecialKeys.HARD4});
   	}
 
    private static final int PERC = 10;
@@ -110,7 +107,7 @@ public class Breakout extends GameEngine
       if (levelChanged)
          level.set(currentLevel);
  		ball.reinit(level);
-      levelChanged = racketPosChanged = true;
+      levelChanged = true;
    }
 
    public void onGameStop()
@@ -123,7 +120,6 @@ public class Breakout extends GameEngine
             currentLevel = 1;
          levelChanged = true;
       }
-      else level.setDirty();
 
       Vm.sleep(350);
       GameOver go = new GameOver(this);
@@ -134,79 +130,32 @@ public class Breakout extends GameEngine
    {
       if (gameIsRunning)
       {
-         if (levelChanged)
+         gfx.backColor = BACKG;
+         gfx.fillRect(0,0,Settings.screenWidth, Settings.screenHeight);
+         levelRenderer.display(levelX, 2, currentLevel);
+         tilesRenderer.display(tilesX, 2, level.tilesLeft);
+         level.show();
+         if (level.tilesLeft == 0)
+            stop();
+         else
          {
-            gfx.backColor = BACKG;
-            gfx.fillRect(0,0,Settings.screenWidth, Settings.screenHeight);
-
-            levelRenderer.display(levelX, 2, currentLevel);
-         }
-         if (level.dirty)
-         {
-            tilesRenderer.display(tilesX, 2, level.tilesLeft);
-            if (!levelChanged) ball.hide(); // guich: hide the ball to avoid that it redraws the erased part of a brick when it moves
-            level.show();
-            if (level.tilesLeft == 0)
-            {
-               racket.hide();
-               stop();
-               return;
-            }
             if (!levelChanged) ball.show();
-         }
-         levelChanged = false; // don't remove this from here or the racket will get dirty by the ball when the game inits
-         boolean old = racketPosChanged;
-         racketPosChanged = true;
-         if (Vm.isKeyDown(SpecialKeys.PAGE_UP) || Vm.isKeyDown(SpecialKeys.HARD1))
-            racket.move(true, 10);
-         else
-         if (Vm.isKeyDown(SpecialKeys.RIGHT) || Vm.isKeyDown(SpecialKeys.HARD2))
-            racket.move(true, 5);
-         else
-         if (Vm.isKeyDown(SpecialKeys.LEFT) || Vm.isKeyDown(SpecialKeys.HARD3))
-            racket.move(false, 5);
-         else
-         if (Vm.isKeyDown(SpecialKeys.PAGE_DOWN) || Vm.isKeyDown(SpecialKeys.HARD4))
-            racket.move(false, 10);
-         else
-            racketPosChanged = old;
-
-         if (racketPosChanged)
-         {
+            levelChanged = false; // don't remove this from here or the racket will get dirty by the ball when the game inits
             racket.show();
-            racketPosChanged = false;
+            ball.move();
          }
-         ball.move();
       }
    }
 
    public final void onPenDown(PenEvent evt)
    {
       if (gameIsRunning)
-      {
    	   racket.setPos(evt.x, racketY, true);
-         racketPosChanged = true;
-      }
    }
    public final void onPenDrag(PenEvent evt)
    {
       if (gameIsRunning)
-      {
    	   racket.setPos(evt.x, racketY, true);
-         racketPosChanged = true;
-      }
-   }
-   public final void onKey(KeyEvent evt)
-   {
-      if (evt.key==SpecialKeys.HARD1 || evt.isUpKey())
-        	racket.move(true, 14);
-      else if (evt.key==SpecialKeys.HARD2 || evt.key==SpecialKeys.LEFT)
-        	racket.move(true, 8);
-    	else if (evt.key==SpecialKeys.HARD3 || evt.key==SpecialKeys.RIGHT)
-        	racket.move(false, 8);
-      else if (evt.key==SpecialKeys.HARD4 || evt.isDownKey())
-        	racket.move(false, 14);
-      racketPosChanged = true;
    }
 
    Container blankContainer;
