@@ -139,6 +139,8 @@ public final class Font
 
    private Font(String name, boolean boldStyle, int size) // guich@580_10
    {
+      if (size == 0)
+         throw new RuntimeException("Font size cannot be 0!");
       this.name = name;
       this.style = boldStyle ? 1 : 0;
       this.size = size;
