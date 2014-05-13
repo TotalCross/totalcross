@@ -68,10 +68,8 @@ public class Deployer4WP8
       Utils.processInstallFile("wp8.pkg", ht);
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
       if (extras.length > 0)
-      {
          for (int i = 0; i < extras.length; i++)
             sz.putEntry(extras[i], new File(Utils.getFileName(extras[i])));
-      }
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));
@@ -88,28 +86,22 @@ public class Deployer4WP8
 
       // overwrite properties on the manifest, like application title, version numbers, etc
       String wmAppManifest = new String(baos.toByteArray(), "UTF-8");
-      wmAppManifest = wmAppManifest.replace(
-            "<Title>PhoneDirect3DXamlAppInterop</Title>", "<Title>" + DeploySettings.appTitle + "</Title>");
-      wmAppManifest = wmAppManifest.replace(
-            "Title=\"PhoneDirect3DXamlAppInterop\"", "Title=\"" + DeploySettings.appTitle + "\"");
-      wmAppManifest = wmAppManifest.replace(
-            "Version=\"1.0.0.0\"", "Version=\"" + DeploySettings.appVersion + "\"");
-      wmAppManifest = wmAppManifest.replace(
-            "Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyInfo + "\"");
-      wmAppManifest = wmAppManifest.replace(
-            "Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
+      wmAppManifest = wmAppManifest.replace("<Title>PhoneDirect3DXamlAppInterop</Title>", "<Title>" + DeploySettings.appTitle + "</Title>");
+      wmAppManifest = wmAppManifest.replace("Title=\"PhoneDirect3DXamlAppInterop\"", "Title=\"" + DeploySettings.appTitle + "\"");
+      wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + DeploySettings.appVersion + "\"");
+      wmAppManifest = wmAppManifest.replace("Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyInfo + "\"");
+      wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
 
       // close template and final output files      
       TVFS.umount(templateZip);
       sz.close();
-      
-      System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/wp8/"));
+      System.out.println("... Files written to folder "+ targetDir);
    }
 
    private byte[] readIcon(int width, int height) throws ImageException, IOException
    {
-      Image icon = width == height ? IconStore.getSquareIcon(width) : IconStore.getSquareIcon(width);
+      Image icon = width == height ? IconStore.getSquareIcon(width) : IconStore.getIcon(width,height);
       ByteArrayStream bas = new ByteArrayStream(width * height);
       icon.createPng(bas);
       return bas.toByteArray();
