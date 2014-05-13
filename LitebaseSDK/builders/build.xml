@@ -202,29 +202,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildInstalls_sdk">
-
-  <property name="sdk.file"  value="${target.sdk.path}/../LitebaseSDK"/>
-
-  <!-- delete old files -->
-  <delete file="${sdk.file}.exe" />
-
-  <!-- update readme files -->
-  <copy file="sdk_sfx.diz" toDir="${rootpath}/">
-    <filterset>
-      <filter token="VERSION" value="${lb.version}"/>
-    </filterset>
-  </copy>
-
-  <echo message="Creating ${sdk.file} file..."/>
-  <!-- create the splitted rar then the full sfx -->
-  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes"><arg line='a -sfx        -y -ep1 -m5 -r -s -idq -zsdk_sfx.diz ${sdk.file} ${target.sdk.path}\*.*'/></exec>
-  <!--exec dir="${rootpath}" executable="${winrar.path}/rar.exe" failonerror="yes"><arg line='a -v5000k -vn -y -ep1 -m5 -r -s -idq -zsdk_sfx.diz ${sdk.file} ${target.sdk.path}\*.*'/></exec-->
-
-  <!-- delete temp files -->
-  <delete file="${rootpath}/sdk_sfx.diz"/>
-
-</target>
+<target name="buildInstalls_sdk" />
 
 <target name="buildInstalls_vms" />
 
