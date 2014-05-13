@@ -90,11 +90,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private String []strCaptions;
    private Image []imgCaptions,imgDis, imgCaptions0;
    private Image activeIcon, activeIcon0;
-   
-   public void setActiveIcon(Image newActiveIcon)
-   {
-      activeIcon0 = newActiveIcon;
-   }
    private boolean isTextCaption=true;
    private Container containers[];
    private int count;
@@ -293,6 +288,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       onFontChanged();
    }
    
+   /** Sets the active icon.
+    */
+   public void setActiveIcon(Image newActiveIcon)
+   {
+      activeIcon0 = newActiveIcon;
+   }
+   
    /** Set the given icons to appear at the top (or bottom, if TABS_BOTTOM) of a text TabbedContainer.
     * The icon images must be squared. You must also set the extraTabHeight, because the icons
     * will be resized to (extraTabHeight-fmH) in both directions.
@@ -313,12 +315,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     */
    public void setIcons(Image[] icons, Image activeIcon)
    {
-      if (icons.length != count)
-         throw new RuntimeException("Image array passed in setIcons must have the same length of the captions.");
-      imgCaptions0 = icons;
-      imgCaptions = new Image[icons.length];
+      setIcons(icons);
       this.activeIcon0 = activeIcon;
-      setupImageProps();
    }
    
    private void setupImageProps()
