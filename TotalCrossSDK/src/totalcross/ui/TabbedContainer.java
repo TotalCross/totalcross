@@ -292,7 +292,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     */
    public void setActiveIcon(Image newActiveIcon)
    {
-      activeIcon0 = newActiveIcon;
+      if (isTextCaption)
+         activeIcon0 = newActiveIcon;
+      else
+         activeIcon = newActiveIcon;
    }
    
    /** Set the given icons to appear at the top (or bottom, if TABS_BOTTOM) of a text TabbedContainer.
