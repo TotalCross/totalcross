@@ -96,7 +96,14 @@ public class Deployer4WP8
       // close template and final output files      
       TVFS.umount(templateZip);
       sz.close();
-      System.out.println("... Files written to folder "+ targetDir);
+      String inst = "";
+      if (DeploySettings.installPlatforms != null && DeploySettings.installPlatforms.toLowerCase().contains("wp8"))
+         try
+         {
+            Utils.exec(new String[]{DeploySettings.etcDir+"tools\\xap\\XapDeployCmd.exe","/installlaunch",DeploySettings.appTitle + ".xap","/targetdevice:de"},targetDir);
+            inst = " (Installed)";
+         } catch (Exception e) {inst = " (Error: "+e.getMessage()+")";}
+      System.out.println("... Files written to folder "+ targetDir + inst);
    }
 
    private byte[] readIcon(int width, int height) throws ImageException, IOException
