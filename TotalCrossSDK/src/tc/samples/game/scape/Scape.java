@@ -94,7 +94,7 @@ public class Scape extends GameEngine implements ProdConfig
 
    public Scape()
    {
-      setUIStyle(Settings.Flat);
+      setUIStyle(Settings.Android);
 
       // adjust attributes
       gameName = "Scape";
@@ -103,7 +103,7 @@ public class Scape extends GameEngine implements ProdConfig
             : PC_CREATOR_ID;
       gameVersion = 100;
       gameHighscoresSize = 0;
-      gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable?100:50) : NO_AUTO_REFRESH;
+      gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable?100:100) : NO_AUTO_REFRESH;
       gameDoClearScreen = CLEAR_SCREEN;
       gameHasUI = HAS_UI;
       setBackColor(0x66FFFF);
@@ -243,7 +243,6 @@ public class Scape extends GameEngine implements ProdConfig
             if (!Settings.onJavaSE) 
                return; // showIntroduction will be displayed when the sound stops - in Java, stop is never called
          }
-         else Sound.tone(1000, 50);
       }
       // when the game stops, popup the GameOver window
       showIntroduction();
@@ -314,29 +313,6 @@ public class Scape extends GameEngine implements ProdConfig
          stop();
       }
       // if non arcade game is selected, redrawings have to be called explicitly
-      if (!ARCADE_GAME)
-         refresh();
-   }
-
-   public final void onKey (KeyEvent evt)
-   {
-      boolean nohit = true;
-
-      if (evt.key==SpecialKeys.HARD1 || evt.isUpKey())
-         nohit = ball.move(0, -moveDist);
-      else if (evt.key==SpecialKeys.HARD2 || evt.key==SpecialKeys.LEFT)
-         nohit = ball.move(-moveDist, 0);
-      else if (evt.key==SpecialKeys.HARD3 || evt.key==SpecialKeys.RIGHT)
-         nohit = ball.move(moveDist, 0);
-      else if (evt.key==SpecialKeys.HARD4 || evt.isDownKey())
-         nohit = ball.move(0, moveDist);
-
-      if (!nohit)
-      {
-         stop();
-      }
-
-      // if non arcade game is selected, redrawings have to be called explicitly.
       if (!ARCADE_GAME)
          refresh();
    }

@@ -18,17 +18,13 @@
 
 package tc.samples.game.scape;
 
-import totalcross.game.Animation;
-import totalcross.io.IOException;
-import totalcross.sys.Vm;
-import totalcross.ui.Button;
-import totalcross.ui.Check;
-import totalcross.ui.ComboBox;
-import totalcross.ui.Container;
-import totalcross.ui.Label;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.image.ImageException;
+import totalcross.game.*;
+import totalcross.io.*;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 final class Introduction extends Container implements ProdConfig
 {
@@ -60,30 +56,28 @@ final class Introduction extends Container implements ProdConfig
    {
       setRect(Scape.game.getRect());
 
-      add(new Label("Scape v" + PC_VERSION), CENTER, TOP + 5);
-      add(new Label("written by Frank Diebolt."), CENTER, AFTER + 4);
+      add(new Label("Scape - written by Frank Diebolt"), CENTER, TOP + 5);
       add(new Label("__________________"), CENTER, AFTER);
 
-      add(btnQuit = new Button("Game exit"), RIGHT - 20, BOTTOM - 10);
-      add(btnNewGame = new Button("start Game"), SAME, BEFORE - 7);
-
-      add(anim, RIGHT - 10, BEFORE - 15, btnNewGame);
+      add(anim, CENTER,AFTER+fmH*2);
       anim.enableEvents(Animation.eventNone);
-      anim.start(15);
+      anim.start(Animation.LOOPS_UNLIMITED);
 
-      chkSound = new Check("Sound enabled");
-      add(chkSound, BEFORE - 10, SAME, anim);
+      chkSound = new Check("Sound enabled    ");
+      add(chkSound, LEFT,AFTER+fmH,PREFERRED,PREFERRED+fmH/2);
       chkSound.setChecked(Scape.optSound.value);
-
-      Label difficulty = new Label("Level");
-      add(difficulty, SAME, AFTER + 7, chkSound);
 
       levelSelect = new ComboBox(new String[]
       {
-            "easy", "medium", "hard"
+        "easy", "medium", "hard"
       });
-      add(levelSelect, AFTER + 3, SAME, difficulty);
+      add(levelSelect, RIGHT, SAME,PREFERRED,PREFERRED+fmH/2);
       levelSelect.setSelectedIndex(Scape.optDifficulty.value);
+      add(new Label("Level "), BEFORE,SAME,PREFERRED,PREFERRED+fmH/2);
+      
+      add(btnQuit = new Button("Game exit"), CENTER, BOTTOM - 10, PARENTSIZE+80,PREFERRED+fmH/2);
+      add(btnNewGame = new Button("Start Game"), SAME, BEFORE - fmH,SAME,SAME);
+      btnNewGame.setBackColor(Color.ORANGE);
    }
 
    public void onEvent(Event event)
