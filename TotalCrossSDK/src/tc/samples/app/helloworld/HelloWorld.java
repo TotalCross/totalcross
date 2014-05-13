@@ -43,6 +43,7 @@ public class HelloWorld extends MainWindow
       ListBox lb = new ListBox(new String[]
       {
          "Version is " + Settings.versionStr,
+         "Build number is "+Settings.buildNumber,
          "Platform is " + Settings.platform,
          "User is " + Settings.userName,
          "Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),
@@ -52,9 +53,7 @@ public class HelloWorld extends MainWindow
          "Default font size is " + Font.NORMAL_SIZE,
          "Device font height is " + Settings.deviceFontHeight,
          "Screen bpp is " + Settings.screenBPP,
-         "timeZone is " + Settings.timeZone,
          "timeZoneMinutes is " + Settings.timeZoneMinutes,
-         "daylightSavings is " + Settings.daylightSavings,
          "daylightSavingsMinutes is " + Settings.daylightSavingsMinutes,
          "dateFormat is " + Settings.dateFormat,
          "dateSeparator is " + Settings.dateSeparator,
