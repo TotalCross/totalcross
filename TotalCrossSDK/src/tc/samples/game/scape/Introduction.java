@@ -20,7 +20,6 @@ package tc.samples.game.scape;
 
 import totalcross.game.*;
 import totalcross.io.*;
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -30,7 +29,6 @@ final class Introduction extends Container implements ProdConfig
 {
    private Check chkSound;
    private Button btnNewGame;
-   private Button btnQuit;
    private static Animation anim;
    private ComboBox levelSelect;
 
@@ -39,9 +37,7 @@ final class Introduction extends Container implements ProdConfig
    static void swapTo()
    {
       if (singleton == null)
-      {
          singleton = new Introduction();
-      }
       Scape.game.swap(singleton);
       if (!anim.isPlaying)
          anim.start(Animation.LOOPS_UNLIMITED);
@@ -67,16 +63,12 @@ final class Introduction extends Container implements ProdConfig
       add(chkSound, LEFT,AFTER+fmH,PREFERRED,PREFERRED+fmH/2);
       chkSound.setChecked(Scape.optSound.value);
 
-      levelSelect = new ComboBox(new String[]
-      {
-        "easy", "medium", "hard"
-      });
+      levelSelect = new ComboBox(new String[]{"easy", "medium", "hard"});
       add(levelSelect, RIGHT, SAME,PREFERRED,PREFERRED+fmH/2);
       levelSelect.setSelectedIndex(Scape.optDifficulty.value);
       add(new Label("Level "), BEFORE,SAME,PREFERRED,PREFERRED+fmH/2);
       
-      add(btnQuit = new Button("Game exit"), CENTER, BOTTOM - 10, PARENTSIZE+80,PREFERRED+fmH/2);
-      add(btnNewGame = new Button("Start Game"), SAME, BEFORE - fmH,SAME,SAME);
+      add(btnNewGame = new Button("Start Game"), SAME, BOTTOM - fmH,SAME,SAME);
       btnNewGame.setBackColor(Color.ORANGE);
    }
 
@@ -90,23 +82,17 @@ final class Introduction extends Container implements ProdConfig
       if (event.target == levelSelect)
       {
          Scape.optDifficulty.value = levelSelect.getSelectedIndex();
-         if (DEBUG) Vm.debug("level is " + Scape.optDifficulty.value);
       }
       else if (event.target == chkSound)
       {
          Scape.optSound.value = !Scape.optSound.value;
          chkSound.setChecked(Scape.optSound.value);
-         if (DEBUG) Vm.debug("sound is " + Scape.optSound.value);
       }
       else if (event.target == btnNewGame)
       {
          anim.stop();
          game.blankScreen();
          game.start();
-      }
-      else if (event.target == btnQuit)
-      {
-         totalcross.ui.MainWindow.exit(0);
       }
    }
 }

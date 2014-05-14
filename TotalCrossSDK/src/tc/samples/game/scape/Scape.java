@@ -166,7 +166,6 @@ public class Scape extends GameEngine implements ProdConfig
       {
          MessageBox.showException(e, true);
       }
-      if (DEBUG) Vm.debug("lost clip=" + lostClip);
 
       showIntroduction();
    }
@@ -203,7 +202,6 @@ public class Scape extends GameEngine implements ProdConfig
                int bs4 = blockSize >> 2;
                int sx = bs4 + i * bs4;
                int sy = bs4 + bs4 * (BLOCKS - 1 - i);
-               if (DEBUG) Vm.debug("scale to " + sx + " x " + sy);
 
                blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy), ball);
             }
@@ -239,7 +237,6 @@ public class Scape extends GameEngine implements ProdConfig
             {
                MessageBox.showException(e, true);
             }
-            if (DEBUG) Vm.debug("play sound: " + lostClip);
             if (!Settings.onJavaSE) 
                return; // showIntroduction will be displayed when the sound stops - in Java, stop is never called
          }
