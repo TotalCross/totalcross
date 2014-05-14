@@ -1332,7 +1332,7 @@ public class Window extends Container
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Open the menu bar that is associated with this window */
-   protected void popupMenuBar() // guich@200b4_41
+   public void popupMenuBar() // guich@200b4_41
    {
       if (menubar != null)
          menubar.setVisible(true);
