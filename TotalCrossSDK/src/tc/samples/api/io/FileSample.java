@@ -289,6 +289,7 @@ public class FileSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       String sdId = null;
       MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
       mb.popupNonBlocking();

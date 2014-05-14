@@ -88,6 +88,7 @@ public class CipherSample extends BaseContainer
    
    public void initUI()
    {
+      super.initUI();
       ciphers = new Object[2];
       ciphers[0] = new AESCipher();
       ciphers[1] = new RSACipher();
@@ -162,7 +163,7 @@ public class CipherSample extends BaseContainer
                   lboResults.add("Exception: " + ex.toString());
                }
                lboResults.add("=========================");
-               lboResults.repaintNow();
+               lboResults.selectLast();
             }
             break;
       }

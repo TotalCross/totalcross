@@ -28,6 +28,7 @@ public class SettingsSample extends BaseContainer
 {
    public void initUI()
    {
+      super.initUI();
       ListBox lb = new ListBox(new String[]
       {
          "Version is " + Settings.versionStr,

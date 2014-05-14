@@ -33,6 +33,7 @@ public class ZLibSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       add(btn = new Button("    Start    "), CENTER, TOP + 3);
       add(lb = new ListBox());
       lb.setRect(LEFT, AFTER + 3, FILL, FILL);

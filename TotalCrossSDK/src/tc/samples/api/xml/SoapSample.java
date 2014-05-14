@@ -104,6 +104,7 @@ public class SoapSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       add(new Label("Select test"), LEFT+2, TOP+2);
 
       add(cbTest = new ComboBox(tests),AFTER, SAME);

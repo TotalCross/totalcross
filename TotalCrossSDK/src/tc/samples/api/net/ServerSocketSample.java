@@ -42,6 +42,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 
    public void initUI()
    {
+      super.initUI();
       String ip = null;
       try
       {

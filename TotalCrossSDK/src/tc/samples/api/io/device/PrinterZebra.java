@@ -146,6 +146,7 @@ public class PrinterZebra extends BaseContainer
    {
       try
       {
+         super.initUI();
          int gap = fmH/2;
          add(btnRadioOn = new Button("set radio on"),LEFT,TOP+2);
          add(btnRadioOff = new Button("set radio off"),AFTER+gap,SAME);

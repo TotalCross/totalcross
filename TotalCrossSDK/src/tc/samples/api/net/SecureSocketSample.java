@@ -45,6 +45,7 @@ public class SecureSocketSample extends MainWindow
 
    public void initUI()
    {
+      super.initUI();
       add(new Label("Address: "),LEFT+2,TOP+1);
       add(edA = new Edit(""),AFTER+3,SAME);
       edA.setText("https://webmail.grad.inf.puc-rio.br");

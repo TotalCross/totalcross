@@ -43,6 +43,7 @@ public class DigestSample extends BaseContainer
    
    public void initUI()
    {
+      super.initUI();
       edtInput = new Edit();
       edtInput.setText("0123456789ABCDEF");
       cboDigests = new ComboBox(comboItems);
@@ -74,7 +75,7 @@ public class DigestSample extends BaseContainer
                lboResults.add("Message: " + message);
                lboResults.add("Digest: " + Convert.bytesToHexString(digest) + " (" + digest.length + " bytes)");
                lboResults.add("=========================");
-               lboResults.repaintNow();
+               lboResults.selectLast();
             }
             break;
       }

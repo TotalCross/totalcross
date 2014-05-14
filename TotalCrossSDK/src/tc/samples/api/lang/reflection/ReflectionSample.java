@@ -24,6 +24,7 @@ public class ReflectionSample extends BaseContainer
    {
       try
       {
+         super.initUI();
          AlignedLabelsContainer alc = new AlignedLabelsContainer(new String[]{"Name: ","Address: ","Addr.Number: ","Age: "});
          int g = fmH/2;
          add(alc,LEFT,TOP+g,FILL,PREFERRED);

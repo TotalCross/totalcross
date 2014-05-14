@@ -42,6 +42,7 @@ public class PDBFileSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       add(lb = new ListBox());
       lb.enableHorizontalScroll();
       lb.setRect(LEFT, TOP, FILL, FILL);

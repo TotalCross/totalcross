@@ -154,7 +154,8 @@ public class BaseContainer extends Container
    
    public void setInfo(String s)
    {
-      footerBar.setTitle(s);
+      if (footerBar != null)
+         footerBar.setTitle(s);
    }
    
    public void show()

@@ -28,6 +28,7 @@ public class MailSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       add(lblPage = new Label("Inbox", Label.CENTER), CENTER, TOP);
       add(btConnect = new Button("Synchronize"), RIGHT, TOP);
       add(btReset = new Button("Reset"), LEFT, BOTTOM);

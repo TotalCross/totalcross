@@ -222,4 +222,9 @@ public class MainMenu extends BaseContainer
       if (c.isSingleCall)         
          itemInstances[idx] = null;
    }
+   
+   public void onAddAgain()
+   {
+      getParentWindow().setMenuBar(null);
+   }
 }

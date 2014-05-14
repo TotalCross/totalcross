@@ -42,6 +42,7 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
 
    public void initUI()
    {
+      super.initUI();
       MenuItem []m0 =
       {
          new MenuItem("File"),

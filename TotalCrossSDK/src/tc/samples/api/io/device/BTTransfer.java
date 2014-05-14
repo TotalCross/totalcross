@@ -184,6 +184,7 @@ public class BTTransfer extends BaseContainer
    {
       try
       {
+         super.initUI();
          if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
             add(new Label("This sample works\nonly in Android"),CENTER,CENTER);
          else

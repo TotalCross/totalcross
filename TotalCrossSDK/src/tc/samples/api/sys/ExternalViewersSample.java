@@ -14,6 +14,7 @@ public class ExternalViewersSample extends BaseContainer
    
    public void initUI()
    {
+      super.initUI();
       try
       {
          if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())

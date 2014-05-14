@@ -66,6 +66,7 @@ public class SignatureSample extends BaseContainer
    
    public void initUI()
    {
+      super.initUI();
       signatures = new Object[3];
       try
       {
@@ -131,7 +132,7 @@ public class SignatureSample extends BaseContainer
                   lboResults.add("Exception: " + ex.toString());
                }
                lboResults.add("=========================");
-               lboResults.repaintNow();
+               lboResults.selectLast();
             }
             break;
       }

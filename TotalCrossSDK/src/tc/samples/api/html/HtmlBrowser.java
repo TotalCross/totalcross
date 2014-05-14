@@ -52,6 +52,7 @@ public class HtmlBrowser extends BaseContainer
    
    public void initUI()
    {
+      super.initUI();
       MenuItem[][] menus =
       {
          {

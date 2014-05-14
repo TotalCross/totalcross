@@ -129,6 +129,7 @@ public class GpsSample extends BaseContainer
 
    public void initUI() 
    {
+      super.initUI();
       try 
       {
          add(btnGps = new Button("  Start GPS Logger  "), CENTER, TOP + 10);

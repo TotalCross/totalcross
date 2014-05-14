@@ -32,6 +32,7 @@ public class ZipSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       try
       {
          FileChooserBox fcb = new FileChooserBox(null);

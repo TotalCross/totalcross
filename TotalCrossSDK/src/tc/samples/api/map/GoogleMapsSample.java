@@ -41,6 +41,7 @@ public class GoogleMapsSample extends BaseContainer
    {
       try
       {
+         super.initUI();
          if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())
          {
             add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);

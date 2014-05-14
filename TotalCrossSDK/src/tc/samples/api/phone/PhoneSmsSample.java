@@ -33,6 +33,7 @@ public class PhoneSmsSample extends BaseContainer
 
    public void initUI()
    {
+      super.initUI();
       add(edNumber = new Edit(), LEFT + 2, TOP);
       add(btSend = new Button("Send"), LEFT + 3, BOTTOM);
       add(btReceive = new Button("Receive"), RIGHT - 3, BOTTOM);

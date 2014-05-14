@@ -42,6 +42,7 @@ public class SocketSample extends MainWindow
 
    public void initUI()
    {
+      super.initUI();
       boolean wifi = false, cell = false;
       
       try

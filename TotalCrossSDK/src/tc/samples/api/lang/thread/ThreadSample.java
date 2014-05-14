@@ -43,6 +43,7 @@ public class ThreadSample extends BaseContainer implements Runnable
 
    public void initUI()
    {
+      super.initUI();
       Vm.tweak(Vm.TWEAK_DUMP_MEM_STATS,true);
       directionButton = new Button("Switch Direction");
       containers = new SetX[3];

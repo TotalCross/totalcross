@@ -29,6 +29,7 @@ public class PrinterCitizen extends BaseContainer
 {
    public void initUI()
    {
+      super.initUI();
       CitizenPrinter cp = null;
       try
       {

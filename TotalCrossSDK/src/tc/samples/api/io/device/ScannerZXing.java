@@ -44,6 +44,7 @@ public class ScannerZXing extends MainWindow implements KeyListener
    
    public void initUI()
    {
+      super.initUI();
       setUIStyle(Settings.Android);
       setDefaultFont(font.adjustedBy(2,true));
       setBackColor(UIColors.controlsBack = Color.WHITE);
