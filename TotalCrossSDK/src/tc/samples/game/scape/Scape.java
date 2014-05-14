@@ -43,7 +43,7 @@ public class Scape extends GameEngine implements ProdConfig
    protected final static boolean HAS_UI = false;
 
    protected final static int BLOCKS = 4;
-   protected final static int RADIUS = 60;
+   protected final static int RADIUS = Settings.screenWidth/2;
    protected final static int PEN_OFFSET = 24;
 
    protected final static int MAX_DIFFICULTIES = 3;
@@ -134,7 +134,7 @@ public class Scape extends GameEngine implements ProdConfig
       }
       catch (ImageException e)
       {
-         Vm.alert(e.getMessage());
+         MessageBox.showException(e,true);
       }
 
       // set the screen dimensions
@@ -189,10 +189,9 @@ public class Scape extends GameEngine implements ProdConfig
             for (int i = 0; i < BLOCKS; i++)
             {
                int q = (i << 1) + 1;
-               int vecx = (int) (RADIUS * Math
-                     .cos(2 * Math.PI * q / (BLOCKS << 1)));
-               int vecy = (int) (RADIUS * Math
-                     .sin(2 * Math.PI * q / (BLOCKS << 1)));
+               int vecx = (int) (RADIUS * Math.cos(2 * Math.PI * q / (BLOCKS << 1)));
+               int vecy = (int) (RADIUS * Math.sin(2 * Math.PI * q / (BLOCKS << 1)));
+               
 
                int xx = (int) (midx + vecx);
                int yy = (int) (midy + vecy);
@@ -203,12 +202,12 @@ public class Scape extends GameEngine implements ProdConfig
                int sx = bs4 + i * bs4;
                int sy = bs4 + bs4 * (BLOCKS - 1 - i);
 
-               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy), ball);
+               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getHwScaledInstance(sx, sy), ball);
             }
          }
          catch (ImageException e)
          {
-            Vm.alert(e.getMessage());
+            MessageBox.showException(e,true);
          }
 
       ball.reduceZone(frameSizes[optDifficulty.value]);
@@ -281,9 +280,7 @@ public class Scape extends GameEngine implements ProdConfig
             // increase the level and the ball speed
             level++;
             for (int i = 0; i < BLOCKS; i++)
-            {
                blocks[i].increaseSpeed(SPEED_INCR_PERC);
-            }
          }
 
          // render level & score
@@ -295,9 +292,7 @@ public class Scape extends GameEngine implements ProdConfig
    public final void onPenDown(PenEvent evt)
    {
       if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true))
-      {
          stop();
-      }
       // if non arcade game is selected, redrawings have to be called explicitly
       if (!ARCADE_GAME)
          refresh();
@@ -306,9 +301,7 @@ public class Scape extends GameEngine implements ProdConfig
    public final void onPenDrag(PenEvent evt)
    {
       if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true))
-      {
          stop();
-      }
       // if non arcade game is selected, redrawings have to be called explicitly
       if (!ARCADE_GAME)
          refresh();

@@ -68,7 +68,7 @@ final class Introduction extends Container implements ProdConfig
       levelSelect.setSelectedIndex(Scape.optDifficulty.value);
       add(new Label("Level "), BEFORE,SAME,PREFERRED,PREFERRED+fmH/2);
       
-      add(btnNewGame = new Button("Start Game"), SAME, BOTTOM - fmH,SAME,SAME);
+      add(btnNewGame = new Button("Start Game"), CENTER, BOTTOM - fmH, PARENTSIZE+80,SAME);
       btnNewGame.setBackColor(Color.ORANGE);
    }
 
