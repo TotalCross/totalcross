@@ -10,6 +10,10 @@ using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
+#ifdef _DEBUG
+#define DEBUG_APP "TCTestWin"
+#endif
+
 #define DXRELEASE(x) do {if (x) {x->Release(); x = null;}} while (0)
 static Direct3DBase ^instance;
 
@@ -44,11 +48,15 @@ void Direct3DBase::setBufAndLen(Platform::Array<byte>^ fileData, byte** buf, int
 // Initialize the Direct3D resources required to run.
 void Direct3DBase::initialize()
 {
+#ifndef DEBUG_APP
 	const wchar_t* wide_chars = csharp->getAppName()->Data();
 	char chars[512];
 	wcstombs(chars, wide_chars, 512);
-		
 	int exitCode = startVM(chars, &localContext);
+#else
+   int exitCode = startVM(DEBUG_APP, &localContext);
+#endif
+
    if (exitCode != 0)
    {
       wchar_t exitMsg[64];
