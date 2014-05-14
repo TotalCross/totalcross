@@ -153,11 +153,10 @@ public class Deployer4WP8
                f.output(baos);
                byte[] content = baos.toByteArray();
 
-               if (DeploySettings.isFullScreen == true && "MainPage.xaml".equals(name))
+               if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.WINDOWSPHONE) && "MainPage.xaml".equals(name))
                {
                   String mainPage = new String(content, "UTF-8");
-                  mainPage = mainPage.replace(
-                        "shell:SystemTray.IsVisible=\"True\"", "shell:SystemTray.IsVisible=\"False\"");
+                  mainPage = mainPage.replace("shell:SystemTray.IsVisible=\"True\"", "shell:SystemTray.IsVisible=\"False\"");
                   content = mainPage.getBytes("UTF-8");
                }
 
