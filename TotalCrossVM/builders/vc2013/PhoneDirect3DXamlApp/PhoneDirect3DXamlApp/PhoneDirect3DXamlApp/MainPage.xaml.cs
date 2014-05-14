@@ -606,13 +606,17 @@ namespace PhoneDirect3DXamlAppInterop
 
         public static string ReadManifest()
         {
-            XElement xml = XElement.Load("TotalCrossManifest.xml");
-            var manifestElement = (from manifest in xml.Descendants("App") select manifest).SingleOrDefault();
-            if (manifestElement != null)
-            {
-                return manifestElement.Attribute("Name").Value;
-            }
-            return string.Empty;
+           try // allow debugging
+           {
+              XElement xml = XElement.Load("TotalCrossManifest.xml");
+              var manifestElement = (from manifest in xml.Descendants("App") select manifest).SingleOrDefault();
+              if (manifestElement != null)
+              {
+                 return manifestElement.Attribute("Name").Value;
+              }
+           }
+           catch (Exception) { }
+           return string.Empty;
         }
     }
 }
