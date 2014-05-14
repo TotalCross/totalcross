@@ -114,8 +114,6 @@
 		0F8C8CD31549CFC700E0967F /* jutils.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A851549CFC700E0967F /* jutils.c */; };
 		0F8C8CD41549CFC700E0967F /* jversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A861549CFC700E0967F /* jversion.h */; };
 		0F8C8CD51549CFC700E0967F /* rdbmp.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A871549CFC700E0967F /* rdbmp.c */; };
-		0F8C8CD91549CFC700E0967F /* Launcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A9E1549CFC700E0967F /* Launcher.m */; };
-		0F8C8CDB1549CFC700E0967F /* Launcher.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8AA11549CFC700E0967F /* Launcher.c */; };
 		0F8C8CDE1549CFC700E0967F /* libtcvm.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8AA61549CFC700E0967F /* libtcvm.h */; };
 		0F8C8CDF1549CFC700E0967F /* libtcvm.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8AA71549CFC700E0967F /* libtcvm.m */; };
 		0F8C8CE01549CFC700E0967F /* crypt.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8AA91549CFC700E0967F /* crypt.h */; };
@@ -530,8 +528,6 @@
 		0F8C8A851549CFC700E0967F /* jutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jutils.c; sourceTree = "<group>"; };
 		0F8C8A861549CFC700E0967F /* jversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jversion.h; sourceTree = "<group>"; };
 		0F8C8A871549CFC700E0967F /* rdbmp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rdbmp.c; sourceTree = "<group>"; };
-		0F8C8A9E1549CFC700E0967F /* Launcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Launcher.m; sourceTree = "<group>"; };
-		0F8C8AA11549CFC700E0967F /* Launcher.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Launcher.c; sourceTree = "<group>"; };
 		0F8C8AA61549CFC700E0967F /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F8C8AA71549CFC700E0967F /* libtcvm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = libtcvm.m; sourceTree = "<group>"; };
 		0F8C8AA91549CFC700E0967F /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
@@ -892,7 +888,6 @@
 				0F8C8A181549CFC700E0967F /* event */,
 				0F8C8A2E1549CFC700E0967F /* init */,
 				0F8C8A501549CFC700E0967F /* jpeg */,
-				0F8C8A881549CFC700E0967F /* launchers */,
 				0F8C8AA81549CFC700E0967F /* minizip */,
 				0F8C8AB01549CFC700E0967F /* nm */,
 				0F8C8B991549CFC700E0967F /* palmdb */,
@@ -1076,31 +1071,6 @@
 				0F8C8A871549CFC700E0967F /* rdbmp.c */,
 			);
 			path = jpeg;
-			sourceTree = "<group>";
-		};
-		0F8C8A881549CFC700E0967F /* launchers */ = {
-			isa = PBXGroup;
-			children = (
-				0F8C8A9D1549CFC700E0967F /* darwin */,
-				0F8C8AA01549CFC700E0967F /* linux */,
-			);
-			path = launchers;
-			sourceTree = "<group>";
-		};
-		0F8C8A9D1549CFC700E0967F /* darwin */ = {
-			isa = PBXGroup;
-			children = (
-				0F8C8A9E1549CFC700E0967F /* Launcher.m */,
-			);
-			path = darwin;
-			sourceTree = "<group>";
-		};
-		0F8C8AA01549CFC700E0967F /* linux */ = {
-			isa = PBXGroup;
-			children = (
-				0F8C8AA11549CFC700E0967F /* Launcher.c */,
-			);
-			path = linux;
 			sourceTree = "<group>";
 		};
 		0F8C8AA81549CFC700E0967F /* minizip */ = {
@@ -2248,8 +2218,6 @@
 				0F8C8CD21549CFC700E0967F /* jquant2.c in Sources */,
 				0F8C8CD31549CFC700E0967F /* jutils.c in Sources */,
 				0F8C8CD51549CFC700E0967F /* rdbmp.c in Sources */,
-				0F8C8CD91549CFC700E0967F /* Launcher.m in Sources */,
-				0F8C8CDB1549CFC700E0967F /* Launcher.c in Sources */,
 				0F8C8CDF1549CFC700E0967F /* libtcvm.m in Sources */,
 				0F8C8CE11549CFC700E0967F /* ioapi.c in Sources */,
 				0F8C8CE31549CFC700E0967F /* unzip.c in Sources */,
