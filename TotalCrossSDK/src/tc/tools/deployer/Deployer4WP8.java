@@ -152,14 +152,6 @@ public class Deployer4WP8
                baos.reset();
                f.output(baos);
                byte[] content = baos.toByteArray();
-
-               if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.WINDOWSPHONE) && "MainPage.xaml".equals(name))
-               {
-                  String mainPage = new String(content, "UTF-8");
-                  mainPage = mainPage.replace("shell:SystemTray.IsVisible=\"True\"", "shell:SystemTray.IsVisible=\"False\"");
-                  content = mainPage.getBytes("UTF-8");
-               }
-
                zip.putEntry(baseDir == null ? f.getName() : Convert.appendPath(baseDir, f.getName()), content);
             }
             catch (java.io.IOException e)

@@ -84,6 +84,7 @@ void cameraClick(NMParams p);
 double getFontHeightCPP();
 void privateWindowSetSIP(bool visible);
 void appExit();
+void appSetFullScreen();
 
 #ifdef __cplusplus
 }

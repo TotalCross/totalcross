@@ -60,6 +60,7 @@ namespace PhoneDirect3DXamlAppComponent
 
      // Others
      void appExit();
+     void appSetFullScreen();
 	};
 }
 

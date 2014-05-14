@@ -247,6 +247,13 @@ namespace PhoneDirect3DXamlAppInterop
                }
          }
       }
+      public void appSetFullScreen()
+      {
+         Deployment.Current.Dispatcher.BeginInvoke(() =>
+         {
+            SystemTray.IsVisible = false;
+         });
+      }
       public void appExit()
       {
          Application.Current.Terminate();

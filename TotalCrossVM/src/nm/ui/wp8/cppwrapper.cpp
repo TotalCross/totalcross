@@ -316,3 +316,8 @@ void appExit()
 {
    Direct3DBase::getLastInstance()->csharp->appExit();
 }
+
+void appSetFullScreen()
+{
+   Direct3DBase::getLastInstance()->csharp->appSetFullScreen();
+}
