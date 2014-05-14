@@ -486,6 +486,11 @@ public class Loader extends Activity implements BarcodeReadListener
       // System.exit(0); // make sure all threads will stop. also ensures that one app is not called as the app launched previously
    }
    
+   protected void onRestart()
+   {
+      onResume();
+   }
+   
    protected void onResume()
    {
       if (onMainLoop)
