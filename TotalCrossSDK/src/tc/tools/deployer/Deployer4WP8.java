@@ -13,6 +13,7 @@ package tc.tools.deployer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FilenameFilter;
 import org.apache.commons.io.FileUtils;
 import tc.tools.deployer.zip.SilverlightZip;
 import totalcross.io.ByteArrayStream;
@@ -80,7 +81,7 @@ public class Deployer4WP8
       sz.putEntry("Assets/Tiles/IconicTileSmall.png", readIcon(71, 110));
 
       // copy files from the template and get the WMAppManifest
-      TFile wmAppManifestFile = templateZip.listFiles(sz.getCopyZipFilter(null))[0]; // must return exactly ONE result, in case of failure, check the filter!
+      TFile wmAppManifestFile = templateZip.listFiles(new CopyZipFilter(sz, null))[0]; // must return exactly ONE result, in case of failure, check the filter!
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       wmAppManifestFile.output(baos);
 
@@ -112,5 +113,62 @@ public class Deployer4WP8
       ByteArrayStream bas = new ByteArrayStream(width * height);
       icon.createPng(bas);
       return bas.toByteArray();
+   }
+
+   /**
+    * Filter that copies the contents of a source TFile to this SilverlightZip.<br>
+    * WMAppManifest.xml is NOT copied, it is returned by listFiles instead, so the caller may overwrite its properties
+    * before writing it to the target file.
+    * 
+    * @author Fabio Sobral
+    * 
+    */
+   private class CopyZipFilter implements FilenameFilter
+   {
+      private ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+      private SilverlightZip zip;
+      private String baseDir;
+
+      CopyZipFilter(SilverlightZip zip, String baseDir)
+      {
+         this.zip = zip;
+         this.baseDir = baseDir;
+      }
+
+      public boolean accept(File dir, String name)
+      {
+         TFile f = new TFile(dir, name);
+
+         if (f.isDirectory())
+            f.listFiles(new CopyZipFilter(zip, baseDir == null ? f.getName() : Convert.appendPath(baseDir, f.getName())));
+         else
+         {
+            if ("WMAppManifest.xml".equals(name))
+               return true;
+
+            try
+            {
+               baos.reset();
+               f.output(baos);
+               byte[] content = baos.toByteArray();
+
+               if (DeploySettings.isFullScreen == true && "MainPage.xaml".equals(name))
+               {
+                  String mainPage = new String(content, "UTF-8");
+                  mainPage = mainPage.replace(
+                        "shell:SystemTray.IsVisible=\"True\"", "shell:SystemTray.IsVisible=\"False\"");
+                  content = mainPage.getBytes("UTF-8");
+               }
+
+               zip.putEntry(baseDir == null ? f.getName() : Convert.appendPath(baseDir, f.getName()), content);
+            }
+            catch (java.io.IOException e)
+            {
+               e.printStackTrace();
+            }
+         }
+         return false;
+      }
    }
 }
