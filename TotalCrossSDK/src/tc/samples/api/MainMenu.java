@@ -80,7 +80,7 @@ public class MainMenu extends BaseContainer
       DigestSample.class,
       SignatureSample.class,
       
-      HtmlBrowser.class,
+      HtmlContainerSample.class,
       
       FileSample.class,
       PDBFileSample.class,

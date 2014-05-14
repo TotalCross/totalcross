@@ -69,6 +69,11 @@ public class ScannerInternal extends BaseContainer
    public void initUI()
    {
       super.initUI();
+      if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
+      {
+         add(new Label("This sample works only on Android"),CENTER,CENTER);
+         return;
+      }
       add(new Label("Scan manager version:"), CENTER, TOP);
       add(lblScanManagerVersion = new Label("", CENTER), LEFT, AFTER);
       add(new Label("Port driver version:"), CENTER, AFTER);

@@ -33,6 +33,11 @@ public class PrinterCitizen extends BaseContainer
       CitizenPrinter cp = null;
       try
       {
+         if (!ask("This test works with a Citizen printer only. Do you have one attached?"))
+         {
+            back();
+            return;
+         }
          add(new Label("Printing..."),CENTER,CENTER);
 
          cp = new CitizenPrinter();

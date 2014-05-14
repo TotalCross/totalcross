@@ -19,8 +19,9 @@
 
 package tc.samples.api.io.device;
 
+import tc.samples.api.*;
+
 import totalcross.io.device.scanner.*;
-import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
@@ -29,60 +30,30 @@ import totalcross.ui.gfx.*;
 /** ZXing scanner demo
  */
 
-public class ScannerZXing extends MainWindow implements KeyListener
+public class ScannerZXing extends BaseContainer 
 {
    // by making the members private, the compiler can optimize them.
    private MultiEdit edtBarCode;
-   private Bar headerBar;
    private PushButtonGroup pbg;
 
-   public ScannerZXing()
-   {
-      super("ZXing Scanner Demo",NO_BORDER);
-      setTitle("");
-   }
-   
    public void initUI()
    {
       super.initUI();
-      setUIStyle(Settings.Android);
-      setDefaultFont(font.adjustedBy(2,true));
+      if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
+      {
+         add(new Label("This sample works only on Android"),CENTER,CENTER);
+         return;
+      }
       setBackColor(UIColors.controlsBack = Color.WHITE);
-      UIColors.messageboxBack = Color.brighter(0x4A64AA);
-      UIColors.messageboxFore = Color.WHITE;
+      pbg = new PushButtonGroup(new String[]{"SCAN 1D barcodes","SCAN 2D QR codes","SCAN Both types"},fmH/2,3);
+      add(pbg,LEFT,AFTER+fmH,FILL,PREFERRED+fmH);
 
-      headerBar = new Bar("ZXing Scanner Demo");
-      headerBar.setBackForeColors(0x0A246A,Color.WHITE);
-      headerBar.addButton(Resources.exit);
-      add(headerBar, LEFT,0,FILL,PREFERRED);
-      if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID))
-         add(new Label("This program currently runs\nonly on the Android platform."),CENTER,CENTER);
-      else
-      {
-         pbg = new PushButtonGroup(new String[]{"SCAN 1D barcodes","SCAN 2D QR codes","SCAN Both types"},fmH/2,3);
-         add(pbg,LEFT,AFTER+fmH,FILL,PREFERRED+fmH);
-
-         add(edtBarCode = new MultiEdit(3,1), LEFT, BOTTOM-fmH,FILL,PREFERRED);
-         edtBarCode.setEditable(false);
-         
-         add(new Label("Result:"),LEFT,BEFORE);
-         
-         
-         getParentWindow().addKeyListener(this); // exit app when user press back 
-      }
+      add(edtBarCode = new MultiEdit(3,1), LEFT, BOTTOM-fmH,FILL,PREFERRED);
+      edtBarCode.setEditable(false);
+      
+      add(new Label("Result:"),LEFT,BEFORE);
    }
 
-   public void keyPressed(KeyEvent e) {}
-   public void actionkeyPressed(KeyEvent e) {}
-   public void specialkeyPressed(KeyEvent e)
-   {
-      if (e.key == SpecialKeys.ESCAPE)
-      {
-         e.consumed = true;
-         exit(0);
-      }
-   }
-   
    private static final String msg = "Place a barcode inside the viewfinder rectangle to scan it";
 
    public void onEvent(Event event)
@@ -90,9 +61,6 @@ public class ScannerZXing extends MainWindow implements KeyListener
       switch (event.type)
       {
          case ControlEvent.PRESSED:
-            if (event.target == headerBar && headerBar.getSelectedIndex() == 1)
-                  exit(0);
-            else
             if (event.target == pbg)
             {
                int sel = pbg.getSelectedIndex();

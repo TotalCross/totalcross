@@ -1,4 +1,4 @@
-package tc.samples.lang.reflection;
+package tc.samples.api.lang.reflection;
 
 public class Data
 {

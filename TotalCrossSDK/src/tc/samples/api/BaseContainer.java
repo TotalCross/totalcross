@@ -134,7 +134,7 @@ public class BaseContainer extends Container
          });
          
          String name = getClass().getName();
-         setTitle(name.endsWith("Sample") ? name.substring(name.lastIndexOf('.')+1,name.length()-6)+" samples" : defaultTitle);
+         setTitle(name.endsWith("Sample") ? name.substring(name.lastIndexOf('.')+1,name.length()-6) : defaultTitle);
       }
       catch (Exception ee)
       {
@@ -176,6 +176,13 @@ public class BaseContainer extends Container
       {
          //MainWindow.exit(0); // we're the last screen, so just exit the application
       }
+   }
+   
+   public boolean ask(String question)
+   {
+      MessageBox mb = new MessageBox("Question", question, new String[]{"Yes","No"});
+      mb.popup();
+      return mb.getPressedButtonIndex() == 0;
    }
    
 /*   

@@ -29,7 +29,6 @@ import totalcross.ui.event.*;
 public class BTTransfer extends BaseContainer
 {
    StreamConnectionNotifier server;
-   Spinner sp;
    Button btListP,btListNP,btClient, btSend, btHost;
    Edit edClient;
    ListBox lbLog;
@@ -90,7 +89,6 @@ public class BTTransfer extends BaseContainer
    {
       if (!paired)
          RadioDevice.setState(RadioDevice.BLUETOOTH, RadioDevice.RADIO_STATE_ENABLED);
-      sp.start();
       btListNP.setEnabled(false);
       btListP.setEnabled(false);
   //    try
@@ -105,7 +103,6 @@ public class BTTransfer extends BaseContainer
          btListNP.setEnabled(true);
          btListP.setEnabled(true);
       }
-      sp.stop();
    }
    
    Stream btsocket;
@@ -121,7 +118,6 @@ public class BTTransfer extends BaseContainer
             RadioDevice.setState(RadioDevice.BLUETOOTH, RadioDevice.RADIO_STATE_ENABLED);
             btHost.setEnabled(false);
             btClient.setEnabled(false);
-            sp.start();
             RemoteDevice rd = (RemoteDevice)sel;
             log("Connecting to "+rd.getBluetoothAddress());
             btsocket = (Stream)Connector.open("btspp://"+rd.getBluetoothAddress()+":0;uuid="+UUID);
@@ -133,7 +129,6 @@ public class BTTransfer extends BaseContainer
          {
             btClient.setEnabled(true);
             btSend.setEnabled(false);
-            sp.stop();
             throw e;
          }
       }
@@ -153,7 +148,6 @@ public class BTTransfer extends BaseContainer
             {
                log("Enabling bluetooth");
                RadioDevice.setState(RadioDevice.BLUETOOTH, RadioDevice.BLUETOOTH_STATE_DISCOVERABLE);
-               sp.start();
                log("Waiting connections...");
                server = (StreamConnectionNotifier) Connector.open("btspp://localhost:"+UUID);
                Stream connection = server.accept();
@@ -175,7 +169,6 @@ public class BTTransfer extends BaseContainer
             {
                MessageBox.showException(e, true);
             }
-            sp.stop();
          }
       }.start();
    }
@@ -189,11 +182,10 @@ public class BTTransfer extends BaseContainer
             add(new Label("This sample works\nonly in Android"),CENTER,CENTER);
          else
          {
-            add(sp = new Spinner(),BEFORE,SAME,SAME,SAME);
-            add(btHost = new Button("host"),BEFORE-5,SAME);
+            add(btHost = new Button("host"),RIGHT,TOP);
+            add(btClient = new Button("client"),BEFORE-5,SAME);
             add(btListP = new Button("paired"),LEFT,SAME);
             add(btListNP = new Button("!paired"),AFTER+5,SAME);
-            add(btClient = new Button("client"),AFTER+5,SAME);
             add(btSend = new Button(" Send "),AFTER+5,SAME);
             add(edClient = new Edit(),LEFT,AFTER+5);
             add(lbLog = new ListBox(),LEFT,AFTER+5,FILL,FILL);
@@ -222,7 +214,5 @@ public class BTTransfer extends BaseContainer
       
       if (server != null) // host code
          try {server.close();} catch (Exception ee) {ee.printStackTrace();}
-      if (sp != null)
-         sp.stop();
    }
 }
