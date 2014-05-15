@@ -91,7 +91,7 @@ public class SignatureSample extends BaseContainer
       cboSignatures = new ComboBox(signatures);
       cboSignatures.setSelectedIndex(0);
       
-      btnGo = new Button("Go!");
+      btnGo = new Button(" Go! ");
       lboResults = new ListBox();
       lboResults.enableHorizontalScroll();
       

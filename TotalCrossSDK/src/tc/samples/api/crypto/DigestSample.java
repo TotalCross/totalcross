@@ -48,7 +48,7 @@ public class DigestSample extends BaseContainer
       edtInput.setText("0123456789ABCDEF");
       cboDigests = new ComboBox(comboItems);
       cboDigests.setSelectedIndex(0);
-      btnGo = new Button("Go!");
+      btnGo = new Button(" Go! ");
       lboResults = new ListBox();
       lboResults.enableHorizontalScroll();
       

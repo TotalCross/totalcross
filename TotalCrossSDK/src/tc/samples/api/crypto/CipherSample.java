@@ -112,7 +112,7 @@ public class CipherSample extends BaseContainer
       cboPadding = new ComboBox(new Object[] {"NONE", "PKCS#1", "PKCS#5"});
       cboPadding.setSelectedIndex(0);
       
-      btnGo = new Button("Go!");
+      btnGo = new Button(" Go! ");
       lboResults = new ListBox();
       lboResults.enableHorizontalScroll();
       
