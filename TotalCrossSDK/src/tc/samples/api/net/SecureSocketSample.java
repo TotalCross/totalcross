@@ -26,6 +26,7 @@ import totalcross.net.*;
 import totalcross.net.ssl.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
 public class SecureSocketSample extends BaseContainer
@@ -48,6 +49,7 @@ public class SecureSocketSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
+      new MessageBox("Attention","The SSL cerfiticate used by this sample is no longer valid, but you can see the sources and use with a valid certificate you may have.").popup();
       add(new Label("Address: "),LEFT+2,TOP+1);
       add(edA = new Edit(""),AFTER+3,SAME);
       edA.setText("https://webmail.grad.inf.puc-rio.br");
