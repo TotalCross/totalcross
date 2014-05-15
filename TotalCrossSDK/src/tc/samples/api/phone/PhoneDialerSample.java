@@ -45,12 +45,12 @@ public class PhoneDialerSample extends BaseContainer
       
       pbg = new PushButtonGroup(new String[]{"1","2","3","4","5","6","7","8","9","P","0"," << "}, 5, 4);
       pbg.setFont(big);
-      add(pbg,CENTER,AFTER+5,PREFERRED,PREFERRED+16);
+      add(pbg,CENTER,CENTER,PARENTSIZEMIN+50,PARENTSIZEMIN+50);
       pbg.setFocusLess(true);
 
       dial = new Button("Dial");
       dial.setFont(big);
-      add(dial, SAME, AFTER+5, SAME-18, PREFERRED);
+      add(dial, SAME, AFTER+5, SAME, PREFERRED);
       dial.setBackColor(Color.GREEN);
       dial.setEnabled(false);
    }
