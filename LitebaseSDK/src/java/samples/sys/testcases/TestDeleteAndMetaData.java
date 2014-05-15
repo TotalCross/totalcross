@@ -234,8 +234,8 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (DriverException exception) {}
       
-      assertEquals(1, meta.getPKColumnIndices("tabsync")[0]);
-      assertEquals("time", meta.getPKColumnNames("tabsync")[0]);
+      assertEquals(1, meta.getPKColumnIndices("tabSync")[0]);
+      assertEquals("time", meta.getPKColumnNames("tabSync")[0]);
       
       // Table is not in the select.
       try 

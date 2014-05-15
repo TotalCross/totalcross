@@ -537,6 +537,8 @@ public class ResultSetMetaData
       SQLResultSetField[] fields = rs.fields;
       int i = fields.length;
       
+      tableName = tableName.toLowerCase();
+      
       // The table name must be used in the select.
       while (--i >= 0 && (fields[i].tableName == null || !fields[i].tableName.equals(tableName)));         
       if (i == -1)
