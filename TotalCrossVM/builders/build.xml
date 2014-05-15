@@ -238,8 +238,8 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
    <copy todir="${target.sdk3.path}/dist/vm/android/tc/lib">  <fileset dir="${target.sdk3.path}/dist/vm/android/lb/lib"/>               </copy>
 
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip,res/raw/beep.ogg"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
 
    <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
    <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
@@ -559,8 +559,8 @@ target: Android builds
    <unzip src="${apk}" dest="${out}"/>   
    <zip destfile="${out}/assets/tcfiles.zip"  includes="LitebaseLib.tcz" basedir="${source.lb.path}/dist/lib" update="yes" compress="no" keepcompression="no" />
    <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
-   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip" basedir="${out}" />
-   <zip destfile="${apk}"  includes="assets/tcfiles.zip" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
+   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" />
+   <zip destfile="${apk}"  includes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
    <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
     storepass="@ndroid$w" keypass="@ndroidsw">
     <path><fileset dir="${android.temp}" includes="TotalCross.apk" /></path>
