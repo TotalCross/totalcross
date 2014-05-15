@@ -49,9 +49,9 @@ public class PlayLog extends MainWindow
    /**
     * The constructor.
     */
-   public LoggerSample()
+   public PlayLog()
    {
-      super("Logger Sample", TAB_BORDER);
+      super("Play Log", TAB_BORDER);
       setUIStyle(Settings.Android);
    }
    
