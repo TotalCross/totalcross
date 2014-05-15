@@ -43,7 +43,9 @@ public class ZipSample extends BaseContainer
          fcb.mountTree("device/");
          fcb.popup();
 
-         if (fcb.getPressedButtonIndex() == 0)
+         if (fcb.getPressedButtonIndex() != 0)
+            log("Cancelled");
+         else
          {
             String answer = fcb.getAnswer();
             if (answer == null || answer.length() == 0)
