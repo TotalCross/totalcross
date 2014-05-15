@@ -3393,12 +3393,23 @@ platforms
 \family default
  : Pass a list of comma-separated platforms to let the generated file be
  installed.
- Currently works on Android.
- E.G.: 
+ Currently works on Android and Windows Phone 8.
+ The possible options are: 
 \family typewriter
 /i android
 \family default
+, 
+\family typewriter
+/i android,wp8
+\family default
+, and 
+\family typewriter
+/i wp8
+\family default
 .
+ On WP8, this parameter also automatically starts the application.
+ It is necessary to have the Windows Phone SDK installed to be able to use
+ it.
 \end_layout
 
 \begin_layout Itemize
