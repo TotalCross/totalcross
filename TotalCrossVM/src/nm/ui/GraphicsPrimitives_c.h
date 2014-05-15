@@ -292,7 +292,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
 
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, (int32)(((fc > 1) ? Image_widthOfAllFrames(srcSurf) : srcWidth) * Image_hwScaleW(srcSurf)),srcHeight, null,null);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null);
    }
    else
 #endif
