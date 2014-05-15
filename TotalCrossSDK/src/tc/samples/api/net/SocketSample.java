@@ -18,6 +18,8 @@
 
 package tc.samples.api.net;
 
+import tc.samples.api.*;
+
 import totalcross.io.*;
 import totalcross.net.*;
 import totalcross.sys.*;
@@ -26,7 +28,7 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.util.*;
 
-public class SocketSample extends MainWindow
+public class SocketSample extends BaseContainer
 {
    Button btnOpen, btnHang;
    ListBox lb;
@@ -35,11 +37,6 @@ public class SocketSample extends MainWindow
    Socket socket;
    Vector networks;
    
-   public SocketSample()
-   {
-      super("Socket Test",TAB_ONLY_BORDER);
-   }
-
    public void initUI()
    {
       super.initUI();
@@ -59,8 +56,9 @@ public class SocketSample extends MainWindow
       
       if (!wifi && !cell) // no connection available
       {
-         new MessageBox("Warning", "No network connection available.\nSocketTest will exit now.").popup();
-         exit(1);
+         new MessageBox("Warning", "No network connection available.").popup();
+         back();
+         return;
       }
       
       networks = new Vector();
@@ -140,12 +138,16 @@ public class SocketSample extends MainWindow
          try {port = Convert.toInt(edP.getText());} catch (InvalidNumberException ine) {}
 
       String network = (String)cboNetworks.getSelectedItem();
-      if (network.equals("ANY"))
-         ConnectionManager.open();
-      else if (network.equals("WI-FI"))
-         ConnectionManager.open(ConnectionManager.WIFI);
-      else if (network.equals("CELLULAR"))
-         ConnectionManager.open(ConnectionManager.CELLULAR);
+      try
+      {
+         if (network.equals("ANY"))
+            ConnectionManager.open();
+         else if (network.equals("WI-FI"))
+            ConnectionManager.open(ConnectionManager.WIFI);
+         else if (network.equals("CELLULAR"))
+            ConnectionManager.open(ConnectionManager.CELLULAR);
+      }
+      catch (Exception e) {status(e.getMessage()+"");}
          
       socket = new Socket(edA.getText(), port, 25000);
       socket.readTimeout = 30000;

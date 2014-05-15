@@ -32,8 +32,6 @@ public class PhoneDialerSample extends BaseContainer
 {
    PushButtonGroup pbg;
    Edit ed;
-   ListBox lb;
-   KeyEvent backspace,ke;
    Button dial;
 
    public void initUI()
@@ -44,7 +42,7 @@ public class PhoneDialerSample extends BaseContainer
       ed.setFont(big);
       ed.setEnabled(false);
       add(ed,LEFT,TOP);
-
+      
       pbg = new PushButtonGroup(new String[]{"1","2","3","4","5","6","7","8","9","P","0"," << "}, 5, 4);
       pbg.setFont(big);
       add(pbg,CENTER,AFTER+5,PREFERRED,PREFERRED+16);
@@ -55,10 +53,6 @@ public class PhoneDialerSample extends BaseContainer
       add(dial, SAME, AFTER+5, SAME-18, PREFERRED);
       dial.setBackColor(Color.GREEN);
       dial.setEnabled(false);
-
-      lb = new ListBox();
-      lb.enableHorizontalScroll();
-      add(lb,LEFT,AFTER+5,FILL,FILL);
    }
 
    public void onEvent(Event e)
@@ -70,9 +64,10 @@ public class PhoneDialerSample extends BaseContainer
             {
                switch (pbg.getSelectedIndex())
                {
-                  case 11: ed.onEvent(backspace); break;
+                  case 11: if (ed.getLength() > 0) ed.setText(ed.getText().substring(0,ed.getText().length()-1)); break;
                   case -1: break;
-                  default: ke.key = pbg.getSelectedItem().charAt(0); ed.onEvent(ke); break;
+                  default: String s = pbg.getSelectedItem(); ed.setText(ed.getText()+s); 
+                  break;
                }
                dial.setEnabled(ed.getLength() > 0);
             }

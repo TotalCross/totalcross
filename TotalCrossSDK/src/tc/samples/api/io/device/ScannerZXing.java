@@ -46,7 +46,7 @@ public class ScannerZXing extends BaseContainer
       }
       setBackColor(UIColors.controlsBack = Color.WHITE);
       pbg = new PushButtonGroup(new String[]{"SCAN 1D barcodes","SCAN 2D QR codes","SCAN Both types"},fmH/2,3);
-      add(pbg,LEFT,AFTER+fmH,FILL,PREFERRED+fmH);
+      add(pbg,LEFT,TOP+fmH,FILL,PREFERRED+fmH);
 
       add(edtBarCode = new MultiEdit(3,1), LEFT, BOTTOM-fmH,FILL,PREFERRED);
       edtBarCode.setEditable(false);

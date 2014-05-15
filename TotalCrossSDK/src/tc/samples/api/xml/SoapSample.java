@@ -111,7 +111,7 @@ public class SoapSample extends BaseContainer
 
       add(new Label("URI:"), LEFT+2, AFTER+4);
       add(edRemote = new Edit(""), AFTER+2,SAME-2);
-      edRemote.setText(Settings.appSettings != null ? Settings.appSettings : "http://<address>:<port>/axis/TestHandler.jws");
+      edRemote.setText("http://<address>:<port>/axis/TestHandler.jws");
 
       add(btOk = new Button(" GO! "));
       btOk.setRect(CENTER,BOTTOM - 2, PREFERRED + 4, PREFERRED);
@@ -119,11 +119,6 @@ public class SoapSample extends BaseContainer
       add(lbStatus = new ListBox());
       lbStatus.enableHorizontalScroll();
       lbStatus.setRect(LEFT,AFTER+2,FILL,FIT, edRemote);
-   }
-
-   public void onExit()
-   {
-      Settings.appSettings = edRemote.getText();
    }
 
    private void log(String s)

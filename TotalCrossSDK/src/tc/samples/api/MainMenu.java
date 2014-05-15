@@ -149,11 +149,9 @@ public class MainMenu extends BaseContainer
       "xml - Soap",
    };
 
-   BaseContainer[] itemInstances = new BaseContainer[itemClasses.length];
-   
    protected String getHelpMessage()
    {
-      return "This is a TotalCross "+Settings.versionStr+" sample that shows most of the user interface controls available in the SDK. In this screen you can see the Bar control (at the header and footer), and also the new ButtonMenu (the menu at the middle). You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
+      return "This is a TotalCross "+Settings.versionStr+"."+Settings.buildNumber+" sample that shows most of the Application Programming Interfaces available in the SDK. You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
    }
    
    private void addToolTip(Control c, String text)
@@ -215,12 +213,10 @@ public class MainMenu extends BaseContainer
 
    private void showSample(int idx) throws Exception
    {
-      BaseContainer c = itemInstances[idx] == null ? itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance() : itemInstances[idx];
+      BaseContainer c = (BaseContainer)itemClasses[idx].newInstance();
       c.info = "Press Back for main menu";
       c.show();
       c.setInfo(c.info);
-      if (c.isSingleCall)         
-         itemInstances[idx] = null;
    }
    
    public void onAddAgain()

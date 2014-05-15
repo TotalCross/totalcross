@@ -18,15 +18,17 @@
 
 package tc.samples.api.net;
 
+import tc.samples.api.*;
+
 import totalcross.crypto.*;
-import totalcross.io.IOException;
-import totalcross.net.ssl.*;
+import totalcross.io.*;
 import totalcross.net.*;
+import totalcross.net.ssl.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.sys.*;
 
-public class SecureSocketSample extends MainWindow
+public class SecureSocketSample extends BaseContainer
 {
    Button btnOpen, btnAction, btnClear;
    ListBox lb;
@@ -35,9 +37,9 @@ public class SecureSocketSample extends MainWindow
    Socket socket;
    int auth_mode = NO_AUTH;
 
-   byte[] session_id = null;
-   SSLClient ssl_ctx = null;
-   SSL ssl = null;
+   byte[] session_id;
+   SSLClient ssl_ctx;
+   SSL ssl;
 
    final static int SERVER_AUTH = 0;
    final static int CLIENT_AUTH = 1;
@@ -97,7 +99,7 @@ public class SecureSocketSample extends MainWindow
       }
    }
 
-   public void onExit()
+   public void onRemove()
    {
       try
       {

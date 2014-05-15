@@ -29,14 +29,16 @@ import totalcross.util.zip.*;
 public class ZipSample extends BaseContainer
 {
    byte[] buf = new byte[1024];
+   ListBox lb;
 
    public void initUI()
    {
       super.initUI();
       try
       {
+         add(lb = new ListBox(),LEFT,TOP,FILL,FILL);
          FileChooserBox fcb = new FileChooserBox(null);
-         fcb.setTitle("Select the files");
+         fcb.setTitle("Select the files to Zip");
          fcb.multipleSelection = true;
          fcb.mountTree("device/");
          fcb.popup();
@@ -44,6 +46,11 @@ public class ZipSample extends BaseContainer
          if (fcb.getPressedButtonIndex() == 0)
          {
             String answer = fcb.getAnswer();
+            if (answer == null || answer.length() == 0)
+            {
+               log("No files selected. Operation cancelled");
+               return;
+            }
             String[] paths = Convert.tokenizeString(answer, ',');
 
             InputBox input = new InputBox("Zip file path", "Create new file at:", "device/sample.zip");
@@ -52,11 +59,13 @@ public class ZipSample extends BaseContainer
             {
                if (input.getPressedButtonIndex() == 0)
                {
+                  int original = 0;
                   File destination = new File(input.getValue(), File.CREATE_EMPTY);
                   ZipStream zstream = new ZipStream(destination, ZipStream.DEFLATE);
 
                   for (int i = 0; i < paths.length; i++)
                   {
+                     log("Adding "+paths[i]);
                      File file = new File(paths[i], File.DONT_OPEN);
                      if (!file.exists())
                         throw new FileNotFoundException();
@@ -64,6 +73,7 @@ public class ZipSample extends BaseContainer
                      if (!file.isDir())
                      {
                         file = new File(paths[i], File.READ_WRITE);
+                        original += file.getSize();
                         int n;
                         while ((n = file.readBytes(buf, 0, 1024)) > 0)
                            zstream.writeBytes(buf, 0, n);
@@ -72,27 +82,26 @@ public class ZipSample extends BaseContainer
                      zstream.closeEntry();
                   }
                   zstream.close();
-                  new MessageBox("Success!", "Operation successful!").popup();
+                  log("Operation completed.");
+                  log("Original size: "+original);
+                  log("Final size: "+destination.getSize());
                }
             }
-            catch (IllegalArgumentIOException e)
+            catch (Exception ee)
             {
-               e.printStackTrace();
-            }
-            catch (FileNotFoundException e)
-            {
-               e.printStackTrace();
-            }
-            catch (ZipException e)
-            {
-               e.printStackTrace();
+               MessageBox.showException(ee,true);
             }
          }
-         MainWindow.exit(0);
       }
       catch (IOException e)
       {
          e.printStackTrace();
       }
+   }
+   
+   private void log(String s)
+   {
+      lb.add(s);
+      lb.selectLast();
    }
 }

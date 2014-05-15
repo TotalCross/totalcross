@@ -32,7 +32,7 @@ public class ReflectionSample extends BaseContainer
          alc.add(edAddr = new Edit(),LEFT,alc.getLineY(1));
          alc.add(edNumber = new Edit(),LEFT,alc.getLineY(2)); edNumber.setKeyboard(Edit.KBD_NUMERIC);
          alc.add(edAge = new Edit(),LEFT,alc.getLineY(3)); edAge.setKeyboard(Edit.KBD_NUMERIC);
-         add(btAdd = new Button("ADD"),CENTER,AFTER+g,PARENTSIZE+g,PREFERRED+g/2);
+         add(btAdd = new Button("ADD"),CENTER,AFTER+g,PARENTSIZE+50,PREFERRED+g/2);
          add(new Label("Constructed and retrieved using reflection:"),LEFT,AFTER+g);
          add(lb = new ListBox(),LEFT,AFTER,FILL,FILL);
          // get access to Data's fields

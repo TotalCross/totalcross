@@ -70,11 +70,9 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
       miLogout.isEnabled = false;
       getParentWindow().setMenuBar(mbar = new MenuBar(new MenuItem[][]{m0,m1}));
 
-      boolean big = Settings.screenWidth==320;
-      Font courierNew = Font.getFont("courier_new", big, big?Font.BIG_SIZE:Font.NORMAL_SIZE);
       Label l;
       String [] commands = {"List","Change dir","Send - just a sample","Receive - just a sample"};
-      add(l=new Label("Command: "),LEFT,AFTER+1);
+      add(l=new Label("Command: "),LEFT,TOP+1);
       add(btGo = new Button("Go"));
       btGo.setRect(RIGHT, SAME, PREFERRED,PREFERRED+2);
       add(cbCmd = new ComboBox(commands));
@@ -86,13 +84,9 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
 
       int h = ((cbLog.getPos().y-cbCmd.getRect().y2())>>1) -2;
       add(lbLocal = new ListBox());
-      lbLocal.setFont(courierNew);
-      if (!big) lbLocal.extraHorizScrollButtonHeight = 0;
       lbLocal.enableHorizontalScroll();
       lbLocal.setRect(LEFT,AFTER+1,FILL,h,btGo);
       add(lbRemote = new ListBox());
-      lbRemote.setFont(courierNew);
-      if (!big) lbRemote.extraHorizScrollButtonHeight = 0;
       lbRemote.enableHorizontalScroll();
       lbRemote.setRect(LEFT,AFTER+1,FILL,h);
       cbCmd.setSelectedIndex(0);
@@ -123,7 +117,7 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
       mbar.moveBy(1); // show connection menu
    }
 
-   public void onExit()
+   public void onRemove()
    {
       if (ftp != null)
       {

@@ -53,7 +53,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          MessageBox.showException(ex, true);
       }
       
-      add(new Label("IP: " + ip), LEFT + 2, AFTER + 3);
+      add(new Label("IP: " + ip), LEFT + 2, TOP + 3);
       add(edPort = new Edit("12345"), RIGHT - 2, SAME);
       edPort.setValidChars(Edit.numbersSet);
       edPort.setText("7070");
@@ -166,7 +166,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       stopServer();
    }
 
-   public void onExit()
+   public void onRemove()
    {
       // remember to stop the server on exit.
       stopServer();

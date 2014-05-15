@@ -34,21 +34,17 @@ public class PhoneSmsSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      add(edNumber = new Edit(), LEFT + 2, TOP);
+      if (!Settings.platform.equals(Settings.WINDOWSPHONE) && !Settings.onJavaSE)
+      {
+         add(new Label("This sample works only on Android"),CENTER,CENTER);
+         return;
+      }
+      add(new Label("Number: "),LEFT+2,TOP+2);
+      add(edNumber = new Edit(), AFTER, TOP);
+      edNumber.setKeyboard(Edit.KBD_NUMERIC);
       add(btSend = new Button("Send"), LEFT + 3, BOTTOM);
       add(btReceive = new Button("Receive"), RIGHT - 3, BOTTOM);
       add(edMsg = new MultiEdit(), LEFT, AFTER, FILL, FIT, edNumber);
-      // restore last typed data
-      if (Settings.appSettings != null)
-         edNumber.setText(Settings.appSettings);
-      if (Settings.appSecretKey != null)
-         edMsg.setText(Settings.appSecretKey);
-   }
-
-   public void onExit()
-   {
-      Settings.appSettings = edNumber.getLength() == 0 ? null : edNumber.getText();
-      Settings.appSecretKey = edMsg.getLength() == 0 ? null : edMsg.getText();
    }
 
    public void onEvent(Event event)

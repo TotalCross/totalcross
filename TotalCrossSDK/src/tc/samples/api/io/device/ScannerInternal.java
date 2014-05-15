@@ -150,7 +150,7 @@ public class ScannerInternal extends BaseContainer
          setStatus("Scanner deactivated.");
    }
 
-   public void onExit() // there is no need to do this; the Scanner lib stops the Scanner for us.
+   public void onRemove() // there is no need to do this; the Scanner lib stops the Scanner for us.
    {
       scannerStop();
    }

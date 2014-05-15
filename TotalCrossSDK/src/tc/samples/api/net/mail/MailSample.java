@@ -37,7 +37,7 @@ public class MailSample extends BaseContainer
       inbox = new Grid(new String[] { "Subject" }, new int[] { -400 }, new int[] { LEFT }, false);
       add(inbox, LEFT, AFTER, FILL, FIT, lblPage);
 
-      add(new ConfigurationContainer(),LEFT,AFTER,FILL,FILL);
+      new ConfigurationContainer().popup();
    }
 
    Message[] msgs;
@@ -104,7 +104,7 @@ public class MailSample extends BaseContainer
          new MessageContainer(message).popup();
    }
 
-   public void onExit()
+   public void onRemove()
    {
       try
       {

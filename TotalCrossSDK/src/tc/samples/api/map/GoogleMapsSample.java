@@ -47,8 +47,8 @@ public class GoogleMapsSample extends BaseContainer
             add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
             return;
          }
-         int g = fmH/2;
-         add(sc = new ScrollContainer(false, true),LEFT,AFTER,FILL,FILL);
+         int g = fmH/4;
+         add(sc = new ScrollContainer(false, true),LEFT,TOP,FILL,FILL);
          
          sc.add(new Label("Select the parameters"),LEFT+g,TOP);
          sc.add(new Ruler(),LEFT+g,AFTER+g,FILL-g,PREFERRED);

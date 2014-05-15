@@ -201,7 +201,7 @@ public class BTTransfer extends BaseContainer
    
    static String QUIT = "quit!";
    
-   public void onExit()
+   public void onRemove()
    {
       if (btsocket != null) // client code
          try

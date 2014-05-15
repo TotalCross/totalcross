@@ -13,7 +13,7 @@ import totalcross.ui.event.Event;
 import totalcross.util.Properties;
 import totalcross.util.Properties.Value;
 
-public class ConfigurationContainer extends Container
+public class ConfigurationContainer extends Window
 {
    Edit edLogin;
    Edit edPassword;
@@ -30,6 +30,7 @@ public class ConfigurationContainer extends Container
 
    public ConfigurationContainer()
    {
+      super("Configuration",ROUND_BORDER);
       try
       {
          File f = new File(filePath, File.CREATE);
@@ -39,48 +40,41 @@ public class ConfigurationContainer extends Container
             loaded = true;
          f.close();
       }
-      catch (IllegalArgumentIOException e)
+      catch (Exception e)
       {
          MessageBox.showException(e, true);
       }
-      catch (FileNotFoundException e)
-      {
-         MessageBox.showException(e, true);
-      }
-      catch (IOException e)
-      {
-         MessageBox.showException(e, true);
-      }
+      setRect(CENTER,CENTER,SCREENSIZE+80,fmH*10);
    }
 
    public void initUI()
    {
-      add(new Label("Login: "), LEFT, TOP);
+      add(new Label("Login: "), LEFT, TOP,PARENTSIZE+40,PREFERRED);
       add(edLogin = new Edit(), AFTER, SAME);
 
-      add(new Label("Password: "), LEFT, AFTER);
+      add(new Label("Password: "), LEFT, AFTER,PARENTSIZE+40,PREFERRED);
       add(edPassword = new Edit(), AFTER, SAME);
       edPassword.setMode(Edit.PASSWORD);
 
-      add(new Label("SMTP host: "), LEFT, AFTER);
+      add(new Label("SMTP host: "), LEFT, AFTER,PARENTSIZE+40,PREFERRED);
       add(edSmtpHost = new Edit(), AFTER, SAME);
 
-      add(new Label("SMTP port: "), LEFT, AFTER);
+      add(new Label("SMTP port: "), LEFT, AFTER,PARENTSIZE+40,PREFERRED);
       add(edSmtpPort = new Edit("12345"), AFTER, SAME);
       edSmtpPort.setValidChars("0123456789");
       edSmtpPort.setMaxLength(5);
       edSmtpPort.setText("25");
 
-      add(new Label("POP3 host: "), LEFT, AFTER);
+      add(new Label("POP3 host: "), LEFT, AFTER,PARENTSIZE+40,PREFERRED);
       add(edPopHost = new Edit(), AFTER, SAME);
 
-      add(new Label("POP3 port: "), LEFT, AFTER);
+      add(new Label("POP3 port: "), LEFT, AFTER,PARENTSIZE+40,PREFERRED);
       add(edPopPort = new Edit("12345"), AFTER, SAME);
       edPopPort.setValidChars("0123456789");
       edPopPort.setMaxLength(5);
       edPopPort.setText("110");
 
-      add(btOk = new Button("Ok"), RIGHT, BOTTOM);
+      add(btOk = new Button(" Ok "), RIGHT, BOTTOM);
 
       if (loaded)
       {
@@ -129,20 +123,11 @@ public class ConfigurationContainer extends Container
             mp.save(new DataStream(f));
             f.close();
          }
-         catch (IllegalArgumentIOException e)
+         catch (Exception e)
          {
             MessageBox.showException(e, true);
          }
-         catch (FileNotFoundException e)
-         {
-            MessageBox.showException(e, true);
-         }
-         catch (IOException e)
-         {
-            MessageBox.showException(e, true);
-         }
-
-         MainWindow.getMainWindow().swap(null);
+         unpop();
       }
    }
 }

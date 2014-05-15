@@ -11,6 +11,9 @@ import totalcross.ui.event.*;
 public class ExternalViewersSample extends BaseContainer
 {
    private ButtonMenu menu;
+   String sdcardPath = "/sdcard/xviewers/";
+   String jpg = "filhos_gui.jpg";
+   String pdf = "TotalCrossCompanion.pdf";
    
    public void initUI()
    {
@@ -22,11 +25,14 @@ public class ExternalViewersSample extends BaseContainer
             add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
             return;
          }
-         copyFiles2Sdcard();
+         if (Settings.isIOS())
+            sdcardPath = Settings.appPath+"/";
+         
+         if (Settings.platform.equals(Settings.ANDROID))
+            copyFiles2Sdcard();
          
          String[] items = {"Zoom image","Read PDF *","Open HTML page"};
          menu = new ButtonMenu(items, ButtonMenu.SINGLE_COLUMN);
-         menu.textPosition = RIGHT_OF;
          menu.pressedColor = BKGCOLOR;
          menu.textGap = 400;
          menu.borderGap = 100;
@@ -39,9 +45,6 @@ public class ExternalViewersSample extends BaseContainer
       }
    }
    
-   String sdcardPath = "/sdcard/xviewers/";
-   String jpg = "filhos_gui.jpg";
-   String pdf = "TotalCrossCompanion.pdf";
    private void copyFiles2Sdcard() throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
       try {new File("/sdcard/xviewers").createDir();} catch (Exception e) {}

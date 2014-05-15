@@ -22,11 +22,17 @@ import totalcross.ui.gfx.*;
 
 public class TotalCrossAPI extends MainWindow
 {
+   static
+   {
+      Settings.resizableWindow = true;
+   }
+   
    public TotalCrossAPI()
    {
       super("",NO_BORDER);
       setUIStyle(Settings.Android);
       setBackColor(UIColors.controlsBack = Color.WHITE);
+      Settings.fadeOtherWindows = true;
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
       Vm.debug(Vm.ALTERNATIVE_DEBUG);
