@@ -255,18 +255,18 @@ target: buildInstalls - run installshield to create the SDK and Samples
 <target name="reorganizeSamples" >
   <property name="samples"  value="${target.sdk3.path}/dist/samples/"/>
 
-  <move todir="${samples}/app" > <fileset dir="${samples}/Breakout"/>    </move>
-  <move todir="${samples}/app" > <fileset dir="${samples}/Scape"/>       </move>
-  <move todir="${samples}/app" > <fileset dir="${samples}/Calculator"/>  </move>
-  <move todir="${samples}/app" > <fileset dir="${samples}/BtChat"/>      </move>
-  <move todir="${samples}/app" > <fileset dir="${samples}/WorldWatch"/>  </move>
-
-  <move todir="${samples}/service" > <fileset dir="${samples}/GPSLogger"/>           </move>
-  <move todir="${samples}/service" > <fileset dir="${samples}/GPSLoggerController"/> </move>
-  <move todir="${samples}/service" > <fileset dir="${samples}/GPSLoggerViewer"/>     </move>
-  <move todir="${samples}/service" > <fileset dir="${samples}/MailController"/>      </move>
-  <move todir="${samples}/service" > <fileset dir="${samples}/MailService"/>         </move>
-  <move todir="${samples}/service" > <fileset dir="${samples}/MailViewer"/>          </move>
+  <move todir="${samples}/app"     failonerror="no"> <fileset dir="${samples}/Breakout"/>    </move>
+  <move todir="${samples}/app"     failonerror="no"> <fileset dir="${samples}/Scape"/>       </move>
+  <move todir="${samples}/app"     failonerror="no"> <fileset dir="${samples}/Calculator"/>  </move>
+  <move todir="${samples}/app"     failonerror="no"> <fileset dir="${samples}/BtChat"/>      </move>
+  <move todir="${samples}/app"     failonerror="no"> <fileset dir="${samples}/WorldWatch"/>  </move>
+                                   
+  <move todir="${samples}/service" failonerror="no"> <fileset dir="${samples}/GPSLogger"/>           </move>
+  <move todir="${samples}/service" failonerror="no"> <fileset dir="${samples}/GPSLoggerController"/> </move>
+  <move todir="${samples}/service" failonerror="no"> <fileset dir="${samples}/GPSLoggerViewer"/>     </move>
+  <move todir="${samples}/service" failonerror="no"> <fileset dir="${samples}/MailController"/>      </move>
+  <move todir="${samples}/service" failonerror="no"> <fileset dir="${samples}/MailService"/>         </move>
+  <move todir="${samples}/service" failonerror="no"> <fileset dir="${samples}/MailViewer"/>          </move>
    
 </target>   
 
