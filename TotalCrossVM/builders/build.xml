@@ -308,7 +308,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildInstalls_sdk" >
-  <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
   
   <antcall target="createTotalCross3" />
 
