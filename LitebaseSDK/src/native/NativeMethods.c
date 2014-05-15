@@ -4694,6 +4694,7 @@ LB_API void lRSMD_getPKColumnIndices_s(NMParams p)
          
          // Gets the table given its name in the result set.
          TC_JCharP2CharPBuf(String_charsStart(tableNameStr), String_charsLen(tableNameStr), tableNameCharP); 
+         TC_CharPToLower(tableNameCharP);
          if (!(table = getTableRS(context, rsBag, tableNameCharP))) 
             goto finish;
             
@@ -4751,6 +4752,7 @@ LB_API void lRSMD_getPKColumnNames_s(NMParams p)
          
          // Gets the table given its name in the result set.
          TC_JCharP2CharPBuf(String_charsStart(tableNameStr), String_charsLen(tableNameStr), tableNameCharP); 
+         TC_CharPToLower(tableNameCharP);
          if (!(table = getTableRS(context, rsBag, tableNameCharP))) 
             goto finish;
       
