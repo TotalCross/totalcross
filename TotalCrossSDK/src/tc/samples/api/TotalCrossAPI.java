@@ -29,7 +29,8 @@ public class TotalCrossAPI extends MainWindow
    
    public TotalCrossAPI()
    {
-      super("",NO_BORDER);
+      super("TotalCross API",NO_BORDER);
+      setTitle("");
       setUIStyle(Settings.Android);
       setBackColor(UIColors.controlsBack = Color.WHITE);
       Settings.fadeOtherWindows = true;
