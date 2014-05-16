@@ -273,7 +273,7 @@ public final class TCMethod implements TCConstants
          }
          else
          {
-            java.lang.reflect.Method methods[] = c4D.getDeclaredMethods();
+            java.lang.reflect.Method methods[] = c4D.getMethods();
             // lookahead to see if there are 4D methods with this same name
             Hashtable ht = new Hashtable(methods.length);
             for (int i =0; i < methods.length; i++)
