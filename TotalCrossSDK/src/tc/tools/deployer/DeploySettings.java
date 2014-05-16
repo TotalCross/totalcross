@@ -166,7 +166,7 @@ public class DeploySettings
          binDir = Convert.replace(etcDir, "/etc/","/bin/");
          distDir = Convert.replace(etcDir, "/etc/", "/dist/");
       }
-      System.out.println("TotalCross SDK version "+Settings.versionStr+" running on "+osName+" with JDK "+javaVersion);
+      System.out.println("TotalCross SDK version "+Settings.versionStr+"."+Settings.buildNumber+" running on "+osName+" with JDK "+javaVersion);
       System.out.println("Etc directory: "+ (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
       System.out.println("Classpath: "+cp0);
 
