@@ -15,7 +15,7 @@
  *********************************************************************************/
 -->
 
-<project name="LoggerSample" basedir=".">
+<project name="PlayLog" basedir=".">
 
 <property name="app.srcdir" value="apps/logger" />
 <property name="app.name" value="${ant.project.name}"/>
