@@ -51,7 +51,7 @@ public class Loader extends Activity implements BarcodeReadListener
       try
       {
          AndroidUtils.initialize(this);
-         if (isSingleApk() && savedInstanceState != null) // bypass bug that will cause a new instance each time the app is minimized and called again
+         if (isSingleApk() && savedInstanceState != null && savedInstanceState.size() > 0) // bypass bug that will cause a new instance each time the app is minimized and called again
          {
             AndroidUtils.debug("Quitting from relaunch");
             System.exit(2);
@@ -451,6 +451,7 @@ public class Loader extends Activity implements BarcodeReadListener
 
    protected void onSaveInstanceState(Bundle outState) 
    {
+      outState.clear();
    }
    
    protected void onDestroy()
