@@ -42,7 +42,7 @@ public class ImageComparisionTest extends TestCase
       maing = MainWindow.getMainWindow().getGraphics();
    }
 
-   protected void assert(String in256, String in65536, String title)
+   protected void assertOK(String in256, String in65536, String title)
    {
       if (debuggingOnScreen)
          ;

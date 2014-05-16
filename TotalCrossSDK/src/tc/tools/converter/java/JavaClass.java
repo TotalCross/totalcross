@@ -51,10 +51,10 @@ public final class JavaClass
       // names
       className = cp.getString1(ds.readUnsignedShort());
 
-      if (!onlyHeader && majorVersion >= 0x2E) // check if we're using the correct class file format
+      if (!onlyHeader && majorVersion > 51) // check if we're using the correct class file format
       {
-         String e = DeploySettings.javaVersion.startsWith("1.3") || DeploySettings.javaVersion.startsWith("1.4") ? "-target 1.1" : "-target 1.1 -source 1.2";
-         throw new IllegalArgumentException("\n\nThe class "+className+" has an invalid .class file format.\n\nTo correct this, you must make sure that the file is compiled using the 1.1 Java Class specification. So, if you're compiling using JAVAC in the command shell (or an ANT file), add this to your javac command line:\n\nJAVAC "+e+" ...\n\nOtherwise, if the files were compiled in Eclipse, go to the project properties, select 'Java Compiler', set 'Enable project specific settings', and set 'Compiler compliance level' to 1.3.");
+         String e = "-target 1.7 -source 1.7";
+         throw new IllegalArgumentException("\n\nThe class "+className+" has an invalid .class file format.\n\nTo correct this, you must make sure that the file is compiled using the 1.7 Java Class specification. So, if you're compiling using JAVAC in the command shell (or an ANT file), add this to your javac command line:\n\nJAVAC "+e+" ...\n\nOtherwise, if the files were compiled in Eclipse, go to the project properties, select 'Java Compiler', set 'Enable project specific settings', and set 'Compiler compliance level' to 1.7.");
       }
 
       int idx = ds.readUnsignedShort();
