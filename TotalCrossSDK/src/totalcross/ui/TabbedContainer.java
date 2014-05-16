@@ -569,6 +569,11 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       int x0 = 1;
       int y0 = atTop?0:(height-tabH);
       int n = count;
+      if (!allSameWidth && transparentBackground) // using balls? center on screen
+      {
+         int ww = 0; for (int i = 0; i < n; i++) ww += (i == activeIndex ? rSel[i] : rNotSel[i]).width;
+         x0 = (width-ww)/2;
+      }
       for (int i =0; i < n; i++)
       {
          Rect r = rects[i];
