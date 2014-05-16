@@ -20,6 +20,7 @@
 package totalcross.ui.gfx;
 
 import totalcross.sys.*;
+import totalcross.util.*;
 
 /**
  * The Color class is just an utility class used to do operations in a color, which
@@ -248,5 +249,19 @@ public final class Color
       int a1 = getAlpha(color1);
       int a2 = getAlpha(color2);
       return Math.abs(a1-a0) > Math.abs(a2-a0) ? color1 : color2;
+   }
+
+   /** Returns a random color.
+    * Example:
+    * <pre>
+      Random r = new Random();
+      for (int i = 0; i < tt.length; i++)
+         tabPanel.getContainer(i).setBackColor(Color.getRandomColor(r));
+    * </pre>
+    * @since TotalCross 3.0
+    */
+   public static int getRandomColor(Random r)
+   {
+      return getRGBEnsureRange(r.nextInt(256),r.nextInt(256),r.nextInt(256));
    }
 }
