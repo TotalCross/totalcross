@@ -24,7 +24,7 @@ import totalcross.ui.*;
 /**
  * Performs a benchmark in the SQLite.
  */
-public class SQLiteBench extends BaseContainer
+public class SQLiteBenchSample extends BaseContainer
 {
    /**
     * The connection with SQLite.
@@ -61,15 +61,10 @@ public class SQLiteBench extends BaseContainer
     */
    private final static int REFRESH_MOD = NRECS / 50;
 
-   static
-   {
-      Settings.useNewFont = true;
-   }
-   
    /**
     * The constructor.
     */
-   public SQLiteBench()
+   public SQLiteBenchSample()
    {
       if (Settings.onJavaSE)
          Settings.showDesktopMessages = false;
