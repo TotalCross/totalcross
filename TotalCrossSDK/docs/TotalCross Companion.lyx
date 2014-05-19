@@ -7967,6 +7967,8 @@ DriverManager.
 
 getConnection("jdbc:sqlite:XXXX
 \backslash
+
+\backslash
 YYYY.db")
 \family default
 , where 
