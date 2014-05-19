@@ -8316,6 +8316,30 @@ All string data inserted is stored in unicode.
  It's not possible to create an ascii database in order to save space.
 \end_layout
 
+\begin_layout Enumerate
+It is not possible to erase all indices in a single SQL statement such as
+ the one used in Litebase: 
+\family typewriter
+drop index * on table_name
+\family default
+.
+ Moreover, to drop a specific index, you must drop it using its name, using
+ 
+\family typewriter
+drop index IDX_NAME
+\family default
+, not 
+\family typewriter
+drop index on table_name(column_name)
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+You can't alter a table to add or drop a primary key in SQLite.
+ 
+\end_layout
+
 \begin_layout Chapter
 SuperWaba to TotalCross Conversion
 \end_layout
