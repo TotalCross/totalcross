@@ -26,6 +26,7 @@ import tc.samples.api.map.*;
 import tc.samples.api.net.*;
 import tc.samples.api.net.mail.*;
 import tc.samples.api.phone.*;
+import tc.samples.api.sql.SQLiteBench;
 import tc.samples.api.sys.*;
 import tc.samples.api.util.*;
 import tc.samples.api.xml.*;
@@ -66,6 +67,7 @@ public class MainMenu extends BaseContainer
       "net - Socket Https",
       "phone - Dialer",
       "phone - SMS",
+      "sql - SQLite Bench",
       "sys - Settings",
       "sys - External Viewers",
       "util - Zip",
@@ -105,6 +107,8 @@ public class MainMenu extends BaseContainer
       
       PhoneDialerSample.class,
       PhoneSmsSample.class,
+      
+      SQLiteBench.class,
       
       SettingsSample.class,
       ExternalViewersSample.class,
