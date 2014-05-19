@@ -83,7 +83,8 @@ public class SQLiteBench extends BaseContainer
     */
    private void createTable() throws Exception
    {
-      (driver = DriverManager.getConnection("jdbc:sqlite:" + Convert.appendPath(Settings.appPath, "person.db"))).setAutoCommit(false);
+      driver = DriverManager.getConnection("jdbc:sqlite:" + Convert.appendPath(Settings.appPath, "person.db"));
+      driver.setAutoCommit(false);
       
       log("Creating tables...");
       (statement = driver.createStatement()).executeUpdate("drop table if exists person");
@@ -355,6 +356,8 @@ public class SQLiteBench extends BaseContainer
     */
    public void initUI()
    {
+      super.initUI();
+      add(new Label("Try also BenchLitebase, in the samples folder"),CENTER,TOP);
       // User interface.
       ProgressBar pbTotal = new ProgressBar(0, 13);
       add(pbInserts = new ProgressBar(0, 500), CENTER, AFTER + 5);
@@ -374,6 +377,9 @@ public class SQLiteBench extends BaseContainer
          int time1 = insertWithPS();
          pbTotal.setValue(2);
          int time2 = insertNormal();           
+         
+         driver.commit();
+         
          pbTotal.setValue(3);
          int time3 = selectBeforeLast();        
          pbTotal.setValue(4);
@@ -396,7 +402,6 @@ public class SQLiteBench extends BaseContainer
          int time12 = selectOrderBy();              
          pbTotal.setValue(13); 
          
-         driver.commit();
          statement.close();
          driver.close();
          
