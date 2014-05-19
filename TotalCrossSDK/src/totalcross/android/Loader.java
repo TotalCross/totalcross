@@ -26,8 +26,10 @@ import android.view.*;
 import android.view.inputmethod.*;
 import java.io.*;
 import java.util.*;
+
 import totalcross.*;
 import totalcross.android.compat.*;
+
 import com.intermec.aidc.*; 
 import java.util.concurrent.*;
 
@@ -44,6 +46,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
+   private static boolean onCreateCalled; //
    /** Called when the activity is first created. */
    public void onCreate(Bundle savedInstanceState)
    {
@@ -51,12 +54,12 @@ public class Loader extends Activity implements BarcodeReadListener
       try
       {
          AndroidUtils.initialize(this);
-         if (isSingleApk() && savedInstanceState != null) // bypass bug that will cause a new instance each time the app is minimized and called again
+         if (isSingleApk() && onCreateCalled) // bypass bug that will cause a new instance each time the app is minimized and called again (2282)
          {
-            AndroidUtils.debug("Quitting from relaunch");
             System.exit(2);
             return;
          }
+         onCreateCalled = true;
          AndroidUtils.checkInstall();
          runVM();
       }
@@ -66,6 +69,11 @@ public class Loader extends Activity implements BarcodeReadListener
          AndroidUtils.debug(stack);
          AndroidUtils.error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
       }
+   }
+   
+   public void onRestart()
+   {
+      super.onRestart();
    }
    
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -451,6 +459,7 @@ public class Loader extends Activity implements BarcodeReadListener
 
    protected void onSaveInstanceState(Bundle outState) 
    {
+      outState.clear();
    }
    
    protected void onDestroy()

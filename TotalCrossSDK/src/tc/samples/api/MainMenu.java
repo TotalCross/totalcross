@@ -26,6 +26,7 @@ import tc.samples.api.map.*;
 import tc.samples.api.net.*;
 import tc.samples.api.net.mail.*;
 import tc.samples.api.phone.*;
+import tc.samples.api.sql.SQLiteBench;
 import tc.samples.api.sys.*;
 import tc.samples.api.util.*;
 import tc.samples.api.xml.*;
@@ -35,13 +36,12 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
 
 public class MainMenu extends BaseContainer
 {
    private ButtonMenu menu;
    
-   static String DEFAULT_INFO = "Click Info for help. Hold button for tip";
+   static String DEFAULT_INFO = "Click Info for help";
    String[] items =
    {
       "crypto - Cipher",
@@ -67,6 +67,7 @@ public class MainMenu extends BaseContainer
       "net - Socket Https",
       "phone - Dialer",
       "phone - SMS",
+      "sql - SQLite Bench",
       "sys - Settings",
       "sys - External Viewers",
       "util - Zip",
@@ -107,6 +108,8 @@ public class MainMenu extends BaseContainer
       PhoneDialerSample.class,
       PhoneSmsSample.class,
       
+      SQLiteBench.class,
+      
       SettingsSample.class,
       ExternalViewersSample.class,
       
@@ -116,53 +119,12 @@ public class MainMenu extends BaseContainer
       SoapSample.class,
       
    };
-   
-   String[] tips = 
-   {
-      "crypto - Cipher",
-      "crypto - Digest",
-      "crypto - Signature",
-      "html - HtmlContainer",
-      "io - File",
-      "io - PDBFile",
-      "io.device - Bluetooth Print (Citizen)",
-      "io.device - Bluetooth Print (Zebra)",
-      "io.device - Bluetooth Transfer",
-      "io.device - GPS",
-      "io.device - Scanner Internal",
-      "io.device - Scanner Camera",
-      "io.device - PortConnector",
-      "lang - Reflection",
-      "lang - Thread",
-      "map - GoogleMaps",
-      "net - Mail",
-      "net - FTP",
-      "net - Server socket",
-      "net - Socket Http",
-      "net - Socket Https",
-      "phone - Dialer",
-      "phone - SMS",
-      "sys - Settings",
-      "sys - External Viewers",
-      "util - Zip",
-      "util - Zlib",
-      "xml - Soap",
-   };
 
    protected String getHelpMessage()
    {
       return "This is a TotalCross "+Settings.versionStr+"."+Settings.buildNumber+" sample that shows most of the Application Programming Interfaces available in the SDK. You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
    }
    
-   private void addToolTip(Control c, String text)
-   {
-      ToolTip t = new ToolTip(c,text);
-      t.millisDelay = 500;
-      t.millisDisplay = 5000;
-      t.borderColor = Color.BLACK;
-      t.setBackColor(0xF0F000);
-   }
-
    public void initUI()
    {
       super.initUI(); // important!
@@ -179,10 +141,6 @@ public class MainMenu extends BaseContainer
       else menu.buttonHorizGap = 50;
       
       add(menu,LEFT,TOP,FILL,FILL);
-      for (int i = 0; i < tips.length; i++)
-         addToolTip(menu.getButton(i), ToolTip.split(tips[i],fm));
-      if (!Settings.isOpenGL && !Settings.onJavaSE)
-         menu.getButton(tips.length-2).setEnabled(false);
 
       setInfo(DEFAULT_INFO);
 

@@ -337,8 +337,7 @@ public class Deploy
                          if (!key.matches("([0-9A-F]{4}(\\-)?){6}"))
                             throw new DeployerException("The key must be specified in the following format: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (with or without '-')");
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
-                         boolean lbok = DeploySettings.rasKey[2] == 'L' && DeploySettings.rasKey[3] == 'B';
-                         System.out.println("The application was signed with the given registration key. "+(lbok ? "Litebase is allowed." : "Litebase is NOT allowed."));
+                         System.out.println("The application was signed with the given registration key.");
                          break;
                case 't': DeploySettings.testClass = true; 
                          break; // guich@tc115_37: missing break

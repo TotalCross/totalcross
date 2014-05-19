@@ -184,7 +184,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
-
+   
    private TabbedContainer(int count)
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
@@ -569,6 +569,11 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       int x0 = 1;
       int y0 = atTop?0:(height-tabH);
       int n = count;
+      if (!allSameWidth && transparentBackground) // using balls? center on screen
+      {
+         int ww = 0; for (int i = 0; i < n; i++) ww += (i == activeIndex ? rSel[i] : rNotSel[i]).width;
+         x0 = (width-ww)/2;
+      }
       for (int i =0; i < n; i++)
       {
          Rect r = rects[i];
@@ -667,7 +672,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          else
          try
          {
-        	int size = extraTabHeight-fmH/2;
+           	int size = extraTabHeight-fmH/2;
             for (int i = 0; i < count; i++)
                imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size);
             if (activeIcon0 != null)
@@ -815,19 +820,11 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (disabled[i])
                g.foreColor = Color.getCursorColor(cColor);
             if (imgCaptions != null && imgCaptions[i] != null)
-            {
-               if (i == activeIndex && activeIcon != null)
-                  g.drawImage(activeIcon, r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
-               else
-                  g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
-            }
+               g.drawImage(i == activeIndex && activeIcon != null ? activeIcon : disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
          }
          else
          {
-            if (i == activeIndex && activeIcon != null)
-            	g.drawImage(activeIcon, r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
-            else
-            	g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
+         	g.drawImage(i == activeIndex && activeIcon != null ? activeIcon : disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
          }
          if (uiFlat)
             g.drawRect(r.x,r.y,r.width,r.height);
