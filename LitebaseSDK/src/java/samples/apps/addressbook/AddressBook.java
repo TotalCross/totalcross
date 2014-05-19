@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.apps.addressbook;
 
 import litebase.*;
@@ -67,7 +65,7 @@ public class AddressBook extends MainWindow implements Grid.DataSource
       super("TC Address Book", TAB_ONLY_BORDER);
       if (Settings.onJavaSE)
          totalcross.sys.Settings.showDesktopMessages = false;
-      setUIStyle(Settings.Vista);
+      setUIStyle(Settings.Android);
       driver = LitebaseConnection.getInstance("ABok");
    }
 
@@ -76,7 +74,7 @@ public class AddressBook extends MainWindow implements Grid.DataSource
     */
    public void initUI()
    {
-      createTable(); // Data base setup stage.
+      createTables(); // Data base setup stage.
 
       // User interface set up stage.
       String[] tpCaptions = {"Listing", "Edition"};
@@ -213,18 +211,33 @@ public class AddressBook extends MainWindow implements Grid.DataSource
    /**
     * Creates the table.
     */
-   private void createTable()
+   private void createTables()
    {
       try
       {
          // Uses the rowid as the person id.
-         driver.execute("create table bookentry(name char(30), address char(50), phone char(20), birthday int, salary float, married short, " 
-                                                                                              + "gender short, lastUpdated long)");
-         driver.execute("CREATE INDEX IDX_0 ON bookentry(rowid)"); // The index names are completely ignored. 
+         if (!driver.exists("bookentry"))
+         {
+            driver.execute("create table bookentry(name char(30), address char(50), phone char(20), birthday int, salary float, married short, " 
+                                                                                 + "gender short, lastUpdated long, photoidx short)");
+            driver.execute("CREATE INDEX IDX_0 ON bookentry(rowid)"); // The index names are completely ignored. 
+         }
+         
+         // Photo table for the data base.
+         if (!driver.exists("photodb"))
+            driver.execute("create table photodb(photo blob(16384))");
+         
+         PreparedStatement ps = driver.prepareStatement("insert into photodb values (?)");
+         ps.setBlob(0, Vm.getFile("fabio.jpg"));
+         ps.executeUpdate();
+         ps.setBlob(0, Vm.getFile("guilherme.jpg"));
+         ps.executeUpdate();
+         ps.setBlob(0, Vm.getFile("juliana.jpg"));
+         ps.executeUpdate();        
       }
       catch (AlreadyCreatedException exception) {} // ignored
 
-      psList = driver.prepareStatement("select rowid, name, address, phone, birthday, salary, married, gender, lastUpdated from bookentry");
-      
+      psList = driver.prepareStatement("select rowid, name, address, phone, birthday, salary, married, gender, lastUpdated, photoidx from " 
+                                                                                                                                  + "bookentry");   
    }  
 }

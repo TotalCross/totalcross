@@ -1,10 +1,5 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE project   [
-<!ENTITY common SYSTEM "common.xml">
-]>
-<!--
 /*********************************************************************************
- *  TotalCross Software Development Kit                                          *
+ *  TotalCross Software Development Kit - Litebase                               *
  *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
@@ -13,12 +8,23 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
--->
 
-<project name="PhotoDB" basedir=".">
+package samples.apps.salesplus.ui.customer;
 
-<property name="app.srcdir" value="sys/photodb" />
-<property name="app.name" value="${ant.project.name}"/>
-<import file="${sdk.root}/build.xml"/>
+import samples.apps.salesplus.*;
+import samples.apps.salesplus.ui.*;
 
-</project>
+/**
+ * The customer menu.
+ */
+public class CustomerMenu extends BaseMenu
+{
+   /**
+    * The constructor.
+    */
+   public CustomerMenu()
+   {
+      super(new String[]{"New Customer", "Search"},
+             new int[]{SalesPlus.NEW_CUSTOMER, SalesPlus.CUSTOMER_SEARCH}, false);
+   }
+}
