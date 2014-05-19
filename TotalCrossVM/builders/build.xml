@@ -252,6 +252,24 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 </target>
 
+<target name="reorganizeSamples" >
+  <property name="samples"  value="${target.sdk3.path}/dist/samples/"/>
+
+  <move todir="${samples}/app/Breakout"    failonerror="no"> <fileset dir="${samples}/Breakout"/>    </move>
+  <move todir="${samples}/app/Scape"       failonerror="no"> <fileset dir="${samples}/Scape"/>       </move>
+  <move todir="${samples}/app/Calculator"  failonerror="no"> <fileset dir="${samples}/Calculator"/>  </move>
+  <move todir="${samples}/app/BtChat"      failonerror="no"> <fileset dir="${samples}/BtChat"/>      </move>
+  <move todir="${samples}/app/WorldWatch"  failonerror="no"> <fileset dir="${samples}/WorldWatch"/>  </move>
+                                   
+  <move todir="${samples}/service/GPSLogger"           failonerror="no"> <fileset dir="${samples}/GPSLogger"/>           </move>
+  <move todir="${samples}/service/GPSLoggerController" failonerror="no"> <fileset dir="${samples}/GPSLoggerController"/> </move>
+  <move todir="${samples}/service/GPSLoggerViewer"     failonerror="no"> <fileset dir="${samples}/GPSLoggerViewer"/>     </move>
+  <move todir="${samples}/service/MailController"      failonerror="no"> <fileset dir="${samples}/MailController"/>      </move>
+  <move todir="${samples}/service/MailService"         failonerror="no"> <fileset dir="${samples}/MailService"/>         </move>
+  <move todir="${samples}/service/MailViewer"          failonerror="no"> <fileset dir="${samples}/MailViewer"/>          </move>
+   
+</target>   
+
 <target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
 
   <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
@@ -269,9 +287,8 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <delete dir="${base.temp.path}/jar" />
    
    <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
-   <copy todir="${target.sdk3.path}/dist/samples" includeEmptyDirs="No" failonerror="No">
+   <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
-      <mapper type="glob" from="*" to="LB_*"/>
    </copy>
    <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
    <copy todir="${target.sdk3.path}/docs/lb" ><fileset dir="${target.litebase.path}/docs/html"/></copy>
@@ -281,6 +298,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
    
    <antcall target="mergeAPK" />
+   <antcall target="reorganizeSamples" />
 
 </target>
 
@@ -290,7 +308,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildInstalls_sdk" >
-  <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
   
   <antcall target="createTotalCross3" />
 

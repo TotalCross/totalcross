@@ -88,6 +88,7 @@ import tc.samples.api.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 import totalcross.xml.soap.*;
 
 public class SoapSample extends BaseContainer
@@ -99,26 +100,38 @@ public class SoapSample extends BaseContainer
 
    int selectedServer;
 
-   private String[] tests = {"All tests","parameters","sum int","sum double","boolean return","sum int array","sum double array",
-         "return string array","return int array","return double array"};
+   private String[] tests = 
+   {
+      "All tests",
+      "parameters",
+      "sum int",
+      "sum double",
+      "boolean return",
+      "sum int array",
+      "sum double array",
+      "return string array",
+//      "return int array",     - does not work
+//      "return double array"   - in our server
+   };
 
    public void initUI()
    {
       super.initUI();
-      add(new Label("Select test"), LEFT+2, TOP+2);
+      add(new Label("URI:"), LEFT+2, TOP+4);
+      add(edRemote = new Edit(""), AFTER+2,SAME-2);
+      edRemote.setText("http://www.superwaba.net/SoapSampleWS/services/TestHandler");
+      
+      add(new Label("Select test: "), LEFT+2, AFTER+2);
 
       add(cbTest = new ComboBox(tests),AFTER, SAME);
 
-      add(new Label("URI:"), LEFT+2, AFTER+4);
-      add(edRemote = new Edit(""), AFTER+2,SAME-2);
-      edRemote.setText("http://<address>:<port>/axis/TestHandler.jws");
-
       add(btOk = new Button(" GO! "));
-      btOk.setRect(CENTER,BOTTOM - 2, PREFERRED + 4, PREFERRED);
+      btOk.setBackColor(Color.ORANGE);
+      btOk.setRect(AFTER+fmH,SAME, FILL, PREFERRED);
 
       add(lbStatus = new ListBox());
       lbStatus.enableHorizontalScroll();
-      lbStatus.setRect(LEFT,AFTER+2,FILL,FIT, edRemote);
+      lbStatus.setRect(LEFT,AFTER+2,FILL,FILL);
    }
 
    private void log(String s)
@@ -132,7 +145,7 @@ public class SoapSample extends BaseContainer
    {
       if (test == -1)
       {
-         for (int i=0; i<=11; i++)
+         for (int i=0; i < tests.length-1; i++)
             executeTest(i);
       }
       else
@@ -147,8 +160,8 @@ public class SoapSample extends BaseContainer
             case 4: testSumIntArray(); break;       // int sumIntArray(int[] array, String name)
             case 5: testSumDoubleArray(); break;    // double sumDoubleArray(double[] array, String name)
             case 6: testReturnStringArray(); break; // string[] returnStringArray(string[] s)
-            case 7: testReturnIntArray(); break;    // int[] returnIntArray()
-            case 8: testReturnDoubleArray(); break; // double[] returnDoubleArray()
+            //case 7: testReturnIntArray(); break;    // int[] returnIntArray()
+            //case 8: testReturnDoubleArray(); break; // double[] returnDoubleArray()
          }
       }
    }
@@ -172,7 +185,7 @@ public class SoapSample extends BaseContainer
       try
       {
          SOAP s = createSoap("testParameters");
-         s.setParam(totalcross.ui.html.EscapeHtml.escape("hoje é"),"testString");
+         s.setParam(totalcross.ui.html.EscapeHtml.escape("hoje eh"),"testString");
          s.setParam(26,"testInt");
          s.setParam(7.4,"testDouble");
          s.setParam(true,"testBoolean");
@@ -293,6 +306,7 @@ public class SoapSample extends BaseContainer
       }
    }
 
+/* does not work in our server
    private void testReturnIntArray() //int[] returnIntArray()
    {
       try
@@ -305,7 +319,7 @@ public class SoapSample extends BaseContainer
          for (int i=0; i<len; i++)
             log(Convert.toString(response[i]));
       }
-      catch (SOAPException /*XmlRpcException*/ e)
+      catch (SOAPException e)
       {
          log("*** Error! "+e.getMessage());
          e.printStackTrace();
@@ -324,12 +338,12 @@ public class SoapSample extends BaseContainer
          for (int i=0; i<len; i++)
             log(Convert.toString(response[i]));
       }
-      catch (SOAPException /*XmlRpcException*/ e)
+      catch (SOAPException e)
       {
          log("*** Error! "+e.getMessage());
          e.printStackTrace();
       }
-   }
+   }*/
 
    private SOAP createSoap(String method)
    {

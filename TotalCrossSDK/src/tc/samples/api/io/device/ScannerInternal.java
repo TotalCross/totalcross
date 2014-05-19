@@ -59,10 +59,8 @@ public class ScannerInternal extends BaseContainer
    // by making the members private, the compiler can optimize them.
    private String barCode;
    private Check chkScanner;
-   private Button trigger;
 
    private Label lblScanManagerVersion;
-   private Label lblPortDriverVersion;
    private Label lblRomSerialNumber;
    ListBox lb;
    
@@ -76,8 +74,6 @@ public class ScannerInternal extends BaseContainer
       }
       add(new Label("Scan manager version:"), CENTER, TOP);
       add(lblScanManagerVersion = new Label("", CENTER), LEFT, AFTER);
-      add(new Label("Port driver version:"), CENTER, AFTER);
-      add(lblPortDriverVersion = new Label("", CENTER), LEFT, AFTER);
       add(new Label("Rom serial number:"), CENTER, AFTER);
       add(lblRomSerialNumber = new Label("", CENTER), LEFT, AFTER);
       add(chkScanner = new Check("Scan"), LEFT, AFTER + 10);
@@ -89,12 +85,8 @@ public class ScannerInternal extends BaseContainer
       if (scannerStart())
       {
          // Versions can only be get after the Scanner is initialized
-         lblScanManagerVersion.setText(Scanner.getScanManagerVersion());
-         lblPortDriverVersion.setText(Scanner.getScanPortDriverVersion());
+         lblScanManagerVersion.setText(Scanner.scanManagerVersion);
          lblRomSerialNumber.setText(Settings.romSerialNumber != null ? Settings.romSerialNumber : "Not available");
-         
-         if (Scanner.isPassive())
-            add(trigger = new Button(" TRIGGER "), CENTER, BOTTOM); // support SocketCom              
          scannerStop();
       }
    }
@@ -115,15 +107,19 @@ public class ScannerInternal extends BaseContainer
       repaintNow(); // at startup it will be ugly but this is faster than repainting the whole screen
    }
 
+   private static boolean setDefaultAndroidParams()
+   {
+      return Scanner.setBarcodeParam(Intermec.CODE_128, true)
+            && Scanner.setBarcodeParam(Intermec.CODABAR, true) && Scanner.setBarcodeParam(Intermec.EAN_UPC_UPC_E, true)
+            && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_13, true) && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_8, true);
+   }
+   
    private boolean scannerStart()
    {
       if (Scanner.activate())
       {
          // only using BARUPCE for demo - use initializeScanner(String args[]) for your requirements
-         if ((Settings.platform.equals(Settings.ANDROID) && Scanner.setBarcodeParam(Scanner.INTERMEC_CODE_128, true)
-          && Scanner.setBarcodeParam(Scanner.INTERMEC_CODABAR, true) && Scanner.setBarcodeParam(Scanner.INTERMEC_EAN_UPC_UPC_E, true)
-          && Scanner.setBarcodeParam(Scanner.INTERMEC_EAN_UPC_EAN_13, true) && Scanner.setBarcodeParam(Scanner.INTERMEC_EAN_UPC_EAN_8, true))
-         || (!Settings.platform.equals(Settings.ANDROID) && Scanner.setBarcodeParam(Scanner.BARUPCE, true)))
+         if ((Settings.platform.equals(Settings.ANDROID) && setDefaultAndroidParams()) || !Settings.platform.equals(Settings.ANDROID))
          {   
             setStatus("Initializing scanner ...");
             if (Scanner.commitBarcodeParams())
@@ -161,11 +157,6 @@ public class ScannerInternal extends BaseContainer
       {
          case ControlEvent.PRESSED:
          {
-            if (event.target == trigger)
-            {
-               Scanner.trigger();
-            }
-            else
             if (event.target == chkScanner)
             {
                if (chkScanner.isChecked())
