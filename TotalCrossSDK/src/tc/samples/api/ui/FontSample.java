@@ -79,7 +79,6 @@ public class FontSample extends BaseContainer
          rgSexo.setSelectedIndex(0);
 
          controls = getBagChildren();
-         repositionAllowed = false; // only reposition the controls
       }
 
       public void setFonts(Font f)
