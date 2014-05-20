@@ -187,7 +187,6 @@ target: createSkeleton - Create the folders from scratch
   <ant antfile="build.xml" dir="${source.lb.path}" target="javadoc"  		inheritAll="false"/>
 
   <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
   <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
 </target>
