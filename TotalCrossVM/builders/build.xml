@@ -279,7 +279,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
    
    <!-- totalcross -->
    <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
-   <move todir="${target.sdk3.path}/docs/tc" > <fileset dir="${target.sdk3.path}/docs/html"/>    </move>
    
    <!-- litebase -->
    <zip destfile="${target.sdk3.path}/dist/tc.jar" update="yes">
@@ -291,7 +290,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
       <fileset dir="${target.litebase.path}/dist/samples" />
    </copy>
    <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
-   <copy todir="${target.sdk3.path}/docs/lb" ><fileset dir="${target.litebase.path}/docs/html"/></copy>
    <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
    
    <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
