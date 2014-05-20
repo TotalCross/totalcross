@@ -166,16 +166,17 @@ public class BaseContainer extends Container
    
    public void back()
    {
-      try
-      {
-         setInfo(MainMenu.DEFAULT_INFO);
-         containerStack.pop(); // pop ourself
-         Window.getTopMost().swap((Container)containerStack.peek());
-      }
-      catch (ElementNotFoundException enfe)
-      {
-         //MainWindow.exit(0); // we're the last screen, so just exit the application
-      }
+      if (!(this instanceof MainMenu))
+         try
+         {
+            setInfo(MainMenu.DEFAULT_INFO);
+            containerStack.pop(); // pop ourself
+            Window.getTopMost().swap((Container)containerStack.peek());
+         }
+         catch (ElementNotFoundException enfe)
+         {
+            //MainWindow.exit(0); // we're the last screen, so just exit the application
+         }
    }
    
    public boolean ask(String question)
