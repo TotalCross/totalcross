@@ -299,27 +299,26 @@ public class MainMenu extends BaseContainer
       topmenu.buttonHorizGap = topmenu.buttonVertGap = 25;
       topmenu.setBackForeColors(Color.brighter(BKGCOLOR), Color.WHITE);
       topmenu.pressedColor = Color.CYAN;
-      add(new Ruler(), LEFT,TOP,FILL,0); // this ruler makes the ScrollContainer have the same width always. otherwise, when changing the UpdateMatrix, it will be shrinked in 10 pixels at the width 
       add(topmenu,LEFT,TOP,FILL,PREFERRED);
 
       setInfo(DEFAULT_INFO);
 
-/*      String cmd = MainWindow.getCommandLine();
+      String cmd = MainWindow.getCommandLine();
       if (cmd != null && cmd.startsWith("/t"))
          try 
          {
-            showSample(Convert.toInt(cmd.substring(2)));
+            showSample(uiClasses[Convert.toInt(cmd.substring(2))]);
             return;
          }
          catch (Exception e) {}
-*/   }
+   }
 
    
    Class itemClasses;
    private void showMenu(String[] names)
    {
       if (menu != null) remove(menu);
-      menu = new ButtonMenu(names, ButtonMenu.MULTIPLE_VERTICAL);
+      menu = new ButtonMenu(names, ButtonMenu.SINGLE_COLUMN);
       
       menu.pressedColor = BKGCOLOR;
       if (Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30)
