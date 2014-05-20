@@ -12,8 +12,8 @@ public class ExternalViewersSample extends BaseContainer
 {
    private ButtonMenu menu;
    String sdcardPath = "/sdcard/xviewers/";
-   String jpg = "filhos_gui.jpg";
-   String pdf = "TotalCrossCompanion.pdf";
+   String jpg = "sys/filhos_gui.jpg";
+   String pdf = "sys/TotalCrossCompanion.pdf";
    
    public void initUI()
    {
