@@ -185,7 +185,7 @@ target: createSkeleton - Create the folders from scratch
   <ant antfile="build.xml" dir="${source.lb.path}" target="clean"           inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="javadoc"  		inheritAll="false"/>
-   <mkdir dir="${target.sdk.path}/doc"/>
+   <mkdir dir="${target.sdk.path}/docs"/>
 
   <!-- copy the changed files to the release folder -->
   <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
