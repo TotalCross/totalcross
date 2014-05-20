@@ -40,6 +40,7 @@
 <property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 <property name="lb.src"                 value="${sdk.root}/../../Litebase/LitebaseSDK/src/java"/>
+<property name="sqlite-jdbc"            value="sqlite-jdbc4-3.8.2"/>
 
 <!-- defined alxjoin task -->	
 <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${tools}/ant/tctasks.jar" />
@@ -185,7 +186,7 @@ target: compile
   	includeAntRuntime="false"
   >
      <classpath>
-        <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+        <pathelement location="${tools}/sqlite/${sqlite-jdbc}.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
@@ -244,7 +245,7 @@ target: compile
   >
   	
     <classpath>
-       <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+       <pathelement location="${tools}/sqlite/${sqlite-jdbc}.jar"/>
        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
        <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
@@ -337,7 +338,7 @@ target: desktop
    <zip destfile="${dist}/tc.jar">
        <zipgroupfileset file="${dist}/tc_desktop.jar"/>
        <zipgroupfileset file="${dist}/tc_deploy.jar"/>
-       <zipgroupfileset file="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+       <zipgroupfileset file="${tools}/sqlite/${sqlite-jdbc}.jar"/>
    </zip>
    <delete file="${dist}/tc_desktop.jar" />
    <delete file="${dist}/tc_deploy.jar" />
