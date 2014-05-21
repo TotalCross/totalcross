@@ -190,7 +190,9 @@ public class BaseContainer extends Container
    protected static ListBox lblog;
    public void addLog(int x, int y, int w, int h, Control rel)
    {
+      ListBox.itemHeightFactor = 1;
       add(lblog = new ListBox(),x,y,w,h,rel);
+      ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR;
    }
 
    // a log method that runs safely on threads
