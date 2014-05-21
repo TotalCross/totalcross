@@ -29,7 +29,6 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 {
    private Button btnStart;
    private Button btnStop;
-   private ListBox lb;
    private Edit edPort;
    private ServerSocket serverSocket;
    private int port;
@@ -64,9 +63,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       add(btnStop = new Button("Stop"), RIGHT - 2, BOTTOM - 2);
       Button.commonGap = 0;
 
-      lb = new ListBox();
-      lb.enableHorizontalScroll();
-      add(lb, LEFT, AFTER + 3, FILL, FIT, l);
+      addLog(LEFT, AFTER + 3, FILL, FIT, l);
 
       toggleUI(true);
    }
@@ -87,28 +84,28 @@ public class ServerSocketSample extends BaseContainer implements Runnable
    private void startServer() throws Exception
    {
       toggleUI(false);
-      status("Starting...");
+      log("Starting...");
 
       serverSocket = new ServerSocket(port, 10000);
 
-      status("Server started");
-      status("Waiting for connections");
+      log("Server started");
+      log("Waiting for connections");
 
       do
       {
          clientSocket = serverSocket.accept();
-         status("Still waiting...");
+         log("Still waiting...");
       }
       while (clientSocket == null);
 
-      status("Accepted new connection");
+      log("Accepted new connection");
       clientSocket.readTimeout = 20000;
 
-      status("========================");
+      log("========================");
       String s;
       while ((s = clientSocket.readLine()) != null && (s = s.trim()).length() > 0)
-         status(s);
-      status("========================");
+         log(s);
+      log("========================");
       clientSocket.writeBytes(answer);
       clientSocket.close();
       clientSocket = null; // flsobral@tc120: must set to null, otherwise the method stopServer will try to close it again.
@@ -127,20 +124,20 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          {
             clientSocket.close();
             clientSocket = null;
-            status("Closed connection");
+            log("Closed connection");
          }
          if (serverSocket != null)
          {
-            status("Stopping the server...");
+            log("Stopping the server...");
             serverSocket.close();
             serverSocket = null;
-            status("Server closed.");
+            log("Server closed.");
          }
          repaintNow();
       }
       catch (Exception e)
       {
-         status("EXCEPTION CAUGHT AT STOP SERVER");
+         log("EXCEPTION CAUGHT AT STOP SERVER");
       }
    }
 
@@ -155,8 +152,8 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          // ignore exceptions thrown after the server was stopped
          if (threadIsRunning)
          {
-            status("EXCEPTION CAUGHT AT SERVER START");
-            status(e.getClass()+": "+e.getMessage());
+            log("EXCEPTION CAUGHT AT SERVER START");
+            log(e.getClass()+": "+e.getMessage());
          }
       }
       stopServer();
@@ -198,33 +195,9 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          }
          catch (InvalidNumberException e)
          {
-            status("Invalid port value.");
+            log("Invalid port value.");
          }
       }
       return false;
-   }
-
-   /**
-    * Auxiliary function to manipulate the list box.
-    * 
-    * @param s
-    */
-   private void status(String s)
-   {
-      final String ss = s;
-      if (MainWindow.isMainThread())
-      {
-         lb.add(s);
-         lb.selectLast();
-      }
-      else
-      MainWindow.getMainWindow().runOnMainThread(new Runnable()
-      {
-         public void run()
-         {
-            lb.add(ss);
-            lb.selectLast();
-         }
-      });
    }
 }

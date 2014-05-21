@@ -21,7 +21,6 @@ package tc.samples.api.sys;
 import tc.samples.api.*;
 
 import totalcross.sys.*;
-import totalcross.ui.*;
 import totalcross.ui.font.*;
 
 public class SettingsSample extends BaseContainer
@@ -29,40 +28,35 @@ public class SettingsSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      ListBox lb = new ListBox(new String[]
-      {
-         "Version is " + Settings.versionStr,
-         "Build number is "+Settings.buildNumber,
-         "Platform is " + Settings.platform,
-         "User is " + Settings.userName,
-         "Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),
-         "Virtual keyboard is " + Settings.virtualKeyboard,
-         "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
-         "Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,
-         "Default font size is " + Font.NORMAL_SIZE,
-         "Device font height is " + Settings.deviceFontHeight,
-         "Screen bpp is " + Settings.screenBPP,
-         "timeZoneMinutes is " + Settings.timeZoneMinutes,
-         "daylightSavingsMinutes is " + Settings.daylightSavingsMinutes,
-         "dateFormat is " + Settings.dateFormat,
-         "dateSeparator is " + Settings.dateSeparator,
-         "decimalSeparator is " + Settings.decimalSeparator,
-         "thousandsSeparator is " + Settings.thousandsSeparator + "  ",
-         "timeSeparator is " + Settings.timeSeparator,
-         "is24Hour is " + Settings.is24Hour,
-         "weekStart is " + Settings.weekStart,
-         "Battery is at " + Vm.getRemainingBattery() + "%",
-         "Free memory is at " + Vm.getFreeMemory(),
-         "Line number is " + Settings.lineNumber,
-         "Rom serial number is " + Settings.romSerialNumber,
-         "IMEI is "+ Settings.imei,
-         "ICCID is "+ Settings.iccid,
-         "Rom version is " + Settings.romVersion,
-         "Device id is " + Settings.deviceId,
-         "App path is " + Settings.appPath,
-      });
-      lb.enableHorizontalScroll();
-      add(lb, LEFT, TOP, FILL, FILL);
-      lb.requestFocus();
+      addLog(LEFT, TOP, FILL, FILL,null);
+      log("Version is " + Settings.versionStr,false);
+      log("Build number is "+Settings.buildNumber,false);
+      log("Platform is " + Settings.platform,false);
+      log("User is " + Settings.userName,false);
+      log("Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),false);
+      log("Virtual keyboard is " + Settings.virtualKeyboard,false);
+      log("Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,false);
+      log("Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,false);
+      log("Default font size is " + Font.NORMAL_SIZE,false);
+      log("Device font height is " + Settings.deviceFontHeight,false);
+      log("Screen bpp is " + Settings.screenBPP,false);
+      log("timeZoneMinutes is " + Settings.timeZoneMinutes,false);
+      log("daylightSavingsMinutes is " + Settings.daylightSavingsMinutes,false);
+      log("dateFormat is " + Settings.dateFormat,false);
+      log("dateSeparator is " + Settings.dateSeparator,false);
+      log("decimalSeparator is " + Settings.decimalSeparator,false);
+      log("thousandsSeparator is " + Settings.thousandsSeparator + "  ",false);
+      log("timeSeparator is " + Settings.timeSeparator,false);
+      log("is24Hour is " + Settings.is24Hour,false);
+      log("weekStart is " + Settings.weekStart,false);
+      log("Battery is at " + Vm.getRemainingBattery() + "%",false);
+      log("Free memory is at " + Vm.getFreeMemory(),false);
+      log("Line number is " + Settings.lineNumber,false);
+      log("Rom serial number is " + Settings.romSerialNumber,false);
+      log("IMEI is "+ Settings.imei,false);
+      log("ICCID is "+ Settings.iccid,false);
+      log("Rom version is " + Settings.romVersion,false);
+      log("Device id is " + Settings.deviceId,false);
+      log("App path is " + Settings.appPath,false);
    }
 }

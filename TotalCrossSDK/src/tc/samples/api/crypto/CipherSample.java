@@ -48,7 +48,6 @@ public class CipherSample extends BaseContainer
    private ComboBox cboChaining;
    private ComboBox cboPadding;
    private Button btnGo;
-   private ListBox lboResults;
    
    private byte[] AES_KEY = new byte[]
    {
@@ -113,15 +112,13 @@ public class CipherSample extends BaseContainer
       cboPadding.setSelectedIndex(0);
       
       btnGo = new Button(" Go! ");
-      lboResults = new ListBox();
-      lboResults.enableHorizontalScroll();
       
       add(edtInput, LEFT + 2, TOP + 2, FILL - 2, PREFERRED);
       add(cboCiphers, LEFT + 2, AFTER + 2, PREFERRED, PREFERRED);
       add(cboChaining, AFTER + 2, SAME, PREFERRED, PREFERRED);
       add(cboPadding, AFTER + 2, SAME, PREFERRED, PREFERRED);
       add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
-      add(lboResults, LEFT + 2, AFTER + 2, FILL - 2, FILL - 2);
+      addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2,null);
    }
    
    public void onEvent(Event e)
@@ -139,31 +136,30 @@ public class CipherSample extends BaseContainer
                Cipher cipher = (Cipher)ciphers[index];
                try
                {
-                  lboResults.add("Message: '" + message + "'");
+                  log("Message: '" + message + "'");
 
                   byte[] iv = null; // no initialization vector => let the cipher generate a random one
                   cipher.reset(Cipher.OPERATION_ENCRYPT, encKeys[index], chaining, iv, padding);
                   iv = cipher.getIV(); // store the generated iv
                   if (iv != null)
-                     lboResults.add("Generated iv: " + Convert.bytesToHexString(iv));
+                     log("Generated iv: " + Convert.bytesToHexString(iv));
 
                   cipher.update(message.getBytes());
                   byte[] encrypted = cipher.getOutput();
                   
-                  lboResults.add("Encrypted: " + Convert.bytesToHexString(encrypted) + " (" + encrypted.length + " bytes)");
+                  log("Encrypted: " + Convert.bytesToHexString(encrypted) + " (" + encrypted.length + " bytes)");
                   
                   cipher.reset(Cipher.OPERATION_DECRYPT, decKeys[index], chaining, iv, padding);
                   cipher.update(encrypted);
                   byte[] decrypted = cipher.getOutput();
                   
-                  lboResults.add("Decrypted: '" + new String(decrypted) + "'");
+                  log("Decrypted: '" + new String(decrypted) + "'");
                }
                catch (CryptoException ex)
                {
-                  lboResults.add("Exception: " + ex.toString());
+                  log("Exception: " + ex.toString());
                }
-               lboResults.add("=========================");
-               lboResults.selectLast();
+               log("=========================");
             }
             break;
       }

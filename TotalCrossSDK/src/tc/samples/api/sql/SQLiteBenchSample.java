@@ -42,11 +42,6 @@ public class SQLiteBenchSample extends BaseContainer
    private ProgressBar pbInserts;
    
    /**
-    * The list box for showing the results.
-    */
-   private ListBox results;
-   
-   /**
     * The number of records to be inserted.
     */
    private final static int NRECS = 50000; 
@@ -81,7 +76,7 @@ public class SQLiteBenchSample extends BaseContainer
       driver = DriverManager.getConnection("jdbc:sqlite:" + Convert.appendPath(Settings.appPath, "person.db"));
       driver.setAutoCommit(false);
       
-      log("Creating tables...");
+      log("Creating tables...",false);
       (statement = driver.createStatement()).executeUpdate("drop table if exists person");
       statement.execute("create table PERSON (NAME CHAR(8))");
    }
@@ -112,7 +107,7 @@ public class SQLiteBenchSample extends BaseContainer
          sb.setLength(1);
       }
       
-      log("Creation time (PrepStat): " + (time = Vm.getTimeStamp() - time) + "ms");
+      log("Creation time (PrepStat): " + (time = Vm.getTimeStamp() - time) + "ms",false);
       return time;
    }
    
@@ -142,7 +137,7 @@ public class SQLiteBenchSample extends BaseContainer
          }
       }
       pbInserts.setValue(500);
-      log("Creation time (normal): " + (time = Vm.getTimeStamp() - time) + "ms");
+      log("Creation time (normal): " + (time = Vm.getTimeStamp() - time) + "ms",false);
       return time;
    }
 
@@ -155,7 +150,7 @@ public class SQLiteBenchSample extends BaseContainer
    private int selectBeforeLast() throws Exception
    {
       Vm.gc();
-      log("Select name = 'a" + (NRECS - 1) + "'");
+      log("Select name = 'a" + (NRECS - 1) + "'",false);
       
       int time = Vm.getTimeStamp();
       int count = 0;
@@ -170,9 +165,9 @@ public class SQLiteBenchSample extends BaseContainer
       }
       
       if (count == 0)
-         log("*** Not found...");
-      log("-> Found " + count + " elements");
-      log("Finished: " + time + "ms");
+         log("*** Not found...",false);
+      log("-> Found " + count + " elements",false);
+      log("Finished: " + time + "ms",false);
       return time;
    }
 
@@ -185,7 +180,7 @@ public class SQLiteBenchSample extends BaseContainer
    private int selectLikeA9() throws Exception
    {
       Vm.gc();
-      log("Select like 'a9%'");
+      log("Select like 'a9%'",false);
       StringBuffer sb = new StringBuffer();
       int time = Vm.getTimeStamp(),
           i = -1;
@@ -197,9 +192,9 @@ public class SQLiteBenchSample extends BaseContainer
          sb.append(' ').append(resultSet.getString(1));
       while (resultSet.next())
          i++;
-      log("-> Found " + i + " elements");
+      log("-> Found " + i + " elements",false);
       log("First 5:" + sb);
-      log("Finished: " + time + "ms");
+      log("Finished: " + time + "ms",false);
       return time;
    }
    
@@ -215,7 +210,7 @@ public class SQLiteBenchSample extends BaseContainer
       
       statement.execute("CREATE INDEX IDX_NAME ON PERSON(NAME)");
       time = Vm.getTimeStamp() - time;
-      log("= Index creation time: " + time + "ms");
+      log("= Index creation time: " + time + "ms",false);
       return time;
    }
    
@@ -228,7 +223,7 @@ public class SQLiteBenchSample extends BaseContainer
    private int selectStar() throws Exception
    {
       Vm.gc();
-      log("Select star");
+      log("Select star",false);
       int time = Vm.getTimeStamp();
       int count = 0;
       ResultSet resultSet = statement.executeQuery("select * from person");
@@ -243,9 +238,9 @@ public class SQLiteBenchSample extends BaseContainer
          count++;
       
       if (count == 0)
-         log("*** Not found...");
-      log("-> Found " + count + " elements");
-      log("Finished: " + time + "ms");
+         log("*** Not found...",false);
+      log("-> Found " + count + " elements",false);
+      log("Finished: " + time + "ms",false);
       return time;
    }
    
@@ -258,7 +253,7 @@ public class SQLiteBenchSample extends BaseContainer
    private int selectCountStar() throws Exception
    {
       Vm.gc();
-      log("Select count(*)");
+      log("Select count(*)",false);
       int time = Vm.getTimeStamp();
       int count = 0;
       ResultSet resultSet = statement.executeQuery("select count(*) as number from person");
@@ -271,9 +266,9 @@ public class SQLiteBenchSample extends BaseContainer
       }
       
       if (count == 0)
-         log("*** Not found...");
-      log("-> Found " + count + " elements");
-      log("Finished: " + time + "ms");
+         log("*** Not found...",false);
+      log("-> Found " + count + " elements",false);
+      log("Finished: " + time + "ms",false);
       return time;
    }
    
@@ -286,7 +281,7 @@ public class SQLiteBenchSample extends BaseContainer
    private int selectMax() throws Exception
    {
       Vm.gc();
-      log("Select max()");
+      log("Select max()",false);
       int time = Vm.getTimeStamp();
       int count = 0;
       ResultSet resultSet = statement.executeQuery("select max(name) as mname from person where name >= 'a0'");
@@ -299,9 +294,9 @@ public class SQLiteBenchSample extends BaseContainer
       }
       
       if (count == 0)
-         log("*** Not found...");
-      log("-> Found " + count + " elements");
-      log("Finished: " + time + "ms");
+         log("*** Not found...",false);
+      log("-> Found " + count + " elements",false);
+      log("Finished: " + time + "ms",false);
       return time;
    }
    
@@ -314,7 +309,7 @@ public class SQLiteBenchSample extends BaseContainer
    private int selectOrderBy() throws Exception
    {
       Vm.gc();
-      log("Select with order by");
+      log("Select with order by",false);
       int time = Vm.getTimeStamp();
       int count = 0;
       ResultSet resultSet = statement.executeQuery("select * from person order by name");
@@ -329,21 +324,10 @@ public class SQLiteBenchSample extends BaseContainer
          count++;
       
       if (count == 0)
-         log("*** Not found...");
-      log("-> Found " + count + " elements");
-      log("Finished: " + time + "ms");
+         log("*** Not found...",false);
+      log("-> Found " + count + " elements",false);
+      log("Finished: " + time + "ms",false);
       return time;
-   }
-
-   /** 
-    * Logs the results on the debug console and on the list box.
-    *
-    * @param string The string to be logged.
-    */
-   private void log(String string)
-   {
-      Vm.debug(string);
-      results.add(string);
    }
 
    /**
@@ -357,10 +341,9 @@ public class SQLiteBenchSample extends BaseContainer
       ProgressBar pbTotal = new ProgressBar(0, 13);
       add(pbInserts = new ProgressBar(0, 500), CENTER, AFTER + 5);
       add(pbTotal, CENTER, AFTER + 5);
-      add(results = new ListBox());
+      addLog(LEFT, AFTER + 5, FILL, FILL, null);
       pbInserts.suffix = "00 of " + NRECS;
       pbTotal.suffix = " of 13";
-      results.setRect(LEFT, AFTER + 5, FILL, FILL);
 
       // Executes the bench operations.
       repaintNow();
@@ -375,26 +358,16 @@ public class SQLiteBenchSample extends BaseContainer
          
          driver.commit();
          
-         pbTotal.setValue(3);
-         int time3 = selectBeforeLast();        
-         pbTotal.setValue(4);
-         int time4 = selectLikeA9();            
-         pbTotal.setValue(5); 
-         int time5 = selectMax();
-         pbTotal.setValue(6);
-         int time6 = createIndex();             
-         pbTotal.setValue(7); 
-         int time7 = selectBeforeLast();        
-         pbTotal.setValue(8);
-         int time8 = selectLikeA9();
-         pbTotal.setValue(9);
-         int time9 = selectMax();              
-         pbTotal.setValue(10);
-         int time10 = selectStar();              
-         pbTotal.setValue(11);
-         int time11 = selectCountStar();         
-         pbTotal.setValue(12); 
-         int time12 = selectOrderBy();              
+         pbTotal.setValue(3);   int time3 = selectBeforeLast();        
+         pbTotal.setValue(4);   int time4 = selectLikeA9();            
+         pbTotal.setValue(5);   int time5 = selectMax();
+         pbTotal.setValue(6);   int time6 = createIndex();             
+         pbTotal.setValue(7);   int time7 = selectBeforeLast();        
+         pbTotal.setValue(8);   int time8 = selectLikeA9();
+         pbTotal.setValue(9);   int time9 = selectMax();              
+         pbTotal.setValue(10);  int time10 = selectStar();              
+         pbTotal.setValue(11);  int time11 = selectCountStar();         
+         pbTotal.setValue(12);  int time12 = selectOrderBy();              
          pbTotal.setValue(13); 
          
          statement.close();
@@ -414,8 +387,7 @@ public class SQLiteBenchSample extends BaseContainer
          log(exception.getMessage());
       }           
       
-      log("Results are also in the console");    
-      results.selectLast();
-      results.requestFocus();
+      log("Results are also in the console",false);
+      lblog.selectLast();
    }
 }

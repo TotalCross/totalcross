@@ -22,7 +22,6 @@ import tc.samples.api.*;
 
 import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 import totalcross.util.*;
 
@@ -38,15 +37,11 @@ public class PDBFileSample extends BaseContainer
    private ResizeRecord rs;
    private DataStream ds;
 
-   protected ListBox lb;
-
    public void initUI()
    {
       super.initUI();
-      add(lb = new ListBox());
-      lb.enableHorizontalScroll();
-      lb.setRect(LEFT, TOP, FILL, FILL);
-      lb.ihtBackColors = new IntHashtable(10);
+      addLog(LEFT, TOP, FILL, FILL, null);
+      lblog.ihtBackColors = new IntHashtable(10);
 
       try
       {
@@ -404,11 +399,11 @@ public class PDBFileSample extends BaseContainer
                log("null " + i);
    }
    
-   private void log(String s)
+   void log(String s)
    {
-      lb.add(s);
+      BaseContainer.log(s);
       if (s.startsWith(">"))
-         lb.ihtBackColors.put(lb.size()-1, Color.RED);
+         lblog.ihtBackColors.put(lblog.size()-1, Color.RED);
    }
 
    /**

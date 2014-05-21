@@ -30,44 +30,20 @@ import totalcross.util.*;
 
 public class SocketSample extends BaseContainer
 {
-   Button btnOpen, btnHang;
-   ListBox lb;
+   Button btnOpen;
    Edit edA,edP;
-   ComboBox cboNetworks;
    Socket socket;
    Vector networks;
    
    public void initUI()
    {
       super.initUI();
-      boolean wifi = false, cell = false;
-      
-      try
-      {
-         wifi = ConnectionManager.isAvailable(ConnectionManager.WIFI);
-      }
-      catch (IOException e) {}
-      
-      try
-      {
-         cell = ConnectionManager.isAvailable(ConnectionManager.CELLULAR);
-      }
-      catch (IOException e) {}
-      
-      if (!wifi && !cell && !ConnectionManager.isInternetAccessible()) // no connection available
+      if (!ConnectionManager.isInternetAccessible()) // no connection available
       {
          new MessageBox("Warning", "No network connection available.").popup();
          back();
          return;
       }
-      
-      networks = new Vector();
-      if (wifi)
-         networks.addElement("WI-FI");
-      if (cell)
-         networks.addElement("CELLULAR");
-      if (networks.size() > 1) // more than one network
-         networks.insertElementAt("ANY", 0);
       
       add(new Label("Address: "),LEFT, TOP+1);
       add(edA = new Edit(""), AFTER+3, SAME);
@@ -76,25 +52,11 @@ public class SocketSample extends BaseContainer
       add(edP = new Edit("8080"), AFTER+3, SAME);
       edP.setText("80");
       
-      add(cboNetworks = new ComboBox(networks.toObjectArray()), AFTER+3, SAME);
-      cboNetworks.setSelectedIndex(0);
-      
       add(btnOpen = new Button("Open connection"), LEFT, AFTER+3);
-      add(btnHang = new Button("Disconnect"), RIGHT, SAME);
       
-      add(lb = new ListBox());
-      lb.enableHorizontalScroll();
-      lb.setRect(LEFT,AFTER+3,FILL,FILL);
+      addLog(LEFT,AFTER+3,FILL,FILL,null);
    }
 
-   private void status(String s)
-   {
-      if (s != null)
-      {
-         lb.add(s);
-         lb.selectLast();
-      }
-   }
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED)
@@ -106,57 +68,29 @@ public class SocketSample extends BaseContainer
             }
             catch (IOException e1)
             {
-               status("openSocket failed!");
-               status(e1.getMessage());
+               log("openSocket failed!");
+               log(e1.getMessage());
                e1.printStackTrace();
             }
-         else
-         if (e.target == btnHang)
-         {
-            status("Disconnecting...");
-            try
-            {
-               ConnectionManager.close();
-            }
-            catch (IOException e1)
-            {
-               status("disconnect failed!");
-               status(e1.getMessage());
-               e1.printStackTrace();
-            }
-            status("Disconnected.");
-         }
       }
    }
 
    private void openSocket() throws totalcross.net.UnknownHostException,  totalcross.io.IOException
    {
       repaintNow(); // release the button
-      status("opening connection...");
+      log("opening connection...");
       int port = 80;
       if (edP.getLength() > 0)
          try {port = Convert.toInt(edP.getText());} catch (InvalidNumberException ine) {}
 
-      String network = (String)cboNetworks.getSelectedItem();
-      try
-      {
-         if (network.equals("ANY"))
-            ConnectionManager.open();
-         else if (network.equals("WI-FI"))
-            ConnectionManager.open(ConnectionManager.WIFI);
-         else if (network.equals("CELLULAR"))
-            ConnectionManager.open(ConnectionManager.CELLULAR);
-      }
-      catch (Exception e) {status(e.getMessage()+"");}
-         
       socket = new Socket(edA.getText(), port, 25000);
       socket.readTimeout = 30000;
 
-      status("Socket opened");
-      status("Sending HttpGet");
+      log("Socket opened");
+      log("Sending HttpGet");
       byte []bytes = "GET / HTTP/1.0\n\n".getBytes();
       socket.writeBytes(bytes);
-      status("===== RESPONSE =====");
+      log("===== RESPONSE =====");
       
       // some sites can take a longer delay to start sending things,
       // so we loop until we find something to read
@@ -165,15 +99,15 @@ public class SocketSample extends BaseContainer
       try
       {
          while ((line = lr.readLine()) != null)
-            status(line);
+            log(line);
       }
       catch (SocketTimeoutException ex)
       {
-         status("Read: Timeout!");
+         log("Read: Timeout!");
       }
-      status("===================");
-      status("Closing socket");
+      log("===================");
+      log("Closing socket");
       socket.close();
-      status("Socket closed");
+      log("Socket closed");
    }
 }
