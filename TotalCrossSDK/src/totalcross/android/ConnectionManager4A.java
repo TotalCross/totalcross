@@ -158,7 +158,7 @@ public class ConnectionManager4A
       {
          return InetAddress.getByName(hostName).getHostAddress();
       }
-      catch (UnknownHostException e)
+      catch (Exception e)
       {
          return null;
       }
@@ -170,7 +170,7 @@ public class ConnectionManager4A
       {
          return InetAddress.getByName(hostAddress).getHostName();
       }
-      catch (UnknownHostException e)
+      catch (Exception e)
       {
          return null;
       }
@@ -189,10 +189,10 @@ public class ConnectionManager4A
          }
          return InetAddress.getLocalHost().getHostAddress();
       }
-      catch (UnknownHostException e)
+      catch (Exception e)
       {
-         return "127.0.0.1";
       }
+      return "127.0.0.1";
    }
 
    public static boolean isAvailable(int type)
