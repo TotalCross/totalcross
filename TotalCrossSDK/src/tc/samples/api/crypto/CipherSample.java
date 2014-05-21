@@ -112,13 +112,16 @@ public class CipherSample extends BaseContainer
       cboPadding.setSelectedIndex(0);
       
       btnGo = new Button(" Go! ");
-      
       add(edtInput, LEFT + 2, TOP + 2, FILL - 2, PREFERRED);
       add(cboCiphers, LEFT + 2, AFTER + 2, PREFERRED, PREFERRED);
       add(cboChaining, AFTER + 2, SAME, PREFERRED, PREFERRED);
       add(cboPadding, AFTER + 2, SAME, PREFERRED, PREFERRED);
       add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
       addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2,null);
+      log("Valid options:");
+      log("AES / CBC / PKCS#5");
+      log("AES / ECB / PKCS#5");
+      log("RSA / ECB / PKCS#1");
    }
    
    public void onEvent(Event e)
