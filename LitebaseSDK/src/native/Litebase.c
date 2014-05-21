@@ -122,11 +122,6 @@ bool initVars(OpenParams params)
 {
    Context context = params->currentContext; 
 
-#ifdef PALMOS // It is necessary to get the application id for mutex on Palm.   
-   getApplicationIdFunc getApplicationId = params->getProcAddress(null, "getApplicationId");
-	int32 applicationId = getApplicationId();
-#endif
-
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 // Initializes the list of Litebase opened files.
 #if defined(POSIX) || defined(ANDROID)
@@ -180,9 +175,6 @@ bool initVars(OpenParams params)
  * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
  * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
  * cryptography. Notice that path must be absolute, not relative.
- * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
- * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
- * slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
  * creator id.
  * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -200,8 +192,7 @@ TCObject create(Context context, int32 crid, TCObject objParams)
 	TRACE("create")
 	TCObject driver,
           logger = litebaseConnectionClass->objStaticValues[1];
-   int32 hash,
-         slot;
+   int32 hash;
    bool isAscii = false,
         useCrypto = false;
    TCHAR sourcePath[1024];
@@ -289,7 +280,7 @@ error:
    }
  
    // Gets the slot and checks the path validity.
-   if (!(slot = checkApppath(context, sourcePath, path))) // juliana@214_1
+   if (!checkApppath(context, sourcePath, path)) // juliana@214_1
 		return null;
 
 	// juliana@221_3: solved a small bug that could make Litebase crash on Windows 32, Windows CE, Palm, iPhone, and Android when passing 2 arguments to
@@ -306,7 +297,6 @@ error:
 			return null;
 
       OBJ_LitebaseAppCrid(driver) = crid; // juliana@210a_10
-      OBJ_LitebaseSlot(driver) = slot; // juliana@223_1
 	   OBJ_LitebaseIsAscii(driver) = isAscii;
 	   OBJ_LitebaseUseCrypto(driver) = useCrypto;
 	   OBJ_LitebaseKey(driver) = hash;
@@ -859,8 +849,7 @@ void litebaseExecuteDropTable(Context context, TCObject driver, LitebaseParser* 
    else // The table is closed.
    {
       int32 deleted = 0,
-            count = 0,
-            slot = OBJ_LitebaseSlot(driver);
+            count = 0;
       char fileName[DBNAME_SIZE],
 		     fileSimpIdxName[DBNAME_SIZE],
 		     fileCompIdxName[DBNAME_SIZE];
@@ -877,7 +866,7 @@ void litebaseExecuteDropTable(Context context, TCObject driver, LitebaseParser* 
 		xstrcat(fileSimpIdxName, "$");
 		xstrcat(fileCompIdxName, "&");
 
-      if ((i = TC_listFiles(sourcePath, slot, &list, &count, heap, 0))) // Lists all the path files.
+      if ((i = TC_listFiles(sourcePath, -1, &list, &count, heap, 0))) // Lists all the path files.
       {
          fileError(context, i, "");
          goto finish;
@@ -890,7 +879,7 @@ void litebaseExecuteDropTable(Context context, TCObject driver, LitebaseParser* 
          if (xstrstr(value, fileName) == value || xstrstr(value, fileSimpIdxName) == value || xstrstr(value, fileCompIdxName) == value)
          {
             getFullFileName(value, sourcePath, buffer);
-            if ((i = lbfileDelete(null, buffer, slot, false)))
+            if ((i = lbfileDelete(null, buffer, false)))
             {
                fileError(context, i, value);
                goto finish;
@@ -1300,7 +1289,7 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
             xstrcat(tempName, "_");
             xmemzero(&newDB, sizeof(PlainDB));
             xmemmove(&oldDB, plainDB, sizeof(PlainDB));
-            if (!(createPlainDB(context, &newDB, tempName, true, useCrypto, table->sourcePath, table->slot)))
+            if (!(createPlainDB(context, &newDB, tempName, true, useCrypto, table->sourcePath)))
                goto finish;
             newDB.isAscii = oldDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
             newDB.headerSize = oldDB.headerSize;
@@ -1342,7 +1331,7 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
                if (!readRecord(context, table, record, i, columnNulls, null, 0, false, null, null)) // juliana@220_3 juliana@227_20
                {
 free:               
-                  plainRemove(context, &newDB, table->sourcePath, table->slot);
+                  plainRemove(context, &newDB, table->sourcePath);
                   goto finish;
                }   
                j = -1;
@@ -1389,7 +1378,7 @@ free:
             // Puts the new plain db in the table and deletes the old one.            
             newDB.rowInc = DEFAULT_ROW_INC;
             
-            if (!plainRemove(context, &oldDB, table->sourcePath, table->slot) || !plainRename(context, &newDB, table->name, table->sourcePath, table->slot))
+            if (!plainRemove(context, &oldDB, table->sourcePath) || !plainRename(context, &newDB, table->name, table->sourcePath))
                goto finish;
             xstrcpy(newDB.name, table->name);
             xmemmove(&table->db, &newDB, sizeof(PlainDB));
@@ -1584,16 +1573,15 @@ bool testRIClosed(NMParams params)
  * @param context The thread context where the function is being executed.
  * @param sourcePath Receives the path that Litebase will use to store and access tables.
  * @param pathParam the path passed as a parameter.
- * @return The slot number for palm, -1 for the other devices or 0 in case of error.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException if the path passed as a parameter is invalid. 
  */
-int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juliana@214_1
+bool checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juliana@214_1
 {
 	TRACE("checkApppath")
    TCHAR buffer[MAX_PATHNAME];
    int32 endCh,
          lenAppPath,
-         slot = -1,
          ret = 0;
 
    if (pathParam)
@@ -1604,7 +1592,7 @@ int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juli
          char pathCharP[1024];
          TC_TCHARP2CharPBuf(pathParam, pathCharP);
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
-		   return 0;
+		   return false;
 		}   
       //tcscpy(sourcePath, tstrTrim(pathParam)); - guich: was crashing on LaudoMovel
       {TCHARP src = tstrTrim(pathParam); xmemmove(sourcePath, src, sizeof(TCHAR) * (tcslen(src)+1));}
@@ -1612,7 +1600,7 @@ int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juli
 		if (!sourcePath[0])
 		{
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), "");
-			return 0;
+			return false;
 		}
 	}
    else // Since no path was passed by the user, gets it from dataPath or appPath. 
@@ -1628,11 +1616,11 @@ int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juli
       char pathCharP[1024];
       TC_TCHARP2CharPBuf(sourcePath, pathCharP);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
-		return 0;
+		return false;
 	}
 
    // Creates the path folder if it does not exist.
-   if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
+   if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath) && (ret = lbfileCreateDir(sourcePath))))
    {
       char pathCharP[1024];
 
@@ -1641,7 +1629,7 @@ int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juli
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), pathCharP);
       else
          fileError(context, ret, pathCharP);
-		return 0;
+		return false;
 	}
 
    // Puts a '/' at the end of the path.
@@ -1650,7 +1638,7 @@ int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam) // juli
    if ((endCh != '\\' && endCh != '/') || endCh == -1)
       tcscat(sourcePath, TEXT("/"));
 
-	return slot;
+	return true;
 }
 
 /**
@@ -1721,7 +1709,6 @@ bool checkParamAndDriver(NMParams params, CharP parameter)
  *
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  * @throws DriverException If a file error occurs, not all the tables use the desired cryptography format.
  * @throws NullPointerException If one of the string parameters is null.
  */
@@ -1746,7 +1733,6 @@ void encDecTables(NMParams params, bool toEncrypt)
                   k,
                   error,
                   count = 0,
-                  slot = params->i32[0],
                   encByte = toEncrypt? 0 : 1;
             bool deleted = false;
             Heap heap = heapCreate();
@@ -1766,7 +1752,7 @@ error:
             TC_JCharP2CharPBuf(String_charsStart(cridObj), String_charsLen(cridObj), cridStr);
             TC_JCharP2TCHARPBuf(String_charsStart(pathObj), String_charsLen(pathObj), pathStr);
 
-            if ((error = TC_listFiles(pathStr, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+            if ((error = TC_listFiles(pathStr, -1, &list, &count, heap, 0))) // Lists all the files of the folder. 
             {
                fileError(params->currentContext, error, "");
                goto error;
@@ -1780,7 +1766,7 @@ error:
                if (xstrstr(value, cridStr) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
                {
                   getFullFileName(value, pathStr, buffer);
-                  if ((error = lbfileCreate(&file, buffer, READ_ONLY, &slot)))
+                  if ((error = lbfileCreate(&file, buffer, READ_ONLY)))
                   {
 fileError:
                      fileError(params->currentContext, error, value);
@@ -1807,7 +1793,7 @@ fileError:
                if (xstrstr(value, cridStr) == value)         
                {
                   getFullFileName(value, pathStr, buffer);
-                  if ((error = lbfileCreate(&file, buffer, READ_WRITE, &slot)))
+                  if ((error = lbfileCreate(&file, buffer, READ_WRITE)))
                      goto fileError;
                   
                   count = 0;
@@ -1960,9 +1946,7 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
-#ifdef PALMOS
-   ASSERT1_EQUALS(NotNull, TC_getLastVolume);
-#endif
+
 #ifdef ENABLE_MEMORY_TEST
    ASSERT1_EQUALS(NotNull, TC_getCountToReturnNull);
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);
@@ -2578,19 +2562,11 @@ TESTCASE(checkApppath)
 
 	// null.
 	ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, null)); 
-#ifdef PALMOS
-   ASSERT2_EQUALS(Sz, sourcePath, "/Litebase_DBs/");
-#else
    ASSERT2_EQUALS(Sz, sourcePath, defaultAppPath);
-#endif
 
 	// Empty string.
 	path[0] = 0;
-#ifdef PALMOS
-   ASSERT2_EQUALS(Sz, sourcePath, "/Litebase_DBs/");
-#else
    ASSERT1_EQUALS(False, checkApppath(currentContext, sourcePath, path)); 
-#endif
 
 	// Just spaces.
 	xstrcpy(path, " ");  
@@ -2632,29 +2608,12 @@ TESTCASE(checkApppath)
    ASSERT2_EQUALS(Sz, sourcePath, "/temp/tables/"); 
 #endif
 #ifdef WIN32
-   #ifndef WINCE
 	xstrcpy(path, "p:\\temp\\tables/"); 
 	ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
    ASSERT2_EQUALS(Sz, sourcePath, "p:/temp/tables/");
    xstrcpy(path, "p:/temp/tables/"); 
 	ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
    ASSERT2_EQUALS(Sz, sourcePath, "p:/temp/tables/");
-   #else
-   xstrcpy(path, "p:\\temp\\tables/"); 
-	ASSERT1_EQUALS(False, checkApppath(currentContext, sourcePath, path));
-   ASSERT2_EQUALS(Sz, sourcePath, "p:/temp/tables/");
-   xstrcpy(path, "p:/temp/tables/"); 
-	ASSERT1_EQUALS(False, checkApppath(currentContext, sourcePath, path));
-   ASSERT2_EQUALS(Sz, sourcePath, "p:/temp/tables/");
-#endif
-#endif
-#ifdef PALMOS
-	xstrcpy(path, "1:\\temp\\tables");
-	ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
-	ASSERT2_EQUALS(Sz, sourcePath, "/temp/tables/");
-	xstrcpy(path, "-1:/temp/tables");
-	ASSERT1_EQUALS(True, checkApppath(currentContext, sourcePath, path));
-	ASSERT2_EQUALS(Sz, sourcePath, "/temp/tables/");
 #endif
 
 finish: ;
@@ -2766,9 +2725,7 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
-#ifdef PALMOS
-   ASSERT1_EQUALS(NotNull, TC_getLastVolume);
-#endif
+
 #ifdef ENABLE_MEMORY_TEST
    ASSERT1_EQUALS(NotNull, TC_getCountToReturnNull);
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);

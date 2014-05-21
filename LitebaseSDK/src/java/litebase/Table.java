@@ -682,7 +682,7 @@ class Table
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
             if ((exist = new File(fullName = Utils.getFullFileName(nameAux + i + ".idk", sourcePath)).exists()) && flags == 0)
             {
-               idxFile = new File(fullName, File.READ_WRITE, -1);
+               idxFile = new File(fullName, File.READ_WRITE);
                idxFile.setSize(0);
                exist = false;
                idxFile.close();
@@ -777,7 +777,7 @@ class Table
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
             if ((exist = new File(fullName = Utils.getFullFileName(nameAux + indexId + ".idk", sourcePath)).exists()) && flags == 0)
             {
-               idxFile = new File(fullName, File.READ_WRITE, -1);
+               idxFile = new File(fullName, File.READ_WRITE);
                idxFile.setSize(0);
                exist = false;
                idxFile.close();

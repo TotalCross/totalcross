@@ -23,14 +23,13 @@
  * @param isCreation Indicates if the file must be created or just open.
  * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the file will be created.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @param xFile A pointer to the normal file structure.
  * @param cacheSize The cache size to be used. -1 should be passed if the default value is to be used.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath, int32 slot, XFile* xFile, int32 cacheSize)
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath, XFile* xFile, int32 cacheSize)
 {
 	TRACE("nfCreateFile")
    TCHAR buffer[MAX_PATHNAME];
@@ -68,7 +67,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
    xstrcpy(xFile->fullPath, buffer);
    if ((ret = openFile(context, xFile, isCreation? CREATE_EMPTY : READ_WRITE))
 #else
-   if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
+   if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE))
 #endif
     || (ret = lbfileGetSize(xFile->file, null, (int32*)&xFile->size)))
    {
@@ -243,11 +242,10 @@ void nfSetPos(XFile* xFile, int32 newPos)
  * @param xFile A pointer to the normal file structure.
  * @param newName The new name of the file.
  * @param sourcePath The path where the file is stored.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to rename the file.
  */
-bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath, int32 slot)
+bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath)
 {  
    TRACE("nfRename")
    TCHAR oldPath[MAX_PATHNAME];
@@ -265,8 +263,8 @@ bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath, i
 #endif
 
    // Renames and reopens the file.
-   if ((ret = lbfileRename(xFile->file, slot, oldPath, newPath, true))
-    || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
+   if ((ret = lbfileRename(xFile->file, oldPath, newPath, true))
+    || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE)))
    {
 
 #if defined(POSIX) || defined(ANDROID)
@@ -337,11 +335,10 @@ bool nfClose(Context context, XFile* xFile)
  * @param context The thread context where the function is being executed.
  * @param xFile A pointer to the normal file structure.
  * @param sourcePath The path where the file is stored.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to remove the file.
  */
-bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath, int32 slot)
+bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath)
 {
 	TRACE("nfRemove")
    TCHAR buffer[MAX_PATHNAME]; 
@@ -355,7 +352,7 @@ bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath, int32 slot)
 #endif
 
    getFullFileName(xFile->name, sourcePath, buffer);
-   if ((ret |= lbfileDelete(&xFile->file, buffer, slot, true)))
+   if ((ret |= lbfileDelete(&xFile->file, buffer, true)))
       fileError(context, ret, xFile->name);
    fileInvalidate(xFile->file);
    xfree(xFile->cache);
@@ -448,7 +445,7 @@ bool flushCache(Context context, XFile* xFile)
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
-#if defined(WINCE) || defined(POSIX) || defined(ANDROID)
+#if defined(POSIX) || defined(ANDROID)
    if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
       goto error;
 #endif

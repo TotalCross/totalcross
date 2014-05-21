@@ -197,7 +197,7 @@ target: desktop
 
 <target name="desktop" depends="compile" description="build the litebase.jar">
 
-  <property name="exclusions" value="*,**/*4D.*,**/*4B.*,samples/**,litebase/android/**" />
+  <property name="exclusions" value="*,**/*4D.*,samples/**,litebase/android/**" />
   <echo message="create the desktop jar file" />
   <mkdir dir="${dist}" />
   <delete file="${dist}/litebase.jar"/>
@@ -340,7 +340,7 @@ target: javadoc
   <mkdir dir="${output}/javadoc" />
   <copy todir="${output}/javadoc">
     <fileset dir="${src}"
-    excludes="**/*4B*,**/*4D*,tc/**,litebase/android/**"/>
+    excludes="**/*4D*,tc/**,litebase/android/**"/>
   </copy>
 
   <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>

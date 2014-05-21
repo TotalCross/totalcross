@@ -58,11 +58,11 @@ public class TestSourcePath extends TestCase
 
 	      // Checks if the files exist.
 	      File f;
-         if (!(f = new File(tempPath + "Test-twonames.db", File.DONT_OPEN, 1)).exists()) 
+         if (!(f = new File(tempPath + "Test-twonames.db", File.DONT_OPEN)).exists()) 
             fail("File doesn't exist. " + f.getPath());
-         if (!(f = new File(tempPath + "Test-twonames.dbo", File.DONT_OPEN, 1)).exists()) 
+         if (!(f = new File(tempPath + "Test-twonames.dbo", File.DONT_OPEN)).exists()) 
             fail("File doesn't exist. " + f.getPath());
-         if (!(f = new File(tempPath + "Test-twonames$1.idk", File.DONT_OPEN, 1)).exists())
+         if (!(f = new File(tempPath + "Test-twonames$1.idk", File.DONT_OPEN)).exists())
             fail("File doesn't exist. " + f.getPath());
    	}
    	catch (IOException exception)
@@ -79,7 +79,7 @@ public class TestSourcePath extends TestCase
       String prevDataPath = Settings.dataPath; // Stores the previous data path.
       doTest(Convert.appendPath(Settings.appPath, "temp/"));
       
-      // Tests Windows CE memory card and folders with stress.
+      // Tests memory card and folders with stress.
       try
       {
          String path = Convert.appendPath(Settings.appPath, "temporário/");
@@ -165,13 +165,7 @@ public class TestSourcePath extends TestCase
       
       try
       {
-         if (Settings.platform.equals(Settings.PALMOS))
-         {
-            Settings.dataPath = "0:\\Litebase_DBs";
-            LitebaseConnection.getInstance("Test");
-            fail("8");
-         }
-         else if (Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.BLACKBERRY))
+         if (Settings.platform.equals(Settings.ANDROID))
          {
             Settings.dataPath = "/Litebase_DBs/";
             LitebaseConnection.getInstance("Test");

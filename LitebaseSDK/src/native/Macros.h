@@ -53,11 +53,7 @@
 // juliana@210_6: removed problem with long processing.
 // Supports ARM's double mixed endianness. This is handled by the READ_DOUBLE macro. The GCCE compiler of the new Symbian S60v3 generates non mixed 
 // endianness doubles.
-#if defined (PALMOS)
-   #define READ_DOUBLE(destination, source) xmemmove(destination, source + 4, 4); xmemmove(destination + 4, source, 4) // Mixed word endianness.
-#else 
    #define READ_DOUBLE(destination, source) xmemmove(destination, source, 8) 
-#endif
 
 // Classes fields.
 // DriverException
@@ -69,7 +65,6 @@
 #define OBJ_LitebaseDontFinalize(o) FIELD_I32(o, 2)					// LitebaseConnection.dontFinalize
 #define OBJ_LitebaseKey(o)          FIELD_I32(o, 3)					// LitebaseConnection.key 
 #define OBJ_LitebaseAppCrid(o)      FIELD_I32(o, 4)					// LitebaseConnection.appCrid
-#define OBJ_LitebaseSlot(o)         FIELD_I32(o, 5)					// LitebaseConnection.slot
 
 // LitebaseConnection.htTables
 #define getLitebaseHtTables(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))

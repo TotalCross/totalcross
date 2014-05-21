@@ -166,13 +166,6 @@ public class LitebaseConnection
    {
       if (Settings.deviceId == null) // juliana@lb201_30: fills Settings if its a headless application. 
          new totalcross.Launcher().fillSettings();
-      
-      if (Settings.platform.equals("BlackBerry"))
-      {
-         //$START:FULL-VERSION$
-         totalcross.Launcher.checkLitebaseAllowed();
-         //$END:FULL-VERSION$
-      }
    }
    
    // juliana@230_11: Litebase public class constructors are now not public any more. 
@@ -218,9 +211,6 @@ public class LitebaseConnection
     * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
     * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
     * cryptography. Notice that path must be absolute, not relative.
-    * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
-    * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
-    * slot.
     * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
     * creator id.
     * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -1005,13 +995,8 @@ public class LitebaseConnection
    {
       String tableName = parser.tableList[0].tableName;
       Table table = (Table)htTables.remove(tableName); // Tries to get the table.
-
+      
       // flsobral@224_4: workaround for bug with listFiles on BlackBerry 9000.
-      if (table == null && Settings.platform.equals(Settings.BLACKBERRY) && Settings.deviceId.equals("9000"))
-      {
-         table = getTable(tableName);
-         htTables.remove(tableName);
-      }
       
       // juliana@253_5: removed .idr files from all indices and changed its format.
       if (table != null) // The table is open.
@@ -1783,7 +1768,7 @@ public class LitebaseConnection
          {                                                                                                                                             
             LitebaseConnection.tempTime.update();                                                                                                      
             logger.addOutputHandler(new File(Convert.appendPath(Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath                            
-         : Settings.appPath, "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, 1));
+         : Settings.appPath, "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY));
          }                                                                                                                                             
       }                                                                                                                                                
       catch (IOException exception)                                                                                                                   
@@ -1951,7 +1936,7 @@ public class LitebaseConnection
          
          // Opens the table file.
          File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
-                                                                                                                        File.READ_WRITE, -1);
+                                                                                                                        File.READ_WRITE);
          
          byte[] buffer = oneByte; 
          boolean useCryptoAux = useCrypto;
@@ -2182,7 +2167,7 @@ public class LitebaseConnection
          
          // Opens the table file.
          File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
-                                                                                                                        File.READ_WRITE, -1);
+                                                                                                                        File.READ_WRITE);
          
          // The version must be the previous of the current one.
          tableDb.setPos(7);
@@ -2554,7 +2539,7 @@ public class LitebaseConnection
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder were stored. Not used anymore.
+    * @param slot Not used anymore.
     * @throws DriverException If the database is not found or an <code>IOException</code> occurs.
     */
    public static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException
@@ -2562,7 +2547,7 @@ public class LitebaseConnection
       try
       {
          // Lists all the files of the folder.
-         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
+         String[] files = (new File(sourcePath, File.DONT_OPEN)).listFiles();
          int i = files.length;
          
          crid += '-';
@@ -2573,7 +2558,7 @@ public class LitebaseConnection
          {
             if (files[i].startsWith(crid))
             {
-               new File(sourcePath + files[i], File.DONT_OPEN, -1).delete();
+               new File(sourcePath + files[i], File.DONT_OPEN).delete();
                deleted = true;
             }
          }
@@ -2609,7 +2594,7 @@ public class LitebaseConnection
             // Opens the table file.
             sBuffer.setLength(0);
             File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
-                                                                                                                           File.READ_WRITE, -1);
+                                                                                                                           File.READ_WRITE);
             byte[] buffer = oneByte; 
             
             // Reads the flag.
@@ -2652,7 +2637,7 @@ public class LitebaseConnection
       
       try
       {
-         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
+         String[] files = (new File(sourcePath, File.DONT_OPEN)).listFiles();
          String fileName,
                 crid = appCrid + '-';
          int i = files.length,
@@ -2690,11 +2675,11 @@ public class LitebaseConnection
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param slot Not used anyore.
     */
    public static void encryptTables(String crid, String sourcePath, int slot) 
    {
-      encDecTables(crid, sourcePath, slot, true);
+      encDecTables(crid, sourcePath, true);
    }
    
    // juliana@253_16: created static methods LitebaseConnection.encryptTables() and decryptTables().
@@ -2703,11 +2688,11 @@ public class LitebaseConnection
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param slot Not used anymore.
     */
    public static void decryptTables(String crid, String sourcePath, int slot)
    {
-      encDecTables(crid, sourcePath, slot, false);
+      encDecTables(crid, sourcePath, false);
    }
    
    /**
@@ -2715,16 +2700,15 @@ public class LitebaseConnection
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
     * @param toEncrypt Indicates if the tables are to be encrypted or decrypted.
     * @throws DriverException If an <code>IOException</code> is thrown or not all the tables use the desired cryptography format.
     */
-   private static void encDecTables(String crid, String sourcePath, int slot, boolean toEncrypt) throws DriverException
+   private static void encDecTables(String crid, String sourcePath, boolean toEncrypt) throws DriverException
    {
       try
       {
          // Lists all the files of the folder.
-         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
+         String[] files = (new File(sourcePath, File.DONT_OPEN)).listFiles();
          int i = files.length,
              j,
              k;
@@ -2738,7 +2722,7 @@ public class LitebaseConnection
          {
             if (files[i].startsWith(crid) && files[i].endsWith(".db"))
             {
-               (file = new File(sourcePath + files[i], File.READ_ONLY, -1)).readBytes(bytes, 0, 4);
+               (file = new File(sourcePath + files[i], File.READ_ONLY)).readBytes(bytes, 0, 4);
                file.close();
                if ((toEncrypt? bytes[0] != 0 : (bytes[0] != 1 && bytes[0] != 3)) || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
                   throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
@@ -2751,7 +2735,7 @@ public class LitebaseConnection
          {
             if (files[i].startsWith(crid))
             {          
-               file = new File(sourcePath + files[i], File.READ_WRITE, -1);
+               file = new File(sourcePath + files[i], File.READ_WRITE);
                
                if (files[i].endsWith(".db")) // Changes the .db file crypto information.
                {

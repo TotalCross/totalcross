@@ -489,8 +489,6 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
  * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
  * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
  * cryptography. Notice that path must be absolute, not relative. 
- * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
- * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
  * creator id.
  * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -1245,8 +1243,7 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         int32 length = String_charsLen(tableNameObj),
-               slot = OBJ_LitebaseSlot(driver);
+         int32 length = String_charsLen(tableNameObj);
          TCHARP sourcePath = getLitebaseSourcePath(driver);
 
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
@@ -1262,13 +1259,13 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
             getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
             xstrcat(bufName, DB_EXT);
             getFullFileName(bufName, sourcePath, fullName);
-            p->retI = lbfileExists(fullName, slot);
+            p->retI = lbfileExists(fullName);
          
             // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
             length = tcslen(fullName);
             fullName[length] = 'o';
             fullName[length + 1] = 0;
-            if (p->retI && !lbfileExists(fullName, slot))
+            if (p->retI && !lbfileExists(fullName))
             {
                char path[MAX_PATHNAME];
                TC_TCHARP2CharPBuf(fullName, path);
@@ -1422,8 +1419,7 @@ LB_API void lLC_purge_s(NMParams p)
                   length = table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount),
                   remain = 0,
                   type,
-                  numberOfBytes = NUMBEROFBYTES(columnCount),
-                  slot = table->slot;
+                  numberOfBytes = NUMBEROFBYTES(columnCount);
             bool useCrypto = dbFile->useCrypto;
             TCHARP sourcePath = getLitebaseSourcePath(driver);
             SQLValue* record[MAXIMUMS + 1];
@@ -1462,7 +1458,7 @@ free:
             // Creates the temporary .dbo file.
             xstrcpy(buffer, plainDB->dbo.name);
             xstrcat(buffer, "_");
-            if (!nfCreateFile(context, buffer, true, useCrypto, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
+            if (!nfCreateFile(context, buffer, true, useCrypto, sourcePath, &newdbo, -1)) // Creates the new .dbo file.
                goto free;
 
 		      plainDB->rowInc = willRemain;
@@ -1485,7 +1481,7 @@ free:
 					      if (!writeValue(context, plainDB, record[j], &basbuf[columnOffsets[j]], columnTypes[j], columnSizes[j], true, true, false, 
                                                                                                                                          false))
                      {
-                        nfRemove(context, &newdbo, sourcePath, slot);
+                        nfRemove(context, &newdbo, sourcePath);
                         xmemmove(&plainDB->dbo, &olddbo, sizeof(XFile));
                         goto free;
                      }
@@ -1523,7 +1519,7 @@ free:
                }
             }
             
-            if (!nfRemove(context, &olddbo, sourcePath, slot) || !nfRename(context, &newdbo, olddbo.name, sourcePath, slot))
+            if (!nfRemove(context, &olddbo, sourcePath) || !nfRename(context, &newdbo, olddbo.name, sourcePath))
                goto free;
 		      xmemmove(&plainDB->dbo, &newdbo, sizeof(XFile));
             plainDB->rowInc = DEFAULT_ROW_INC;
@@ -1799,7 +1795,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
          
       FIELD_OBJ(p->obj[0] = file, OBJ_CLASS(file), 0) = p->obj[1] = nameStr; // path
       FIELD_I32(file, 1) = p->i32[0] = CREATE_EMPTY; // mode 
-      FIELD_I32(file, 2) = p->i32[1] = 1; // slot                                                                                                                                
+      FIELD_I32(file, 2) = p->i32[1] = -1; // slot                                                                                                                                
 		TC_tiF_create_sii(p);
       if (context->thrownException)                                                                                                                  
          goto finish;                                                                                                                                
@@ -1898,7 +1894,7 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
       if (xstrstr(value, "LITEBASE") == value && xstrstr(value, ".LOGS") && !xstrstr(name, value)) // Deletes only the closed log files.                                      
       {  
          getFullFileName(value, path, fullPath);                                                                                                
-         if ((ret = lbfileDelete(null, fullPath, 1, false)))                                                                                                  
+         if ((ret = lbfileDelete(null, fullPath, false)))                                                                                                  
          {                                                                                                                                                 
             fileError(context, ret, "");                                                                                                                     
             goto finish;                                                                                                                                   
@@ -2094,7 +2090,6 @@ LB_API void lLC_recoverTable_s(NMParams p)
          NATIVE_FILE tableDb;
          SQLValue** record;
          int32 crid = OBJ_LitebaseAppCrid(driver),
-               slot = OBJ_LitebaseSlot(driver),
                i,
                read,
                rows,
@@ -2158,7 +2153,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          xstrcat(name, ".db");
          getFullFileName(name, sourcePath, buffer);
          
-         if ((j = lbfileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+         if ((j = lbfileCreate(&tableDb, buffer, READ_WRITE))) // Opens the .db table file.
 	      {
 		      fileError(context, j, name);
 		      goto finish;
@@ -2201,7 +2196,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
           // juliana@253_6: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	      if (!(table = tableCreate(context, name, sourcePath, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
 	                                                                                                                      false, heap)))
             goto finish;
 
@@ -2386,7 +2381,6 @@ LB_API void lLC_convert_s(NMParams p)
          NATIVE_FILE tableDb;
          SQLValue** record;
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
-               slot = OBJ_LitebaseSlot(driver),
                i,
                rowid,
                crc32,
@@ -2451,7 +2445,7 @@ LB_API void lLC_convert_s(NMParams p)
          xstrcat(name, ".db");
 
          getFullFileName(name, sourcePath, buffer);
-	      if ((i = lbfileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+	      if ((i = lbfileCreate(&tableDb, buffer, READ_WRITE))) // Opens the .db table file.
 	      {
 		      fileError(context, i, name);
             goto finish;
@@ -2498,7 +2492,7 @@ LB_API void lLC_convert_s(NMParams p)
 
           // juliana@253_6: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	      if (!(table = tableCreate(context, name, sourcePath, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
 	                                                                                                                      false, heap)))
             goto finish;
 
@@ -2566,15 +2560,14 @@ finish:
 // juliana@223_1: added a method to get the current slot being used.
 //////////////////////////////////////////////////////////////////////////
 /**
- * Returns the slot where the tables are stored. Always return -1 except on palm. 
+ * Used to returned the slot where the tables were stored on Palm OS. Not used anymore.
  * 
- * @param p->obj[0] The connection with Litebase.
- * @param p->retI receives -1 except on palm, where returns the current slot being used.
+ * @param p->retI receives -1.
  */
 LB_API void lLC_getSlot(NMParams p) // litebase/LitebaseConnection public native int getSlot(); 
 {
    TRACE("lLC_getSlot")
-   p->retI = OBJ_LitebaseSlot(p->obj[0]);
+   p->retI = -1;
 }
 
 // juliana@226_6: added LitebaseConnection.isOpen(), which indicates if a table is open in the current connection.
@@ -2627,7 +2620,6 @@ LB_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public nativ
  * 
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  * @throws DriverException If the database is not found or a file error occurs.
  * @throws NullPointerException If one of the string parameters is null.
  * @throws OutOfMemoryError If a memory allocation fails.
@@ -2651,8 +2643,7 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
                   buffer[MAX_PATHNAME];
             char value[DBNAME_SIZE];
             int32 i,
-                  count = 0,
-                  slot = p->i32[0];
+                  count = 0;
             bool deleted = false;
             Heap heap = heapCreate();
 
@@ -2668,7 +2659,7 @@ error:
             TC_JCharP2CharPBuf(String_charsStart(cridObj), 4, cridStr);
             TC_JCharP2TCHARPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath);
 
-            if ((i = TC_listFiles(fullPath, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+            if ((i = TC_listFiles(fullPath, -1, &list, &count, heap, 0))) // Lists all the files of the folder. 
             {
                fileError(p->currentContext, i, "");
                goto error;
@@ -2680,7 +2671,7 @@ error:
                if (xstrstr(value, cridStr) == value)
                {
                   getFullFileName(value, fullPath, buffer);
-                  if ((i = lbfileDelete(null, buffer, slot, false)))
+                  if ((i = lbfileDelete(null, buffer, false)))
                   {
                      fileError(p->currentContext, i, value);
                      goto error;
@@ -2744,7 +2735,6 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
          TCHAR buffer[MAX_PATHNAME];         
          NATIVE_FILE tableDb;
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
-               slot = OBJ_LitebaseSlot(driver),
                i = 0,
                j = 0,
                read;    
@@ -2767,7 +2757,7 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
          xstrcat(name, ".db");
          getFullFileName(name, sourcePath, buffer);
          
-         if ((j = lbfileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+         if ((j = lbfileCreate(&tableDb, buffer, READ_WRITE))) // Opens the .db table file.
 	      {
 		      fileError(context, j, name);
 		      goto finish;
@@ -2829,8 +2819,7 @@ LB_API void lLC_listAllTables(NMParams p)
       TCHARP path = getLitebaseSourcePath(driver);
       int32 i,
             j,
-            count = 0,
-            slot = OBJ_LitebaseSlot(driver);
+            count = 0;
       Heap heap = heapCreate();
 
       IF_HEAP_ERROR(heap)
@@ -2844,7 +2833,7 @@ error:
      
       TC_int2CRID(OBJ_LitebaseAppCrid(driver), crid);
       
-      if ((i = TC_listFiles(path, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+      if ((i = TC_listFiles(path, -1, &list, &count, heap, 0))) // Lists all the files of the folder. 
       {
          fileError(context, i, "");
          goto error;
@@ -2901,7 +2890,6 @@ finish:
  * 
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  */
 LB_API void lLC_encryptTables_ssi(NMParams p) 
 {
@@ -2918,7 +2906,6 @@ LB_API void lLC_encryptTables_ssi(NMParams p)
  * 
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  */
 LB_API void lLC_decryptTables_ssi(NMParams p) 
 {

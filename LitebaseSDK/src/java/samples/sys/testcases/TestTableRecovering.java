@@ -97,7 +97,7 @@ public class TestTableRecovering extends TestCase
                fail("2");
             }
             catch (DriverException exception) {}
-            dbFile = new File(tablePath, File.READ_WRITE, 1); // The table is closed after recovering it.
+            dbFile = new File(tablePath, File.READ_WRITE); // The table is closed after recovering it.
             
             // Pretends that the table was not closed correctly.   
             dbFile.setPos(6);
@@ -166,8 +166,8 @@ public class TestTableRecovering extends TestCase
             
             driver.executeUpdate("drop table person");
             
-            new File(tablePath, File.CREATE_EMPTY, 1).close();
-            new File(tablePath + 'o', File.CREATE_EMPTY, 1).close();
+            new File(tablePath, File.CREATE_EMPTY).close();
+            new File(tablePath + 'o', File.CREATE_EMPTY).close();
             try // Empty file: table corrupted.
             {
                driver.recoverTable("person");
@@ -189,7 +189,7 @@ public class TestTableRecovering extends TestCase
                                                                                         || message.indexOf("read") != -1);
             }
             
-            File file = new File(tablePath, File.CREATE_EMPTY, 1);
+            File file = new File(tablePath, File.CREATE_EMPTY);
             file.setSize(1024);
             file.writeBytes(blankBuffer);
             file.close();
@@ -205,7 +205,7 @@ public class TestTableRecovering extends TestCase
             }            
             
             // Erases the file.
-            file = new File(tablePath, File.DONT_OPEN, 1);
+            file = new File(tablePath, File.DONT_OPEN);
             file.delete();
             
             driver.closeAll();

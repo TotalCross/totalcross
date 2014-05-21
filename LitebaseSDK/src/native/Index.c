@@ -55,8 +55,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
 {
 	TRACE("createIndex")
    Index* index = (Index*)TC_heapAlloc(heap, sizeof(Index));
-   int32 keyRecSize = VALREC_SIZE,
-         slot = table->slot;
+   int32 keyRecSize = VALREC_SIZE;
    char buffer[DBNAME_SIZE];
    TCHARP sourcePath = table->sourcePath;
    XFile* fnodes = &index->fnodes;
@@ -78,9 +77,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    index->heap = heap;
    
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
-#ifndef PALMOS
    index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
-#endif
    
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.
@@ -92,7 +89,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    xstrcat(buffer, IDK_EXT);
    
    // juliana@253_8: now Litebase supports weak cryptography.
-   if (!nfCreateFile(context, buffer, !exist, table->db.db.useCrypto, sourcePath, slot, fnodes, index->nodeRecSize << 1))
+   if (!nfCreateFile(context, buffer, !exist, table->db.db.useCrypto, sourcePath, fnodes, index->nodeRecSize << 1))
       return null;
    
    index->nodeCount = index->fnodes.size / index->nodeRecSize;
@@ -327,7 +324,6 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
       return null;
    }
    
-#ifndef PALMOS
    // Tries to find the node in the nodes of the first level.
    if (idx <= index->btreeMaxNodes)
    {
@@ -343,7 +339,6 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
       }
       return cand;
    }
-#endif   
    
    // Loads the cache if the node is in a deeper level.
    nodes = index->cache;
@@ -654,7 +649,7 @@ bool indexRemove(Context context, Index* index)
 	TRACE("indexRemove")
    Table* table = index->table;
 
-   if (index->heap && !nfRemove(context, &index->fnodes, table->sourcePath, table->slot))
+   if (index->heap && !nfRemove(context, &index->fnodes, table->sourcePath))
       return false;
    
    heapDestroy(index->heap);
@@ -692,11 +687,7 @@ bool indexDeleteAllRows(Context context, Index* index)
 	TRACE("indexDeleteAllRows")
    int32 i;
    Node** cache = index->cache;
-   
-#ifndef PALMOS   
    Node** firstLevel = index->firstLevel;
-#endif
-   
    XFile* fnodes = &index->fnodes;
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
@@ -721,12 +712,10 @@ bool indexDeleteAllRows(Context context, Index* index)
       if (cache[i])
 			cache[i]->idx = -1;
 	
-#ifndef PALMOS
 	i = index->btreeMaxNodes;
 	while (--i >= 0) // Erases the first level nodes.
       if (firstLevel[i])
          firstLevel[i]->idx = -1;
-#endif
 
    // juliana@220_6: The node count should be reseted when recreating the indices.
    index->cacheI = 0;
@@ -752,12 +741,10 @@ bool indexSetWriteDelayed(Context context, Index* index, bool delayed)
    ret &= nodeSetWriteDelayed(context, index->root, delayed); // Commits the pending keys.
    
 // Commits the pending first level nodes.
-#ifndef PALMOS   
    i = index->btreeMaxNodes;
    nodes = index->firstLevel;
    while (--i >= 0)
       ret &= nodeSetWriteDelayed(context, nodes[i], delayed);
-#endif   
    
    // Commits the pending cache nodes.
    nodes = index->cache;
@@ -877,13 +864,12 @@ bool indexRename(Context context, Index* index, CharP newName)
 	TRACE("indexRename")
    char buffer[DBNAME_SIZE];
    TCHARP sourcePath = index->table->sourcePath;
-   int32 slot = index->table->slot;
 
    // Renames the keys.
    xstrcpy(index->name, newName);
    xstrcpy(buffer, newName);
    xstrcat(buffer, IDK_EXT);
-   if (!nfRename(context, &index->fnodes, buffer, sourcePath, slot)) 
+   if (!nfRename(context, &index->fnodes, buffer, sourcePath)) 
       return false;
 
    return true;
@@ -894,7 +880,7 @@ bool indexRename(Context context, Index* index, CharP newName)
  * 
  * @param context The thread context where the function is being executed.
  * @param index The index where a node is going to be fetched.
- * @return The loaded node, a new cache node with the requested node loaded, a first level node if not palm OS, or <code>null</code> if it is not 
+ * @return The loaded node, a new cache node with the requested node loaded, or <code>null</code> if it is not 
  * already loaded and its cache is full.
  */
 Node* getLoadedNode(Context context, Index* index, int32 idx) 
@@ -904,7 +890,6 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
    Node** nodes;
    int32 i = -1;
    
-#ifndef PALMOS
    // Tries to find the node in the nodes of the first level.
    if (idx <= index->btreeMaxNodes)
    {
@@ -920,7 +905,6 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
       }
       return node;
    }
-#endif
    
    // Tries to get an already loaded node if it is a node from a deeper level.
    nodes = index->cache;

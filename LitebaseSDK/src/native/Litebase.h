@@ -86,9 +86,6 @@ bool initVars(OpenParams params);
  * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
  * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
  * cryptography. Notice that path must be absolute, not relative.
- * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
- * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
- * slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
  * creator id.
  * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -237,10 +234,10 @@ bool testRIClosed(NMParams params);
  * @param context The thread context where the function is being executed.
  * @param sourcePath Receives the path that Litebase will use to store and access tables.
  * @param pathParam the path passed as a parameter.
- * @return The slot number for palm, -1 for the other devices or 0 in case of error.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException if the path passed as a parameter is invalid. 
  */
-int32 checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam);
+bool checkApppath(Context context, TCHARP sourcePath, TCHARP pathParam);
 
 /**
  * Verifies if the function can be applied to a data type field.
@@ -275,7 +272,6 @@ bool checkParamAndDriver(NMParams params, CharP parameter);
  *
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  * @throws DriverException If a file error occurs or not all the tables use the desired cryptography format.
  */
 void encDecTables(NMParams params, bool toEncrypt);

@@ -15,33 +15,31 @@
 
 #include "lbFile.h"
 
-#if defined PALMOS
-   #include "palm/File_c.h"
-#elif defined WIN32
+#if defined WIN32
    #include "win/File_c.h"
 #else
    #include "posix/File_c.h"
 #endif
 
-Err lbfileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
+Err lbfileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode)
 {
-   return fileCreate(fref, path, mode, slot);
+   return fileCreate(fref, path, mode, null);
 }
 Err lbfileClose(NATIVE_FILE* fref)
 {
    return fileClose(fref);
 }
-Err lbfileCreateDir(TCHARP path, int32 slot)
+Err lbfileCreateDir(TCHARP path)
 {
-   return fileCreateDir(path, slot);
+   return fileCreateDir(path, -1);
 }
-Err lbfileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
+Err lbfileDelete(NATIVE_FILE* fref, TCHARP path, bool isOpen)
 {
-   return fileDelete(fref, path, slot, isOpen);
+   return fileDelete(fref, path, -1, isOpen);
 }
-bool lbfileExists(TCHARP path, int32 slot)
+bool lbfileExists(TCHARP path)
 {                                              
-   return fileExists(path, slot);
+   return fileExists(path, -1);
 }
 Err lbfileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {                                
@@ -51,9 +49,9 @@ Err lbfileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, i
 {                                         
    return fileReadBytes(fref, bytes, offset, length, bytesRead);
 }
-Err lbfileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
+Err lbfileRename(NATIVE_FILE fref, TCHARP currPath, TCHARP newPath, bool isOpen)
 {                                                              
-   return fileRename(fref, slot, currPath, newPath, isOpen);
+   return fileRename(fref, -1, currPath, newPath, isOpen);
 }
 Err lbfileSetPos(NATIVE_FILE fref, int32 position)
 {                                                           

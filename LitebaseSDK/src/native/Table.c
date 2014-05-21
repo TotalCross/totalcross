@@ -285,7 +285,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
             // juliana@223_14: solved possible memory problems.
             if (TC_htGet32Inv(htName2index, columnHashes[n]) >= 0)
             {
-               plainRemove(context, &table->db, table->sourcePath, table->slot);
+               plainRemove(context, &table->db, table->sourcePath);
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), (table->columnNames[n]));
                return false;
             }
@@ -319,8 +319,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          version = 0,
          nameLength,
          indexNameLength,
-         stringLength,
-         slot = table->slot;
+         stringLength;
    bool exist;
    PlainDB* plainDB = &table->db;
    XFile* dbFile = &plainDB->db;
@@ -495,9 +494,9 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
-         if ((exist = lbfileExists(indexName, slot)) && !flags)
+         if ((exist = lbfileExists(indexName)) && !flags)
          {     
-            if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE, &slot))
+            if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE))
              || (exist = lbfileSetSize(&idxFile, 0)) || (exist = lbfileClose(&idxFile)))
             {
                char buffer[1024];
@@ -641,9 +640,9 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
-         if ((exist = lbfileExists(indexName, slot)) && !flags)
+         if ((exist = lbfileExists(indexName)) && !flags)
          {     
-            if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE, &slot))
+            if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE))
              || (exist = lbfileSetSize(&idxFile, 0))
              || (exist = lbfileClose(&idxFile)))
             {
@@ -1541,7 +1540,6 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param context The thread context where the function is being executed.
  * @param name The name of the table.
  * @param sourcePath The path of the table on disk.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
  * @param useCrypto Indicates if the table uses cryptography.
@@ -1550,7 +1548,7 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, TCHARP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+Table* tableCreate(Context context, CharP name, TCHARP sourcePath, bool create, bool isAscii, bool useCrypto, int32* nodes, 
                                                                                            bool throwException, Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
@@ -1569,7 +1567,7 @@ Table* tableCreate(Context context, CharP name, TCHARP sourcePath, int32 slot, b
       goto error;
    }
 
-   if (!createPlainDB(context, &table->db, name, create, useCrypto, sourcePath, table->slot = slot)) // Creates or opens the table files.    
+   if (!createPlainDB(context, &table->db, name, create, useCrypto, sourcePath)) // Creates or opens the table files.    
       goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
@@ -1621,7 +1619,7 @@ Table* driverCreateTable(Context context, TCObject driver, CharP tableName, Char
    if (!tableName) // Temporary table.
 	{
 	   // rnovais@570_75 juliana@220_5
-		if (!(table = tableCreate(context, null, sourcePath, -1, true, false, false, getLitebaseNodes(driver), true, heap))) 
+		if (!(table = tableCreate(context, null, sourcePath, true, false, false, getLitebaseNodes(driver), true, heap))) 
          return null; 
 
       table->db.headerSize = 0;
@@ -1652,8 +1650,8 @@ Table* driverCreateTable(Context context, TCObject driver, CharP tableName, Char
    
 		// juliana@220_5
 		// juliana@253_8: now Litebase supports weak cryptography.  
-		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), 
-		                                                     OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)))
+		if (!(table = tableCreate(context, name, sourcePath, true, OBJ_LitebaseIsAscii(driver), OBJ_LitebaseUseCrypto(driver), 
+                                                                                              getLitebaseNodes(driver), true, heap)))
 		   goto error;
 
       IF_HEAP_ERROR(heap)
@@ -1713,7 +1711,7 @@ bool renameTable(Context context, TCObject driver, Table* table, CharP newTableN
    length = xstrlen(result);
 
    // Renames the table.
-   if (!plainRename(context, &table->db, result, sourcePath, table->slot))
+   if (!plainRename(context, &table->db, result, sourcePath))
 	   return false;
    xstrcpy(table->name, result);
 
@@ -2928,7 +2926,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       }
 
       if (isDelete) // Frees or removes the table.
-         ret &= plainRemove(context, &table->db, sourcePath, table->slot);
+         ret &= plainRemove(context, &table->db, sourcePath);
       else
          ret &= plainClose(context, &table->db, updatePos);
 
@@ -3006,7 +3004,7 @@ bool tableExistsByName(Context context, TCObject driver, CharP name)
    getFullFileName(bufName, sourcePath, fullName);
    tcscat(fullName, TEXT(DB_EXT));
 
-   if (lbfileExists(fullName, OBJ_LitebaseSlot(driver)))
+   if (lbfileExists(fullName))
    {
       // The .db file already exists. So, the table is considered to exists.
       TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_TABLE_ALREADY_CREATED), name);
@@ -3119,8 +3117,8 @@ Table* getTable(Context context, TCObject driver, CharP tableName)
          // Opens it. It must have been already created.
          // juliana@220_5
          // juliana@253_8: now Litebase supports weak cryptography.
-         if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
-                      OBJ_LitebaseIsAscii(driver), OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
+         if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), false, OBJ_LitebaseIsAscii(driver), OBJ_LitebaseUseCrypto(driver), 
+                                                                                       getLitebaseNodes(driver), true, heap)) && table->db.db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
             {

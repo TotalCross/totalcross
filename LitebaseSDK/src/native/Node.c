@@ -167,7 +167,6 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
    dataStream += i;
 
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
-#ifndef PALMOS
    if (isNew && idx > 0 && idx <= index->btreeMaxNodes)
    {
       Node** firstLevel = index->firstLevel;
@@ -185,7 +184,6 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
          keySetFromKey(&newKeys[i], &keys[i + left]);
       newNode->isDirty = false;
    }
-#endif
 
    xmemzero(dataStream, nodeRecSize - (dataStream - index->basbuf)); // Fills the rest with zeros.
    if (!nfWriteBytes(context, fnodes, index->basbuf, nodeRecSize))

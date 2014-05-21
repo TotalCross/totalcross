@@ -182,8 +182,6 @@ LB_API void lLC_privateGetInstance_s(NMParams p);
  * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
  * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
  * cryptography. Notice that path must be absolute, not relative.
- * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
- * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
  * creator id.
  * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -457,10 +455,9 @@ LB_API void lLC_recoverTable_s(NMParams p);
 LB_API void lLC_convert_s(NMParams p);
 
 /**
- * Returns the slot where the tables are stored. Always return -1 except on palm. 
+ * Used to returned the slot where the tables were stored on Palm OS. Not used anymore.
  * 
- * @param p->obj[0] The connection with Litebase.
- * @param p->retI receives -1 except on palm, where returns the current slot being used.
+ * @param p->retI receives -1.
  */
 LB_API void lLC_getSlot(NMParams p); // juliana@223_1: added a method to get the current slot being used.
 
@@ -480,7 +477,6 @@ LB_API void lLC_isOpen_s(NMParams p);
  * 
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  * @throws DriverException If the database is not found or a file error occurs.
  * @throws NullPointerException If one of the string parameters is null.
  */
@@ -513,7 +509,6 @@ LB_API void lLC_listAllTables(NMParams p);
  * 
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  */
 LB_API void lLC_encryptTables_ssi(NMParams p);
 
@@ -522,7 +517,6 @@ LB_API void lLC_encryptTables_ssi(NMParams p);
  * 
  * @param p->obj[0] The application id of the database.
  * @param p->obj[1] The path where the files are stored.
- * @param p->i32[0] The slot on Palm where the source path folder is stored. Ignored on other platforms.
  */
 LB_API void lLC_decryptTables_ssi(NMParams p);
 

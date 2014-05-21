@@ -132,9 +132,6 @@ extern tiF_create_siiFunc TC_tiF_create_sii;
 extern toLowerFunc TC_toLower;
 extern traceFunc TC_trace;
 extern validatePathFunc TC_validatePath; // juliana@214_1
-#ifdef PALMOS
-extern getLastVolumeFunc TC_getLastVolume;
-#endif
 #ifdef ENABLE_MEMORY_TEST
 extern getCountToReturnNullFunc TC_getCountToReturnNull;
 extern setCountToReturnNullFunc TC_setCountToReturnNull;

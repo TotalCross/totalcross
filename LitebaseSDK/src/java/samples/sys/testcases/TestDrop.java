@@ -168,11 +168,9 @@ public class TestDrop extends TestCase
 	{
 		try
 		{
-			return new File(path + "Test-person.db", File.DONT_OPEN, 1).exists() || new File(path + "Test-person.dbo", File.DONT_OPEN, 1).exists()
-	          || new File(path + "Test-person$0.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person$0.idk", File.DONT_OPEN, 1).exists()
-	          || new File(path + "Test-person$1.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person$1.idk", File.DONT_OPEN, 1).exists()
-	          || new File(path + "Test-person&1.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists()
-             || new File(path + "Test-person&2.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person&2.idk", File.DONT_OPEN, 1).exists();
+			return new File(path + "Test-person.db", File.DONT_OPEN).exists() || new File(path + "Test-person.dbo", File.DONT_OPEN).exists()
+	          || new File(path + "Test-person$0.idk", File.DONT_OPEN).exists() || new File(path + "Test-person$1.idk", File.DONT_OPEN).exists()
+	          || new File(path + "Test-person&1.idk", File.DONT_OPEN).exists() || new File(path + "Test-person&2.idk", File.DONT_OPEN).exists();
 		} 
 		catch (IOException exception)
 		{
@@ -189,10 +187,8 @@ public class TestDrop extends TestCase
 	{
 		try
 		{
-			return new File(path + "Test-person$0.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person$0.idk", File.DONT_OPEN, 1).exists()
-             || new File(path + "Test-person$1.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person$1.idk", File.DONT_OPEN, 1).exists()
-			    || new File(path + "Test-person&1.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists()
-             || new File(path + "Test-person&2.idr", File.DONT_OPEN, 1).exists() || new File(path + "Test-person&2.idk", File.DONT_OPEN, 1).exists();
+			return new File(path + "Test-person$0.idk", File.DONT_OPEN).exists() || new File(path + "Test-person$1.idk", File.DONT_OPEN).exists()
+			    || new File(path + "Test-person&1.idk", File.DONT_OPEN).exists() || new File(path + "Test-person&2.idk", File.DONT_OPEN).exists();
 		} 
 		catch (IOException exception)
 		{

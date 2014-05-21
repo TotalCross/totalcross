@@ -460,18 +460,10 @@ target: checks if we must update the versions of the files prior to a build.
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildWin32_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
 <target name="build_vms" />
 
 <target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk" description="builds sdk" />
-
-<target name="buildBB_sdk" />
-<target name="buildBB_vms" />
-<target name="buildPalmOS5_sdk" />
-<target name="buildPalmOS5_vms" />
-<target name="buildWinCE_vms" />
-<target name="buildWinCE_sdk" />
-<target name="buildWinCECabsSingle" />
     
 </project>

@@ -38,8 +38,7 @@ public class PlayLog extends MainWindow
    /**
     * The default path.
     */
-   private String dataPath = Settings.platform.equals(Settings.PALMOS)? "/Litebase_DBs/" 
-                           : (Settings.dataPath != null && Settings.dataPath.length() != 0? Settings.dataPath : Settings.appPath);
+   private String dataPath = (Settings.dataPath != null && Settings.dataPath.length() != 0? Settings.dataPath : Settings.appPath);
    
    static
    {
@@ -87,14 +86,14 @@ public class PlayLog extends MainWindow
                }
             });
             
-            fcb.mountTree("device/", 1);
+            fcb.mountTree("device/");
             fcb.popup();
                        
             // Only process a logger file if there is a chosen file to be processed.
             String loggerName = fcb.getAnswer();
             if (loggerName != null && loggerName.length() > 0)
             {               
-               LineReader lineReader = new LineReader(new File(loggerName, File.READ_ONLY, 1)); // Opens the log file.
+               LineReader lineReader = new LineReader(new File(loggerName, File.READ_ONLY)); // Opens the log file.
                String string;
                int i;
                
