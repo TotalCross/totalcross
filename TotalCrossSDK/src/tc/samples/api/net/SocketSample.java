@@ -38,13 +38,6 @@ public class SocketSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      if (!ConnectionManager.isInternetAccessible()) // no connection available
-      {
-         new MessageBox("Warning", "No network connection available.").popup();
-         back();
-         return;
-      }
-      
       add(new Label("Address: "),LEFT, TOP+1);
       add(edA = new Edit(""), AFTER+3, SAME);
       edA.setText("www.superwaba.com.br");
