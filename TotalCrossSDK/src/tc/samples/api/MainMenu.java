@@ -195,7 +195,7 @@ public class MainMenu extends BaseContainer
    {
       CipherSample.class,
       DigestSample.class,
-      SignatureSample.class,
+      tc.samples.api.crypto.SignatureSample.class,
    };
      
    Class[] ioClasses =
