@@ -20,11 +20,9 @@ package tc.samples.api.net;
 
 import tc.samples.api.*;
 
-import totalcross.io.*;
 import totalcross.net.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
 public class ServerSocketSample extends BaseContainer implements Runnable
@@ -36,21 +34,21 @@ public class ServerSocketSample extends BaseContainer implements Runnable
    private ServerSocket serverSocket;
    private int port;
    private Socket clientSocket;
-   private Thread acceptThread;
 
    private boolean threadIsRunning;
 
    public void initUI()
    {
       super.initUI();
-      String ip = null;
+      String ip;
       try
       {
          ip = ConnectionManager.getLocalHost();
       }
-      catch (IOException ex)
+      catch (Exception ex)
       {
-         MessageBox.showException(ex, true);
+         add(new Label("Unable to get local host ip."),CENTER,CENTER);
+         return;
       }
       
       add(new Label("IP: " + ip), LEFT + 2, TOP + 3);
@@ -78,10 +76,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       if (e.type == ControlEvent.PRESSED)
       {
          if (e.target == btnStart && validatePort())
-         {
-            acceptThread = new Thread(this);
-            acceptThread.start();
-         }
+            new Thread(this).start();
          else if (e.target == btnStop)
             stopServer();
       }
@@ -89,7 +84,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 
    String answer = "<HTML><HEAD><TITLE>TotalCross</TITLE></HEAD><BODY>Connected!</BODY></HTML>";
 
-   private void startServer() throws IOException
+   private void startServer() throws Exception
    {
       toggleUI(false);
       status("Starting...");
@@ -107,7 +102,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       while (clientSocket == null);
 
       status("Accepted new connection");
-      clientSocket.readTimeout = 2000;
+      clientSocket.readTimeout = 20000;
 
       status("========================");
       String s;
@@ -143,10 +138,9 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          }
          repaintNow();
       }
-      catch (IOException e)
+      catch (Exception e)
       {
          status("EXCEPTION CAUGHT AT STOP SERVER");
-         MessageBox.showException(e, true);
       }
    }
 
@@ -156,13 +150,13 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       {
          startServer();
       }
-      catch (IOException e)
+      catch (Exception e)
       {
          // ignore exceptions thrown after the server was stopped
          if (threadIsRunning)
          {
-            status("EXCEPTION CAUGHT AT START SERVER");
-            MessageBox.showException(e, true);
+            status("EXCEPTION CAUGHT AT SERVER START");
+            status(e.getClass()+": "+e.getMessage());
          }
       }
       stopServer();
@@ -204,7 +198,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          }
          catch (InvalidNumberException e)
          {
-            new MessageBox("Error", "Invalid port value.").popup();
+            status("Invalid port value.");
          }
       }
       return false;
@@ -217,7 +211,20 @@ public class ServerSocketSample extends BaseContainer implements Runnable
     */
    private void status(String s)
    {
-      lb.add(s);
-      lb.selectLast();
+      final String ss = s;
+      if (MainWindow.isMainThread())
+      {
+         lb.add(s);
+         lb.selectLast();
+      }
+      else
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
+      {
+         public void run()
+         {
+            lb.add(ss);
+            lb.selectLast();
+         }
+      });
    }
 }
