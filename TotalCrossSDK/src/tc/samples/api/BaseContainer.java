@@ -166,16 +166,17 @@ public class BaseContainer extends Container
    
    public void back()
    {
-      try
-      {
-         setInfo(MainMenu.DEFAULT_INFO);
-         containerStack.pop(); // pop ourself
-         Window.getTopMost().swap((Container)containerStack.peek());
-      }
-      catch (ElementNotFoundException enfe)
-      {
-         //MainWindow.exit(0); // we're the last screen, so just exit the application
-      }
+      if (!(this instanceof MainMenu))
+         try
+         {
+            setInfo(MainMenu.DEFAULT_INFO);
+            containerStack.pop(); // pop ourself
+            Window.getTopMost().swap((Container)containerStack.peek());
+         }
+         catch (ElementNotFoundException enfe)
+         {
+            //MainWindow.exit(0); // we're the last screen, so just exit the application
+         }
    }
    
    public boolean ask(String question)
@@ -183,5 +184,44 @@ public class BaseContainer extends Container
       MessageBox mb = new MessageBox("Question", question, new String[]{"Yes","No"});
       mb.popup();
       return mb.getPressedButtonIndex() == 0;
+   }
+   
+   // single place to add and log messages
+   protected static ListBox lblog;
+   public void addLog(int x, int y, int w, int h, Control rel)
+   {
+      add(lblog = new ListBox(),x,y,w,h,rel);
+   }
+
+   // a log method that runs safely on threads
+   public static void log(Object s)
+   {
+      log(s,true);
+   }
+   public static void log(Object s, boolean selLast)
+   {
+      if (s == null) return;
+      final Object _s = s;
+      final boolean _selLast = selLast;
+      if (MainWindow.isMainThread())
+      {
+         if (s instanceof String)
+            lblog.addWrapping((String)s);
+         else
+            lblog.add(s);
+         if (selLast) lblog.selectLast();
+      }
+      else
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
+      {
+         public void run()
+         {
+            if (_s instanceof String)
+               lblog.addWrapping((String)_s);
+            else
+               lblog.add(_s);
+            if (_selLast) lblog.selectLast();
+         }
+      });
    }
 }

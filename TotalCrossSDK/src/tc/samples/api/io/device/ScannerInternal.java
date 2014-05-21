@@ -62,7 +62,6 @@ public class ScannerInternal extends BaseContainer
 
    private Label lblScanManagerVersion;
    private Label lblRomSerialNumber;
-   ListBox lb;
    
    public void initUI()
    {
@@ -77,7 +76,7 @@ public class ScannerInternal extends BaseContainer
       add(new Label("Rom serial number:"), CENTER, AFTER);
       add(lblRomSerialNumber = new Label("", CENTER), LEFT, AFTER);
       add(chkScanner = new Check("Scan"), LEFT, AFTER + 10);
-      add(lb= new ListBox(),LEFT,AFTER + 10,FILL,FILL); 
+      addLog(LEFT,AFTER + 10,FILL,FILL,null); 
 
       // tell scanner that we are the control that is listening the events.
       // if this is not done, all events will be sent to the top most window.
@@ -89,22 +88,6 @@ public class ScannerInternal extends BaseContainer
          lblRomSerialNumber.setText(Settings.romSerialNumber != null ? Settings.romSerialNumber : "Not available");
          scannerStop();
       }
-   }
-
-   private void log(String s)
-   {
-      Vm.debug(s);
-      lb.add(new Time()+" - "+s);
-      lb.selectLast();
-   }
-   
-   private void setStatus(String status)
-   {
-      log(status);
-      // the mainwindow is painted when a normal event is sent by the system
-      // since the ScanEvent isnt a normal event, we must explicitly repaint
-      // the screen
-      repaintNow(); // at startup it will be ugly but this is faster than repainting the whole screen
    }
 
    private static boolean setDefaultAndroidParams()
@@ -121,29 +104,29 @@ public class ScannerInternal extends BaseContainer
          // only using BARUPCE for demo - use initializeScanner(String args[]) for your requirements
          if ((Settings.platform.equals(Settings.ANDROID) && setDefaultAndroidParams()) || !Settings.platform.equals(Settings.ANDROID))
          {   
-            setStatus("Initializing scanner ...");
+            log("Initializing scanner ...");
             if (Scanner.commitBarcodeParams())
             {
-               setStatus("Scanner ready.");
+               log("Scanner ready.");
                chkScanner.setChecked(true);
                return true;
             }
             else
             {
-               setStatus("Scanner not initialized.");
+               log("Scanner not initialized.");
                scannerStop();
             }
          }
       }
       else 
-         setStatus("Scanner not activated.");
+         log("Scanner not activated.");
       return false;
    }
 
    private void scannerStop()
    {
       if (Scanner.deactivate())
-         setStatus("Scanner deactivated.");
+         log("Scanner deactivated.");
    }
 
    public void onRemove() // there is no need to do this; the Scanner lib stops the Scanner for us.
@@ -184,10 +167,10 @@ public class ScannerInternal extends BaseContainer
          }
          break;
          case ScanEvent.BATTERY_ERROR:
-            setStatus("Replace Batteries");
+            log("Replace Batteries");
             break;
          case ScanEvent.TRIGGERED:
-            setStatus("Event being received from Scanner...");
+            log("Event being received from Scanner...");
             break;
       }
    }

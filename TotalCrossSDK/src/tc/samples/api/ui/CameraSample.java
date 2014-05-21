@@ -51,6 +51,7 @@ public class CameraSample extends BaseContainer
       add(ic = new ImageControl(), LEFT+gap, TOP+gap, FILL-gap, FIT-gap);
       ic.setEventsEnabled(true);
       camera = new Camera();
+      camera.allowRotation = true;
       if (Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE))
          btnFilm.setVisible(false);
    }

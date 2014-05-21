@@ -3,7 +3,6 @@ package tc.samples.api.lang.reflection;
 import java.lang.reflect.*;
 import tc.samples.api.*;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -11,7 +10,6 @@ import totalcross.ui.event.*;
 public class ReflectionSample extends BaseContainer
 {
    // ui
-   ListBox lb;
    Button btAdd;
    Edit edName,edAddr,edNumber,edAge;
    
@@ -34,7 +32,7 @@ public class ReflectionSample extends BaseContainer
          alc.add(edAge = new Edit(),LEFT,alc.getLineY(3)); edAge.setKeyboard(Edit.KBD_NUMERIC);
          add(btAdd = new Button("ADD"),CENTER,AFTER+g,PARENTSIZE+50,PREFERRED+g/2);
          add(new Label("Constructed and retrieved using reflection:"),LEFT,AFTER+g);
-         add(lb = new ListBox(),LEFT,AFTER,FILL,FILL);
+         addLog(LEFT,AFTER,FILL,FILL,null);
          // get access to Data's fields
          Class data = Class.forName("tc.samples.api.lang.reflection.Data");
          c = data.getConstructor(new Class[]{String.class,String.class,int.class,byte.class});
@@ -70,12 +68,11 @@ public class ReflectionSample extends BaseContainer
                // ba = d.getAge();
                byte ba = ((Byte)mage.invoke(o, null)).byteValue();
                // show in list
-               lb.add("name: "+sn);
-               lb.add("address: "+sa);
-               lb.add("number: "+in);
-               lb.add("age: "+ba);
-               lb.add("-------------------");
-               lb.selectLast();
+               log("name: "+sn);
+               log("address: "+sa);
+               log("number: "+in);
+               log("age: "+ba);
+               log("-------------------");
             }
          }
          catch (Throwable ee)

@@ -105,7 +105,7 @@ public class GpsSample extends BaseContainer
          } 
          catch (Exception e) 
          {
-            log(new Time()+" ERRO"+e.getMessage());
+            log(new Time()+" ERROR: "+e.getMessage());
          } 
          finally 
          {
@@ -115,17 +115,10 @@ public class GpsSample extends BaseContainer
 
    }
    
-   private static void log(final String s)
-   {
-      // since a thread cannot update the screen, we run this on the main thread
-      MainWindow.getMainWindow().runOnMainThread(new Runnable() {public void run() {lbLog.add(s); lbLog.selectLast();}});
-   }
-
    public static GpsThread gpsThread;
 
    MenuBar mbar;
    Button btnGps;
-   public static ListBox lbLog;
 
    public void initUI() 
    {
@@ -134,7 +127,7 @@ public class GpsSample extends BaseContainer
       {
          add(btnGps = new Button("  Start GPS Logger  "), CENTER, TOP + 10);
          btnGps.setBackColor(Color.getRGB(188, 238, 104));
-         add(lbLog = new ListBox(), LEFT, AFTER+10, FILL, FILL);
+         addLog(LEFT, AFTER+10, FILL, FILL,null);
       } 
       catch (Exception e) 
       {
@@ -151,8 +144,7 @@ public class GpsSample extends BaseContainer
             case ControlEvent.PRESSED:
                if (e.target == btnGps) 
                {
-                  lbLog.add("Gps started with intervals of "+SECONDS+" seconds");
-                  lbLog.selectLast();
+                  log("Gps started with intervals of "+SECONDS+" seconds");
                   if (gpsThread == null) 
                      gpsThread = new GpsThread();
                   gpsThread.start();
