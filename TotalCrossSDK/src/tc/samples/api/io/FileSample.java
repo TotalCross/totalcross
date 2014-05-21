@@ -294,7 +294,7 @@ public class FileSample extends BaseContainer
       MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
       mb.popupNonBlocking();
 
-      addLog(LEFT, AFTER + 2, FILL, FILL,null);
+      addLog(LEFT, TOP + fmH*2, FILL, FILL,null);
 
       if (sdId != null)
          log("SD unique id: " + sdId);
