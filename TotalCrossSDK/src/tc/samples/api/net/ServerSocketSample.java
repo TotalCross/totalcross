@@ -61,8 +61,10 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       Label l;
       add(l=new Label("Write this ip and port in your browser"), LEFT, AFTER);
 
+      Button.commonGap = fmH/4;
       add(btnStart = new Button("Start"), LEFT + 2, BOTTOM - 2);
       add(btnStop = new Button("Stop"), RIGHT - 2, BOTTOM - 2);
+      Button.commonGap = 0;
 
       lb = new ListBox();
       lb.enableHorizontalScroll();
