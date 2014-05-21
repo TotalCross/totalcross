@@ -54,10 +54,10 @@ public class ThreadSample extends BaseContainer implements Runnable
       add(pauseButton = new Button("Pause"),CENTER,TOP);
       add(unpauseButton = new Button("Unpause"),CENTER,TOP);
       unpauseButton.setVisible(false);
-      add(lmem = new Label("",CENTER),AFTER,SAME,FIT,PREFERRED,directionButton);
+      add(lmem = new Label("",RIGHT),AFTER,SAME);
 
       for (int i = 0; i < containers.length; i++)
-         add((Container)containers[i], i == 0 ? LEFT : AFTER,i==0 ? AFTER : SAME,SCREENSIZE,FILL);
+         add((Container)containers[i], i == 0 ? LEFT : AFTER,i==0 ? AFTER+fmH/4 : SAME,SCREENSIZE,FILL);
 
       slideThread = new Thread(this);
       slideThread.start();
@@ -134,7 +134,7 @@ public class ThreadSample extends BaseContainer implements Runnable
                lmem.setText(Convert.toString(Vm.getFreeMemory()));
                //try {repaintNow();} catch (Throwable t) {t.printStackTrace();}
             }
-            Vm.sleep(5); // without this, events are blocked in Palm OS.
+            Vm.sleep(5); // without this, scroll does not work
          }
          if (running)
          {
