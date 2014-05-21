@@ -44,20 +44,22 @@ public class ThreadSample extends BaseContainer implements Runnable
    public void initUI()
    {
       super.initUI();
+      Button.commonGap = fmH/4;
       Vm.tweak(Vm.TWEAK_DUMP_MEM_STATS,true);
       directionButton = new Button("Switch Direction");
       containers = new SetX[3];
       containers[0] = new TypingContainer(true);
       containers[1] = new HTTPContainer();
       containers[2] = new TypingContainer(false);
-      add(directionButton,LEFT,TOP);
-      add(pauseButton = new Button("Pause"),CENTER,TOP);
-      add(unpauseButton = new Button("Unpause"),CENTER,TOP);
+      add(directionButton,LEFT,TOP+2);
+      add(pauseButton = new Button("Pause"),CENTER,SAME);
+      add(unpauseButton = new Button("Unpause"),CENTER,SAME);
       unpauseButton.setVisible(false);
       add(lmem = new Label("",RIGHT),AFTER,SAME);
+      Button.commonGap = 0;
 
       for (int i = 0; i < containers.length; i++)
-         add((Container)containers[i], i == 0 ? LEFT : AFTER,i==0 ? AFTER+fmH/4 : SAME,SCREENSIZE,FILL);
+         add((Container)containers[i], i == 0 ? LEFT : AFTER,i==0 ? AFTER+fmH/4 : SAME,SCREENSIZE,FILL,i==0?pauseButton:null);
 
       slideThread = new Thread(this);
       slideThread.start();
