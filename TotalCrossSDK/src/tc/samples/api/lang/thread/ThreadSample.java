@@ -51,8 +51,8 @@ public class ThreadSample extends BaseContainer implements Runnable
       containers[1] = new HTTPContainer();
       containers[2] = new TypingContainer(false);
       add(directionButton,LEFT,TOP);
-      add(pauseButton = new Button("Pause"),RIGHT,TOP);
-      add(unpauseButton = new Button("Unpause"),RIGHT,TOP);
+      add(pauseButton = new Button("Pause"),CENTER,TOP);
+      add(unpauseButton = new Button("Unpause"),CENTER,TOP);
       unpauseButton.setVisible(false);
       add(lmem = new Label("",CENTER),AFTER,SAME,FIT,PREFERRED,directionButton);
 
