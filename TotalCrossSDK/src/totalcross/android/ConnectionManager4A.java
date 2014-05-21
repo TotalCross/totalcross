@@ -191,7 +191,7 @@ public class ConnectionManager4A
       }
       catch (UnknownHostException e)
       {
-         return new String("127.0.0.1");
+         return "127.0.0.1";
       }
    }
 
