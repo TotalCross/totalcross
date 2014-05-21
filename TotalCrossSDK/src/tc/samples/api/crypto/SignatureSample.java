@@ -92,10 +92,10 @@ public class SignatureSample extends BaseContainer
       
       btnGo = new Button(" Go! ");
       
-      add(edtInput, LEFT + 2, TOP + 2, FILL - 2, PREFERRED);
-      add(cboSignatures, LEFT + 2, AFTER + 2, PREFERRED, PREFERRED);
+      add(edtInput, LEFT + 2, TOP + fmH/4, FILL - 2, PREFERRED);
+      add(cboSignatures, LEFT + 2, AFTER + fmH/4, PREFERRED, PREFERRED);
       add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
-      addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2,null);
+      addLog(LEFT + 2, AFTER + fmH/4, FILL - 2, FILL - 2,null);
    }
    
    public void onEvent(Event e)

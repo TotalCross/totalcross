@@ -49,7 +49,7 @@ public class DigestSample extends BaseContainer
       cboDigests.setSelectedIndex(0);
       btnGo = new Button(" Go! ");
       
-      add(edtInput, LEFT + 2, TOP + 2, FILL - (btnGo.getPreferredWidth() + cboDigests.getPreferredWidth() + 6), PREFERRED);
+      add(edtInput, LEFT + 2, TOP + fmH/4, FILL - (btnGo.getPreferredWidth() + cboDigests.getPreferredWidth() + 6), PREFERRED);
       add(cboDigests, AFTER + 2, SAME, PREFERRED, PREFERRED);
       add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
       addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2,null);
