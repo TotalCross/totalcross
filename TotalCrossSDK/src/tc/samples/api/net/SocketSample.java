@@ -44,7 +44,7 @@ public class SocketSample extends BaseContainer
       add(edP = new Edit("8080"), AFTER+3, SAME);
       edP.setText("80");
       
-      add(btnOpen = new Button("Open connection"), LEFT, AFTER+3,PREFERRED,PREFERRED+fmH/4);
+      add(btnOpen = new Button(" Open connection "), CENTER, AFTER+3,PREFERRED,PREFERRED+fmH/4);
       
       addLog(LEFT,AFTER+3,FILL,FILL,null);
    }
