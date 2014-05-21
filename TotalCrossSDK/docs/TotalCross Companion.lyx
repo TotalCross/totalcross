@@ -1290,24 +1290,24 @@ TCFont.tcz.
 samples
 \family default
 : Installation files for all samples.
- Litebase samples are also inside, prefixed by 
+ Litebase samples are also inside, in the folder 
 \family typewriter
-LB_
+litebase
 \family default
 .
- Lets take the UIControls sample, located at 
+ Lets take the TotalCrossAPI sample, located at 
 \family typewriter
 TotalCrossSDK
 \backslash
 dist
 \backslash
-samples
-\backslash
 
 \begin_inset Newline newline
 \end_inset
 
-UIControls
+samples
+\backslash
+TotalCrossAPI
 \family default
 .
  Inside there's an install folder, and below the following folders:
@@ -1598,15 +1598,11 @@ Litebase Companion.pdf
 \end_layout
 
 \begin_layout Itemize
-The folders 
+The folder 
 \family typewriter
-lb
+html
 \family default
- and 
-\family typewriter
-tc
-\family default
-, which contains the generated javadocs.
+, which contains the generated javadocs for TotalCross and Litebase.
  Open the files 
 \family typewriter
 index.html
@@ -2818,7 +2814,7 @@ to
 The last argument passed to the launcher is always the qualified name of
  the main class of the application to be launched (for example, 
 \family typewriter
-tc.samples.ui.controls.UIControls
+tc.samples.api.TotalCrossAPI
 \family default
 ).
 \end_layout
@@ -5731,7 +5727,7 @@ setup.bat
 \begin_layout Standard
 So, if you want to test the 
 \family typewriter
-UIControls.apk
+TotalCrossAPI.apk
 \family default
 , from the command line, use:
 \end_layout
@@ -5739,7 +5735,7 @@ UIControls.apk
 \begin_layout Standard
 
 \family typewriter
-adb install -r UIControls.apk
+adb install -r TotalCrossAPI.apk
 \end_layout
 
 \begin_layout Standard
@@ -5747,7 +5743,7 @@ Remember to install the TotalCross and Litebase
 \family typewriter
 .apk
 \family default
-s (if your application is not deployed as a single package) as:
+ (if your application is not deployed as a single package) as:
 \end_layout
 
 \begin_layout Standard
@@ -5761,21 +5757,7 @@ vm
 \backslash
 android
 \backslash
-android-tcvm.apk
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-adb install -r %LITEBASE_HOME%
-\backslash
-dist
-\backslash
-lib
-\backslash
-android
-\backslash
-android-litebase.apk
+TotalCross.apk
 \end_layout
 
 \begin_layout Standard
@@ -14695,7 +14677,11 @@ For each control we’ll see its characteristics, how to create them with
 
 \begin_layout Standard
 You can see most of the user interface controls available in TotalCross
- looking at the UIControls sample.
+ looking at the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample.
 \end_layout
 
 \begin_layout Standard
@@ -14739,7 +14725,11 @@ Buttons are the most used types of controls.
  They are used to invoke an action or to confirm something, like [ok] or
  [cancel].
  Here are some screenshots from some buttons using the Android style from
- the old sample UIGadgets and UIControls:
+ the old samples UIGadgets and UIControls (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -15556,7 +15546,11 @@ Edit is a control used to get text input when the user types using the keyboard
  or the grafitti area.
  It allows you to select text and cut/copy/paste it.
  Here are some screenshots from some edits using the Android style from
- the old UIGadgets samples and UIControls:
+ the old UIGadgets and UIControls samples (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -16598,7 +16592,7 @@ n
 .
  A label never receives focus neither dispatches events.
  Here is a screenshot from a multi-lined label using the Android style from
- UIGadgets:
+ the old UIGadgets sample:
 \end_layout
 
 \begin_layout Standard
@@ -17261,7 +17255,11 @@ Check is a control that has a rectangle with a check inside and a text at
 
 \begin_layout Standard
 Here are some screenshots from some checks using the Android style from
- UIControls:
+ the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -17679,7 +17677,11 @@ Radio is a control that allows the user to choose one of a predefined set
 
 \begin_layout Standard
 Here are some screenshots from some checks using the Android style from
- UIControls:
+ the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -18487,7 +18489,12 @@ ComboBoxDropDown
 
 \begin_layout Standard
 Here are some screenshots from a simple combo box using the Android style
- from UIControls (below the combo box component, there is a list box):
+ from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) Note that below the combo box component,
+ there is a list box:
 \end_layout
 
 \begin_layout Standard
@@ -19312,7 +19319,12 @@ The list box is a control that allows the user to select one item from a
 
 \begin_layout Standard
 Here are some screenshots from a simple list box using the Android style
- from UIControls (above the list box component, there is a combo box):
+ from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample).
+ Note that above the list box component, there is a combo box:
 \end_layout
 
 \begin_layout Standard
@@ -20356,7 +20368,12 @@ An editable
 \family typewriter
 MultiEdit
 \family default
- from UIControls, also using Android style, can be seen below:
+ from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), also using Android style, can be
+ seen below:
 \end_layout
 
 \begin_layout Standard
@@ -20844,7 +20861,12 @@ The grid control is used to display tabulated data, which is represented
 \end_layout
 
 \begin_layout Standard
-Below are some examples of grid taken from GridTest using Android style.
+Below are some examples of grid taken from the old GridTest sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) using Android style.
 \end_layout
 
 \begin_layout Standard
@@ -24828,7 +24850,12 @@ which results in the following images using Android style, where the bottom
 \end_layout
 
 \begin_layout Standard
-Note that the top and bottom components of the sample UIControls are bars.
+Note that the top and bottom components of the the old UIControls sample
+ (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) are bars.
 \end_layout
 
 \begin_layout Standard
@@ -26499,7 +26526,12 @@ The resulting window from it looks like the screenshots below:
 \end_layout
 
 \begin_layout Standard
-From UIControls, the following screenshots were taken:
+From the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), the following screenshots were
+ taken:
 \end_layout
 
 \begin_layout Standard
@@ -27388,8 +27420,13 @@ position
 \family typewriter
 PagePosition
 \family default
- is shown in the image below from UIControls above the mouse cursor, where
- it is inside a 
+ is shown in the image below from the old UIControls sample (now inside
+ the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) above the mouse cursor, where it
+ is inside a 
 \family typewriter
 ButtonMenu
 \family default
@@ -27752,8 +27789,12 @@ Then set a timer to update the value.
 \end_layout
 
 \begin_layout Standard
-Here is some progress bar samples taken from UIControls and the old UIGadgets
- sample (using Android user interface style):
+Here is some progress bar samples taken from the old UIGadgets and UIControls
+ samples (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), using Android user interface style:
 \end_layout
 
 \begin_layout Standard
