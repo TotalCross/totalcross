@@ -68,6 +68,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
       toggleUI(true);
    }
 
+   boolean stopThread;
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED)
@@ -75,7 +76,10 @@ public class ServerSocketSample extends BaseContainer implements Runnable
          if (e.target == btnStart && validatePort())
             new Thread(this).start();
          else if (e.target == btnStop)
-            stopServer();
+         {
+            log("Wait until accept finishes...");
+            stopThread = true;
+         }
       }
    }
 
@@ -83,28 +87,32 @@ public class ServerSocketSample extends BaseContainer implements Runnable
 
    private void startServer() throws Exception
    {
+      stopThread = false;
+      threadIsRunning = true;
       toggleUI(false);
       log("Starting...");
 
       serverSocket = new ServerSocket(port, 10000);
 
-      log("Server started");
-      log("Waiting for connections");
+      log("Server started. Waiting for connections");
 
       do
       {
          clientSocket = serverSocket.accept();
          log("Still waiting...");
       }
-      while (clientSocket == null);
+      while (!stopThread && clientSocket == null);
 
+      if (stopThread)
+         return;
+      
       log("Accepted new connection");
       clientSocket.readTimeout = 20000;
 
       log("========================");
       String s;
       while ((s = clientSocket.readLine()) != null && (s = s.trim()).length() > 0)
-         log(s);
+         log(s,false);
       log("========================");
       clientSocket.writeBytes(answer);
       clientSocket.close();
@@ -115,6 +123,7 @@ public class ServerSocketSample extends BaseContainer implements Runnable
    {
       if (!threadIsRunning)
          return;
+      threadIsRunning = false;
 
       toggleUI(true);
 
@@ -172,7 +181,6 @@ public class ServerSocketSample extends BaseContainer implements Runnable
     */
    private void toggleUI(boolean enabled)
    {
-      threadIsRunning = !enabled;
       edPort.setEnabled(enabled);
       btnStart.setEnabled(enabled);
       btnStop.setEnabled(!enabled);
