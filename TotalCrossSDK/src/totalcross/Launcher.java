@@ -126,6 +126,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private void runtimeInstructions()
    {
       System.out.println("Current path: "+System.getProperty("user.dir"));
+      System.out.println("TotalCross "+Settings.versionStr+"."+Settings.buildNumber);
       // print instructions
       System.out.println("===================================");
       System.out.println("Device key emulations:");

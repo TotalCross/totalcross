@@ -54,7 +54,7 @@ public class SocketSample extends BaseContainer
       }
       catch (IOException e) {}
       
-      if (!wifi && !cell) // no connection available
+      if (!wifi && !cell && !ConnectionManager.isInternetAccessible()) // no connection available
       {
          new MessageBox("Warning", "No network connection available.").popup();
          back();

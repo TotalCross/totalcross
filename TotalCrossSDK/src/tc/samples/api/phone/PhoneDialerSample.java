@@ -39,7 +39,7 @@ public class PhoneDialerSample extends BaseContainer
       super.initUI();
       Font big = Font.getFont(true, Font.NORMAL_SIZE+2);
       ed = new Edit("");
-      ed.setFont(big);
+      ed.setFont(Font.getFont(true, Font.NORMAL_SIZE*2));
       ed.setEnabled(false);
       add(ed,LEFT,TOP);
       

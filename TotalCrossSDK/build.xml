@@ -39,6 +39,8 @@
 <property name="output"                 value="${sdk.root}/../../temp"/>
 <property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
+<property name="lb.src"                 value="${sdk.root}/../../Litebase/LitebaseSDK/src/java"/>
+<property name="sqlite-jdbc"            value="sqlite-jdbc4-3.8.2"/>
 
 <!-- defined alxjoin task -->	
 <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${tools}/ant/tctasks.jar" />
@@ -184,7 +186,7 @@ target: compile
   	includeAntRuntime="false"
   >
      <classpath>
-        <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+        <pathelement location="${tools}/sqlite/${sqlite-jdbc}.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
@@ -243,7 +245,7 @@ target: compile
   >
   	
     <classpath>
-       <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+       <pathelement location="${tools}/sqlite/${sqlite-jdbc}.jar"/>
        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
        <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
@@ -336,7 +338,7 @@ target: desktop
    <zip destfile="${dist}/tc.jar">
        <zipgroupfileset file="${dist}/tc_desktop.jar"/>
        <zipgroupfileset file="${dist}/tc_deploy.jar"/>
-       <zipgroupfileset file="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+       <zipgroupfileset file="${tools}/sqlite/${sqlite-jdbc}.jar"/>
    </zip>
    <delete file="${dist}/tc_desktop.jar" />
    <delete file="${dist}/tc_deploy.jar" />
@@ -425,14 +427,19 @@ target: javadoc
 
   <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
   <mkdir dir="${output}/javadoc" />
-  <copy todir="${output}/javadoc">
-    <fileset dir="${src}"
-    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
-  </copy>
 
-  <echo message="Removing 4D and 4B methods" />
+  <!-- join lb javadoc -->  
+  <copy todir="${output}/javadoc"><fileset dir="${lb.src}" excludes="**/*4D*,tc/**,litebase/android/**"/></copy>
+  <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="public static native" value="//public static native"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="native static" value="//native static"><include name="**/*.java"/></replace>
+
+  <copy todir="${output}/javadoc">
+    <fileset dir="${src}" excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
+  </copy>
+  <echo message="Removing 4D methods" />
   <taskdef name="removemethod" classname="tc.tools.ant.RemoveMethod" classpath="${etc}/tools/ant/tctasks.jar" />
-  <removemethod methodname=".+(4B|4D)" keeporiginal="false">
+  <removemethod methodname=".+(4D)" keeporiginal="false">
     <fileset dir="${output}/javadoc" includes="totalcross/**/*.java" />
   </removemethod>
   
@@ -460,7 +467,7 @@ target: javadoc
     <arg line="-windowtitle 'TotalCross SDK ${versionStr}'"/>
     <arg line="-d ${docs}/html"/>
     <arg line="-source 1.2"/>
-    <arg line="-subpackages totalcross"/>
+    <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>
 
   <!-- replace all references in the javadocs, even if they don't create a link. -->

@@ -33,7 +33,7 @@ public class BaseContainer extends Container
    protected Bar headerBar,footerBar;
    private static Vector containerStack = new Vector(5);
    private static Image infoImg;
-   private String defaultTitle = "TotalCross API";
+   public static String defaultTitle = "TotalCross API";
    protected int gap;
    public boolean isSingleCall;
    public String info;
@@ -56,7 +56,7 @@ public class BaseContainer extends Container
          }
          
          if (infoImg == null)
-            infoImg = new Image("images/ic_dialog_info.png");
+            infoImg = new Image("ui/images/ic_dialog_info.png");
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
@@ -166,16 +166,17 @@ public class BaseContainer extends Container
    
    public void back()
    {
-      try
-      {
-         setInfo(MainMenu.DEFAULT_INFO);
-         containerStack.pop(); // pop ourself
-         Window.getTopMost().swap((Container)containerStack.peek());
-      }
-      catch (ElementNotFoundException enfe)
-      {
-         //MainWindow.exit(0); // we're the last screen, so just exit the application
-      }
+      if (!(this instanceof MainMenu))
+         try
+         {
+            setInfo(MainMenu.DEFAULT_INFO);
+            containerStack.pop(); // pop ourself
+            Window.getTopMost().swap((Container)containerStack.peek());
+         }
+         catch (ElementNotFoundException enfe)
+         {
+            //MainWindow.exit(0); // we're the last screen, so just exit the application
+         }
    }
    
    public boolean ask(String question)
@@ -184,11 +185,4 @@ public class BaseContainer extends Container
       mb.popup();
       return mb.getPressedButtonIndex() == 0;
    }
-   
-/*   
-   public void onPaint(Graphics g)
-   {
-      super.onPaint(g); 
-      g.drawCylindricShade(0xBFCFFF,Color.WHITE,0,headerBar.getY2(),width,height-footerBar.getHeight());
-   }
-*/}
+}

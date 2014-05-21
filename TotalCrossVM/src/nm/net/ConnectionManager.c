@@ -206,8 +206,9 @@ TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager na
 {
 #if defined (WIN32) || defined (ANDROID)
    char szHostAddress[16];
+   szHostAddress[0] = 0;
 
-   if (CmGetLocalHost(szHostAddress) != NO_ERROR)
+   if (CmGetLocalHost(szHostAddress) != NO_ERROR || szHostAddress[0] == 0)
       xstrcpy(szHostAddress, "127.0.0.1");
    p->retO = createStringObjectFromCharP(p->currentContext, szHostAddress, -1);
 #else
