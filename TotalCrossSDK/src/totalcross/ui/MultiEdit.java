@@ -76,7 +76,7 @@ public class MultiEdit extends Container implements Scrollable
    private int firstToDraw; //JR@0.4
    private int numberTextLines; // JR@0.4
    private int hLine; // JR@0.4. height of a line
-   private static Coord z1 = new Coord(), z2 = new Coord();
+   private Coord z1 = new Coord(), z2 = new Coord();
    private Coord z3 = new Coord();
    private Rect boardRect;
    private Rect textRect;
@@ -1189,7 +1189,8 @@ public class MultiEdit extends Container implements Scrollable
          {
             if (chars.charAt(k) <= ' ') // guich@tc166: ignore space/ENTER at line start
                k++;
-            g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+            if (k2 > k)
+               g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
          }
          if (drawDots)
          {
@@ -1205,7 +1206,7 @@ public class MultiEdit extends Container implements Scrollable
             if (drawDots) g.drawDots(textRect.x, dh, textRect.x2(), dh);
             g.backColor = back0;
          }
-    if (hasFocus && (editable || hasCursorWhenNotEditable))
+      if (hasFocus && (editable || hasCursorWhenNotEditable))
       {
          // draw cursor
          if (cursorShowing)
