@@ -175,7 +175,7 @@ static int createDirRec(TCHARP szPath, int stringSize, int slot)
    if (fileExists(szPath, slot))
       return 0;
 
-   for (nStringSize = stringSize, c = stringSize - 1; c >= szPath; c--, nStringSize--)
+   for (nStringSize = stringSize, c = szPath - 1; c >= szPath; c--, nStringSize--)
       if (*c == '/')
       {
           *c = 0;
