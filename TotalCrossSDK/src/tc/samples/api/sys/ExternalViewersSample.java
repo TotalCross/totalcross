@@ -58,6 +58,7 @@ public class ExternalViewersSample extends BaseContainer
       String fullPath = sdcardPath+name;
       if (!new File(fullPath).exists())
       {
+         try {new File(Convert.getFilePath(fullPath)).createDir();} catch (Exception e) {}
          File f = new File(fullPath,File.CREATE_EMPTY);
          byte[] b = Vm.getFile(name);
          f.writeBytes(b);
