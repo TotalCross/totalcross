@@ -1609,10 +1609,10 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       size+=2;
       if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) < (uint32)size)
       {
-         *xPointsObj = createArrayObject(currentContext, INT_ARRAY, size);
+         *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
          if (*xPointsObj == null)
             return;
-         *yPointsObj = createArrayObject(currentContext, INT_ARRAY, size);
+         *yPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
          if (*yPointsObj == null)
          {
             setObjectLock(*xPointsObj, UNLOCKED);
@@ -1725,7 +1725,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       endIndex--;
    // step 6: fill or draw the polygons
    endIndex++;
-   if (pie)
+   if (pie && fill)
    {
       // connect two lines from the center to the two edges of the arc
       oldX1 = xPoints[endIndex];
@@ -1752,13 +1752,18 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
          fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);
       if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, c);
    }
-   if (pie)  // restore saved points
+   if (pie && fill)  // restore saved points
    {
       endIndex-=2;
       xPoints[endIndex]   = oldX1;
       yPoints[endIndex]   = oldY1;
       xPoints[endIndex+1] = oldX2;
       yPoints[endIndex+1] = oldY2;
+   }
+   if (!gradient && pie) // connect two lines from the center to the two edges of the arc
+   {
+      drawLine(currentContext,g, xc,yc, xc+xPoints[startIndex], yc+yPoints[startIndex], c);
+      drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex],   yc+yPoints[endIndex], c);
    }
 }
 ////////////////////////////////////////////////////////////////////////////

@@ -294,7 +294,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       }
       glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
-      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINE_LOOP, 0,n); GL_CHECK_ERROR  
+      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,n); GL_CHECK_ERROR
       glClearClip();
    }
 }
