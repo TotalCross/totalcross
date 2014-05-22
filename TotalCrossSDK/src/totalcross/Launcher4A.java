@@ -57,7 +57,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean appPaused;
    static PhoneListener phoneListener;
    static boolean showingAlert;
-   static int deviceFontHeight; // guich@tc126_69
+   public static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
    private static android.text.ClipboardManager clip;
