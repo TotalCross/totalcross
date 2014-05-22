@@ -36,6 +36,7 @@ import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.zip.*;
 
@@ -1044,19 +1045,42 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[0])};
       }
       else
-      {         
-         Geocoder g = new Geocoder(instance.getContext());
-         List<Address> al = g.getFromLocationName(address, 1);
-         if (al != null && al.size() > 0)
-         {
-            Address a = al.get(0);
-            if (a.hasLatitude() && a.hasLongitude())
-               return new double[]{a.getLatitude(),a.getLongitude()};
-         }
+      {
+         return getGeocode(address);
       }
       return null;
    }
    
+   private static double[] getGeocode(String address)
+   {
+      try
+      {
+         // connect to map web service
+         StringBuilder urlString = new StringBuilder(128).
+         append("http://maps.googleapis.com/maps/api/geocode/xml?address=").append(address.replace("  "," ").replace(' ','+')).append("&sensor=false");
+         //AndroidUtils.debug(urlString.toString());
+         HttpURLConnection urlConnection = (HttpURLConnection) new URL(urlString.toString()).openConnection();
+         urlConnection.connect();
+         byte[] bytes = AndroidUtils.readFully(urlConnection.getInputStream());
+         String s = new String(bytes).toLowerCase();
+         //AndroidUtils.debug(s);
+         if (s.contains("<location_type>approximate</location_type>"))
+            return null;
+         int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>",idx1);
+         int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>",idx1);
+         if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1)
+            return null;
+         String lat = s.substring(idx1+5,idx2);
+         String lon = s.substring(idx3+5,idx4);
+         return new double[]{Double.parseDouble(lat),Double.parseDouble(lon)};
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         return null;
+      }
+   }
+
    public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
    {
       boolean tryAgain = false;
