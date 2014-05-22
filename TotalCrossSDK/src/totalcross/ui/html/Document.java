@@ -138,8 +138,7 @@ public class Document extends ScrollContainer
       }
       catch (Exception e)
       {
-         if (Settings.onJavaSE)
-            Vm.debug(e.getMessage());
+         e.printStackTrace();
       }
       return null;
    }
