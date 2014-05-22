@@ -1972,6 +1972,7 @@ public class LitebaseConnection
          ByteArrayStream bas = plainDB.bas;
          DataStreamLB dataStream = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography. 
          buffer = bas.getBuffer();
+         boolean corrupted;
          int rows = plainDB.rowCount,
              crc32,
              rowid,
@@ -1999,6 +2000,7 @@ public class LitebaseConnection
          while (--i >= 0) // Checks all table records.
          {
             plainDB.read(i);
+            corrupted = false;
             
             if (isZero(buffer)) // juliana@268_3: Now does not do anything if there are only zeros in a row and removes them.
             {
@@ -2017,29 +2019,35 @@ public class LitebaseConnection
                
                // juliana@230_12: improved recover table to take .dbo data into consideration.
                crc32 = Table.updateCRC32(buffer, len, 0, useCryptoAux);
-               
+
                if (table.version == Table.VERSION)
                {
                   j = columnCount;
                   while (--j > 0)
                      record[j].asInt = -1;
                   
-                  table.readRecord(record, i, 0, null, null, false, null);
-                  
-                  j = columnCount;
-                  while (--j > 0)
-                     if ((types[j] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) 
-                      && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
-                     {
-                        byteArray = Utils.toByteArray(record[j].asString);
-                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
-                     }
-                     else if (types[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
-                     {  
-                        intArray[0] = record[j].asInt;
-                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
-                     }
-                  
+                  try
+                  {
+                     table.readRecord(record, i, 0, null, null, false, null);
+                     
+                     j = columnCount;
+                     while (--j > 0)
+                        if ((types[j] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) 
+                         && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                        {
+                           byteArray = Utils.toByteArray(record[j].asString);
+                           crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32, false);
+                        }
+                        else if (types[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                        {  
+                           intArray[0] = record[j].asInt;
+                           crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32, false);
+                        }
+                  }
+                  catch (DriverException exception)
+                  {
+                     corrupted = true;
+                  }                    
                }
                
                dataStream.skipBytes(len);
@@ -2049,7 +2057,7 @@ public class LitebaseConnection
                   plainDB.rewrite(i);
                   table.auxRowId = (rowid & Utils.ROW_ID_MASK) + 1;                   
                }
-               else if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
+               else if (crc32 != dataStream.readInt() && !corrupted) // Deletes and invalidates corrupted records.
                {
                   bas.reset();
                   dataStream.writeInt(Utils.ROW_ATTR_DELETED);
