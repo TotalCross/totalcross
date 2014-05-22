@@ -169,16 +169,12 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    if (path[len-1] == '/') // remove leading slash
       path[len-1] = 0;
 
-#ifdef WP8
    {
 	   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
 	   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
 	   GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
 	   fileAttributes = f_attr_ex.dwFileAttributes;
    }
-#else
-   fileAttributes = GetFileAttributes(path);
-#endif
 
    if (fileAttributes == INVALID_ATTR_VALUE) //Checks if file exists.
       return ERROR_FILE_NOT_FOUND;
