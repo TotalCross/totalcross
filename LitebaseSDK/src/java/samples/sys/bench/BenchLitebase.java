@@ -62,6 +62,7 @@ public class BenchLitebase extends MainWindow
       if (Settings.onJavaSE)
          totalcross.sys.Settings.showDesktopMessages = false;
       Vm.tweak(Vm.TWEAK_DUMP_MEM_STATS,true);
+      Vm.debug(Vm.ALTERNATIVE_DEBUG);
    }
 
    /**

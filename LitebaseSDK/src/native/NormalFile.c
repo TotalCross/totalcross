@@ -522,7 +522,7 @@ int32 openFile(Context context, XFile* xFile, int32 mode)
       list[oldest] = xFile;      
    }
    UNLOCKVAR(files);
-   return lbfileCreate(&xFile->file, xFile->fullPath, mode, null);
+   return lbfileCreate(&xFile->file, xFile->fullPath, mode);
 }
 
 /**
