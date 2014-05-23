@@ -5345,6 +5345,29 @@ So there you have it, how to do OTA updates on iOS without needing the App
  
 \end_layout
 
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note that after iOS 7.1, the plist file must be server over an https connection.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Debugging
 \end_layout
