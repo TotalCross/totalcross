@@ -126,8 +126,8 @@ public class PrinterZebra extends BaseContainer
    Button btnRadioOn, btnDiscOn, btnRadioOff, btnListPaired, btnListUnpaired, btnConnect;
    Label lstatus;
    TimerEvent timer;
-   ListBox loglist;
    Check chUnsec;
+   static PrinterZebra instance;
    
    private void listDevices(String tit, RemoteDevice[] rd)
    {
@@ -138,7 +138,7 @@ public class PrinterZebra extends BaseContainer
          for (int i = 0; i < rd.length; i++)
          {
             log(rd[i]);
-            loglist.ihtBackColors.put(loglist.size()-1, Color.GREEN);
+            lblog.ihtBackColors.put(lblog.size()-1, Color.GREEN);
          }            
    }
 
@@ -147,6 +147,7 @@ public class PrinterZebra extends BaseContainer
       try
       {
          super.initUI();
+         instance = this;
          int gap = fmH/2;
          add(btnRadioOn = new Button("set radio on"),LEFT,TOP+2);
          add(btnRadioOff = new Button("set radio off"),AFTER+gap,SAME);
@@ -157,12 +158,8 @@ public class PrinterZebra extends BaseContainer
          add(chUnsec = new Check("Unsecure connection"),LEFT,AFTER+gap,FILL,SAME);
          btnConnect.setEnabled(false);
          add(lstatus = new Label("",CENTER),LEFT,BOTTOM);
-         loglist = new ListBox();
-         loglist.setCursorColor(backColor);
-         loglist.enableHorizontalScroll();
-         loglist.ihtBackColors = new IntHashtable(30);
-         //loglist.setCursorColor(loglist.getBackColor());
-         add(loglist,LEFT,AFTER+gap,FILL,FIT,chUnsec);
+         addLog(LEFT,AFTER+gap,FILL,FIT,chUnsec);
+         lblog.ihtBackColors = new IntHashtable(30);
          timer = addTimer(200);
          updateButtonState(false,false);
       }
@@ -172,11 +169,10 @@ public class PrinterZebra extends BaseContainer
       }
    }
    
-   private void log(Object s)
+   public static void log(Object s)
    {
-      loglist.add(s);
-      loglist.selectLast();
-      loglistSelected();
+      BaseContainer.log(s);
+      instance.loglistSelected();
    }
 
    public void onEvent(Event e)
@@ -206,7 +202,7 @@ public class PrinterZebra extends BaseContainer
                }
                break;
             case ControlEvent.PRESSED:
-               if (e.target == loglist)
+               if (e.target == lblog)
                   loglistSelected();
                else
                if (e.target == btnRadioOff)
@@ -226,7 +222,7 @@ public class PrinterZebra extends BaseContainer
                else
                if (e.target == btnConnect)
                {
-                  Object sel = loglist.getSelectedItem();
+                  Object sel = lblog.getSelectedItem();
                   if (sel != null && sel instanceof RemoteDevice)
                   {
                      boolean printIt = true;//ask("This test currently only works with a CPCL / CPL compatible bluetooth printer (like Zebra MZ 320). Do you have such printer attached and want to print a test page?");
@@ -303,7 +299,7 @@ public class PrinterZebra extends BaseContainer
 
    private void loglistSelected()
    {
-      Object sel = loglist.getSelectedItem();
+      Object sel = lblog.getSelectedItem();
       boolean ok = sel != null && sel instanceof RemoteDevice;
       btnConnect.setEnabled(ok);
       btnConnect.setBackColor(ok ? Color.GREEN : backColor);

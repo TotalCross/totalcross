@@ -44,13 +44,15 @@ public class ChartSample extends BaseContainer
       ScrollContainer sc = new ScrollContainer(false, true);
       sc.setInsets(gap,gap,gap,gap);
       add(sc,LEFT,TOP,FILL,FILL);
-
+      int color1 = Chart.COLOR2;
+      int color2 = Chart.COLOR3;
+      int color3 = Chart.COLOR4;
       // setup the column chart
       String[] names = {"Jan", "Feb", "Mar", "Apr"};
       column = new ColumnChart(names);
-      column.series.addElement(new Series("Rice", new double[] {1000, 1020, 1040, 1060}, Color.YELLOW));
-      column.series.addElement(new Series("Beans", new double[] {850, 755, 859, 964}, Color.GREEN));
-      column.series.addElement(new Series("Oil", new double[] {930, 837, 943, 1000}, Color.RED));
+      column.series.addElement(new Series("Rice", new double[] {1000, 1020, 1040, 1060}, color1));
+      column.series.addElement(new Series("Beans", new double[] {850, 755, 859, 964},    color2));
+      column.series.addElement(new Series("Oil", new double[] {930, 837, 943, 1000},     color3));
 
       column.setTitle("Sales Projection");
       column.setYAxis(0, 1100, 11);
@@ -109,9 +111,9 @@ public class ChartSample extends BaseContainer
 
       // setup the line chart
       line = new LineChart(names);
-      line.series.addElement(new Series("Rice", new double[] {100, 102, 104, 106}, Color.YELLOW));
-      line.series.addElement(new Series("Beans", new double[] {150, 155, 159, 164}, Color.GREEN));
-      line.series.addElement(new Series("Oil", new double[] {130, 137, 143, 150}, Color.RED));
+      line.series.addElement(new Series("Rice", new double[] {100, 102, 104, 106}, color1));
+      line.series.addElement(new Series("Beans", new double[] {150, 155, 159, 164}, color2));
+      line.series.addElement(new Series("Oil", new double[] {130, 137, 143, 150}, color3));
       line.lineThickness = 2;
       line.setTitle("Sales Projection");
       line.setYAxis(0, 200, 10);
@@ -120,9 +122,9 @@ public class ChartSample extends BaseContainer
 
       // setup the pie chart
       pie = new PieChart();
-      pie.series.addElement(new Series("Rice", new double[] {100}, Color.YELLOW));
-      pie.series.addElement(new Series("Beans", new double[] {150}, Color.GREEN));
-      pie.series.addElement(new Series("Oil", new double[] {130}, Color.RED));
+      pie.series.addElement(new Series("Rice", new double[] {100}, color1));
+      pie.series.addElement(new Series("Beans", new double[] {150}, color2));
+      pie.series.addElement(new Series("Oil", new double[] {130}, color3));
       pie.selectedSeries = 2;
       pie.yDecimalPlaces = 1; // 1 decimal place
       pie.setTitle("Profit Share");

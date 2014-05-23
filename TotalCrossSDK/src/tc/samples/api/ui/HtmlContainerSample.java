@@ -38,14 +38,15 @@ public class HtmlContainerSample extends BaseContainer
    private String[] samples = 
    {
       "",
-      "ui/data/Sample0.html",
-      "ui/data/Sample1.html",
-      "ui/data/Sample2.html",
-      "ui/data/Sample3.html",
-      "ui/data/Sample4.html",
-      "ui/data/Sample5.html",
-      "ui/data/Sample6.html",
+      "tc/samples/api/ui/data/Sample0.html",
+      "tc/samples/api/ui/data/Sample1.html",
+      "tc/samples/api/ui/data/Sample2.html",
+      "tc/samples/api/ui/data/Sample3.html",
+      "tc/samples/api/ui/data/Sample4.html",
+      "tc/samples/api/ui/data/Sample5.html",
+      "tc/samples/api/ui/data/Sample6.html",
    };
+   String gif = "tc/samples/api/ui/data/totalcross.gif"; // in the html we didnt put the full path, so we put here so tc.Deploy can store the gif in the tcz
    
    public void initUI()
    {

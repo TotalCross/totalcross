@@ -49,12 +49,12 @@ public class BaseContainer extends Container
       {
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
-         if (isMainMenu) 
+/*         if (isMainMenu) 
          {
             backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
             setForeColor(0xBFCFFF);
          }
-         
+*/         
          if (infoImg == null)
             infoImg = new Image("ui/images/ic_dialog_info.png");
          int c1 = 0x0A246A;
@@ -184,5 +184,46 @@ public class BaseContainer extends Container
       MessageBox mb = new MessageBox("Question", question, new String[]{"Yes","No"});
       mb.popup();
       return mb.getPressedButtonIndex() == 0;
+   }
+   
+   // single place to add and log messages
+   protected static ListBox lblog;
+   public void addLog(int x, int y, int w, int h, Control rel)
+   {
+      ListBox.itemHeightFactor = 1;
+      add(lblog = new ListBox(),x,y,w,h,rel);
+      ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR;
+   }
+
+   // a log method that runs safely on threads
+   public static void log(Object s)
+   {
+      log(s,true);
+   }
+   public static void log(Object s, boolean selLast)
+   {
+      if (s == null) return;
+      final Object _s = s;
+      final boolean _selLast = selLast;
+      if (MainWindow.isMainThread())
+      {
+         if (s instanceof String)
+            lblog.addWrapping((String)s);
+         else
+            lblog.add(s);
+         if (selLast) lblog.selectLast();
+      }
+      else
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
+      {
+         public void run()
+         {
+            if (_s instanceof String)
+               lblog.addWrapping((String)_s);
+            else
+               lblog.add(_s);
+            if (_selLast) lblog.selectLast();
+         }
+      });
    }
 }

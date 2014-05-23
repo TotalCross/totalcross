@@ -85,7 +85,6 @@ package tc.samples.api.xml;
 
 import tc.samples.api.*;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -96,7 +95,6 @@ public class SoapSample extends BaseContainer
    ComboBox cbTest;
    Button btOk;
    Edit edRemote;
-   ListBox lbStatus;
 
    int selectedServer;
 
@@ -129,16 +127,7 @@ public class SoapSample extends BaseContainer
       btOk.setBackColor(Color.ORANGE);
       btOk.setRect(AFTER+fmH,SAME, FILL, PREFERRED);
 
-      add(lbStatus = new ListBox());
-      lbStatus.enableHorizontalScroll();
-      lbStatus.setRect(LEFT,AFTER+2,FILL,FILL);
-   }
-
-   private void log(String s)
-   {
-      lbStatus.add(s);
-      lbStatus.selectLast();
-      if (Settings.onJavaSE) Vm.debug(s);
+      addLog(LEFT,AFTER+2,FILL,FILL,null);
    }
 
    public void executeTest(int test)
@@ -173,7 +162,7 @@ public class SoapSample extends BaseContainer
          case ControlEvent.PRESSED:
             if (e.target == btOk && cbTest.getSelectedIndex() >= 0)
             {
-               lbStatus.removeAll();
+               lblog.removeAll();
                executeTest(cbTest.getSelectedIndex()-1);
             }
             break;

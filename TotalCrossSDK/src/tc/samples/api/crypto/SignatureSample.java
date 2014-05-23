@@ -32,7 +32,6 @@ public class SignatureSample extends BaseContainer
    private Edit edtInput;
    private ComboBox cboSignatures;
    private Button btnGo;
-   private ListBox lboResults;
    
    private static final byte[] RSA_N = new byte[]
    {
@@ -92,13 +91,11 @@ public class SignatureSample extends BaseContainer
       cboSignatures.setSelectedIndex(0);
       
       btnGo = new Button(" Go! ");
-      lboResults = new ListBox();
-      lboResults.enableHorizontalScroll();
       
-      add(edtInput, LEFT + 2, TOP + 2, FILL - 2, PREFERRED);
-      add(cboSignatures, LEFT + 2, AFTER + 2, PREFERRED, PREFERRED);
+      add(edtInput, LEFT + 2, TOP + fmH/4, FILL - 2, PREFERRED);
+      add(cboSignatures, LEFT + 2, AFTER + fmH/4, PREFERRED, PREFERRED);
       add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
-      add(lboResults, LEFT + 2, AFTER + 2, FILL - 2, FILL - 2);
+      addLog(LEFT + 2, AFTER + fmH/4, FILL - 2, FILL - 2,null);
    }
    
    public void onEvent(Event e)
@@ -115,24 +112,23 @@ public class SignatureSample extends BaseContainer
                Signature signer = (Signature)signatures[index];
                try
                {
-                  lboResults.add("Message: '" + message + "'");
+                  log("Message: '" + message + "'");
                   signer.reset(Signature.OPERATION_SIGN, sigKeys[index]);
                   signer.update(data);
                   byte[] signature = signer.sign();
                   
-                  lboResults.add("Signature: " + Convert.bytesToHexString(signature) + " (" + signature.length + " bytes)");
+                  log("Signature: " + Convert.bytesToHexString(signature) + " (" + signature.length + " bytes)");
                   
                   signer.reset(Signature.OPERATION_VERIFY, verKeys[index]);
                   signer.update(data);
                   
-                  lboResults.add(signer.verify(signature) ? "Signature verified!" : "Invalid signature!");
+                  log(signer.verify(signature) ? "Signature verified!" : "Invalid signature!");
                }
                catch (CryptoException ex)
                {
-                  lboResults.add("Exception: " + ex.toString());
+                  log("Exception: " + ex.toString());
                }
-               lboResults.add("=========================");
-               lboResults.selectLast();
+               log("=========================");
             }
             break;
       }

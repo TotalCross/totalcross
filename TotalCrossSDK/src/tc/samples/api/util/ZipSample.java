@@ -22,21 +22,19 @@ import tc.samples.api.*;
 
 import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.util.zip.*;
 
 public class ZipSample extends BaseContainer
 {
    byte[] buf = new byte[1024];
-   ListBox lb;
 
    public void initUI()
    {
       super.initUI();
       try
       {
-         add(lb = new ListBox(),LEFT,TOP,FILL,FILL);
+         addLog(LEFT,TOP,FILL,FILL,null);
          FileChooserBox fcb = new FileChooserBox(null);
          fcb.setTitle("Select the files to Zip");
          fcb.multipleSelection = true;
@@ -99,11 +97,5 @@ public class ZipSample extends BaseContainer
       {
          e.printStackTrace();
       }
-   }
-   
-   private void log(String s)
-   {
-      lb.add(s);
-      lb.selectLast();
    }
 }

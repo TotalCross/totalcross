@@ -70,7 +70,7 @@ public class Deployer4WP8
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
       if (extras.length > 0)
          for (int i = 0; i < extras.length; i++)
-            sz.putEntry(extras[i], new File(Utils.getFileName(extras[i])));
+            sz.putEntry(extras[i], new File(extras[i]));
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));
