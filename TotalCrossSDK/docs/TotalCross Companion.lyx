@@ -16644,7 +16644,7 @@ Label has three constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Label()
@@ -16656,7 +16656,7 @@ FILL
  as the preferred width.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Label(String
@@ -16671,7 +16671,7 @@ text)
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Label(String
@@ -17436,7 +17436,7 @@ It has only one constructor:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Check(String
@@ -17882,7 +17882,7 @@ It has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Radio(String
@@ -17894,7 +17894,7 @@ text)
  Creates a radio control displaying the given text.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Radio(String
@@ -18718,7 +18718,7 @@ ComboBox
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox()
@@ -18726,7 +18726,7 @@ ComboBox()
  Creates an empty combo box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox(ListBox
@@ -18737,6 +18737,10 @@ userListBox)
 \family default
  Creates a combo box with a 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 ComboBoxDropDown
 \family default
  containing the given list box.
@@ -18763,7 +18767,7 @@ true
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox(Object[]
@@ -18775,7 +18779,7 @@ items)
  Creates a combo box with the given items.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox(ComboBoxDropDown
@@ -18873,7 +18877,7 @@ add()
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object
@@ -18891,7 +18895,7 @@ add(Object[] items)
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -18903,7 +18907,7 @@ items)
  Adds an array of objects to the combo box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -19050,7 +19054,7 @@ To remove items from a combo box, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(int
@@ -19062,7 +19066,7 @@ itemIndex)
  Removes an object from the combo box by its index.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(Object
@@ -19074,7 +19078,7 @@ item)
  Removes the given object from the combo box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 removeAll()
@@ -19571,7 +19575,7 @@ List box has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ListBox() 
@@ -19579,7 +19583,7 @@ ListBox()
 Creates an empty list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ListBox(Object[]
@@ -19598,7 +19602,7 @@ You can append new items to your list box using one of the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object
@@ -19610,7 +19614,7 @@ item)
  Adds an object to the list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -19622,7 +19626,7 @@ moreItems)
  Adds an array of objects to the list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -19779,7 +19783,7 @@ To remove items from a list box, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(int
@@ -19791,7 +19795,7 @@ itemIndex)
  Removes an object from the list box by its index.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(Object
@@ -19803,7 +19807,7 @@ item)
  Removes the given object from the list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 removeAll()
@@ -19931,7 +19935,7 @@ ListBox
 \end_layout
 
 \begin_deeper
-\begin_layout Standard
+\begin_layout Itemize
 
 \family typewriter
 protected
@@ -19973,7 +19977,7 @@ int
 dy)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 
 \family typewriter
 protected
@@ -19991,7 +19995,7 @@ getItemWidth(int
 index)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 
 \family typewriter
 protected
@@ -20543,7 +20547,7 @@ MultiEdit
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 MultiEdit()
@@ -20565,7 +20569,7 @@ FIT
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 MultiEdit(int
@@ -20584,6 +20588,10 @@ spaceBetweenLines)
 \family default
  Creates a 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 MultiEdit
 \family default
  with a vertical scrollbar, the given number of rows and the default width
@@ -20602,7 +20610,7 @@ setRect()
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 MultiEdit(String
@@ -20627,6 +20635,10 @@ int
 
 spaceBetweenLines) 
 \family default
+
+\begin_inset Newline newline
+\end_inset
+
 Creates a 
 \family typewriter
 MultiEdit
@@ -20727,7 +20739,7 @@ MultiEdit
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 scrollToBottom()
@@ -20735,7 +20747,7 @@ scrollToBottom()
  Moves the scroll to the bottom.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 scrollToLine(int
@@ -20747,7 +20759,7 @@ line)
  Scrolls to the gives text line.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 scrollToTop()
@@ -21525,7 +21537,7 @@ Grid has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Grid(String[]
@@ -21558,7 +21570,7 @@ LEFT
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Grid(String[]
@@ -24531,7 +24543,7 @@ b4
  of the above picture:
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="3" columns="2">
 <features islongtable="true" longtabularalignment="center">
@@ -24656,22 +24668,22 @@ prints the following on the console:
 inline false
 status open
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@131f71a, dir: 1 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@15601ea, dir: 2 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@197d257, dir: 3 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@7259da, dir: 4
 \end_layout
