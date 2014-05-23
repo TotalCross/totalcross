@@ -406,7 +406,7 @@ LatexCommand tableofcontents
 THE PLATFORM
 \end_layout
 
-\begin_layout Chapterstar
+\begin_layout Chapter*
 Welcome
 \end_layout
 
@@ -12261,7 +12261,7 @@ totalcross.ui.Control
  JavaDoc.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 FontMetrics
@@ -12283,7 +12283,7 @@ Font
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -12304,7 +12304,7 @@ PushButtonGroup
  index and discover which one of the five had issued the event.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Object
@@ -12328,7 +12328,7 @@ int
 .
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -12341,7 +12341,7 @@ clearValueInt
  The default is: 0.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 String
@@ -12354,7 +12354,7 @@ clearValueStr
  The default is an empty string: “”.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 isHighlighting
@@ -12416,7 +12416,7 @@ true
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(int
@@ -12454,7 +12454,7 @@ height)
  control.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(Rect
@@ -12470,7 +12470,7 @@ setRect(r.x, r.y, r.width, r.height)
 .
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(int
@@ -12511,11 +12511,15 @@ Control
 
 relative)
 \family default
- Same as the first one, but coordinates will be relative to the given control
+
+\begin_inset Newline newline
+\end_inset
+
+Same as the first one, but coordinates will be relative to the given control
  instead of the last one added.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(int
@@ -12555,7 +12559,7 @@ Control
 \end_inset
 
 relative,
-\begin_inset space ~
+\begin_inset Newline newline
 \end_inset
 
 boolean
@@ -12583,7 +12587,7 @@ false
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12621,7 +12625,7 @@ add(control);
 control.setRect(x, y, PREFERRED, PREFERRED);
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12667,7 +12671,7 @@ add(control);
 control.setRect(x, y, PREFERRED, PREFERRED, relative);
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12721,7 +12725,7 @@ add(control);
 control.setRect(x, y, width, height);
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12761,7 +12765,7 @@ int
 \end_inset
 
 height,
-\begin_inset space ~
+\begin_inset Newline newline
 \end_inset
 
 Control
@@ -12817,7 +12821,7 @@ after
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 addTimer(int
@@ -12861,7 +12865,7 @@ addTimerListener()
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 removeTimer(Timer
@@ -12887,7 +12891,7 @@ false
  is returned if the timer could not be found (meaning it was not active).
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 getX()
@@ -12919,7 +12923,7 @@ getHeight()
  Returns the control’s bounds.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 getX2()
@@ -12946,7 +12950,7 @@ y+height-1
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 getParentWindow()
@@ -12963,7 +12967,7 @@ null
  If this control is a window, will return itself.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 repaint()
@@ -12996,7 +13000,7 @@ Window.needsPaint = true;
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 repaintNow()
@@ -13006,7 +13010,7 @@ repaintNow()
  (useful if you're removing some controls from a container) .
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setEnabled(boolean
@@ -13019,7 +13023,7 @@ enabled)
  The control’s appearance is also changed to reflect the state.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setBackColor(int
@@ -13031,7 +13035,7 @@ back)/getBackColor()
  Gets or sets the background color for the control.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setForeColor(int
@@ -13074,7 +13078,7 @@ getBackColor()
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 clear()
@@ -13114,7 +13118,7 @@ clearValueStr()
  these two fields.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 reposition()
@@ -13130,7 +13134,7 @@ setRect()
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 onPaint(Graphics
@@ -13156,7 +13160,7 @@ Graphics
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 onBoundsChanged()
@@ -13169,7 +13173,7 @@ setRect()
  Good to compute positions that are dependant on the bounds.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 onWindowPaintFinished()
@@ -28750,8 +28754,12 @@ ButtonMenu
 \end_layout
 
 \begin_layout Standard
-Some images of it can be found in the UIControls sample when scrolling its
- main window:
+Some images of it can be found in the old UIControls sample (now inside
+ the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) when scrolling its main window:
 \end_layout
 
 \begin_layout Standard
@@ -36267,7 +36275,12 @@ public void initUI()
 \end_layout
 
 \begin_layout Standard
-Another example with an animated GIF: (adapted from GifAnimatedTest sample)
+Another example with an animated GIF: (adapted from the old GifAnimatedTest
+ sample now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
