@@ -1,5 +1,5 @@
-#LyX 2.1 created this file. For more info see http://www.lyx.org/
-\lyxformat 474
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
 \begin_document
 \begin_header
 \textclass memoir
@@ -109,6 +109,7 @@ enumitem
 \maintain_unincluded_children false
 \begin_local_layout
 Input fieldlist.inc
+
 Style Chapterstar
 Copystyle Chapter
 LatexName chapterstar
@@ -127,13 +128,13 @@ End
 \font_roman lmodern
 \font_sans default
 \font_typewriter courier
-\font_math auto
 \font_default_family default
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
 \font_sf_scale 100
 \font_tt_scale 100
+
 \graphics default
 \default_output_format default
 \output_sync 1
@@ -156,24 +157,15 @@ End
 \pdf_quoted_options "linkcolor=black"
 \papersize a4paper
 \use_geometry true
-\use_package amsmath 1
-\use_package amssymb 1
-\use_package cancel 0
-\use_package esint 1
-\use_package mathdots 1
-\use_package mathtools 0
-\use_package mhchem 1
-\use_package stackrel 0
-\use_package stmaryrd 0
-\use_package undertilde 0
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
 \cite_engine basic
-\cite_engine_type default
-\biblio_style plain
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
 \suppress_date true
-\justification true
 \use_refstyle 1
 \index Index
 \shortcut idx
@@ -6864,8 +6856,8 @@ ed:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="23" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="left" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="left" valignment="top" width="0">
 <column alignment="center" valignment="top" width="40page%">
 <row>
 <cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
@@ -10361,7 +10353,7 @@ In the pictures below you can see snapshots of the of the old UIGadgets
 \size small
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" tabularvalignment="middle" tabularwidth="100col%">
+<features tabularvalignment="middle" tabularwidth="100col%">
 <column alignment="center" valignment="top" width="50col%">
 <column alignment="center" valignment="top" width="50col%">
 <row>
@@ -10479,7 +10471,7 @@ iPhone
 \size small
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" tabularvalignment="middle" tabularwidth="100col%">
+<features tabularvalignment="middle" tabularwidth="100col%">
 <column alignment="center" valignment="top" width="50col%">
 <column alignment="center" valignment="top" width="50col%">
 <row>
@@ -10515,8 +10507,8 @@ iPhone
 \size small
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="1">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
@@ -10598,7 +10590,7 @@ Windows
 \size small
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" tabularvalignment="middle" tabularwidth="100col%">
+<features tabularvalignment="middle" tabularwidth="100col%">
 <column alignment="center" valignment="top" width="50col%">
 <column alignment="center" valignment="top" width="50col%">
 <row>
@@ -10680,8 +10672,8 @@ Windows
 \size small
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="1">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
@@ -14755,9 +14747,9 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="3" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
-<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
@@ -15290,7 +15282,7 @@ false
  
 \end_layout
 
-\begin_layout Standard
+\begin_layout )tandard
 Sample code:
 \end_layout
 
@@ -15576,8 +15568,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="4" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -15746,7 +15738,7 @@ setMaxLength()
  If you set a text greater than the maximum length, it will be truncated.
 \end_layout
 
-\begin_layout Standard
+\begin_layout pubmize
 You can also set the valid characters that can be entered by using the 
 \family typewriter
 setValidChars()
@@ -16618,7 +16610,7 @@ n
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -16652,7 +16644,7 @@ Label has three constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Label()
@@ -16664,7 +16656,7 @@ FILL
  as the preferred width.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Label(String
@@ -16679,7 +16671,7 @@ text)
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Label(String
@@ -17285,8 +17277,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -17328,7 +17320,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -17444,7 +17436,7 @@ It has only one constructor:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Check(String
@@ -17707,8 +17699,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -17750,7 +17742,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -17890,7 +17882,7 @@ It has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Radio(String
@@ -17902,7 +17894,7 @@ text)
  Creates a radio control displaying the given text.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Radio(String
@@ -18520,8 +18512,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -18606,8 +18598,8 @@ ListBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -18649,7 +18641,7 @@ ListBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -18677,8 +18669,8 @@ ListBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -18726,7 +18718,7 @@ ComboBox
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 ComboBox()
@@ -18734,7 +18726,7 @@ ComboBox()
  Creates an empty combo box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 ComboBox(ListBox
@@ -18771,7 +18763,7 @@ true
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 ComboBox(Object[]
@@ -18783,7 +18775,7 @@ items)
  Creates a combo box with the given items.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 ComboBox(ComboBoxDropDown
@@ -18881,7 +18873,7 @@ add()
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 add(Object
@@ -18899,7 +18891,7 @@ add(Object[] items)
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 add(Object[]
@@ -18911,7 +18903,7 @@ items)
  Adds an array of objects to the combo box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 add(Object[]
@@ -19058,7 +19050,7 @@ To remove items from a combo box, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 remove(int
@@ -19070,7 +19062,7 @@ itemIndex)
  Removes an object from the combo box by its index.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 remove(Object
@@ -19082,7 +19074,7 @@ item)
  Removes the given object from the combo box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 removeAll()
@@ -19350,8 +19342,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -19393,7 +19385,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -19579,7 +19571,7 @@ List box has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 ListBox() 
@@ -19587,7 +19579,7 @@ ListBox()
 Creates an empty list box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 ListBox(Object[]
@@ -19606,7 +19598,7 @@ You can append new items to your list box using one of the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 add(Object
@@ -19618,7 +19610,7 @@ item)
  Adds an object to the list box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 add(Object[]
@@ -19630,7 +19622,7 @@ moreItems)
  Adds an array of objects to the list box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 add(Object[]
@@ -19787,7 +19779,7 @@ To remove items from a list box, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 remove(int
@@ -19799,7 +19791,7 @@ itemIndex)
  Removes an object from the list box by its index.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 remove(Object
@@ -19811,7 +19803,7 @@ item)
  Removes the given object from the list box.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 removeAll()
@@ -19939,7 +19931,7 @@ ListBox
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout Standard
 
 \family typewriter
 protected
@@ -19981,7 +19973,7 @@ int
 dy)
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 
 \family typewriter
 protected
@@ -19999,7 +19991,7 @@ getItemWidth(int
 index)
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 
 \family typewriter
 protected
@@ -20313,8 +20305,8 @@ MultiEdit
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -20399,8 +20391,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -20442,7 +20434,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -20551,7 +20543,7 @@ MultiEdit
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 MultiEdit()
@@ -20573,7 +20565,7 @@ FIT
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 MultiEdit(int
@@ -20610,7 +20602,7 @@ setRect()
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 MultiEdit(String
@@ -20735,7 +20727,7 @@ MultiEdit
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 scrollToBottom()
@@ -20743,7 +20735,7 @@ scrollToBottom()
  Moves the scroll to the bottom.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 scrollToLine(int
@@ -20755,7 +20747,7 @@ line)
  Scrolls to the gives text line.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 scrollToTop()
@@ -20896,8 +20888,8 @@ The first two images are from a simple grid being selected:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -20956,8 +20948,8 @@ The next samples show a grid with a check in the first column.
 \color none
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21034,8 +21026,8 @@ The next sample shows a grid with a combo box in the first column and an
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21077,7 +21069,7 @@ The next sample shows a grid with a combo box in the first column and an
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21109,8 +21101,8 @@ The next case shows the columns being sorted one at a time:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21188,8 +21180,8 @@ The next sample shows a grid with also a check and a combo box, but this
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21231,7 +21223,7 @@ The next sample shows a grid with also a check and a combo box, but this
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21263,7 +21255,7 @@ Finally, there is a grid whose first column has an image:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -21533,7 +21525,7 @@ Grid has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Grid(String[]
@@ -21566,7 +21558,7 @@ LEFT
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout FieldList
 
 \family typewriter
 Grid(String[]
@@ -23608,7 +23600,7 @@ The code above generates a screen similar to the shown below taken from
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -23999,7 +23991,7 @@ Ping_onOff.png
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -24028,8 +24020,8 @@ which results in the following screenshots (the button starts an animation
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="6" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -24243,8 +24235,8 @@ This control displays an animation that can be loaded from indexed PNG files
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="3" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -24496,7 +24488,7 @@ public class Teste extends MainWindow
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -24539,11 +24531,11 @@ b4
  of the above picture:
 \end_layout
 
-\begin_layout Standard
+\begin_layout FieldList
 \begin_inset Tabular
 <lyxtabular version="3" rows="3" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -24801,7 +24793,7 @@ which results in the following images using Android style, where the bottom
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -24829,7 +24821,7 @@ which results in the following images using Android style, where the bottom
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <row>
@@ -24942,7 +24934,7 @@ h1.startSpinner();
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25145,7 +25137,7 @@ The UIContols program has good samples on how to use this class.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25173,8 +25165,8 @@ The UIContols program has good samples on how to use this class.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25216,8 +25208,8 @@ The UIContols program has good samples on how to use this class.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25412,8 +25404,8 @@ The next images show the result of this sample and some screenshots from
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25455,8 +25447,8 @@ The next images show the result of this sample and some screenshots from
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25498,7 +25490,7 @@ The next images show the result of this sample and some screenshots from
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25576,8 +25568,8 @@ which results in the following windows:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25810,7 +25802,7 @@ which results in:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -25904,8 +25896,8 @@ Some images taken from the sample HtmlBrowser, which uses this control,
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="4" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -26257,8 +26249,8 @@ Using 32x32 images, the result of the above code is the following:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -26505,8 +26497,8 @@ The resulting window from it looks like the screenshots below:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -26557,8 +26549,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -26920,8 +26912,8 @@ The result of this sample is shown in the images below taken from UIGadgets
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27171,7 +27163,7 @@ which results in the following window:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27306,8 +27298,8 @@ MultiListBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27456,7 +27448,7 @@ ButtonMenu
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27537,7 +27529,7 @@ which results in the following using Android style:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27566,7 +27558,7 @@ The old UIGadgets sample also used a default ruler shown near the mouse
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27693,8 +27685,8 @@ which results in a window similar to the one below:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -27820,7 +27812,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <row>
@@ -27922,8 +27914,8 @@ which results in this window when the control is added to its center using
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28000,8 +27992,8 @@ Also using Android user interface style, the screenshots below from the
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28104,7 +28096,7 @@ will show this:
  
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28326,8 +28318,8 @@ which results in the following images:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28605,8 +28597,8 @@ which results in the following screenshots:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28685,7 +28677,7 @@ UIControl uses this control in almost all windows so that its components
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28781,8 +28773,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28880,7 +28872,7 @@ setMinimum()
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -28971,7 +28963,7 @@ which results in the following using Android style, which places two buttons
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29011,7 +29003,7 @@ ui
 
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <row>
@@ -29101,8 +29093,8 @@ The screenshots below from the old UIGadgets sample using Android user interface
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29323,8 +29315,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29366,7 +29358,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29394,8 +29386,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29437,7 +29429,7 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29603,8 +29595,8 @@ which results in the following window (using Android style):
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29656,7 +29648,7 @@ Tree
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29708,8 +29700,8 @@ The sample Painter uses it.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29779,8 +29771,8 @@ ui
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -29867,9 +29859,9 @@ This is a a vertical column chart.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="3" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
@@ -29995,8 +29987,8 @@ This class represents a line chart.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -30068,7 +30060,7 @@ This class represents a line chart.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -30105,8 +30097,8 @@ A simple pie chart.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -30178,7 +30170,7 @@ A simple pie chart.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -30572,7 +30564,7 @@ Bottom"}), AFTER + 2, SAME,PREFERRED,SAME);
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -30877,7 +30869,7 @@ public class TCTestWin extends MainWindow
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -32359,7 +32351,7 @@ MessageBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -33061,7 +33053,7 @@ InputBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -33467,7 +33459,7 @@ KeyboardBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -33519,7 +33511,7 @@ CURRENCY
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -33794,7 +33786,7 @@ Here is a sample from UIControls:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -34103,8 +34095,8 @@ ColorChooserBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -34158,7 +34150,7 @@ A popup window that displays any control given as parameter to the constructor
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -34422,7 +34414,7 @@ ProgressBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -34450,8 +34442,8 @@ ProgressBox
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="2" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -34668,7 +34660,7 @@ It looks like the following image taken from UIControls:
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="1" columns="1">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
@@ -36806,8 +36798,8 @@ InvalidDateException
 \align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="13" columns="1">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
@@ -43869,8 +43861,8 @@ Besides a logical exact result, each arithmetic operation has a preferred
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="5" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
@@ -51691,7 +51683,7 @@ mod)
  
 \begin_inset Tabular
 <lyxtabular version="3" rows="21" columns="2">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <row>
@@ -52164,10 +52156,10 @@ The numbers represents a group of 3.
  These are the possible permission values for each number: 
 \begin_inset Tabular
 <lyxtabular version="3" rows="9" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="0pt">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
 <row>
 <cell alignment="center" valignment="top" usebox="none">
 \begin_inset Text
@@ -57570,9 +57562,9 @@ int
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="13" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="30text%">
-<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="50text%">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
@@ -58111,9 +58103,9 @@ int
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="6" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="30text%">
-<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="50text%">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
@@ -59054,9 +59046,9 @@ target "http://www.bluetooth.org/assigned-numbers/sdp.htm"
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="7" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="40col%">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
@@ -59446,9 +59438,9 @@ target "http://www.bluetooth.org/assigned-numbers/sdp.htm"
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="16" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="35line%">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
@@ -60004,9 +59996,9 @@ ServiceRecord
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="4" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
@@ -60186,9 +60178,9 @@ target "http://www.bluetooth.org/assigned-numbers/sdp.htm"
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="17" columns="3">
-<features rotate="0" islongtable="true" longtabularalignment="center">
+<features islongtable="true" longtabularalignment="center">
 <column alignment="center" valignment="top" width="40text%">
-<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0pt">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
@@ -63819,9 +63811,9 @@ TotalCrossSDK/docs/companion_resources/ant_build
 \align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="9" columns="3">
-<features rotate="0" tabularvalignment="middle">
-<column alignment="center" valignment="top">
-<column alignment="center" valignment="top">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="40col%">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
