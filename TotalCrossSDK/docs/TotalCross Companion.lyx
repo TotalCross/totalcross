@@ -107,7 +107,6 @@
 enumitem
 \end_modules
 \maintain_unincluded_children false
-
 \language english
 \language_package default
 \inputencoding default
@@ -15725,23 +15724,6 @@ setMaxLength()
  If you set a text greater than the maximum length, it will be truncated.
 \end_layout
 
-You can also set the valid characters that can be entered by using the 
-\family typewriter
-setValidChars()
-\family default
-	method.
- They are converted to uppercase to make the verification easy.
- If 
-\family typewriter
-null
-\family default
- is passed, any character can be entered.
- The characters are case insensitive.
- If you pass "" (empty string), no characters will be able to be inputted,
- and movement, delete and copy/paste operations will also be disabled.
- There are some predefined character sets that can be localized if necessary:
-\end_layout
-
 \begin_layout Itemize
 
 \family typewriter
@@ -25887,7 +25869,7 @@ pressedLink
 \end_layout
 
 \begin_layout Standard
-Some images taken from the sample HtmlBrowser, which uses this control,
+Some images taken from the old sample HtmlBrowser, which uses this control,
  are shown here, where the application interface style was changed to Android:
 \end_layout
 
@@ -26903,8 +26885,8 @@ setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
 \end_layout
 
 \begin_layout Standard
-The result of this sample is shown in the images below taken from UIGadgets
- using Android user interface style:
+The result of this sample is shown in the images below taken from the old
+ UIGadgets sample using Android user interface style:
 \end_layout
 
 \begin_layout Standard
@@ -29851,7 +29833,12 @@ ColumnChart
 
 \begin_layout Standard
 This is a a vertical column chart.
- Below are shown some screenshots taken from CharTest:
+ Below are shown some screenshots taken from the old sample CharTest (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -29979,7 +29966,12 @@ LineChart
 
 \begin_layout Standard
 This class represents a line chart.
- Below are shown some screenshots taken from CharTest:
+ Below are shown some screenshots taken from the old CharTest sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -30089,7 +30081,12 @@ PieChart
 
 \begin_layout Standard
 A simple pie chart.
- Below are shown some screenshots taken from CharTest:
+ Below are shown some screenshots taken from the old CharTest sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -30889,10 +30886,6 @@ public class TCTestWin extends MainWindow
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Itemize
 
 \end_layout
 
@@ -33503,7 +33496,11 @@ Edit
 CURRENCY
 \family default
  and displays a calculator with six basic operations and a numeric pad.
- Here is a sample from UIControls:
+ Here is a sample from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -33778,7 +33775,11 @@ The month can be changed via keyboard using the left/right keys, and the
 \end_layout
 
 \begin_layout Standard
-Here is a sample from UIControls:
+Here is a sample from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -34401,7 +34402,11 @@ pb.unpop();
 \end_layout
 
 \begin_layout Standard
-In the UIControls sample, there is some examples using 
+In the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), there is some examples using 
 \family typewriter
 ProgressBox
 \family default
@@ -34652,7 +34657,12 @@ public void onEvent(Event e)
 \end_layout
 
 \begin_layout Standard
-It looks like the following image taken from UIControls:
+It looks like the following image taken from the old UIControls sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
