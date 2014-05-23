@@ -10193,7 +10193,7 @@ TCBase.tcz
 USER INTERFACE
 \end_layout
 
-\begin_layout Chapterstar
+\begin_layout Chapter*
 Overview
 \end_layout
 
@@ -13297,6 +13297,10 @@ PEN_UP
 \family default
  (button, list box, push button group, scrollBar) or even a 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 WINDOW_CLOSED
 \family default
  (comboBox).
@@ -14188,7 +14192,7 @@ Event
 , which provides some useful members:
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -14200,7 +14204,7 @@ type
  This is the event number, used to detect which event was posted.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Object
@@ -14229,7 +14233,7 @@ ControlEvent.PRESSED
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -14273,7 +14277,7 @@ hh:mm:ss:millis
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 boolean
@@ -28857,7 +28861,7 @@ setMaximum()
 setMinimum()
 \family default
  method (the value must always be ODD!).
- The slider is the component pointed by the mouse arrow in the UIControls
+ The slider is the component pointed by the mouse arrow in the old UIGadgets
  sample using the Android style below:
 \end_layout
 
@@ -28981,9 +28985,14 @@ which results in the following using Android style, which places two buttons
 \end_layout
 
 \begin_layout Standard
-The spacer is also used to separate the spinners in the Spinner Samples
- of UIControls and the back and next buttons from the Litebase sample PhotoDB
- (which uses the old Windows CE style):
+The spacer is also used to separate the spinners in the Spinner samples
+ of old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) and the back and next buttons from
+ the old Litebase sample PhotoDB using the old Windows CE style (now inside
+ the sample Address Book and using Android style):
 \begin_inset Newline newline
 \end_inset
 
@@ -29291,8 +29300,12 @@ setRect()
 \end_layout
 
 \begin_layout Standard
-Below are some screenshots taken from the old UIGadgets sample (using Android
- user interface style) and UIControls:
+Below are some screenshots taken from the old UIGadgets (using Android user
+ interface style) and UIControls (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) samples:
 \end_layout
 
 \begin_layout Standard
@@ -29743,7 +29756,12 @@ MultiButton
  is a control that displays a single line button with a set of titles.
  It can be used to replace a check (with on/off) or a radio (with their
  options).
- Below there is a sample taken from UIControls:
+ Below there is a sample taken from old UIControls sample (now inside the
+ 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
