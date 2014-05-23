@@ -107,20 +107,7 @@
 enumitem
 \end_modules
 \maintain_unincluded_children false
-\begin_local_layout
-Input fieldlist.inc
 
-Style Chapterstar
-Copystyle Chapter
-LatexName chapterstar
-LabelType Top_Environment
-LabelString "Unnumbered chapter"
-LabelFont
-Series Bold
-Size LARGE
-EndFont
-End
-\end_local_layout
 \language english
 \language_package default
 \inputencoding default
@@ -15282,7 +15269,7 @@ false
  
 \end_layout
 
-\begin_layout )tandard
+\begin_layout Standard
 Sample code:
 \end_layout
 
@@ -15738,7 +15725,6 @@ setMaxLength()
  If you set a text greater than the maximum length, it will be truncated.
 \end_layout
 
-\begin_layout pubmize
 You can also set the valid characters that can be entered by using the 
 \family typewriter
 setValidChars()
@@ -28722,7 +28708,7 @@ totalcross.ui.ScrollContainer
  JavaDoc.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \end_layout
 
@@ -30906,7 +30892,7 @@ public class TCTestWin extends MainWindow
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \end_layout
 
@@ -46899,7 +46885,7 @@ This class provides some preferences from the device configuration and other
  Look at its JavaDoc for more details.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
  
 \end_layout
 
@@ -48993,7 +48979,7 @@ Stream
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 In I/O operations, usually it's faster and/or less resource consuming to
  send larger chunks of data at once, instead of sending several small chunks
  of data.
@@ -62085,7 +62071,7 @@ if (!Scanner.deactivate())
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"
