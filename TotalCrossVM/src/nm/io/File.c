@@ -166,16 +166,16 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
    }
 }
 //////////////////////////////////////////////////////////////////////////
-static int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
+int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
 {
    TCHARP c;
    int nStringSize;
-   int err;
+   Err err;
 
    if (fileExists(szPath, slot))
       return 0;
 
-   for (nStringSize = stringSize, c = szPath - 1; c >= szPath; c--, nStringSize--)
+   for (nStringSize = stringSize, c = szPath + stringSize - 1; c >= szPath; c--, nStringSize--)
       if (*c == '/')
       {
           *c = 0;
@@ -192,7 +192,14 @@ static int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
           }
           return 1;
       }
-   return 1;
+  
+   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+   {
+      throwExceptionWithCode(p->currentContext, IOException, err);
+      return 1;
+   }
+   else
+      return 0;
 }
 
 TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void createDir() throws totalcross.io.IOException;
