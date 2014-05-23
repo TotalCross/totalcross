@@ -166,7 +166,7 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
    }
 }
 //////////////////////////////////////////////////////////////////////////
-static int createDirRec(TCHARP szPath, int stringSize, int slot)
+static int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
 {
    TCHARP c;
    int nStringSize;
@@ -179,7 +179,7 @@ static int createDirRec(TCHARP szPath, int stringSize, int slot)
       if (*c == '/')
       {
           *c = 0;
-          if (!createDirRec(szPath, nstringSize, slot))
+          if (!createDirRec(p, szPath, nStringSize, slot))
           {
              *c = '/';
              if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
@@ -190,6 +190,7 @@ static int createDirRec(TCHARP szPath, int stringSize, int slot)
              else
                 return 0;
           }
+          return 1;
       }
    return 1;
 }
@@ -210,20 +211,14 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
       throwException(p->currentContext, IOException, "Operation can ONLY be used in mode DONT_OPEN.");
    else
    {
-      int stringSize = String_charsStart(path)
-      JCharP2TCHARPBuf(stringSize, stringSize, szPath);
+      int stringSize = String_charsLen(path);
+      JCharP2TCHARPBuf(String_charsStart(path), stringSize, szPath);
       if (!replacePath(p,szPath,true))
          return;
       if (fileExists(szPath, slot))
          throwException(p->currentContext, IOException, "Directory already exists.");
       else
-      {
-         createDirRec(szPath, stringSize, slot); // this recursion will throw the exception
-         /* old way:
-    	  if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
-    	         throwExceptionWithCode(p->currentContext, IOException, err);
-    	         */
-      }
+         createDirRec(p, szPath, stringSize, slot); // this recursion will throw the exception
    }
 }
 
