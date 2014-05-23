@@ -19,7 +19,7 @@ public class RouteViewer extends MapActivity
    {
       private GeoPoint gp1;
       private GeoPoint gp2;
-      private int mRadius = 6;
+      private int mRadius;
       private int mode;
       private int defaultColor;
       private String text;
@@ -36,6 +36,7 @@ public class RouteViewer extends MapActivity
          this.gp2 = gp2;
          this.mode = mode;
          this.defaultColor = defaultColor;
+         mRadius = Launcher4A.deviceFontHeight/2;
       }
 
       @Override
