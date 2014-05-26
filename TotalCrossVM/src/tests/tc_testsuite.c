@@ -22,10 +22,7 @@
 #include <stdarg.h>
 #endif
 
-#if defined(PALMOS) || defined(WINCE)
-#define DISPLAY_RESULT(text)  TCAPI_FUNC(alert)(text)
-#define OUTPUT(text)          TCAPI_FUNC(debug)(text); //TCAPI_FUNC(alert)(text)
-#elif defined(WIN32)
+#if defined(WIN32)
 //#define DISPLAY_RESULT(text)	MessageBox(NULL,text,"Tests finished",MB_OK);
 #define DISPLAY_RESULT(text) OutputDebugString(text);
 #define OUTPUT(text)          TCAPI_FUNC(debug)(text);

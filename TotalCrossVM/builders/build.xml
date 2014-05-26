@@ -269,7 +269,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <move todir="${samples}/service/MailViewer"          failonerror="no"> <fileset dir="${samples}/MailViewer"/>          </move>
    
 </target>   
-
+                                  
 <target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
 
   <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
@@ -279,19 +279,17 @@ target: buildInstalls - run installshield to create the SDK and Samples
    
    <!-- totalcross -->
    <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
-   <move todir="${target.sdk3.path}/docs/tc" > <fileset dir="${target.sdk3.path}/docs/html"/>    </move>
    
    <!-- litebase -->
-   <unzip src="${target.litebase.path}/dist/litebase.jar" dest="${base.temp.path}/jar"/>
-   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="true" includes="**" basedir="${base.temp.path}/jar"  />
-   <delete dir="${base.temp.path}/jar" />
-   
+   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="yes">
+    <zipgroupfileset dir="${target.litebase.path}/dist" includes="litebase.jar"/>
+   </zip>
+
    <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
    <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
    </copy>
    <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
-   <copy todir="${target.sdk3.path}/docs/lb" ><fileset dir="${target.litebase.path}/docs/html"/></copy>
    <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
    
    <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
@@ -314,7 +312,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <property name="target.file"  value="${target.sdk.path}/../TotalCross3"/>
 
   <!-- delete old files -->
-  <delete file="${target.file}.exe" />
+  <delete file="${target.file}" />
 
   <!-- update readme files -->
   <copy file="SDK_sfx.diz" toDir="${rootpath}/">
@@ -325,7 +323,10 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
   <echo message="Creating ${target.file} file..."/>
   <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
-     <arg line='a -sfx -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file} ${target.sdk3.path}\*.*'/>
+     <arg line='a -sfx -y -ep1 -m5 -md64m -ma5 -r -s -idq -zSDK_sfx.diz ${target.file}.exe ${target.sdk3.path}\*.*'/>
+  </exec>
+  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file}.rar ${target.sdk3.path}\*.*'/>
   </exec>
 
   <!-- delete temp files -->

@@ -29,30 +29,22 @@ import totalcross.util.zip.*;
 public class ZLibSample extends BaseContainer
 {
    private Button btn;
-   private ListBox lb;
 
    public void initUI()
    {
       super.initUI();
       add(btn = new Button("    Start    "), CENTER, TOP + 3);
-      add(lb = new ListBox());
-      lb.setRect(LEFT, AFTER + 3, FILL, FILL);
-   }
-
-   private void debug(String s)
-   {
-      lb.add(s);
-      lb.repaintNow();
+      addLog(LEFT, AFTER + 3, FILL, FILL,null);
    }
 
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED && e.target == btn)
       {
-         debug("----------- proceed(BEST_COMPRESSION) -----------");
+         log("----------- proceed(BEST_COMPRESSION) -----------");
          proceed(ZLib.BEST_COMPRESSION);
 
-         debug("----------- proceed(BEST_SPEED) -----------");
+         log("----------- proceed(BEST_SPEED) -----------");
          proceed(ZLib.BEST_SPEED);
       }
    }
@@ -65,7 +57,7 @@ public class ZLibSample extends BaseContainer
       for (int i = 0; i < 500; i++)
          sb = sb.append("This is the uncompressed original message.");
 
-      debug("original size is " + sb.length());
+      log("original size is " + sb.length());
 
       ByteArrayStream is = new ByteArrayStream(Convert.getBytes(sb));
       ByteArrayStream cs = new ByteArrayStream(0);
@@ -75,12 +67,12 @@ public class ZLibSample extends BaseContainer
          int ini = Vm.getTimeStamp();
          sz = ZLib.deflate(is, cs, compression_level);
          int end = Vm.getTimeStamp();
-         debug("compressed output size=" + sz);
-         debug("Elapsed: " + (end - ini) + "ms");
+         log("compressed output size=" + sz);
+         log("Elapsed: " + (end - ini) + "ms");
       }
       catch (IOException e)
       {
-         debug("an exception occurred : " + e.getMessage());      
+         log("an exception occurred : " + e.getMessage());      
       }
       try
       {
@@ -88,10 +80,10 @@ public class ZLibSample extends BaseContainer
       }
       catch (IOException exc)
       {
-         debug("an exception occurred : " + exc.getMessage());
+         log("an exception occurred : " + exc.getMessage());
       }
 
-      debug("compressed byte stream:");
+      log("compressed byte stream:");
       byte buf[] = new byte[8];
       int read, ofs = 0, left = sz;
       while (left > 0)
@@ -106,7 +98,7 @@ public class ZLibSample extends BaseContainer
          sb.setLength(0);
          for (int i = 0; i < read; i++)
             sb = sb.append(' ').append(Convert.unsigned2hex(buf[i], 2));
-         debug(ofs + " - " + sb.toString());
+         log(ofs + " - " + sb.toString());
          ofs += read;
       }
       ByteArrayStream os = new ByteArrayStream(0);
@@ -117,27 +109,27 @@ public class ZLibSample extends BaseContainer
       }
       catch (IOException exc)
       {
-         debug("an exception occurred : " + exc.getMessage());
+         log("an exception occurred : " + exc.getMessage());
       }
       try
       {
          int ini = Vm.getTimeStamp();
          sz = ZLib.inflate(cs, os, sz);
          int end = Vm.getTimeStamp();
-         debug("uncompressed output size=" + sz);
-         debug("Elapsed: " + (end - ini) + "ms");
+         log("uncompressed output size=" + sz);
+         log("Elapsed: " + (end - ini) + "ms");
       }
       catch (IOException e)
       {
-         debug("an exception occurred : " + e.getMessage());
+         log("an exception occurred : " + e.getMessage());
       }
 
       if (sz > 0)
       {
          String str = new String(os.getBuffer(), 0, sz);
 
-         debug("original content was '" + str.substring(0, 20) + "'");
-         debug("original size was " + sz);
+         log("original content was '" + str.substring(0, 20) + "'");
+         log("original size was " + sz);
       }
    }
 }

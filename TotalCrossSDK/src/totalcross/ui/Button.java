@@ -128,6 +128,7 @@ public class Button extends Control
    private boolean isAndroidStyle;
    private boolean skipPaint;
    private Rect clip;
+   private int localCommonGap;
    
    private String []lines;
    private int []linesW;
@@ -177,12 +178,10 @@ public class Button extends Control
    public int hightlightColor = -1; // guich@tc112_29
 
    /** Set commonGap to a value to make all further buttons with the same internal
-     * gap. This is useful when you're creating the buttons but don't want to
-     * keep calling the <code>setGap</code> method.
-     * Note that this value will be added to the value of <code>gap</code>.
+     * gap. 
      * Remember to save the current value and restore it when done.
      * Changing this also affects the size of the ScrollBars created.
-     * @deprecated Does not work after screen rotation.
+     * The value is stored locally on the constructor so it works later if the screen is resized.
      */
    public static int commonGap; // guich@300_3
    
@@ -227,6 +226,7 @@ public class Button extends Control
       this.img = img;
       this.tiGap = gap;
       txtPos = textPosition;
+      this.localCommonGap = commonGap;
    }
 
    /** Creates a button displaying the given text. */
@@ -359,7 +359,7 @@ public class Button extends Control
          default:               
             prefW = tw + iw;
       }
-      return prefW + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
+      return prefW + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
    }
 
    /** Returns the preffered height of this control. */
@@ -391,7 +391,7 @@ public class Button extends Control
          default:               
             prefH = th + ih;
       }
-      return prefH + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
+      return prefH + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
    }
 
    /** Press and depress this Button to simulate that the user had clicked on it.

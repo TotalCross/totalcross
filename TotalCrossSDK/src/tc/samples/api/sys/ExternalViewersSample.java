@@ -12,8 +12,8 @@ public class ExternalViewersSample extends BaseContainer
 {
    private ButtonMenu menu;
    String sdcardPath = "/sdcard/xviewers/";
-   String jpg = "filhos_gui.jpg";
-   String pdf = "TotalCrossCompanion.pdf";
+   String jpg = "sys/filhos_gui.jpg";
+   String pdf = "sys/TotalCrossCompanion.pdf";
    
    public void initUI()
    {
@@ -58,6 +58,7 @@ public class ExternalViewersSample extends BaseContainer
       String fullPath = sdcardPath+name;
       if (!new File(fullPath).exists())
       {
+         try {new File(Convert.getFilePath(fullPath)).createDir();} catch (Exception e) {}
          File f = new File(fullPath,File.CREATE_EMPTY);
          byte[] b = Vm.getFile(name);
          f.writeBytes(b);

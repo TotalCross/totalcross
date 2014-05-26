@@ -125,7 +125,6 @@ static Err fileCreateDir(TCHARP path, int32 slot)
       {
          if (*c == '/')
          {
-#ifdef WP8
             WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
             int res = 0;
             f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
@@ -133,10 +132,6 @@ static Err fileCreateDir(TCHARP path, int32 slot)
             *c = 0;
             res = GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
             if ((res == 0) || (f_attr_ex.dwFileAttributes == INVALID_ATTR_VALUE))
-#else
-            *c = 0;
-            if (GetFileAttributes(path) == INVALID_ATTR_VALUE)
-#endif
             {
                if (!CreateDirectory(path, null))
                   goto error;
@@ -174,16 +169,12 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    if (path[len-1] == '/') // remove leading slash
       path[len-1] = 0;
 
-#ifdef WP8
    {
 	   WIN32_FILE_ATTRIBUTE_DATA f_attr_ex;
 	   f_attr_ex.dwFileAttributes = INVALID_ATTR_VALUE;
 	   GetFileAttributesEx(path, GetFileExInfoStandard, &f_attr_ex);
 	   fileAttributes = f_attr_ex.dwFileAttributes;
    }
-#else
-   fileAttributes = GetFileAttributes(path);
-#endif
 
    if (fileAttributes == INVALID_ATTR_VALUE) //Checks if file exists.
       return ERROR_FILE_NOT_FOUND;

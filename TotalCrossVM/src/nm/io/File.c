@@ -166,6 +166,42 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
    }
 }
 //////////////////////////////////////////////////////////////////////////
+int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
+{
+   TCHARP c;
+   int nStringSize;
+   Err err;
+
+   if (fileExists(szPath, slot))
+      return 0;
+
+   for (nStringSize = stringSize, c = szPath + stringSize - 1; c >= szPath; c--, nStringSize--)
+      if (*c == '/')
+      {
+          *c = 0;
+          if (!createDirRec(p, szPath, nStringSize, slot))
+          {
+             *c = '/';
+             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+             {
+                throwExceptionWithCode(p->currentContext, IOException, err);
+                return 1;
+             }
+             else
+                return 0;
+          }
+          return 1;
+      }
+  
+   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+   {
+      throwExceptionWithCode(p->currentContext, IOException, err);
+      return 1;
+   }
+   else
+      return 0;
+}
+
 TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void createDir() throws totalcross.io.IOException;
 {
    TCObject file = p->obj[0];
@@ -182,16 +218,18 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
       throwException(p->currentContext, IOException, "Operation can ONLY be used in mode DONT_OPEN.");
    else
    {
-      JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
+      int stringSize = String_charsLen(path);
+      JCharP2TCHARPBuf(String_charsStart(path), stringSize, szPath);
       if (!replacePath(p,szPath,true))
          return;
       if (fileExists(szPath, slot))
          throwException(p->currentContext, IOException, "Directory already exists.");
       else
-      if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
-         throwExceptionWithCode(p->currentContext, IOException, err);
+         createDirRec(p, szPath, stringSize, slot); // this recursion will throw the exception
    }
 }
+
+
 //////////////////////////////////////////////////////////////////////////
 void closeDebug();
 

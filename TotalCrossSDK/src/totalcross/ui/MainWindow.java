@@ -440,8 +440,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       
       DemoBox()
       {
-         super(tit = " TotalCross Virtual Machine "+Settings.versionStr+" ",
-               msg = "Copyright (c) 2008-2014\nTotalCross MGP\n\nDEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"),
+         super(tit = " TotalCross Virtual Machine "+Settings.versionStr+"."+Settings.buildNumber+" ",
+               msg = "Copyright (c) 2008-2014\nTotalCross Mobile\nGlobal Platform\n\nDEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"),
                new String[]{"   Ok   "});
          Vm.debug(tit);
          Vm.debug(msg);

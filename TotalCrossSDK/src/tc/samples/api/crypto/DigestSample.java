@@ -26,7 +26,6 @@ public class DigestSample extends BaseContainer
    private Edit edtInput;
    private ComboBox cboDigests;
    private Button btnGo;
-   private ListBox lboResults;
    private Object[] comboItems;
    
    public DigestSample()
@@ -49,13 +48,11 @@ public class DigestSample extends BaseContainer
       cboDigests = new ComboBox(comboItems);
       cboDigests.setSelectedIndex(0);
       btnGo = new Button(" Go! ");
-      lboResults = new ListBox();
-      lboResults.enableHorizontalScroll();
       
-      add(edtInput, LEFT + 2, TOP + 2, FILL - (btnGo.getPreferredWidth() + cboDigests.getPreferredWidth() + 6), PREFERRED);
+      add(edtInput, LEFT + 2, TOP + fmH/4, FILL - (btnGo.getPreferredWidth() + cboDigests.getPreferredWidth() + 6), PREFERRED);
       add(cboDigests, AFTER + 2, SAME, PREFERRED, PREFERRED);
       add(btnGo, AFTER + 2, SAME, PREFERRED, PREFERRED);
-      add(lboResults, LEFT + 2, AFTER + 2, FILL - 2, FILL - 2);
+      addLog(LEFT + 2, AFTER + 2, FILL - 2, FILL - 2,null);
    }
    
    public void onEvent(Event e)
@@ -72,10 +69,9 @@ public class DigestSample extends BaseContainer
                alg.update(message.getBytes());
                byte[] digest = alg.getDigest();
                
-               lboResults.add("Message: " + message);
-               lboResults.add("Digest: " + Convert.bytesToHexString(digest) + " (" + digest.length + " bytes)");
-               lboResults.add("=========================");
-               lboResults.selectLast();
+               log("Message: " + message);
+               log("Digest: " + Convert.bytesToHexString(digest) + " (" + digest.length + " bytes)");
+               log("=========================");
             }
             break;
       }

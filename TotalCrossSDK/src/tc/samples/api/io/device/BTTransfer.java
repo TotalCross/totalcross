@@ -31,7 +31,6 @@ public class BTTransfer extends BaseContainer
    StreamConnectionNotifier server;
    Button btListP,btListNP,btClient, btSend, btHost;
    Edit edClient;
-   ListBox lbLog;
    
    public void onEvent(Event e)
    {
@@ -56,15 +55,6 @@ public class BTTransfer extends BaseContainer
       {
          MessageBox.showException(ee,true);
       }
-   }
-   
-   private void log(Object s)
-   {
-      if (s instanceof String)
-         lbLog.addWrapping((String)s);
-      else
-         lbLog.add(s);
-      lbLog.selectLast();
    }
    
    private void sendMessage() throws IOException
@@ -110,7 +100,7 @@ public class BTTransfer extends BaseContainer
    
    private void startClient() throws Exception
    {
-      Object sel = lbLog.getSelectedItem();
+      Object sel = lblog.getSelectedItem();
       if (sel != null && sel instanceof RemoteDevice)
       {
          try
@@ -188,7 +178,7 @@ public class BTTransfer extends BaseContainer
             add(btListNP = new Button("!paired"),AFTER+5,SAME);
             add(btSend = new Button(" Send "),AFTER+5,SAME);
             add(edClient = new Edit(),LEFT,AFTER+5);
-            add(lbLog = new ListBox(),LEFT,AFTER+5,FILL,FILL);
+            addLog(LEFT,AFTER+5,FILL,FILL,null);
             btSend.setEnabled(false);
             log("Instructions: You must have two devices, one HOST and one CLIENT. In the HOST device, press HOST button and wait. In the CLIENT device, press the paired and not paired buttons, then select the bluetooth device you want to connect to, and press CLIENT. Then type something and press SEND.");
          }

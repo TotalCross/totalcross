@@ -33,7 +33,7 @@ public class BaseContainer extends Container
    protected Bar headerBar,footerBar;
    private static Vector containerStack = new Vector(5);
    private static Image infoImg;
-   private String defaultTitle = "TotalCross API";
+   public static String defaultTitle = "TotalCross API";
    protected int gap;
    public boolean isSingleCall;
    public String info;
@@ -49,14 +49,14 @@ public class BaseContainer extends Container
       {
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
-         if (isMainMenu) 
+/*         if (isMainMenu) 
          {
             backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
             setForeColor(0xBFCFFF);
          }
-         
+*/         
          if (infoImg == null)
-            infoImg = new Image("images/ic_dialog_info.png");
+            infoImg = new Image("ui/images/ic_dialog_info.png");
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
@@ -166,16 +166,17 @@ public class BaseContainer extends Container
    
    public void back()
    {
-      try
-      {
-         setInfo(MainMenu.DEFAULT_INFO);
-         containerStack.pop(); // pop ourself
-         Window.getTopMost().swap((Container)containerStack.peek());
-      }
-      catch (ElementNotFoundException enfe)
-      {
-         //MainWindow.exit(0); // we're the last screen, so just exit the application
-      }
+      if (!(this instanceof MainMenu))
+         try
+         {
+            setInfo(MainMenu.DEFAULT_INFO);
+            containerStack.pop(); // pop ourself
+            Window.getTopMost().swap((Container)containerStack.peek());
+         }
+         catch (ElementNotFoundException enfe)
+         {
+            //MainWindow.exit(0); // we're the last screen, so just exit the application
+         }
    }
    
    public boolean ask(String question)
@@ -185,10 +186,44 @@ public class BaseContainer extends Container
       return mb.getPressedButtonIndex() == 0;
    }
    
-/*   
-   public void onPaint(Graphics g)
+   // single place to add and log messages
+   protected static ListBox lblog;
+   public void addLog(int x, int y, int w, int h, Control rel)
    {
-      super.onPaint(g); 
-      g.drawCylindricShade(0xBFCFFF,Color.WHITE,0,headerBar.getY2(),width,height-footerBar.getHeight());
+      ListBox.itemHeightFactor = 1;
+      add(lblog = new ListBox(),x,y,w,h,rel);
+      ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR;
    }
-*/}
+
+   // a log method that runs safely on threads
+   public static void log(Object s)
+   {
+      log(s,true);
+   }
+   public static void log(Object s, boolean selLast)
+   {
+      if (s == null) return;
+      final Object _s = s;
+      final boolean _selLast = selLast;
+      if (MainWindow.isMainThread())
+      {
+         if (s instanceof String)
+            lblog.addWrapping((String)s);
+         else
+            lblog.add(s);
+         if (selLast) lblog.selectLast();
+      }
+      else
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
+      {
+         public void run()
+         {
+            if (_s instanceof String)
+               lblog.addWrapping((String)_s);
+            else
+               lblog.add(_s);
+            if (_selLast) lblog.selectLast();
+         }
+      });
+   }
+}

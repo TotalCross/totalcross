@@ -25,6 +25,7 @@ public class TotalCrossAPI extends MainWindow
    static
    {
       Settings.resizableWindow = true;
+      Settings.appVersion = "1.01";
    }
    
    public TotalCrossAPI()

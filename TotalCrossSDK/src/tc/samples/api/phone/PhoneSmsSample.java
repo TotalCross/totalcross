@@ -36,7 +36,7 @@ public class PhoneSmsSample extends BaseContainer
       super.initUI();
       if (!Settings.platform.equals(Settings.WINDOWSPHONE) && !Settings.onJavaSE)
       {
-         add(new Label("This sample works only on Android"),CENTER,CENTER);
+         add(new Label("This sample works only on Windows Phone"),CENTER,CENTER);
          return;
       }
       add(new Label("Number: "),LEFT+2,TOP+2);
