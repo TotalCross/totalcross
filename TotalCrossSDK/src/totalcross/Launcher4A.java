@@ -1042,7 +1042,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (address.startsWith("@"))
       {
          String[] st = address.substring(1).split(",");
-         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[0])};
+         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[1])};
       }
       else
       {
