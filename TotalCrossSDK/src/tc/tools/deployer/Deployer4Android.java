@@ -250,7 +250,7 @@ public class Deployer4Android
             "res/menu/encode.xml",
             "res/menu/history.xml",
             "res/raw/beep.ogg",
-            "res/layout/root.xml",
+            "res/layout/route.xml",
 /*            "res/values/arrays.xml",
             "res/values/colors.xml",
             "res/values/dimens.xml",
