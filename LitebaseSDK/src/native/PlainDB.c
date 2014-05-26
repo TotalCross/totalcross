@@ -30,10 +30,9 @@
  * @param create Defines if the file will be created if it doesn't exist.
  * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the table is to be open or created.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, TCHARP sourcePath, int32 slot)
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, TCHARP sourcePath)
 {
    TRACE("createPlainDB")
    char buffer[DBNAME_SIZE];
@@ -55,9 +54,9 @@ bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, b
       plainDB->writeBytes = nfWriteBytes;
       plainDB->close = nfClose;
       // Opens or creates the .db and .dbo files.
-	   if (nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->db, -1)
+	   if (nfCreateFile(context, buffer, create, useCrypto, sourcePath, &plainDB->db, -1)
        && xstrcat(buffer, "o")
-       && nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->dbo, -1))
+       && nfCreateFile(context, buffer, create, useCrypto, sourcePath, &plainDB->dbo, -1))
          return true;
    }
    else
@@ -166,10 +165,9 @@ bool plainRewrite(Context context, PlainDB* plainDB, int32 record)
  * @param plainDB The <code>PlainDB</code>.
  * @param newName The new table name.
  * @param sourcePath The files path.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP sourcePath, int32 slot)
+bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP sourcePath)
 {
 	TRACE("plainRename")
    char buffer[DBNAME_SIZE];
@@ -179,15 +177,15 @@ bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP source
    xstrcat(buffer, DB_EXT);
 
 	// juliana@202_1: .db should be renamed back if .dbo can't be renamed.
-   if (nfRename(context, &plainDB->db, buffer, sourcePath, slot)) // Renames the .db file.
+   if (nfRename(context, &plainDB->db, buffer, sourcePath)) // Renames the .db file.
 	{	
       xstrcat(buffer, "o");
-		if (!nfRename(context, &plainDB->dbo, buffer, sourcePath, slot)) // Renames the .dbo file.
+		if (!nfRename(context, &plainDB->dbo, buffer, sourcePath)) // Renames the .dbo file.
 		{
          // If the file could not be renamed, which is unlikely to occur, the .db file should be renamed back.
          xstrcpy(buffer, plainDB->name);
          xstrcat(buffer, DB_EXT);
-         nfRename(context, &plainDB->db, buffer, sourcePath, slot);
+         nfRename(context, &plainDB->db, buffer, sourcePath);
 			return false;
 		}
 	} 
@@ -332,18 +330,17 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param sourcePath The files path.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainRemove(Context context, PlainDB* plainDB, TCHARP sourcePath, int32 slot)
+bool plainRemove(Context context, PlainDB* plainDB, TCHARP sourcePath)
 {
 	TRACE("plainRemove")
    bool ret = true;
 
 	if (fileIsValid(plainDB->db.file) || plainDB->db.cache)
-      ret = nfRemove(context, &plainDB->db, sourcePath, slot);
+      ret = nfRemove(context, &plainDB->db, sourcePath);
    if (fileIsValid(plainDB->dbo.file) || plainDB->dbo.cache)
-      ret &= nfRemove(context, &plainDB->dbo, sourcePath, slot);
+      ret &= nfRemove(context, &plainDB->dbo, sourcePath);
 
    return ret;
 }

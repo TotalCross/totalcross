@@ -95,24 +95,11 @@ void initTCVMLib()
    TC_toLower = GETPROCADDRESS(toLower);
    TC_trace = GETPROCADDRESS(trace);
    TC_validatePath = GETPROCADDRESS(validatePath); // juliana@214_1
-#ifdef PALMOS
-   TC_getLastVolume = GETPROCADDRESS(getLastVolume);
-#endif
 #ifdef ENABLE_MEMORY_TEST
    TC_getCountToReturnNull = GETPROCADDRESS(getCountToReturnNull);
    TC_setCountToReturnNull = GETPROCADDRESS(setCountToReturnNull);
 #endif 
 }
-
-#ifdef PALMOS
-int __setjmp(__attribute__ ((unused)) register jmp_buf env)
-{
-  asm volatile ("stmia a1,{v1-v8,sp,lr}\n");
-  asm volatile ("mov a1,$0\n");   // return 0 to indicate initial setjmp
-  asm volatile ("bx lr\n");       // return to caller using interworking return
-  return 0;                       // never reached, just to prevent a warning
-}
-#endif
 
 #ifdef ENABLE_TEST_SUITE
 
@@ -191,9 +178,7 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
-#ifdef PALMOS
-   ASSERT1_EQUALS(NotNull, TC_getLastVolume);
-#endif
+
 #ifdef ENABLE_MEMORY_TEST
    ASSERT1_EQUALS(NotNull, TC_getCountToReturnNull);
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);

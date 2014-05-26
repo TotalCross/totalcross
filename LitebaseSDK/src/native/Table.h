@@ -257,7 +257,6 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param context The thread context where the function is being executed.
  * @param name The name of the table.
  * @param sourcePath The path of the table on disk.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
  * @param useCrypto Indicates if the table uses cryptography.
@@ -266,8 +265,8 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, TCHARP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
-                                                                                                         bool throwException, Heap heap); 
+Table* tableCreate(Context context, CharP name, TCHARP sourcePath, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+                                                                                                              bool throwException, Heap heap); 
 
 /**
  * Creates a table, which can be stored on disk or on memory (result set table).

@@ -76,7 +76,6 @@ public class AllTests extends TestSuite
       addTestCase(TestNullAndDefaultValues.class);
       addTestCase(TestOrderBy.class);
       addTestCase(TestOrderByIndices.class);
-      addTestCase(TestPalmMemoryCard.class);
       addTestCase(TestPreparedStatement.class);
       addTestCase(TestPrimaryKey.class);
       addTestCase(TestRename.class);
@@ -169,7 +168,7 @@ public class AllTests extends TestSuite
     */
    private void dropAllTables()
    {
-      int i = 9;
+      int i = 7;
       String temporario;
       String tempPath = Convert.appendPath(Settings.appPath, "temp/");
       
@@ -187,16 +186,10 @@ public class AllTests extends TestSuite
       }
 
       // The paths used by AllTests.
-      String[] paths =
-      {
-         Settings.platform.equals(Settings.PALMOS)? "/Litebase_DBs/" : Settings.appPath, Settings.dataPath, 
-         tempPath, tempPath + "a/", tempPath + "b/", temporario, "/", "/dba/", "/dbb/"
-      };
-
-      int[] slots = {1, 1, 1, 1, 1, 1, -1, -1, -1};
+      String[] paths = {Settings.appPath, Settings.dataPath, tempPath, tempPath + "a/", tempPath + "b/", temporario, "/"};
 
       // The subfolders used by AllTests.
-      File[] folders = new File[9];
+      File[] folders = new File[7];
          
       while (--i >= 0) // Erases the table files from this application.
       {
@@ -205,26 +198,14 @@ public class AllTests extends TestSuite
             
             if (paths[i] != null)
             {
-               folders[i] = new File(paths[i], File.DONT_OPEN, slots[i]);
-               LitebaseConnection.dropDatabase("Test", paths[i], slots[i]);
+               folders[i] = new File(paths[i], File.DONT_OPEN);
+               LitebaseConnection.dropDatabase("Test", paths[i], -1);
             }
          }
          catch (DriverException exception) {}
          catch (IOException exception) {}
       }
 
-      // Erases the palm memory card forlders.
-      try
-      {
-         folders[8].delete();
-      } 
-      catch (IOException exception) {}
-      try
-      {
-         folders[7].delete();
-      }
-      catch (IOException exception) {}
-      
       i = 6;
       while (--i >= 2) // Erases the folders, being careful to erase the empty folders first.
          try

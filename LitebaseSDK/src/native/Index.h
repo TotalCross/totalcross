@@ -226,7 +226,7 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue);
  * 
  * @param context The thread context where the function is being executed.
  * @param index The index where a node is going to be fetched.
- * @return The loaded node, a new cache node with the requested node loaded, a first level node if not palm OS, or <code>null</code> if it is not 
+ * @return The loaded node, a new cache node with the requested node loaded, a first level node, or <code>null</code> if it is not 
  * already loaded and its cache is full.
  */
 Node* getLoadedNode(Context context, Index* index, int32 idx);

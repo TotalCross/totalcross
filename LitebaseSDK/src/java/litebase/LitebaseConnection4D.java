@@ -71,11 +71,6 @@ public class LitebaseConnection4D
    int appCrid;
    
    /**
-    * The slot where the tables are stored. Its value is -1 except for palm.
-    */
-   int slot;
-   
-   /**
     * Given the table name, returns the Table structure.
     */
    long htTables;
@@ -201,9 +196,6 @@ public class LitebaseConnection4D
     * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
     * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
     * cryptography. Notice that path must be absolute, not relative.
-    * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
-    * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
-    * slot.
     * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
     * creator id.
     * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -232,9 +224,6 @@ public class LitebaseConnection4D
     * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
     * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
     * cryptography. Notice that path must be absolute, not relative.
-    * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
-    * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
-    * slot.
     * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
     * creator id.
     * <p>Also notice that to store Litebase files on card on Pocket PC, just set the second parameter to the correct directory path.
@@ -651,7 +640,7 @@ public class LitebaseConnection4D
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder were stored. Not used anymore.
+    * @param slot Not used anymore.
     * @throws DriverException If the database is not found or a file error occurs.
     * @throws NullPointerException If one of the string parameters is null.
     */
@@ -685,7 +674,7 @@ public class LitebaseConnection4D
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param slot Not used anymore.
     */
    public native static void encryptTables(String crid, String sourcePath, int slot);
    
@@ -694,7 +683,7 @@ public class LitebaseConnection4D
     * 
     * @param crid The application id of the database.
     * @param sourcePath The path where the files are stored.
-    * @param slot The slot on Palm where the source path folder is stored. Ignored on other platforms.
+    * @param slot Not used anymore.
     */
    public native static void decryptTables(String crid, String sourcePath, int slot);
 }

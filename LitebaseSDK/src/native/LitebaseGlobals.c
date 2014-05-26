@@ -150,9 +150,7 @@ tiF_create_siiFunc TC_tiF_create_sii = { 0 };
 toLowerFunc TC_toLower = { 0 };
 traceFunc TC_trace = { 0 };
 validatePathFunc TC_validatePath = { 0 }; // juliana@214_1
-#ifdef PALMOS
-getLastVolumeFunc TC_getLastVolume = { 0 };
-#endif
+
 #ifdef ENABLE_MEMORY_TEST
 getCountToReturnNullFunc TC_getCountToReturnNull = { 0 };
 setCountToReturnNullFunc TC_setCountToReturnNull = { 0 };

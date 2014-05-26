@@ -433,7 +433,7 @@ public class TestAddColumn extends TestCase
          
          driver.closeAll();
          
-         File dbFile = new File(path, File.READ_WRITE, 1); // The table is closed after recovering it.
+         File dbFile = new File(path, File.READ_WRITE); // The table is closed after recovering it.
          byte[] oneByte = new byte[1];
          
          // Pretends that the table was not closed correctly.   
@@ -565,7 +565,7 @@ public class TestAddColumn extends TestCase
    {
       try
       {
-         int i = Settings.platform.equals(Settings.PALMOS)? 120 : 246;
+         int i = 246;
          StringBuffer sBuffer = new StringBuffer(50);
          
          sBuffer.append("alter table person add a");         

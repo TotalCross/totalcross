@@ -32,10 +32,9 @@
  * @param create Defines if the file will be created if it doesn't exist.
  * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the table is to be open or created.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, TCHARP sourcePath, int32 slot);
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, TCHARP sourcePath);
 
 /**
  * Sets the size of a row.
@@ -92,10 +91,9 @@ bool plainRewrite(Context context, PlainDB* plainDB, int32 record);
  * @param plainDB The <code>PlainDB</code>.
  * @param newName The new table name.
  * @param sourcePath The files path.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP sourcePath, int32 slot);
+bool plainRename(Context context, PlainDB* plainDB, CharP newName, TCHARP sourcePath);
 
 /**
  * Writes the given metadata to the header of the .db file.
@@ -136,10 +134,9 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos);
  * @param context The thread context where the function is being executed.
  * @param plainDB The <code>PlainDB</code>.
  * @param sourcePath The files path.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool plainRemove(Context context, PlainDB* plainDB, TCHARP sourcePath, int32 slot);
+bool plainRemove(Context context, PlainDB* plainDB, TCHARP sourcePath);
 
 /**
  * Sets the .db file pointer to point to a record position.

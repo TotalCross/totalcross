@@ -1306,11 +1306,6 @@ struct Table
    int8 composedPK;
 
    /**
-    * The slot being used on palm. -1 on the other devices.
-    */
-   int8 slot;
-
-   /**
     * Used to order the tables.
     */
    int16 weight; 
@@ -1718,12 +1713,10 @@ struct Index // renamed from BTree to Index
    Node* cache[CACHE_SIZE];
    
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
-#ifndef PALMOS
    /**
     * The first level of the index B-tree.
     */
    Node** firstLevel;
-#endif
 
    /**
     * The table of the index.

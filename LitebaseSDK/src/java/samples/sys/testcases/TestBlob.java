@@ -15,7 +15,6 @@ package samples.sys.testcases;
 
 import litebase.*;
 import totalcross.io.*;
-import totalcross.sys.Vm;
 import totalcross.unit.*;
 import totalcross.util.Random;
 
@@ -144,10 +143,10 @@ public class TestBlob extends TestCase
       
       try // The index files can't exist because no index was created.
       {
-         assertFalse(new File(path + "Test-blob1$1.idk", File.DONT_OPEN, 1).exists());
-         assertFalse(new File(path + "Test-blob1&1.idk", File.DONT_OPEN, 1).exists());
-         assertFalse(new File(path + "Test-blob2$1.idk", File.DONT_OPEN, 1).exists());
-         assertFalse(new File(path + "Test-blob2&1.idk", File.DONT_OPEN, 1).exists());
+         assertFalse(new File(path + "Test-blob1$1.idk", File.DONT_OPEN).exists());
+         assertFalse(new File(path + "Test-blob1&1.idk", File.DONT_OPEN).exists());
+         assertFalse(new File(path + "Test-blob2$1.idk", File.DONT_OPEN).exists());
+         assertFalse(new File(path + "Test-blob2&1.idk", File.DONT_OPEN).exists());
       } 
       catch (IOException exception) {}
 

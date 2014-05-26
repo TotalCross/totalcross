@@ -26,14 +26,13 @@
  * @param isCreation Indicates if the file must be created or just open.
  * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the file will be created.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @param xFile A pointer to the normal file structure.
  * @param cacheSize The cache size to be used. -1 should be passed if the default value is to be used.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the file cannot be open.
  * @throws OutOfMemoryError If there is not enough memory to create the normal file cache.
  */
-bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath, int32 slot, XFile* xFile, int32 cacheSize);
+bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, TCHARP sourcePath, XFile* xFile, int32 cacheSize);
 
 /**
  * Reads file bytes.
@@ -83,11 +82,10 @@ void nfSetPos(XFile* xFile, int32 newPos);
  * @param xFile A pointer to the normal file structure.
  * @param newName The new name of the file.
  * @param sourcePath The path where the file is stored.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to rename the file.
  */
-bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath, int32 slot);
+bool nfRename(Context context, XFile* xFile, CharP newName, TCHARP sourcePath);
 
 /** 
  * Closes a file.
@@ -105,11 +103,10 @@ bool nfClose(Context context, XFile* xFile);
  * @param context The thread context where the function is being executed.
  * @param xFile A pointer to the normal file structure.
  * @param sourcePath The path where the file is stored.
- * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If it is not possible to remove the file.
  */
-bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath, int32 slot);
+bool nfRemove(Context context, XFile* xFile, TCHARP sourcePath);
 
 /**
  * The cache must be refreshed if what is desired is not inside it.

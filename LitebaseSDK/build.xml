@@ -197,7 +197,7 @@ target: desktop
 
 <target name="desktop" depends="compile" description="build the litebase.jar">
 
-  <property name="exclusions" value="*,**/*4D.*,**/*4B.*,samples/**,litebase/android/**" />
+  <property name="exclusions" value="*,**/*4D.*,samples/**,litebase/android/**" />
   <echo message="create the desktop jar file" />
   <mkdir dir="${dist}" />
   <delete file="${dist}/litebase.jar"/>
@@ -329,36 +329,6 @@ target: samples
 target: javadoc
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="javadoc" description="build the javadoc.">
-
-  <mkdir dir="${docs}/html" />
-  <delete>
-    <fileset dir="${docs}/html" excludes="*.gif"/>
-  </delete>
-
-  <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
-  <mkdir dir="${output}/javadoc" />
-  <copy todir="${output}/javadoc">
-    <fileset dir="${src}"
-    excludes="**/*4B*,**/*4D*,tc/**,litebase/android/**"/>
-  </copy>
-
-  <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/litebase" token="public static native" value="//public static native"><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/litebase" token="native static" value="//native static"><include name="**/*.java"/></replace>
-  <!-- -hack -->
-
-  <exec dir="${java.home}/bin" executable="javadoc">
-    <arg line="-sourcepath ${output}/javadoc"/>
-    <arg line="-windowtitle 'Litebase ${versionStr}'"/>
-    <arg line="-d ${docs}/html"/>
-    <arg line="-source 1.2"/>
-    <arg line="-public"/>
-    <arg line="-subpackages litebase"/>
-  </exec>
-
-  <delete><fileset dir="${output}/javadoc"/></delete>
-
-</target>
+<target name="javadoc" />
 
 </project>

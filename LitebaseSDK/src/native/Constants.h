@@ -86,11 +86,7 @@
 
 // juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
 // guich@561_1: maximums for the parsing process. 
-#ifdef PALMOS
-#define MAXIMUMS 128
-#else
 #define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
-#endif
 
 // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
 #ifdef ANDROID

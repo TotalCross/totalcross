@@ -242,12 +242,12 @@ public class TestRename extends TestCase
       
       try // Checks if the files of the old table does not exist and that the files of the new table exist.
       {
-         assertFalse(new File(path + "Test-person.db", File.DONT_OPEN, 1).exists());
-         assertTrue(new File(path + "Test-person2.db", File.DONT_OPEN, 1).exists());
-         assertFalse(new File(path + "Test-person.dbo", File.DONT_OPEN, 1).exists());
-         assertTrue(new File(path + "Test-person2.dbo", File.DONT_OPEN, 1).exists());
-         assertFalse(new File(path + "Test-person$2.idk", File.DONT_OPEN, 1).exists());
-         assertTrue(new File(path + "Test-person2$2.idk", File.DONT_OPEN, 1).exists());
+         assertFalse(new File(path + "Test-person.db", File.DONT_OPEN).exists());
+         assertTrue(new File(path + "Test-person2.db", File.DONT_OPEN).exists());
+         assertFalse(new File(path + "Test-person.dbo", File.DONT_OPEN).exists());
+         assertTrue(new File(path + "Test-person2.dbo", File.DONT_OPEN).exists());
+         assertFalse(new File(path + "Test-person$2.idk", File.DONT_OPEN).exists());
+         assertTrue(new File(path + "Test-person2$2.idk", File.DONT_OPEN).exists());
       }
       catch (IOException exception)
       {

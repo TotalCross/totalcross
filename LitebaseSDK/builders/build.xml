@@ -185,9 +185,9 @@ target: createSkeleton - Create the folders from scratch
   <ant antfile="build.xml" dir="${source.lb.path}" target="clean"           inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="javadoc"  		inheritAll="false"/>
+   <mkdir dir="${target.sdk.path}/docs"/>
 
   <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
   <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
 </target>
@@ -465,7 +465,7 @@ target: build targets
 
 <target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk" description="builds sdk" />
-
+    
 <target name="buildBB_sdk" />
 <target name="buildBB_vms" />
 <target name="buildPalmOS5_sdk" />

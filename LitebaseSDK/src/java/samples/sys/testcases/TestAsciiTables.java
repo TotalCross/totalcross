@@ -239,8 +239,8 @@ public class TestAsciiTables extends TestCase
       {
          File file1, 
               file2;
-         assertLower((file1 = new File(tempPath + "Test-person2.dbo", File.READ_WRITE, -1)).getSize(), 
-                     (file2 = new File(tempPath + "Test-person1.dbo", File.READ_WRITE, -1)).getSize());
+         assertLower((file1 = new File(tempPath + "Test-person2.dbo", File.READ_WRITE)).getSize(), 
+                     (file2 = new File(tempPath + "Test-person1.dbo", File.READ_WRITE)).getSize());
          file1.close();
          file2.close();
       } 

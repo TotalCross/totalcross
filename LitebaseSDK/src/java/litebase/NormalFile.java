@@ -172,9 +172,12 @@ class NormalFile extends XFile
     *
     * @param newPos The new file position.
     * @throws IOException If an internal method throws it.
+    * @throws DriverException If the table is corrupted and its access tries to read/write after the file end.
     */
-   void setPos(int newPos) throws IOException
+   void setPos(int newPos) throws IOException, DriverException
    {
+      if (newPos > size)
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED));
       if (pos != newPos) // Optimization: ignores if the position is unchanged.
          f.setPos(pos = newPos); 
    }

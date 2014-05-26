@@ -59,24 +59,24 @@ public class TestComposedIndexAndPK extends TestCase
          driver.executeUpdate("INSERT INTO person VALUES (12, 'Nana', 'Caculé', 2015)");
          
          // Tests that there are no composed index files.
-         assertFalse(new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists());
+         assertFalse(new File(path + "Test-person&1.idk", File.DONT_OPEN).exists());
    
          // Creates a composed index.
          driver.execute("create index idx on person (id, name)");
    
          driver.closeAll();
-         assertTrue(new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists()); // The composed index files must exist.
+         assertTrue(new File(path + "Test-person&1.idk", File.DONT_OPEN).exists()); // The composed index files must exist.
          
          // Deletes a simple index file and opens the table again to re-create it.
-         new File(path + "Test-person$1.idk", File.READ_WRITE, 1).delete();
+         new File(path + "Test-person$1.idk", File.READ_WRITE).delete();
          (driver = AllTests.getInstance("Test")).executeQuery("select * from person").close();
          driver.closeAll();
-         assertTrue(new File(path + "Test-person$1.idk", File.DONT_OPEN, 1).exists()); // The simple index files must exist.
+         assertTrue(new File(path + "Test-person$1.idk", File.DONT_OPEN).exists()); // The simple index files must exist.
          
          // Deletes a composed index file and opens the table again to re-create it.
-         new File(path + "Test-person&1.idk", File.READ_WRITE, 1).delete();
+         new File(path + "Test-person&1.idk", File.READ_WRITE).delete();
          (driver = AllTests.getInstance("Test")).executeQuery("select * from person").close();
-         assertTrue(new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists()); // The composed index files must exist.
+         assertTrue(new File(path + "Test-person&1.idk", File.DONT_OPEN).exists()); // The composed index files must exist.
          
          try // Tries to create the composed index again.
          {
@@ -90,14 +90,14 @@ public class TestComposedIndexAndPK extends TestCase
          driver.execute("create index idx on person (cod, name, rowid)");
          driver.execute("create index idx on person (cod, rowid)");
          driver.execute("create index idx on person (rowid, cod)");
-         new File(path + "Test-person&2.idk", File.DONT_OPEN, 1).exists();
-         new File(path + "Test-person&3.idk", File.DONT_OPEN, 1).exists();
-         new File(path + "Test-person&4.idk", File.DONT_OPEN, 1).exists();
-         new File(path + "Test-person&5.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&2.idk", File.DONT_OPEN).exists();
+         new File(path + "Test-person&3.idk", File.DONT_OPEN).exists();
+         new File(path + "Test-person&4.idk", File.DONT_OPEN).exists();
+         new File(path + "Test-person&5.idk", File.DONT_OPEN).exists();
    
          // Drops a composed index and checks that its file does not exist anymore.
          driver.executeUpdate("drop index id, name on person");
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists();
    
          try // Tries to drop it again.
          {
@@ -109,17 +109,17 @@ public class TestComposedIndexAndPK extends TestCase
          driver.closeAll();
    
          // The other indices still exist.
-         new File(path + "Test-person&2.idk", File.DONT_OPEN, 1).exists();
-         new File(path + "Test-person&3.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&2.idk", File.DONT_OPEN).exists();
+         new File(path + "Test-person&3.idk", File.DONT_OPEN).exists();
    
          // Creates the dropped index again and checks that it exists again.
          (driver = AllTests.getInstance("Test")).execute("create index idx on person (id, name)");
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists();
    
          // Closes the driver and drop the main table files.
          driver.closeAll();
-         new File(Convert.appendPath(path, "Test-person.db"), File.READ_WRITE, 1).delete();
-         new File(Convert.appendPath(path, "Test-person.dbo"), File.READ_WRITE, 1).delete();
+         new File(Convert.appendPath(path, "Test-person.db"), File.READ_WRITE).delete();
+         new File(Convert.appendPath(path, "Test-person.dbo"), File.READ_WRITE).delete();
    
          // Tests rowid in the composed primary key.
          (driver = AllTests.getInstance("Test")).execute("create table person(id int, primary key(rowid))");
@@ -135,7 +135,7 @@ public class TestComposedIndexAndPK extends TestCase
             fail("3");
          }
          catch (SQLParseException exception) {}
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists();
    
          try // The composed primary key can't have repeated fields.
          {
@@ -143,7 +143,7 @@ public class TestComposedIndexAndPK extends TestCase
             fail("4");
          }
          catch (SQLParseException exception) {}
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists();
    
          try // The composed primary key can't have repeated fields.
          {
@@ -151,7 +151,7 @@ public class TestComposedIndexAndPK extends TestCase
             fail("5");
          }
          catch (SQLParseException exception) {}
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists();
    
          // Creates and populates a table with a composed primary key.
          driver.execute("create table person(id int, name char(10), address char(20), age int, years int, primary key (id, name))");
@@ -316,11 +316,11 @@ public class TestComposedIndexAndPK extends TestCase
          assertEquals(3, rs.getInt("years"));
          rs.close();
    
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists(); // Tests if the index files exist.
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists(); // Tests if the index files exist.
    
          // Drops the index and checks that the files do not exist anymore.
          driver.executeUpdate("ALTER TABLE person DROP primary key");
-         new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists();
+         new File(path + "Test-person&1.idk", File.DONT_OPEN).exists();
    
          driver.executeUpdate("Insert into person values (1,'Maria', 'jacaré', 26, 16)");
          
@@ -376,7 +376,7 @@ public class TestComposedIndexAndPK extends TestCase
    
          // Now the composed primary key is added with success.
          driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, name)");
-         assertTrue(new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists());
+         assertTrue(new File(path + "Test-person&1.idk", File.DONT_OPEN).exists());
    
          // Tests composed PK violations for null inside them.
          driver.executeUpdate("ALTER TABLE person DROP primary key");
