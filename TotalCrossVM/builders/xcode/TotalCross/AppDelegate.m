@@ -17,7 +17,7 @@
 @implementation AppDelegate
 
 #ifdef DEBUG
-#define APPNAME "UIControls"
+#define APPNAME "TotalCrossAPI"
 #endif
 
 -(void) initApp
