@@ -460,17 +460,29 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
       int32 offset = uf->bitIndexTable[ch], y, x;
       int32 id[2];
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
-      id[0] = id[1] = 0;
+      bool isLow = height < 19;
+      id[0] = id[1] = 0;            
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
-         for (x = 0; x < width; x++, p++, alpha++)
-         {
-            p->a = *alpha;
-            p->r = color.r;
-            p->g = color.g;
-            p->b = color.b;
-         }
+#ifdef ANDROID            
+         if (isLow)
+            for (x = 0; x < width; x++, p++, alpha++)
+            {
+               p->a = *alpha > 128 ? 255 : *alpha; // this is specially useful for galaxy mini, which have a horrible display
+               p->r = color.r;
+               p->g = color.g;
+               p->b = color.b;
+            }
+         else
+#endif               
+            for (x = 0; x < width; x++, p++, alpha++)
+            {
+               p->a = *alpha; 
+               p->r = color.r;
+               p->g = color.g;
+               p->b = color.b;
+            }
       }
       glLoadTexture(currentContext, null, id, (Pixel*)pixels, width, height, false);
       if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
