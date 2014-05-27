@@ -479,7 +479,10 @@ target: javadoc
   <copy file="${docs}/changelogs.html" todir="${docs}/html"/>
 
   <property name="buildNumber" value="0" />
-  <replace file="${docs}/html/changelogs.html" token="@@@" value="$buildNumber"/>
+  <replace file="${docs}/html/changelogs.html" token="" value="${buildNumber}">
+    <replacetoken>@@@</replacetoken> 
+    <replacevalue>${buildNumber}</replacevalue>
+  </replace>
 
 </target>
 
