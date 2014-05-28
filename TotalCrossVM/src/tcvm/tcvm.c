@@ -756,7 +756,7 @@ notYetLinked:
                      goto contCall;
                   }
                // not found in current class, search in inherited classes, if calling a virtual method
-               if (code->op.op != CALL_virtual && !originalClassIsInterface)
+               if (code->op.op != CALL_virtual && code->op.op != CALL_normal && !originalClassIsInterface)
                   break;
                c = c->superClass;
             } while (c);

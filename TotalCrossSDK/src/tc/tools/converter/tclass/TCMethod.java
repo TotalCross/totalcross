@@ -13,10 +13,11 @@
 
 package tc.tools.converter.tclass;
 
+import java.lang.reflect.Method;
 import totalcross.util.*;
 import tc.tools.converter.*;
 import totalcross.io.DataStreamLE;
-import totalcross.sys.Convert;
+import totalcross.sys.*;
 import tc.tools.converter.bb.*;
 import tc.tools.converter.ir.*;
 import tc.tools.converter.ir.Instruction.*;
@@ -273,7 +274,12 @@ public final class TCMethod implements TCConstants
          }
          else
          {
-            java.lang.reflect.Method methods[] = c4D.getDeclaredMethods();
+            Vector vector = new Vector(c4D.getMethods());
+            vector.addElements(c4D.getDeclaredMethods());
+            Object[] objects = vector.toObjectArray();
+            Method[] methods = new Method[objects.length];
+            
+            Vm.arrayCopy(objects, 0, methods, 0, objects.length);
             // lookahead to see if there are 4D methods with this same name
             Hashtable ht = new Hashtable(methods.length);
             for (int i =0; i < methods.length; i++)
@@ -294,7 +300,9 @@ public final class TCMethod implements TCConstants
             }
          }
          if (!found)
+         {
             throw new InvalidClassException(toHumanReadable(className,method,params)+" is not available at the device! To find the available ones, see the Javadocs for "+java2totalcross(className)+" class."+(className.startsWith("java.lang") ? beAware : ""));
+         }
       }
    }
 

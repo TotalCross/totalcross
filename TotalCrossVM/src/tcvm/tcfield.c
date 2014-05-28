@@ -68,9 +68,10 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
    uint32 classIndex = c->cp->sfieldClass[sym], len;
    CharP className = c->cp->cls[classIndex];
    CharP fieldName = c->cp->mtdfld[fieldIndex];
+   
    FieldArray fields=null, f;
    TCClass ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false);
-   if (ext)
+   while (ext)
    {
       for (f = fields = ext->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
          if (strEq(f->name, fieldName) && strEq(f->sourceClassName, className))
@@ -83,8 +84,12 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
                default:   return c->cp->boundSField[sym] = &ext->v64StaticValues[idx];
             }
          }
+
+         ext = ext->superClass;
+         className = ext->name;
    }
-   len = ARRAYLENV(fields); // pode retirar apos depurar!
+   //len = ARRAYLENV(fields); // pode retirar apos depurar!
+
    return ext == null ? SF_CLASS_ERROR : SF_FIELD_ERROR;
 }
 
@@ -110,11 +115,19 @@ uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, 
    bool found=false;
    FieldArray fields, f;
    TCClass ext = OBJ_CLASS(o);
-   if (ext)
+   while (ext)
    {
       for (fields = ext->instanceFields[(int32)t], f = fields+ARRAYLENV(fields); --f >= fields;) // guich@tc110_101: must go backwards
-         if (strEq(f->name, fieldName) && (found || (found=(f->sourceClassName == fieldClassName || strEq(f->sourceClassName, fieldClassName))))) // guich@tc110_101: once the class was found, we can search all superclasses
-            return (uint16)(f-fields);
+         if (fields)      
+         {
+            if (strEq(f->name, fieldName) && (found || (found=(f->sourceClassName == fieldClassName || strEq(f->sourceClassName, fieldClassName))))) // guich@tc110_101: once the class was found, we can search all superclasses
+                return (uint16)(f-fields);
+         }
+         else
+            break;
+          
+      ext = ext->superClass;
+      fieldClassName = ext->name;
    }
    return ext ? UNBOUND_FIELD_ERROR : UNBOUND_CLASS_ERROR;
 }
