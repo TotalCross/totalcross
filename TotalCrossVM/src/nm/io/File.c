@@ -209,7 +209,6 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
-   Err err;
 
    if (mode == INVALID)
       throwException(p->currentContext, IOException, "Invalid file object.");
