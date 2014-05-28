@@ -86,7 +86,9 @@ public class FontSample extends BaseContainer
          setFont(f);
          for (int i = controls.length; --i >= 0;)
             controls[i].setFont(f);
+         repositionAllowed = false; // only reposition the controls, otherwise
          reposition();
+         repositionAllowed = true; // only reposition the controls, otherwise
       }
    }
 

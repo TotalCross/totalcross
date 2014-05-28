@@ -466,6 +466,7 @@ target: javadoc
     <arg line="-sourcepath ${output}/javadoc"/>
     <arg line="-windowtitle 'TotalCross SDK ${versionStr}'"/>
     <arg line="-d ${docs}/html"/>
+    <arg line="-doctitle 'Please read the changelogs &lt;a href=changelogs.html _target=blank &gt;here&lt;/a&gt;.'"/>
     <arg line="-source 1.2"/>
     <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>
@@ -474,6 +475,10 @@ target: javadoc
   <replace dir="${docs}/html/" token="java.lang." value="totalcross.lang."><include name="**/*.html"/></replace>
 
   <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
+
+  <copy file="${docs}/changelogs.html" todir="${docs}/html"/>
+
+  <!--replace file="${docs}/html/changelogs.html" token="@@@" value="@@BUILD_NUMBER@@"/-->
 
 </target>
 

@@ -276,10 +276,10 @@ public class Deployer4Android
       // include the vm and litebase
       if (tcFolder != null)
       {
-         //copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/libtcvm.so", zos);
-         //copyZipEntry(tcFolder+"Litebase.apk", "lib/armeabi/liblitebase.so", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/liblitebase.so", zos);
+         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
+         //copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/libtcvm.so", zos);
+         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/liblitebase.so", zos);
+         //copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/liblitebase.so", zos);
       }
       
       zis.close();

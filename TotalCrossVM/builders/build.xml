@@ -193,7 +193,9 @@ target: buildSkeleton - Build the folders
    <echo message="Building TotalCross SDK"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false">
+      <property name="buildNumber" value="${buildNumber}"/>
+   </ant>
 
    <!-- copy the changed files to the release folder -->
    <mkdir dir="${target.sdk.path}/dist/vm" />
