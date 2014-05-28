@@ -410,7 +410,8 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
             // Acting on color components 
             a += (int32)pval * iweight;
          }
-         a /= wsum; if (a > 160) a = 255; else if (a < 0) a = 0; // changed 255 to 160 to make the font darker
+         a /= wsum;
+         if (a > 255) a = 255; else if (a < 0) a = 0;
          *ob++ = a;
       }
    }
@@ -459,31 +460,31 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
       int32 offset = uf->bitIndexTable[ch], y, x;
       int32 id[2];
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
-      bool isLow = uf->fontP.maxHeight < 20;
-      id[0] = id[1] = 0;
-      p += width; // skip a line at top
+      bool isLow = height < 19;
+      id[0] = id[1] = 0;            
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
-         if (isLow) // for low res fonts, make it darker
+#ifdef ANDROID            
+         if (isLow)
             for (x = 0; x < width; x++, p++, alpha++)
             {
-               p->a = *alpha < 160 ? *alpha : 255;
+               p->a = *alpha > 128 ? 255 : *alpha; // this is specially useful for galaxy mini, which have a horrible display
                p->r = color.r;
                p->g = color.g;
                p->b = color.b;
             }
          else
+#endif               
             for (x = 0; x < width; x++, p++, alpha++)
             {
-               p->a = *alpha;
+               p->a = *alpha; 
                p->r = color.r;
                p->g = color.g;
                p->b = color.b;
             }
-         p->a = 0; p++; // skip a row at right
       }
-      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width+1, height+1, false);
+      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width, height, false);
       if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
       {
          ret[0] = ic->id[0] = id[0];
