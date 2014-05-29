@@ -334,7 +334,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (spannableStringEnd > spannableStringStart) 
          {
             super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, "/", 0, 1);
+            return super.replace(0, 0, "\uFFFF", 0, 1);
          }
          return super.replace(spannableStringStart, spannableStringEnd, replacementSequence, replacementStart, replacementEnd);
       }
@@ -360,7 +360,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             {
                char[] c = new char[1024]; // guich: set a reasonable size for the buffer
                for (int i = 0; i < c.length; i++)
-                  c[i] = (i & 1) == 0 ? (char)255 : (char)257;
+                  c[i] = (i & 1) == 0 ? (char)0xFFFF : (char)0xFFFE;
                dummy = new String(c);      
             }
             if (myEditable == null) 
