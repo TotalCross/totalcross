@@ -278,8 +278,8 @@ public class Chart extends Control
     */
    public void setYAxis(double min, double max, int steps)
    {
-      yAxisMinValue = min;
-      yAxisMaxValue = max;
+      yAxisMinValue = Math.min(min,max);
+      yAxisMaxValue = Math.max(min,max);
       yAxisSteps = steps;
    }
 
@@ -369,7 +369,7 @@ public class Chart extends Control
          int yvalW = yValuesSize;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
-         left += yvalW;
+         left += yvalW+3;
          top += snapToTop ? 0 : fm.ascent/2;
          bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
