@@ -1,6 +1,32 @@
-<h2>Current version</h2>
+<h2>Current development version</h2>
+. fixed blue screen that appears when the keyboard is shifted and the device goes to sleep on Android<br>
 . now android is built using the old armeabi instruction set, since there's still lots of devices running it. removed areabi-v7a.<br>
 . integrated the changelogs into TotalCross' javadoc.<br>
+. updated sqlite3 to version 3.8.4.3 updated sqlite-jdbc to version 3.8.2 added ssqlite3_tc.h to make updates of sqlite3 easier.<br>
+. fixed html sample 5 sample<br>
+. fixed FontSample not working on rotation<br>
+. prevent app crash if back is pressed at mainmenu<br>
+. prevent aioobe on thread sample<br>
+. undeprecated Button.commonGap and fixed it not working during rotations (which was the cause of the deprecation)<br>
+. fixed connectionmanager.getLocalHost returning invalid chars.<br>
+. use rotation on camera<br>
+. fixed crash at startup of serversocket sample when there's no internet connection<br>
+. fixed getting ConnectionManager.getLocalHost on 3g connections in android<br>
+. fixed corruption when trying to update the user interface in a thread.<br>
+. added a common way to create a logging listbox and add items to it safely in the TotalCross API sample<br>
+. fixed ServerSocket not allowing a new connection when the stop button is pressed<br>
+. added a color scheme to Chart using colors from http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization/<br>
+. fixed drawArc connecting endpoints mistakenly<br>
+. fixed deploy of pkg files<br>
+. fixed maps not working because Geocoder api was retired<br>
+. now GoogleMaps shows a point in the location asked to be shown<br>
+. Corrected the recursion for creating dirs with File.createDir<br>
+. fixed problem when loading a route in single apk<br>
+. fixed coordinate convertion on map's route<br>
+. now using only old armeabi for Android to support old devices<br>
+. improved font readability on low resolution devices<br>
+. fixed FileChooserBox returning the last answer if the user reuses the component<br>
+. fixed strange chars that appears at Edit on android 4.4.2 and newer devices<br>
 
 <h2>TotalCross 3.0 build 2145</h2>
 . prevent aioobe under some undefined situations in Bluetooth.connect<br>
