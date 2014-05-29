@@ -49,7 +49,7 @@
 </condition>
 
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.2"/>
+<property name="compile.target"          value="1.3"/>
 <property name="compile.source"          value="1.3"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
