@@ -150,12 +150,15 @@ public class OtherControlsSample extends BaseContainer
                   fcb.popup();
                   String s = fcb.getAnswer();
                   if (s == null)
-                     lStatus.setText("Cancelled");
+                     setInfo("Cancelled");
                   else
                   if (fm.stringWidth(s) > getWidth())
+                  {
                      lStatus.setMarqueeText(s, 100, 1, -8);
+                     setInfo("Scroll up to see returned value");
+                  }
                   else
-                     lStatus.setText(s);
+                     setInfo(s);
                   btn2.setEnabled(s != null);
                }
                catch (Exception ee)

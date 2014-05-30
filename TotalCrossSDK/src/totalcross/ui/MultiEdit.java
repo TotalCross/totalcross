@@ -554,7 +554,6 @@ public class MultiEdit extends Container implements Scrollable
          switch (event.type)
          {
             case TimerEvent.TRIGGERED:
-               Window w;
                if (blinkTimer != null && !isTopMost()) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
                {
                   focusOut();
@@ -597,6 +596,8 @@ public class MultiEdit extends Container implements Scrollable
                   if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                   if (ke.key == SpecialKeys.ACTION && Settings.platform.equals(Settings.WIN32)) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
                      ke.key = SpecialKeys.ENTER;
+                  if (ke.key == 0xFFFF || ke.key == 0xFFFE) // bypass android 4.4.2 bug (see Launcher4A)
+                     break;
                   if ((ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ESCAPE) && !improvedGeographicalFocus)
                   {
                      //isHighlighting = true; // kmeehl@tc100: set isHighlighting first, so that Window.removeFocus() wont trample Window.highlighted - guich@tc110_81: commented out. this will be done in focusOut().

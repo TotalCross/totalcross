@@ -170,7 +170,7 @@ public class FileChooserBox extends Window
          {
             cbRoot.removeAll();
             cbRoot.add(File.listRoots());
-            previouslySelectedRootIndex = -1;
+            selectedIndex = previouslySelectedRootIndex = -1;
          }
          return;
       }
