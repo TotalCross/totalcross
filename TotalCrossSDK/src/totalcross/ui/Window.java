@@ -281,6 +281,9 @@ public class Window extends Container
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN = 1.0 * 0.0393700787; // 0.5mm
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER = 1.0 * 0.0393700787; // 1.0mm
    
+   /** A key listener that have priority over all other listeners. */
+   public static KeyListener keyHook;
+   
    ////////////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with no title and no border. */
@@ -734,6 +737,20 @@ public class Window extends Container
          _keyEvent.modifiers = modifiers;
          _keyEvent.type = type;
          event = _keyEvent;
+         
+         if (isKeyEvent && keyHook != null)
+         {
+            _keyEvent.consumed = false;
+            switch (type)
+            {
+               case KeyEvent.KEY_PRESS:         keyHook.keyPressed(_keyEvent);         break;
+               case KeyEvent.ACTION_KEY_PRESS:  keyHook.actionkeyPressed(_keyEvent);   break;
+               case KeyEvent.SPECIAL_KEY_PRESS: keyHook.specialkeyPressed(_keyEvent);  break;
+            }
+            if (_keyEvent.consumed)
+               return;
+         }
+
 
          if (Settings.geographicalFocus && _keyEvent.isActionKey()) _keyEvent.type = KeyEvent.ACTION_KEY_PRESS; // kmeehl@tc100 from here
 

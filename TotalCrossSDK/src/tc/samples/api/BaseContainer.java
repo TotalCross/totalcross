@@ -111,9 +111,7 @@ public class BaseContainer extends Container
             }
          });
          
-         Window w = getParentWindow();
-         w.callListenersOnAllTargets = true; // fixes problem if focus goes to another control
-         w.addKeyListener(new KeyListener() 
+         Window.keyHook = new KeyListener() 
          {
             public void keyPressed(KeyEvent e)
             {
@@ -131,7 +129,7 @@ public class BaseContainer extends Container
                   back();
                }
             }
-         });
+         };
          
          String name = getClass().getName();
          setTitle(name.endsWith("Sample") ? name.substring(name.lastIndexOf('.')+1,name.length()-6) : defaultTitle);
@@ -172,6 +170,7 @@ public class BaseContainer extends Container
             setInfo(MainMenu.DEFAULT_INFO);
             containerStack.pop(); // pop ourself
             Window.getTopMost().swap((Container)containerStack.peek());
+            Window.keyHook = null;
          }
          catch (ElementNotFoundException enfe)
          {
