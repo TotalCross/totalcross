@@ -605,6 +605,10 @@ namespace PhoneDirect3DXamlAppInterop
 
                 int appW = (int)LayoutRoot.ActualWidth;
                 int appH = (int)LayoutRoot.ActualHeight;
+                int appW2 = (int)Application.Current.Host.Content.ActualWidth;
+                int appH2 = (int)Application.Current.Host.Content.ActualHeight;
+                String s = appW+","+ appH+" - "+ appW2 + ","+ appH2;
+                MessageBox.Show(s, "ALERT", MessageBoxButton.OK);
                 d3dBackground.OnScreenChanged(-1, appW, appH);
                 d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
                 DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
