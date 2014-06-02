@@ -11,7 +11,7 @@ using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
 
 #ifdef _DEBUG
-#define DEBUG_APP "TCTestWin"
+#define DEBUG_APP "TotalCrossAPI"
 #endif
 
 #define DXRELEASE(x) do {if (x) {x->Release(); x = null;}} while (0)
