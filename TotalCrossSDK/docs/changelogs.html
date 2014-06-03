@@ -1,4 +1,8 @@
 <h2>Current development version</h2>
+. added Window.keyHook to bypass all key listeners and easily handle keys. Used in the TotalCrossAPI sample to handle the back key, and also in Motorola TC60 scanner.<br>
+. implemented the Motorola scanner TC55. Still have to implement the datawedge interface. moved Intermec_barcode to Android_barcode; created an IScanner interface to make the implementation of barcodes easier on Android. Updated ScannerInternal<br>
+
+<h2>TotalCross 3.01 build 2177</h2>
 . fixed blue screen that appears when the keyboard is shifted and the device goes to sleep on Android<br>
 . now android is built using the old armeabi instruction set, since there's still lots of devices running it. removed areabi-v7a.<br>
 . integrated the changelogs into TotalCross' javadoc.<br>
