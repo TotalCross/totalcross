@@ -18,16 +18,15 @@
 
 package totalcross.android;
 
-import totalcross.*;
-
-import java.lang.reflect.*;
-
 import android.content.*;
 import android.content.res.*;
 import android.net.wifi.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
+import java.lang.reflect.*;
+
+import totalcross.*;
 
 public final class Settings4A
 {
