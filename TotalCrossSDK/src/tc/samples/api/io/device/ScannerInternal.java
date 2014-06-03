@@ -86,7 +86,7 @@ public class ScannerInternal extends BaseContainer
          // Versions can only be get after the Scanner is initialized
          lblScanManagerVersion.setText(Scanner.scanManagerVersion);
          lblRomSerialNumber.setText(Settings.romSerialNumber != null ? Settings.romSerialNumber : "Not available");
-         scannerStop();
+         //scannerStop();
       }
    }
 
@@ -109,6 +109,7 @@ public class ScannerInternal extends BaseContainer
             {
                log("Scanner ready.");
                chkScanner.setChecked(true);
+               Scanner.listener = this;
                return true;
             }
             else
@@ -126,7 +127,10 @@ public class ScannerInternal extends BaseContainer
    private void scannerStop()
    {
       if (Scanner.deactivate())
+      {
          log("Scanner deactivated.");
+         chkScanner.setChecked(false);
+      }
    }
 
    public void onRemove() // there is no need to do this; the Scanner lib stops the Scanner for us.

@@ -40,6 +40,7 @@ import java.net.*;
 import java.util.*;
 import java.util.zip.*;
 
+import totalcross.android.*;
 import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
@@ -423,10 +424,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public boolean onKeyPreIme(int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK)
          return onKey(this, keyCode, event);
-      else
-         return false;
+      return false;
    }
    
    public static boolean hardwareKeyboardIsVisible;
@@ -435,9 +438,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       super.onSizeChanged(w, h, oldw, oldh);
    }
-
+   
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event)) 
+         return false;
+      
+      if (keyCode == 0xFFFF || keyCode == 0xFFFE)
+         return false;
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
          if (!hardwareKeyboardIsVisible && sipVisible)

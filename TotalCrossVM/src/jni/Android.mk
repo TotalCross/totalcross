@@ -231,7 +231,7 @@ SQLITE_FILES =                               \
 	$(TC_SRCDIR)/nm/db/NativeDB.c               
 
 SCANNER_FILES =                                \
-	$(TC_SRCDIR)/scanner/intermec/Intermec_barcode.c
+	$(TC_SRCDIR)/scanner/android/Android_barcode.c
 
 SOURCE_FILES =                                \
 	$(SQLITE_FILES)                            \
