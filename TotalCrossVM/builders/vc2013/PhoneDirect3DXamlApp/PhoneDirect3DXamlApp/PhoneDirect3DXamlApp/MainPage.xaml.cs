@@ -594,25 +594,24 @@ namespace PhoneDirect3DXamlAppInterop
 
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
         {
-            if (d3dBackground == null)
-            {
-                cs = new CSWrapper(LayoutRoot);
-                cs.appName = ReadManifest();
-                d3dBackground = new Direct3DBackground(cs);
+           if (d3dBackground == null)
+           {
+              cs = new CSWrapper(LayoutRoot);
+              cs.appName = ReadManifest();
+              d3dBackground = new Direct3DBackground(cs);
 
-                cs.tbox.KeyDown += MainPage_KeyDown;
-                cs.tbox.TextChanged += tbox_TextChanged;
+              cs.tbox.KeyDown += MainPage_KeyDown;
+              cs.tbox.TextChanged += tbox_TextChanged;
 
-                int appW = (int)LayoutRoot.ActualWidth;
-                int appH = (int)LayoutRoot.ActualHeight;
-                int appW2 = (int)Application.Current.Host.Content.ActualWidth;
-                int appH2 = (int)Application.Current.Host.Content.ActualHeight;
-                String s = appW+","+ appH+" - "+ appW2 + ","+ appH2;
-                MessageBox.Show(s, "ALERT", MessageBoxButton.OK);
-                d3dBackground.OnScreenChanged(-1, appW, appH);
-                d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
-                DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
-            }
+              int appW = (int)LayoutRoot.ActualWidth;
+              int appH = (int)LayoutRoot.ActualHeight;
+              int scale = System.Windows.Application.Current.Host.Content.ScaleFactor;
+              appW = appW * scale / 100;
+              appH = appH * scale / 100;
+              d3dBackground.OnScreenChanged(-1, appW, appH);
+              d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
+              DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
+           }
         }
 
         public static string ReadManifest()
