@@ -61,6 +61,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
+   private static String appPath;
    private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
@@ -131,10 +132,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       super(context);
       // read all apk names, before loading the vm
       if (!isSingleAPK)
-      {
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
-      }
       loadAPK(appPath+"/apkname.txt",true);
+      Launcher4A.appPath = appPath;
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
@@ -150,6 +150,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       String vmPath = context.getApplicationInfo().dataDir;
+      if (hadCrash()) // note: if the crash occurs too early, the report may not be sent by the thread. and we cannot remove it from a thread or Android will shout.
+         bugreport();
+      createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
 
@@ -1229,6 +1232,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appPaused()
    {
+      deleteCrash();
       appPaused = true;
       instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
@@ -1240,6 +1244,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
+      createCrash();
       appPaused = false;
       instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
@@ -1376,7 +1381,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      if (realOfs == -1) // if not found, double the read buffer and try again
                      {
                         if (--j == 0)
+                        {
+                           raf.close();
                            throw new RuntimeException("Error: cannot find real offset in APK for "+a.name);
+                        }
                         buf = new byte[buf.length*2];
                         AndroidUtils.debug("read from "+pos+" to "+(pos+buf.length)+" but not found. doubling buffer to "+buf.length+"!");
                      }
@@ -1499,4 +1507,104 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
+   ///////////////// crash controller //////////////////////
+   private static void createCrash()
+   {
+      try {new FileOutputStream(appPath+"/crash.txt").close();} catch (Exception e) {}
+   }
+   private static void deleteCrash()
+   {
+      try {new File(appPath+"/crash.txt").delete();} catch (Exception e) {}
+   }
+   private static boolean hadCrash()
+   {
+      boolean b = false;
+      try {b = new File(appPath+"/crash.txt").exists(); deleteCrash();} catch (Exception e) {}
+      return b;
+   }
+   
+   private void bugreport() 
+   {
+      new Thread()
+      {
+         public void run() 
+         {
+            try 
+            {
+               // generate the bugreport
+               AndroidUtils.debug("Generating bugreport");
+               long ini = System.currentTimeMillis();
+               try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
+               String[] commands =
+                  {
+                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
+                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
+                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
+                  };
+      /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
+                   "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
+                   "logcat -d >> /sdcard/IssueReport/bugreport.txt\n",
+                  };
+      */         java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+               DataOutputStream os = new DataOutputStream(p.getOutputStream());
+               for (String tmpCmd : commands) 
+                  os.writeBytes(tmpCmd);
+               File f = new File("/sdcard/IssueReport/bugreport.txt"); // takes 33 seconds on a s3 mini
+               long l2 = 0;
+               while (true)
+               {
+                  long l1 = f.length();
+                  Thread.sleep(1000);
+                  l2 = f.length();
+                  if (l1 == l2)
+                     break;
+               }            
+               long end = System.currentTimeMillis();
+               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/bugreport.txt in "+(end-ini)+"ms with "+l2+" bytes");
+               
+               // zip the bugreport
+               ini = System.currentTimeMillis();
+               FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
+               ZipOutputStream zout = new ZipOutputStream(fout);
+               File ff = new File("/sdcard/IssueReport/bugreport.txt");
+               FileInputStream fin = new FileInputStream(ff);
+               zout.putNextEntry(new ZipEntry("bugreport.txt"));
+               byte[] buf = new byte[4096];
+               for (int n; (n = fin.read(buf)) > 0;)
+                  zout.write(buf,0,n);
+               zout.closeEntry();
+               zout.close();
+               fin.close();
+               end = System.currentTimeMillis();
+               ff.delete();
+               AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
+               WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+               Display display = wm.getDefaultDisplay();
+               
+               // send by email
+               final Mail m = new Mail("registro@totalcross.com", "t0t4lcr0ss"); 
+               String[] toArr = {"guich@totalcross.com"}; 
+               m.setTo(toArr);
+               m.setFrom("registro@totalcross.com"); 
+               m.setSubject("Bugreport TotalCross build #"+Settings4A.buildNumber); 
+               m.setBody(
+                     "Imei: "+Settings4A.imei+"\n"+
+                     "Serial: "+Settings4A.serialNumber+"\n"+
+                     "Device id: "+Settings4A.deviceId+"\n"+
+                     "OS version: "+Settings4A.romVersion+"\n"+
+                     "Processor: "+System.getProperty("os.arch")+"\n"+
+                     "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
+                     "Font: "+deviceFontHeight+"\n"
+               ); 
+               m.addAttachment("/sdcard/IssueReport/bugreport.zip");
+               m.send();
+               AndroidUtils.debug("Bugreport mail sent!");
+            }
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+         }
+      }.start();
+   }
 }

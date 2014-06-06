@@ -73,6 +73,8 @@ public final class Settings4A
    public static boolean keypadOnly;
    
    public static String lineNumber;
+   
+   public static int buildNumber = 000;
 
    public static void refresh()
    {
