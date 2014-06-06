@@ -1582,8 +1582,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                Display display = wm.getDefaultDisplay();
                
                // send by email
-               final Mail m = new Mail("registro@totalcross.com", "t0t4lcr0ss"); 
-               String[] toArr = {"guich@totalcross.com"}; 
+               final Mail m = new Mail("totalcross", "t0t4lcr0ss"); 
+               String[] toArr = {"bugreport@totalcross.com","guich@totalcross.com"}; 
                m.setTo(toArr);
                m.setFrom("registro@totalcross.com"); 
                m.setSubject("Bugreport TotalCross build #"+Settings4A.buildNumber); 
