@@ -1468,6 +1468,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    private void bugreport() 
    {
+      if (Settings4A.buildNumber != 0) // dont use when debugging
       new Thread()
       {
          public void run() 
