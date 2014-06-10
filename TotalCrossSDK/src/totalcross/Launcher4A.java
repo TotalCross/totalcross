@@ -321,71 +321,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    // https://code.google.com/p/android/issues/detail?id=62306
    // http://stackoverflow.com/questions/18581636/android-cannot-capture-backspace-delete-press-in-soft-keyboard/19980975#19980975
 
-   class EditableAccomodatingLatinIMETypeNullIssues extends SpannableStringBuilder 
+   class MyInputConnection extends BaseInputConnection 
    {
-      EditableAccomodatingLatinIMETypeNullIssues(CharSequence source) 
-      {
-         super(source);
-      }
-
-      public SpannableStringBuilder replace(final int spannableStringStart, final int spannableStringEnd, CharSequence replacementSequence, int replacementStart, int replacementEnd) 
-      {
-         if (replacementEnd > replacementStart) 
-         {
-            super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, replacementSequence, replacementStart, replacementEnd);
-         }
-         if (spannableStringEnd > spannableStringStart) 
-         {
-            super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, "\uFFFF", 0, 1);
-         }
-         return super.replace(spannableStringStart, spannableStringEnd, replacementSequence, replacementStart, replacementEnd);
-      }
-   }
-   
-   class InputConnectionAccomodatingLatinIMETypeNullIssues extends BaseInputConnection 
-   {
-      Editable myEditable;
-      String dummy;
       KeyEvent delUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL);
       KeyEvent delDn = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
       
-      public InputConnectionAccomodatingLatinIMETypeNullIssues(View targetView, boolean fullEditor) 
+      public MyInputConnection(View targetView, boolean fullEditor) 
       {
          super(targetView, fullEditor);
       }
       
-      public Editable getEditable() 
-      {
-         if (Build.VERSION.SDK_INT >= 19) 
-         {
-            if (dummy == null)
-            {
-               char[] c = new char[1024]; // guich: set a reasonable size for the buffer
-               for (int i = 0; i < c.length; i++)
-                  c[i] = (i & 1) == 0 ? (char)0xFFFF : (char)0xFFFE;
-               dummy = new String(c);      
-            }
-            if (myEditable == null) 
-            {
-               myEditable = new EditableAccomodatingLatinIMETypeNullIssues(dummy);
-               Selection.setSelection(myEditable, dummy.length());
-            }
-            else 
-            {
-               int myEditableLength = myEditable.length(); 
-               if (myEditableLength == 0) 
-               {
-                  myEditable.append(dummy);
-                  Selection.setSelection(myEditable, dummy.length());
-               }
-            }
-            return myEditable;
-         }
-         return super.getEditable();
-      }
-
       public boolean deleteSurroundingText(int beforeLength, int afterLength) 
       {
          for (int i =0; i < beforeLength; i++)
@@ -418,7 +363,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
       outAttrs.inputType = InputType.TYPE_NULL;
       outAttrs.actionLabel = null;
-      return new InputConnectionAccomodatingLatinIMETypeNullIssues(this, false);
+      return new MyInputConnection(this, false);
    }
    //////////////////////////////////////////////////////////////////////////////////
    
@@ -447,8 +392,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event)) 
          return false;
       
-      if (keyCode == 0xFFFF || keyCode == 0xFFFE)
-         return false;
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
          if (!hardwareKeyboardIsVisible && sipVisible)

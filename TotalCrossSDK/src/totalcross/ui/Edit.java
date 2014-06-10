@@ -1182,8 +1182,6 @@ public class Edit extends Control
                   popupKCC();
                   break;
                }
-               if (ke.key == 0xFFFF || ke.key == 0xFFFE) // bypass android 4.4.2 bug (see Launcher4A)
-                  break;
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
