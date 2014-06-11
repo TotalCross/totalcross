@@ -10,7 +10,7 @@ namespace PhoneDirect3DXamlAppComponent
 		Platform::String^ getAppName();
 
       // Vm
-      void privateAlertCS(Platform::String^ alertMsg);
+      void privateAlertCS(Platform::String^ alertMsg, bool eventsInitialized);
       bool isAlertVisible();
       void vmSetAutoOffCS(bool enable);
 

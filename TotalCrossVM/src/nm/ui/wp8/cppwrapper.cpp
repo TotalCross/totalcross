@@ -138,7 +138,7 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr), eventsInitialized);
    while (Direct3DBase::getLastInstance()->csharp->isAlertVisible()) Sleep(10);
 }
 

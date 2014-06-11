@@ -61,7 +61,9 @@ void Direct3DBase::initialize()
    {
       wchar_t exitMsg[64];
       swprintf_s(exitMsg, 64, L"Error code when starting VM: %d", exitCode);
-      csharp->privateAlertCS(ref new Platform::String(exitMsg));
+      csharp->privateAlertCS(ref new Platform::String(exitMsg), eventsInitialized);
+      csharp->appExit();
+      return;
    }
 
    DX::ReadDataAsync("VertexShaderGlobalColor.cso").then([this](Platform::Array<byte>^ fileData) {setBufAndLen(fileData, &vs1buf, &vs1len, 1); });
