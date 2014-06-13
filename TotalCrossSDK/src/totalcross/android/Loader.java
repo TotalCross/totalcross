@@ -158,6 +158,7 @@ public class Loader extends Activity implements BarcodeReadListener
             intent.putExtra("height",height);
             intent.putExtra("allowRotation", allowRotation);
             startActivityForResult(intent, TAKE_PHOTO);
+            Launcher4A.instance.nativeInitSize(null,-998,0);
          }
       }
       catch (Throwable e)
