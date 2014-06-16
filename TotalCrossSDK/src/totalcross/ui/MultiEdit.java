@@ -627,6 +627,8 @@ public class MultiEdit extends Container implements Scrollable
                      boolean isPrintable = ke.key > 0 && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0
                            && event.type == KeyEvent.KEY_PRESS;
                      boolean isDelete = (ke.key == SpecialKeys.DELETE);
+                     if (Settings.optionalBackspaceKey != 0 && ke.key == Settings.optionalBackspaceKey)
+                        ke.key = SpecialKeys.BACKSPACE;
                      boolean isBackspace = (ke.key == SpecialKeys.BACKSPACE);
                      boolean isEnter = (ke.key == SpecialKeys.ENTER);
                      int del1 = -1;

@@ -805,6 +805,13 @@ public final class Settings
     */
    public static boolean isOpenGL;
 
+   /** An optional value for the backspace key. Android 4.4.2 has a bug that prevents the backspace from working well;
+    * this bug is fixed in 4.4.3. The workaround is to define a unused key that will work as the backspace one.
+    * Defaults to the î key, used only if romVersion is 442.
+    */
+   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
+   
+
    // this class can't be instantiated
 	private Settings()
 	{

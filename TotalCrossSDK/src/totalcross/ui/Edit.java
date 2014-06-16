@@ -250,7 +250,7 @@ public class Edit extends Control
     * @since TotalCross 1.6
     */
    public boolean virtualKeyboard = Settings.virtualKeyboard;
-   
+
    /** Cursor thickness */
    public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
 
@@ -1230,6 +1230,8 @@ public class Edit extends Control
                if ("".equals(validChars)) // guich@tc115_33 
                   break;
                boolean isDelete = (ke.key == SpecialKeys.DELETE);
+               if (Settings.optionalBackspaceKey != 0 && ke.key == Settings.optionalBackspaceKey)
+                  ke.key = SpecialKeys.BACKSPACE;
                boolean isBackspace = (ke.key == SpecialKeys.BACKSPACE);
                boolean isPrintable = ke.key > 0 && event.type == KeyEvent.KEY_PRESS && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0;
                int del1 = -1;
