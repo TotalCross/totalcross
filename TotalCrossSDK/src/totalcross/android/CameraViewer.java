@@ -117,6 +117,8 @@ public class CameraViewer extends Activity // guich@tc126_34
             camera.setDisplayOrientation(result);
 		
             parameters.setPictureFormat(PixelFormat.JPEG);
+            if (Build.VERSION.SDK_INT >= 14 && getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS))
+               parameters.setFocusMode("continuous-picture"); // FOCUS_MODE_CONTINUOUS_PICTURE 
             if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
             int ww = Math.max(width,height);
