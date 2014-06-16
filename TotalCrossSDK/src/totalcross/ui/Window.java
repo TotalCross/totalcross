@@ -502,6 +502,8 @@ public class Window extends Container
    {
       boolean isPenEvent = !multiTouching && PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
+      if (isKeyEvent && Settings.optionalBackspaceKey != 0 && key == Settings.optionalBackspaceKey)
+         key = SpecialKeys.BACKSPACE;
       if (isKeyEvent && Settings.deviceRobotSpecialKey != 0 && Settings.deviceRobotSpecialKey == key)
       {
          onRobotKey();

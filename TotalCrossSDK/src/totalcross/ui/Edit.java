@@ -1230,8 +1230,6 @@ public class Edit extends Control
                if ("".equals(validChars)) // guich@tc115_33 
                   break;
                boolean isDelete = (ke.key == SpecialKeys.DELETE);
-               if (Settings.optionalBackspaceKey != 0 && ke.key == Settings.optionalBackspaceKey)
-                  ke.key = SpecialKeys.BACKSPACE;
                boolean isBackspace = (ke.key == SpecialKeys.BACKSPACE);
                boolean isPrintable = ke.key > 0 && event.type == KeyEvent.KEY_PRESS && (ke.modifiers & SpecialKeys.ALT) == 0 && (ke.modifiers & SpecialKeys.CONTROL) == 0;
                int del1 = -1;
