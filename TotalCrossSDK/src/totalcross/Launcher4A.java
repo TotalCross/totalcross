@@ -1505,23 +1505,33 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                }            
                long end = System.currentTimeMillis();
                AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/bugreport.txt in "+(end-ini)+"ms with "+l2+" bytes");
-               
                // zip the bugreport
                ini = System.currentTimeMillis();
                FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
                ZipOutputStream zout = new ZipOutputStream(fout);
                File ff = new File("/sdcard/IssueReport/bugreport.txt");
                FileInputStream fin = new FileInputStream(ff);
+               // check if there's a SIGSEGV, which indicates an vm abort
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
                byte[] buf = new byte[4096];
+               boolean hasSIGSEGV = false;
                for (int n; (n = fin.read(buf)) > 0;)
+               {
+                  if (!hasSIGSEGV && new String(buf,0,n).contains("SIGSEGV"))
+                     hasSIGSEGV = true;
                   zout.write(buf,0,n);
+               }
                zout.closeEntry();
                zout.close();
                fin.close();
                end = System.currentTimeMillis();
                ff.delete();
                AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
+               if (!hasSIGSEGV)
+               {
+                  AndroidUtils.debug("SIGSEGV NOT FOUND; Aborting email.");
+                  return;
+               }
                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                Display display = wm.getDefaultDisplay();
                
