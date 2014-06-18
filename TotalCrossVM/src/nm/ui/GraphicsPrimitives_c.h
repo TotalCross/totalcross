@@ -1366,7 +1366,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
       return;
 
 #if defined __gl2_h_ && !defined WP8
-   if (!gradient && isConvex) // opengl doesnt fills non-convex polygons well
+   if (!gradient && isConvex && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well
    {
       if (nPoints1 > 0)
          glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
@@ -2470,7 +2470,7 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
    Pixel p;
    bool drawFadedPixels = !Graphics_useOpenGL(g);
 #ifdef __gl2_h_
-   bool optimize = topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
+   bool optimize = Graphics_useOpenGL(g) && topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
 #else
    bool optimize = false;
 #endif
@@ -2977,7 +2977,7 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
       currentContext->fullDirty = true;
       return;
    }
-#else
+#endif
    int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
    pc2.pixel = c2;
@@ -3005,7 +3005,6 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
       else
          fillRect(currentContext,g,yy,y,k,height, backColor);
    }
-#endif
 }
 
 /////////////// Start of Device-dependant functions ///////////////

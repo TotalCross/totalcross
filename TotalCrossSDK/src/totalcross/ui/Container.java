@@ -142,6 +142,36 @@ public class Container extends Control
    // a private id used in the ListContainer class
    int containerId;
    
+   public Image offscreen;
+   
+   public void takeScreenShot() throws Exception
+   {
+      offscreen = null;
+      offscreen = new Image(width,height);
+      Graphics g = offscreen.getGraphics();
+      paint2shot(g);
+   }
+   public void releaseScreenShot()
+   {
+      offscreen = null;
+   }
+   
+   private void paint2shot(Graphics g)
+   {
+      this.onPaint(g);
+      for (Control child = children; child != null; child = child.next)
+         if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+         {
+            int tx = -child.x, ty = -child.y;
+            g.translate(tx,ty);
+            child.onPaint(g);
+            g.translate(-tx,-ty);
+            if (child.asContainer != null)
+               child.asContainer.paint2shot(g);
+         }
+   }
+   
+   
    /** Creates a container with the default colors.
      * Important note: this container has no default size.
      * <br><br>
