@@ -1,6 +1,17 @@
 <h2>Current development version</h2>
+. 
+
+<h2>TotalCross 3.02 build 2200</h2>
 . added Window.keyHook to bypass all key listeners and easily handle keys. Used in the TotalCrossAPI sample to handle the back key, and also in Motorola TC60 scanner.<br>
 . implemented support for the Motorola scanner TC55.<br>
+. fixed screen resolution on highres Windows Phone 8 devices.<br>
+. added automatic crash report for totalcross. note that the user must run the app again right after the error happens<br>
+. removed the backspace fix of android 4.4.2 bug for handling backspace. All devices must upgrade to 4.4.3 which fixes the bug. added Settings.optionalBackspaceKey, set to î on android 4.4.2 only, to bypass the backspace key bug of this Android version<br>
+. fixed vm crash when a problem occurs at a very beginning of the startup. fixed alert not showing anything when called at that point<br>
+. fixed black images when calling the camera in Android<br>
+. updated sqlite to 3.8.5. fixed crash when running on windows due to MSIZE<br>
+. enabled continuous focus on android's camera<br>
+. fixed npe when running FontGenerator<br>
 
 <h2>TotalCross 3.01 build 2177</h2>
 . fixed blue screen that appears when the keyboard is shifted and the device goes to sleep on Android<br>
