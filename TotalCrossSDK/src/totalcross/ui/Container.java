@@ -149,25 +149,25 @@ public class Container extends Control
       offscreen = null;
       offscreen = new Image(width,height);
       Graphics g = offscreen.getGraphics();
-      paint2shot(g);
+      paint2shot(g,this);
    }
    public void releaseScreenShot()
    {
       offscreen = null;
+      Window.needsPaint = true;
    }
    
-   private void paint2shot(Graphics g)
+   private void paint2shot(Graphics g, Container top)
    {
+      this.refreshGraphics(g,0,top);
       this.onPaint(g);
       for (Control child = children; child != null; child = child.next)
-         if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+         if (child.visible)
          {
-            int tx = -child.x, ty = -child.y;
-            g.translate(tx,ty);
+            child.refreshGraphics(g,0,top);
             child.onPaint(g);
-            g.translate(-tx,-ty);
             if (child.asContainer != null)
-               child.asContainer.paint2shot(g);
+               child.asContainer.paint2shot(g,top);
          }
    }
    

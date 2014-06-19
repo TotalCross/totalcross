@@ -910,7 +910,7 @@ public class Control extends GfxSurface
             parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
          else
          {
-            Graphics g = refreshGraphics(gfx, 0);
+            Graphics g = refreshGraphics(gfx, 0, null);
             if (g != null)
             {
                onPaint(g);
@@ -947,17 +947,17 @@ public class Control extends GfxSurface
      */
    public Graphics getGraphics()
    {
-      return refreshGraphics(gfx, 0);
+      return refreshGraphics(gfx, 0, null);
    }
 
-   Graphics refreshGraphics(Graphics g, int expand)
+   Graphics refreshGraphics(Graphics g, int expand, Container topParent)
    {
       if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
          return null;
       int sw = this.width;
       int sh = this.height;
       int sx = this.x, sy = this.y, cx, cy, delta, tx = sx, ty = sy;
-      for (Container c = parent; c != null; c = c.parent)
+      for (Container c = parent; c != topParent; c = c.parent)
       {
          cx = c.x;  cy = c.y;
          tx += cx;  ty += cy;
@@ -1370,7 +1370,7 @@ public class Control extends GfxSurface
             font = setFont; fm = font.fm; fmH = font.fm.height;
             setRect(setX, setY, setW, setH, setRel, true);
             font = current; fm = font.fm; fmH = font.fm.height;
-            refreshGraphics(gfx, 0);
+            refreshGraphics(gfx, 0, null);
          }
          if (recursive && asContainer != null)
          {

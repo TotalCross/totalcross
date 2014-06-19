@@ -1636,7 +1636,7 @@ public class Window extends Container
    private void drawHighlight(Control c, boolean highlighted)
    {
       int n = UIColors.highlightColors.length;
-      Graphics g = c.refreshGraphics(c.gfx, n);
+      Graphics g = c.refreshGraphics(c.gfx, n, null);
       if (g != null)
       {
          int offset = 0;
