@@ -1024,6 +1024,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       }
       catch (Throwable t)
       {
+         if (Settings.onJavaSE) t.printStackTrace();
          releaseScreenShots();
       }
    }
