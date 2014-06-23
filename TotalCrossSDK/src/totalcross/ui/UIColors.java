@@ -164,4 +164,11 @@ public final class UIColors // guich@564_6
    public static int clipboardBack = Color.YELLOW;
    /** Foreground color of the clipboard menu that is opened at Edit and MultiEdit. */
    public static int clipboardFore = Color.BLACK;
+   
+   /** Background color of the TopMenu */
+   public static int topmenuBack = 0x2C3337;
+   /** Foreground color of the TopMenu */
+   public static int topmenuFore = Color.WHITE;
+   /** Separator color of the TopMenu */
+   public static int separatorFore = 0x61666A;
 }
