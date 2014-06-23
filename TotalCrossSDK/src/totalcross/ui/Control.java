@@ -957,24 +957,25 @@ public class Control extends GfxSurface
       int sw = this.width;
       int sh = this.height;
       int sx = this.x, sy = this.y, cx, cy, delta, tx = sx, ty = sy;
-      for (Container c = parent; c != topParent; c = c.parent)
-      {
-         cx = c.x;  cy = c.y;
-         tx += cx;  ty += cy;
-         sx += cx;  sy += cy;
-
-         // before?
-         delta = sx - cx;
-         if (delta < 0) {sw += delta; sx = cx;}
-         delta = sy - cy;
-         if (delta < 0) {sh += delta; sy = cy;}
-
-         // after?
-         delta = (sx+sw)-(cx+c.width);
-         if (delta > 0) sw -= delta;
-         delta = (sy+sh)-(cy+c.height);
-         if (delta > 0) sh -= delta;
-      }
+      if (this != topParent)
+         for (Container c = parent; c != topParent; c = c.parent)
+         {
+            cx = c.x;  cy = c.y;
+            tx += cx;  ty += cy;
+            sx += cx;  sy += cy;
+   
+            // before?
+            delta = sx - cx;
+            if (delta < 0) {sw += delta; sx = cx;}
+            delta = sy - cy;
+            if (delta < 0) {sh += delta; sy = cy;}
+   
+            // after?
+            delta = (sx+sw)-(cx+c.width);
+            if (delta > 0) sw -= delta;
+            delta = (sy+sh)-(cy+c.height);
+            if (delta > 0) sh -= delta;
+         }
       g.refresh(sx-expand,sy-expand,sw+expand+expand,sh+expand+expand, tx, ty, font);
       return g;
    }
