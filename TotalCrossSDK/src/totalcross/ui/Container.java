@@ -142,8 +142,12 @@ public class Container extends Control
    // a private id used in the ListContainer class
    int containerId;
    
+   /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
+    */
    public Image offscreen;
    
+   /** Take a screen shot of this container and stores it in <code>offscreen</code>.
+    */
    public void takeScreenShot() throws Exception
    {
       offscreen = null;
@@ -151,6 +155,8 @@ public class Container extends Control
       Graphics g = offscreen.getGraphics();
       paint2shot(g,this);
    }
+   
+   /** Releases the screen shot. */
    public void releaseScreenShot()
    {
       offscreen = null;
@@ -581,9 +587,14 @@ public class Container extends Control
       for (Control child = children; child != null; child = child.next)
          if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
          {
-            child.onPaint(child.getGraphics());
-            if (child.asContainer != null)
-               child.asContainer.paintChildren();
+            if (child.asContainer != null && child.asContainer.offscreen != null)
+               getGraphics().drawImage(child.asContainer.offscreen,child.x,child.y);
+            else
+            {
+               child.onPaint(child.getGraphics());
+               if (child.asContainer != null)
+                  child.asContainer.paintChildren();
+            }
          }
    }
 
