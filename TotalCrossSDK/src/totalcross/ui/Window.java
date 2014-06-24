@@ -1201,9 +1201,12 @@ public class Window extends Container
          setFocus(topMost); // guich@567_4: changed from setFocus to swapFocus to fix 566_18 problem - guich@568_17: changed back to setFocus
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
-         enableUpdateScreen = true;
-         //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
-         repaintActiveWindows();
+         if (newWin.offscreen == null)
+         {
+            enableUpdateScreen = true;
+            //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
+            repaintActiveWindows();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////

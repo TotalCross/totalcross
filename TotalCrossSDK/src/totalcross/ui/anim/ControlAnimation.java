@@ -71,6 +71,7 @@ public abstract class ControlAnimation implements TimerListener
       animate();
       if (next != null)
          next.animatePriv();
+      Window.enableUpdateScreen = true;
    }
    
    public abstract void animate();

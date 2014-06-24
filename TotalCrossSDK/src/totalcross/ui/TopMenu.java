@@ -111,8 +111,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       {
          if (animDir == CENTER)
          {
-            FadeAnimation.create(this,true).start();
+            Window.enableUpdateScreen = false;
             setRect(CENTER,CENTER,KEEP,KEEP);
+            FadeAnimation.create(this,true).start();
          }
          else
             PathAnimation.create(this,animDir).concat(FadeAnimation.create(this,true)).start();
