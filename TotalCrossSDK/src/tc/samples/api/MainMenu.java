@@ -73,6 +73,7 @@ public class MainMenu extends BaseContainer
       "ScrollContainer",
       "Signature",
       "TabbedContainer",
+      "TopMenu",
       "Other controls",
    };
    
@@ -188,6 +189,7 @@ public class MainMenu extends BaseContainer
       ScrollContainerSample.class,
       SignatureSample.class,      
       TabbedContainerSample.class,
+      TopMenuSample.class,
       OtherControlsSample.class,
    };
    
