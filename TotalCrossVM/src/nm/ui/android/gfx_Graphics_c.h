@@ -487,9 +487,9 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 
    if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
-   if (lastAlphaMask != textureAlpha) // prevent color change = performance x2 in galaxy tab2
+   if (lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
    {          
-      lastAlphaMask = textureAlpha;
+      lastAlphaMask = alphaMask;
       glUniform1f(textureAlpha, f255[alphaMask]);
    }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
