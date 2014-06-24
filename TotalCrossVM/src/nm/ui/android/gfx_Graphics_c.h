@@ -169,12 +169,14 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 
 static GLint lastProg=-1;
 static Pixel lrpLastRGB = -2;
+static float lastAlphaMask = -1;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
    {
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
       lrpLastRGB = -2;
+      lastAlphaMask = -1;
    }
 }
 
@@ -485,7 +487,11 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 
    if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
-   glUniform1f(textureAlpha, f255[alphaMask]);
+   if (lastAlphaMask != textureAlpha) // prevent color change = performance x2 in galaxy tab2
+   {          
+      lastAlphaMask = textureAlpha;
+      glUniform1f(textureAlpha, f255[alphaMask]);
+   }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    if (clip != null) glClearClip();
