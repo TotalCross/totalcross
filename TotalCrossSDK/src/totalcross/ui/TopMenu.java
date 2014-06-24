@@ -1,15 +1,17 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.anim.*;
 import totalcross.ui.event.*;
 import totalcross.ui.image.*;
 
-public class TopMenu extends Window
+public class TopMenu extends Window implements PathAnimation.AnimationFinished
 {
    public Image[] icons;
    public String[] captions;
    public int percIcon = 20, percCap = 80;
    private ScrollContainer sc;
+   private int animDir;
    
    private class TopMenuItem extends Container
    {
@@ -39,18 +41,29 @@ public class TopMenu extends Window
       }
    }
    
-   public TopMenu(String[] captions, Image[] icons)
+   /** @param animDir LEFT, RIGHT, TOP, BOTTOM, CENTER */
+   public TopMenu(String[] captions, Image[] icons, int animDir)
    {
       super(null,ROUND_BORDER);
       titleGap = 0;
       this.icons = icons;
       this.captions = captions;
+      this.animDir = animDir;
       fadeOtherWindows = false;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);
       
-      setRect(100000,100000,SCREENSIZE+80,WILL_RESIZE);
+      switch (animDir)
+      {
+         case LEFT:
+         case RIGHT:
+            setRect(100000,100000,SCREENSIZE+50,SCREENSIZE+100); 
+            break;
+         default:
+            setRect(100000,100000,SCREENSIZE+80,WILL_RESIZE); 
+            break;
+      }
    }
    
    final public void initUI()
@@ -73,7 +86,41 @@ public class TopMenu extends Window
    
    protected boolean onClickedOutside(PenEvent event)
    {
-      unpop();
+      if (event.type == PenEvent.PEN_UP)
+      try
+      {
+         if (animDir == CENTER)
+            FadeAnimation.create(this,false,this).start();
+         else
+            PathAnimation.create(this,-animDir,this).concat(FadeAnimation.create(this,false)).start();
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+         unpop(); // no animation, just unpop
+      }
       return true;
+   }
+   public void onAnimationFinished(ControlAnimation anim)
+   {
+      unpop();
+   }
+   public void onPopup()
+   {
+      try
+      {
+         if (animDir == CENTER)
+         {
+            FadeAnimation.create(this,true).start();
+            setRect(CENTER,CENTER,KEEP,KEEP);
+         }
+         else
+            PathAnimation.create(this,animDir).concat(FadeAnimation.create(this,true)).start();
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+         // no animation, just popup
+      }
    }
 }

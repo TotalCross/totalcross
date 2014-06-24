@@ -8,9 +8,14 @@ public class PathAnimation extends ControlAnimation
    int x0,y0,xf,yf,x,y;
    int speed;
    
+   public PathAnimation(Container c, AnimationFinished animFinish)
+   {
+      super(c,animFinish);
+   }
+   
    public PathAnimation(Container c)
    {
-      super(c);
+      this(c,null);
    }
    
    public void setPath(int x0, int y0, int xf, int yf) throws Exception
@@ -22,7 +27,6 @@ public class PathAnimation extends ControlAnimation
       int dist = (int)Math.sqrt((xf-x0)*(xf-x0) + (yf-y0)*(yf-y0));
       int fps = totalTime / frameRate;
       speed = dist / fps;
-      start();
    }
    
    public void animate()
@@ -111,38 +115,52 @@ public class PathAnimation extends ControlAnimation
       }
    }
 
-   public static void create(Container c, int direction)
+   public static PathAnimation create(Container c, int direction, AnimationFinished animFinish)
    {
-      PathAnimation anim = new PathAnimation(c);
+      PathAnimation anim = new PathAnimation(c,animFinish);
       int x0,y0,xf,yf;
       int pw = c instanceof Window ? Settings.screenWidth  : c.getParent().getWidth();
       int ph = c instanceof Window ? Settings.screenHeight : c.getParent().getHeight();
       int cw = c.getWidth();
       int ch = c.getHeight();
+      xf = x0 = (pw - cw) / 2; 
+      y0 = yf = (ph - ch) / 2;
       switch (direction)
       {
+         case -Control.BOTTOM:
+            y0 = c.getY();
+            yf = ph;
+            break;
          case Control.BOTTOM: 
-            xf = x0 = (pw - cw) / 2;
             y0 = ph;
             yf = ph - ch;
             break;
+         case -Control.TOP:
+            y0 = c.getY();
+            yf = -ch;
+            break;
          case Control.TOP:
-            xf = x0 = (pw - cw) / 2;
             y0 = -ch;
             yf = 0;
             break;
+         case -Control.LEFT:
+            x0 = c.getX();
+            xf = -cw;
+            break;
          case Control.LEFT:
-            y0 = yf = (ph - ch) / 2;
             x0 = -cw;
             xf = 0;
             break;
+         case -Control.RIGHT:
+            x0 = c.getX();
+            xf = pw;
+            break;
          case Control.RIGHT:
-            y0 = yf = (ph - ch) / 2;
             x0 = pw;
             xf = pw - cw;
             break;
          default:
-            return;
+            return null;
       }
             
       try
@@ -152,6 +170,12 @@ public class PathAnimation extends ControlAnimation
       catch (Exception e)
       {
          e.printStackTrace();
-      }   
+      }
+      return anim;
+   }
+
+   public static PathAnimation create(Container c, int direction)
+   {
+      return create(c, direction, null);
    }
 }

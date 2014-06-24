@@ -8,12 +8,17 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    int a,a0,af,speed;
    boolean fadeIn;
    
-   public FadeAnimation(Container c, boolean fadeIn)
+   public FadeAnimation(Container c, boolean fadeIn, AnimationFinished animFinish)
    {
-      super(c);
+      super(c,animFinish);
       this.fadeIn = fadeIn;
       a = a0 = fadeIn ? 0 : 255;
       af = fadeIn ? 255 : 0;
+   }
+
+   public FadeAnimation(Container c, boolean fadeIn)
+   {
+      this(c, fadeIn, null);
    }
    
    public void start() throws Exception
@@ -37,15 +42,21 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
          stop();
    }
 
-   public static void create(Container c, boolean fadeIn)
+   public static FadeAnimation create(Container c, boolean fadeIn, AnimationFinished animFinish)
    {
       try
       {
-         new FadeAnimation(c,fadeIn).start();
+         return new FadeAnimation(c,fadeIn, animFinish);
       }
       catch (Exception e)
       {
          e.printStackTrace();
       }
+      return null;
+   }
+   
+   public static FadeAnimation create(Container c, boolean fadeIn)
+   {
+      return create(c, fadeIn, null);
    }
 }
