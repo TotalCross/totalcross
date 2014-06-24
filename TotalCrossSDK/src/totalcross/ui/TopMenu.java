@@ -32,7 +32,7 @@ public class TopMenu extends Window
          else
          {
             ImageControl ic = null;
-            try {ic = new ImageControl(icon.getHwScaledInstance(fmH,fmH)); ic.centerImage = true;} catch (ImageException e) {}
+            try {ic = new ImageControl(icon.getSmoothScaledInstance(fmH,fmH)); ic.centerImage = true;} catch (ImageException e) {}
             add(ic == null ? (Control)new Spacer(fmH,fmH) : (Control)ic,LEFT,TOP,PARENTSIZE+percIcon,FILL);
          }
          add(lab, AFTER+(icon==null?fmH:0),TOP,PARENTSIZE+perc-10,FILL);
