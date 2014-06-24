@@ -151,9 +151,12 @@ public class Container extends Control
    public void takeScreenShot() throws Exception
    {
       offscreen = null;
-      offscreen = new Image(width,height);
+      Image offscreen = new Image(width,height);
       Graphics g = offscreen.getGraphics();
+      if (asWindow != null)
+         asWindow.paintWindowBackground(g);
       paint2shot(g,this);
+      this.offscreen = offscreen;
    }
    
    /** Releases the screen shot. */
@@ -166,7 +169,7 @@ public class Container extends Control
    private void paint2shot(Graphics g, Container top)
    {
       this.refreshGraphics(g,0,top);
-      this.onPaint(g);
+      if (this.asWindow == null) this.onPaint(g);
       for (Control child = children; child != null; child = child.next)
          if (child.visible)
          {
@@ -588,7 +591,10 @@ public class Container extends Control
          if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
          {
             if (child.asContainer != null && child.asContainer.offscreen != null)
+            {
                getGraphics().drawImage(child.asContainer.offscreen,child.x,child.y);
+               Vm.debug("@");
+            }
             else
             {
                child.onPaint(child.getGraphics());

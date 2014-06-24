@@ -1134,20 +1134,29 @@ public class Window extends Container
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /**
-    * Called by the VM to repaint an area.
-    */
-   public void _doPaint()
+   public void paintWindowBackground(Graphics gg)
    {
-      Graphics gg = getGraphics();
-      // clear background
       gg.backColor = backColor; // disabled here?
       if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
          gg.fillRect(0, 0, width, height); // guich@110
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
       onPaint(gg);
-      paintChildren();
+   }
+   /**
+    * Called by the VM to repaint an area.
+    */
+   public void _doPaint()
+   {
+      Graphics gg = getGraphics();
+      if (offscreen != null)
+         gg.drawImage(offscreen,0,0);
+      else
+      {
+         // clear background
+         paintWindowBackground(gg);
+         paintChildren();
+      }
       if (needsPaint)
       {
          needsPaint = false;

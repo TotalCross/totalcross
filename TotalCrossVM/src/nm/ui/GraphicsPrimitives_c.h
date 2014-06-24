@@ -201,7 +201,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    uint32 i;
    Pixel * srcPixels;
    Pixel * dstPixels;
-   int32 srcPitch, srcWidth, srcHeight;
+   int32 srcPitch, srcWidth, srcHeight, alphaMask = 0;
    bool isSrcScreen = !Surface_isImage(srcSurf);
    dstPixels = getSurfacePixels(dstSurf);
    srcPixels = getSurfacePixels(srcSurf);
@@ -209,6 +209,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    {
       srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
+      alphaMask = Image_alphaMask(srcSurf);
    }
    else
    {
@@ -292,7 +293,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
 
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null, alphaMask);
    }
    else
 #endif
@@ -311,6 +312,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          for (;count != 0; pt++,ps++, count--)
          {
             int32 a = ps->a;
+            a = alphaMask * a / 255;
             if (a == 0xFF)
                pt->pixel = ps->pixel;
             else
@@ -1110,7 +1112,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                clip[2] = clipX2;
                clip[3] = yMax;
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
-               glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip);
+               glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip, 255);
             }
             else
    #endif // case 2

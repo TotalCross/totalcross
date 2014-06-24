@@ -73,26 +73,31 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 #define TEXTURE_VERTEX_CODE  \
       "attribute vec4 vertexPoint;" \
       "attribute vec2 aTextureCoord;" \
+      "uniform float alpha;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
+      "varying float vAlpha;" \
       "void main()" \
       "{" \
       "    gl_Position = vertexPoint * projectionMatrix;" \
       "    vTextureCoord = aTextureCoord;" \
+      "    vAlpha = alpha;" \
       "}"
 
 #define TEXTURE_FRAGMENT_CODE \
       "precision mediump float;" \
       "varying vec2 vTextureCoord;" \
       "uniform sampler2D sTexture;" \
+      "varying float vAlpha;" \
       "void main()" \
       "{" \
       "   gl_FragColor = texture2D(sTexture, vTextureCoord);" \
+      "   gl_FragColor.a = gl_FragColor.a * vAlpha;" \
       "}"
 
 static GLuint textureProgram;
 static GLuint texturePoint;
-static GLuint textureCoord,textureS;
+static GLuint textureCoord,textureS,textureAlpha;
 
 //////////// points (text)
 
@@ -357,6 +362,7 @@ void initTexture()
    textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
    textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
+   textureAlpha = glGetUniformLocation(textureProgram, "alpha"); GL_CHECK_ERROR
 
    glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
@@ -450,11 +456,12 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
    }
 }
 
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {                 
    if (textureId[0] == 0) return;
       
    GLfloat* coords = texcoords;
+   
    setCurrentProgram(textureProgram);
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 
@@ -477,6 +484,8 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
 
    if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
+
+   glUniform1f(textureAlpha, f255[alphaMask]);
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    if (clip != null) glClearClip();

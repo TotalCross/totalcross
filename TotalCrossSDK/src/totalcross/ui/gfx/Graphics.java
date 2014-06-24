@@ -1869,6 +1869,7 @@ public final class Graphics
          int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
          int psrc = (bmpY+y)*scrPitch+bmpX+x;
          int pdst = dstY*pitch+dstX;
+         int alphaMask = srcSurface instanceof Image ? ((Image)srcSurface).alphaMask : 255;
          for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
          {
             int srcIdx = psrc; // guich@450_1
@@ -1881,6 +1882,7 @@ public final class Graphics
                {
                   bmpPt = pixels[srcIdx++];
                   int a = (bmpPt >>> 24) & 0xFF;
+                  a = alphaMask * a / 255;
                   if (a == 0xFF)
                      dst[dstIdx] = bmpPt;
                   else

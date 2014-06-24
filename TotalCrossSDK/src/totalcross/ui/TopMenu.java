@@ -1,7 +1,7 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
-import totalcross.ui.gfx.*;
+import totalcross.ui.event.*;
 import totalcross.ui.image.*;
 
 public class TopMenu extends Window
@@ -50,7 +50,7 @@ public class TopMenu extends Window
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);
       
-      setRect(CENTER,CENTER,SCREENSIZE+80,WILL_RESIZE);
+      setRect(100000,100000,SCREENSIZE+80,WILL_RESIZE);
    }
    
    final public void initUI()
@@ -71,8 +71,9 @@ public class TopMenu extends Window
       resizeHeight();
    }
    
-   public void onPaint(Graphics g)
+   protected boolean onClickedOutside(PenEvent event)
    {
-      super.onPaint(g);
+      unpop();
+      return true;
    }
 }

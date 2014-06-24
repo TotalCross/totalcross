@@ -79,6 +79,10 @@ public class Image extends GfxSurface
    public int transparentColor = Color.WHITE;
    /** Dumb field to keep compilation compatibility with TC 1 */
    public boolean useAlpha; // guich@tc126_12
+   /** A global alpha mask to be applied to the whole image when drawing it, ranging from 0 to 255.
+    */
+   public int alphaMask=255;
+   
    /** Hardware accellerated scaling. The original image is scaled up or down
     * by the video card when its displayed. In high end devices, the quality
     * is the same of the algorithm used in smooth instances. 
@@ -95,7 +99,7 @@ public class Image extends GfxSurface
     * @since TotalCross 2.0
     */
    public double hwScaleW=1,hwScaleH=1;
-
+   
    /** Sets the hwScaleW and hwScaleH fields based on the given new size.
     * Does not work on Win32.
     * @see #hwScaleH
