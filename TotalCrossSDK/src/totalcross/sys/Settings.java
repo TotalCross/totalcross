@@ -829,4 +829,6 @@ public final class Settings
    public static boolean isMinimized;
    /** Dumb field to keep compilation compatibility with TC 1 */
    public static boolean keypadOnly;
+   
+   public static final boolean debugging = buildNumber == 0;
 }
