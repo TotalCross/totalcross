@@ -2,6 +2,7 @@ package totalcross.ui.anim;
 
 import totalcross.ui.*;
 import totalcross.ui.event.*;
+import totalcross.ui.image.*;
 
 public abstract class ControlAnimation implements TimerListener
 {
@@ -35,6 +36,7 @@ public abstract class ControlAnimation implements TimerListener
       {
          te = c.addTimer(frameRate);
          c.addTimerListener(this);
+         Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
          c.takeScreenShot();
          Window.needsPaint = true;
       }
