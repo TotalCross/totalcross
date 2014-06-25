@@ -24,9 +24,7 @@ public class PathAnimation extends ControlAnimation
       this.y0 = y = y0;
       this.xf = xf;
       this.yf = yf;
-      int dist = (int)Math.sqrt((xf-x0)*(xf-x0) + (yf-y0)*(yf-y0));
-      int fps = totalTime / frameRate;
-      speed = dist / fps;
+      speed = (int)(Math.sqrt((xf-x0)*(xf-x0) + (yf-y0)*(yf-y0)) * frameRate / totalTime);
    }
    
    public void animate()

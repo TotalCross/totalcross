@@ -23,9 +23,8 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    
    public void start() throws Exception
    {
-      int dist = 255;
-      int fps = totalTime / frameRate;
-      speed = dist / fps;
+      final int dist = 255;
+      speed = dist * frameRate / totalTime;
       if (!fadeIn)
          speed = -speed;
       super.start();
