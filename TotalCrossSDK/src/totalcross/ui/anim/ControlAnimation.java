@@ -11,7 +11,7 @@ public abstract class ControlAnimation implements TimerListener
    ControlAnimation with,then;
    AnimationFinished animFinish;
    
-   public int totalTime = 1000;
+   public int totalTime = 800;
    public int frameRate = 20;
    
    public static interface AnimationFinished
