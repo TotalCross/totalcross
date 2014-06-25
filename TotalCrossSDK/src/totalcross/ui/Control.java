@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -271,6 +272,10 @@ public class Control extends GfxSurface
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
+   /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
+    */
+   public Image offscreen;
+   
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
@@ -287,6 +292,43 @@ public class Control extends GfxSurface
       textShadowColor = UIColors.textShadowColor;
    }
 
+   /** Take a screen shot of this container and stores it in <code>offscreen</code>.
+    */
+   public void takeScreenShot() throws Exception
+   {
+      offscreen = null;
+      Image offscreen = new Image(width,height);
+      Graphics g = offscreen.getGraphics();
+      if (asWindow != null)
+         asWindow.paintWindowBackground(g);
+      paint2shot(g,this);
+      this.offscreen = offscreen;
+   }
+   
+   /** Releases the screen shot. */
+   public void releaseScreenShot()
+   {
+      offscreen = null;
+      Window.needsPaint = true;
+   }
+   
+   void paint2shot(Graphics g, Control top)
+   {
+      if (asContainer != null || asWindow != null)
+         this.refreshGraphics(g,0,top);
+      if (this.asWindow == null) 
+         this.onPaint(g);
+      if (asContainer != null)
+         for (Control child = asContainer.children; child != null; child = child.next)
+            if (child.visible)
+            {
+               child.refreshGraphics(g,0,top);
+               child.onPaint(g);
+               if (child.asContainer != null)
+                  child.asContainer.paint2shot(g,top);
+            }
+   }
+   
    /** Call to set the color value to place a shadow around the control's text. The shadow is made
     * drawing the button in (x-1,y-1), (x+1,y-1), (x-1,y+1), (x+1,y+1) positions.
     * Defaults to -1, which means no shadow.
@@ -742,6 +784,13 @@ public class Control extends GfxSurface
       setX = SETX_NOT_SET;
    }
    
+   /** Used internally. */
+   public void setSet(int x, int y)
+   {
+      setX = x;
+      setY = y;
+   }
+   
    protected void updateTemporary() // guich@tc114_68
    {
       if (parent != null)
@@ -950,7 +999,7 @@ public class Control extends GfxSurface
       return refreshGraphics(gfx, 0, null);
    }
 
-   Graphics refreshGraphics(Graphics g, int expand, Container topParent)
+   Graphics refreshGraphics(Graphics g, int expand, Control topParent)
    {
       if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
          return null;

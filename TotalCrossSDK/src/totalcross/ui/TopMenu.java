@@ -81,7 +81,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          r.setBackColor(backColor);
          sc.add(r,LEFT,AFTER,FILL, gap);
       }
-      resizeHeight();
+      if (animDir != LEFT && animDir != RIGHT) resizeHeight();
    }
    
    protected boolean onClickedOutside(PenEvent event)
@@ -92,7 +92,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          if (animDir == CENTER)
             FadeAnimation.create(this,false,this).start();
          else
-            PathAnimation.create(this,-animDir,this).concat(FadeAnimation.create(this,false)).start();
+            PathAnimation.create(this,-animDir,this).with(FadeAnimation.create(this,false)).start();
       }
       catch (Exception e)
       {
@@ -116,7 +116,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
             FadeAnimation.create(this,true).start();
          }
          else
-            PathAnimation.create(this,animDir).concat(FadeAnimation.create(this,true)).start();
+            PathAnimation.create(this,animDir).with(FadeAnimation.create(this,true)).start();
       }
       catch (Exception e)
       {

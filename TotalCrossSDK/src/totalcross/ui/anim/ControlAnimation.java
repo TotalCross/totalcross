@@ -1,14 +1,14 @@
 package totalcross.ui.anim;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.image.*;
 
 public abstract class ControlAnimation implements TimerListener
 {
-   Container c;
+   Control c;
    TimerEvent te;
-   ControlAnimation next;
+   ControlAnimation with,then;
    AnimationFinished animFinish;
    
    public int totalTime = 1000;
@@ -19,13 +19,13 @@ public abstract class ControlAnimation implements TimerListener
       public void onAnimationFinished(ControlAnimation anim);
    }
    
-   public ControlAnimation(Container c, AnimationFinished animFinish)
+   public ControlAnimation(Control c, AnimationFinished animFinish)
    {
       this.c = c;
       this.animFinish = animFinish;
    }
    
-   public ControlAnimation(Container c)
+   public ControlAnimation(Control c)
    {
       this(c,null);
    }
@@ -40,7 +40,7 @@ public abstract class ControlAnimation implements TimerListener
          c.takeScreenShot();
          Window.needsPaint = true;
       }
-      if (next != null) next.start();
+      if (with != null) with.start();
    }
 
    public void stop()
@@ -53,11 +53,20 @@ public abstract class ControlAnimation implements TimerListener
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);
+      if (then != null)
+         try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }
    
-   public ControlAnimation concat(ControlAnimation other)
+   public ControlAnimation with(ControlAnimation other)
    {
-      this.next = other;
+      this.with = other;
+      other.c = c;
+      return this;
+   }
+   
+   public ControlAnimation then(ControlAnimation other)
+   {
+      this.then = other;
       other.c = c;
       return this;
    }
@@ -71,8 +80,8 @@ public abstract class ControlAnimation implements TimerListener
    private void animatePriv()
    {
       animate();
-      if (next != null)
-         next.animatePriv();
+      if (with != null)
+         with.animatePriv();
       Window.enableUpdateScreen = true;
    }
    

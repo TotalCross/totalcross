@@ -6,14 +6,14 @@ import totalcross.ui.*;
 public class PathAnimation extends ControlAnimation
 {
    int x0,y0,xf,yf,x,y;
-   int speed;
+   int speed,dir;
    
-   public PathAnimation(Container c, AnimationFinished animFinish)
+   public PathAnimation(Control c, AnimationFinished animFinish)
    {
       super(c,animFinish);
    }
    
-   public PathAnimation(Container c)
+   public PathAnimation(Control c)
    {
       this(c,null);
    }
@@ -36,6 +36,19 @@ public class PathAnimation extends ControlAnimation
          stop();
       c.setRect(x,y,Control.KEEP,Control.KEEP);
       Window.needsPaint = true;
+   }
+   
+   public void stop()
+   {
+      super.stop();
+      switch (dir)
+      {
+         case Control.LEFT:   c.setSet(Control.LEFT,Control.CENTER); break;
+         case Control.RIGHT:  c.setSet(Control.RIGHT,Control.CENTER); break;
+         case Control.TOP:    c.setSet(Control.CENTER,Control.TOP); break;
+         case Control.BOTTOM: c.setSet(Control.CENTER,Control.BOTTOM); break;
+         case Control.CENTER: c.setSet(Control.CENTER,Control.CENTER); break;
+      }
    }
    
    private void update()
@@ -115,9 +128,24 @@ public class PathAnimation extends ControlAnimation
       }
    }
 
-   public static PathAnimation create(Container c, int direction, AnimationFinished animFinish)
+   public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish) throws Exception
    {
       PathAnimation anim = new PathAnimation(c,animFinish);
+      anim.setPath(c.getX(),c.getY(),toX,toY);
+      return anim;
+   }
+   
+   public static PathAnimation create(Control c, int fromX, int fromY, int toX, int toY, AnimationFinished animFinish) throws Exception
+   {
+      PathAnimation anim = new PathAnimation(c,animFinish);
+      anim.setPath(fromX,fromY,toX,toY);
+      return anim;
+   }
+   
+   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish) throws Exception
+   {
+      PathAnimation anim = new PathAnimation(c,animFinish);
+      anim.dir = direction;
       int x0,y0,xf,yf;
       int pw = c instanceof Window ? Settings.screenWidth  : c.getParent().getWidth();
       int ph = c instanceof Window ? Settings.screenHeight : c.getParent().getHeight();
@@ -163,18 +191,11 @@ public class PathAnimation extends ControlAnimation
             return null;
       }
             
-      try
-      {
-         anim.setPath(x0,y0,xf,yf);
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
+      anim.setPath(x0,y0,xf,yf);
       return anim;
    }
 
-   public static PathAnimation create(Container c, int direction)
+   public static PathAnimation create(Control c, int direction) throws Exception
    {
       return create(c, direction, null);
    }

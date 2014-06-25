@@ -8,7 +8,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    int a,a0,af,speed;
    boolean fadeIn;
    
-   public FadeAnimation(Container c, boolean fadeIn, AnimationFinished animFinish)
+   public FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish)
    {
       super(c,animFinish);
       this.fadeIn = fadeIn;
@@ -16,7 +16,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
       af = fadeIn ? 255 : 0;
    }
 
-   public FadeAnimation(Container c, boolean fadeIn)
+   public FadeAnimation(Control c, boolean fadeIn)
    {
       this(c, fadeIn, null);
    }
@@ -42,7 +42,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
          stop();
    }
 
-   public static FadeAnimation create(Container c, boolean fadeIn, AnimationFinished animFinish)
+   public static FadeAnimation create(Control c, boolean fadeIn, AnimationFinished animFinish)
    {
       try
       {
@@ -55,7 +55,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
       return null;
    }
    
-   public static FadeAnimation create(Container c, boolean fadeIn)
+   public static FadeAnimation create(Control c, boolean fadeIn)
    {
       return create(c, fadeIn, null);
    }

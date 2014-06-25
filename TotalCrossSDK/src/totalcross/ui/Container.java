@@ -142,45 +142,6 @@ public class Container extends Control
    // a private id used in the ListContainer class
    int containerId;
    
-   /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
-    */
-   public Image offscreen;
-   
-   /** Take a screen shot of this container and stores it in <code>offscreen</code>.
-    */
-   public void takeScreenShot() throws Exception
-   {
-      offscreen = null;
-      Image offscreen = new Image(width,height);
-      Graphics g = offscreen.getGraphics();
-      if (asWindow != null)
-         asWindow.paintWindowBackground(g);
-      paint2shot(g,this);
-      this.offscreen = offscreen;
-   }
-   
-   /** Releases the screen shot. */
-   public void releaseScreenShot()
-   {
-      offscreen = null;
-      Window.needsPaint = true;
-   }
-   
-   private void paint2shot(Graphics g, Container top)
-   {
-      this.refreshGraphics(g,0,top);
-      if (this.asWindow == null) this.onPaint(g);
-      for (Control child = children; child != null; child = child.next)
-         if (child.visible)
-         {
-            child.refreshGraphics(g,0,top);
-            child.onPaint(g);
-            if (child.asContainer != null)
-               child.asContainer.paint2shot(g,top);
-         }
-   }
-   
-   
    /** Creates a container with the default colors.
      * Important note: this container has no default size.
      * <br><br>
@@ -590,11 +551,8 @@ public class Container extends Control
       for (Control child = children; child != null; child = child.next)
          if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
          {
-            if (child.asContainer != null && child.asContainer.offscreen != null)
-            {
-               getGraphics().drawImage(child.asContainer.offscreen,child.x,child.y);
-               Vm.debug("@");
-            }
+            if (child.offscreen != null)
+               getGraphics().drawImage(child.offscreen,child.x,child.y);
             else
             {
                child.onPaint(child.getGraphics());
