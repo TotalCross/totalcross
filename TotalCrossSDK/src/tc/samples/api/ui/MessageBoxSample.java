@@ -32,7 +32,6 @@ public class MessageBoxSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("MessageBox");
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);

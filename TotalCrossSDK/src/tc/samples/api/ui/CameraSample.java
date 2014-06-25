@@ -38,7 +38,6 @@ public class CameraSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      setTitle("Camera");
       Settings.showMemoryMessagesAtExit = false;
       
       add(l = new Label(""), LEFT, BOTTOM);

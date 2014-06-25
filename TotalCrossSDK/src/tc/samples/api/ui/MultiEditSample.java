@@ -39,7 +39,6 @@ public class MultiEditSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("MultiEdit");
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);

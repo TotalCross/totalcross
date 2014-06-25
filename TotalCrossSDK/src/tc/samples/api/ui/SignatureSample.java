@@ -39,8 +39,6 @@ public class SignatureSample extends BaseContainer
    {
       super.initUI();
       
-      setTitle("Signature");
-      
       fileName = Settings.platform.equals(Settings.ANDROID) ? "/sdcard/handwrite.png" : "device/handwrite.png";
 
       save = new Button("Save");
