@@ -48,13 +48,13 @@ public class MainMenu extends BaseContainer
    String[] uiItems =
    {
       "AlignedLabelsContainer",
-      "AnimationControl",
       "Button",
       "ButtonMenu",
       "Camera",
       "Chart",
       "Check/Radio",
       "Combo/ListBox",
+      "ControlAnimation",
       "Dynamic ScrollContainer",
       "Edit",
       "Font sizes",
@@ -165,13 +165,13 @@ public class MainMenu extends BaseContainer
    Class[] uiClasses =
    {
       AlignedLabelsSample.class,
-      AnimationControlSample.class,
       ButtonSample.class,
       ButtonMenuSample.class,
       CameraSample.class,
       ChartSample.class,
       CheckRadioSample.class,
       ComboListSample.class,
+      ControlAnimationSample.class,
       DynScrollContainerSample.class,
       EditSample.class,
       FontSample.class,

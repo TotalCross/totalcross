@@ -314,8 +314,8 @@ public class Control extends GfxSurface
    
    void paint2shot(Graphics g, Control top)
    {
-      if (asContainer != null || asWindow != null)
-         this.refreshGraphics(g,0,top);
+      // if (asContainer != null || asWindow != null)
+      //  this.refreshGraphics(g,0,top);
       if (this.asWindow == null) 
          this.onPaint(g);
       if (asContainer != null)

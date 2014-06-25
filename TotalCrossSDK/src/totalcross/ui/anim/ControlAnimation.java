@@ -10,6 +10,8 @@ public abstract class ControlAnimation implements TimerListener
    TimerEvent te;
    ControlAnimation with,then;
    AnimationFinished animFinish;
+   int initialTime;
+   boolean slave;
    
    public int totalTime = 800;
    public int frameRate = 20;
@@ -32,7 +34,7 @@ public abstract class ControlAnimation implements TimerListener
 
    public void start() throws Exception
    {
-      if (c.offscreen == null)
+      if (!slave && c.offscreen == null)
       {
          te = c.addTimer(frameRate);
          c.addTimerListener(this);
@@ -41,6 +43,7 @@ public abstract class ControlAnimation implements TimerListener
          Window.needsPaint = true;
       }
       if (with != null) with.start();
+      initialTime = Vm.getTimeStamp();
    }
 
    public void stop()
@@ -57,17 +60,24 @@ public abstract class ControlAnimation implements TimerListener
          try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }
    
+   int last;
+   protected double computeSpeed(double distance)
+   {
+      last = Vm.getTimeStamp();
+      double ret = distance * frameRate / (totalTime-(Vm.getTimeStamp()-initialTime));
+      return ret;
+   }
+   
    public ControlAnimation with(ControlAnimation other)
    {
       this.with = other;
-      other.c = c;
+      other.slave = true;
       return this;
    }
    
    public ControlAnimation then(ControlAnimation other)
    {
       this.then = other;
-      other.c = c;
       return this;
    }
    

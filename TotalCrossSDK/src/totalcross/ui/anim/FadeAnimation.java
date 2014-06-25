@@ -5,14 +5,14 @@ import totalcross.ui.event.*;
 
 public class FadeAnimation extends ControlAnimation implements TimerListener
 {
-   int a,a0,af,speed;
+   int a,af;
    boolean fadeIn;
    
    public FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish)
    {
       super(c,animFinish);
       this.fadeIn = fadeIn;
-      a = a0 = fadeIn ? 0 : 255;
+      a = fadeIn ? 0 : 255;
       af = fadeIn ? 255 : 0;
    }
 
@@ -23,15 +23,15 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    
    public void start() throws Exception
    {
-      final int dist = 255;
-      speed = dist * frameRate / totalTime;
-      if (!fadeIn)
-         speed = -speed;
       super.start();
+      //Window.needsPaint = false; // prevent flick when using fade out/in sequentially
    }
    
    public void animate()
    {
+      int speed = (int)computeSpeed(255);
+      if (!fadeIn)
+         speed = -speed;
       a += speed;
       if (a > 255) a = 255; else if (a < 0) a = 0;
       if (c.offscreen != null)
