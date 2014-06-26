@@ -61,6 +61,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
+   static boolean lastWasPenDown;
+   
    private static String appPath;
    private static android.text.ClipboardManager clip;
    
@@ -257,6 +259,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       public boolean onScaleBegin(ScaleGestureDetector detector)
       {
          multiTouching = true;
+         if (lastWasPenDown) // if pressed a button and started multitouch, issue a penup event so button can be released
+         {
+            lastWasPenDown = false;
+            eventThread.pushEvent(PEN_UP, 0, 10000, 10000, 0, 0);
+         }
          eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 1, 0,0, 0, 0);
          return true;
       }
@@ -469,8 +476,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       switch (event.getAction())
       {
-         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; break;
-         case MotionEvent.ACTION_UP:   type = PEN_UP;   break;
+         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; lastWasPenDown = true;  break;
+         case MotionEvent.ACTION_UP:   type = PEN_UP;   lastWasPenDown = false; break;
          case MotionEvent.ACTION_MOVE: type = PEN_DRAG; break;
          default: return false;
       }
