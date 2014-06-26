@@ -42,8 +42,8 @@ public class PathAnimation extends ControlAnimation
       super.stop();
       switch (dir)
       {
-         case Control.LEFT:   c.setSet(Control.LEFT,Control.CENTER); break;
-         case Control.RIGHT:  c.setSet(Control.RIGHT,Control.CENTER); break;
+         case Control.LEFT:   c.setSet(Control.LEFT,Control.TOP); break;
+         case Control.RIGHT:  c.setSet(Control.RIGHT,Control.TOP); break;
          case Control.TOP:    c.setSet(Control.CENTER,Control.TOP); break;
          case Control.BOTTOM: c.setSet(Control.CENTER,Control.BOTTOM); break;
          case Control.CENTER: c.setSet(Control.CENTER,Control.CENTER); break;

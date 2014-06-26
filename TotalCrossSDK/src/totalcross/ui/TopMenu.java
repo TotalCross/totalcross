@@ -72,7 +72,8 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       int gap = 2;
       int n = captions.length;
       int prefH = n * itemH + gap * n;
-      add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,Math.min(prefH, Settings.screenHeight-fmH*2)-2);
+      boolean isLR = animDir == LEFT || animDir == RIGHT;
+      add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
       for (int i = 0;; i++)
       {
          sc.add(new TopMenuItem(captions[i], icons == null ? null : icons[i]),LEFT,AFTER,FILL,itemH);
@@ -81,7 +82,13 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          r.setBackColor(backColor);
          sc.add(r,LEFT,AFTER,FILL, gap);
       }
-      if (animDir != LEFT && animDir != RIGHT) resizeHeight();
+      if (!isLR) resizeHeight();
+   }
+   
+   public void screenResized()
+   {
+      removeAll();
+      initUI();
    }
    
    protected boolean onClickedOutside(PenEvent event)
@@ -111,6 +118,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       {
          if (animDir == CENTER)
          {
+            resetSetPositions();
             setRect(CENTER,CENTER,KEEP,KEEP);
             FadeAnimation.create(this,true).start();
          }
