@@ -58,7 +58,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       {
          case LEFT:
          case RIGHT:
-            setRect(100000,100000,SCREENSIZE+50,SCREENSIZE+100); 
+            setRect(animDir,TOP,SCREENSIZE+50,FILL); 
             break;
          default:
             setRect(100000,100000,SCREENSIZE+80,WILL_RESIZE); 
@@ -74,6 +74,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
       add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
+      sc.setBackColor(backColor);
       for (int i = 0;; i++)
       {
          sc.add(new TopMenuItem(captions[i], icons == null ? null : icons[i]),LEFT,AFTER,FILL,itemH);
