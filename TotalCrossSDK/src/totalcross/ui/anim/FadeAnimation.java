@@ -24,7 +24,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    public void start() throws Exception
    {
       super.start();
-      //Window.needsPaint = false; // prevent flick when using fade out/in sequentially
+      c.offscreen.alphaMask = a;
    }
    
    public void animate()
