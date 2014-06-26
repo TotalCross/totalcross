@@ -7,7 +7,6 @@ public class PathAnimation extends ControlAnimation
 {
    int x0,y0,xf,yf,x,y;
    int dir;
-   int dist;
    
    public PathAnimation(Control c, AnimationFinished animFinish)
    {
@@ -25,7 +24,6 @@ public class PathAnimation extends ControlAnimation
       this.y0 = y = y0;
       this.xf = xf;
       this.yf = yf;
-      dist = (int)Math.sqrt((xf-x0)*(xf-x0) + (yf-y0)*(yf-y0));
    }
    
    public void animate()
@@ -52,7 +50,7 @@ public class PathAnimation extends ControlAnimation
    
    private void update()
    {
-      int speed = (int)computeSpeed(dist);
+      int speed = (int)computeSpeed(Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y)));
       int dx = xf - this.x;
       int dy = yf - this.y;
       int steps;
