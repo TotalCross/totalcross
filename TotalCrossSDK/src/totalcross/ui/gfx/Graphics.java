@@ -2805,7 +2805,7 @@ public final class Graphics
       int r = (color1r*factor+color2r*m)/255;
       int g = (color1g*factor+color2g*m)/255;
       int b = (color1b*factor+color2b*m)/255;
-      return (r << 16) | (g << 8) | b;
+      return 0xFF000000 | (r << 16) | (g << 8) | b;
    }
    
    private static int interpolate(int color1r, int color1g, int color1b, int color2r, int color2g, int color2b, int factor)
@@ -2814,7 +2814,7 @@ public final class Graphics
       int r = (color1r*factor+color2r*m)/255;
       int g = (color1g*factor+color2g*m)/255;
       int b = (color1b*factor+color2b*m)/255;
-      return (r << 16) | (g << 8) | b;
+      return 0xFF000000 | (r << 16) | (g << 8) | b;
    }
    
    public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators)
