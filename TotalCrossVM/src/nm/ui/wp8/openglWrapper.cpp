@@ -224,5 +224,5 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {
-   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
+   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip, alphaMask);
 }

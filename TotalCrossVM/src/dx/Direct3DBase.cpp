@@ -263,7 +263,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    preRender();
 }
 
-void Direct3DBase::setColor(int color)
+void Direct3DBase::setColor(int color, int alphaMask)
 {
    if (color == lastRGB || minimized) return;
    lastRGB = color;
@@ -271,9 +271,11 @@ void Direct3DBase::setColor(int color)
    rr = ((color >> 16) & 0xFF) / 255.0f;
    gg = ((color >> 8) & 0xFF) / 255.0f;
    bb = (color & 0xFF) / 255.0f;
+   float aam = alphaMask / 255.0f;
 
    VertexColor vcolor;
    vcolor.color = XMFLOAT4(rr, gg, bb, aa);
+   vcolor.alphaMask = XMFLOAT4(0, 0, 0, aam);
 
    D3D11_MAPPED_SUBRESOURCE ms;
 
@@ -324,7 +326,7 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
    int n = count;
    VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
    ty += glShiftY;
-   setColor(color);
+   setColor(color,255);
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
    for (i = count; --i >= 0; cv++)
       cv->pos = XMFLOAT2((float)(*xx++ + tx), (float)(*yy++ + ty)); 
@@ -394,7 +396,7 @@ void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
    d3dcontext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
    d3dcontext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R16_UINT, 0);
    d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
-   setColor(color);
+   setColor(color,255);
    d3dcontext->DrawIndexed(2, 0, 0);
 }
 
@@ -422,7 +424,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    d3dcontext->IASetVertexBuffers(0, 1, &pBufferRect, &stride, &offset);
    d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    d3dcontext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R16_UINT, 0);
-   setColor(color);
+   setColor(color,255);
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
@@ -432,7 +434,7 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    int i;
    int n = count * 2;
    VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
-   setColor(color);
+   setColor(color,255);
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
    for (i = count; --i >= 0;)
    {
@@ -645,7 +647,7 @@ void Direct3DBase::setClip(int32* clip)
    clipSet = doClip;
 }
 
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip)
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip, int32 alphaMask)
 {
    if (minimized) return;
    ID3D11Texture2D *texture;
@@ -654,7 +656,7 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    xmoveptr(&texture, &textureId[0]);
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
-   setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b);
+   setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b, alphaMask);
 
    setClip(clip);
 
