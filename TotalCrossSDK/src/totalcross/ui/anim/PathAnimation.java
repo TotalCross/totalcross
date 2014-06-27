@@ -6,7 +6,7 @@ import totalcross.ui.*;
 public class PathAnimation extends ControlAnimation
 {
    int x0,y0,xf,yf,x,y;
-   int dir;
+   int dir,speed0;
    
    public PathAnimation(Control c, AnimationFinished animFinish)
    {
@@ -24,6 +24,7 @@ public class PathAnimation extends ControlAnimation
       this.y0 = y = y0;
       this.xf = xf;
       this.yf = yf;
+      speed0 = (int)computeSpeed(Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y)));
    }
    
    public void animate()
@@ -51,6 +52,7 @@ public class PathAnimation extends ControlAnimation
    private void update()
    {
       int speed = (int)computeSpeed(Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y)));
+      if (speed == 0) speed = speed0;
       int dx = xf - this.x;
       int dy = yf - this.y;
       int steps;
