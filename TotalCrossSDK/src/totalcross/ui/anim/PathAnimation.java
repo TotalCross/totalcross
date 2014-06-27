@@ -29,11 +29,11 @@ public class PathAnimation extends ControlAnimation
    
    public void animate()
    {
-      update();
-      if (x == xf && y == yf)
-         stop();
-      c.setRect(x,y,Control.KEEP,Control.KEEP);
-      Window.needsPaint = true;
+      if (update())
+      {
+         c.setRect(x,y,Control.KEEP,Control.KEEP);
+         Window.needsPaint = true;
+      }
    }
    
    public void stop()
@@ -49,9 +49,15 @@ public class PathAnimation extends ControlAnimation
       }
    }
    
-   private void update()
+   private boolean update()
    {
-      int speed = (int)computeSpeed(Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y)));
+      double distanceRemaining = Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y));
+      if (distanceRemaining < 1)
+      {
+         stop();
+         return false;
+      }
+      int speed = (int)computeSpeed(distanceRemaining);
       if (speed == 0) speed = speed0;
       int dx = xf - this.x;
       int dy = yf - this.y;
@@ -126,6 +132,7 @@ public class PathAnimation extends ControlAnimation
             }
          }
       }
+      return true;
    }
 
    public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish) throws Exception
