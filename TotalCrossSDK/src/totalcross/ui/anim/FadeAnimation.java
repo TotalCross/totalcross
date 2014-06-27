@@ -7,6 +7,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
 {
    int a,af;
    boolean fadeIn;
+   int speed;
    
    public FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish)
    {
@@ -25,13 +26,13 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
    {
       super.start();
       c.offscreen.alphaMask = a;
+      speed = (int)computeSpeed(255);
+      if (!fadeIn)
+         speed = -speed;
    }
    
    public void animate()
    {
-      int speed = (int)computeSpeed(255);
-      if (!fadeIn)
-         speed = -speed;
       a += speed;
       if (a > 255) a = 255; else if (a < 0) a = 0;
       if (c.offscreen != null)
