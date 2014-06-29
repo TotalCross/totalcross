@@ -44,6 +44,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
    private static Vector newInsts = new Vector(64);
    public static JavaCode javaCodeCurrent;
    private static int lineOfPC;
+   
+   protected static boolean isClassLiteral;
 
    public static void init(ByteCode[] bcs)
    {
@@ -351,7 +353,40 @@ public class Bytecode2TCCode implements JConstants, TCConstants
                   stack.push(new OperandSymD32(GlobalConstantPool.put(v.asDouble)));
             }
             else
-               stack.push(new OperandSymO(GlobalConstantPool.putStr((String)v.asObj)));
+            {
+               String value = (String)v.asObj;
+               String valueAux = value.replace('/', '.');
+               boolean found = false;
+               
+               try
+               {
+                  Class.forName(valueAux);
+                  found = true;                  
+               }
+               catch (ClassNotFoundException cNFException)
+               {
+                  try
+                  {
+                     GlobalConstantPool.getClassIndex(valueAux);
+                     found = true; 
+                  }
+                  catch (ConverterException convException) {}               
+               }
+               
+               stack.push(new OperandSymO(GlobalConstantPool.putStr(value)));
+               
+               if (found)
+               {
+                  if (!valueAux.equals("a"))
+                  {   
+                     GlobalConstantPool.putCls("totalcross.util.ClassLiteral");
+                     GlobalConstantPool.putMethod("totalcross.util.ClassLiteral", "getClass", new String[] {"Ljava/lang/String;"}, 
+                                                                                              "(Ljava/lang/String;)Ljava/lang/Class;");
+                     isClassLiteral = true;
+                  }
+               }
+              
+            } 
             break;
          }
          case LDC2_W: //20
