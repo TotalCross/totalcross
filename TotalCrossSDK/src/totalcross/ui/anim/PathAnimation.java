@@ -6,7 +6,7 @@ import totalcross.ui.*;
 public class PathAnimation extends ControlAnimation
 {
    int x0,y0,xf,yf,x,y;
-   int dir,speed0;
+   int dir;
    
    public PathAnimation(Control c, AnimationFinished animFinish)
    {
@@ -24,16 +24,13 @@ public class PathAnimation extends ControlAnimation
       this.y0 = y = y0;
       this.xf = xf;
       this.yf = yf;
-      speed0 = (int)computeSpeed(Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y)));
    }
    
    public void animate()
    {
-      if (update())
-      {
-         c.setRect(x,y,Control.KEEP,Control.KEEP);
-         Window.needsPaint = true;
-      }
+      update();
+      c.setRect(x,y,Control.KEEP,Control.KEEP);
+      Window.needsPaint = true;
    }
    
    public void stop()
@@ -49,16 +46,16 @@ public class PathAnimation extends ControlAnimation
       }
    }
    
-   private boolean update()
+   private void update()
    {
       double distanceRemaining = Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y));
-      if (distanceRemaining < 1)
-      {
-         stop();
-         return false;
-      }
       int speed = (int)computeSpeed(distanceRemaining);
-      if (speed == 0) speed = speed0;
+      if ((x == xf && y == yf) || speed == 0)
+      {
+         x = xf; y = yf;
+         stop();
+         return;
+      }
       int dx = xf - this.x;
       int dy = yf - this.y;
       int steps;
@@ -132,7 +129,6 @@ public class PathAnimation extends ControlAnimation
             }
          }
       }
-      return true;
    }
 
    public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish) throws Exception
