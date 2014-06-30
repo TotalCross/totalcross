@@ -74,7 +74,11 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);
-      
+      setRect();
+   }
+   
+   private void setRect()
+   {
       switch (animDir)
       {
          case LEFT:
@@ -111,6 +115,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    public void screenResized()
    {
+      setRect();
       removeAll();
       initUI();
    }
