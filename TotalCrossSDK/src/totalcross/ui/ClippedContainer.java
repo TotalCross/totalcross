@@ -86,9 +86,14 @@ public class ClippedContainer extends Container
          for (Control child = children; child != null; child = child.next)
             if (child.isVisibleAndInside(x0,y0,xf,yf) && (pw == null || !child.isObscured(pw)))
             {
-               child.onPaint(child.getGraphics());
-               if (child.asContainer != null)
-                  child.asContainer.paintChildren();
+               if (child.asContainer != null && child.asContainer.offscreen != null)
+                  getGraphics().drawImage(child.asContainer.offscreen,child.x,child.y);
+               else
+               {
+                  child.onPaint(child.getGraphics());
+                  if (child.asContainer != null)
+                     child.asContainer.paintChildren();
+               }
             }
       }
    }

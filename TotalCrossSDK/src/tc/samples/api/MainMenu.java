@@ -54,6 +54,7 @@ public class MainMenu extends BaseContainer
       "Chart",
       "Check/Radio",
       "Combo/ListBox",
+      "ControlAnimation",
       "Dynamic ScrollContainer",
       "Edit",
       "Font sizes",
@@ -73,6 +74,7 @@ public class MainMenu extends BaseContainer
       "ScrollContainer",
       "Signature",
       "TabbedContainer",
+      "TopMenu",
       "Other controls",
    };
    
@@ -169,6 +171,7 @@ public class MainMenu extends BaseContainer
       ChartSample.class,
       CheckRadioSample.class,
       ComboListSample.class,
+      ControlAnimationSample.class,
       DynScrollContainerSample.class,
       EditSample.class,
       FontSample.class,
@@ -188,6 +191,7 @@ public class MainMenu extends BaseContainer
       ScrollContainerSample.class,
       SignatureSample.class,      
       TabbedContainerSample.class,
+      TopMenuSample.class,
       OtherControlsSample.class,
    };
    

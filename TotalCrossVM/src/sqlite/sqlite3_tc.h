@@ -11,6 +11,7 @@
 #define SQLITE_ENABLE_UNLOCK_NOTIFY
 #define SQLITE_THREADSAFE 1
 #define SQLITE_THREAD_OVERRIDE_LOCK 0
+#define SQLITE_WITHOUT_MSIZE
 #ifdef WP8
 #define SQLITE_OMIT_WAL 1
 #define SQLITE_OS_WINRT 1
@@ -21,6 +22,10 @@
 #endif
 
 /* other changes to work with totalcross:
+
+0. On top of sqlite3.c: 
+
+#include "sqlite3_tc.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////
 1.

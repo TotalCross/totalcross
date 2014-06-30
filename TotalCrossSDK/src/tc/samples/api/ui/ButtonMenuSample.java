@@ -33,7 +33,6 @@ public class ButtonMenuSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("ButtonMenu");
          sc = new ScrollContainer(false, true);
          sc.setInsets(0,0,gap/2,gap/2);
          add(sc,LEFT,TOP,FILL,FILL);

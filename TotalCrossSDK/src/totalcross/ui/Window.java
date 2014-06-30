@@ -281,6 +281,9 @@ public class Window extends Container
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN = 1.0 * 0.0393700787; // 0.5mm
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER = 1.0 * 0.0393700787; // 1.0mm
    
+   /** A key listener that have priority over all other listeners. */
+   public static KeyListener keyHook;
+   
    ////////////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with no title and no border. */
@@ -499,6 +502,8 @@ public class Window extends Container
    {
       boolean isPenEvent = !multiTouching && PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
+      if (isKeyEvent && Settings.optionalBackspaceKey != 0 && key == Settings.optionalBackspaceKey)
+         key = SpecialKeys.BACKSPACE;
       if (isKeyEvent && Settings.deviceRobotSpecialKey != 0 && Settings.deviceRobotSpecialKey == key)
       {
          onRobotKey();
@@ -719,7 +724,7 @@ public class Window extends Container
             _penEvent.modifiers = modifiers;
             _penEvent.target = null;
             _penEvent.touch();
-            if (_focus != null && _focus != this && _focus == _dragEvent.target && type == PenEvent.PEN_UP) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever
+            if (_focus != null && _focus != this && (_focus == _dragEvent.target || x == 10000) && type == PenEvent.PEN_UP) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever -- x = 10000 is sent when a multitouch will begin
                _focus.postEvent(_penEvent);
             if (!onClickedOutside(_penEvent)) // if clicked outside was not handled by this method...
                if (type == PenEvent.PEN_DOWN && beepIfOut) // alert him! - ds: i changed this accordingly to your comments about win32 problems
@@ -734,6 +739,20 @@ public class Window extends Container
          _keyEvent.modifiers = modifiers;
          _keyEvent.type = type;
          event = _keyEvent;
+         
+         if (isKeyEvent && keyHook != null)
+         {
+            _keyEvent.consumed = false;
+            switch (type)
+            {
+               case KeyEvent.KEY_PRESS:         keyHook.keyPressed(_keyEvent);         break;
+               case KeyEvent.ACTION_KEY_PRESS:  keyHook.actionkeyPressed(_keyEvent);   break;
+               case KeyEvent.SPECIAL_KEY_PRESS: keyHook.specialkeyPressed(_keyEvent);  break;
+            }
+            if (_keyEvent.consumed)
+               return;
+         }
+
 
          if (Settings.geographicalFocus && _keyEvent.isActionKey()) _keyEvent.type = KeyEvent.ACTION_KEY_PRESS; // kmeehl@tc100 from here
 
@@ -1081,7 +1100,7 @@ public class Window extends Container
                   {
                      boolean hasTitle = tit != null && tit.length() > 0;
                      int c = Color.getCursorColor(f);
-                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,borderColor != -1 ? borderColor : f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
                      if (!hasTitle)
                         return;
                      else
@@ -1115,20 +1134,29 @@ public class Window extends Container
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /**
-    * Called by the VM to repaint an area.
-    */
-   public void _doPaint()
+   public void paintWindowBackground(Graphics gg)
    {
-      Graphics gg = getGraphics();
-      // clear background
       gg.backColor = backColor; // disabled here?
       if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
          gg.fillRect(0, 0, width, height); // guich@110
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
       onPaint(gg);
-      paintChildren();
+   }
+   /**
+    * Called by the VM to repaint an area.
+    */
+   public void _doPaint()
+   {
+      Graphics gg = getGraphics();
+      if (offscreen != null)
+         gg.drawImage(offscreen,0,0);
+      else
+      {
+         // clear background
+         paintWindowBackground(gg);
+         paintChildren();
+      }
       if (needsPaint)
       {
          needsPaint = false;
@@ -1173,9 +1201,12 @@ public class Window extends Container
          setFocus(topMost); // guich@567_4: changed from setFocus to swapFocus to fix 566_18 problem - guich@568_17: changed back to setFocus
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
-         enableUpdateScreen = true;
-         //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
-         repaintActiveWindows();
+         if (newWin.offscreen == null)
+         {
+            enableUpdateScreen = true;
+            //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
+            repaintActiveWindows();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1617,7 +1648,7 @@ public class Window extends Container
    private void drawHighlight(Control c, boolean highlighted)
    {
       int n = UIColors.highlightColors.length;
-      Graphics g = c.refreshGraphics(c.gfx, n);
+      Graphics g = c.refreshGraphics(c.gfx, n, null);
       if (g != null)
       {
          int offset = 0;

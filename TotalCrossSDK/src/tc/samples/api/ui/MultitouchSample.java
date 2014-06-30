@@ -41,7 +41,6 @@ public class MultitouchSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("Multitouch");
          if (lata == null)
             lata = new Image("ui/images/lata.jpg");
          ic = new ImageControl(screenShot != null ? screenShot : lata);

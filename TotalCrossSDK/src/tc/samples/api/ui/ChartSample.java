@@ -40,7 +40,6 @@ public class ChartSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      setTitle("Chart");
       ScrollContainer sc = new ScrollContainer(false, true);
       sc.setInsets(gap,gap,gap,gap);
       add(sc,LEFT,TOP,FILL,FILL);

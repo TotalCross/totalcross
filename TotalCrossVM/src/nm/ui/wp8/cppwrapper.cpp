@@ -138,7 +138,7 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr), eventsInitialized);
    while (Direct3DBase::getLastInstance()->csharp->isAlertVisible()) Sleep(10);
 }
 
@@ -249,9 +249,9 @@ void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
    Direct3DBase::getLastInstance()->deleteTexture(img, textureId, updateList);
 }
 
-void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {
-   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
+   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip, alphaMask);
 }
 
 void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int color, bool fill)

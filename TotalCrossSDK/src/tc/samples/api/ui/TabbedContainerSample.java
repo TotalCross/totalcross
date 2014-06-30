@@ -31,7 +31,6 @@ public class TabbedContainerSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("TabbedContainer");
          
          String[] caps = {"juju","dedé","babi"};
          Image [] icons = {new Image("ui/images/ic_dialog_alert.png"),new Image("ui/images/ic_dialog_usb.png"),new Image("ui/images/ic_dialog_info.png")};

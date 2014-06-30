@@ -551,9 +551,14 @@ public class Container extends Control
       for (Control child = children; child != null; child = child.next)
          if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
          {
-            child.onPaint(child.getGraphics());
-            if (child.asContainer != null)
-               child.asContainer.paintChildren();
+            if (child.offscreen != null)
+               getGraphics().drawImage(child.offscreen,child.x,child.y);
+            else
+            {
+               child.onPaint(child.getGraphics());
+               if (child.asContainer != null)
+                  child.asContainer.paintChildren();
+            }
          }
    }
 

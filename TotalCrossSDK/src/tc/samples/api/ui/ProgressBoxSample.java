@@ -33,7 +33,6 @@ public class ProgressBoxSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("ProgressBox");
 
          String[] items =
          {

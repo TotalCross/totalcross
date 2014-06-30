@@ -37,7 +37,6 @@ public class ButtonSample extends BaseContainer
       try
       {
          super.initUI();
-         setTitle("Button");
          sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);

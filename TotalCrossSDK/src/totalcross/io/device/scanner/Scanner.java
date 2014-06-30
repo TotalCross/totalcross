@@ -20,6 +20,7 @@
 
 package totalcross.io.device.scanner;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 
@@ -67,22 +68,7 @@ public class Scanner
    private static String barcode;
    private static int tries;
    /** The scanner version. */
-   public static String scanManagerVersion = "Scanner emulation";
-
-   /**
-    * Flag which can be set to false so activate() only performs one scan
-    * <p>
-    * Note: the Symbol Scanner API differs on Palm and PocketPC (the Java
-    * emulation works the same as PocketPC). On Palm activating the scanner
-    * will allow the user to scan any number of barcodes until the scanner is
-    * deactivated. On Java/PocketPC activating the Scanner only schedules
-    * a single scan.
-    * <p>
-    * We obviously need this class behave in the same way on both platforms.  Rather than
-    * forcing one choice on the user, the continuousScanning flag allows the user
-    * to choose which mode they want.
-    */
-   public static boolean continousScanning = true;
+   public static String scanManagerVersion = Settings.onJavaSE ? "Scanner emulation" : "1.0";
 
    /** Set this listener to send all Scanner events to its onEvent method. */
    public static Control listener; // maybe theres another better way to do this...
@@ -198,16 +184,6 @@ public class Scanner
       // dispatch to the listener
       se.update(id);
       dest.postEvent(se);
-      Window win = dest.getParentWindow(); // guich@400_44
-      if (win != null)
-         win.validate();
-      // If we are running on a PocketPC unit, or under Java emulation, then calling
-      // activate() on the Symbol Scanner API only schedules a single scan.
-      // So, if continuousScanning is true we need to schedule another scan.
-      if (continousScanning)
-         activate();
-      else
-         isActive = false;
    }
 
    /** Reads a barcode using ZXing for Android.
@@ -221,7 +197,7 @@ public class Scanner
     *  
     *  If an error happens, it is returned prefixed with ***.
     *  
-    *  See the tc.samples.io.device.zxing.ZXingScanner sample.
+    *  See the TotalCross API / Scanner Camera sample.
     */
    public static String readBarcode(String mode)
    {

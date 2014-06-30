@@ -26,7 +26,6 @@ public class ScrollContainerSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      setTitle("ScrollContainer");
       ScrollContainer sc = new ScrollContainer(false, true);
       sc.setInsets(gap,gap,gap,gap);
       add(sc,LEFT,TOP,FILL,FILL);

@@ -181,6 +181,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     * @since TotalCross 1.3.4
     */
    public int extraTabHeight;
+   
+   private Container prevScr,curScr,nextScr;
 
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
@@ -926,6 +928,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                   event.consumed = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
                   {
+                     takeScreenShots();
                      flickTimerStarted = false;
                      isScrolling = scScrolled = true;
                   }
@@ -1009,6 +1012,28 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             }
             break;
       }
+   }
+   
+   private void takeScreenShots()
+   {
+      try
+      {
+         if (activeIndex > 0) (prevScr = containers[activeIndex-1]).takeScreenShot();
+         (curScr = containers[activeIndex]).takeScreenShot();
+         if (activeIndex < count-1) (nextScr = containers[activeIndex+1]).takeScreenShot();
+      }
+      catch (Throwable t)
+      {
+         if (Settings.onJavaSE) t.printStackTrace();
+         releaseScreenShots();
+      }
+   }
+   
+   private void releaseScreenShots()
+   {
+      if (prevScr != null) {prevScr.releaseScreenShot(); prevScr = null;}
+      if (curScr != null)  {curScr.releaseScreenShot(); curScr = null;}
+      if (nextScr != null) {nextScr.releaseScreenShot(); nextScr = null;}
    }
 
    /** Tranfer the focus between the containers on this TabbedContainer */
@@ -1128,6 +1153,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    {
       int tab = getPositionedTab(false);
       setActiveTab(tab);
+      releaseScreenShots();
    }
    
    private int getPositionedTab(boolean exact)

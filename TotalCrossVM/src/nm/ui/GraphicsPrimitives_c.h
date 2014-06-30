@@ -201,7 +201,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    uint32 i;
    Pixel * srcPixels;
    Pixel * dstPixels;
-   int32 srcPitch, srcWidth, srcHeight;
+   int32 srcPitch, srcWidth, srcHeight, alphaMask = 0;
    bool isSrcScreen = !Surface_isImage(srcSurf);
    dstPixels = getSurfacePixels(dstSurf);
    srcPixels = getSurfacePixels(srcSurf);
@@ -209,6 +209,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    {
       srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
+      alphaMask = Image_alphaMask(srcSurf);
    }
    else
    {
@@ -292,7 +293,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
 
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null, alphaMask);
    }
    else
 #endif
@@ -311,6 +312,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          for (;count != 0; pt++,ps++, count--)
          {
             int32 a = ps->a;
+            a = alphaMask * a / 255;
             if (a == 0xFF)
                pt->pixel = ps->pixel;
             else
@@ -1110,7 +1112,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                clip[2] = clipX2;
                clip[3] = yMax;
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
-               glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip);
+               glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip, 255);
             }
             else
    #endif // case 2
@@ -1366,7 +1368,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
       return;
 
 #if defined __gl2_h_ && !defined WP8
-   if (!gradient && isConvex) // opengl doesnt fills non-convex polygons well
+   if (!gradient && isConvex && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well
    {
       if (nPoints1 > 0)
          glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
@@ -2470,7 +2472,7 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
    Pixel p;
    bool drawFadedPixels = !Graphics_useOpenGL(g);
 #ifdef __gl2_h_
-   bool optimize = topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
+   bool optimize = Graphics_useOpenGL(g) && topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
 #else
    bool optimize = false;
 #endif
@@ -2975,9 +2977,10 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
       pc1.pixel = interpolate(pc1,pc2,factor*255/100);
       glFillShadedRect(g,x+Graphics_transX(g),y+Graphics_transY(g),width,height,invert?pc2:pc1,invert?pc1:pc2,rotate);
       currentContext->fullDirty = true;
-      return;
    }
-#else
+   else
+#endif
+   {
    int32 dim,y0,hh,dim0,inc,lineS,line0,lastF,i,f,yy,k,backColor,c;
    pc1.pixel = c1;
    pc2.pixel = c2;
@@ -3005,7 +3008,7 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
       else
          fillRect(currentContext,g,yy,y,k,height, backColor);
    }
-#endif
+   }
 }
 
 /////////////// Start of Device-dependant functions ///////////////

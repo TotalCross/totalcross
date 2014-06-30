@@ -34,7 +34,6 @@ public class ProgressBarSample extends BaseContainer
          super.initUI();
          isSingleCall = true;
          
-         setTitle("ProgressBar");
          Container sc = new Container();
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);

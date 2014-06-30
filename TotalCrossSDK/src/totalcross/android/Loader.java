@@ -158,6 +158,7 @@ public class Loader extends Activity implements BarcodeReadListener
             intent.putExtra("height",height);
             intent.putExtra("allowRotation", allowRotation);
             startActivityForResult(intent, TAKE_PHOTO);
+            Launcher4A.instance.nativeInitSize(null,-998,0);
          }
       }
       catch (Throwable e)
@@ -503,8 +504,8 @@ public class Loader extends Activity implements BarcodeReadListener
       super.onResume();
    }
 
-   String strBarcodeData;    
-   static Semaphore semaphore = new Semaphore(1);
+   public String strBarcodeData;    
+   public static Semaphore semaphore = new Semaphore(1);
 
    public void barcodeRead(BarcodeReadEvent aBarcodeReadEvent)
    {
@@ -517,5 +518,11 @@ public class Loader extends Activity implements BarcodeReadListener
 	   semaphore.release();
 
       Launcher4A.instance._postEvent(Launcher4A.BARCODE_READ, 0, 0, 0, 0, 0);
+   }
+
+   public void onNewIntent(Intent i) 
+   {
+      AndroidUtils.debug("on new intent "+i);
+      super.onNewIntent(i);
    }
 }

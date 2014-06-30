@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -271,6 +272,10 @@ public class Control extends GfxSurface
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
+   /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
+    */
+   public Image offscreen;
+   
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
@@ -287,6 +292,48 @@ public class Control extends GfxSurface
       textShadowColor = UIColors.textShadowColor;
    }
 
+   /** Take a screen shot of this container and stores it in <code>offscreen</code>.
+    */
+   public void takeScreenShot() throws Exception
+   {
+      offscreen = null;
+      Image offscreen = new Image(width,height);
+      Graphics g = offscreen.getGraphics();
+      if (parent != null) 
+      {     
+         g.backColor = parent.backColor;
+         g.fillRect(0,0,width,height);
+      }
+      if (asWindow != null)
+         asWindow.paintWindowBackground(g);
+      paint2shot(g,this);
+      this.offscreen = offscreen;
+   }
+   
+   /** Releases the screen shot. */
+   public void releaseScreenShot()
+   {
+      offscreen = null;
+      Window.needsPaint = true;
+   }
+   
+   void paint2shot(Graphics g, Control top)
+   {
+      // if (asContainer != null || asWindow != null)
+      //  this.refreshGraphics(g,0,top);
+      if (this.asWindow == null) 
+         this.onPaint(g);
+      if (asContainer != null)
+         for (Control child = asContainer.children; child != null; child = child.next)
+            if (child.visible)
+            {
+               child.refreshGraphics(g,0,top);
+               child.onPaint(g);
+               if (child.asContainer != null)
+                  child.asContainer.paint2shot(g,top);
+            }
+   }
+   
    /** Call to set the color value to place a shadow around the control's text. The shadow is made
     * drawing the button in (x-1,y-1), (x+1,y-1), (x-1,y+1), (x+1,y+1) positions.
     * Defaults to -1, which means no shadow.
@@ -742,6 +789,13 @@ public class Control extends GfxSurface
       setX = SETX_NOT_SET;
    }
    
+   /** Used internally. */
+   public void setSet(int x, int y)
+   {
+      setX = x;
+      setY = y;
+   }
+   
    protected void updateTemporary() // guich@tc114_68
    {
       if (parent != null)
@@ -910,7 +964,7 @@ public class Control extends GfxSurface
             parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
          else
          {
-            Graphics g = refreshGraphics(gfx, 0);
+            Graphics g = refreshGraphics(gfx, 0, null);
             if (g != null)
             {
                onPaint(g);
@@ -947,34 +1001,35 @@ public class Control extends GfxSurface
      */
    public Graphics getGraphics()
    {
-      return refreshGraphics(gfx, 0);
+      return refreshGraphics(gfx, 0, null);
    }
 
-   Graphics refreshGraphics(Graphics g, int expand)
+   Graphics refreshGraphics(Graphics g, int expand, Control topParent)
    {
       if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
          return null;
       int sw = this.width;
       int sh = this.height;
       int sx = this.x, sy = this.y, cx, cy, delta, tx = sx, ty = sy;
-      for (Container c = parent; c != null; c = c.parent)
-      {
-         cx = c.x;  cy = c.y;
-         tx += cx;  ty += cy;
-         sx += cx;  sy += cy;
-
-         // before?
-         delta = sx - cx;
-         if (delta < 0) {sw += delta; sx = cx;}
-         delta = sy - cy;
-         if (delta < 0) {sh += delta; sy = cy;}
-
-         // after?
-         delta = (sx+sw)-(cx+c.width);
-         if (delta > 0) sw -= delta;
-         delta = (sy+sh)-(cy+c.height);
-         if (delta > 0) sh -= delta;
-      }
+      if (this != topParent)
+         for (Container c = parent; c != topParent; c = c.parent)
+         {
+            cx = c.x;  cy = c.y;
+            tx += cx;  ty += cy;
+            sx += cx;  sy += cy;
+   
+            // before?
+            delta = sx - cx;
+            if (delta < 0) {sw += delta; sx = cx;}
+            delta = sy - cy;
+            if (delta < 0) {sh += delta; sy = cy;}
+   
+            // after?
+            delta = (sx+sw)-(cx+c.width);
+            if (delta > 0) sw -= delta;
+            delta = (sy+sh)-(cy+c.height);
+            if (delta > 0) sh -= delta;
+         }
       g.refresh(sx-expand,sy-expand,sw+expand+expand,sh+expand+expand, tx, ty, font);
       return g;
    }
@@ -1370,7 +1425,7 @@ public class Control extends GfxSurface
             font = setFont; fm = font.fm; fmH = font.fm.height;
             setRect(setX, setY, setW, setH, setRel, true);
             font = current; fm = font.fm; fmH = font.fm.height;
-            refreshGraphics(gfx, 0);
+            refreshGraphics(gfx, 0, null);
          }
          if (recursive && asContainer != null)
          {

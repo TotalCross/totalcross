@@ -35,8 +35,6 @@ public class ListContainerSample extends BaseContainer
          super.initUI();
          isSingleCall = true;
          
-         setTitle("ListContainer");
-
          int TOTAL_ITEMS = lastCount == 30 ? 3000 : 30; // increase this to 3000, for example
          lastCount = TOTAL_ITEMS;
          setInfo("Loading "+TOTAL_ITEMS+" items...");

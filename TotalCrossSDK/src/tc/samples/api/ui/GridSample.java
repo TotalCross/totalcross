@@ -33,7 +33,6 @@ public class GridSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      setTitle("Grid");
       String tabCaptions[] = { "Line", "Check 1", "Check 2", "Edit&Pop", "Sort", "CellControl", "Image" };
       tp = new TabbedContainer(tabCaptions);
       tp.setBackColor(Color.brighter(BKGCOLOR));

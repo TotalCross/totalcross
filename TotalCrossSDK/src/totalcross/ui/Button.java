@@ -497,7 +497,7 @@ public class Button extends Control
       if (skipPaint) return;
       if (isAndroidStyle)
       {
-         if (!Settings.isOpenGL)
+         if (!Settings.isOpenGL && !Settings.onJavaSE)
          {
             g.getClip(clip);
             g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent

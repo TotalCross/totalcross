@@ -32,7 +32,6 @@ public class EditSample extends BaseContainer
          Settings.is24Hour = true;
          
          super.initUI();
-         setTitle("Edit");
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);

@@ -40,6 +40,7 @@ import java.net.*;
 import java.util.*;
 import java.util.zip.*;
 
+import totalcross.android.*;
 import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
@@ -60,6 +61,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
+   static boolean lastWasPenDown;
+   
+   private static String appPath;
    private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
@@ -130,10 +134,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       super(context);
       // read all apk names, before loading the vm
       if (!isSingleAPK)
-      {
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
-      }
       loadAPK(appPath+"/apkname.txt",true);
+      Launcher4A.appPath = appPath;
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
@@ -149,6 +152,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       String vmPath = context.getApplicationInfo().dataDir;
+      if (hadCrash()) // note: if the crash occurs too early, the report may not be sent by the thread. and we cannot remove it from a thread or Android will shout.
+         bugreport();
+      createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
 
@@ -253,6 +259,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       public boolean onScaleBegin(ScaleGestureDetector detector)
       {
          multiTouching = true;
+         if (lastWasPenDown) // if pressed a button and started multitouch, issue a penup event so button can be released
+         {
+            lastWasPenDown = false;
+            eventThread.pushEvent(PEN_UP, 0, 10000, 10000, 0, 0);
+         }
          eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 1, 0,0, 0, 0);
          return true;
       }
@@ -317,71 +328,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    // https://code.google.com/p/android/issues/detail?id=62306
    // http://stackoverflow.com/questions/18581636/android-cannot-capture-backspace-delete-press-in-soft-keyboard/19980975#19980975
 
-   class EditableAccomodatingLatinIMETypeNullIssues extends SpannableStringBuilder 
+   class MyInputConnection extends BaseInputConnection 
    {
-      EditableAccomodatingLatinIMETypeNullIssues(CharSequence source) 
-      {
-         super(source);
-      }
-
-      public SpannableStringBuilder replace(final int spannableStringStart, final int spannableStringEnd, CharSequence replacementSequence, int replacementStart, int replacementEnd) 
-      {
-         if (replacementEnd > replacementStart) 
-         {
-            super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, replacementSequence, replacementStart, replacementEnd);
-         }
-         if (spannableStringEnd > spannableStringStart) 
-         {
-            super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, "\uFFFF", 0, 1);
-         }
-         return super.replace(spannableStringStart, spannableStringEnd, replacementSequence, replacementStart, replacementEnd);
-      }
-   }
-   
-   class InputConnectionAccomodatingLatinIMETypeNullIssues extends BaseInputConnection 
-   {
-      Editable myEditable;
-      String dummy;
       KeyEvent delUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL);
       KeyEvent delDn = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
       
-      public InputConnectionAccomodatingLatinIMETypeNullIssues(View targetView, boolean fullEditor) 
+      public MyInputConnection(View targetView, boolean fullEditor) 
       {
          super(targetView, fullEditor);
       }
       
-      public Editable getEditable() 
-      {
-         if (Build.VERSION.SDK_INT >= 19) 
-         {
-            if (dummy == null)
-            {
-               char[] c = new char[1024]; // guich: set a reasonable size for the buffer
-               for (int i = 0; i < c.length; i++)
-                  c[i] = (i & 1) == 0 ? (char)0xFFFF : (char)0xFFFE;
-               dummy = new String(c);      
-            }
-            if (myEditable == null) 
-            {
-               myEditable = new EditableAccomodatingLatinIMETypeNullIssues(dummy);
-               Selection.setSelection(myEditable, dummy.length());
-            }
-            else 
-            {
-               int myEditableLength = myEditable.length(); 
-               if (myEditableLength == 0) 
-               {
-                  myEditable.append(dummy);
-                  Selection.setSelection(myEditable, dummy.length());
-               }
-            }
-            return myEditable;
-         }
-         return super.getEditable();
-      }
-
       public boolean deleteSurroundingText(int beforeLength, int afterLength) 
       {
          for (int i =0; i < beforeLength; i++)
@@ -414,7 +370,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
       outAttrs.inputType = InputType.TYPE_NULL;
       outAttrs.actionLabel = null;
-      return new InputConnectionAccomodatingLatinIMETypeNullIssues(this, false);
+      return new MyInputConnection(this, false);
    }
    //////////////////////////////////////////////////////////////////////////////////
    
@@ -423,10 +379,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public boolean onKeyPreIme(int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK)
          return onKey(this, keyCode, event);
-      else
-         return false;
+      return false;
    }
    
    public static boolean hardwareKeyboardIsVisible;
@@ -435,9 +393,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       super.onSizeChanged(w, h, oldw, oldh);
    }
-
+   
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event)) 
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
          if (!hardwareKeyboardIsVisible && sipVisible)
@@ -515,8 +476,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       switch (event.getAction())
       {
-         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; break;
-         case MotionEvent.ACTION_UP:   type = PEN_UP;   break;
+         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; lastWasPenDown = true;  break;
+         case MotionEvent.ACTION_UP:   type = PEN_UP;   lastWasPenDown = false; break;
          case MotionEvent.ACTION_MOVE: type = PEN_DRAG; break;
          default: return false;
       }
@@ -653,7 +614,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeInitSize(Surface surface, int w, int h);
+   public native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -1221,6 +1182,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appPaused()
    {
+      deleteCrash();
       appPaused = true;
       instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
@@ -1232,6 +1194,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
+      createCrash();
       appPaused = false;
       instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
@@ -1368,7 +1331,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      if (realOfs == -1) // if not found, double the read buffer and try again
                      {
                         if (--j == 0)
+                        {
+                           raf.close();
                            throw new RuntimeException("Error: cannot find real offset in APK for "+a.name);
+                        }
                         buf = new byte[buf.length*2];
                         AndroidUtils.debug("read from "+pos+" to "+(pos+buf.length)+" but not found. doubling buffer to "+buf.length+"!");
                      }
@@ -1491,4 +1457,115 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
+   ///////////////// crash controller //////////////////////
+   private static void createCrash()
+   {
+      try {new FileOutputStream(appPath+"/crash.txt").close();} catch (Exception e) {}
+   }
+   private static void deleteCrash()
+   {
+      try {new File(appPath+"/crash.txt").delete();} catch (Exception e) {}
+   }
+   private static boolean hadCrash()
+   {
+      boolean b = false;
+      try {b = new File(appPath+"/crash.txt").exists(); deleteCrash();} catch (Exception e) {}
+      return b;
+   }
+   
+   private void bugreport() 
+   {
+      if (Settings4A.buildNumber != 0) // dont use when debugging
+      new Thread()
+      {
+         public void run() 
+         {
+            try 
+            {
+               // generate the bugreport
+               AndroidUtils.debug("Generating bugreport");
+               long ini = System.currentTimeMillis();
+               try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
+               String[] commands =
+                  {
+                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
+                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
+                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
+                  };
+      /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
+                   "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
+                   "logcat -d >> /sdcard/IssueReport/bugreport.txt\n",
+                  };
+      */         java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+               DataOutputStream os = new DataOutputStream(p.getOutputStream());
+               for (String tmpCmd : commands) 
+                  os.writeBytes(tmpCmd);
+               File f = new File("/sdcard/IssueReport/bugreport.txt"); // takes 33 seconds on a s3 mini
+               long l2 = 0;
+               while (true)
+               {
+                  long l1 = f.length();
+                  Thread.sleep(1000);
+                  l2 = f.length();
+                  if (l1 == l2)
+                     break;
+               }            
+               long end = System.currentTimeMillis();
+               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/bugreport.txt in "+(end-ini)+"ms with "+l2+" bytes");
+               // zip the bugreport
+               ini = System.currentTimeMillis();
+               FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
+               ZipOutputStream zout = new ZipOutputStream(fout);
+               File ff = new File("/sdcard/IssueReport/bugreport.txt");
+               FileInputStream fin = new FileInputStream(ff);
+               // check if there's a SIGSEGV, which indicates an vm abort
+               zout.putNextEntry(new ZipEntry("bugreport.txt"));
+               byte[] buf = new byte[4096];
+               boolean hasSIGSEGV = false;
+               for (int n; (n = fin.read(buf)) > 0;)
+               {
+                  if (!hasSIGSEGV && new String(buf,0,n).contains("SIGSEGV"))
+                     hasSIGSEGV = true;
+                  zout.write(buf,0,n);
+               }
+               zout.closeEntry();
+               zout.close();
+               fin.close();
+               end = System.currentTimeMillis();
+               ff.delete();
+               AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
+               if (!hasSIGSEGV)
+               {
+                  AndroidUtils.debug("SIGSEGV NOT FOUND; Aborting email.");
+                  return;
+               }
+               WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+               Display display = wm.getDefaultDisplay();
+               
+               // send by email
+               final Mail m = new Mail("totalcross", "t0t4lcr0ss"); 
+               String[] toArr = {"bugreport@totalcross.com","guich@totalcross.com"}; 
+               m.setTo(toArr);
+               m.setFrom("registro@totalcross.com"); 
+               m.setSubject("Bugreport TotalCross build #"+Settings4A.buildNumber); 
+               m.setBody(
+                     "Imei: "+Settings4A.imei+"\n"+
+                     "Serial: "+Settings4A.serialNumber+"\n"+
+                     "Device id: "+Settings4A.deviceId+"\n"+
+                     "OS version: "+Settings4A.romVersion+"\n"+
+                     "Processor: "+System.getProperty("os.arch")+"\n"+
+                     "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
+                     "Font: "+deviceFontHeight+"\n"
+               ); 
+               m.addAttachment("/sdcard/IssueReport/bugreport.zip");
+               m.send();
+               AndroidUtils.debug("Bugreport mail sent!");
+            }
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+         }
+      }.start();
+   }
 }

@@ -1869,6 +1869,7 @@ public final class Graphics
          int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
          int psrc = (bmpY+y)*scrPitch+bmpX+x;
          int pdst = dstY*pitch+dstX;
+         int alphaMask = srcSurface instanceof Image ? ((Image)srcSurface).alphaMask : 255;
          for (j=height; --j >= 0; psrc += scrPitch, pdst += pitch)
          {
             int srcIdx = psrc; // guich@450_1
@@ -1881,6 +1882,7 @@ public final class Graphics
                {
                   bmpPt = pixels[srcIdx++];
                   int a = (bmpPt >>> 24) & 0xFF;
+                  a = alphaMask * a / 255;
                   if (a == 0xFF)
                      dst[dstIdx] = bmpPt;
                   else
@@ -2803,7 +2805,7 @@ public final class Graphics
       int r = (color1r*factor+color2r*m)/255;
       int g = (color1g*factor+color2g*m)/255;
       int b = (color1b*factor+color2b*m)/255;
-      return (r << 16) | (g << 8) | b;
+      return 0xFF000000 | (r << 16) | (g << 8) | b;
    }
    
    private static int interpolate(int color1r, int color1g, int color1b, int color2r, int color2g, int color2b, int factor)
@@ -2812,7 +2814,7 @@ public final class Graphics
       int r = (color1r*factor+color2r*m)/255;
       int g = (color1g*factor+color2g*m)/255;
       int b = (color1b*factor+color2b*m)/255;
-      return (r << 16) | (g << 8) | b;
+      return 0xFF000000 | (r << 16) | (g << 8) | b;
    }
    
    public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators)
