@@ -183,18 +183,18 @@ namespace PhoneDirect3DXamlAppInterop
       {
          alertIsVisible = true;
          if (!eventsInitialized) // needed if an error occurs at vm startup
-         {
-            MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
-            alertIsVisible = false;
-         }
-         else
-         {
-            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            try
             {
                MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
                alertIsVisible = false;
-            });
-         }
+               return;
+            }
+            catch (System.UnauthorizedAccessException e) { }
+         Deployment.Current.Dispatcher.BeginInvoke(() =>
+         {
+            MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+            alertIsVisible = false;
+         });
       }
 
       public bool isAlertVisible()
