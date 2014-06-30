@@ -21,6 +21,7 @@ import tc.samples.api.*;
 import totalcross.res.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
 import totalcross.ui.image.*;
 
 public class TopMenuSample extends BaseContainer
@@ -58,11 +59,11 @@ public class TopMenuSample extends BaseContainer
                Resources.menu,
                Resources.warning,
             };
-         new TopMenu(tits,icons,CENTER).popup();
-         new TopMenu(tits,icons,BOTTOM).popup();
-         new TopMenu(tits,icons,TOP).popup();
-         new TopMenu(tits,icons,LEFT).popup();
-         new TopMenu(tits,icons,RIGHT).popup();
+         show(new TopMenu(tits,icons,CENTER),"CENTER");
+         show(new TopMenu(tits,icons,BOTTOM),"BOTTOM");
+         show(new TopMenu(tits,icons,TOP),"TOP");
+         show(new TopMenu(tits,icons,LEFT),"LEFT");
+         show(new TopMenu(tits,icons,RIGHT),"RIGHT");
          back();
       }
       catch (Exception e)
@@ -70,5 +71,18 @@ public class TopMenuSample extends BaseContainer
          MessageBox.showException(e,true);
          back();
       }
+   }
+
+   private void show(final TopMenu t, String dir)
+   {
+      setInfo("Showing at "+dir);
+      t.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            setInfo("Selected index: "+t.getSelectedIndex());
+         }
+      });
+      t.popup();
    }
 }

@@ -1236,7 +1236,7 @@ public class Window extends Container
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Hides this window. Calling unpop when only the MainWindow is active does nothing. */
-   final public void unpop()
+   public void unpop()
    {
       if (zStack.size() == 1) // guich@400_69
          return;
