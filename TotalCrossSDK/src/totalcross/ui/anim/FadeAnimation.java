@@ -37,8 +37,11 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
       if (c.offscreen != null)
          c.offscreen.alphaMask = a;
       Window.needsPaint = true;
-      if (a == af)
+      if (a == af || speed == 0)
+      {
+         a = af;
          stop();
+      }
    }
 
    public static FadeAnimation create(Control c, boolean fadeIn, AnimationFinished animFinish)
