@@ -293,16 +293,20 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    if (checkGLfloatBuffer(currentContext, n))
    {
       int32 i;
-      float *glV = glcoords;
+      float *glV = glcoords;            
+      int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
+      bool doClip = false;
       for (i = 0; i < n; i++)
       {
-         *glV++ = (float)(*x++ + tx);
-         *glV++ = (float)(*y++ + ty);
-      }
-      glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
+         *glV++ = xx = (float)(*x++ + tx);
+         *glV++ = yy = (float)(*y++ + ty);
+         if (!doClip && (xx < cx1 || xx > cx2 || yy < cy1 || yy > cy2))
+            doClip = true;
+      }           
+      if (doClip) glSetClip(cx1,cy1,cx2,cy2);
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
       glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,n); GL_CHECK_ERROR
-      glClearClip();
+      if (doClip) glClearClip();
    }
 }
 
@@ -320,8 +324,11 @@ static void initShade()
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
+   int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
+   bool doClip = x < cx1 || x+w > cx2 || y < cy1 || y+h > cy2;
+   
+   if (doClip) glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    setCurrentProgram(shadeProgram);
-   glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
    
@@ -354,7 +361,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    }
     
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
-   glClearClip();
+   if (doClip) glClearClip();
 }
 
 void initTexture()
@@ -436,14 +443,14 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 void glClearClip()
 {            
    glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
-}   
+}                                               
 // note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
 {
    if (x1 == 0 && y1 == 0 && x2 == appW && y2 == appH) // set clip to whole screen disables it
       {glClearClip(); GL_CHECK_ERROR}
    else
-   {
+   {                    
       y1 += glShiftY;
       y2 += glShiftY;
       glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
@@ -459,7 +466,7 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
-{                 
+{                    
    if (textureId[0] == 0) return;
       
    GLfloat* coords = texcoords;
@@ -484,8 +491,16 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[10] = coords[12] = right;
    coords[13] = coords[15] = top;
    glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
-
-   if (clip != null) glSetClip(clip[0],clip[1],clip[2],clip[3]);
+      
+   bool doClip = false;
+   if (clip != null) 
+   {          
+      int32 cx1 = clip[0], cy1 = clip[1], cx2 = clip[2], cy2 = clip[3];
+      doClip = dstX < cx1 || dstX+w > cx2 || dstY < cy1 || dstY+h > cy2;
+   }
+   
+   if (doClip)
+      glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
    if (lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
    {          
@@ -494,7 +509,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-   if (clip != null) glClearClip();
+   if (doClip) glClearClip();
 }
 
 void initLineRectPoint()
