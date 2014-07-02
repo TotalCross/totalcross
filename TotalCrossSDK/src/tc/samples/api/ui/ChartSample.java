@@ -147,7 +147,9 @@ public class ChartSample extends BaseContainer
             for (int i = 0; i < 100; i++)
                repaintNow();
             int fim = Vm.getTimeStamp();
-            setInfo("Paint 100x elapsed: "+(fim-ini)+"ms");
+            String s;
+            setInfo(s="Paint 100x elapsed: "+(fim-ini)+"ms");
+            Vm.debug(s);
          }
          else
          if (e.target == tp)
