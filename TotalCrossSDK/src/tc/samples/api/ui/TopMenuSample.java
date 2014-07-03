@@ -22,7 +22,6 @@ import totalcross.res.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.ui.image.*;
 
 public class TopMenuSample extends BaseContainer
 {
@@ -30,40 +29,27 @@ public class TopMenuSample extends BaseContainer
    
    public void initUI()
    {
-      super.initUI();
       try
       {
          super.initUI();
-         setInfo("Click outside to close the menu");
-         String [] tits =
+         Control []items = 
          {
-            "Videocalls",
-            "Insert emoticon",
-            "Add text",
-            "See contact",
-            "Add slide",
-            "Add subject",
-            "Add persons",
-            "Programmed messages",
-            "Add to the phone book",
+            new TopMenu.Item("Videocalls",            Resources.warning),
+            new TopMenu.Item("Insert emoticon",       Resources.exit),
+            new ComboBox(new String[]{"Smile","Sad","Laugh"}),
+            new TopMenu.Item("Add text",              Resources.back),
+            new TopMenu.Item("See contact",           Resources.menu),
+            new TopMenu.Item("Add slide",             Resources.warning),
+            new TopMenu.Item("Add subject",           Resources.exit),
+            new TopMenu.Item("Add persons",           Resources.back),
+            new TopMenu.Item("Programmed messages",   Resources.menu),
+            new TopMenu.Item("Add to the phone book", Resources.warning),
          };
-         Image [] icons =
-            {
-               Resources.warning,
-               Resources.exit,
-               Resources.back,
-               Resources.menu,
-               Resources.warning,
-               Resources.exit,
-               Resources.back,
-               Resources.menu,
-               Resources.warning,
-            };
-         show(new TopMenu(tits,icons,CENTER),"CENTER");
-         show(new TopMenu(tits,icons,BOTTOM),"BOTTOM");
-         show(new TopMenu(tits,icons,TOP),"TOP");
-         show(new TopMenu(tits,icons,LEFT),"LEFT");
-         show(new TopMenu(tits,icons,RIGHT),"RIGHT");
+         show(new TopMenu(items,CENTER),"CENTER");
+         show(new TopMenu(items,BOTTOM),"BOTTOM");
+         show(new TopMenu(items,TOP),"TOP");
+         show(new TopMenu(items,LEFT),"LEFT");
+         show(new TopMenu(items,RIGHT),"RIGHT");
          back();
       }
       catch (Exception e)
@@ -75,7 +61,7 @@ public class TopMenuSample extends BaseContainer
 
    private void show(final TopMenu t, String dir)
    {
-      setInfo("Showing at "+dir);
+      setInfo("Showing at "+dir+". Click outside to close");
       t.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)

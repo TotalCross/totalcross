@@ -7,69 +7,85 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
 /** This is a top menu like those on Android. It opens and closes using animation and fading effects.
+ * Caution: if you place an image in an Item, use getSmoothScale methods instead of getHwScale ones.
  * @since TotalCross 3.03
  */
 public class TopMenu extends Window implements PathAnimation.AnimationFinished
 {
-   public Image[] icons;
-   public String[] captions;
-   public int percIcon = 20, percCap = 80;
+   public static int percIcon = 20, percCap = 80;
+   private Control []items;
    private ScrollContainer sc;
    private int animDir;
    private int selected=-1;
    
-   private class TopMenuItem extends Container
+   public static class Item extends Container
    {
-      String caption;
+      Control tit;
       Image icon;
-      Label lab;
       ImageControl ic;
-      
-      TopMenuItem(String cap, Image icon)
+
+      /** Used when you want to fully customize your Item by extending this class. */
+      protected Item()
       {
-         this.caption = cap;
-         this.icon = icon;
-         lab = new Label(caption,LEFT);
          setBackForeColors(UIColors.topmenuBack,UIColors.topmenuFore);
-         focusTraversable = true;
       }
+      
+      /** Pass a Control and optionally an icon */
+      public Item(Control c, Image icon)
+      {
+         this();
+         this.tit = c;
+         this.icon = icon;
+      }
+      
+      /** Creates a Label and optionally an icon */
+      public Item(String cap, Image icon)
+      {
+         this(new Label((String)cap,LEFT),icon);
+      }
+      
       public void initUI()
       {
+         int itemH = fmH + Edit.prefH;
          int perc = percCap;
          if (icon == null)
             perc = 100;
          else
          {
-            ic = null;
-            try {ic = new ImageControl(icon.getSmoothScaledInstance(fmH,fmH)); ic.centerImage = true;} catch (ImageException e) {}
-            add(ic == null ? (Control)new Spacer(fmH,fmH) : (Control)ic,LEFT,TOP,PARENTSIZE+percIcon,FILL);
+            try {ic = new ImageControl(icon.getSmoothScaledInstance(itemH,itemH)); ic.centerImage = true;} catch (ImageException e) {}
+            add(ic == null ? (Control)new Spacer(itemH,itemH) : (Control)ic,LEFT,TOP,PARENTSIZE+percIcon,FILL);
          }
-         add(lab, AFTER+(icon==null?fmH:0),TOP,PARENTSIZE+perc-10,FILL);
+         add(tit, AFTER+(icon==null? tit instanceof Label ? itemH:0:0),TOP,PARENTSIZE+perc-(tit instanceof Label?10:0),FILL,ic);
       }
+      
       public void onEvent(Event e)
       {
          if (e.type == PenEvent.PEN_UP && !hadParentScrolled())
          {
-            setBackColor(Color.brighter(backColor));
-            lab.setBackColor(backColor);
-            if (ic != null) ic.setBackColor(backColor);
-            selected = this.appId;
-            TopMenu.this.postPressedEvent();
+            int bc = backColor;
+            setBackColors(Color.brighter(bc));
             repaintNow();
             Vm.sleep(100);
-            unpop();
+            postPressedEvent();
+            setBackColors(bc);
          }
-      }      
+      }   
+      private void setBackColors(int b)
+      {
+         setBackColor(b);
+         for (Control child = children; child != null; child = child.next)
+            if (child instanceof Label || child instanceof ImageControl) // changing ComboBox back does not work well... should think in an alternative
+               child.setBackColor(b);
+      }
    }
    
    /** @param animDir LEFT, RIGHT, TOP, BOTTOM, CENTER */
-   public TopMenu(String[] captions, Image[] icons, int animDir)
+   public TopMenu(Control []items, int animDir)
    {
       super(null,ROUND_BORDER);
-      titleGap = 0;
-      this.icons = icons;
-      this.captions = captions;
+      this.items = items;
       this.animDir = animDir;
+      titleGap = 0;
       fadeOtherWindows = false;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
@@ -95,14 +111,14 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    {
       int itemH = fmH*2;
       int gap = 2;
-      int n = captions.length;
+      int n = items.length;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
       add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
       sc.setBackColor(backColor);
       for (int i = 0;; i++)
       {
-         TopMenuItem tmi = new TopMenuItem(captions[i], icons == null ? null : icons[i]);
+         Control tmi = items[i];
          tmi.appId = i;
          sc.add(tmi,LEFT,AFTER,FILL,itemH);
          if (i == n-1) break;
@@ -111,6 +127,17 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          sc.add(r,LEFT,AFTER,FILL, gap);
       }
       if (!isLR) resizeHeight();
+   }
+   
+   public void onEvent(Event e)
+   {
+      if (e.type == ControlEvent.PRESSED && e.target != this && ((Control)e.target).isChildOf(this))
+      {
+         if (e.target instanceof Item)
+            selected = ((Item)e.target).appId;
+         postPressedEvent();
+         unpop();
+      }
    }
    
    public void screenResized()
