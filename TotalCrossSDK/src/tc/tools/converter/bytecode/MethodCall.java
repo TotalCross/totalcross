@@ -38,17 +38,6 @@ public class MethodCall extends ByteCode
       targetType = convertJavaType(ret);
    }
 
-   public MethodCall()
-   {
-      className = "totalcross/util/ClassLiteral";
-      name = "getClass";
-      parameters = "(Ljava/lang/String;)Ljava/lang/Class;";
-      pcInc = 0;      
-      bc = 184;
-      parseSignature();
-      targetType = convertJavaType(ret);
-   }
-   
    public void parseSignature()
    {
       jargs = JavaMethod.splitParams(parameters, retsb);

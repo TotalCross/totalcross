@@ -485,18 +485,6 @@ public final class J2TC implements JConstants, TCConstants
             {
                Instruction tccode = Bytecode2TCCode.convert(bc, bc[j], stack, vcode, isStaticInitializer,jm.signature);
                if (dumpBytecodes) System.out.println(bc[j] + " -> " + tccode); // dump
-               
-               if (Bytecode2TCCode.isClassLiteral)
-               {
-                  if (!(bc[j + 1] instanceof BC184_invokestatic && ((BC184_invokestatic)bc[j + 1]).name.equals("forName")))
-                  {
-                     MethodCall getClass = new MethodCall();
-                     tccode = Bytecode2TCCode.convert(bc, getClass, stack, vcode, isStaticInitializer, jm.signature);
-                     if (dumpBytecodes) 
-                        System.out.println(getClass + " -> " + tccode); // dump
-                  }
-                  Bytecode2TCCode.isClassLiteral = false;
-               }
             }
             Bytecode2TCCode.updateBranchs(vcode);
             tcm.exceptionHandlers = Bytecode2TCCode.updatePCsOfExceptionHandler(tcm.exceptionHandlers);
