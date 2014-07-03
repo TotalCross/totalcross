@@ -7,7 +7,6 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
 /** This is a top menu like those on Android. It opens and closes using animation and fading effects.
- * Caution: if you place an image in an Item, use getSmoothScale methods instead of getHwScale ones.
  * @since TotalCross 3.03
  */
 public class TopMenu extends Window implements PathAnimation.AnimationFinished
@@ -119,7 +118,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       for (int i = 0;; i++)
       {
          Control tmi = items[i];
-         tmi.appId = i;
+         tmi.appId = i+1;
          sc.add(tmi,LEFT,AFTER,FILL,itemH);
          if (i == n-1) break;
          Ruler r = new Ruler(Ruler.HORIZONTAL,false);
@@ -133,8 +132,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    {
       if (e.type == ControlEvent.PRESSED && e.target != this && ((Control)e.target).isChildOf(this))
       {
-         if (e.target instanceof Item)
-            selected = ((Item)e.target).appId;
+         selected = ((Control)e.target).appId-1;
          postPressedEvent();
          unpop();
       }
