@@ -205,6 +205,8 @@ public class Utils
          {
             String path = searchPath[i].replace('\\','/');
             path = path.replace("\"",""); // remove any " surrounding the path
+            if (path.contains("system32")) // ignores the ones copied to C:/Windows/system32
+               continue;
             p = path+"/"+fileName;
             if (new File(p).exists())
                return p;
@@ -783,7 +785,7 @@ public class Utils
       v.addElement(jar);
       v.addElement("tcandroidkey");
       String out = Utils.exec((String[])v.toObjectArray(), targetDir);
-      if (out != null)
+      if (out != null && !out.startsWith("INPUT:jar signed"))
          throw new DeployerException("An error occured when signing the APK. The output is "+out);
    }
    /////////////////////////////////////////////////////////////////////////////////////
@@ -803,5 +805,12 @@ public class Utils
       {
          return 100;
       }
+   }
+   public static String toString(String[] cmd)
+   {
+      StringBuilder sb = new StringBuilder(200);
+      for (int i = 0; i < cmd.length; i++)
+         sb.append(cmd[i]).append(" ");
+      return sb.toString();
    }
 }

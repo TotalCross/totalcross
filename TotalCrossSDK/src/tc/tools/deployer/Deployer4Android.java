@@ -188,7 +188,7 @@ public class Deployer4Android
       String []cmd = {javaExe,"-classpath",DeploySettings.pathAddQuotes(dxjar),"com.android.dx.command.Main","--dex","--output=classes.dex",new File(jarOut).getAbsolutePath()}; // guich@tc124_3: use the absolute path for the file
       String out = Utils.exec(cmd, targetDir);
       if (!new File(targetDir+"classes.dex").exists())
-         throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+cmd+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
+         throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+Utils.toString(cmd)+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
       new File(jarOut).delete(); // delete the jar
    }
    

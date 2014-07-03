@@ -12,9 +12,11 @@ public abstract class ControlAnimation implements TimerListener
    AnimationFinished animFinish;
    int initialTime;
    boolean slave;
+   public int id;
+   private static int _id;
    
    public int totalTime = 800;
-   public int frameRate = 20;
+   public int frameRate = Settings.platform.equals(Settings.WINDOWSPHONE) ? 30 : 20;
    
    public static interface AnimationFinished
    {
@@ -25,6 +27,7 @@ public abstract class ControlAnimation implements TimerListener
    {
       this.c = c;
       this.animFinish = animFinish;
+      id = _id++;
    }
    
    public ControlAnimation(Control c)
@@ -60,11 +63,12 @@ public abstract class ControlAnimation implements TimerListener
          try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }
    
-   int last;
    protected double computeSpeed(double distance)
    {
-      last = Vm.getTimeStamp();
-      double ret = distance * frameRate / (totalTime-(Vm.getTimeStamp()-initialTime));
+      int elapsed = totalTime-(Vm.getTimeStamp()-initialTime);
+      if (elapsed <= 0)
+         return 0;
+      double ret = distance * frameRate / elapsed;
       return ret;
    }
    

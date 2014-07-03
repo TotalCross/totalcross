@@ -122,8 +122,8 @@ public class ChartSample extends BaseContainer
       // setup the pie chart
       pie = new PieChart();
       pie.series.addElement(new Series("Rice", new double[] {100}, color1));
-      pie.series.addElement(new Series("Beans", new double[] {150}, color2));
-      pie.series.addElement(new Series("Oil", new double[] {130}, color3));
+      pie.series.addElement(new Series("Beans", new double[] {200}, color2));
+      pie.series.addElement(new Series("Oil", new double[] {80}, color3));
       pie.selectedSeries = 2;
       pie.yDecimalPlaces = 1; // 1 decimal place
       pie.setTitle("Profit Share");
@@ -147,7 +147,9 @@ public class ChartSample extends BaseContainer
             for (int i = 0; i < 100; i++)
                repaintNow();
             int fim = Vm.getTimeStamp();
-            setInfo("Paint 100x elapsed: "+(fim-ini)+"ms");
+            String s;
+            setInfo(s="Paint 100x elapsed: "+(fim-ini)+"ms");
+            Vm.debug(s);
          }
          else
          if (e.target == tp)

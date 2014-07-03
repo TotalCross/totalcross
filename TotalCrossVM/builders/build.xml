@@ -248,10 +248,14 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
    <delete file="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
    
-   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
-    storepass="@ndroid$w" keypass="@ndroidsw">
+   <exec executable="jarsigner${exe}">
+      <arg line="-digestalg SHA1 -sigalg MD5withRSA -keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${target.sdk3.path}/dist/vm/android/TotalCross.apk tcandroidkey" />
+   </exec>
+
+   <!--signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw" sigalg="SHA1withRSA" digestalg="SHA1">
     <path><fileset dir="${target.sdk3.path}/dist/vm/android" includes="TotalCross.apk" /></path>
-   </signjar>
+   </signjar-->
 
 </target>
 
@@ -582,10 +586,15 @@ target: Android builds
    <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
    <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" />
    <zip destfile="${apk}"  includes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
-   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
-    storepass="@ndroid$w" keypass="@ndroidsw">
+
+   <exec executable="jarsigner${exe}">
+      <arg line="-digestalg SHA1 -sigalg MD5withRSA -keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${android.temp}/TotalCross.apk tcandroidkey" />
+   </exec>
+   
+   <!--signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw"  sigalg="SHA1withRSA" digestalg="SHA1">
     <path><fileset dir="${android.temp}" includes="TotalCross.apk" /></path>
-   </signjar>
+   </signjar-->
 
 </target>
 
