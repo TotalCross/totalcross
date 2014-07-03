@@ -295,12 +295,12 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       int32 i;
       float *glV = glcoords;            
       int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
-      bool doClip = false;
+      bool doClip = false;    
       for (i = 0; i < n; i++)
       {
          *glV++ = xx = (float)(*x++ + tx);
          *glV++ = yy = (float)(*y++ + ty);
-         if (!doClip && (xx < cx1 || xx > cx2 || yy < cy1 || yy > cy2))
+         if (!doClip && (yy < cy1 || yy > cy2 || xx < cx1 || xx > cx2))
             doClip = true;
       }           
       if (doClip) glSetClip(cx1,cy1,cx2,cy2);
@@ -325,7 +325,7 @@ static void initShade()
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
-   bool doClip = x < cx1 || x+w > cx2 || y < cy1 || y+h > cy2;
+   bool doClip = y < cy1 || y+h > cy2 || x < cx1 || x+w > cx2;
    
    if (doClip) glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    setCurrentProgram(shadeProgram);
@@ -496,11 +496,10 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    if (clip != null) 
    {          
       int32 cx1 = clip[0], cy1 = clip[1], cx2 = clip[2], cy2 = clip[3];
-      doClip = dstX < cx1 || dstX+w > cx2 || dstY < cy1 || dstY+h > cy2;
+      doClip = dstY < cy1 || dstY+h > cy2 || dstX < cx1 || dstX+w > cx2;
    }
    
-   if (doClip)
-      glSetClip(clip[0],clip[1],clip[2],clip[3]);
+   if (doClip) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
    if (lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
    {          
