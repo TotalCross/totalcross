@@ -181,12 +181,12 @@ public class Image4D extends GfxSurface
 
    public int getHeight()
    {
-      return Settings.isOpenGL ? (int)(height * hwScaleH) : height;
+      return (int)(height * hwScaleH);
    }
 
    public int getWidth()
    {
-      return Settings.isOpenGL ? (int)(width * hwScaleW) : width;
+      return (int)(width * hwScaleW);
    }
 
    public Graphics4D getGraphics()
