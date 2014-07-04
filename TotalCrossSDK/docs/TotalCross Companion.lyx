@@ -3106,6 +3106,12 @@ The deployer automatically detects and includes
 Class.forName()
 \family default
  references.
+ Note that the parameter must be a string literal.
+ 
+\family typewriter
+Class.forName()
+\family default
+ will not work yet if the parameter is a variable containing the class name.
 \end_layout
 
 \end_deeper
@@ -5449,8 +5455,8 @@ tc.Deploy
 .
  There is no pre-requisite to generate it.
  After installing the Windows Phone SDK 8.0, it's only necessary to open
- Application Deployment, choose the target (the WP8 device or an emulator),
- and select the desired application 
+ Application Deployment, choose the target (the WP8 device), and select
+ the desired application 
 \family typewriter
 .xap
 \family default
@@ -5459,8 +5465,7 @@ tc.Deploy
 
 \begin_layout Standard
 Phones registered for development can only have one TotalCross application
- installed whereas WP8 emulator can have at most two TotalCross applications
- at the same time.
+ installed at the same time.
 \end_layout
 
 \begin_layout Subsection
