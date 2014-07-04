@@ -51,7 +51,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
             perc = 100;
          else
          {
-            try {ic = new ImageControl(icon.getSmoothScaledInstance(itemH,itemH)); ic.centerImage = true;} catch (ImageException e) {}
+            try {ic = new ImageControl(icon.getHwScaledInstance(itemH,itemH)); ic.centerImage = true;} catch (ImageException e) {}
             add(ic == null ? (Control)new Spacer(itemH,itemH) : (Control)ic,LEFT,TOP,PARENTSIZE+percIcon,FILL);
          }
          add(tit, AFTER+(icon==null? tit instanceof Label ? itemH:0:0),TOP,PARENTSIZE+perc-(tit instanceof Label?10:0),FILL,ic);
