@@ -716,7 +716,19 @@ notYetLinked:
             hashParams = cp->hashParams[code->mtd.sym];
             methodName = cp->mtdfld[sym[1]];
             if (code->op.op == CALL_virtual)
+            {
                c = OBJ_CLASS(regO[code->mtd.this_]); // search for the method starting on the class pointed by "this"
+               if (strEq(className, "java.lang.Class") && strEq(c->name, "java.lang.String"))
+               {
+                  TNMParams params;
+
+                  tzero(params);
+                  params.currentContext = context;
+                  params.obj = &regO[code->mtd.this_];
+                  jlC_forName_s(&params);
+                  c = OBJ_CLASS(regO[code->mtd.this_] = params.retO);
+               }
+            }
             else
             if (className == class_->name || strEq(className, class_->name)) // calling a method inside this class? (first comparison is always true, but keep 2nd for safety)
                c = class_;

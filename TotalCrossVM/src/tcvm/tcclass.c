@@ -808,6 +808,9 @@ tryAgain:
    if (s == t) // another quick test
       result = COMPATIBLE;
    else
+   if (strEq(className, "java.lang.String") && strEq(ident, "java.lang.Class"))
+      result = COMPATIBLE;
+   else
    // If S is an ordinary (nonarray) class, then:
    if (!sIsArray)
    {

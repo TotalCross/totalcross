@@ -13,6 +13,8 @@
 
 #include "tcvm.h"
 
+TC_API void jlC_forName_s(NMParams p);
+
 static void createClassObject(Context currentContext, CharP className, Type type, TCObject* ret, bool* isNew)
 {
    TCObject ptrObj=null;
@@ -209,8 +211,21 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
             for (j = 0; j < nparams; j++)  // do NOT invert the loop!
             {
                TCClass target;
+               TCClass classAux;
                CharP pt, po;
-               xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(classes[j])));
+               classAux = OBJ_CLASS(classes[j]);
+               if (strEq(classAux->name, "java.lang.String"))
+               {
+                  TNMParams params;
+
+                  tzero(params);
+                  params.currentContext = p->currentContext;
+                  params.obj = &classes[j];
+                  jlC_forName_s(&params);
+                  xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(params.retO)));
+               }
+               else
+                  xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(classes[j])));
                pt = target->name;
                po = getParameterType(c,mm->cpParams[j]);
                if (!strEq(pt,po))
@@ -330,6 +345,7 @@ TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Cl
          bool isObj = false, isNew0=false;
          bool isNew = true, ok = false;
          CharP pv, start;
+         replaceChar(className, '/', '.');
          // check correctness
          for (start = className; !ok && *start != 0; start++)
             if (('a' <= *start && *start <= 'z') || ('A' <= *start && *start <= 'Z'))

@@ -127,7 +127,8 @@ uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, 
             break;
           
       ext = ext->superClass;
-      fieldClassName = ext->name;
+      if (ext)
+         fieldClassName = ext->name;
    }
    return ext ? UNBOUND_FIELD_ERROR : UNBOUND_CLASS_ERROR;
 }
