@@ -211,10 +211,9 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
             for (j = 0; j < nparams; j++)  // do NOT invert the loop!
             {
                TCClass target;
-               TCClass classAux;
                CharP pt, po;
-               classAux = OBJ_CLASS(classes[j]);
-               if (strEq(classAux->name, "java.lang.String"))
+
+               if (strEq(OBJ_CLASS(classes[j])->name, "java.lang.String"))
                {
                   TNMParams params;
 

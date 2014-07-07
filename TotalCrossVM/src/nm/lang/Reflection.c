@@ -110,7 +110,18 @@ static Type checkPrimitiveField(NMParams p, Type from, bool isGet) // check if t
       throwException(p->currentContext, NullPointerException, "Argument array is null");
    else
    {
-      xmoveptr(&cto, ARRAYOBJ_START(Class_nativeStruct(Field_type(o))));
+      if (strEq(OBJ_CLASS(Field_type(o))->name, "java.lang.String"))
+      {
+         TNMParams params;
+
+         tzero(params);
+         params.currentContext = p->currentContext;
+         params.obj = &Field_type(o);
+         jlC_forName_s(&params);
+         xmoveptr(&cto, ARRAYOBJ_START(Class_nativeStruct(params.retO)));
+      }
+      else
+         xmoveptr(&cto, ARRAYOBJ_START(Class_nativeStruct(Field_type(o))));
       return checkPrimitiveType(p, cto, from, isGet);
    }
    return Type_Null;
