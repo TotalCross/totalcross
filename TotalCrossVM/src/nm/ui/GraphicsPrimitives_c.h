@@ -1762,6 +1762,8 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       endIndex+=2;
    }
 
+   i = !fill && pie ? 1 : 0; // skip the first coord (at center of pie) so an arc can be correctly drawn
+      
    if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)
    {
       int p1 = last-startIndex;
@@ -1772,8 +1774,8 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    else
    {
       if (fill)
-         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, c);
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);   
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+i, yPoints+startIndex+i, endIndex-startIndex-i, 0,0,0, xc,yc, c);
    }
    if (pie && fill)  // restore saved points
    {
@@ -3130,4 +3132,4 @@ void graphicsDestroyPrimitives()
    xfree(lookupGray);
    fontDestroy();
 }
-/////////////// End of Device-dependant functions ///////////////
+/////////////// End of Device-dependant functions ///
