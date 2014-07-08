@@ -289,15 +289,18 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    {          
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
-   }
+   }                                
+//   debug("================ : %d",n);
    if (checkGLfloatBuffer(currentContext, n))
    {
-      int32 i;
+      int32 i,nn=n;
       float *glV = glcoords;            
       int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
       bool doClip = false;    
       for (i = 0; i < n; i++)
       {
+         if (i > 0 && x[-1] == x[0] && y[-1] == y[0] && x[0] == 0 && y[0] == 0) // && x[0] == -100 && y[0] == 0) fixes horizontal line from 0,0 to 100,0
+            {/*debug("skipping %d: %d,%d",i,*x,*y);*/nn--;x++;y++;continue;}
          *glV++ = xx = (float)(*x++ + tx);
          *glV++ = yy = (float)(*y++ + ty);
          if (!doClip && (yy < cy1 || yy > cy2 || xx < cx1 || xx > cx2))
@@ -305,7 +308,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       }           
       if (doClip) glSetClip(cx1,cy1,cx2,cy2);
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
-      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,n); GL_CHECK_ERROR
+      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,nn); GL_CHECK_ERROR
       if (doClip) glClearClip();
    }
 }

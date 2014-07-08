@@ -1630,6 +1630,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       ppd = (double)size / 360.0f;
       // step 3: create space in the buffer so it can save all the circle
       size+=2;
+      if (pie) size++;
       if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) < (uint32)size)
       {
          *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
@@ -1646,6 +1647,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       }
       xPoints = (int32*)ARRAYOBJ_START(*xPointsObj);
       yPoints = (int32*)ARRAYOBJ_START(*yPointsObj);
+      if (pie) {xPoints++; yPoints++;} // make sure that startIndex-1 is at a valid pointer
 
       // step 4: stores all the circle in the array. the odd arcs are drawn in reverse order
       // intermediate terms to speed up loop
@@ -1748,47 +1750,44 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       endIndex--;
    // step 6: fill or draw the polygons
    endIndex++;
-   if (pie && fill)
+   if (pie)
    {
       // connect two lines from the center to the two edges of the arc
       oldX1 = xPoints[endIndex];
       oldY1 = yPoints[endIndex];
-      oldX2 = xPoints[endIndex+1];
-      oldY2 = yPoints[endIndex+1];
-      xPoints[endIndex] = 0;
-      yPoints[endIndex] = 0;
-      xPoints[endIndex+1] = xPoints[startIndex];
-      yPoints[endIndex+1] = yPoints[startIndex];
-      endIndex+=2;
+      oldX2 = xPoints[startIndex-1];
+      oldY2 = yPoints[startIndex-1];
+      xPoints[startIndex-1] = xPoints[endIndex] = 0;
+      yPoints[startIndex-1] = yPoints[endIndex] = 0;
+      endIndex++;
+      startIndex--;
    }
-
-   i = !fill && pie ? 1 : 0; // skip the first coord (at center of pie) so an arc can be correctly drawn
-      
+  
    if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)
    {
       int p1 = last-startIndex;
       if (fill)
          fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient,true); // lower half, upper half
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, c);
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1-1, xPoints+1, yPoints+1, endIndex-1, xc,yc, c);
    }
    else
    {
+      int32 arc = pie ? 0 : 1;
       if (fill)
          fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);   
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+i, yPoints+startIndex+i, endIndex-startIndex-i, 0,0,0, xc,yc, c);
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+arc, yPoints+startIndex+arc, endIndex-startIndex-arc, 0,0,0, xc,yc, c);
    }
-   if (pie && fill)  // restore saved points
+   if (pie)  // restore saved points
    {
-      endIndex-=2;
+//#ifdef ANDROID
+//      if (!gradient) drawLine(currentContext,g, xc,yc, xc+xPoints[startIndex], yc+yPoints[startIndex], c);
+//#endif         
+      endIndex--;
+      startIndex++;
       xPoints[endIndex]   = oldX1;
       yPoints[endIndex]   = oldY1;
-      xPoints[endIndex+1] = oldX2;
-      yPoints[endIndex+1] = oldY2;
-   }
-   if (!gradient && pie) // connect two lines from the center to the two edges of the arc
-   {
-      drawLine(currentContext,g, xc,yc, xc+xPoints[startIndex], yc+yPoints[startIndex], c);
-      drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex],   yc+yPoints[endIndex], c);
+      xPoints[startIndex-1] = oldX2;
+      yPoints[startIndex-1] = oldY2;
    }
 }
 ////////////////////////////////////////////////////////////////////////////
