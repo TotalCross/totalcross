@@ -16,6 +16,8 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    private ScrollContainer sc;
    private int animDir;
    private int selected=-1;
+   /** Set to false to disable the close when pressing in a button of the menu. */
+   public boolean autoClose = true;
    
    public static class Item extends Container
    {
@@ -130,7 +132,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    public void onEvent(Event e)
    {
-      if (e.type == ControlEvent.PRESSED && e.target != this && ((Control)e.target).isChildOf(this))
+      if (autoClose && e.type == ControlEvent.PRESSED && e.target != this && ((Control)e.target).isChildOf(this))
       {
          selected = ((Control)e.target).appId-1;
          postPressedEvent();
