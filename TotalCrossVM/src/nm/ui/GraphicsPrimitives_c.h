@@ -1550,7 +1550,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    // this algorithm was created by Guilherme Campos Hazan
    double ppd;
    int32 startIndex,endIndex,index,i,nq,size=0,oldX1=0,oldY1=0,last,oldX2=0,oldY2=0;
-   bool sameR;
+   bool sameR,startSetTo0 = true;
    TCObject *xPointsObj = &Graphics_xPoints(g);
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
@@ -1755,12 +1755,17 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       // connect two lines from the center to the two edges of the arc
       oldX1 = xPoints[endIndex];
       oldY1 = yPoints[endIndex];
-      oldX2 = xPoints[startIndex-1];
-      oldY2 = yPoints[startIndex-1];
-      xPoints[startIndex-1] = xPoints[endIndex] = 0;
-      yPoints[startIndex-1] = yPoints[endIndex] = 0;
+      xPoints[endIndex] = yPoints[endIndex] = 0;
+      if (xPoints[startIndex] == 0 && yPoints[startIndex] == 0)
+         startSetTo0 = false;
+      else
+      {
+         startIndex--;
+         oldX2 = xPoints[startIndex];
+         oldY2 = yPoints[startIndex];
+         xPoints[startIndex] = yPoints[startIndex] = 0;
+      }
       endIndex++;
-      startIndex--;
    }
   
    if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)
@@ -1779,15 +1784,18 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    }
    if (pie)  // restore saved points
    {
-//#ifdef ANDROID
-//      if (!gradient) drawLine(currentContext,g, xc,yc, xc+xPoints[startIndex], yc+yPoints[startIndex], c);
-//#endif         
+      if (startSetTo0)
+      {
+         xPoints[startIndex] = oldX2;
+         yPoints[startIndex] = oldY2;
+      }
       endIndex--;
-      startIndex++;
       xPoints[endIndex]   = oldX1;
       yPoints[endIndex]   = oldY1;
-      xPoints[startIndex-1] = oldX2;
-      yPoints[startIndex-1] = oldY2;
+#ifdef ANDROID
+      if (!gradient && endAngle == 360) 
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+#endif         
    }
 }
 ////////////////////////////////////////////////////////////////////////////

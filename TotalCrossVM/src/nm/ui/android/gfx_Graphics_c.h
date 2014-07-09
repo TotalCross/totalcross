@@ -290,7 +290,6 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
    }                                
-//   debug("================ : %d",n);
    if (checkGLfloatBuffer(currentContext, n))
    {
       int32 i,nn=n;
@@ -299,8 +298,6 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       bool doClip = false;    
       for (i = 0; i < n; i++)
       {
-         if (i > 0 && x[-1] == x[0] && y[-1] == y[0] && x[0] == 0 && y[0] == 0) // && x[0] == -100 && y[0] == 0) fixes horizontal line from 0,0 to 100,0
-            {/*debug("skipping %d: %d,%d",i,*x,*y);*/nn--;x++;y++;continue;}
          *glV++ = xx = (float)(*x++ + tx);
          *glV++ = yy = (float)(*y++ + ty);
          if (!doClip && (yy < cy1 || yy > cy2 || xx < cx1 || xx > cx2))
@@ -530,7 +527,7 @@ void glSetLineWidth(int32 w)
 }
 
 void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiagonal)
-{         
+{           
    float* coords = lrcoords;
    setCurrentProgram(lrpProgram);
    glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
