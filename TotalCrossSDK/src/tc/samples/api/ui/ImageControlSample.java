@@ -40,7 +40,7 @@ public class ImageControlSample extends BaseContainer
          isSingleCall = true;
          
          setTitle("Scale with ImageControl");
-         add(lab = new Label("To Natasha",CENTER),LEFT,TOP,FILL,PREFERRED);
+         add(lab = new Label("To Rafaella",CENTER),LEFT,TOP,FILL,PREFERRED);
          img = new Image("ui/images/heart.png");
          int nw = parent.getWidth()/2, nh = parent.getHeight()/2;
          if (img.getWidth() > nw || img.getHeight() > nh)
