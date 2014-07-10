@@ -121,9 +121,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    final public void initUI()
    {
-      int itemH = fmH*2;
       int gap = 2;
       int n = items.length;
+      int itemH = n == 1 ? getClientRect().height-4 : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
       add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
@@ -155,7 +155,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
             break;
          case PenEvent.PEN_DRAG_END:
             DragEvent de = (DragEvent)e;
-            if (animDir == de.direction && de.xTotal >= width/2)
+            if (sameDirection(animDir, de.direction) && de.xTotal >= width/2)
             {
                selected = -1;
                unpop();
@@ -164,11 +164,28 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       }
    }
    
+   private boolean sameDirection(int animDir, int dragDir)
+   {
+      if (animDir < 0) animDir = -animDir;
+      return (dragDir == DragEvent.LEFT && animDir == LEFT) ||
+            (dragDir == DragEvent.RIGHT && animDir == RIGHT) || 
+            (dragDir == DragEvent.UP && animDir == TOP) || 
+            (dragDir == DragEvent.DOWN && animDir == BOTTOM); 
+   }
+
    public void screenResized()
    {
       setRect();
       removeAll();
       initUI();
+      // used for custom containers
+      for (int i = 0; i < items.length; i++)
+         if (items[i].asContainer != null)
+         {
+            Control []c = items[i].asContainer.getChildren();
+            for (int j = c.length; --j >= 0;)
+               c[j].reposition();
+         }
    }
    
    protected boolean onClickedOutside(PenEvent event)
