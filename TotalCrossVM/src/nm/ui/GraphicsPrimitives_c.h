@@ -207,7 +207,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    if (Surface_isImage(srcSurf))
    {
 #ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
-      bool forcedSmoothScale = !Surface_isImage(dstSurf);
+      bool forcedSmoothScale = Surface_isImage(Graphics_surface(dstSurf)); // the destination is always a Graphics object
 #else
       bool forcedSmoothScale = true;
 #endif
