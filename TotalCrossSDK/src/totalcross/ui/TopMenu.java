@@ -143,11 +143,24 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    public void onEvent(Event e)
    {
-      if (autoClose && e.type == ControlEvent.PRESSED && e.target != this && ((Control)e.target).isChildOf(this))
+      switch (e.type)
       {
-         selected = ((Control)e.target).appId-1;
-         postPressedEvent();
-         unpop();
+         case ControlEvent.PRESSED:
+            if (autoClose && e.target != this && ((Control)e.target).isChildOf(this))
+            {
+               selected = ((Control)e.target).appId-1;
+               postPressedEvent();
+               unpop();
+            }
+            break;
+         case PenEvent.PEN_DRAG_END:
+            DragEvent de = (DragEvent)e;
+            if (animDir == de.direction && de.xTotal >= width/2)
+            {
+               selected = -1;
+               unpop();
+            }
+            break;
       }
    }
    
