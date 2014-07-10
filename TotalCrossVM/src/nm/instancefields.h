@@ -182,7 +182,7 @@
 #define Control_width(o)            FIELD_I32(o, 3)
 #define Control_height(o)           FIELD_I32(o, 4)
 
-// generic surface - for Control or Image
+// generic surface - can only be used if "o" is a Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
 #ifdef __gl2_h_
 #define Graphics_useOpenGL(g)             (!Surface_isImage(Graphics_surface(g)))
