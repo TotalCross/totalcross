@@ -11,6 +11,7 @@ import totalcross.ui.image.*;
  */
 public class TopMenu extends Window implements PathAnimation.AnimationFinished
 {
+   /** The percentage of the area used for the icon and the caption */
    public static int percIcon = 20, percCap = 80;
    private Control []items;
    private ScrollContainer sc;
@@ -20,6 +21,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    public boolean autoClose = true;
    /** Defines the animation delay */
    public int totalTime;
+   /** The percentage of the screen that this TopMenu will take: LEFT/RIGHT will take 50% of the screen's width, 
+    * other directions will take 80% of the screen's width. Must be ser before calling <code>popup()</code>. */
+   public int percWidth;
    
    public static class Item extends Container
    {
@@ -93,7 +97,12 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);
+   }
+
+   public void popup()
+   {
       setRect();
+      super.popup();
    }
    
    private void setRect()
@@ -102,10 +111,10 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       {
          case LEFT:
          case RIGHT:
-            setRect(animDir,TOP,SCREENSIZE+50,FILL); 
+            setRect(animDir,TOP,SCREENSIZE+(percWidth > 0 ? percWidth : 50),FILL); 
             break;
          default:
-            setRect(100000,100000,SCREENSIZE+80,WILL_RESIZE); 
+            setRect(100000,100000,SCREENSIZE+(percWidth > 0 ? percWidth : 80),WILL_RESIZE); 
             break;
       }
    }
