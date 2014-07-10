@@ -10,7 +10,7 @@
     FOR STANDARD APPLICATIONS THAT USE THE VM
     G:\TotalCross\TotalCrossVM\builders\android\apps\singleapk\AndroidManifest.xml -->
 
-    <application android:icon="@drawable/icon" android:label="Stub"
+    <application android:icon="@drawable/icon" android:label="Stub" android:debuggable="false"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity android:name=".Loader"
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
