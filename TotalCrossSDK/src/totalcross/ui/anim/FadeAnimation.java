@@ -5,30 +5,25 @@ import totalcross.ui.event.*;
 
 public class FadeAnimation extends ControlAnimation implements TimerListener
 {
-   int a,at,af;
-   boolean fadeIn;
+   private int a,at,af;
+   private boolean fadeIn;
    
-   public FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish)
+   private FadeAnimation(Control c, boolean fadeIn, AnimationFinished animFinish, int totalTime)
    {
-      super(c,animFinish);
+      super(c,animFinish, totalTime);
       this.fadeIn = fadeIn;
       at = 255;
       a = fadeIn ? 0 : 255;
       af = fadeIn ? 255 : 0;
    }
 
-   public FadeAnimation(Control c, boolean fadeIn)
-   {
-      this(c, fadeIn, null);
-   }
-   
    public void start() throws Exception
    {
       super.start();
       c.offscreen.alphaMask = a;
    }
    
-   public void animate()
+   protected void animate()
    {
       int speed = (int)computeSpeed(at);
       at -= speed;
@@ -44,21 +39,22 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
       }
    }
 
-   public static FadeAnimation create(Control c, boolean fadeIn, AnimationFinished animFinish)
+   /** Creates a path animation, moving the control in a direction.
+    * @param c The control to be moved
+    * @param fadeIn True will make the control appear, false will make it disappear.
+    * @param animFinish An interface method to be called when the animation finished, or null if none.
+    * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
+    */
+   public static FadeAnimation create(Control c, boolean fadeIn, AnimationFinished animFinish, int totalTime)
    {
       try
       {
-         return new FadeAnimation(c,fadeIn, animFinish);
+         return new FadeAnimation(c,fadeIn, animFinish, totalTime);
       }
       catch (Exception e)
       {
          e.printStackTrace();
       }
       return null;
-   }
-   
-   public static FadeAnimation create(Control c, boolean fadeIn)
-   {
-      return create(c, fadeIn, null);
    }
 }

@@ -18,6 +18,8 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    private int selected=-1;
    /** Set to false to disable the close when pressing in a button of the menu. */
    public boolean autoClose = true;
+   /** Defines the animation delay */
+   public int totalTime;
    
    public static class Item extends Container
    {
@@ -158,9 +160,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       try
       {
          if (animDir == CENTER)
-            FadeAnimation.create(this,false,this).start();
+            FadeAnimation.create(this,false,this,totalTime).start();
          else
-            PathAnimation.create(this,-animDir,this).with(FadeAnimation.create(this,false)).start();
+            PathAnimation.create(this,-animDir,this,totalTime).with(FadeAnimation.create(this,false,null,totalTime)).start();
       }
       catch (Exception e)
       {
@@ -181,10 +183,10 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          {
             resetSetPositions();
             setRect(CENTER,CENTER,KEEP,KEEP);
-            FadeAnimation.create(this,true).start();
+            FadeAnimation.create(this,true,null,totalTime).start();
          }
          else
-            PathAnimation.create(this,animDir).with(FadeAnimation.create(this,true)).start();
+            PathAnimation.create(this,animDir,null,totalTime).with(FadeAnimation.create(this,true,null,totalTime)).start();
       }
       catch (Exception e)
       {
