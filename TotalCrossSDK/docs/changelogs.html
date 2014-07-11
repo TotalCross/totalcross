@@ -1,6 +1,17 @@
 <h2>Current development version</h2>
 . 
 
+<h2>TotalCross 3.03 build 2227</h2>
+. improved speed of TabbedContainer drag and flick by drawing the tabs in an image and drawing that image instead of calling the drawing methods. its far smoother than before.<br>
+. added ControlAnimation, PathAnimation, FadeAnimation and TopMenu. Added samples.<br>
+. if pressed a button and started multitouch, issue a penup event so button can be released<br>
+. fixed crash that occurs sometimes when an unhandled exception was caught<br>
+. fixed deploy in java 7<br>
+. improved graphics performance on android tablets<br>
+. decreased distance needed to start flick on tablet devices<br>
+. fixed Image.hwScaleW/H not being supported on win32; now we create an image during the draw. it would be slow but win32 hardware makes it fast.<br>
+. fixed many bugs on draw/fill pie/arc.<br>
+
 <h2>TotalCross 3.02 build 2201</h2>
 . added Window.keyHook to bypass all key listeners and easily handle keys. Used in the TotalCrossAPI sample to handle the back key, and also in Motorola TC60 scanner.<br>
 . implemented support for the Motorola scanner TC60.<br>

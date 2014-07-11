@@ -3,30 +3,29 @@ package totalcross.ui.anim;
 import totalcross.sys.*;
 import totalcross.ui.*;
 
+/** Creates an animation that follows a path. 
+ * @since TotalCross 3.03
+ */
+
 public class PathAnimation extends ControlAnimation
 {
-   int x0,y0,xf,yf,x,y;
-   int dir;
+   private int xf,yf,x,y;
+   private int dir;
    
-   public PathAnimation(Control c, AnimationFinished animFinish)
+   private PathAnimation(Control c, AnimationFinished animFinish, int totalTime)
    {
-      super(c,animFinish);
+      super(c,animFinish,totalTime);
    }
    
-   public PathAnimation(Control c)
+   private void setPath(int x0, int y0, int xf, int yf) throws Exception
    {
-      this(c,null);
-   }
-   
-   public void setPath(int x0, int y0, int xf, int yf) throws Exception
-   {
-      this.x0 = x = x0;
-      this.y0 = y = y0;
+      x = x0;
+      y = y0;
       this.xf = xf;
       this.yf = yf;
    }
    
-   public void animate()
+   protected void animate()
    {
       update();
       c.setRect(x,y,Control.KEEP,Control.KEEP);
@@ -131,23 +130,45 @@ public class PathAnimation extends ControlAnimation
       }
    }
 
-   public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish) throws Exception
+   /** Creates a path animation, moving the control to the given x and y positions.
+    * @param c The control to be moved
+    * @param toX The destination X coordinate
+    * @param toY The destination Y coordinate
+    * @param animFinish An interface method to be called when the animation finished, or null if none.
+    * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
+    */
+   public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish, int totalTime) throws Exception
    {
-      PathAnimation anim = new PathAnimation(c,animFinish);
+      PathAnimation anim = new PathAnimation(c,animFinish,totalTime);
       anim.setPath(c.getX(),c.getY(),toX,toY);
       return anim;
    }
    
-   public static PathAnimation create(Control c, int fromX, int fromY, int toX, int toY, AnimationFinished animFinish) throws Exception
+   /** Creates a path animation, moving the control from a position to another.
+    * @param c The control to be moved
+    * @param fromX The origin X coordinate
+    * @param fromY The origin Y coordinate
+    * @param toX The destination X coordinate
+    * @param toY The destination Y coordinate
+    * @param animFinish An interface method to be called when the animation finished, or null if none.
+    * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
+    */
+   public static PathAnimation create(Control c, int fromX, int fromY, int toX, int toY, AnimationFinished animFinish, int totalTime) throws Exception
    {
-      PathAnimation anim = new PathAnimation(c,animFinish);
+      PathAnimation anim = new PathAnimation(c,animFinish,totalTime);
       anim.setPath(fromX,fromY,toX,toY);
       return anim;
    }
    
-   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish) throws Exception
+   /** Creates a path animation, moving the control in a direction.
+    * @param c The control to be moved
+    * @param direction One of BOTTOM, -BOTTOM, TOP, -TOP, LEFT, -LEFT, RIGHT, -RIGHT. Any other value will return null.
+    * @param animFinish An interface method to be called when the animation finished, or null if none.
+    * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
+    */
+   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish, int totalTime) throws Exception
    {
-      PathAnimation anim = new PathAnimation(c,animFinish);
+      PathAnimation anim = new PathAnimation(c,animFinish,totalTime);
       anim.dir = direction;
       int x0,y0,xf,yf;
       int pw = c instanceof Window ? Settings.screenWidth  : c.getParent().getWidth();
@@ -196,10 +217,5 @@ public class PathAnimation extends ControlAnimation
             
       anim.setPath(x0,y0,xf,yf);
       return anim;
-   }
-
-   public static PathAnimation create(Control c, int direction) throws Exception
-   {
-      return create(c, direction, null);
    }
 }

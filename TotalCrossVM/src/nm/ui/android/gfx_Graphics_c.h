@@ -289,10 +289,10 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    {          
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
-   }
+   }                                
    if (checkGLfloatBuffer(currentContext, n))
    {
-      int32 i;
+      int32 i,nn=n;
       float *glV = glcoords;            
       int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
       bool doClip = false;    
@@ -305,7 +305,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       }           
       if (doClip) glSetClip(cx1,cy1,cx2,cy2);
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
-      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,n); GL_CHECK_ERROR
+      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,nn); GL_CHECK_ERROR
       if (doClip) glClearClip();
    }
 }
@@ -527,7 +527,7 @@ void glSetLineWidth(int32 w)
 }
 
 void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiagonal)
-{         
+{           
    float* coords = lrcoords;
    setCurrentProgram(lrpProgram);
    glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
