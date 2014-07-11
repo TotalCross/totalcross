@@ -204,16 +204,13 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    int32 srcPitch, srcWidth, srcHeight, alphaMask = 0;
    bool isSrcScreen = !Surface_isImage(srcSurf);
    bool unlockSrc = false;
-      debug("a");
    if (Surface_isImage(srcSurf))
    {                                
-      debug("1");
 #ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
       bool forcedSmoothScale = Surface_isImage(Graphics_surface(dstSurf)); // the destination is always a Graphics object
 #else
       bool forcedSmoothScale = true;
 #endif
-      debug("forcedSmooth: %d",forcedSmoothScale);
       srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
       if (forcedSmoothScale && (Image_hwScaleW(srcSurf) != 1 || Image_hwScaleH(srcSurf) != 1))
@@ -231,17 +228,14 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          srcHeight = Image_height(srcSurf);
       }
       alphaMask = Image_alphaMask(srcSurf);
-      debug("2");
    }
    else
    {
       srcPitch = srcWidth = screen.screenW;
       srcHeight = screen.screenH;
    }
-      debug("3");
    dstPixels = getSurfacePixels(dstSurf);
    srcPixels = getSurfacePixels(srcSurf);
-      debug("4");
    if (!doClip)
    {
       /*
@@ -314,16 +308,12 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       int32 fc;
       int frame;
 
-      debug("5");
       if (Image_changed(srcSurf))
          applyChanges(currentContext, srcSurf, true);
-      debug("6");
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
-      debug("7");
 
       glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null, alphaMask);
-      debug("8");
    }
    else
 #endif
@@ -363,15 +353,14 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 #ifndef __gl2_h_
    if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
 #else
-   if (Surface_isImage(dstSurf))
-      Image_changed(dstSurf) = true;
+   if (Surface_isImage(Graphics_surface(dstSurf)))
+      Image_changed(Graphics_surface(dstSurf)) = true;
    else
       currentContext->fullDirty = true;
 #endif
 end:
    if (unlockSrc)
       setObjectLock(srcSurf, UNLOCKED);
-      debug("b");
 }
 
 //   Device specific routine.
