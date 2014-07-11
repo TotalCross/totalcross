@@ -72,11 +72,10 @@ public abstract class ControlAnimation implements TimerListener
    
    protected double computeSpeed(double distance)
    {
-      int elapsed = totalTime-(Vm.getTimeStamp()-initialTime);
-      if (elapsed <= 0)
+      int remaining = totalTime-(Vm.getTimeStamp()-initialTime);
+      if (remaining <= 0)
          return 0;
-      double ret = distance * frameRate / elapsed;
-      return ret;
+      return distance * frameRate / remaining;
    }
    
    public ControlAnimation with(ControlAnimation other)
