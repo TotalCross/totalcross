@@ -306,7 +306,7 @@ public class Control extends GfxSurface
       }
       if (asWindow != null)
          asWindow.paintWindowBackground(g);
-      paint2shot(g,this);
+      paint2shot(g,this) ;
       this.offscreen = offscreen;
    }
    
