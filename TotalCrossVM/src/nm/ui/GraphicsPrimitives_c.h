@@ -206,14 +206,14 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    bool unlockSrc = false;
    if (Surface_isImage(srcSurf))
    {
-#ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
+/*#ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
       bool forcedSmoothScale = Surface_isImage(Graphics_surface(dstSurf)); // the destination is always a Graphics object
 #else
       bool forcedSmoothScale = true;
-#endif
+#endif*/
       srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
-      if (forcedSmoothScale && (Image_hwScaleW(srcSurf) != 1 || Image_hwScaleH(srcSurf) != 1))
+/*      if (forcedSmoothScale && (Image_hwScaleW(srcSurf) != 1 || Image_hwScaleH(srcSurf) != 1))
       {
          TCObject newSurf = executeMethod(currentContext, getMethod(OBJ_CLASS(srcSurf), false, "getSmoothScaledInstance",2,J_INT,J_INT), srcSurf, srcWidth, srcHeight).asObj;
          if (newSurf == null)
@@ -226,7 +226,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          }
          srcPitch = srcWidth = Image_width(srcSurf);
          srcHeight = Image_height(srcSurf);
-      }
+      }*/
       alphaMask = Image_alphaMask(srcSurf);
    }
    else
