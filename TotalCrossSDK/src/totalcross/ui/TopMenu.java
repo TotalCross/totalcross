@@ -123,7 +123,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    {
       int gap = 2;
       int n = items.length;
-      int itemH = n == 1 ? getClientRect().height-4 : fmH*2;
+      int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height-4) : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
       add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
