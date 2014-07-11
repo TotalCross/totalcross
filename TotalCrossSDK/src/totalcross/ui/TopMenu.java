@@ -156,10 +156,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          case PenEvent.PEN_DRAG_END:
             DragEvent de = (DragEvent)e;
             if (sameDirection(animDir, de.direction) && de.xTotal >= width/2)
-            {
-               selected = -1;
                unpop();
-            }
             break;
       }
    }
