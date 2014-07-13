@@ -59,8 +59,8 @@
 </condition>
 
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.5"/>
-<property name="compile.source"          value="1.5"/>
+<property name="compile.target"          value="1.6"/>
+<property name="compile.source"          value="1.6"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
@@ -504,7 +504,7 @@ target: device
     <fileset dir="${src}" includes="totalcross/res/**" />
   </jar>
 
-   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
        <keepclassmembers>
          <method name="*" />
