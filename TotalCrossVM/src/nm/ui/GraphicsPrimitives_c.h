@@ -211,6 +211,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 #else
       bool forcedSmoothScale = true;
 #endif
+      if (forcedSmoothScale) traceOn = true;
       srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
       if (forcedSmoothScale && (Image_hwScaleW(srcSurf) != 1 || Image_hwScaleH(srcSurf) != 1))
