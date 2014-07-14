@@ -458,7 +458,7 @@ jumpArgument:
       xstrcpy(commandLine, c);
    }
 
-#if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
+#if defined(ENABLE_TRACE) && (defined(darwin) || defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
    traceOn = true;
 #endif
 
