@@ -184,8 +184,9 @@
 
 // generic surface - can only be used if "o" is a Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
+#define Graphics_isImageSurface(g)  (Surface_isImage(Graphics_surface(g)))
 #ifdef __gl2_h_
-#define Graphics_useOpenGL(g)             (!Surface_isImage(Graphics_surface(g)))
+#define Graphics_useOpenGL(g)             (!Graphics_isImageSurface(g))
 #else
 #define Graphics_useOpenGL(g)             (false)
 #endif

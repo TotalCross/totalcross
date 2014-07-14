@@ -207,7 +207,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    if (Surface_isImage(srcSurf))
    {                                
 #ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
-      bool forcedSmoothScale = Surface_isImage(Graphics_surface(dstSurf)); // the destination is always a Graphics object
+      bool forcedSmoothScale = Graphics_isImageSurface(dstSurf); // the destination is always a Graphics object
 #else
       bool forcedSmoothScale = true;
 #endif
@@ -351,9 +351,9 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       dstPixels += Graphics_pitch(dstSurf);
    }
 #ifndef __gl2_h_
-   if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
+   if (!currentContext->fullDirty && !Graphics_isImageSurface(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
 #else
-   if (Surface_isImage(Graphics_surface(dstSurf)))
+   if (Graphics_isImageSurface(dstSurf))
       Image_changed(Graphics_surface(dstSurf)) = true;
    else
       currentContext->fullDirty = true;
@@ -415,7 +415,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
       if (Graphics_useOpenGL(g))
       {
          glDrawPixel(x,y,pixel,255);
-         if (Surface_isImage(Graphics_surface(g)))
+         if (Graphics_isImageSurface(g))
             Image_changed(Graphics_surface(g)) = true;
          else
             currentContext->fullDirty = true;
@@ -424,7 +424,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
 #endif
       {
          getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, 1, 1);
       }
    }
 }
@@ -514,7 +514,7 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #endif
       {
          pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, 1);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, width, 1);
          if (pixel1 == pixel2) // same color?
          {
             while (width-- > 0)
@@ -607,7 +607,7 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             for (; n != 0; pTgt += pitch, n--)
                *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
          }
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, height);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, 1, height);
       }
    }
 }
@@ -785,9 +785,9 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              }
        }
 #ifndef __gl2_h_
-       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+       if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, dx, dy);
 #else
-      if (Surface_isImage(Graphics_surface(g)))
+      if (Graphics_isImageSurface(g))
          Image_changed(Graphics_surface(g)) = true;
       else
          currentContext->fullDirty = true;
@@ -850,7 +850,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
       if (Graphics_useOpenGL(g))
       {
          glFillRect(x,y,width,height,pixel,255);
-         if (Surface_isImage(Graphics_surface(g)))
+         if (Graphics_isImageSurface(g))
             Image_changed(Graphics_surface(g)) = true;
          else
             currentContext->fullDirty = true;
@@ -861,7 +861,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
          uint32 count;
          int32 pitch = Graphics_pitch(g);
          Pixel* to = getGraphicsPixels(g) + y * pitch + x;
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, width, height);
          if (x == 0 && width == pitch) // filling with full width?
          {
             int32* t = (int32*)to;
@@ -1186,9 +1186,9 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
    }
 #ifndef __gl2_h_
-   if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
+   if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 #else
-   if (Surface_isImage(Graphics_surface(g)))
+   if (Graphics_isImageSurface(g))
       Image_changed(Graphics_surface(g)) = true;
    else
       currentContext->fullDirty = true;
@@ -2610,7 +2610,7 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
       int32 inc = Graphics_pitch(g), count = w * h;
       Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
-      bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
+      bool markDirty = !currentContext->fullDirty && !Graphics_isImageSurface(g);
 #ifdef __gl2_h_
       currentContext->fullDirty |= markDirty;
       if (isGet && Graphics_useOpenGL(g))
@@ -2910,9 +2910,9 @@ static void dither(Context currentContext, TCObject g, int32 x0, int32 y0, int32
          }
       }
 #ifndef __gl2_h_
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
+      if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x0, y0, w, h);
 #else
-      if (Surface_isImage(Graphics_surface(g)))
+      if (Graphics_isImageSurface(g))
          Image_changed(Graphics_surface(g)) = true;
       else
          currentContext->fullDirty = true;
@@ -2967,7 +2967,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
       drawThickRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
    }
    glSetLineWidth(1);
-   if (Surface_isImage(Graphics_surface(g)))
+   if (Graphics_isImageSurface(g))
       Image_changed(Graphics_surface(g)) = true;
    else
       currentContext->fullDirty = true;
@@ -3000,7 +3000,7 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
 {
    PixelConv pc1,pc2;
 #if defined(__gl2_h_)
-   if (!Surface_isImage(Graphics_surface(g)))
+   if (!Graphics_isImageSurface(g))
    {
       pc1.pixel = c1;
       pc2.pixel = c2;
