@@ -550,7 +550,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    if (doClip) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
    if (!color && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
-   {          
+   {
       lastAlphaMask = alphaMask;
       glUniform1f(textureAlpha, f255[alphaMask]);
    }
@@ -560,7 +560,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       glUniform3f(textRGB, f255[color->r],f255[color->g],f255[color->b]); GL_CHECK_ERROR
    }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
-   glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+   //glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR - 3% gain
    if (doClip) glClearClip();
 }
 
