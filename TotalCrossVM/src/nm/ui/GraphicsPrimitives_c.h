@@ -204,7 +204,6 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    int32 srcPitch, srcWidth, srcHeight, alphaMask = 0;
    bool isSrcScreen = !Surface_isImage(srcSurf);
    bool unlockSrc = false;
-   debug("a: %d, %d",Surface_isImage(srcSurf),Graphics_isImageSurface(dstSurf));
    if (Surface_isImage(srcSurf))
    {                                
 #ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
@@ -332,8 +331,8 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       else
          for (;count != 0; pt++,ps++, count--)
          {
-            int32 a = ps->a;
-            a = alphaMask * a / 255;
+            int32 a = ps->a * alphaMask;
+            a = (a+1 + (a >> 8)) >> 8; // alphaMask * a / 255
             if (a == 0xFF)
                pt->pixel = ps->pixel;
             else
@@ -362,7 +361,6 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 end:
    if (unlockSrc)
       setObjectLock(srcSurf, UNLOCKED);
-   debug("b");
 }
 
 //   Device specific routine.
