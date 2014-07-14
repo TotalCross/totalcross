@@ -287,7 +287,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
-   setCurrentProgram(lrpProgram);
+   setCurrentProgram(pointsProgram);
    pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
    pointsAlpha = glGetAttribLocation(pointsProgram, "alpha"); GL_CHECK_ERROR
    pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
