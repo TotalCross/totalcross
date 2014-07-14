@@ -698,7 +698,7 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
 #ifdef WP8
       glDeleteTexture(obj, Image_textureId(obj), false);
 #endif
-      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList);
+      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList,false);
    }
    Image_changed(obj) = false;
 }

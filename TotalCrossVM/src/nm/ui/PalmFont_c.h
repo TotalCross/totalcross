@@ -58,7 +58,7 @@ bool fontInit(Context currentContext)
       htFree(&htUF, null);
    }
    else
-   {        
+   {
       int32 i;
       useRealFont = true;
       for (i = 0; i < SIZE_LEN; i++)
@@ -137,7 +137,7 @@ FontFile loadFontFile(char *fontName)
    ff = findFontFile(fontName);
    if (ff == null)
    {
-#ifdef ANDROID      
+#ifdef ANDROID
       int32 idx = callFindTCZ(fontName);
       if (idx >= 0)
          xstrcpy(fullName, fontName);
@@ -406,8 +406,8 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
          for (j = 0; j < count; j++)
          {
             int iweight = *p_weight++;
-            pval = tb[n + newWidth * *p_pixel++]; // Using val as temporary storage 
-            // Acting on color components 
+            pval = tb[n + newWidth * *p_pixel++]; // Using val as temporary storage
+            // Acting on color components
             a += (int32)pval * iweight;
          }
          a /= wsum;
@@ -430,11 +430,11 @@ Cleanup: /* CLEANUP */
 }
 
 #ifdef __gl2_h_
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha);
 void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color, int32* ret)
 {
    IdColor ic = uf->textureIds[ch];
-#ifdef WP8
+#if defined(WP8) || defined(ANDROID)
    if (ic != null && ic->id[0])
    {
       ret[0] = ic->id[0]; // id
@@ -456,23 +456,34 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
 #endif
    // new color/char
    {
-      PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
       int32 offset = uf->bitIndexTable[ch], y, x;
-      int32 id[2];
+      int32 id[2] = {0,0};
       int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
-      id[0] = id[1] = 0;            
+#if defined(ANDROID) || defined(darwin)
+      uint8* pixels = (uint8*)uf->charPixels, *p = pixels;
+      bool onlyAlpha = true;
+      for (y = 0; y < height; y++)
+      {
+         uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
+         for (x = 0; x < width; x++)
+            *p++ = *alpha++;
+      }
+#else
+      PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
+      bool onlyAlpha = false;
       for (y = 0; y < height; y++)
       {
          uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
          for (x = 0; x < width; x++, p++, alpha++)
          {
-            p->a = *alpha; 
+            p->a = *alpha;
             p->r = color.r;
             p->g = color.g;
             p->b = color.b;
          }
       }
-      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width, height, false);
+#endif      
+      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width, height, false, onlyAlpha);
       if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
       {
          ret[0] = ic->id[0] = id[0];
@@ -500,14 +511,14 @@ void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv col
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
 static void reset1Font(UserFont uf)
 {
-   int32 i;       
+   int32 i;
    if (uf)
-      for (i = 256; --i >= 0;) 
+      for (i = 256; --i >= 0;)
       {
          IdColor ic = uf->textureIds[i];
          for (; ic != null; ic = ic->next)
          {
-#ifdef WP8      
+#ifdef WP8
             if (ic->id[0] != 0)
                glDeleteTexture(null, ic->id, false);
 #endif
@@ -518,11 +529,11 @@ static void reset1Font(UserFont uf)
 #endif
 
 void resetFontTexture()
-{                          
+{
    #ifdef __gl2_h_
    int32 j;
    for (j = 0; j < SIZE_LEN; j++)
-   {  
+   {
       reset1Font(baseFontN[j]);
       reset1Font(baseFontB[j]);
    }

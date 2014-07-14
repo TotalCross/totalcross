@@ -215,7 +215,7 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
    }
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
    dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
    if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate

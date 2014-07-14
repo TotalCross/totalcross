@@ -99,6 +99,37 @@ static GLuint textureProgram;
 static GLuint texturePoint;
 static GLuint textureCoord,textureS,textureAlpha;
 
+///////
+
+#define TEXT_VERTEX_CODE  \
+      "attribute vec4 vertexPoint;" \
+      "attribute vec2 aTextureCoord;" \
+      "uniform vec3 rgb;" \
+      "uniform mat4 projectionMatrix; " \
+      "varying vec2 vTextureCoord;" \
+      "varying vec3 v_rgb;" \
+      "void main()" \
+      "{" \
+      "    gl_Position = vertexPoint * projectionMatrix;" \
+      "    vTextureCoord = aTextureCoord;" \
+      "    v_rgb = rgb;" \
+      "}"
+
+#define TEXT_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 vTextureCoord;" \
+      "uniform sampler2D sTexture;" \
+      "varying vec3 v_rgb;" \
+      "void main()" \
+      "{" \
+      "   gl_FragColor = texture2D(sTexture, vTextureCoord);" \
+      "   gl_FragColor.rgb = v_rgb;" \
+      "}"
+
+static GLuint textProgram;
+static GLuint textPoint;
+static GLuint textCoord,textS,textRGB;
+
 //////////// points (text)
 
 #define POINTS_VERTEX_CODE \
@@ -168,7 +199,7 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
-static Pixel lrpLastRGB = -2;
+static Pixel lrpLastRGB = -2, lastTextRGB;
 static float lastAlphaMask = -1;
 static void setCurrentProgram(GLint prog)
 {
@@ -177,6 +208,7 @@ static void setCurrentProgram(GLint prog)
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
       lrpLastRGB = -2;
       lastAlphaMask = -1;
+      lastTextRGB = -1;
    }
 }
 
@@ -310,7 +342,6 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    }
 }
 
-
 static void initShade()
 {         
    shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
@@ -366,6 +397,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
 void initTexture()
 {         
+   // images
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
    textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
@@ -375,21 +407,36 @@ void initTexture()
 
    glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
+
+   // text char
+   textProgram = createProgram(TEXT_VERTEX_CODE, TEXT_FRAGMENT_CODE);
+   setCurrentProgram(textProgram);
+   textS     = glGetUniformLocation(textProgram, "sTexture"); GL_CHECK_ERROR
+   textPoint = glGetAttribLocation(textProgram, "vertexPoint"); GL_CHECK_ERROR
+   textCoord = glGetAttribLocation(textProgram, "aTextureCoord"); GL_CHECK_ERROR
+   textRGB   = glGetUniformLocation(textProgram, "rgb"); GL_CHECK_ERROR
+
+   glEnableVertexAttribArray(textCoord); GL_CHECK_ERROR
+   glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
    int32 i;
-   PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
+   PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
-   if (!pt)
+   if (onlyAlpha)
+      pt = pt0 = (PixelConv*)pixels;
+   else
    {
-      throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
-      return;
+      pt0 = pt = (PixelConv*)xmalloc(width*height*4);
+      if (!pt)
+      {
+         throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
+         return;
+      }
    }
-
    if (!textureAlreadyCreated) 
    {
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR              
@@ -409,15 +456,16 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
    }
    // must invert the pixels from ARGB to RGBA
-   for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
+   if (!onlyAlpha)
+      for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
    if (textureAlreadyCreated)
    {
-      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    else
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
+      glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
       if (err)
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       else
@@ -427,7 +475,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
       }
    }
-   xfree(pt0);
+   if (!onlyAlpha) xfree(pt0);
 }
 
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
@@ -471,7 +519,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       
    GLfloat* coords = texcoords;
    
-   setCurrentProgram(textureProgram);
+   setCurrentProgram(color ? textProgram : textureProgram);
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 
    dstY += glShiftY;
@@ -482,7 +530,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[2] = coords[4] = (dstX+w);
    coords[5] = coords[7] = dstY;
 
-   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
+   glVertexAttribPointer(color ? textPoint : texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    // source coordinates                  
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
@@ -490,21 +538,26 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[ 9] = coords[11] = bottom;
    coords[10] = coords[12] = right;
    coords[13] = coords[15] = top;
-   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
-      
+   glVertexAttribPointer(color ? textCoord : textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
+
    bool doClip = false;
    if (clip != null) 
    {          
       int32 cx1 = clip[0], cy1 = clip[1], cx2 = clip[2], cy2 = clip[3];
       doClip = dstY < cy1 || dstY+h > cy2 || dstX < cx1 || dstX+w > cx2;
    }
-   
+
    if (doClip) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
-   if (lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
+   if (!color && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
    {          
       lastAlphaMask = alphaMask;
       glUniform1f(textureAlpha, f255[alphaMask]);
+   }
+   if (color && lastTextRGB != color->pixel) // prevent color change = performance x2 in galaxy tab2
+   {
+      lastTextRGB = color->pixel;
+      glUniform3f(textRGB, f255[color->r],f255[color->g],f255[color->b]); GL_CHECK_ERROR
    }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
    glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
@@ -652,6 +705,7 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
       0.0, 0.0, -1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
    };
+   setCurrentProgram(textProgram);    glUniformMatrix4fv(glGetUniformLocation(textProgram,    "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
