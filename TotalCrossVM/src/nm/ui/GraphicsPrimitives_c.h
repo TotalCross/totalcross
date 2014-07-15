@@ -1140,9 +1140,9 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             else
    #endif // case 2
             {                                                                                    
-               int r1 = debug("1");
+               int r1 = debug("1: %X",uf);
                uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
-               debug("2");
+               debug("2: %X",alpha);
                if (alpha)
                {                             
                   rowWIB = width;

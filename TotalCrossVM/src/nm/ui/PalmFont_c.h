@@ -223,6 +223,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    CharSizeCache csc;
    VoidPs *csclist;
 
+debug("grcp 1");
    IF_HEAP_ERROR(fontsHeap)
    {
       goto Cleanup;
@@ -425,6 +426,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    fSuccess = true;
 
 Cleanup: /* CLEANUP */
+debug("grcp 2: %d",fSuccess);
    if (!fSuccess) throwException(currentContext, OutOfMemoryError, "Cannot create font buffers");
    return fSuccess ? ob0 : null;
 }
