@@ -28,6 +28,7 @@ extern float ftransp[16];
 extern float *glcoords, *glcolors;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
+void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2);
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
@@ -504,11 +505,11 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel2);
          }
 #else
-         glDrawLine(x,y,x+width,y,pixel1,255);
-         if (pixel1 != pixel2)
-            for (x++; width > 0; width -= 2, x += 2)
-               glDrawPixel(x,y, pixel2,255);
-#endif         
+         if (pixel1 == pixel2)
+            glDrawLine(x, y, x + width, y, pixel1, 255);
+         else
+            glDrawDots(x, y, x + width, y, pixel1, pixel2);
+#endif
          currentContext->fullDirty = true;
       }
       else
@@ -559,6 +560,7 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
+
 #ifdef WP8
          if (pixel1 == pixel2)
             glDrawLine(x, y, x, y + height, pixel1, 255);
@@ -585,10 +587,10 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel2);
          }
 #else         
-         glDrawLine(x,y,x,y+height,pixel1,255);
-         if (pixel1 != pixel2)
-            for (y++; height > 0; height -= 2, y += 2)
-               glDrawPixel(x,y, pixel2,255);
+         if (pixel1 == pixel2)
+            glDrawLine(x, y, x, y + height, pixel1, 255);
+         else
+            glDrawDots(x, y, x, y + height, pixel1, pixel2);
 #endif               
          currentContext->fullDirty = true;
       }

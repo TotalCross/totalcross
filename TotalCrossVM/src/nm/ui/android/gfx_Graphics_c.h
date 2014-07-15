@@ -164,6 +164,26 @@ static GLuint lrpPosition;
 static GLuint lrpColor;
 static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
+///////////// line, rect, point
+
+#define DOT_VERTEX_CODE \
+      "attribute vec4 a_Position;" \
+      "uniform mat4 projectionMatrix;" \
+      "varying vec2 v_xy;" \
+      "void main() {gl_PointSize = 1.0; gl_Position = a_Position*projectionMatrix; v_xy = a_Position.xy;}"
+
+#define DOT_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 v_xy;" \
+      "uniform float isVert;" \
+      "uniform vec4 color1;" \
+      "uniform vec4 color2;" \
+      "void main() {gl_FragColor = mod(isVert > 0.0 ? v_xy.y : v_xy.x, 2.0) >= 1.0 ? color1 : color2;}"
+
+static GLuint dotProgram;
+static GLuint dotPosition,dotIsVert;
+static GLuint dotColor1,dotColor2;
+
 ///////////// shaded rect
 
 #define SHADE_VERTEX_CODE \
@@ -571,6 +591,14 @@ void initLineRectPoint()
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
    lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
    glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
+
+   dotProgram = createProgram(DOT_VERTEX_CODE, DOT_FRAGMENT_CODE);
+   setCurrentProgram(dotProgram);
+   dotColor1 = glGetUniformLocation(dotProgram, "color1"); GL_CHECK_ERROR
+   dotColor2 = glGetUniformLocation(dotProgram, "color2"); GL_CHECK_ERROR
+   dotPosition = glGetAttribLocation(dotProgram, "a_Position"); GL_CHECK_ERROR
+   dotIsVert = glGetUniformLocation(dotProgram, "isVert"); GL_CHECK_ERROR
+   glEnableVertexAttribArray(dotPosition); GL_CHECK_ERROR
 }
 
 void glSetLineWidth(int32 w)
@@ -579,22 +607,38 @@ void glSetLineWidth(int32 w)
    glLineWidth(w); GL_CHECK_ERROR
 }
 
-void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiagonal)
+typedef enum
+{
+   SIMPLE,
+   DOTS,
+   DIAGONAL
+}  LRPType;
+
+void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a, LRPType type)
 {           
    float* coords = lrcoords;
-   setCurrentProgram(lrpProgram);
-   glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
+   setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
+   glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
    int32 ty = glShiftY;
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
+   if (type == DOTS)
+   {                 
+      glUniform1f(dotIsVert, x == w ? 1.0 : 0.0); GL_CHECK_ERROR
+      glUniform4f(dotColor1, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+      pc.pixel = rgb2;
+      pc.a = a;
+      glUniform4f(dotColor2, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+   }
+   else
    if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
-   {          
+   {
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
    }
    y += ty;
-   if (isDiagonal)
+   if (type == DIAGONAL || type == DOTS)
    {                    
       coords[0] = x;
       coords[1] = y;
@@ -614,29 +658,34 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiag
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {   
-   drawLRP(x,y,1,1,rgb,a, false);
+   drawLRP(x,y,1,1,rgb,-1,a, SIMPLE);
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
-   drawLRP(x1,y1,x2,y2,rgb,a, true);
+   drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
 }
 
+void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2)
+{
+   drawLRP(x1,y1,x2,y2, rgb1, rgb2, 255, DOTS);
+}
+ 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
-      drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,a, false);
+      drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,-1,a, SIMPLE);
    else
    if (y1 == y2) 
-      drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,a, false);
+      drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,-1,a, SIMPLE);
    else              
-      drawLRP(x1,y1,x2,y2,rgb,a, true);
+      drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
 }
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-   drawLRP(x,y,w,h,rgb,a, false);
+   drawLRP(x,y,w,h,rgb,-1,a, SIMPLE);
 }
 
 typedef union
@@ -708,6 +757,7 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
    setCurrentProgram(textProgram);    glUniformMatrix4fv(glGetUniformLocation(textProgram,    "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(dotProgram);     glUniformMatrix4fv(glGetUniformLocation(dotProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
 #ifdef darwin
