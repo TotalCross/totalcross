@@ -14,7 +14,7 @@
 #ifndef TCVM_H
 #define TCVM_H
 
-#define ENABLE_TRACE
+//#define ENABLE_TRACE
 
 
 #ifdef darwin

@@ -212,7 +212,6 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
 #else
       bool forcedSmoothScale = true;
 #endif
-      if (forcedSmoothScale) traceOn = true;
       srcPitch = srcWidth = (int32)(Image_width(srcSurf) * Image_hwScaleW(srcSurf));
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
       if (forcedSmoothScale && (Image_hwScaleW(srcSurf) != 1 || Image_hwScaleH(srcSurf) != 1))
@@ -1140,12 +1139,15 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif // case 2
-            {
+            {                                                                                    
+               int r1 = debug("1");
                uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+               debug("2");
                if (alpha)
                {                             
                   rowWIB = width;
                   start = alpha + istart * rowWIB;
+                  debug("3");
                   for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                   {
                      current = start;
@@ -1165,6 +1167,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                         }
                      }
                   }
+                  debug("4");
                }
             }
          }
