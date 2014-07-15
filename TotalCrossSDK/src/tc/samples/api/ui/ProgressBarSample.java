@@ -103,7 +103,7 @@ public class ProgressBarSample extends BaseContainer
          pbzv.setValue(v);
       }
       int ela = Vm.getTimeStamp()-ini;
-      info = "Elapsed: "+ela+"ms ("+Convert.toString(pbv.max*100.0d/ela,1)+" ms per frame)";
+      info = "Elapsed: "+ela+"ms ("+Convert.toString((double)ela/pbv.max,1)+" ms per frame)";
       Vm.debug(info);
    }
 }
