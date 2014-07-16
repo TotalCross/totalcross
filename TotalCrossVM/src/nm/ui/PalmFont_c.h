@@ -267,6 +267,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    /* Pre-allocating all of the needed memory */
    s = max32(newWidth, newHeight);
    i = (uf->fontP.maxWidth * newHeight / uf->fontP.maxHeight + 1) * height + 2 * s * maxContribsXY * sizeof(int32)+2 * s * sizeof(int32);
+   i += 5 * 4; // 5 buffers, 4 possible misaligns
    if (uf->tempbufssize >= i)
       xmemzero(uf->tempbufs, uf->tempbufssize);
    else
@@ -277,12 +278,11 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
       uf->tempbufssize = i;
    }
    tempbuf = uf->tempbufs;
-   tb = (alpha_t *)tempbuf; tempbuf += newWidth * height;
+   tb = (alpha_t *)tempbuf; tempbuf += (newWidth * height + 4) / sizeof(int32) * sizeof(int32);
    v_weight = (int32 *)tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* weights */
    v_pixel = (int32 *)tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* the contributing pixels */
    v_count = (int32 *)tempbuf; tempbuf += s * sizeof(int32); /* how many contributions for the target pixel */
    v_wsum = (int32 *)tempbuf; tempbuf += s * sizeof(int32); /* sum of the weights for the target pixel */
-debug("grcp 10");
 
    /* Pre-calculate weights contribution for a row */
    for (i = 0; i < newWidth; i++)
@@ -309,20 +309,13 @@ debug("grcp 10");
             continue;
          iweight = (int32)(weight * BIAS);
 
-debug("grcp n: %d, i: %d, v_count: %X",n,i,v_count);
          n = v_count[i]; // Since v_count[i] is our current index
-debug("grcp p_pixel: %X", p_pixel);
          p_pixel[n] = j;
-debug("grcp p_weight: %X", p_weight);
          p_weight[n] = iweight;
-debug("grcp v_wsum: %X", v_wsum);
          v_wsum[i] += iweight;
-debug("grcp v_count: %X", v_count);
          v_count[i]++; // Increment contribution count
-debug("grcp fim");
       }
    }
-debug("grcp 11");
 
    /* Filter horizontally from input to temporary buffer */
    for (i = 0; i < newWidth; i++)
