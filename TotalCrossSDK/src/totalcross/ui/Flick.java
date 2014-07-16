@@ -36,7 +36,7 @@ public class Flick implements PenListener, TimerListener
    /**
     * Desired animation frame rate in frames/second.
     */
-   public static int defaultFrameRate = 25;
+   public static int defaultFrameRate = 40;
    public int frameRate = defaultFrameRate;
 
    /**
