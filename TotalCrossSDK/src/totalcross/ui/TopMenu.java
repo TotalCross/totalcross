@@ -11,11 +11,19 @@ import totalcross.ui.image.*;
  */
 public class TopMenu extends Window implements PathAnimation.AnimationFinished
 {
+   /** The percentage of the area used for the icon and the caption */
    public static int percIcon = 20, percCap = 80;
    private Control []items;
    private ScrollContainer sc;
    private int animDir;
    private int selected=-1;
+   /** Set to false to disable the close when pressing in a button of the menu. */
+   public boolean autoClose = true;
+   /** Defines the animation delay */
+   public int totalTime;
+   /** The percentage of the screen that this TopMenu will take: LEFT/RIGHT will take 50% of the screen's width, 
+    * other directions will take 80% of the screen's width. Must be ser before calling <code>popup()</code>. */
+   public int percWidth;
    
    public static class Item extends Container
    {
@@ -89,7 +97,12 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);
+   }
+
+   public void popup()
+   {
       setRect();
+      super.popup();
    }
    
    private void setRect()
@@ -98,19 +111,19 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       {
          case LEFT:
          case RIGHT:
-            setRect(animDir,TOP,SCREENSIZE+50,FILL); 
+            setRect(animDir,TOP,SCREENSIZE+(percWidth > 0 ? percWidth : 50),FILL); 
             break;
          default:
-            setRect(100000,100000,SCREENSIZE+80,WILL_RESIZE); 
+            setRect(100000,100000,SCREENSIZE+(percWidth > 0 ? percWidth : 80),WILL_RESIZE); 
             break;
       }
    }
    
    final public void initUI()
    {
-      int itemH = fmH*2;
       int gap = 2;
       int n = items.length;
+      int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height-4) : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
       add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
@@ -130,19 +143,46 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    public void onEvent(Event e)
    {
-      if (e.type == ControlEvent.PRESSED && e.target != this && ((Control)e.target).isChildOf(this))
+      switch (e.type)
       {
-         selected = ((Control)e.target).appId-1;
-         postPressedEvent();
-         unpop();
+         case ControlEvent.PRESSED:
+            if (autoClose && e.target != this && ((Control)e.target).isChildOf(this))
+            {
+               selected = ((Control)e.target).appId-1;
+               postPressedEvent();
+               unpop();
+            }
+            break;
+         case PenEvent.PEN_DRAG_END:
+            DragEvent de = (DragEvent)e;
+            if (sameDirection(animDir, de.direction) && de.xTotal >= width/2)
+               unpop();
+            break;
       }
    }
    
+   private boolean sameDirection(int animDir, int dragDir)
+   {
+      if (animDir < 0) animDir = -animDir;
+      return (dragDir == DragEvent.LEFT && animDir == LEFT) ||
+            (dragDir == DragEvent.RIGHT && animDir == RIGHT) || 
+            (dragDir == DragEvent.UP && animDir == TOP) || 
+            (dragDir == DragEvent.DOWN && animDir == BOTTOM); 
+   }
+
    public void screenResized()
    {
       setRect();
       removeAll();
       initUI();
+      // used for custom containers
+      for (int i = 0; i < items.length; i++)
+         if (items[i].asContainer != null)
+         {
+            Control []c = items[i].asContainer.getChildren();
+            for (int j = c.length; --j >= 0;)
+               c[j].reposition();
+         }
    }
    
    protected boolean onClickedOutside(PenEvent event)
@@ -156,9 +196,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       try
       {
          if (animDir == CENTER)
-            FadeAnimation.create(this,false,this).start();
+            FadeAnimation.create(this,false,this,totalTime).start();
          else
-            PathAnimation.create(this,-animDir,this).with(FadeAnimation.create(this,false)).start();
+            PathAnimation.create(this,-animDir,this,totalTime).with(FadeAnimation.create(this,false,null,totalTime)).start();
       }
       catch (Exception e)
       {
@@ -179,10 +219,10 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          {
             resetSetPositions();
             setRect(CENTER,CENTER,KEEP,KEEP);
-            FadeAnimation.create(this,true).start();
+            FadeAnimation.create(this,true,null,totalTime).start();
          }
          else
-            PathAnimation.create(this,animDir).with(FadeAnimation.create(this,true)).start();
+            PathAnimation.create(this,animDir,null,totalTime).with(FadeAnimation.create(this,true,null,totalTime)).start();
       }
       catch (Exception e)
       {

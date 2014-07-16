@@ -28,6 +28,7 @@ extern float ftransp[16];
 extern float *glcoords, *glcolors;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
+void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2);
 
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
@@ -205,9 +206,9 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
    bool isSrcScreen = !Surface_isImage(srcSurf);
    bool unlockSrc = false;
    if (Surface_isImage(srcSurf))
-   {
+   {                                
 #ifdef __gl2_h_ // for opengl, we will use the smoothScaled only if we will draw on an image. for win32, we will always use smoothScale
-      bool forcedSmoothScale = !Surface_isImage(dstSurf);
+      bool forcedSmoothScale = Graphics_isImageSurface(dstSurf); // the destination is always a Graphics object
 #else
       bool forcedSmoothScale = true;
 #endif
@@ -331,8 +332,8 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       else
          for (;count != 0; pt++,ps++, count--)
          {
-            int32 a = ps->a;
-            a = alphaMask * a / 255;
+            int32 a = ps->a * alphaMask;
+            a = (a+1 + (a >> 8)) >> 8; // alphaMask * a / 255
             if (a == 0xFF)
                pt->pixel = ps->pixel;
             else
@@ -351,10 +352,10 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       dstPixels += Graphics_pitch(dstSurf);
    }
 #ifndef __gl2_h_
-   if (!currentContext->fullDirty && !Surface_isImage(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
-#else            
-   if (Surface_isImage(dstSurf))
-      Image_changed(dstSurf) = true;
+   if (!currentContext->fullDirty && !Graphics_isImageSurface(dstSurf)) markScreenDirty(currentContext, dstX, dstY, width, height);
+#else
+   if (Graphics_isImageSurface(dstSurf))
+      Image_changed(Graphics_surface(dstSurf)) = true;
    else
       currentContext->fullDirty = true;
 #endif
@@ -415,7 +416,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
       if (Graphics_useOpenGL(g))
       {
          glDrawPixel(x,y,pixel,255);
-         if (Surface_isImage(Graphics_surface(g)))
+         if (Graphics_isImageSurface(g))
             Image_changed(Graphics_surface(g)) = true;
          else
             currentContext->fullDirty = true;
@@ -424,7 +425,7 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
 #endif
       {
          getGraphicsPixels(g)[y * Graphics_pitch(g) + x] = pixel;
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, 1);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, 1, 1);
       }
    }
 }
@@ -503,18 +504,18 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel2);
          }
 #else
-         glDrawLine(x,y,x+width,y,pixel1,255);
-         if (pixel1 != pixel2)
-            for (x++; width > 0; width -= 2, x += 2)
-               glDrawPixel(x,y, pixel2,255);
-#endif         
+         if (pixel1 == pixel2)
+            glDrawLine(x, y, x + width, y, pixel1, 255);
+         else
+            glDrawDots(x, y, x + width, y, pixel1, pixel2);
+#endif
          currentContext->fullDirty = true;
       }
       else
 #endif
       {
          pTgt = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, 1);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, width, 1);
          if (pixel1 == pixel2) // same color?
          {
             while (width-- > 0)
@@ -558,6 +559,7 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
+
 #ifdef WP8
          if (pixel1 == pixel2)
             glDrawLine(x, y, x, y + height, pixel1, 255);
@@ -584,10 +586,10 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel2);
          }
 #else         
-         glDrawLine(x,y,x,y+height,pixel1,255);
-         if (pixel1 != pixel2)
-            for (y++; height > 0; height -= 2, y += 2)
-               glDrawPixel(x,y, pixel2,255);
+         if (pixel1 == pixel2)
+            glDrawLine(x, y, x, y + height, pixel1, 255);
+         else
+            glDrawDots(x, y, x, y + height, pixel1, pixel2);
 #endif               
          currentContext->fullDirty = true;
       }
@@ -607,7 +609,7 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             for (; n != 0; pTgt += pitch, n--)
                *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
          }
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, 1, height);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, 1, height);
       }
    }
 }
@@ -785,9 +787,9 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              }
        }
 #ifndef __gl2_h_
-       if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+       if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, dx, dy);
 #else
-      if (Surface_isImage(Graphics_surface(g)))
+      if (Graphics_isImageSurface(g))
          Image_changed(Graphics_surface(g)) = true;
       else
          currentContext->fullDirty = true;
@@ -850,7 +852,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
       if (Graphics_useOpenGL(g))
       {
          glFillRect(x,y,width,height,pixel,255);
-         if (Surface_isImage(Graphics_surface(g)))
+         if (Graphics_isImageSurface(g))
             Image_changed(Graphics_surface(g)) = true;
          else
             currentContext->fullDirty = true;
@@ -861,7 +863,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
          uint32 count;
          int32 pitch = Graphics_pitch(g);
          Pixel* to = getGraphicsPixels(g) + y * pitch + x;
-         if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x, y, width, height);
+         if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x, y, width, height);
          if (x == 0 && width == pitch) // filling with full width?
          {
             int32* t = (int32*)to;
@@ -1137,7 +1139,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif // case 2
-            {
+            {                                                                                    
                uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
                if (alpha)
                {                             
@@ -1186,9 +1188,9 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
    }
 #ifndef __gl2_h_
-   if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
+   if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, (xMax - xMin), (yMax - yMin));
 #else
-   if (Surface_isImage(Graphics_surface(g)))
+   if (Graphics_isImageSurface(g))
       Image_changed(Graphics_surface(g)) = true;
    else
       currentContext->fullDirty = true;
@@ -1550,7 +1552,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    // this algorithm was created by Guilherme Campos Hazan
    double ppd;
    int32 startIndex,endIndex,index,i,nq,size=0,oldX1=0,oldY1=0,last,oldX2=0,oldY2=0;
-   bool sameR;
+   bool sameR,startSetTo0 = true;
    TCObject *xPointsObj = &Graphics_xPoints(g);
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
@@ -1630,6 +1632,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       ppd = (double)size / 360.0f;
       // step 3: create space in the buffer so it can save all the circle
       size+=2;
+      if (pie) size++;
       if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) < (uint32)size)
       {
          *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
@@ -1646,6 +1649,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       }
       xPoints = (int32*)ARRAYOBJ_START(*xPointsObj);
       yPoints = (int32*)ARRAYOBJ_START(*yPointsObj);
+      if (pie) {xPoints++; yPoints++;} // make sure that startIndex-1 is at a valid pointer
 
       // step 4: stores all the circle in the array. the odd arcs are drawn in reverse order
       // intermediate terms to speed up loop
@@ -1748,45 +1752,52 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       endIndex--;
    // step 6: fill or draw the polygons
    endIndex++;
-   if (pie && fill)
+   if (pie)
    {
       // connect two lines from the center to the two edges of the arc
       oldX1 = xPoints[endIndex];
       oldY1 = yPoints[endIndex];
-      oldX2 = xPoints[endIndex+1];
-      oldY2 = yPoints[endIndex+1];
-      xPoints[endIndex] = 0;
-      yPoints[endIndex] = 0;
-      xPoints[endIndex+1] = xPoints[startIndex];
-      yPoints[endIndex+1] = yPoints[startIndex];
-      endIndex+=2;
+      xPoints[endIndex] = yPoints[endIndex] = 0;
+      if (xPoints[startIndex] == 0 && yPoints[startIndex] == 0)
+         startSetTo0 = false;
+      else
+      {
+         startIndex--;
+         oldX2 = xPoints[startIndex];
+         oldY2 = yPoints[startIndex];
+         xPoints[startIndex] = yPoints[startIndex] = 0;
+      }
+      endIndex++;
    }
-
+  
    if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)
    {
       int p1 = last-startIndex;
       if (fill)
          fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient,true); // lower half, upper half
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, c);
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1-1, xPoints+1, yPoints+1, endIndex-1, xc,yc, c);
    }
    else
    {
+      int32 arc = pie ? 0 : 1;
       if (fill)
-         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);
-      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, c);
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);   
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+arc, yPoints+startIndex+arc, endIndex-startIndex-arc, 0,0,0, xc,yc, c);
    }
-   if (pie && fill)  // restore saved points
+   if (pie)  // restore saved points
    {
-      endIndex-=2;
+      if (startSetTo0)
+      {
+         xPoints[startIndex] = oldX2;
+         yPoints[startIndex] = oldY2;
+      }
+      endIndex--;
       xPoints[endIndex]   = oldX1;
       yPoints[endIndex]   = oldY1;
-      xPoints[endIndex+1] = oldX2;
-      yPoints[endIndex+1] = oldY2;
-   }
-   if (!gradient && pie) // connect two lines from the center to the two edges of the arc
-   {
-      drawLine(currentContext,g, xc,yc, xc+xPoints[startIndex], yc+yPoints[startIndex], c);
-      drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex],   yc+yPoints[endIndex], c);
+#ifdef ANDROID
+      if (!gradient && endAngle == 360) 
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+#endif         
    }
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -2601,7 +2612,7 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
       Pixel* data = ((Pixel*)ARRAYOBJ_START(dataObj)) + offset;
       int32 inc = Graphics_pitch(g), count = w * h;
       Pixel* pixels = getGraphicsPixels(g) + y * inc + x;
-      bool markDirty = !currentContext->fullDirty && !Surface_isImage(Graphics_surface(g));
+      bool markDirty = !currentContext->fullDirty && !Graphics_isImageSurface(g);
 #ifdef __gl2_h_
       currentContext->fullDirty |= markDirty;
       if (isGet && Graphics_useOpenGL(g))
@@ -2901,9 +2912,9 @@ static void dither(Context currentContext, TCObject g, int32 x0, int32 y0, int32
          }
       }
 #ifndef __gl2_h_
-      if (!currentContext->fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(currentContext, x0, y0, w, h);
+      if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, x0, y0, w, h);
 #else
-      if (Surface_isImage(Graphics_surface(g)))
+      if (Graphics_isImageSurface(g))
          Image_changed(Graphics_surface(g)) = true;
       else
          currentContext->fullDirty = true;
@@ -2958,7 +2969,7 @@ static void drawCylindricShade(Context currentContext, TCObject g, int32 startCo
       drawThickRect(g,sx,sy,endX-i-sx,endY-i-sy,foreColor);
    }
    glSetLineWidth(1);
-   if (Surface_isImage(Graphics_surface(g)))
+   if (Graphics_isImageSurface(g))
       Image_changed(Graphics_surface(g)) = true;
    else
       currentContext->fullDirty = true;
@@ -2991,7 +3002,7 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
 {
    PixelConv pc1,pc2;
 #if defined(__gl2_h_)
-   if (!Surface_isImage(Graphics_surface(g)))
+   if (!Graphics_isImageSurface(g))
    {
       pc1.pixel = c1;
       pc2.pixel = c2;
@@ -3130,4 +3141,4 @@ void graphicsDestroyPrimitives()
    xfree(lookupGray);
    fontDestroy();
 }
-/////////////// End of Device-dependant functions ///////////////
+/////////////// End of Device-dependant functions ///

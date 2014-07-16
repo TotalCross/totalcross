@@ -35,7 +35,6 @@ public class ChartSample extends BaseContainer
      showVGrids, isVGrad, isHGrad, isInvGrad, isDarker, showYValues;
    ComboBox legendPosition;
    TabbedContainer tp;
-   Button bt;
 
    public void initUI()
    {
@@ -103,7 +102,6 @@ public class ChartSample extends BaseContainer
       tp = new TabbedContainer(new String[]{" Column "," Line "," Pie "});
       tp.extraTabHeight = fmH/2;
       sc.add(tp, LEFT,AFTER+gap*2,FILL,PARENTSIZE+90);
-      sc.add(bt = new Button("100x"),RIGHT,SAME+fmH/4);
 
       tp.getContainer(0).add(column, LEFT,TOP,FILL,FILL);
       column.setBackColor(bg);
@@ -141,17 +139,6 @@ public class ChartSample extends BaseContainer
    {
       if (e.type == ControlEvent.PRESSED)
       {
-         if (e.target == bt)
-         {
-            int ini = Vm.getTimeStamp();
-            for (int i = 0; i < 100; i++)
-               repaintNow();
-            int fim = Vm.getTimeStamp();
-            String s;
-            setInfo(s="Paint 100x elapsed: "+(fim-ini)+"ms");
-            Vm.debug(s);
-         }
-         else
          if (e.target == tp)
          {
             int sel = tp.getActiveTab();

@@ -67,7 +67,7 @@ void glDrawPixels(int32 n, int32 rgb);
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen);
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha);
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill);
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList);

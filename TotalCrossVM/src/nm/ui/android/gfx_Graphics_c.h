@@ -99,6 +99,37 @@ static GLuint textureProgram;
 static GLuint texturePoint;
 static GLuint textureCoord,textureS,textureAlpha;
 
+///////
+
+#define TEXT_VERTEX_CODE  \
+      "attribute vec4 vertexPoint;" \
+      "attribute vec2 aTextureCoord;" \
+      "uniform vec3 rgb;" \
+      "uniform mat4 projectionMatrix; " \
+      "varying vec2 vTextureCoord;" \
+      "varying vec3 v_rgb;" \
+      "void main()" \
+      "{" \
+      "    gl_Position = vertexPoint * projectionMatrix;" \
+      "    vTextureCoord = aTextureCoord;" \
+      "    v_rgb = rgb;" \
+      "}"
+
+#define TEXT_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 vTextureCoord;" \
+      "uniform sampler2D sTexture;" \
+      "varying vec3 v_rgb;" \
+      "void main()" \
+      "{" \
+      "   gl_FragColor = texture2D(sTexture, vTextureCoord);" \
+      "   gl_FragColor.rgb = v_rgb;" \
+      "}"
+
+static GLuint textProgram;
+static GLuint textPoint;
+static GLuint textCoord,textS,textRGB;
+
 //////////// points (text)
 
 #define POINTS_VERTEX_CODE \
@@ -132,6 +163,26 @@ static GLuint lrpProgram;
 static GLuint lrpPosition;
 static GLuint lrpColor;
 static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+
+///////////// line, rect, point
+
+#define DOT_VERTEX_CODE \
+      "attribute vec4 a_Position;" \
+      "uniform mat4 projectionMatrix;" \
+      "varying vec2 v_xy;" \
+      "void main() {gl_PointSize = 1.0; gl_Position = a_Position*projectionMatrix; v_xy = a_Position.xy;}"
+
+#define DOT_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 v_xy;" \
+      "uniform float isVert;" \
+      "uniform vec4 color1;" \
+      "uniform vec4 color2;" \
+      "void main() {gl_FragColor = mod(isVert > 0.0 ? v_xy.y : v_xy.x, 2.0) >= 1.0 ? color1 : color2;}"
+
+static GLuint dotProgram;
+static GLuint dotPosition,dotIsVert;
+static GLuint dotColor1,dotColor2;
 
 ///////////// shaded rect
 
@@ -168,7 +219,7 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
-static Pixel lrpLastRGB = -2;
+static Pixel lrpLastRGB = -2, lastTextRGB;
 static float lastAlphaMask = -1;
 static void setCurrentProgram(GLint prog)
 {
@@ -177,6 +228,7 @@ static void setCurrentProgram(GLint prog)
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
       lrpLastRGB = -2;
       lastAlphaMask = -1;
+      lastTextRGB = -1;
    }
 }
 
@@ -255,7 +307,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
-   setCurrentProgram(lrpProgram);
+   setCurrentProgram(pointsProgram);
    pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
    pointsAlpha = glGetAttribLocation(pointsProgram, "alpha"); GL_CHECK_ERROR
    pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
@@ -289,10 +341,10 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    {          
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
-   }
+   }                                
    if (checkGLfloatBuffer(currentContext, n))
    {
-      int32 i;
+      int32 i,nn=n;
       float *glV = glcoords;            
       int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
       bool doClip = false;    
@@ -305,11 +357,10 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       }           
       if (doClip) glSetClip(cx1,cy1,cx2,cy2);
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
-      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,n); GL_CHECK_ERROR
+      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,nn); GL_CHECK_ERROR
       if (doClip) glClearClip();
    }
 }
-
 
 static void initShade()
 {         
@@ -366,6 +417,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
 void initTexture()
 {         
+   // images
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
    textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
@@ -375,21 +427,36 @@ void initTexture()
 
    glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
+
+   // text char
+   textProgram = createProgram(TEXT_VERTEX_CODE, TEXT_FRAGMENT_CODE);
+   setCurrentProgram(textProgram);
+   textS     = glGetUniformLocation(textProgram, "sTexture"); GL_CHECK_ERROR
+   textPoint = glGetAttribLocation(textProgram, "vertexPoint"); GL_CHECK_ERROR
+   textCoord = glGetAttribLocation(textProgram, "aTextureCoord"); GL_CHECK_ERROR
+   textRGB   = glGetUniformLocation(textProgram, "rgb"); GL_CHECK_ERROR
+
+   glEnableVertexAttribArray(textCoord); GL_CHECK_ERROR
+   glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
    int32 i;
-   PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
+   PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
-   if (!pt)
+   if (onlyAlpha)
+      pt = pt0 = (PixelConv*)pixels;
+   else
    {
-      throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
-      return;
+      pt0 = pt = (PixelConv*)xmalloc(width*height*4);
+      if (!pt)
+      {
+         throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
+         return;
+      }
    }
-
    if (!textureAlreadyCreated) 
    {
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR              
@@ -409,15 +476,16 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
    }
    // must invert the pixels from ARGB to RGBA
-   for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
+   if (!onlyAlpha)
+      for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
    if (textureAlreadyCreated)
    {
-      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    else
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
+      glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
       if (err)
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       else
@@ -427,7 +495,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
       }
    }
-   xfree(pt0);
+   if (!onlyAlpha) xfree(pt0);
 }
 
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
@@ -471,7 +539,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       
    GLfloat* coords = texcoords;
    
-   setCurrentProgram(textureProgram);
+   setCurrentProgram(color ? textProgram : textureProgram);
    glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
 
    dstY += glShiftY;
@@ -482,7 +550,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[2] = coords[4] = (dstX+w);
    coords[5] = coords[7] = dstY;
 
-   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
+   glVertexAttribPointer(color ? textPoint : texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    // source coordinates                  
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
@@ -490,24 +558,29 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[ 9] = coords[11] = bottom;
    coords[10] = coords[12] = right;
    coords[13] = coords[15] = top;
-   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
-      
+   glVertexAttribPointer(color ? textCoord : textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
+
    bool doClip = false;
    if (clip != null) 
    {          
       int32 cx1 = clip[0], cy1 = clip[1], cx2 = clip[2], cy2 = clip[3];
       doClip = dstY < cy1 || dstY+h > cy2 || dstX < cx1 || dstX+w > cx2;
    }
-   
+
    if (doClip) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
-   if (lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
-   {          
+   if (!color && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
+   {
       lastAlphaMask = alphaMask;
       glUniform1f(textureAlpha, f255[alphaMask]);
    }
+   if (color && lastTextRGB != color->pixel) // prevent color change = performance x2 in galaxy tab2
+   {
+      lastTextRGB = color->pixel;
+      glUniform3f(textRGB, f255[color->r],f255[color->g],f255[color->b]); GL_CHECK_ERROR
+   }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
-   glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+   //glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR - 3% gain
    if (doClip) glClearClip();
 }
 
@@ -518,6 +591,14 @@ void initLineRectPoint()
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
    lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
    glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
+
+   dotProgram = createProgram(DOT_VERTEX_CODE, DOT_FRAGMENT_CODE);
+   setCurrentProgram(dotProgram);
+   dotColor1 = glGetUniformLocation(dotProgram, "color1"); GL_CHECK_ERROR
+   dotColor2 = glGetUniformLocation(dotProgram, "color2"); GL_CHECK_ERROR
+   dotPosition = glGetAttribLocation(dotProgram, "a_Position"); GL_CHECK_ERROR
+   dotIsVert = glGetUniformLocation(dotProgram, "isVert"); GL_CHECK_ERROR
+   glEnableVertexAttribArray(dotPosition); GL_CHECK_ERROR
 }
 
 void glSetLineWidth(int32 w)
@@ -526,22 +607,38 @@ void glSetLineWidth(int32 w)
    glLineWidth(w); GL_CHECK_ERROR
 }
 
-void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiagonal)
-{         
+typedef enum
+{
+   SIMPLE,
+   DOTS,
+   DIAGONAL
+}  LRPType;
+
+void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a, LRPType type)
+{           
    float* coords = lrcoords;
-   setCurrentProgram(lrpProgram);
-   glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
+   setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
+   glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
    int32 ty = glShiftY;
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
+   if (type == DOTS)
+   {                 
+      glUniform1f(dotIsVert, x == w ? 1.0 : 0.0); GL_CHECK_ERROR
+      glUniform4f(dotColor1, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+      pc.pixel = rgb2;
+      pc.a = a;
+      glUniform4f(dotColor2, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+   }
+   else
    if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
-   {          
+   {
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
    }
    y += ty;
-   if (isDiagonal)
+   if (type == DIAGONAL || type == DOTS)
    {                    
       coords[0] = x;
       coords[1] = y;
@@ -561,29 +658,34 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a, bool isDiag
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {   
-   drawLRP(x,y,1,1,rgb,a, false);
+   drawLRP(x,y,1,1,rgb,-1,a, SIMPLE);
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
-   drawLRP(x1,y1,x2,y2,rgb,a, true);
+   drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
 }
 
+void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2)
+{
+   drawLRP(x1,y1,x2,y2, rgb1, rgb2, 255, DOTS);
+}
+ 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
-      drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,a, false);
+      drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,-1,a, SIMPLE);
    else
    if (y1 == y2) 
-      drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,a, false);
+      drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,-1,a, SIMPLE);
    else              
-      drawLRP(x1,y1,x2,y2,rgb,a, true);
+      drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
 }
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-   drawLRP(x,y,w,h,rgb,a, false);
+   drawLRP(x,y,w,h,rgb,-1,a, SIMPLE);
 }
 
 typedef union
@@ -652,8 +754,10 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
       0.0, 0.0, -1.0, 0.0,
       0.0, 0.0, 0.0, 1.0
    };
+   setCurrentProgram(textProgram);    glUniformMatrix4fv(glGetUniformLocation(textProgram,    "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(dotProgram);     glUniformMatrix4fv(glGetUniformLocation(dotProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
 #ifdef darwin

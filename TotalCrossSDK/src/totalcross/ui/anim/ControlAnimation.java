@@ -4,30 +4,37 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 
+/** Abstract class used to create and handle animations
+ * @since TotalCross 3.03 
+ */
+
 public abstract class ControlAnimation implements TimerListener
 {
-   Control c;
-   TimerEvent te;
-   ControlAnimation with,then;
-   AnimationFinished animFinish;
-   int initialTime;
-   boolean slave;
-   public int id;
-   private static int _id;
+   protected Control c;
+   protected int totalTime;
+   private TimerEvent te;
+   private ControlAnimation with,then;
+   private AnimationFinished animFinish;
+   private int initialTime;
+   private boolean slave;
    
-   public int totalTime = 800;
-   public int frameRate = Settings.platform.equals(Settings.WINDOWSPHONE) ? 30 : 20;
+   public static int frameRate = Settings.platform.equals(Settings.WINDOWSPHONE) ? 30 : 20;
    
    public static interface AnimationFinished
    {
       public void onAnimationFinished(ControlAnimation anim);
    }
    
-   public ControlAnimation(Control c, AnimationFinished animFinish)
+   public ControlAnimation(Control c, AnimationFinished animFinish, int totalTime)
    {
       this.c = c;
       this.animFinish = animFinish;
-      id = _id++;
+      this.totalTime = totalTime <= 0 ? 800 : totalTime;
+   }
+      
+   public ControlAnimation(Control c, AnimationFinished animFinish)
+   {
+      this(c, animFinish, -1);
    }
    
    public ControlAnimation(Control c)
@@ -65,11 +72,10 @@ public abstract class ControlAnimation implements TimerListener
    
    protected double computeSpeed(double distance)
    {
-      int elapsed = totalTime-(Vm.getTimeStamp()-initialTime);
-      if (elapsed <= 0)
+      int remaining = totalTime-(Vm.getTimeStamp()-initialTime);
+      if (remaining <= 0)
          return 0;
-      double ret = distance * frameRate / elapsed;
-      return ret;
+      return distance * frameRate / remaining;
    }
    
    public ControlAnimation with(ControlAnimation other)
@@ -99,5 +105,5 @@ public abstract class ControlAnimation implements TimerListener
       Window.enableUpdateScreen = true;
    }
    
-   public abstract void animate();
+   protected abstract void animate();
 }

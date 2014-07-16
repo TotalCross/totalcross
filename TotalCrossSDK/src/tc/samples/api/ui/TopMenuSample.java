@@ -22,16 +22,32 @@ import totalcross.res.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 
 public class TopMenuSample extends BaseContainer
 {
    ScrollContainer sc;
+   
+   private class FilterContainer extends Container
+   {
+      public void initUI()
+      {
+         super.initUI();
+         add(new Label("FILTERS"),CENTER,TOP);
+         add(new ComboBox(new String[]{"Name","Name 1","Name 2","Name 3"}),LEFT,AFTER+fmH/4,FILL,PREFERRED);
+         add(new Edit(),LEFT,AFTER+fmH/4);
+         Button b;
+         add(b = new Button("Search"),LEFT,AFTER+fmH/4,FILL,PREFERRED);
+         b.setBackColor(Color.CYAN);
+      }
+   }
    
    public void initUI()
    {
       try
       {
          super.initUI();
+         
          Control []items = 
          {
             new TopMenu.Item("Videocalls",            Resources.warning),
@@ -50,6 +66,11 @@ public class TopMenuSample extends BaseContainer
          show(new TopMenu(items,TOP),"TOP");
          show(new TopMenu(items,LEFT),"LEFT");
          show(new TopMenu(items,RIGHT),"RIGHT");
+
+         final TopMenu t = new TopMenu(new Control[] {new FilterContainer()}, RIGHT);
+         t.totalTime = 500;
+         t.autoClose = false;   
+         t.popup();
          back();
       }
       catch (Exception e)
@@ -61,7 +82,7 @@ public class TopMenuSample extends BaseContainer
 
    private void show(final TopMenu t, String dir)
    {
-      setInfo("Showing at "+dir+". Click outside to close");
+      setInfo("Showing at "+dir+". Click outside or drag");
       t.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)

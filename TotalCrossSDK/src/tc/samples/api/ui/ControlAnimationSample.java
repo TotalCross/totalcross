@@ -52,26 +52,26 @@ public class ControlAnimationSample extends BaseContainer
          if (e.type == ControlEvent.PRESSED)
             switch (((Control)e.target).appId)
             {
-               case 1: PathAnimation.create(btnL,-LEFT).then(PathAnimation.create(btnL,LEFT)).start(); break;
-               case 2: PathAnimation.create(btnR,-RIGHT).then(PathAnimation.create(btnR,RIGHT)).start(); break;
-               case 3: PathAnimation.create(btnT,-TOP).then(PathAnimation.create(btnT,TOP)).start(); break;
-               case 4: PathAnimation.create(btnB,-BOTTOM).then(PathAnimation.create(btnB,BOTTOM)).start(); break;
+               case 1: PathAnimation.create(btnL,-LEFT,null,-1).then(PathAnimation.create(btnL,LEFT,null,-1)).start(); break;
+               case 2: PathAnimation.create(btnR,-RIGHT,null,-1).then(PathAnimation.create(btnR,RIGHT,null,-1)).start(); break;
+               case 3: PathAnimation.create(btnT,-TOP,null,-1).then(PathAnimation.create(btnT,TOP,null,-1)).start(); break;
+               case 4: PathAnimation.create(btnB,-BOTTOM,null,-1).then(PathAnimation.create(btnB,BOTTOM,null,-1)).start(); break;
                case 5:
                {
                   int xr = btnR.getX(), yr = btnR.getY(), xl = btnL.getX(), yl = btnL.getY();
-                  PathAnimation.create(btnR,xr,yr,xl,yl,null).then(PathAnimation.create(btnR,xl,yl,xr,yr,null)).start(); 
-                  PathAnimation.create(btnL,xl,yl,xr,yr,null).then(PathAnimation.create(btnL,xr,yr,xl,yl,null)).start(); 
+                  PathAnimation.create(btnR,xr,yr,xl,yl,null,-1).then(PathAnimation.create(btnR,xl,yl,xr,yr,null,-1)).start(); 
+                  PathAnimation.create(btnL,xl,yl,xr,yr,null,-1).then(PathAnimation.create(btnL,xr,yr,xl,yl,null,-1)).start(); 
                   break;
                }
-               case 6: (FadeAnimation.create(c,false).then(FadeAnimation.create(c,true))).start(); break;
+               case 6: (FadeAnimation.create(c,false,null,-1).then(FadeAnimation.create(c,true,null,-1))).start(); break;
                case 7:
                {
                   int xr = btnR.getX(), yr = btnR.getY(), xl = btnL.getX(), yl = btnL.getY();
                   int xt = btnT.getX(), yt = btnT.getY(), xb = btnB.getX(), yb = btnB.getY();
-                  PathAnimation p1 = PathAnimation.create(btnL,xt,yt,null); p1.totalTime = 500;
-                  PathAnimation p2 = PathAnimation.create(btnT,xr,yr,null); p2.totalTime = 500;
-                  PathAnimation p3 = PathAnimation.create(btnR,xb,yb,null); p3.totalTime = 500;
-                  PathAnimation p4 = PathAnimation.create(btnB,xl,yl,null); p4.totalTime = 500;
+                  PathAnimation p1 = PathAnimation.create(btnL,xt,yt,null,500);
+                  PathAnimation p2 = PathAnimation.create(btnT,xr,yr,null,500);
+                  PathAnimation p3 = PathAnimation.create(btnR,xb,yb,null,500);
+                  PathAnimation p4 = PathAnimation.create(btnB,xl,yl,null,500);
                   p1.with(p2); p2.with(p3); p3.with(p4);
                   p1.start(); 
                   

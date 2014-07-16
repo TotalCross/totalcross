@@ -2716,7 +2716,7 @@ public final class Graphics
          endIndex--;
       // step 6: fill or draw the polygons
       endIndex++;
-      if (pie && fill)
+      if (pie)
       {
          // connect two lines from the center to the two edges of the arc
          oldX1 = xPoints[endIndex];
@@ -2743,18 +2743,13 @@ public final class Graphics
             fillPolygon(xPoints, yPoints, startIndex, endIndex-startIndex, null,null,0, gradient ? c : c2, c2, gradient);
          if (!gradient) drawPolygon(xPoints, yPoints, startIndex, endIndex-startIndex, null,null,0, c);
       }
-      if (pie && fill)  // restore saved points
+      if (pie)  // restore saved points
       {
          endIndex-=2;
          xPoints[endIndex]   = oldX1;
          yPoints[endIndex]   = oldY1;
          xPoints[endIndex+1] = oldX2;
          yPoints[endIndex+1] = oldY2;
-      }
-      if (!gradient && !fill && pie) // connect two lines from the center to the two edges of the arc
-      {
-         drawLine(xc,yc, xPoints[startIndex], yPoints[startIndex]);
-         drawLine(xc,yc, xPoints[endIndex], yPoints[endIndex]);
       }
    }
 
