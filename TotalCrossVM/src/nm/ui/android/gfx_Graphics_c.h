@@ -226,10 +226,13 @@ static void setCurrentProgram(GLint prog)
    if (prog != lastProg)
    {
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
-      lrpLastRGB = -2;
-      lastAlphaMask = -1;
-      lastTextRGB = -1;
+      if (lastProg != textureProgram && lastProg != textProgram) lrpLastRGB = -2;
    }
+}
+static void resetGlobals()
+{
+   lastAlphaMask = -1;
+   lastTextRGB = -1;
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
@@ -967,4 +970,5 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
    glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
    glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+   resetGlobals();
 }
