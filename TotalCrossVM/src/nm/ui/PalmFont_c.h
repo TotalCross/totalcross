@@ -193,6 +193,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
 {
    bool fSuccess = false;
    // font bits
+int ttt = debug("grcp 0");
    int32 offset = uf->bitIndexTable[ch];
    int32 width = uf->bitIndexTable[ch + 1] - offset;
    int32 height = uf->fontP.maxHeight;
@@ -229,6 +230,7 @@ debug("grcp 1");
       goto Cleanup;
    }
 
+debug("grcp 2");
    // check if its in the cache
    csclist = uf->charSizeCache;
    if (uf->charSizeCache != null)
@@ -240,11 +242,14 @@ debug("grcp 1");
       csclist = csclist->next;
    } while (csclist != uf->charSizeCache);
 
+debug("grcp 3");
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
 
    ob0 = ob = (alpha_t*)heapAlloc(fontsHeap, newWidth * newHeight);
+debug("grcp 4");
    ib = (alpha_t*)&uf->bitmapTable[offset];
+debug("grcp 5");
 
    if (newWidth > width)
    {
@@ -268,21 +273,26 @@ debug("grcp 1");
    /* Pre-allocating all of the needed memory */
    s = max32(newWidth, newHeight);
    i = (uf->fontP.maxWidth * newHeight / uf->fontP.maxHeight + 1) * height + 2 * s * maxContribsXY * sizeof(int32)+2 * s * sizeof(int32);
+debug("grcp 6");
    if (uf->tempbufssize >= i)
       xmemzero(uf->tempbufs, uf->tempbufssize);
    else
    {
+debug("grcp 7");
       xfree(uf->tempbufs); uf->tempbufssize = 0;
       uf->tempbufs = xmalloc(i);
       if (!uf->tempbufs) goto Cleanup;
       uf->tempbufssize = i;
+debug("grcp 8");
    }
+debug("grcp 9");
    tempbuf = uf->tempbufs;
    tb = (alpha_t *)tempbuf; tempbuf += newWidth * height;
    v_weight = (int32 *)tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* weights */
    v_pixel = (int32 *)tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* the contributing pixels */
    v_count = (int32 *)tempbuf; tempbuf += s * sizeof(int32); /* how many contributions for the target pixel */
    v_wsum = (int32 *)tempbuf; tempbuf += s * sizeof(int32); /* sum of the weights for the target pixel */
+debug("grcp 10");
 
    /* Pre-calculate weights contribution for a row */
    for (i = 0; i < newWidth; i++)
@@ -316,6 +326,7 @@ debug("grcp 1");
          v_count[i]++; // Increment contribution count
       }
    }
+debug("grcp 11");
 
    /* Filter horizontally from input to temporary buffer */
    for (i = 0; i < newWidth; i++)
@@ -339,6 +350,7 @@ debug("grcp 1");
          tb[i + n*newWidth] = (alpha_t)a;
       }
    }
+debug("grcp 12");
 
    /* Going to vertical stuff */
    if (newHeight > height)
@@ -352,11 +364,13 @@ debug("grcp 1");
       scaledRadius = 2 / yScale;
    }
    maxContribs = (int32)(2 * scaledRadius + 1);
+debug("grcp 13");
 
    p_weight = v_weight;
    p_pixel = v_pixel;
    for (i = s*maxContribs; --i >= 0;)
       *p_weight++ = *p_pixel++ = 0;
+debug("grcp 14");
 
    /* Pre-calculate filter contributions for a column */
    for (i = 0; i < newHeight; i++)
@@ -392,6 +406,7 @@ debug("grcp 1");
          v_count[i]++; /* Increment the contribution count */
       }
    }
+debug("grcp 15");
 
    /* Filter vertically from work to output */
    for (i = 0; i < newHeight; i++)
@@ -416,17 +431,20 @@ debug("grcp 1");
          *ob++ = a;
       }
    }
+debug("grcp 16");
 
    // add to the cache
    csc = newXH(CharSizeCache, fontsHeap);
+debug("grcp 17");
    csc->ch = ch;
    csc->size = newHeight;
    csc->alpha = ob0;
    uf->charSizeCache = VoidPsAdd(uf->charSizeCache, csc, fontsHeap);
    fSuccess = true;
+debug("grcp 18");
 
 Cleanup: /* CLEANUP */
-debug("grcp 2: %d",fSuccess);
+debug("grcp 19: %d",fSuccess);
    if (!fSuccess) throwException(currentContext, OutOfMemoryError, "Cannot create font buffers");
    return fSuccess ? ob0 : null;
 }
