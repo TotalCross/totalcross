@@ -35,7 +35,7 @@ public class Flick implements PenListener, TimerListener
    /**
     * Desired animation frame rate in frames/second.
     */
-   public static int defaultFrameRate = 40;
+   public static int defaultFrameRate = 40; // each frame at 25ms
    public int frameRate = defaultFrameRate;
 
    /**
@@ -101,6 +101,7 @@ public class Flick implements PenListener, TimerListener
 
    // Timer that runs the flick animation.
    TimerEvent timer;
+   private int timerDelay;
 
    // Container owning this Flick object.
    private Scrollable target;
@@ -532,7 +533,7 @@ public class Flick implements PenListener, TimerListener
             if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickStarted();
             currentFlick = this;
             flickPos = 0;
-            ((Control)target).addTimer(timer, 1000 / frameRate);
+            ((Control)target).addTimer(timer, timerDelay = 1000 / frameRate);
          }
       }
    }
@@ -563,6 +564,7 @@ public class Flick implements PenListener, TimerListener
          stop(false);
    }
 
+   int last;
    /**
     * Processes timer ticks to run the animation.
     */
@@ -570,7 +572,15 @@ public class Flick implements PenListener, TimerListener
    {
       if (e == timer && !totalcross.unit.UIRobot.abort)
       {
-         double t = Vm.getTimeStamp() - t0;
+         int cur = Vm.getTimeStamp();
+         double t = cur - t0;
+         int ela = cur - last;
+         if (ela > timerDelay && ela < 100)
+         {
+            ((Control)target).removeTimer(timer);
+            ((Control)target).addTimer(timer, timerDelay = ela * 11 / 10);
+         }
+         last = cur;
          
          // No rounding is done, the maximum rounding error is 1 pixel.
          int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
@@ -603,6 +613,7 @@ public class Flick implements PenListener, TimerListener
          {
             lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
             stop(false);
+            last = 0;
          }
          if (pagepos != null)
          {
