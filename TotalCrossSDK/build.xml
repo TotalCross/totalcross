@@ -59,8 +59,8 @@
 </condition>
 
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.7"/>
-<property name="compile.source"          value="1.7"/>
+<property name="compile.target"          value="1.8"/>
+<property name="compile.source"          value="1.8"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
@@ -288,7 +288,7 @@ target: desktop
     />
   </jar>
 
-   <proguard warn="false" shrink="false" allowaccessmodification="false" defaultpackage="z" optimize="false" overloadaggressively="true" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/desktop_${versionStr}.map">
+   <proguard warn="false" shrink="false" allowaccessmodification="false" defaultpackage="z" optimize="false" overloadaggressively="true" obfuscate="false" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/desktop_${versionStr}.map">
        <keep name="tc.tools.deployer.*"><field/><method/></keep>
        <keep name="tc.tools.converter.ConverterException" />
        <keep name="tc.Deploy"><field  access="public protected" /><method access="public protected" /></keep>
