@@ -960,6 +960,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    y = y0;
 
    pitch = Graphics_pitch(g);
+#ifdef __gl2_h_
    if (isGL)
    {
       clip[0] = xMin;
@@ -967,6 +968,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       clip[2] = clipX2;
       clip[3] = yMax;
    }
+#endif   
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
