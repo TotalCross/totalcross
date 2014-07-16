@@ -62,7 +62,7 @@ public class Flick implements PenListener, TimerListener
     * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
     * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
     */
-   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight) > 320 ? 2.95 : 1.6;
+   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE/10;
    public double flickAcceleration = defaultFlickAcceleration;
 
    // Device pixel densities in dpi.
@@ -211,8 +211,7 @@ public class Flick implements PenListener, TimerListener
       resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
       resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
       
-      if ((Settings.screenHeight > 700 && Settings.screenWidth  > 400) ||
-          (Settings.screenWidth  > 700 && Settings.screenHeight > 400))
+      if (isTablet)
       {
         // Prefer high density on high res screens
         resX = (resX < 150) ? 240 : resX;

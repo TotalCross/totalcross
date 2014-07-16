@@ -227,6 +227,9 @@ public class Control extends GfxSurface
    boolean eventsEnabled = true;
 
    static Rect cli = new Rect();
+   /** Specifies if this device is a tablet, computing the number of text lines.
+    */
+   public static boolean isTablet;
 
    static final int SETX_NOT_SET = -100000000;
    protected int setX = SETX_NOT_SET, setY, setW, setH;
@@ -284,6 +287,7 @@ public class Control extends GfxSurface
          MainWindow.defaultFont = Font.getFont(Font.DEFAULT, false, Font.NORMAL_SIZE);
          if (Settings.onJavaSE && !Font.DEFAULT.equals("TCFont"))
             Vm.warning("You're using the old font. Consider porting your program to the new font. See Settings.useNewFont javadocs.");
+         isTablet = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30;
       }
       font = MainWindow.defaultFont;
       fm = font.fm; // guich@450_36: new way of getting the fontMetrics.
