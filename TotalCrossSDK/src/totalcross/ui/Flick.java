@@ -21,7 +21,6 @@ import totalcross.util.*;
  */
 public class Flick implements PenListener, TimerListener
 {
-   private static boolean isTablet = Math.max(Settings.screenWidth,Settings.screenHeight) / Font.NORMAL_SIZE >= 40;
    public static final int BOTH_DIRECTIONS = 0;
    public static final int HORIZONTAL_DIRECTION_ONLY = 1;
    public static final int VERTICAL_DIRECTION_ONLY = 2;
@@ -156,7 +155,7 @@ public class Flick implements PenListener, TimerListener
    public void setScrollDistance(int v)
    {
       scrollDistance = v;
-      distanceToAbortScroll = v / (isTablet ? 10 : 5);
+      distanceToAbortScroll = v / (Control.isTablet ? 10 : 5);
    }
    
    /** The distance used to abort the scroll. Set to 0 to make it always scroll a page, even if it
@@ -211,7 +210,7 @@ public class Flick implements PenListener, TimerListener
       resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
       resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
       
-      if (isTablet)
+      if (Control.isTablet)
       {
         // Prefer high density on high res screens
         resX = (resX < 150) ? 240 : resX;
