@@ -1042,7 +1042,8 @@ public class Grid extends Container implements Scrollable
       dy = lineH << 1;
       boolean first = (Math.max(0, gridOffset) & 1) == 0;
       g.backColor = first ? this.firstStripeColor : this.secondStripeColor;
-      g.fillRect(1, h, w, h * linesPerPage);
+      if (g.backColor != backColor)
+         g.fillRect(1, h, w, h * linesPerPage);
       // now fill the second stripe
       g.backColor = !first ? this.firstStripeColor : this.secondStripeColor;
       for (y = dy; c > 0; y += dy, c--)
