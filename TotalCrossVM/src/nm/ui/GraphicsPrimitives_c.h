@@ -912,6 +912,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    float *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
+   bool isGL = Graphics_useOpenGL(g);
 
    if (!text || chrCount == 0 || fontObj == null) return;
 
@@ -959,6 +960,13 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    y = y0;
 
    pitch = Graphics_pitch(g);
+   if (isGL)
+   {
+      clip[0] = xMin;
+      clip[1] = yMin;
+      clip[2] = clipX2;
+      clip[3] = yMax;
+   }
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
@@ -1018,13 +1026,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
       row0 = getGraphicsPixels(g) + y * Graphics_pitch(g);
       rmax = (y+height > yMax) ? yMax - y : height;
-      if (Graphics_useOpenGL(g))
-      {
-         clip[0] = xMin;
-         clip[1] = yMin;
-         clip[2] = clipX2;
-         clip[3] = yMax;
-      }
 
       switch (aaType)
       {
@@ -1058,7 +1059,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             isNibbleStartingLow = (offset & 1) == 1;
    #ifdef __gl2_h_
             // draws the char, a row at a time
-            if (Graphics_useOpenGL(g))
+            if (isGL)
             {
                int ty = glShiftY;
                glC = glcolors;
@@ -1113,7 +1114,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
          {
             // draws the char, a row at a time
    #ifdef __gl2_h_
-            if (Graphics_useOpenGL(g))
+            if (isGL)
             {
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
                glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip, 255);
