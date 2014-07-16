@@ -1140,14 +1140,11 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             else
    #endif // case 2
             {                                                                                    
-               int r1 = debug("1: %X",uf);
                uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
-               debug("2: %X",alpha);
                if (alpha)
                {                             
                   rowWIB = width;
                   start = alpha + istart * rowWIB;
-                  debug("3");
                   for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                   {
                      current = start;
@@ -1167,7 +1164,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                         }
                      }
                   }
-                  debug("4");
                }
             }
          }
