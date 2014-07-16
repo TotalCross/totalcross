@@ -889,16 +889,6 @@ static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color, int32* ret); // PalmFont_c.h
 uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
 
-
-static Context lastContext;
-static TCObject lastObject;
-static JCharP lastText;
-static Pixel lastForeColor;
-static int lx0;
-static int ly0;
-static int lastJustify;
-static int lastCharCount;
-
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {
    TCObject fontObj = Graphics_font(g);
@@ -922,18 +912,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    float *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
-
-   {
-      lastContext = currentContext;
-      lastObject = g;
-      lastText = text;
-      lastForeColor = foreColor;
-
-      lx0 = x0;
-      ly0 = y0;
-      lastJustify = justifyWidth;
-      lastCharCount = chrCount;
-   }
 
    if (!text || chrCount == 0 || fontObj == null) return;
 
@@ -1195,12 +1173,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    else
       currentContext->fullDirty = true;
 #endif
-}
-
-void callLastDrawText()
-{
-	if( lastText != null)
-	drawText(lastContext, lastObject, lastText, lastCharCount, lx0, ly0, lastForeColor, lastJustify);
 }
 
 static SurfaceType getSurfaceType(Context currentContext, TCObject surface)
