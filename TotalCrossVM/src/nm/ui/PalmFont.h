@@ -55,9 +55,11 @@ typedef TIdColor* IdColor;
 
 struct TIdColor
 {
+#ifdef WP8   
    int32 id[2];
-   Pixel color;
-   TIdColor* next;
+#else   
+   int32 id[1];
+#endif
 };
 
 struct TUserFont
@@ -68,7 +70,7 @@ struct TUserFont
    uint16 *bitIndexTable;
    // gl fonts: used by the base font
 #ifdef __gl2_h_   
-   IdColor *textureIds; // one image for each character (fontP.lastChar - fontP.firstChar + 1)
+   IdColor textureIds; // one image for each character (fontP.lastChar - fontP.firstChar + 1)
 #endif   
    int32 *charPixels; // for one char
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size

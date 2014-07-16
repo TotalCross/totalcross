@@ -1018,6 +1018,13 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
       row0 = getGraphicsPixels(g) + y * Graphics_pitch(g);
       rmax = (y+height > yMax) ? yMax - y : height;
+      if (Graphics_useOpenGL(g))
+      {
+         clip[0] = xMin;
+         clip[1] = yMin;
+         clip[2] = clipX2;
+         clip[3] = yMax;
+      }
 
       switch (aaType)
       {
@@ -1108,10 +1115,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    #ifdef __gl2_h_
             if (Graphics_useOpenGL(g))
             {
-               clip[0] = xMin;
-               clip[1] = yMin;
-               clip[2] = clipX2;
-               clip[3] = yMax;
                getCharTexture(currentContext, uf->ubase, ch, fc, id);
                glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip, 255);
             }
