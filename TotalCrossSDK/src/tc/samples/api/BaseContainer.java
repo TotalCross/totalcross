@@ -88,10 +88,13 @@ public class BaseContainer extends Container
                   {
                      case 1:
                      {
+                        Vm.gc();
+                        Vm.tweak(Vm.TWEAK_DISABLE_GC,true);
                         int ini = Vm.getTimeStamp();
                         for (int i = 0; i < 100; i++)
                            repaintNow();
                         int fim = Vm.getTimeStamp();
+                        Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
                         String s;
                         setInfo(s="Paint 100x elapsed: "+(fim-ini)+"ms");
                         Vm.debug(s);
