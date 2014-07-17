@@ -1111,15 +1111,6 @@ public class Grid extends Container implements Scrollable
             }
 
             // draw the lines in the body of the Grid
-            if (i > 0 || !this.checkEnabled)
-            {
-               int yy = (lineH-fmH)/2;
-               int capw = captionWidths[i];
-               boolean greater = capw > w;
-               if (greater) g.setClip(kx+2,yy,w-4,fmH);
-               g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
-               if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
-            }
             if (i > 0)
             {
                switch (this.verticalLineStyle)
@@ -1139,6 +1130,15 @@ public class Grid extends Container implements Scrollable
             else
             if (this.checkEnabled && canClickSelectAll) // guich@572_10: only draw the box if can click select all
                drawCheck(g, 0, this.allChecked);
+            if (i > 0 || !this.checkEnabled)
+            {
+               int yy = (lineH-fmH)/2;
+               int capw = captionWidths[i];
+               boolean greater = capw > w;
+               if (greater) g.setClip(kx+2,yy,w-4,fmH);
+               g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
+               if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
+            }
 
             kx += w;
          }

@@ -504,10 +504,14 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel2);
          }
 #else
-         if (pixel1 == pixel2)
+         glDrawLine(x,y,x+width,y,pixel1,255);
+         if (pixel1 != pixel2)
+            for (x++; width > 0; width -= 2, x += 2)
+               glDrawPixel(x,y, pixel2,255);
+/*         if (pixel1 == pixel2)
             glDrawLine(x, y, x + width, y, pixel1, 255);
          else
-            glDrawDots(x, y, x + width, y, pixel1, pixel2);
+            glDrawDots(x, y, x + width, y, pixel1, pixel2);*/
 #endif
          currentContext->fullDirty = true;
       }
@@ -586,10 +590,13 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel2);
          }
 #else         
-         if (pixel1 == pixel2)
-            glDrawLine(x, y, x, y + height, pixel1, 255);
+         glDrawLine(x,y,x,y+height,pixel1,255);
+         if (pixel1 != pixel2)
+            for (y++; height > 0; height -= 2, y += 2)
+               glDrawPixel(x,y, pixel2,255);
+/*            glDrawLine(x, y, x, y + height, pixel1, 255);
          else
-            glDrawDots(x, y, x, y + height, pixel1, pixel2);
+            glDrawDots(x, y, x, y + height, pixel1, pixel2);*/
 #endif               
          currentContext->fullDirty = true;
       }
