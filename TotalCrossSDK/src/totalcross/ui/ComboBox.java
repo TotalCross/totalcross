@@ -582,7 +582,7 @@ public class ComboBox extends Container
          try
          {
             if (npback == null)
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false,true);
+               npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false);
             if ((armed || btn.armed) && nparmed == null)
                nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
             Image img = armed || btn.armed ? nparmed : npback;
