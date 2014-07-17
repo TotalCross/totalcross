@@ -219,7 +219,7 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
-static Pixel lrpLastRGB = -2, lastTextRGB;
+static Pixel lrpLastRGB = -2, lastTextRGB, lastTextureId, lastTextId;
 static float lastAlphaMask = -1;
 static void setCurrentProgram(GLint prog)
 {
@@ -231,8 +231,7 @@ static void setCurrentProgram(GLint prog)
 }
 static void resetGlobals()
 {
-   lastAlphaMask = -1;
-   lastTextRGB = -1;
+   lastAlphaMask = lastTextRGB = lastTextureId = lastTextId = -1;
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
@@ -535,7 +534,7 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
       glScissor(x1,appH - y2,w,h); GL_CHECK_ERROR
    }
 }
-
+                                                           
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {                    
    if (textureId[0] == 0) return;
@@ -543,7 +542,11 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    GLfloat* coords = texcoords;
    
    setCurrentProgram(color ? textProgram : textureProgram);
-   glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
+   if (lastTextId != *textureId)
+   {
+      lastTextId = *textureId;
+      glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
+   }
 
    dstY += glShiftY;
 
