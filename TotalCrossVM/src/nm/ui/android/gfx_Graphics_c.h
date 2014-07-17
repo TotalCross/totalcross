@@ -219,7 +219,7 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
-static Pixel lrpLastRGB = -2, lastTextRGB, lastTextureId, lastTextId;
+static Pixel lrpLastRGB = -2, lastTextRGB, lastTextId;
 static float lastAlphaMask = -1;
 static void setCurrentProgram(GLint prog)
 {
@@ -231,7 +231,7 @@ static void setCurrentProgram(GLint prog)
 }
 static void resetGlobals()
 {
-   lastAlphaMask = lastTextRGB = lastTextureId = lastTextId = -1;
+   lastAlphaMask = lastTextRGB = lastTextId = -1;
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
@@ -532,16 +532,14 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
                                                            
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {                    
+   bool isDrawText = color != null;
    if (textureId[0] == 0) return;
       
    GLfloat* coords = texcoords;
    
-   setCurrentProgram(color ? textProgram : textureProgram);
-   if (lastTextId != *textureId)
-   {
-      lastTextId = *textureId;
-      glBindTexture(GL_TEXTURE_2D, *textureId); GL_CHECK_ERROR
-   }
+   setCurrentProgram(isDrawText ? textProgram : textureProgram);
+   if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
+      glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR
 
    dstY += glShiftY;
 
@@ -551,7 +549,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[2] = coords[4] = (dstX+w);
    coords[5] = coords[7] = dstY;
 
-   glVertexAttribPointer(color ? textPoint : texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
+   glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    // source coordinates                  
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
@@ -559,7 +557,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[ 9] = coords[11] = bottom;
    coords[10] = coords[12] = right;
    coords[13] = coords[15] = top;
-   glVertexAttribPointer(color ? textCoord : textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
+   glVertexAttribPointer(isDrawText ? textCoord : textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
 
    bool doClip = false;
    if (clip != null) 
@@ -570,12 +568,12 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 
    if (doClip) glSetClip(clip[0],clip[1],clip[2],clip[3]);
 
-   if (!color && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
+   if (!isDrawText && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
    {
       lastAlphaMask = alphaMask;
       glUniform1f(textureAlpha, f255[alphaMask]);
    }
-   if (color && lastTextRGB != color->pixel) // prevent color change = performance x2 in galaxy tab2
+   if (isDrawText && lastTextRGB != color->pixel) // prevent color change = performance x2 in galaxy tab2
    {
       lastTextRGB = color->pixel;
       glUniform3f(textRGB, f255[color->r],f255[color->g],f255[color->b]); GL_CHECK_ERROR
