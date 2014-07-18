@@ -322,7 +322,6 @@ public class Radio extends Control
          try 
          {
             Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, foreColor);
-            ret.applyColor(foreColor);
             g.drawImage(ret,0,0);
             if (checked)
                g.drawImage(Resources.radioSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
