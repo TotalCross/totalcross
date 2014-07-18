@@ -19,6 +19,8 @@ public abstract class ControlAnimation implements TimerListener
    private boolean slave;
    
    public static int frameRate = Settings.platform.equals(Settings.WINDOWSPHONE) ? 30 : 20;
+   /** A delay issued right after the animation finishes */
+   public int delayAfterFinish;
    
    public static interface AnimationFinished
    {
@@ -66,6 +68,7 @@ public abstract class ControlAnimation implements TimerListener
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);
+      Vm.sleep(delayAfterFinish);
       if (then != null)
          try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }
