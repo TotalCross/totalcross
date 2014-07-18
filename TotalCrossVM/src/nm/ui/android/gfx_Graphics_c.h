@@ -489,7 +489,10 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    {
       glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
       if (err)
+      {
+         *textureId = 0;
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
+      }
       else
       {   
          if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
@@ -625,10 +628,9 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
    if (type == DOTS)
    {                 
       glUniform1f(dotIsVert, x == w ? 1.0 : 0.0); GL_CHECK_ERROR
-      glUniform4f(dotColor1, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+      glUniform4f(dotColor1, f255[pc.r],f255[pc.g],f255[pc.b],1); GL_CHECK_ERROR
       pc.pixel = rgb2;
-      pc.a = a;
-      glUniform4f(dotColor2, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+      glUniform4f(dotColor2, f255[pc.r],f255[pc.g],f255[pc.b],1); GL_CHECK_ERROR
    }
    else
    if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
@@ -667,7 +669,7 @@ void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 
 void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2)
 {
-   drawLRP(x1,y1,x2,y2, rgb1, rgb2, 255, DOTS);
+   drawLRP(x1+1,y1,x2+1,y2, rgb1, rgb2, 255, DOTS);
 }
  
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
