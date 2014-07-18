@@ -490,15 +490,14 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
       if (err)
       {
+         glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
          *textureId = 0;
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       }
       else
-      {   
-         if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
-            imgTextures = VoidPsAdd(imgTextures, img, null);
-         glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
-      }
+      if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
+         imgTextures = VoidPsAdd(imgTextures, img, null);
+      glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    if (!onlyAlpha) xfree(pt0);
 }
