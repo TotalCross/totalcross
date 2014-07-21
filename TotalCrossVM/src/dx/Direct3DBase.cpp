@@ -428,7 +428,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
+void Direct3DBase::drawPixels(float* glXYA, int count, int color)
 {
    if (minimized) return;
    int i;
@@ -438,8 +438,9 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
    for (i = count; --i >= 0;)
    {
-      float x = *glcoords++;  // TODO use glcolors
-      float y = *glcoords++;
+      float x = *glXYA++;
+      float y = *glXYA++;
+      glXYA++; // skip alpha
       cv->pos = XMFLOAT2(x, y + glShiftY); cv++;
       cv->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); cv++;
    }

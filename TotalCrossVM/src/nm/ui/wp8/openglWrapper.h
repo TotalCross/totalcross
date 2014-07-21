@@ -49,8 +49,7 @@ extern int32 /*realAppH,*/ appW, appH, glShiftY;
 extern int32 *needsPaint;
 
 extern TCGfloat ftransp[16];
-extern TCGfloat* glcoords;//[flen*2]; x,y
-extern TCGfloat* glcolors;//[flen];   alpha
+extern TCGfloat* glXYA;//[flen*3]; x,y
 extern int32 desiredScreenShiftY;
 extern int32 setShiftYonNextUpdateScreen;
 

@@ -274,9 +274,9 @@ void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
    Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
 }
 
-void dxDrawPixels(float *glcoords, float *glcolors, int count, int color)
+void dxDrawPixels(float *glXYA, int count, int color)
 {
-	Direct3DBase::getLastInstance()->drawPixels(glcoords, glcolors, count, color);
+	Direct3DBase::getLastInstance()->drawPixels(glXYA, count, color);
 }
 
 double getFontHeightCPP()

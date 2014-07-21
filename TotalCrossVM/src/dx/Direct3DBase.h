@@ -63,7 +63,7 @@ internal:
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
    void fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
-   void drawPixels(float *glcoords, float *glcolors, int count, int color);
+   void drawPixels(float *glXYA, int count, int color);
    void setClip(int32* clip);
    void setColor(int color, int alphaMask);
    void createTexture();

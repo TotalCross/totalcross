@@ -35,8 +35,7 @@ VoidPs* imgTextures;
 TCGfloat ftransp[16];
 int32 appW, appH, glShiftY;
 int32 flen;
-TCGfloat* glcoords;//[flen*2]; x,y
-TCGfloat* glcolors;//[flen];   alpha
+TCGfloat* glXYA;//[flen*2]; x,y
 
 #pragma endregion
 
@@ -61,18 +60,14 @@ bool checkGLfloatBuffer(Context c, int32 n)
 {
 	if (n > flen)
 	{
-		xfree(glcoords);
-		xfree(glcolors);
+      xfree(glXYA);
 		flen = n * 3 / 2;
-		int len = flen * 2;
-		glcoords = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len); pixcoords = (int32*)glcoords;
-		glcolors = (TCGfloat*)xmalloc(sizeof(TCGfloat)*flen); pixcolors = (int32*)glcolors;
+		int len = flen * 3;
+      glXYA = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len); pixcoords = (int32*)glXYA;
 		pixEnd = pixcoords + len;
-		if (!glcoords || !glcolors)
+      if (!glXYA)
 		{
 			throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
-			xfree(glcoords);
-			xfree(glcolors);
 			flen = 0;
 			return false;
 		}
@@ -119,8 +114,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 	if (!isScreenChange)
 	{
 		xfree(screen->extension);
-		xfree(glcoords);
-		xfree(glcolors);
+      xfree(glXYA);
 	}
 }
 
@@ -147,14 +141,14 @@ DWORD32 getGlColor(int32 rgb, int32 a)
 void glDrawPixels(int32 n, int32 rgb)
 {
    Pixel colour = getGlColor(rgb,0xFF);
-   dxDrawPixels(glcoords+pointsPosition, glcolors+pointsPosition, n, colour);
+   dxDrawPixels(glXYA + pointsPosition, n, colour);
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
    Pixel colour = getGlColor(rgb, a);
-   float coords[2] = { (float)x, (float)y }, colors[1] = { a/255.0f };
-   dxDrawPixels(coords, colors, 1, colour);
+   float coords[3] = { (float)x, (float)y, a/255.0f };
+   dxDrawPixels(coords, 1, colour);
 }
 
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)

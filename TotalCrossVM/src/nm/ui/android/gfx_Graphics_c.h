@@ -918,8 +918,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       if (screen->extension)
          free(screen->extension);
       deviceCtx = screen->extension = NULL;
-      xfree(glcoords);
-      xfree(glcolors);
+      xfree(glXYA);
    }
 #endif
 }
