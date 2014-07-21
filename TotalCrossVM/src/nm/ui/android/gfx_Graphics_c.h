@@ -72,15 +72,14 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 //////////// texture
 #define TEXTURE_VERTEX_CODE  \
       "attribute vec4 vertexPoint;" \
-      "attribute vec2 aTextureCoord;" \
       "uniform float alpha;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
       "varying float vAlpha;" \
       "void main()" \
       "{" \
-      "    gl_Position = vertexPoint * projectionMatrix;" \
-      "    vTextureCoord = aTextureCoord;" \
+      "    gl_Position = vec4(vertexPoint.xy,0,1.0) * projectionMatrix;" \
+      "    vTextureCoord = vertexPoint.zw;" \
       "    vAlpha = alpha;" \
       "}"
 
@@ -97,21 +96,20 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 
 static GLuint textureProgram;
 static GLuint texturePoint;
-static GLuint textureCoord,textureS,textureAlpha;
+static GLuint textureS,textureAlpha;
 
-///////
+/////// vertexPoint.x,vertexPoint.y,0,vertexPoint.w
 
 #define TEXT_VERTEX_CODE  \
       "attribute vec4 vertexPoint;" \
-      "attribute vec2 aTextureCoord;" \
       "uniform vec3 rgb;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
       "varying vec3 v_rgb;" \
       "void main()" \
       "{" \
-      "    gl_Position = vertexPoint * projectionMatrix;" \
-      "    vTextureCoord = aTextureCoord;" \
+      "    gl_Position = vec4(vertexPoint.xy,0,1.0) * projectionMatrix;" \
+      "    vTextureCoord = vertexPoint.zw;" \
       "    v_rgb = rgb;" \
       "}"
 
@@ -128,7 +126,7 @@ static GLuint textureCoord,textureS,textureAlpha;
 
 static GLuint textProgram;
 static GLuint textPoint;
-static GLuint textCoord,textS,textRGB;
+static GLuint textS,textRGB;
 
 //////////// points (text)
 
@@ -424,10 +422,8 @@ void initTexture()
    setCurrentProgram(textureProgram);
    textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
-   textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
    textureAlpha = glGetUniformLocation(textureProgram, "alpha"); GL_CHECK_ERROR
 
-   glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 
    // text char
@@ -435,10 +431,8 @@ void initTexture()
    setCurrentProgram(textProgram);
    textS     = glGetUniformLocation(textProgram, "sTexture"); GL_CHECK_ERROR
    textPoint = glGetAttribLocation(textProgram, "vertexPoint"); GL_CHECK_ERROR
-   textCoord = glGetAttribLocation(textProgram, "aTextureCoord"); GL_CHECK_ERROR
    textRGB   = glGetUniformLocation(textProgram, "rgb"); GL_CHECK_ERROR
 
-   glEnableVertexAttribArray(textCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
@@ -533,6 +527,7 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 }
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {
+   int i=0;
    bool isDrawText = color != null;
    if (textureId[0] == 0) return;
 
@@ -543,22 +538,30 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR
 
    dstY += glShiftY;
+   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
 
    // destination coordinates
-   coords[0] = coords[6] = dstX;
-   coords[1] = coords[3] = isDrawText ? dstY+dstH : dstY+h;
-   coords[2] = coords[4] = isDrawText ? dstX+dstW : dstX+w;
-   coords[5] = coords[7] = dstY;
-
-   glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
-
-   // source coordinates
-   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
-   coords[ 8] = coords[14] = left;
-   coords[ 9] = coords[11] = bottom;
-   coords[10] = coords[12] = right;
-   coords[13] = coords[15] = top;
-   glVertexAttribPointer(isDrawText ? textCoord : textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
+   coords[i++] = dstX;
+   coords[i++] = isDrawText ? dstY+dstH : dstY+h;
+   coords[i++] = left;
+   coords[i++] = bottom;
+      
+   coords[i++] = isDrawText ? dstX+dstW : dstX+w;
+   coords[i++] = isDrawText ? dstY+dstH : dstY+h;
+   coords[i++] = right;
+   coords[i++] = bottom;
+      
+   coords[i++] = isDrawText ? dstX+dstW : dstX+w;
+   coords[i++] = dstY;
+   coords[i++] = right;
+   coords[i++] = top;
+   
+   coords[i++] = dstX;
+   coords[i++] = dstY;
+   coords[i++] = left;
+   coords[i++] = top;
+   
+   glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    bool doClip = false;
    if (clip != null)
