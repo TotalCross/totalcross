@@ -63,7 +63,7 @@ int32 realAppH,appW,appH,glShiftY;
 GLfloat ftransp[16], f255[256];
 int32 flen;
 GLfloat *glXYA;//[flen*2]; x,y
-static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
+static GLfloat texcoords[16], lrcoords[8], shcolors[12],shcoords[8];
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 
@@ -183,9 +183,9 @@ static GLuint dotColor1,dotColor2;
 ///////////// shaded rect
 
 #define SHADE_VERTEX_CODE \
-      "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;" \
+      "attribute vec4 a_Position; attribute vec3 a_Color; varying vec4 v_Color;" \
       "uniform mat4 projectionMatrix;" \
-      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = a_Position*projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color,1.0); gl_Position = a_Position*projectionMatrix;}"
 
 #define SHADE_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -365,7 +365,6 @@ static void initShade()
    shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
 }
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
@@ -375,7 +374,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
    if (doClip) glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    setCurrentProgram(shadeProgram);
-   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
+   glVertexAttribPointer(shadeColor, 3, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
 
    y += glShiftY;
@@ -387,23 +386,23 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
    if (!horiz)
    {
-      shcolors[0] = shcolors[12] = f255[c2.r]; // upper left + upper right
-      shcolors[1] = shcolors[13] = f255[c2.g];
-      shcolors[2] = shcolors[14] = f255[c2.b];
+      shcolors[0] = shcolors[9] = f255[c2.r]; // upper left + upper right
+      shcolors[1] = shcolors[10] = f255[c2.g];
+      shcolors[2] = shcolors[11] = f255[c2.b];
 
-      shcolors[4] = shcolors[8]  = f255[c1.r]; // lower left + lower right
-      shcolors[5] = shcolors[9]  = f255[c1.g];
-      shcolors[6] = shcolors[10] = f255[c1.b];
+      shcolors[3] = shcolors[6]  = f255[c1.r]; // lower left + lower right
+      shcolors[4] = shcolors[7]  = f255[c1.g];
+      shcolors[5] = shcolors[8] = f255[c1.b];
    }
    else
    {
-      shcolors[0] = shcolors[4] = f255[c2.r];  // upper left + lower left
-      shcolors[1] = shcolors[5] = f255[c2.g];
-      shcolors[2] = shcolors[6] = f255[c2.b];
+      shcolors[0] = shcolors[3] = f255[c2.r];  // upper left + lower left
+      shcolors[1] = shcolors[4] = f255[c2.g];
+      shcolors[2] = shcolors[5] = f255[c2.b];
 
-      shcolors[8]  = shcolors[12] = f255[c1.r]; // lower right + upper right
-      shcolors[9]  = shcolors[13] = f255[c1.g];
-      shcolors[10] = shcolors[14] = f255[c1.b];
+      shcolors[6] = shcolors[9] = f255[c1.r]; // lower right + upper right
+      shcolors[7] = shcolors[10] = f255[c1.g];
+      shcolors[8] = shcolors[11] = f255[c1.b];
    }
 
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
