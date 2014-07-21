@@ -522,7 +522,6 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 }
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {
-   int i=0;
    bool isDrawText = color != null;
    if (textureId[0] == 0) return;
 
@@ -536,25 +535,25 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
 
    // destination coordinates
-   coords[i++] = dstX;
-   coords[i++] = isDrawText ? dstY+dstH : dstY+h;
-   coords[i++] = left;
-   coords[i++] = bottom;
+   coords[ 0] = dstX;
+   coords[ 1] = isDrawText ? dstY+dstH : dstY+h;
+   coords[ 2] = left;
+   coords[ 3] = bottom;
       
-   coords[i++] = isDrawText ? dstX+dstW : dstX+w;
-   coords[i++] = isDrawText ? dstY+dstH : dstY+h;
-   coords[i++] = right;
-   coords[i++] = bottom;
+   coords[ 4] = isDrawText ? dstX+dstW : dstX+w;
+   coords[ 5] = isDrawText ? dstY+dstH : dstY+h;
+   coords[ 6] = right;
+   coords[ 7] = bottom;
       
-   coords[i++] = isDrawText ? dstX+dstW : dstX+w;
-   coords[i++] = dstY;
-   coords[i++] = right;
-   coords[i++] = top;
+   coords[ 8] = isDrawText ? dstX+dstW : dstX+w;
+   coords[ 9] = dstY;
+   coords[10] = right;
+   coords[11] = top;
    
-   coords[i++] = dstX;
-   coords[i++] = dstY;
-   coords[i++] = left;
-   coords[i++] = top;
+   coords[12] = dstX;
+   coords[13] = dstY;
+   coords[14] = left;
+   coords[15] = top;
    
    glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
