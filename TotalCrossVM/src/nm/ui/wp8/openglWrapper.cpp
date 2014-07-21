@@ -22,7 +22,6 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
 #pragma region StaticVariables
 
 static TCGuint pointsPosition;
-static int32 *pixcoords, *pixcolors, *pixEnd;
 static int32 desiredglShiftY;
 
 #pragma endregion
@@ -63,8 +62,7 @@ bool checkGLfloatBuffer(Context c, int32 n)
       xfree(glXYA);
 		flen = n * 3 / 2;
 		int len = flen * 3;
-      glXYA = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len); pixcoords = (int32*)glXYA;
-		pixEnd = pixcoords + len;
+      glXYA = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len);
       if (!glXYA)
 		{
 			throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
@@ -211,12 +209,12 @@ void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
-   dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList, onlyAlpha);
    if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
       imgTextures = VoidPsAdd(imgTextures, img, null);
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {
-   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip, alphaMask);
+   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, dstW, dstH, imgW, imgH, color, clip, alphaMask);
 }

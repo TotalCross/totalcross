@@ -558,12 +558,12 @@ void Direct3DBase::setProgram(whichProgram p)
    d3dcontext->VSSetConstantBuffers(0, 1, &constantBuffer);
 }
 
-void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
    if (minimized) return;
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
+   PixelConv* pt = onlyAlpha ? pf : (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
    if (!pt)
    {
       throwException(currentContext, OutOfMemoryError, "Cannot allocate memory for texture.");
@@ -573,14 +573,15 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    D3D11_TEXTURE2D_DESC textureDesc = { 0 };
    textureDesc.Width = width;
    textureDesc.Height = height;
-   textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+   textureDesc.Format = onlyAlpha ? DXGI_FORMAT_A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
    textureDesc.MipLevels = textureDesc.ArraySize = textureDesc.SampleDesc.Count = 1;
    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-   for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
+   if (!onlyAlpha)
+      for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
    D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
    textureSubresourceData.pSysMem = pt0;
-   textureSubresourceData.SysMemPitch = textureDesc.Width * 4; // Specify the size of a row in bytes
+   textureSubresourceData.SysMemPitch = textureDesc.Width * (onlyAlpha ? 1 : 4); // Specify the size of a row in bytes
    if (FAILED(d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
    else
@@ -588,14 +589,14 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
       ID3D11ShaderResourceView* textureView;
       D3D11_SHADER_RESOURCE_VIEW_DESC textureViewDesc;
       ZeroMemory(&textureViewDesc, sizeof(textureViewDesc));
-      textureViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      textureViewDesc.Format = textureDesc.Format;
       textureViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
       textureViewDesc.Texture2D.MipLevels = 1;
       d3dDevice->CreateShaderResourceView(&texture[0], &textureViewDesc, &textureView);
       xmoveptr(&textureId[0], &texture);
       xmoveptr(&textureId[1], &textureView);
    }
-   xfree(pt0);
+   if (!onlyAlpha) xfree(pt0);
 }
 
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
@@ -648,13 +649,12 @@ void Direct3DBase::setClip(int32* clip)
    clipSet = doClip;
 }
 
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip, int32 alphaMask)
+int lastTexView;
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
 {
+   bool isDrawText = color != null;
    if (minimized) return;
-   ID3D11Texture2D *texture;
    ID3D11ShaderResourceView *textureView;
-
-   xmoveptr(&texture, &textureId[0]);
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
    setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b, alphaMask);
@@ -662,8 +662,8 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    setClip(clip);
 
    dstY += glShiftY;
-   int32 dstY2 = dstY + h;
-   int32 dstX2 = dstX + w;
+   int32 dstY2 = isDrawText ? dstY + dstH : dstY + h;
+   int32 dstX2 = isDrawText ? dstX + dstW : dstX + w;
 
    float left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
 
