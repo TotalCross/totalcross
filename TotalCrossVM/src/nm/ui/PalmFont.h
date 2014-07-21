@@ -50,18 +50,6 @@ typedef struct
    JChar ch;
 } *CharSizeCache, TCharSizeCache;
 
-typedef struct TIdColor TIdColor;
-typedef TIdColor* IdColor;
-
-struct TIdColor
-{
-#ifdef WP8   
-   int32 id[2];
-#else   
-   int32 id[1];
-#endif
-};
-
 struct TUserFont
 {
    uint8 *bitmapTable;
@@ -69,8 +57,11 @@ struct TUserFont
    uint16 rowWidthInBytes;
    uint16 *bitIndexTable;
    // gl fonts: used by the base font
-#ifdef __gl2_h_   
-   IdColor textureIds; // one image for each character (fontP.lastChar - fontP.firstChar + 1)
+#ifdef __gl2_h_
+   int32 textureId[2];
+   int32 maxW,maxH;
+   uint8* textureAlphas;
+   int16 charX[256], charY[256]; // value limited by texture's width (2048)
 #endif   
    int32 *charPixels; // for one char
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size

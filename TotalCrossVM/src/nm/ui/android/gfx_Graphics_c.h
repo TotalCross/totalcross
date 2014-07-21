@@ -24,9 +24,9 @@ bool isIpad = false;
 bool checkGlError(const char* op, int line)
 {
    GLint error;
-   
+
    //debug("%s (%d)",op,line);
-   
+
    if (!op)
       return glGetError() != 0;
    else
@@ -202,7 +202,7 @@ static GLuint shadeColor;
 
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
-   GLint ret=1;               
+   GLint ret=1;
    GLuint shader = glCreateShader(shaderType); GL_CHECK_ERROR
    glShaderSource(shader, 1, &pSource, NULL); GL_CHECK_ERROR
    glCompileShader(shader); GL_CHECK_ERROR
@@ -256,25 +256,25 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
 void recreateTextures(bool delTex); // imagePrimitives_c.h
 
-void setTimerInterval(int32 t);  
+void setTimerInterval(int32 t);
 int32 desiredglShiftY;
 bool setShiftYonNextUpdateScreen;
-#ifdef ANDROID           
+#ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
-{                    
-   if (!screen.extension)           
+{
+   if (!screen.extension)
       screen.extension = newX(ScreenSurfaceEx);
 
    if (surface == null) // passed null when the surface is destroyed
-   {       
+   {
       if (width == -999)
-      {                
+      {
          if (needsPaint != null)
          {
             desiredglShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
             setShiftYonNextUpdateScreen = true;
             *needsPaint = true; // schedule a screen paint to update the shiftY values
-            setTimerInterval(1);      
+            setTimerInterval(1);
          }
       }
       else
@@ -286,8 +286,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       else
          surfaceWillChange = true; // block all screen updates
       return;
-   }  
-   desiredglShiftY = glShiftY = 0;         
+   }
+   desiredglShiftY = glShiftY = 0;
    setShiftYonNextUpdateScreen = true;
    appW = width;
    appH = height;
@@ -297,7 +297,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (lastWindow && lastWindow != window)
-   {  
+   {
       destroyEGL();
       initGLES(&screen);
       recreateTextures(false); // now we set the changed flag for all textures
@@ -340,23 +340,23 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    pc.pixel = rgb;
    pc.a = 255;
    if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
-   {          
+   {
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
-   }                                
+   }
    if (checkGLfloatBuffer(currentContext, n))
    {
       int32 i,nn=n;
-      float *glV = glcoords;            
+      float *glV = glcoords;
       int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
-      bool doClip = false;    
+      bool doClip = false;
       for (i = 0; i < n; i++)
       {
          *glV++ = xx = (float)(*x++ + tx);
          *glV++ = yy = (float)(*y++ + ty);
          if (!doClip && (yy < cy1 || yy > cy2 || xx < cx1 || xx > cx2))
             doClip = true;
-      }           
+      }
       if (doClip) glSetClip(cx1,cy1,cx2,cy2);
       glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
       glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,nn); GL_CHECK_ERROR
@@ -365,7 +365,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
 }
 
 static void initShade()
-{         
+{
    shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
    setCurrentProgram(shadeProgram);
    shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
@@ -379,14 +379,14 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 {
    int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
    bool doClip = y < cy1 || y+h > cy2 || x < cx1 || x+w > cx2;
-   
+
    if (doClip) glSetClip(Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g));
    setCurrentProgram(shadeProgram);
    glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
-   
+
    y += glShiftY;
-   
+
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
    shcoords[3] = shcoords[5] = y+h;
@@ -397,7 +397,7 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
       shcolors[0] = shcolors[12] = f255[c2.r]; // upper left + upper right
       shcolors[1] = shcolors[13] = f255[c2.g];
       shcolors[2] = shcolors[14] = f255[c2.b];
-      
+
       shcolors[4] = shcolors[8]  = f255[c1.r]; // lower left + lower right
       shcolors[5] = shcolors[9]  = f255[c1.g];
       shcolors[6] = shcolors[10] = f255[c1.b];
@@ -407,18 +407,18 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
       shcolors[0] = shcolors[4] = f255[c2.r];  // upper left + lower left
       shcolors[1] = shcolors[5] = f255[c2.g];
       shcolors[2] = shcolors[6] = f255[c2.b];
-      
+
       shcolors[8]  = shcolors[12] = f255[c1.r]; // lower right + upper right
       shcolors[9]  = shcolors[13] = f255[c1.g];
       shcolors[10] = shcolors[14] = f255[c1.b];
    }
-    
+
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
    if (doClip) glClearClip();
 }
 
 void initTexture()
-{         
+{
    // images
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
    setCurrentProgram(textureProgram);
@@ -459,10 +459,10 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          return;
       }
    }
-   if (!textureAlreadyCreated) 
+   if (!textureAlreadyCreated)
    {
-      glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR              
-      if (err) 
+      glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+      if (err)
       {
          throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
          return;
@@ -504,20 +504,20 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
 {
-   if (textureId != null && textureId[0] != 0)        
+   if (textureId != null && textureId[0] != 0)
    {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
-      *textureId = 0;                               
+      *textureId = 0;
    }
    if (updateList && VoidPsContains(imgTextures, img))
       imgTextures = VoidPsRemove(imgTextures, img, null);
 }
 void glClearClip()
-{            
+{
    glDisable(GL_SCISSOR_TEST); GL_CHECK_ERROR
 }
 // note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
-void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2) 
+void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 {
    y1 += glShiftY;
    y2 += glShiftY;
@@ -531,14 +531,13 @@ void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
    if (w < 0) w = 0;
    glScissor(x1,appH - y2,w,h); GL_CHECK_ERROR
 }
-                                                           
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
-{                    
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
+{
    bool isDrawText = color != null;
    if (textureId[0] == 0) return;
-      
+
    GLfloat* coords = texcoords;
-   
+
    setCurrentProgram(isDrawText ? textProgram : textureProgram);
    if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
       glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR
@@ -547,13 +546,13 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 
    // destination coordinates
    coords[0] = coords[6] = dstX;
-   coords[1] = coords[3] = (dstY+h);
-   coords[2] = coords[4] = (dstX+w);
+   coords[1] = coords[3] = isDrawText ? dstY+dstH : dstY+h;
+   coords[2] = coords[4] = isDrawText ? dstX+dstW : dstX+w;
    coords[5] = coords[7] = dstY;
 
    glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
-   // source coordinates                  
+   // source coordinates
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
    coords[ 8] = coords[14] = left;
    coords[ 9] = coords[11] = bottom;
@@ -562,8 +561,8 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    glVertexAttribPointer(isDrawText ? textCoord : textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
 
    bool doClip = false;
-   if (clip != null) 
-   {          
+   if (clip != null)
+   {
       int32 cx1 = clip[0], cy1 = clip[1], cx2 = clip[2], cy2 = clip[3];
       doClip = dstY < cy1 || dstY+h > cy2 || dstX < cx1 || dstX+w > cx2;
    }
@@ -586,7 +585,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 }
 
 void initLineRectPoint()
-{         
+{
    lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
    setCurrentProgram(lrpProgram);
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
@@ -603,7 +602,7 @@ void initLineRectPoint()
 }
 
 void glSetLineWidth(int32 w)
-{         
+{
    setCurrentProgram(lrpProgram);
    glLineWidth(w); GL_CHECK_ERROR
 }
@@ -616,7 +615,7 @@ typedef enum
 }  LRPType;
 
 void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a, LRPType type)
-{           
+{
    float* coords = lrcoords;
    setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
    glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
@@ -625,7 +624,7 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
    pc.pixel = rgb;
    pc.a = a;
    if (type == DOTS)
-   {                 
+   {
       glUniform1f(dotIsVert, x == w ? 1.0 : 0.0); GL_CHECK_ERROR
       glUniform4f(dotColor1, f255[pc.r],f255[pc.g],f255[pc.b],1); GL_CHECK_ERROR
       pc.pixel = rgb2;
@@ -639,7 +638,7 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
    }
    y += ty;
    if (type == DIAGONAL || type == DOTS)
-   {                    
+   {
       coords[0] = x;
       coords[1] = y;
       coords[2] = w;    // x2
@@ -657,7 +656,7 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
-{   
+{
    drawLRP(x,y,1,1,rgb,-1,a, SIMPLE);
 }
 
@@ -670,16 +669,16 @@ void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2)
 {
    drawLRP(x1+1,y1,x2+1,y2, rgb1, rgb2, 255, DOTS);
 }
- 
+
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
       drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,-1,a, SIMPLE);
    else
-   if (y1 == y2) 
+   if (y1 == y2)
       drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,-1,a, SIMPLE);
-   else              
+   else
       drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
 }
 
@@ -695,14 +694,14 @@ typedef union
 } glpixel;
 
 int32 glGetPixel(int32 x, int32 y)
-{                
+{
    glpixel gp;
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
 
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch)
-{          
+{
    #define GL_BGRA 0x80E1 // BGRA is 20x faster than RGBA on devices that supports it
    PixelConv* p;
    glpixel gp;
@@ -710,7 +709,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
    GLint ext_format, ext_type;
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &ext_format);
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &ext_type);
-   if (ext_format == GL_BGRA && ext_type == GL_UNSIGNED_BYTE) 
+   if (ext_format == GL_BGRA && ext_type == GL_UNSIGNED_BYTE)
       for (; height-- > 0; srcY++,dstPixels += pitch)
       {
          glReadPixels(srcX, appH-srcY-1, width, 1, GL_BGRA, GL_UNSIGNED_BYTE, dstPixels); GL_CHECK_ERROR
@@ -723,7 +722,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
             p->g = gp.g;
             p->b = gp.r;
          }
-      }   
+      }
    else
       for (; height-- > 0; srcY++,dstPixels += pitch)
       {
@@ -737,7 +736,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
             p->g = gp.g;
             p->b = gp.b;
          }
-      }   
+      }
 }
 
 void flushAll()
@@ -746,7 +745,7 @@ void flushAll()
 }
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
-{                              
+{
    GLfloat mat[] =
    {
       2.0/w, 0.0, 0.0, -1.0,
@@ -779,8 +778,8 @@ bool checkGLfloatBuffer(Context c, int32 n)
       xfree(glcolors);
       flen = n*3/2;
       int len = flen*2;
-      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); 
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); 
+      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
+      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen);
       if (!glcoords || !glcolors)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
@@ -845,7 +844,7 @@ bool initGLES(ScreenSurface /*screen*/unused)
    EGLContext context;
    EGLint width;
    EGLint height;
-   
+
    if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)    {debug("eglGetDisplay() returned error %d", eglGetError()); return false;}
    if (!eglInitialize(display, 0, 0))                                       {debug("eglInitialize() returned error %d", eglGetError()); return false;}
    if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs))         {debug("eglChooseConfig() returned error %d", eglGetError()); destroyEGL(); return false;}
@@ -865,7 +864,7 @@ bool initGLES(ScreenSurface /*screen*/unused)
 }
 
 static void destroyEGL()
-{         
+{
    eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
    eglDestroyContext(_display, _context);
    eglDestroySurface(_display, _surface);
@@ -886,7 +885,7 @@ void privateScreenChange(int32 w, int32 h)
     appW = w;
     appH = h;
 #endif
-   setProjectionMatrix(w,h); 
+   setProjectionMatrix(w,h);
 }
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
@@ -936,26 +935,26 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 void setTimerInterval(int32 t);
 void setShiftYgl()
-{                   
-#ifdef ANDROID           
+{
+#ifdef ANDROID
    if (setShiftYonNextUpdateScreen && needsPaint != null)
-   {       
+   {
       setShiftYonNextUpdateScreen = false;
       glShiftY = desiredglShiftY - desiredScreenShiftY;     // set both at once
       screen.shiftY = desiredScreenShiftY;
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
-      setTimerInterval(1);      
-   }                                     
+      setTimerInterval(1);
+   }
    if (glShiftY < 0) // guich: occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
       glShiftY = 0;
 #else
     glShiftY = -desiredScreenShiftY;
-#endif    
+#endif
 }
 extern int32 desiredScreenShiftY;
 void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
-{ 
+{
    if (surfaceWillChange) return;
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)

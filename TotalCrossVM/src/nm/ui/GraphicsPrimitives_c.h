@@ -313,8 +313,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          applyChanges(currentContext, srcSurf, true);
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
-
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null, alphaMask);
+      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, 0,0, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null, alphaMask);
    }
    else
 #endif
@@ -886,7 +885,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 #define INTERP(j,f,shift) (j + (((f - j) * transparency) >> shift)) & 0xFF
 
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
-void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color, int32* ret); // PalmFont_c.h
+bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* ret); // PalmFont_c.h
 uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
 
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
@@ -895,7 +894,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    int32 startBit, currentBit, incY, y1, r, rmax, istart;
    uint8 *bitmapTable, *ands, *current, *start;
    uint16* bitIndexTable;
-   int32 rowWIB, offset, xMin, xMax, yMin, yMax, x, y, yDif, width, height, spaceW = 0, k, clipX2, pitch;
+   int32 rowWIB, offset, xMin, xMax, yMin, yMax, x, y, yDif, width, width0, height, spaceW = 0, k, clipX2, pitch;
    Pixel transparency, *row0, *row;
    PixelConv *i;
    bool isNibbleStartingLow, isLowNibble;
@@ -907,8 +906,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    uint8 *ands8 = _ands8;
    int32 fcR, fcG, fcB;
 #ifdef __gl2_h_
-   int32 clip[4];
-   int32 id[2];
+   int32 clip[4], charXY[2];
    float *glC, *glV;
 #endif
    bool isVert = Graphics_isVerticalText(g);
@@ -1005,7 +1003,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
-      width = bitIndexTable[ch+1] - offset;
+      width0 = width = bitIndexTable[ch+1] - offset;
 
       width = width * height / uf->ubase->fontP.maxHeight;
       
@@ -1117,9 +1115,9 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             // draws the char, a row at a time
    #ifdef __gl2_h_
             if (isGL)
-            {
-               getCharTexture(currentContext, uf->ubase, ch, fc, id);
-               glDrawTexture(id, 0, 0, width, height, x0, y-istart, width, height, &fc, clip, 255);
+            {       
+               if (getCharPosInTexture(currentContext, uf->ubase, ch, charXY))
+                  glDrawTexture(uf->ubase->textureId, charXY[0], charXY[1], width0, uf->ubase->fontP.maxHeight, x0, y-istart, width, height, uf->ubase->maxW, uf->ubase->maxH, &fc, clip, 255);
             }
             else
    #endif // case 2
