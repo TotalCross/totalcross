@@ -25,7 +25,7 @@
 #ifdef __gl2_h_
 extern int32 appW,appH,glShiftY,desiredglShiftY;
 extern float ftransp[16];
-extern float *glcoords, *glcolors;
+extern float *glXYA;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2);
@@ -477,30 +477,30 @@ static void drawHLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-#ifdef WP8 // in wp8 drawing is not buffered, so we can use this
+#ifdef WP8
          if (pixel1 == pixel2)
             glDrawLine(x, y, x + width, y, pixel1, 255);
          else
          if (checkGLfloatBuffer(currentContext, width/2+2))
          {
-            float *glC = glcolors;
-            float *glV = glcoords;
+            float *xya = glXYA;
             int32 xx, ww;
             for (xx = x, ww = width; ww > 0; ww -= 2, xx += 2)
             {
-               *glC++ = 1; // alpha
-               *glV++ = (float)xx;   *glV++ = (float)y; // vertices
+               *xya++ = (float)xx;   
+               *xya++ = (float)y; // vertices
+               *xya++ = 1; // alpha
             }
-            if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel1);
+            if (xya != glXYA) glDrawPixels(((int32)(xya-glXYA)),pixel1);
 
-            glC = glcolors;
-            glV = glcoords;
+            xya = glXYA;
             for (xx = x + 1, ww = width - 1; ww > 0; ww -= 2, xx += 2)
             {
-               *glC++ = 1; // alpha
-               *glV++ = (float)xx;   *glV++ = (float)y; // vertices
+               *xya++ = (float)xx;
+               *xya++ = (float)y; // vertices
+               *xya++ = 1; // alpha
             }
-            if (glC != glcolors) glDrawPixels(((int32)(glC-glcolors)),pixel2);
+            if (xya != glXYA) glDrawPixels(((int32)(xya-glXYA)),pixel2);
          }
 #else
          if (pixel1 == pixel2)
@@ -558,38 +558,37 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
 #ifdef __gl2_h_
       if (Graphics_useOpenGL(g))
       {
-
 #ifdef WP8
          if (pixel1 == pixel2)
             glDrawLine(x, y, x, y + height, pixel1, 255);
          else
          if (checkGLfloatBuffer(currentContext, height/2+2))
          {
-            float *glC = glcolors;
-            float *glV = glcoords;
+            float *xya = glXYA;
             int32 yy, hh;
             for (yy=y,hh=height; hh > 0; hh -= 2, yy += 2)
             {
-               *glC++ = 1; // alpha
-               *glV++ = (float)x;  *glV++ = (float)yy; // vertices
+               *xya++ = (float)x;
+               *xya++ = (float)yy; // vertices
+               *xya++ = 1; // alpha
             }
-            if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel1);
+            if (xya != glXYA) glDrawPixels(((int32)(xya-glXYA)),pixel1);
 
-            glC = glcolors;
-            glV = glcoords;
+            xya = glXYA;
             for (yy = y+1, hh = height-1; hh > 0; hh -= 2, yy += 2)
             {
-               *glC++ = 1; // alpha
-               *glV++ = (float)x;  *glV++ = (float)yy; // vertices
+               *xya++ = (float)x;
+               *xya++ = (float)yy; // vertices
+               *xya++ = 1; // alpha
             }
-            if (glC != glcolors) glDrawPixels(((int32)(glC - glcolors)), pixel2);
+            if (xya != glXYA) glDrawPixels(((int32)(xya-glXYA)),pixel2);
          }
-#else         
+#else
          if (pixel1 == pixel2)
             glDrawLine(x, y, x, y + height, pixel1, 255);
          else
             glDrawDots(x, y, x, y + height, pixel1, pixel2);
-#endif               
+#endif
          currentContext->fullDirty = true;
       }
       else
@@ -907,7 +906,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    int32 fcR, fcG, fcB;
 #ifdef __gl2_h_
    int32 clip[4], charXY[2];
-   float *glC, *glV;
+   float *xya;
 #endif
    bool isVert = Graphics_isVerticalText(g);
    bool isGL = Graphics_useOpenGL(g);
@@ -1062,8 +1061,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             if (isGL)
             {
                int ty = glShiftY;
-               glC = glcolors;
-               glV = glcoords;
+               
+               xya = glXYA;
                for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
                {
                   current = start;
@@ -1076,14 +1075,14 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                         continue;
 
                      // alpha
-                     *glC++ = ftransp[transparency];
                      // vertices
-                     *glV++ = (float)x;
-                     *glV++ = (float)(y + ty);
+                     *xya++ = (float)x;
+                     *xya++ = (float)(y + ty);
+                     *xya++ = ftransp[transparency];
                   }
                }
-               if (glC != glcolors) // flush vertices buffer
-                  glDrawPixels(((int32)(glC-glcolors)),foreColor);
+               if (xya != glXYA) // flush vertices buffer
+                  glDrawPixels(((int32)(xya - glXYA)),foreColor);
             }
             else
    #endif

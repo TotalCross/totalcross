@@ -62,8 +62,7 @@ VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
 GLfloat ftransp[16], f255[256];
 int32 flen;
-GLfloat *glcoords;//[flen*2]; x,y
-GLfloat *glcolors;//[flen];   alpha
+GLfloat *glXYA;//[flen*2]; x,y
 static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
@@ -131,9 +130,9 @@ static GLuint textS,textRGB;
 //////////// points (text)
 
 #define POINTS_VERTEX_CODE \
-      "attribute vec4 a_Position; uniform vec4 a_Color; varying vec4 v_Color; attribute float alpha;" \
+      "attribute vec3 a_xya; uniform vec4 a_Color; varying vec4 v_Color;" \
       "uniform mat4 projectionMatrix; " \
-      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color.x,a_Color.y,a_Color.z,alpha); gl_Position = a_Position * projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color.x,a_Color.y,a_Color.z, a_xya.z); gl_Position = vec4(a_xya.xy,0,1.0) * projectionMatrix;}"
 
 #define POINTS_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -141,9 +140,8 @@ static GLuint textS,textRGB;
       "void main() {gl_FragColor = v_Color;}"
 
 static GLuint pointsProgram;
-static GLuint pointsPosition;
+static GLuint pointsXYA;
 static GLuint pointsColor;
-static GLuint pointsAlpha;
 
 ///////////// line, rect, point
 
@@ -309,10 +307,8 @@ static void initPoints()
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
    setCurrentProgram(pointsProgram);
    pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
-   pointsAlpha = glGetAttribLocation(pointsProgram, "alpha"); GL_CHECK_ERROR
-   pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(pointsAlpha); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-   glEnableVertexAttribArray(pointsPosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   pointsXYA = glGetAttribLocation(pointsProgram, "a_xya"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(pointsXYA); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
 }
 
 static int pixLastRGB = -1;
@@ -325,8 +321,7 @@ void glDrawPixels(int32 n, int32 rgb)
       pc.pixel = pixLastRGB = rgb;
       glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
    }
-   glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
-   glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+   glVertexAttribPointer(pointsXYA, 3, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
    glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
 }
 
@@ -345,7 +340,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
    if (checkGLfloatBuffer(currentContext, n))
    {
       int32 i,nn=n;
-      float *glV = glcoords;
+      float *glV = glXYA;
       int32 cx1 = Graphics_clipX1(g), cy1 = Graphics_clipY1(g), cx2 = Graphics_clipX2(g), cy2 = Graphics_clipY2(g), xx,yy;
       bool doClip = false;
       for (i = 0; i < n; i++)
@@ -356,7 +351,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
             doClip = true;
       }
       if (doClip) glSetClip(cx1,cy1,cx2,cy2);
-      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
       glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0,nn); GL_CHECK_ERROR
       if (doClip) glClearClip();
    }
@@ -583,7 +578,6 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
       glUniform3f(textRGB, f255[color->r],f255[color->g],f255[color->b]); GL_CHECK_ERROR
    }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
-   //glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR - 3% gain
    if (doClip) glClearClip();
 }
 
@@ -670,7 +664,8 @@ void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 
 void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2)
 {
-   drawLRP(x1+1,y1,x2+1,y2, rgb1, rgb2, 255, DOTS);
+   int32 extra = x1 == x2 ? 1 : 0;
+   drawLRP(x1+extra, y1, x2+extra, y2-extra, rgb1, rgb2, 255, DOTS);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
@@ -777,17 +772,13 @@ bool checkGLfloatBuffer(Context c, int32 n)
 {
    if (n > flen)
    {
-      xfree(glcoords);
-      xfree(glcolors);
+      xfree(glXYA);
       flen = n*3/2;
-      int len = flen*2;
-      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen);
-      if (!glcoords || !glcolors)
+      int len = flen*3;
+      glXYA = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
+      if (!glXYA)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
-         xfree(glcoords);
-         xfree(glcolors);
          flen = 0;
          return false;
       }
@@ -919,8 +910,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
    {
       destroyEGL();
       xfree(screen->extension);
-      xfree(glcoords);
-      xfree(glcolors);
+      xfree(glXYA);
    }
 #else
    if (isScreenChange)
