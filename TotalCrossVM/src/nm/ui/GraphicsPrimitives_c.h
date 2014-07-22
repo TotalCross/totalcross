@@ -590,7 +590,7 @@ static void drawVLine(Context currentContext, TCObject g, int32 x, int32 y, int3
             glDrawLine(x, y, x, y + height, pixel1, 255);
          else
             glDrawDots(x, y, x, y + height, pixel1, pixel2);
-#endif*/
+#endif
          currentContext->fullDirty = true;
       }
       else
