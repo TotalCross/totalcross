@@ -182,7 +182,7 @@ int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
           if (!createDirRec(p, szPath, nStringSize, slot))
           {
              *c = '/';
-             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != 17) // ignore if EEXIST
              {
                 throwExceptionWithCode(p->currentContext, IOException, err);
                 return 1;
@@ -193,7 +193,7 @@ int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
           return 1;
       }
   
-   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != 17)
    {
       throwExceptionWithCode(p->currentContext, IOException, err);
       return 1;
