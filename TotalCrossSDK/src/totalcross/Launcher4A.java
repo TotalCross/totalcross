@@ -1053,9 +1053,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
             double[] llF = getLatLon(addressF);
-            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
             if (llI != null && llF != null)
             {
+               AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
