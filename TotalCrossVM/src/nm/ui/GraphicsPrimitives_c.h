@@ -1006,7 +1006,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       offset = bitIndexTable[ch];
       width0 = width = bitIndexTable[ch+1] - offset;
 
-      width = width * height / uf->ubase->fontP.maxHeight;
+      if (uf->ubase != null) width = width * height / uf->ubase->fontP.maxHeight;
       
       if ((xMax = x0 + width) > Graphics_clipX2(g))
          xMax = Graphics_clipX2(g);
@@ -1036,6 +1036,39 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             startBit  = offset & 7;
 
             // draws the char, a row at a time
+   #ifdef __gl2_h_
+            // draws the char, a row at a time
+            if (isGL)
+            {
+               int32 ty = glShiftY, nn=0;
+               
+               xya = glXYA;
+               for (; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
+               {
+                  current = start;
+                  ands = ands8 + (currentBit = startBit);
+                  for (x=x0; x < xMax; x++)
+                  {
+                     if ((*current & *ands++) != 0 && x >= xMin)
+                     {
+                        *xya++ = (float)x;
+                        *xya++ = (float)(y + ty);
+                        *xya++ = 1;
+                        nn++;
+                     }
+                     if (++currentBit == 8)   // finished this uint8?
+                     {
+                        currentBit = 0;       // reset counter
+                        ands = ands8;         // reset test bit pointer
+                        ++current;            // inc current uint8
+                     }
+                  }
+               }
+               if (nn > 0) // flush vertices buffer
+                  glDrawPixels(nn,foreColor);
+            }
+            else
+   #endif
             for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
             {
                current = start;
