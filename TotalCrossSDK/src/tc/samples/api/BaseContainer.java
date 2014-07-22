@@ -97,7 +97,7 @@ public class BaseContainer extends Container
                         Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
                         String s;
                         setInfo(s="Paint 100x elapsed: "+(fim-ini)+"ms");
-                        Vm.debug(s);
+                        Vm.debug(headerBar.getTitle()+" - "+s);
                         break;
                      }
                      case 2:
