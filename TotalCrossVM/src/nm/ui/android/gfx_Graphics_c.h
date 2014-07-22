@@ -327,7 +327,6 @@ void glDrawPixels(int32 n, int32 rgb)
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
 {
    PixelConv pc;
-   ty += glShiftY;
    setCurrentProgram(lrpProgram);
    pc.pixel = rgb;
    pc.a = 255;
@@ -376,8 +375,6 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
    glVertexAttribPointer(shadeColor, 3, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
 
-   y += glShiftY;
-
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
    shcoords[3] = shcoords[5] = y+h;
@@ -385,21 +382,21 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
    if (!horiz)
    {
-      shcolors[0] = shcolors[9] = f255[c2.r]; // upper left + upper right
+      shcolors[0] = shcolors[9]  = f255[c2.r]; // upper left + upper right
       shcolors[1] = shcolors[10] = f255[c2.g];
       shcolors[2] = shcolors[11] = f255[c2.b];
 
       shcolors[3] = shcolors[6]  = f255[c1.r]; // lower left + lower right
       shcolors[4] = shcolors[7]  = f255[c1.g];
-      shcolors[5] = shcolors[8] = f255[c1.b];
+      shcolors[5] = shcolors[8]  = f255[c1.b];
    }
    else
    {
-      shcolors[0] = shcolors[3] = f255[c2.r];  // upper left + lower left
-      shcolors[1] = shcolors[4] = f255[c2.g];
-      shcolors[2] = shcolors[5] = f255[c2.b];
+      shcolors[0] = shcolors[3]  = f255[c2.r];  // upper left + lower left
+      shcolors[1] = shcolors[4]  = f255[c2.g];
+      shcolors[2] = shcolors[5]  = f255[c2.b];
 
-      shcolors[6] = shcolors[9] = f255[c1.r]; // lower right + upper right
+      shcolors[6] = shcolors[9]  = f255[c1.r]; // lower right + upper right
       shcolors[7] = shcolors[10] = f255[c1.g];
       shcolors[8] = shcolors[11] = f255[c1.b];
    }
@@ -504,8 +501,6 @@ void glClearClip()
 // note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 {
-   y1 += glShiftY;
-   y2 += glShiftY;
    glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
    if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
    if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;
@@ -527,7 +522,6 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
       glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR
 
-   dstY += glShiftY;
    GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
 
    // coordinates
@@ -600,7 +594,6 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
    float* coords = lrcoords;
    setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
    glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
-   int32 ty = glShiftY;
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
@@ -617,13 +610,12 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
    }
-   y += ty;
    if (type == DIAGONAL || type == DOTS)
    {
       coords[0] = x;
       coords[1] = y;
-      coords[2] = w;    // x2
-      coords[3] = h+ty; // y2
+      coords[2] = w;  // x2
+      coords[3] = h; // y2
       glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
    }
    else
@@ -728,13 +720,15 @@ void flushAll()
 
 static void setProjectionMatrix(GLfloat w, GLfloat h)
 {
+   double t = -glShiftY, b = h-glShiftY; // f = 1, n = -1
    GLfloat mat[] =
    {
-      2.0/w, 0.0, 0.0, -1.0,
-      0.0, -2.0/h, 0.0, 1.0,
-      0.0, 0.0, -1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0
+      2.0/w,    0.0,   0.0, -1.0,
+      0.0,    2.0/(t-b),   0.0,  -(t+b)/(t-b),
+      0.0,      0.0,  -1.0,  0.0,
+      0.0,      0.0,   0.0,  1.0
    };
+      
    setCurrentProgram(textProgram);    glUniformMatrix4fv(glGetUniformLocation(textProgram,    "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
@@ -917,12 +911,16 @@ void setShiftYgl()
    {
       setShiftYonNextUpdateScreen = false;
       glShiftY = desiredglShiftY - desiredScreenShiftY;     // set both at once
+      setProjectionMatrix(appW,appH);
       screen.shiftY = desiredScreenShiftY;
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
       setTimerInterval(1);
    }
    if (glShiftY < 0) // guich: occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
+   {
       glShiftY = 0;
+      setProjectionMatrix(appW,appH);
+   }
 #else
     glShiftY = -desiredScreenShiftY;
 #endif
