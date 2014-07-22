@@ -68,7 +68,7 @@ public abstract class ControlAnimation implements TimerListener
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);
-      Vm.sleep(delayAfterFinish);
+      if (delayAfterFinish > 0) Vm.safeSleep(delayAfterFinish);
       if (then != null)
          try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }

@@ -248,6 +248,33 @@ TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics n
    drawDottedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_backPixel(g));
 }                 
 //////////////////////////////////////////////////////////////////////////
+static bool isConvex(int32* x, int32* y, int32 n)
+{
+#ifndef __gl2_h_   
+   return false;
+#else  // http://debian.fmi.uni-sofia.bg/~sergei/cgsr/docs/clockwise.htm
+   int32 i,j,k;
+   int32 flag = 0;
+   int32 z;
+
+   if (n < 3)
+      return(0);
+
+   for (i = 0; i < n; i++) 
+   {
+      j = (i + 1) % n;
+      k = (i + 2) % n;
+      z  = (x[j] - x[i]) * (y[k] - y[j]) - (y[j] - y[i]) * (x[k] - x[j]);
+      if (z < 0)
+         flag |= 1;
+      else if (z > 0)
+         flag |= 2;
+      if (flag == 3)
+         return false;
+   }
+   return flag != 0;
+#endif      
+}
 TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
    TCObject g = p->obj[0];
@@ -259,7 +286,7 @@ TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics nativ
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false,false);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false,isConvex(xp,yp,nPoints));
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
