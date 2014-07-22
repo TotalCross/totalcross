@@ -57,7 +57,7 @@ public class ClippedContainer extends Container
       if (verticalOnly)
       {
          Object[] items = tabOrder.items;
-         int n = tabOrder.size(),i,first;
+         int n = tabOrder.size(),i,first,painted=0;
          // check if the mid container of the last search is still visible, and restart the search using it
          if (lastMid != -1 && lastMid < n && ((Control)items[lastMid]).isVisibleAndInside(y0,yf))
             first = lastMid;
@@ -70,7 +70,7 @@ public class ClippedContainer extends Container
          for (i = first; i < n; i++)
          {
             Control child = (Control)items[i];
-            if (!child.isVisibleAndInside(y0,yf))
+            if (painted++ > 0 && !child.isVisibleAndInside(y0,yf))
                break;
             if (pw == null || !child.isObscured(pw))            
             {
