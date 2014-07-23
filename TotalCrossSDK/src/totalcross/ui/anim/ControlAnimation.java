@@ -12,7 +12,7 @@ public abstract class ControlAnimation implements TimerListener
 {
    protected Control c;
    protected int totalTime;
-   private TimerEvent te;
+   private TimerEvent teFrame, teDelay;
    private ControlAnimation with,then;
    private AnimationFinished animFinish;
    private int initialTime;
@@ -48,7 +48,7 @@ public abstract class ControlAnimation implements TimerListener
    {
       if (!slave && c.offscreen == null)
       {
-         te = c.addTimer(frameRate);
+         teFrame = c.addTimer(frameRate);
          c.addTimerListener(this);
          Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
          c.takeScreenShot();
@@ -60,15 +60,22 @@ public abstract class ControlAnimation implements TimerListener
 
    public void stop()
    {
-      if (te != null)
+      if (teFrame != null)
       {
-         c.removeTimer(te);
-         te = null;
+         c.removeTimer(teFrame);
+         teFrame = null;
          c.releaseScreenShot();
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);
-      if (delayAfterFinish > 0) Vm.safeSleep(delayAfterFinish);
+      if (delayAfterFinish > 0) 
+         teDelay = c.addTimer(delayAfterFinish);
+      else
+         handleThen();
+   }
+   
+   private void handleThen()
+   {
       if (then != null)
          try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }
@@ -96,8 +103,21 @@ public abstract class ControlAnimation implements TimerListener
    
    public void timerTriggered(TimerEvent e)
    {
-      if (te != null && te.triggered)
+      if (teFrame != null && teFrame.triggered)
          animatePriv();
+      else
+      if (teDelay != null && teDelay.triggered)
+      {
+         c.removeTimer(teDelay);
+         teDelay = null;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable() 
+         {
+            public void run() 
+            {
+               handleThen();
+            }
+         });         
+      }
    }
    
    private void animatePriv()
