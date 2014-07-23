@@ -16,7 +16,6 @@
 
 package totalcross.ui;
 
-import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 
 /* A container that checks if the sibling is within the visible area before calling paint on it.
@@ -50,11 +49,17 @@ public class ClippedContainer extends Container
    
    public void paintChildren()
    {
-      Rect r = getClientRect(); // -8,0,792,1188 - cli: 0,38,784,822 - fixes a problem of SAV for the ItemPedido screen: was painting the left and right tabs when the middle tab was selected
-      int y0 = r.y;//-this.y; 
-      int yf = y0 + r.height;
-      int x0 = r.x;//-this.x;
-      int xf = x0 + r.width;
+//      Rect r = getClientRect(); // -8,0,792,1188 - cli: 0,38,784,822 - fixes a problem of SAV for the ItemPedido screen: was painting the left and right tabs when the middle tab was selected
+      int y0 = -this.y; 
+      int yf = y0 + parent.height;
+      int x0 = -this.x;
+      int xf = x0 + parent.width;
+
+//      int y0 = r.y;           // -this.y; 
+//      int yf = y0 + r.height; // y0 + parent.height;
+//      int x0 = r.x;           // -this.x;
+//      int xf = x0 + r.width;  //  x0 + parent.width;
+
       Window pw = getParentWindow();
       if (pw == Window.topMost) pw = null; // no need to check if we're already at the top
       
