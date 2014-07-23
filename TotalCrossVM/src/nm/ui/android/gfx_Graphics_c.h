@@ -501,6 +501,8 @@ void glClearClip()
 // note2: 777e4e85d26ddff1bb1d211c161bebc626d69636 - removed glClearClip and glSetClip. Some Motorola devices were clipping out the whole screen when the keyboard was visible and the screen was shifted. prior: 4d329c97ef58a42f365a2d48b70f0d9126869355
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2)
 {
+   y1 += glShiftY;
+   y2 += glShiftY;
    glEnable(GL_SCISSOR_TEST); GL_CHECK_ERROR
    if (x1 < 0) x1 = 0; else if (x1 > appW) x1 = appW;
    if (x2 < 0) x2 = 0; else if (x2 > appW) x2 = appW;

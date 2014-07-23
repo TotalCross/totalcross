@@ -23,7 +23,7 @@
 #define TRANSITION_CLOSE 2
 
 #ifdef __gl2_h_
-extern int32 appW,appH,glShiftY,desiredglShiftY;
+extern int32 appW,appH;
 extern float ftransp[16];
 extern float *glXYA;
 void glClearClip();
@@ -1040,7 +1040,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             // draws the char, a row at a time
             if (isGL)
             {
-               int32 ty = glShiftY, nn=0;
+               int32 nn=0;
                
                xya = glXYA;
                for (; r < rmax; start+=rowWIB, r++,row += pitch,y++)    // draw each row
@@ -1052,7 +1052,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                      if ((*current & *ands++) != 0 && x >= xMin)
                      {
                         *xya++ = (float)x;
-                        *xya++ = (float)(y + ty);
+                        *xya++ = (float)y;
                         *xya++ = 1;
                         nn++;
                      }
@@ -1095,7 +1095,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             // draws the char, a row at a time
             if (isGL)
             {
-               int32 ty = glShiftY, nn=0;
+               int32 nn=0;
                
                xya = glXYA;
                for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
@@ -1112,7 +1112,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                      // alpha
                      // vertices
                      *xya++ = (float)x;
-                     *xya++ = (float)(y + ty);
+                     *xya++ = (float)y;
                      *xya++ = ftransp[transparency];
                      nn++;
                   }
