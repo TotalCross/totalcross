@@ -303,7 +303,7 @@ public class Control extends GfxSurface
       offscreen = null;
       Image offscreen = new Image(width,height);
       Graphics g = offscreen.getGraphics();
-      if (parent != null) 
+      if (!transparentBackground && parent != null) 
       {     
          g.backColor = parent.backColor;
          g.fillRect(0,0,width,height);

@@ -95,8 +95,8 @@ public class BaseContainer extends Container
                            repaintNow();
                         int fim = Vm.getTimeStamp();
                         Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
-                        String s;
-                        setInfo(s="Paint 100x elapsed: "+(fim-ini)+"ms");
+                        String s = "Paint 100x elapsed: "+(fim-ini)+"ms";
+                        Toast.show("\n"+s+"\n", 0x303030, Color.YELLOW, 3000);
                         Vm.debug(headerBar.getTitle()+" - "+s);
                         break;
                      }

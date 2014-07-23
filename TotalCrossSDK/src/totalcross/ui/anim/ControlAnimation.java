@@ -17,6 +17,7 @@ public abstract class ControlAnimation implements TimerListener
    private AnimationFinished animFinish;
    private int initialTime;
    private boolean slave;
+   protected boolean releaseScreenShot=true;
    
    public static int frameRate = Settings.platform.equals(Settings.WINDOWSPHONE) ? 30 : 20;
    /** A delay issued right after the animation finishes */
@@ -46,13 +47,19 @@ public abstract class ControlAnimation implements TimerListener
 
    public void start() throws Exception
    {
-      if (!slave && c.offscreen == null)
+      if (!slave)
       {
-         teFrame = c.addTimer(frameRate);
-         c.addTimerListener(this);
-         Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
-         c.takeScreenShot();
-         Window.needsPaint = true;
+         if (teFrame == null)
+         {
+            teFrame = c.addTimer(frameRate);
+            c.addTimerListener(this);
+         }
+         if (c.offscreen == null)
+         {
+            Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
+            c.takeScreenShot();
+            Window.needsPaint = true;
+         }
       }
       if (with != null) with.start();
       initialTime = Vm.getTimeStamp();
@@ -64,7 +71,8 @@ public abstract class ControlAnimation implements TimerListener
       {
          c.removeTimer(teFrame);
          teFrame = null;
-         c.releaseScreenShot();
+         if (releaseScreenShot) 
+            c.releaseScreenShot();
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);

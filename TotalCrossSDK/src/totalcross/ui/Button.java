@@ -59,7 +59,7 @@ public class Button extends Control
    public static final byte BORDER_NONE = 0;
    /** Specifies a single-lined border for this button. Used in the setBorder method. */
    public static final byte BORDER_SIMPLE = 1;
-   /** Specifies a 3d border this button. Used in the setBorder method. */
+   /** Specifies a 3d border for this button. Used in the setBorder method. */
    public static final byte BORDER_3D = 2;
    /** Specifies a vertical 3d-gradient border for this button. Used in the setBorder method.
     * Note that, in this mode, the back and fore colors are set using the borderColor3DG,
@@ -93,6 +93,10 @@ public class Button extends Control
     * @since TotalCross 1.12 
     */
    public static final byte BORDER_GRAY_IMAGE = 5; // guich@tc112_25
+   /** Specifies a rounded border for this button. Used in the setBorder method. Note that you MUST use PREFERRED when specifying button's height.
+    * @since TotalCross 3.04 
+    */
+   public static final byte BORDER_ROUND = 6;
    
    /** Set to true to draw the button borders if transparentBackground is true.
     * @since TotalCross 1.15 
@@ -293,6 +297,9 @@ public class Button extends Control
       this.border = border;
       switch (border)
       {
+         case BORDER_ROUND:
+            transparentBackground = true;
+            break;
          case BORDER_3D: // guich@tc112_30
          case BORDER_3D_HORIZONTAL_GRADIENT:
          case BORDER_3D_VERTICAL_GRADIENT:
@@ -359,6 +366,8 @@ public class Button extends Control
          default:               
             prefW = tw + iw;
       }
+      if (border == BORDER_ROUND)
+         prefW += getPreferredHeight();
       return prefW + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
    }
 
@@ -495,6 +504,7 @@ public class Button extends Control
    public void onPaint(Graphics g)
    {
       if (skipPaint) return;
+      boolean isRound = border == BORDER_ROUND;
       if (isAndroidStyle)
       {
          if (!Settings.isOpenGL && !Settings.onJavaSE)
@@ -505,9 +515,15 @@ public class Button extends Control
          }
       }
       else
-      if (!transparentBackground || drawBordersIfTransparentBackground)
+      if (!isRound && (!transparentBackground || drawBordersIfTransparentBackground))
          paintBackground(g);
 
+      if (isRound)
+      {
+         g.backColor = backColor;
+         g.fillRoundRect(0,0,width,height,height/2);
+      }
+      else
       if (isAndroidStyle)
          paintImage(g, true, 0,0);
       
