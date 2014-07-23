@@ -214,6 +214,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       disabled = new boolean[count];
    }
    
+   protected void computeClipRect()
+   {
+      bagClipY0 = clientRect.y;           // -this.y; 
+      bagClipYf = bagClipY0 + clientRect.height; // y0 + parent.height;
+      bagClipX0 = clientRect.x;           // -this.x;
+      bagClipXf = bagClipX0 + clientRect.width;  //  x0 + parent.width;
+   }
+   
    public void initUI()
    {
       onBoundsChanged(false);
