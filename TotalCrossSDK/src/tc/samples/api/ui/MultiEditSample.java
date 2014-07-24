@@ -63,8 +63,9 @@ public class MultiEditSample extends BaseContainer
 
          Label l;
          sc.add(new Label("Aligned Label:"),LEFT,AFTER+50);
-         sc.add(l = new Label(Convert.insertLineBreak(Settings.screenWidth-20, fm, TEXT)));
+         sc.add(l = new Label(TEXT));
          l.align = FILL;
+         l.autoSplit = true;
          l.setRect(LEFT,AFTER+2,FILL-20,PREFERRED);
          l.backgroundType = Label.VERTICAL_GRADIENT_BACKGROUND;
          l.firstGradientColor = Color.YELLOW;
