@@ -308,6 +308,7 @@ public class Control extends GfxSurface
          g.backColor = parent.backColor;
          g.fillRect(0,0,width,height);
       }
+      g.setFont(font);
       if (asWindow != null)
          asWindow.paintWindowBackground(g);
       paint2shot(g,this) ;
