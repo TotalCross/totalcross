@@ -38,6 +38,12 @@ public class BaseContainer extends Container
    public boolean isSingleCall;
    public String info;
 
+   static
+   {
+      Toast.height = PREFERRED + Font.NORMAL_SIZE;
+      Toast.posY = BOTTOM - Font.NORMAL_SIZE * 3;
+   }
+   
    protected String getHelpMessage()
    {
       return null;
@@ -96,7 +102,7 @@ public class BaseContainer extends Container
                         int fim = Vm.getTimeStamp();
                         Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
                         String s = "Paint 100x elapsed: "+(fim-ini)+"ms";
-                        Toast.show("\n"+s+"\n", 0x303030, Color.YELLOW, 3000);
+                        Toast.show(s, 3000);
                         Vm.debug(headerBar.getTitle()+" - "+s);
                         break;
                      }
