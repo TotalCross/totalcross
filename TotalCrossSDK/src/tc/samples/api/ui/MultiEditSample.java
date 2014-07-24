@@ -18,7 +18,6 @@ package tc.samples.api.ui;
 
 import tc.samples.api.*;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
