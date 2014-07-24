@@ -1520,12 +1520,19 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                FileInputStream fin = new FileInputStream(ff);
                // check if there's a SIGSEGV, which indicates an vm abort
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
-               byte[] buf = new byte[4096];
+               byte[] buf = new byte[8192];
+               final String USELESS = /* #00  pc */ "/data/data/totalcross.appmbgs/lib/libtcvm.so (executeMethod)";
                boolean hasSIGSEGV = false;
-               for (int n; (n = fin.read(buf)) > 0;)
+               for (int n,idx; (n = fin.read(buf)) > 0;)
                {
-                  if (!hasSIGSEGV && new String(buf,0,n).contains("SIGSEGV"))
-                     hasSIGSEGV = true;
+                  String s = new String(buf,0,n);
+                  if ((idx = s.indexOf(">>> totalcross")) >= 0 && 
+                      (idx = s.indexOf("SIGSEGV",idx)) >= 0 && 
+                      (idx = s.indexOf("#00  pc",idx)) >= 0) // #00  pc 0016d748  /data/data/totalcross.appmbgs/lib/libtcvm.so (executeMethod)
+                  {
+                     if (!s.substring(idx+18,Math.min(s.length(),idx+18+USELESS.length())).equals(USELESS))
+                        hasSIGSEGV = true;
+                  }
                   zout.write(buf,0,n);
                }
                zout.closeEntry();
