@@ -187,6 +187,16 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
    
+   /** Set to false to disable flicking between tabs. You can still switch between the tabs by clicking on them.
+    * Sample:
+    * <pre>
+      TabbedContainer.allowFlick = false;
+      TabbedContainer tc = new TabbedContainer(caps);
+      TabbedContainer.allowFlick = true;
+    * </pre>
+    */
+   public static boolean allowFlick = Settings.fingerTouch;
+   
    private TabbedContainer(int count)
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
@@ -195,7 +205,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       started = true;
       focusHandler = true;
       containers = new Container[count];
-      if (Settings.fingerTouch)
+      if (allowFlick)
       {
          flick = new Flick(this);
          flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
@@ -258,7 +268,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          }
       if (!on && activeIndex == tabIndex) // move to next tab
          setActiveTab(nextEnabled(activeIndex,true));
-      if (Settings.fingerTouch)
+      if (flick != null)
       {
          containers[tabIndex].setEnabled(on);
          if (!on) // tell Control.postEvent that the flick still needs to be called
