@@ -1157,6 +1157,8 @@ public class Window extends Container
          paintWindowBackground(gg);
          paintChildren();
       }
+      if (offscreen == null && Settings.onJavaSE)
+         updateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, and make it child of this one. All events in the behind window are deactivated.
