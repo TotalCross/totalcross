@@ -148,6 +148,8 @@ public class ProgressBar extends Control
     * <p>
     * If this is an endless ProgressBar, the given number is used as 
     * an increment to the current value. Note that n must be greater than 0.
+    * 
+    * If you call this method and the bar isnt updated, you can try to call <code>MainWindow.pumpEvents()</code>.
     *
     * @param   n The new value
     * @see     #getValue
