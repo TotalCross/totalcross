@@ -168,12 +168,12 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
 extern "C" {extern int32 *shiftYfield, *lastShiftYfield, *shiftHfield; }
 void setTimerInterval(int32 t);
-void setShiftYgl()
+void setShiftYgl(int32 shiftY)
 {
 	if (setShiftYonNextUpdateScreen) 
    {
       int32 sipHeight = dxGetSipHeight();
-		int32 componentPos = desiredScreenShiftY;
+		int32 componentPos = shiftY;
       if (appW > appH) // in landscape we work a bit different
          componentPos += *shiftHfield/4*5;
 		setShiftYonNextUpdateScreen = false;

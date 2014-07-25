@@ -50,7 +50,6 @@ extern int32 *needsPaint;
 
 extern TCGfloat ftransp[16];
 extern TCGfloat* glXYA;//[flen*3]; x,y
-extern int32 desiredScreenShiftY;
 extern int32 setShiftYonNextUpdateScreen;
 
 extern VoidPs* imgTextures;

@@ -906,28 +906,22 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 }
 
 void setTimerInterval(int32 t);
-void setShiftYgl()
+void setShiftYgl(int32 shiftY)
 {
 #ifdef ANDROID
    if (setShiftYonNextUpdateScreen && needsPaint != null)
    {
       setShiftYonNextUpdateScreen = false;
-      glShiftY = desiredglShiftY - desiredScreenShiftY;     // set both at once
+      glShiftY = max32(0,desiredglShiftY - shiftY); // guich: under 0 occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
       setProjectionMatrix(appW,appH);
-      screen.shiftY = desiredScreenShiftY;
+      screen.shiftY = shiftY;
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
-      setTimerInterval(1);
-   }
-   if (glShiftY < 0) // guich: occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
-   {
-      glShiftY = 0;
-      setProjectionMatrix(appW,appH);
+      setTimerInterval(1); // needed, dont remove!
    }
 #else
-    glShiftY = -desiredScreenShiftY;
+    glShiftY = -shiftY;
 #endif
 }
-extern int32 desiredScreenShiftY;
 void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 {

@@ -2043,7 +2043,7 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
 }
 #endif
 
-int32 desiredScreenShiftY;
+void setShiftYgl(int32 shiftY);
 
 // not used with opengl
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
@@ -2118,7 +2118,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    
 #ifdef __gl2_h_
-   desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
+   setShiftYgl(shiftY);
 #else
    screen.shiftY = shiftY;
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
@@ -3109,7 +3109,6 @@ static bool checkScreenPixels()
    return screen.pixels != null;
 }
 
-void setShiftYgl();
 void updateScreen(Context currentContext)
 {
 #ifdef ANDROID
@@ -3140,7 +3139,7 @@ void updateScreen(Context currentContext)
 #endif
    UNLOCKVAR(screen);
 #ifdef __gl2_h_
-   setShiftYgl();
+//   setShiftYgl();
 #endif   
 }
 
