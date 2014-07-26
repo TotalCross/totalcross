@@ -76,7 +76,7 @@ int32 glGetPixel(int32 x, int32 y);
 void flushPixels();
 bool checkGLfloatBuffer(Context c, int32 n);
 
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask);
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
 void privateScreenChange(int32 w, int32 h);

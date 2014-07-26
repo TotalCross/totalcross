@@ -313,7 +313,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          applyChanges(currentContext, srcSurf, true);
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
-      glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, 0,0, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null,null, alphaMask);
+/*img*/ glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, 0,0, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null, alphaMask);
    }
    else
 #endif
@@ -907,7 +907,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    uint8 *ands8 = _ands8;
    int32 fcR, fcG, fcB;
 #ifdef __gl2_h_
-   int32 clip[4], charXY[2];
+   int32 charXY[2];
    float *xya;
 #endif
    bool isVert = Graphics_isVerticalText(g);
@@ -959,15 +959,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    y = y0;
 
    pitch = Graphics_pitch(g);
-#ifdef __gl2_h_
-   if (isGL)
-   {
-      clip[0] = xMin;
-      clip[1] = yMin;
-      clip[2] = clipX2;
-      clip[3] = yMax;
-   }
-#endif   
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
@@ -1037,7 +1028,6 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
             // draws the char, a row at a time
    #ifdef __gl2_h_
-            // draws the char, a row at a time
             if (isGL)
             {
                int32 nn=0;
@@ -1091,8 +1081,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
          {
             start = bitmapTable + (offset >> 1) + rowWIB * istart;
             isNibbleStartingLow = (offset & 1) == 1;
-   #ifdef __gl2_h_
             // draws the char, a row at a time
+   #ifdef __gl2_h_
             if (isGL)
             {
                int32 nn=0;
@@ -1152,7 +1142,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             if (isGL)
             {       
                if (getCharPosInTexture(currentContext, uf->ubase, ch, charXY))
-                  glDrawTexture(uf->ubase->textureId, charXY[0], charXY[1], width0, uf->ubase->fontP.maxHeight, x0, y-istart, width, height, uf->ubase->maxW, uf->ubase->maxH, &fc, clip, 255);
+/*text*/          glDrawTexture(uf->ubase->textureId, charXY[0], charXY[1], width0, uf->ubase->fontP.maxHeight, x0, y-istart, width, height, uf->ubase->maxW, uf->ubase->maxH, &fc, 255);
             }
             else
    #endif // case 2

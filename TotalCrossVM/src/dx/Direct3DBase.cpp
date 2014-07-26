@@ -93,8 +93,8 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    d3dDevice->CreateDeferredContext(0, &d3dcontext);
 
    DXRELEASE(depthStencil);                 DXRELEASE(pBlendState);                     DXRELEASE(pixelShader);
-   DXRELEASE(depthStencilView);             DXRELEASE(pRasterStateDisableClipping);     DXRELEASE(constantBuffer);
-   DXRELEASE(indexBuffer);                  DXRELEASE(pRasterStateEnableClipping);      DXRELEASE(vertexShaderT);
+   DXRELEASE(depthStencilView);             DXRELEASE(constantBuffer);
+   DXRELEASE(indexBuffer);                  DXRELEASE(vertexShaderT);
    DXRELEASE(pBufferColor);                 DXRELEASE(texVertexBuffer);                 DXRELEASE(inputLayoutT);
    DXRELEASE(pBufferRect);                  DXRELEASE(renderTexView);                   DXRELEASE(pixelShaderT);
    DXRELEASE(pBufferRectLC);                DXRELEASE(renderTex);                       DXRELEASE(vertexShaderLC);
@@ -197,15 +197,6 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
    DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
 
-   // setup clipping
-   D3D11_RASTERIZER_DESC rasterizerState = { D3D11_FILL_SOLID };
-   rasterizerState.CullMode = D3D11_CULL_FRONT;
-   rasterizerState.FrontCounterClockwise = true;
-   rasterizerState.DepthClipEnable = true;
-   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateDisableClipping));
-   rasterizerState.ScissorEnable = true;
-   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateEnableClipping));
-
    // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
    bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
@@ -291,7 +282,6 @@ void Direct3DBase::setColor(int color, int alphaMask)
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    if (minimized) return;
-   int clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
    y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
@@ -305,7 +295,6 @@ void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h
    };
 
    setProgram(PROGRAM_LC);
-   setClip(clip);
    D3D11_MAPPED_SUBRESOURCE ms;
    d3dcontext->Map(pBufferRectLC, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
@@ -361,15 +350,10 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
 
-   int32 clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
-   setClip(clip);
-
    d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
    d3dcontext->IASetIndexBuffer(pixelsIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
    d3dcontext->IASetPrimitiveTopology(fill ? D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST: D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    d3dcontext->DrawIndexed(n, 0, 0);
-
-   setClip(null);
 
    delete cubeVertices;
 }
@@ -521,8 +505,6 @@ void Direct3DBase::preRender()
    d3dcontext->OMSetRenderTargets(1, &renderTexView, depthStencilView);
    d3dcontext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
-   d3dcontext->RSSetState(pRasterStateDisableClipping);
-   clipSet = false;
 }
 
 void Direct3DBase::setProgram(whichProgram p)
@@ -530,9 +512,6 @@ void Direct3DBase::setProgram(whichProgram p)
    if (p == curProgram || minimized) return;
    lastRGB = 0xFAFFFFFF; // user may never set to this color
    curProgram = p;
-   clipRect.right = -1;
-   d3dcontext->RSSetState(pRasterStateDisableClipping);
-   clipSet = false;
    switch (p)
    {
       case PROGRAM_GC:
@@ -612,45 +591,8 @@ void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList
       texture->Release();
 }
 
-static void swap(int32* a, int32* b)
-{
-   int32 c = *a;
-   *a = *b;
-   *b = c;
-}
-void Direct3DBase::setClip(int32* clip)
-{
-   if (minimized) return;
-   bool doClip = clip != null;
-   if (!doClip && clipSet)
-      d3dcontext->RSSetState(pRasterStateDisableClipping);
-   else
-   if (doClip)
-   {
-      if (!clipSet)
-         d3dcontext->RSSetState(pRasterStateEnableClipping);
-      if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
-      {
-         if (clip[0] > clip[2])
-            swap(&clip[0], &clip[2]);
-         if (clip[1] > clip[3])
-            swap(&clip[1], &clip[3]);
-         clipRect.left = clip[0];
-         clipRect.top = clip[1] + glShiftY;
-         clipRect.right = clip[2];
-         clipRect.bottom = clip[3] + glShiftY;
-         if (clipRect.left   < 0) clipRect.left   = 0;
-         if (clipRect.top    < 0) clipRect.top    = 0;
-         if (clipRect.right  < 0) clipRect.right  = 0;
-         if (clipRect.bottom < 0) clipRect.bottom = 0;
-         d3dcontext->RSSetScissorRects(1, &clipRect);
-      }
-   }
-   clipSet = doClip;
-}
-
 int lastTexView;
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
 {
    bool isDrawText = color != null;
    if (minimized) return;
@@ -658,8 +600,6 @@ void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int3
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
    setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b, alphaMask);
-
-   setClip(clip);
 
    dstY += glShiftY;
    int32 dstY2 = isDrawText ? dstY + dstH : dstY + h;
