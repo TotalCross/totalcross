@@ -1379,7 +1379,51 @@ static TCObject growIntArray(Context currentContext, TCObject oldArrayObj, int32
    return newArrayObj;
 }
 
-static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient, bool isConvex)
+static bool isInsideClip(TCObject g, int32 tx, int32 ty, int32* x, int32* y, int32 n)
+{
+   int32 cx1 = Graphics_clipX1(g);
+   int32 cx2 = Graphics_clipX2(g);
+   int32 cy1 = Graphics_clipY1(g);
+   int32 cy2 = Graphics_clipY2(g);
+   tx += Graphics_transX(g);
+   ty += Graphics_transY(g);
+   
+   while (--n >= 0)
+   {
+      int32 xx = *x++ + tx;
+      int32 yy = *y++ + ty;
+      if (xx < cx1 || xx > cx2 || yy < cy1 || yy > cy2)
+         return false;
+   }
+   return true;
+}
+
+static bool isConvexAndInsideClip(TCObject g, int32 tx, int32 ty, int32* x, int32* y, int32 n)
+{
+   // http://debian.fmi.uni-sofia.bg/~sergei/cgsr/docs/clockwise.htm
+   int32 i,j,k;
+   int32 flag = 0;
+   int32 z;
+
+   if (n <= 2)
+      flag = 1;
+   else
+   for (i = 0; i < n; i++) 
+   {
+      j = (i + 1) % n;
+      k = (i + 2) % n;
+      z  = (x[j] - x[i]) * (y[k] - y[j]) - (y[j] - y[i]) * (x[k] - x[j]);
+      if (z < 0)
+         flag |= 1;
+      else if (z > 0)
+         flag |= 2;
+      if (flag == 3)
+         return false;
+   }
+   return flag != 0 && isInsideClip(g, tx, ty, x, y, n);
+}
+
+static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel c1, Pixel c2, bool gradient)
 {
    int32 x1, y1, x2, y2,y,n=0,temp, i,j, miny, maxy, a, numSteps=0, startRed=0, startGreen=0, startBlue=0, endRed=0, endGreen=0, endBlue=0, redInc=0, greenInc=0, blueInc=0, red=0, green=0, blue=0;
    int32 *yp;
@@ -1392,7 +1436,7 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
       return;
 
 #if defined __gl2_h_ && !defined WP8
-   if (!gradient && isConvex && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well
+   if (!gradient && (nPoints1 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1)) && (nPoints2 == 0 || isConvexAndInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2)) && Graphics_useOpenGL(g)) // opengl doesnt fills non-convex polygons well
    {
       if (nPoints1 > 0)
          glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), c1, true);
@@ -1530,18 +1574,23 @@ static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
 {
    if (xPoints1 && yPoints1 && nPoints1 >= 2)
    {
-      #if defined __gl2_h_ && !defined WP8
-      if (nPoints1 > 0)
-         glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
-      if (nPoints2 > 0)
-         glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
-      #else
-      int32 i;
-      for (i=1; i < nPoints1; i++)
-         drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
-      for (i=1; i < nPoints2; i++)
-         drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
-      #endif
+#if defined __gl2_h_ && !defined WP8
+      if (Graphics_useOpenGL(g) && (nPoints1 == 0 || isInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1)) && (nPoints2 == 0 || isInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2)))
+      {
+         if (nPoints1 > 0)
+            glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+         if (nPoints2 > 0)
+            glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+      } 
+      else
+#endif
+      {
+         int32 i;
+         for (i=1; i < nPoints1; i++)
+            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+         for (i=1; i < nPoints2; i++)
+            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+      }
    }
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -1775,14 +1824,14 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    {
       int p1 = last-startIndex;
       if (fill)
-         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient,true); // lower half, upper half
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient); // lower half, upper half
       if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1-1, xPoints+1, yPoints+1, endIndex-1, xc,yc, c);
    }
    else
    {
       int32 arc = pie ? 0 : 1;
       if (fill)
-         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient,true);   
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient);   
       if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+arc, yPoints+startIndex+arc, endIndex-startIndex-arc, 0,0,0, xc,yc, c);
    }
    if (pie)  // restore saved points
@@ -3003,7 +3052,9 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
 {
    PixelConv pc1,pc2;
 #if defined(__gl2_h_)
-   if (!Graphics_isImageSurface(g))
+   int32 xx[] = {x,x+width-1,x+width-1,x};
+   int32 yy[] = {y,y,y+height-1,y+height-1};
+   if (!Graphics_isImageSurface(g) && isInsideClip(g, 0,0, xx,yy,4))
    {
       pc1.pixel = c1;
       pc2.pixel = c2;
