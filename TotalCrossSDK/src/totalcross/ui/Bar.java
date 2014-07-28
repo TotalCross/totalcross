@@ -108,7 +108,7 @@ public class Bar extends Container
          onFontChanged();
          if (title != null)
          {
-            px = titleAlign == LEFT ? gap : titleAlign == CENTER ? (width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
+            px = titleAlign == LEFT ? gap+1 : titleAlign == CENTER ? (width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
             py = (height-fmH)/2;
          }
          else
