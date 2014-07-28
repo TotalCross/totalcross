@@ -24,7 +24,7 @@
 
 #ifdef __gl2_h_
 extern int32 appW,appH;
-extern float ftransp[16];
+extern GLfloat ftransp[16], f255[256];
 extern float *glXYA;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
@@ -895,10 +895,10 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    int32 startBit, currentBit, incY, y1, r, rmax, istart;
    uint8 *bitmapTable, *ands, *current, *start;
    uint16* bitIndexTable;
-   int32 rowWIB, offset, xMin, xMax, yMin, yMax, x, y, yDif, width, width0, height, spaceW = 0, k, clipX2, pitch;
+   int32 rowWIB, offset, xMin, xMax, yMin, yMax, x, y, yDif, width, width0, height, spaceW = 0, k, clipX1,clipX2,clipY1,clipY2, pitch;
    Pixel transparency, *row0, *row;
    PixelConv *i;
-   bool isNibbleStartingLow, isLowNibble;
+   bool isNibbleStartingLow, isLowNibble, isClipped;
    int aaType;
    JChar ch, first, last;
    UserFont uf = null;
@@ -947,13 +947,16 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
          extraPixelsRemaining = rem % chrCount;
       }
    }
-
-   xMax = xMin = (x0 < Graphics_clipX1(g)) ? Graphics_clipX1(g) : x0;
-   yMax = y0 + (isVert ? chrCount * incY : height);
-   yMin = (y0 < Graphics_clipY1(g)) ? Graphics_clipY1(g) : y0;
+   clipX1 = Graphics_clipX1(g);
    clipX2 = Graphics_clipX2(g);
-   if (yMax >= Graphics_clipY2(g))
-      yMax = Graphics_clipY2(g);
+   clipY1 = Graphics_clipY1(g);
+   clipY2 = Graphics_clipY2(g);
+
+   xMax = xMin = (x0 < clipX1) ? clipX1 : x0;
+   yMax = y0 + (isVert ? chrCount * incY : height);
+   yMin = (y0 < clipY1) ? clipY1 : y0;
+   if (yMax >= clipY2)
+      yMax = clipY2;
    row0 = getGraphicsPixels(g) + yMin * Graphics_pitch(g);
    yDif = yMin - y0;
    y = y0;
@@ -992,15 +995,23 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
+#ifdef __gl2_h_
+         if (!checkGLfloatBuffer(currentContext, uf->ubase->fontP.maxHeight * uf->ubase->fontP.maxWidth))
+            return;
+#endif
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
       width0 = width = bitIndexTable[ch+1] - offset;
+      isClipped = false;
 
       if (uf->ubase != null) width = width * height / uf->ubase->fontP.maxHeight;
       
-      if ((xMax = x0 + width) > Graphics_clipX2(g))
-         xMax = Graphics_clipX2(g);
+      if ((xMax = x0 + width) > clipX2)
+      {
+         isClipped = true;
+         xMax = clipX2;   
+      }
       y1 = y; r=0;
       istart = 0;
       if (!isVert)
@@ -1018,6 +1029,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
       row0 = getGraphicsPixels(g) + y * Graphics_pitch(g);
       rmax = (y+height > yMax) ? yMax - y : height;
+      isClipped |= x0 < clipX1 || istart != 0 || rmax != height;
 
       switch (aaType)
       {
@@ -1041,8 +1053,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                   {
                      if ((*current & *ands++) != 0 && x >= xMin)
                      {
-                        *xya++ = (float)x;
-                        *xya++ = (float)y;
+                        *xya++ = (float)x+1;
+                        *xya++ = (float)y+1;
                         *xya++ = 1;
                         nn++;
                      }
@@ -1101,8 +1113,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
                      // alpha
                      // vertices
-                     *xya++ = (float)x;
-                     *xya++ = (float)y;
+                     *xya++ = (float)x+1;
+                     *xya++ = (float)y+1;
                      *xya++ = ftransp[transparency];
                      nn++;
                   }
@@ -1141,8 +1153,41 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    #ifdef __gl2_h_
             if (isGL)
             {       
-               if (getCharPosInTexture(currentContext, uf->ubase, ch, charXY))
-/*text*/          glDrawTexture(uf->ubase->textureId, charXY[0], charXY[1], width0, uf->ubase->fontP.maxHeight, x0, y-istart, width, height, uf->ubase->maxW, uf->ubase->maxH, &fc, 255);
+               if (!isClipped && getCharPosInTexture(currentContext, uf->ubase, ch, charXY))
+/*text*/          glDrawTexture(uf->ubase->textureId, 
+                               charXY[0], charXY[1], width0, uf->ubase->fontP.maxHeight, // source char position
+                               x0, y, width, height,                                     // target bitmap position
+                               uf->ubase->maxW, uf->ubase->maxH, &fc, 255);              // total bitmap size
+               else
+               { 
+                  uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+                  if (alpha)
+                  {                             
+                     int32 nn=0;
+                     rowWIB = width;
+                     start = alpha + istart * rowWIB;
+                     xya = glXYA;
+                     for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
+                     {
+                        current = start;
+                        for (x=x0; x < xMax; x++)
+                        {
+                           transparency = *current++;
+                           if (transparency == 0 || x < xMin)
+                              continue;
+   
+                           // alpha
+                           // vertices
+                           *xya++ = (float)x+1;
+                           *xya++ = (float)y+1;
+                           *xya++ = f255[transparency];
+                           nn++;
+                        }
+                     }
+                     if (nn > 0) // flush vertices buffer
+                        glDrawPixels(nn,foreColor);
+                  }
+               }
             }
             else
    #endif // case 2
