@@ -126,6 +126,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void flickEnded(boolean atPenDown)
    {
+      bag.releaseScreenShot();
    }
    
    public boolean canScrollContent(int direction, Object target)
@@ -424,6 +425,14 @@ public class ScrollContainer extends Container implements Scrollable
             break;
          case PenEvent.PEN_DOWN:
             scScrolled = false;
+            break;
+         case PenEvent.PEN_DRAG_START:
+            if (Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) // 4k is the texture's limit on most devices
+               bag.takeScreenShot();
+            break;
+         case PenEvent.PEN_DRAG_END:
+            if (flick != null && Flick.currentFlick == null)
+               bag.releaseScreenShot();
             break;
          case PenEvent.PEN_DRAG:
             if (event.target == sbV || event.target == sbH) break;
