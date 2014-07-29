@@ -1970,6 +1970,9 @@ static void setClip(TCObject g, int32 x, int32 y, int32 w, int32 h)
    int32 clipY1 = y+Graphics_transY(g);
    int32 clipX2 = clipX1+w;
    int32 clipY2 = clipY1+h;
+   TCObject surf = Graphics_surface(g);
+   int32 surfW = Surface_isImage(surf) ? Image_width(surf)  : screen.screenW;
+   int32 surfH = Surface_isImage(surf) ? Image_height(surf) : screen.screenH;
 
    if (clipX1 < Graphics_minX(g)) clipX1 = Graphics_minX(g);
    if (clipY1 < Graphics_minY(g)) clipY1 = Graphics_minY(g);
@@ -1981,8 +1984,8 @@ static void setClip(TCObject g, int32 x, int32 y, int32 w, int32 h)
    if (clipX2 > Graphics_maxX(g)) clipX2 = Graphics_maxX(g);
    if (clipY2 > Graphics_maxY(g)) clipY2 = Graphics_maxY(g);
 
-   if (clipX2 > screen.screenW) clipX2 = screen.screenW;
-   if (clipY2 > screen.screenH) clipY2 = screen.screenH;
+   if (clipX2 > surfW) clipX2 = surfW;
+   if (clipY2 > surfH) clipY2 = surfH;
 
    Graphics_clipX1(g) = clipX1;
    Graphics_clipY1(g) = clipY1;

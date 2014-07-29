@@ -1073,8 +1073,11 @@ public final class Graphics
       if (clipX2 > maxX) clipX2 = maxX;
       if (clipY2 > maxY) clipY2 = maxY;
 
-      if (clipX2 > Settings.screenWidth)  clipX2 = Settings.screenWidth;
-      if (clipY2 > Settings.screenHeight) clipY2 = Settings.screenHeight;
+      int surfW = isControlSurface ? Settings.screenWidth : surface.getWidth();
+      int surfH = isControlSurface ? Settings.screenHeight: surface.getHeight();
+
+      if (clipX2 > surfW) clipX2 = surfW;
+      if (clipY2 > surfH) clipY2 = surfH;
 
       this.clipX1 = clipX1;
       this.clipY1 = clipY1;
