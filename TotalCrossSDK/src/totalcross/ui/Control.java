@@ -298,21 +298,29 @@ public class Control extends GfxSurface
 
    /** Take a screen shot of this container and stores it in <code>offscreen</code>.
     */
-   public void takeScreenShot() throws Exception
+   public void takeScreenShot()
    {
-      offscreen = null;
-      Image offscreen = new Image(width,height);
-      Graphics g = offscreen.getGraphics();
-      if (!transparentBackground && parent != null) 
-      {     
-         g.backColor = parent.backColor;
-         g.fillRect(0,0,width,height);
+      try
+      {
+         offscreen = null;
+         Image offscreen = new Image(width,height);
+         Graphics g = offscreen.getGraphics();
+         if (!transparentBackground && parent != null) 
+         {     
+            g.backColor = parent.backColor;
+            g.fillRect(0,0,width,height);
+         }
+         g.setFont(font);
+         if (asWindow != null)
+            asWindow.paintWindowBackground(g);
+         paint2shot(g,this) ;
+         this.offscreen = offscreen;
+         this.offscreen.applyChanges();
       }
-      g.setFont(font);
-      if (asWindow != null)
-         asWindow.paintWindowBackground(g);
-      paint2shot(g,this) ;
-      this.offscreen = offscreen;
+      catch (Throwable t)
+      {
+         this.offscreen = null;
+      }
    }
    
    /** Releases the screen shot. */
