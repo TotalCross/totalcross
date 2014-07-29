@@ -220,7 +220,9 @@ static bool callingCamera;
    });
    while (callingCamera)
       Sleep(100);
-   [self updateLayout];
+   UIDeviceOrientation o = [child_view getOrientation];
+   if (o != UIDeviceOrientationLandscapeLeft && o != UIDeviceOrientationLandscapeRight) // when the camera comes back from landscape and we call updateLayout, the screen gets painted as if it was in portrait. this hack makes the screen a bit better, but still buggy.
+      [self updateLayout];
    return imageFileName != null;
 }
 
