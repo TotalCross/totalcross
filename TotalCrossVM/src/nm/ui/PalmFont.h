@@ -67,7 +67,7 @@ struct TUserFont
    // gl fonts: used by the inherited font. fontP.maxHeight will contain the target size
    struct TUserFont* ubase;
    // used only when drawing on images
-   /*CharSizeCache*/VoidPs* charSizeCache;
+   VoidPs* charSizeCache[256];
    int32 tempbufssize;
    uint8* tempbufs;
 };

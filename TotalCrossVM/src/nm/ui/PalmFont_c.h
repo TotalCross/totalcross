@@ -221,7 +221,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    double scaledRadius, scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
    CharSizeCache csc;
-   VoidPs *csclist;
+   VoidPs *csclist, *csclist0;
 
    IF_HEAP_ERROR(fontsHeap)
    {
@@ -229,15 +229,15 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    }
 
    // check if its in the cache
-   csclist = uf->charSizeCache;
-   if (uf->charSizeCache != null)
+   csclist0 = csclist = uf->charSizeCache[ch & 0xFF];
+   if (csclist != null)
    do
    {
       CharSizeCache csc = (CharSizeCache)csclist->value;
       if (csc->ch == ch && csc->size == newHeight)
          return csc->alpha;
       csclist = csclist->next;
-   } while (csclist != uf->charSizeCache);
+   } while (csclist != csclist0);
 
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
@@ -422,7 +422,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    csc->ch = ch;
    csc->size = newHeight;
    csc->alpha = ob0;
-   uf->charSizeCache = VoidPsAdd(uf->charSizeCache, csc, fontsHeap);
+   uf->charSizeCache[ch & 0xFF] = VoidPsAdd(csclist0, csc, fontsHeap);
    fSuccess = true;
 
 Cleanup: /* CLEANUP */
