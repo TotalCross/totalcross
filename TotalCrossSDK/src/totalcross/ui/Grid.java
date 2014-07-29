@@ -1078,11 +1078,7 @@ public class Grid extends Container implements Scrollable
             // draw top
             g.setClip(0,0,width,lineH);
             g.drawImage(npcapt,0,0);
-            // draw bottom
-            Graphics gg = parent.getGraphics();
-            gg.setClip(this.x,this.y+height-5,width,5);
-            gg.drawImage(npcapt,this.x,this.y+height-lineH-5);
-            gg.clearClip();
+            g.clearClip();
          }
          catch (ImageException ie)
          {
@@ -1240,7 +1236,7 @@ public class Grid extends Container implements Scrollable
             {
                if (npback == null)
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.GRID,width,height,captionsBackColor,false);
-               parent.getGraphics().drawImage(npback,this.x,this.y);
+               g.drawImage(npback,0,0); // parent.getGraphics().drawImage(npback,this.x,this.y);
             }
             catch (ImageException ie)
             {
@@ -1377,8 +1373,15 @@ public class Grid extends Container implements Scrollable
       g.clearClip();
       if (!uiAndroid)
          g.drawRect(0, lineH, width + 1, height - lineH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
-      //if (selectedLine != -1)
-        // drawCursor(g, selectedLine, true);  // guich@555_8: avoid erasing the current sel line, bc the repaint already did it.
+      else
+      {
+         // draw bottom
+         g.expandClipLimits(0,0,0,5);
+         g.setClip(0,height-5,width,5);
+         g.drawImage(npcapt,0,height-lineH-5);
+         g.expandClipLimits(0,0,0,-5);
+         g.clearClip();
+      }
    }
 
    /**

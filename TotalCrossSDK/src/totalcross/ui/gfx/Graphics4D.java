@@ -123,6 +123,13 @@ public final class Graphics4D
       r.height = clipY2 - clipY1;
       return r;
    }
+   public void expandClipLimits(int dx1, int dy1, int dx2, int dy2)
+   {
+      minX += dx1;
+      minY += dy1;
+      maxX += dx2;
+      maxY += dy2;
+   }
 
    public void drawVerticalText(String text, int x, int y)
    {

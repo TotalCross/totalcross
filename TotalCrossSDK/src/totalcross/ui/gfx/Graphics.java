@@ -240,6 +240,15 @@ public final class Graphics
       transY = ty;
       if (f != null) setFont(f);
    }
+   
+   /** Expands the clipping limits. Used internally. */
+   public void expandClipLimits(int dx1, int dy1, int dx2, int dy2)
+   {
+      minX += dx1;
+      minY += dy1;
+      maxX += dx2;
+      maxY += dy2;
+   }
 
    /** Returns the palette used when the screen has 8 bpp.
     * You can view the palette online <a href='http://www.superwaba.org/tc/pal685_values.png' target=_blank>here</a>.
