@@ -2052,8 +2052,9 @@ static bool firstUpdate = true;
 #endif
 
 #ifdef darwin
-static int32 lastAppHeightOnSipOpen;
+static int32 lastAppHeightOnSipOpen, oldShiftY;
 extern int keyboardH,realAppH;
+extern bool setShiftYonNextUpdateScreen;
 
 static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *shiftH)
 {
@@ -2072,6 +2073,11 @@ static void checkKeyboardAndSIP(Context currentContext, int32 *shiftY, int32 *sh
    {
       *shiftY -= appHeightOnSipOpen - *shiftH;
       *shiftH = appHeightOnSipOpen ;
+   }
+   if (oldShiftY != *shiftY)
+   {
+      oldShiftY = *shiftY;
+      setShiftYonNextUpdateScreen = true;
    }
 }
 #elif defined(ANDROID)
@@ -2205,7 +2211,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    
 #ifdef __gl2_h_
    desiredScreenShiftY = shiftY; // will be set with glScreenShiftY in updateScreen
-//   setShiftYgl(shiftY);
 #else
    screen.shiftY = shiftY;
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't

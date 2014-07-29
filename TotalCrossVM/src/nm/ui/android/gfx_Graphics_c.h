@@ -689,7 +689,7 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
       0.0,      0.0,  -1.0,  0.0,
       0.0,      0.0,   0.0,  1.0
    };
-      
+   
    setCurrentProgram(textProgram);    glUniformMatrix4fv(glGetUniformLocation(textProgram,    "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
@@ -867,19 +867,19 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 void setTimerInterval(int32 t);
 void setShiftYgl(int32 shiftY)
 {
-#ifdef ANDROID
    if (setShiftYonNextUpdateScreen && needsPaint != null)
    {
       setShiftYonNextUpdateScreen = false;
+#ifdef ANDROID
       glShiftY = max32(0,desiredglShiftY - shiftY); // guich: under 0 occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
+#else
+      glShiftY = -shiftY;
+#endif
       setProjectionMatrix(appW,appH);
       screen.shiftY = shiftY;
       *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
       setTimerInterval(1); // needed, dont remove!
    }
-#else
-    glShiftY = -shiftY;
-#endif
 }
 void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
