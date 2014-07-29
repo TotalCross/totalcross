@@ -427,7 +427,7 @@ public class ScrollContainer extends Container implements Scrollable
             scScrolled = false;
             break;
          case PenEvent.PEN_DRAG_START:
-            if (Settings.isOpenGL && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) // 4k is the texture's limit on most devices
+            if (Settings.isOpenGL && isFirstBag((Control)event.target) && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) // 4k is the texture's limit on most devices
                bag.takeScreenShot();
             break;
          case PenEvent.PEN_DRAG_END:
@@ -469,6 +469,14 @@ public class ScrollContainer extends Container implements Scrollable
                scrollToControl((Control)event.target);
             break;
       }
+   }
+
+   private boolean isFirstBag(Control c)
+   {
+      for (; c != null; c = c.parent)
+         if (c instanceof ClippedContainer)
+            return c == bag;
+      return false;
    }
 
    /** Scrolls to the given page, which is the flick's scrollDistance (if set), or the control's height.
