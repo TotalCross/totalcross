@@ -51,6 +51,12 @@ bool initGLES(ScreenSurface screen)
    lastOrientationSentToVM = [child_view getOrientation];
 }
 
+bool iosLowMemory;
+- (void)didReceiveMemoryWarning
+{
+   iosLowMemory = true;
+}
+
 - (void)viewDidLayoutSubviews
 {
    int orientation = [child_view getOrientation];
