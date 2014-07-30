@@ -194,7 +194,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    bool fSuccess = false;
    // font bits
    int32 offset = uf->bitIndexTable[ch];
-   int32 width = uf->bitIndexTable[ch + 1] - offset;
+   int32 width = uf->bitIndexTable[ch + 1] - offset - (uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP);
    int32 height = uf->fontP.maxHeight;
    alpha_t *ob, *ib, *ob0, pval;
    uint8* tempbuf;
@@ -672,7 +672,7 @@ int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch)
       return ch == ' ' ? 0 : getJCharWidth(currentContext, fontObj, ' ');
    if (uf->fontP.firstChar <= ch && ch <= uf->fontP.lastChar)
    {
-      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch];
+      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch] - (uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP);
       if (uf->ubase != null) // an inherited font?
          r = r * uf->fontP.maxHeight / uf->ubase->fontP.maxHeight;
       return r;

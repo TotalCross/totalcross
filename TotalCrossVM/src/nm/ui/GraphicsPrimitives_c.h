@@ -909,7 +909,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 #ifdef __gl2_h_
    int32 charXY[2];
    float *xya;
-#endif
+#endif        
+   int32 diffW;
    bool isVert = Graphics_isVerticalText(g);
    bool isGL = Graphics_useOpenGL(g);
 
@@ -922,6 +923,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
    if (uf == null) return;
+   diffW = uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP;
    rowWIB = uf->rowWidthInBytes;
    bitIndexTable = uf->bitIndexTable;
    bitmapTable = uf->bitmapTable;
@@ -1002,7 +1004,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
       }
       // valid char, get its start
       offset = bitIndexTable[ch];
-      width0 = width = bitIndexTable[ch+1] - offset;
+      width0 = width = bitIndexTable[ch+1] - offset - diffW;
       isClipped = false;
 
       if (uf->ubase != null) width = width * height / uf->ubase->fontP.maxHeight;
