@@ -427,11 +427,11 @@ public class ScrollContainer extends Container implements Scrollable
             scScrolled = false;
             break;
          case PenEvent.PEN_DRAG_START:
-            if (Settings.isOpenGL && isFirstBag((Control)event.target) && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) // 4k is the texture's limit on most devices
+            if (Settings.isOpenGL && ((DragEvent)event).direction != 0 && isFirstBag((Control)event.target) && bag.offscreen == null && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) // 4k is the texture's limit on most devices
                bag.takeScreenShot();
             break;
          case PenEvent.PEN_DRAG_END:
-            if (flick != null && Flick.currentFlick == null)
+            if (flick != null && Flick.currentFlick == null && bag.offscreen != null)
                bag.releaseScreenShot();
             break;
          case PenEvent.PEN_DRAG:
