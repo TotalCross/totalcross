@@ -45,6 +45,7 @@ import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
+   public static final boolean GENERATE_FONT = false;
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
@@ -156,6 +157,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          bugreport();
       createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
+      if (GENERATE_FONT)
+      {
+         new totalcross.android.fontgen.FontGenerator("tahoma", new String[]{"","/aa","/rename:TCFont"});
+         AndroidUtils.debug("FINISHED");
+         exit(0);
+      }
    }
 
    public static Context getAppContext()
@@ -522,7 +529,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         eventThread.running = false;
+         if (eventThread != null) eventThread.running = false;
          loader.finish();
       }
       canQuit = true;
