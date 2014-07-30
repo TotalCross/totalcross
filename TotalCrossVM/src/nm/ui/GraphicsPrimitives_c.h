@@ -24,7 +24,8 @@
 
 #ifdef __gl2_h_
 extern int32 appW,appH;
-extern GLfloat *ftransp, *f255;
+extern GLfloat ftransp[];
+extern GLfloat f255[];
 extern float *glXYA;
 void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
