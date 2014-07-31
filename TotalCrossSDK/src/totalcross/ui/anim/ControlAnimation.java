@@ -12,13 +12,16 @@ public abstract class ControlAnimation implements TimerListener
 {
    protected Control c;
    protected int totalTime;
-   private TimerEvent te;
+   private TimerEvent teFrame, teDelay;
    private ControlAnimation with,then;
    private AnimationFinished animFinish;
    private int initialTime;
    private boolean slave;
+   protected boolean releaseScreenShot=true;
    
    public static int frameRate = Settings.platform.equals(Settings.WINDOWSPHONE) ? 30 : 20;
+   /** A delay issued right after the animation finishes */
+   public int delayAfterFinish;
    
    public static interface AnimationFinished
    {
@@ -44,13 +47,19 @@ public abstract class ControlAnimation implements TimerListener
 
    public void start() throws Exception
    {
-      if (!slave && c.offscreen == null)
+      if (!slave)
       {
-         te = c.addTimer(frameRate);
-         c.addTimerListener(this);
-         Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
-         c.takeScreenShot();
-         Window.needsPaint = true;
+         if (teFrame == null)
+         {
+            teFrame = c.addTimer(frameRate);
+            c.addTimerListener(this);
+         }
+         if (c.offscreen == null)
+         {
+            Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
+            c.takeScreenShot();
+            Window.needsPaint = true;
+         }
       }
       if (with != null) with.start();
       initialTime = Vm.getTimeStamp();
@@ -58,25 +67,33 @@ public abstract class ControlAnimation implements TimerListener
 
    public void stop()
    {
-      if (te != null)
+      if (teFrame != null)
       {
-         c.removeTimer(te);
-         te = null;
-         c.releaseScreenShot();
+         c.removeTimer(teFrame);
+         teFrame = null;
+         if (releaseScreenShot) 
+            c.releaseScreenShot();
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);
+      if (delayAfterFinish > 0) 
+         teDelay = c.addTimer(delayAfterFinish);
+      else
+         handleThen();
+   }
+   
+   private void handleThen()
+   {
       if (then != null)
          try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
    }
    
    protected double computeSpeed(double distance)
    {
-      int elapsed = totalTime-(Vm.getTimeStamp()-initialTime);
-      if (elapsed <= 0)
+      int remaining = totalTime-(Vm.getTimeStamp()-initialTime);
+      if (remaining <= 0)
          return 0;
-      double ret = distance * frameRate / elapsed;
-      return ret;
+      return distance * frameRate / remaining;
    }
    
    public ControlAnimation with(ControlAnimation other)
@@ -94,8 +111,21 @@ public abstract class ControlAnimation implements TimerListener
    
    public void timerTriggered(TimerEvent e)
    {
-      if (te != null && te.triggered)
+      if (teFrame != null && teFrame.triggered)
          animatePriv();
+      else
+      if (teDelay != null && teDelay.triggered)
+      {
+         c.removeTimer(teDelay);
+         teDelay = null;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable() 
+         {
+            public void run() 
+            {
+               handleThen();
+            }
+         });         
+      }
    }
    
    private void animatePriv()

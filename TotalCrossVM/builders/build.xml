@@ -553,6 +553,7 @@ target: Android builds
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
   <delete dir="${android.temp}" failonerror="false" />
+  <sleep seconds="1"/>
   <mkdir dir="${android.temp}" />
 
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>

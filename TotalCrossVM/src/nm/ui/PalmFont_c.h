@@ -58,7 +58,7 @@ bool fontInit(Context currentContext)
       htFree(&htUF, null);
    }
    else
-   {        
+   {
       int32 i;
       useRealFont = true;
       for (i = 0; i < SIZE_LEN; i++)
@@ -137,7 +137,7 @@ FontFile loadFontFile(char *fontName)
    ff = findFontFile(fontName);
    if (ff == null)
    {
-#ifdef ANDROID      
+#ifdef ANDROID
       int32 idx = callFindTCZ(fontName);
       if (idx >= 0)
          xstrcpy(fullName, fontName);
@@ -194,7 +194,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    bool fSuccess = false;
    // font bits
    int32 offset = uf->bitIndexTable[ch];
-   int32 width = uf->bitIndexTable[ch + 1] - offset;
+   int32 width = uf->bitIndexTable[ch + 1] - offset - (uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP);
    int32 height = uf->fontP.maxHeight;
    alpha_t *ob, *ib, *ob0, pval;
    uint8* tempbuf;
@@ -221,7 +221,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    double scaledRadius, scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
    CharSizeCache csc;
-   VoidPs *csclist;
+   VoidPs *csclist, *csclist0;
 
    IF_HEAP_ERROR(fontsHeap)
    {
@@ -229,15 +229,15 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    }
 
    // check if its in the cache
-   csclist = uf->charSizeCache;
-   if (uf->charSizeCache != null)
+   csclist0 = csclist = uf->charSizeCache[ch & 0xFF];
+   if (csclist != null)
    do
    {
       CharSizeCache csc = (CharSizeCache)csclist->value;
       if (csc->ch == ch && csc->size == newHeight)
          return csc->alpha;
       csclist = csclist->next;
-   } while (csclist != uf->charSizeCache);
+   } while (csclist != csclist0);
 
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
@@ -267,6 +267,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    /* Pre-allocating all of the needed memory */
    s = max32(newWidth, newHeight);
    i = (uf->fontP.maxWidth * newHeight / uf->fontP.maxHeight + 1) * height + 2 * s * maxContribsXY * sizeof(int32)+2 * s * sizeof(int32);
+   i += 5 * 4; // 5 buffers, 4 possible misaligns
    if (uf->tempbufssize >= i)
       xmemzero(uf->tempbufs, uf->tempbufssize);
    else
@@ -277,7 +278,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
       uf->tempbufssize = i;
    }
    tempbuf = uf->tempbufs;
-   tb = (alpha_t *)tempbuf; tempbuf += newWidth * height;
+   tb = (alpha_t *)tempbuf; tempbuf += (newWidth * height + 4) / sizeof(int32) * sizeof(int32);
    v_weight = (int32 *)tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* weights */
    v_pixel = (int32 *)tempbuf; tempbuf += s * maxContribsXY * sizeof(int32); /* the contributing pixels */
    v_count = (int32 *)tempbuf; tempbuf += s * sizeof(int32); /* how many contributions for the target pixel */
@@ -406,8 +407,8 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
          for (j = 0; j < count; j++)
          {
             int iweight = *p_weight++;
-            pval = tb[n + newWidth * *p_pixel++]; // Using val as temporary storage 
-            // Acting on color components 
+            pval = tb[n + newWidth * *p_pixel++]; // Using val as temporary storage
+            // Acting on color components
             a += (int32)pval * iweight;
          }
          a /= wsum;
@@ -421,7 +422,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    csc->ch = ch;
    csc->size = newHeight;
    csc->alpha = ob0;
-   uf->charSizeCache = VoidPsAdd(uf->charSizeCache, csc, fontsHeap);
+   uf->charSizeCache[ch & 0xFF] = VoidPsAdd(csclist0, csc, fontsHeap);
    fSuccess = true;
 
 Cleanup: /* CLEANUP */
@@ -430,99 +431,74 @@ Cleanup: /* CLEANUP */
 }
 
 #ifdef __gl2_h_
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-void getCharTexture(Context currentContext, UserFont uf, JChar ch, PixelConv color, int32* ret)
-{
-   IdColor ic = uf->textureIds[ch];
-#ifdef WP8
-   if (ic != null && ic->id[0])
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha);
+static bool buildFontTexture(Context currentContext, UserFont uf)
+{  
+   int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
+   int16 *charX = uf->charX + ch, *charY = uf->charY + ch;
+   int32 widthsCount=0,maxW=2048, maxH=0, w=0, offset=0;
+   int32 widths[10] = {0}, *ww = widths; // currently char height 80 uses 4 width blocks
+   // compute char position to build the alpha map. the original map is splitted up to the maximum's width
+   for (; ch <= last; ch++)
    {
-      ret[0] = ic->id[0]; // id
-      ret[1] = ic->id[1]; // view
-      return;
-   }
-#else
-   for (; ic != null; ic = ic->next)
-      if (ic->color == color.pixel)
+      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch];
+      if ((w+r) > maxW || ch == last)
       {
-         if (ic->id[0])
-         {
-            ret[0] = ic->id[0]; // id
-            ret[1] = ic->id[1]; // view
-            return;
-         }
-         break;
+         if (ch == last) w += r; else widthsCount++;
+         if (ww == widths) maxW = (w+3) >> 2 << 2; // limits the next max widths to this one - align so we can optimize the loop
+         *ww++ = w;
+         if ((w+r) > maxW) y += fontH;
+         if (ch == last) w -= r; else w = 0;
       }
-#endif
-   // new color/char
+      *charX++ = w;
+      *charY++ = y;
+      w += r;
+   }
+   widthsCount++;
+   maxH = fontH * widthsCount;
+   IF_HEAP_ERROR(fontsHeap)
    {
-      PixelConv* pixels = (PixelConv*)uf->charPixels, *p = pixels;
-      int32 offset = uf->bitIndexTable[ch], y, x;
-      int32 id[2];
-      int32 width = uf->bitIndexTable[ch + 1] - offset, height = uf->fontP.maxHeight;
-      id[0] = id[1] = 0;            
-      for (y = 0; y < height; y++)
-      {
-         uint8* alpha = &uf->bitmapTable[y * uf->rowWidthInBytes + offset];
-         for (x = 0; x < width; x++, p++, alpha++)
-         {
-            p->a = *alpha; 
-            p->r = color.r;
-            p->g = color.g;
-            p->b = color.b;
-         }
-      }
-      glLoadTexture(currentContext, null, id, (Pixel*)pixels, width, height, false);
-      if (ic != null && ic->color == color.pixel) // if id was zeroed, just update it
-      {
-         ret[0] = ic->id[0] = id[0];
-         ret[1] = ic->id[1] = id[1];
-      }
-      else
-      {
-         ic = newXH(IdColor,fontsHeap);
-         ic->color = color.pixel;
-         ret[0] = ic->id[0] = id[0];
-         ret[1] = ic->id[1] = id[1];
-         if (uf->textureIds[ch] == null)
-            uf->textureIds[ch] = ic;
-         else
-         {
-            ic->next = uf->textureIds[ch];
-            uf->textureIds[ch] = ic;
-         }
-      }
+      return false;
    }
+   uf->textureAlphas = heapAlloc(fontsHeap, maxW * maxH);
+   // create the alpha map
+   for (w = 0; w < widthsCount; offset += widths[w++])
+      for (y = 0; y < fontH; y++)
+         xmemmove(&uf->textureAlphas[(y + w * fontH) * maxW], &uf->bitmapTable[y * uf->rowWidthInBytes + offset], widths[w]);
+   uf->maxW = maxW;
+   uf->maxH = maxH;
+   return true;
 }
-#endif
+bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* ret)
+{
+   if (uf->textureId[0] == 0 && (uf->maxW != 0 || buildFontTexture(currentContext, uf)))
+      glLoadTexture(currentContext, null, uf->textureId, (Pixel*)uf->textureAlphas, uf->maxW, uf->maxH, false, true);
+   ret[0] = uf->charX[ch];
+   ret[1] = uf->charY[ch];
+   return uf->textureId[0] != 0;
+}
 
-#ifdef __gl2_h_
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
 static void reset1Font(UserFont uf)
 {
-   int32 i;       
    if (uf)
-      for (i = 256; --i >= 0;) 
-      {
-         IdColor ic = uf->textureIds[i];
-         for (; ic != null; ic = ic->next)
-         {
-#ifdef WP8      
-            if (ic->id[0] != 0)
-               glDeleteTexture(null, ic->id, false);
+   {
+#ifdef WP8
+      if (uf->textureId[0] != 0)
+         glDeleteTexture(null, uf->textureId, false);
+      uf->textureId[1] = 0;
 #endif
-            ic->id[0] = ic->id[1] = 0;
-         }
-      }
+      uf->textureId[0] = 0;
+   }
 }
 #endif
 
 void resetFontTexture()
-{                          
+{
    #ifdef __gl2_h_
    int32 j;
    for (j = 0; j < SIZE_LEN; j++)
-   {  
+   {
       reset1Font(baseFontN[j]);
       reset1Font(baseFontB[j]);
    }
@@ -654,12 +630,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    tczRead(uftcz, uf->bitIndexTable, bitIndexTableSize);
    uf->bitIndexTable -= uf->fontP.firstChar; // instead of doing "bitIndexTable[ch-firstChar]", this trick will allow use "bitIndexTable[ch]
    if (uf->fontP.antialiased == AA_8BPP) // glfont - create the texture
-   {
-#ifdef __gl2_h_
-      uf->textureIds = (IdColor*)heapAlloc(fontsHeap, sizeof(IdColor) * 256);
-#endif
       uf->charPixels = newPtrArrayOf(Int32, (uf->fontP.maxWidth + 1) * (uf->fontP.maxHeight + 1), fontsHeap);
-   }
 
    tczClose(uftcz);
    if (!useRealFont)
@@ -701,7 +672,7 @@ int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch)
       return ch == ' ' ? 0 : getJCharWidth(currentContext, fontObj, ' ');
    if (uf->fontP.firstChar <= ch && ch <= uf->fontP.lastChar)
    {
-      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch];
+      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch] - (uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP);
       if (uf->ubase != null) // an inherited font?
          r = r * uf->fontP.maxHeight / uf->ubase->fontP.maxHeight;
       return r;

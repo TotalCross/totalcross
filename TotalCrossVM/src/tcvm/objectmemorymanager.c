@@ -376,12 +376,22 @@ static TCObject allocObjWith(uint32 size)
    return o;
 }
 
+extern bool iosLowMemory;
+
 TCObject allocObject(Context currentContext, uint32 size)
 {
    TCObject o = null;
    bool firstPass = true;
    ObjectProperties op;
 
+#ifdef darwin
+   if (iosLowMemory && size > 1024*1024)
+   {
+      iosLowMemory = false;
+      throwException(currentContext, OutOfMemoryError, "iOS low memory warning");
+      return null;
+   }
+#endif
    if (currentContext == gcContext) // a finalize method is creating an object? return null
    {
       throwException(currentContext, OutOfMemoryError, "Objects can't be allocated during finalize.");

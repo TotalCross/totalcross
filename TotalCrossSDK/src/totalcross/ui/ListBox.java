@@ -940,7 +940,7 @@ public class ListBox extends Container implements Scrollable
          if (npback == null)
             try
             {
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false,true);
+               npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false);
             }
          catch (ImageException e) {}
          g.drawImage(npback, 0,0);

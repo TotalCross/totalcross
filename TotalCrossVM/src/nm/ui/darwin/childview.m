@@ -46,6 +46,7 @@ extern int32 deviceFontHeight,iosScale;
    screen->bpp = 32;
    screen->pixels = (uint8*)1;
    deviceFontHeight = [UIFont labelFontSize] * iosScale;
+   if ((deviceFontHeight&1) == 1) deviceFontHeight++; // even size fonts are better
 }
 
 - (void)doRotate

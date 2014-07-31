@@ -21,7 +21,6 @@ import totalcross.util.*;
  */
 public class Flick implements PenListener, TimerListener
 {
-   private static boolean isTablet = Math.max(Settings.screenWidth,Settings.screenHeight) / Font.NORMAL_SIZE >= 40;
    public static final int BOTH_DIRECTIONS = 0;
    public static final int HORIZONTAL_DIRECTION_ONLY = 1;
    public static final int VERTICAL_DIRECTION_ONLY = 2;
@@ -36,7 +35,7 @@ public class Flick implements PenListener, TimerListener
    /**
     * Desired animation frame rate in frames/second.
     */
-   public static int defaultFrameRate = 25;
+   public static int defaultFrameRate = 40; // each frame with 25ms
    public int frameRate = defaultFrameRate;
 
    /**
@@ -62,7 +61,7 @@ public class Flick implements PenListener, TimerListener
     * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
     * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
     */
-   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight) > 320 ? 2.95 : 1.6;
+   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE/10;
    public double flickAcceleration = defaultFlickAcceleration;
 
    // Device pixel densities in dpi.
@@ -156,7 +155,7 @@ public class Flick implements PenListener, TimerListener
    public void setScrollDistance(int v)
    {
       scrollDistance = v;
-      distanceToAbortScroll = v / (isTablet ? 10 : 5);
+      distanceToAbortScroll = v / (Control.isTablet ? 10 : 5);
    }
    
    /** The distance used to abort the scroll. Set to 0 to make it always scroll a page, even if it
@@ -211,8 +210,7 @@ public class Flick implements PenListener, TimerListener
       resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
       resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
       
-      if ((Settings.screenHeight > 700 && Settings.screenWidth  > 400) ||
-          (Settings.screenWidth  > 700 && Settings.screenHeight > 400))
+      if (Control.isTablet)
       {
         // Prefer high density on high res screens
         resX = (resX < 150) ? 240 : resX;

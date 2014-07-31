@@ -183,38 +183,30 @@ public class NinePatch
       return ret;
    }
    
-   public Image getNormalInstance(int type, int width, int height, int color, boolean rotate, boolean fromCache) throws ImageException
+   public Image getNormalInstance(int type, int width, int height, int color, boolean rotate) throws ImageException
    {
       Image ret = null;
       synchronized (imageLock)
       {
          int hash = 0;
-         if (fromCache)
-         {
-            sbBtn.setLength(0);
-            hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color).append('|').append(rotate));
-            ret = (Image)htBtn.get(hash);
-         }
+         sbBtn.setLength(0);
+         hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color).append('|').append(rotate));
+         ret = (Image)htBtn.get(hash);
          if (ret == null)
          {
             ret = getNormalInstance(parts[type],width,height,color,rotate);
-            if (fromCache)
-               htBtn.put(hash, ret);
+            htBtn.put(hash, ret);
          }
       }
       return ret;
    }
    
-   public Image getPressedInstance(Image img, int backColor, int pressColor, boolean fromCache) throws ImageException
+   public Image getPressedInstance(Image img, int backColor, int pressColor) throws ImageException
    {
       Image pressed = null;
       sbBtn.setLength(0);
-      int hash = 0;
-      if (fromCache)
-      {
-         hash = Convert.hashCode(sbBtn.append(img).append('|').append(backColor).append('|').append(pressColor));
-         pressed = (Image)htPressBtn.get(hash);
-      }
+      int hash = Convert.hashCode(sbBtn.append(img).append('|').append(backColor).append('|').append(pressColor));
+      pressed = (Image)htPressBtn.get(hash);
       if (pressed == null)
          synchronized(imageLock)
          {
@@ -224,8 +216,7 @@ public class NinePatch
                pressed.applyColor(pressColor); // colorize it
             }
             else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
-            if (fromCache)
-               htPressBtn.put(hash, pressed);
+            htPressBtn.put(hash, pressed);
          }
       return pressed;
    }

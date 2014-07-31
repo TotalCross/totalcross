@@ -83,7 +83,7 @@ public class ButtonMenuSample extends BaseContainer
          um.cbtp.setSelectedIndex(0);
          um.cbtp.addPressListener(um);
          sc.add(new Label("Border: "),LEFT+gap,AFTER+gap,PREFERRED,PREFERRED+hs);
-         sc.add(um.cbnb = new ComboBox(new String[]{"3D Horiz Gradient","3D Vert Gradient","3D Border", "No border"}),SAME,AFTER+gap,PREFERRED+hs,PREFERRED+hs,um.cbtp);
+         sc.add(um.cbnb = new ComboBox(new String[]{"3D Border", "3D Horiz Gradient","3D Vert Gradient","No border"}),SAME,AFTER+gap,PREFERRED+hs,PREFERRED+hs,um.cbtp);
          um.cbnb.setSelectedIndex(0);
          um.cbnb.addPressListener(um);
          RadioGroupController rg = new RadioGroupController();
@@ -97,7 +97,7 @@ public class ButtonMenuSample extends BaseContainer
          um.rdv.addPressListener(um);
          
          // multiple-row - replicate our previous items
-         um.icons2 = new Image[icons.length*10];
+         um.icons2 = new Image[icons.length*(MainWindow.isTablet ? 100 : 10)];
          um.names2 = new String[um.icons2.length];
          int nn = um.icons2.length/icons.length;
          for (int i = 0, k=0; i < icons.length; i++)
@@ -130,7 +130,7 @@ public class ButtonMenuSample extends BaseContainer
       }
    }
    
-   static byte buttonTypes[] = {Button.BORDER_3D_VERTICAL_GRADIENT, Button.BORDER_3D_HORIZONTAL_GRADIENT, Button.BORDER_3D, Button.BORDER_NONE};
+   static byte buttonTypes[] = {Button.BORDER_3D, Button.BORDER_3D_VERTICAL_GRADIENT, Button.BORDER_3D_HORIZONTAL_GRADIENT, Button.BORDER_NONE};
    static int textPositions[] = {LEFT,RIGHT,TOP,BOTTOM,RIGHT_OF};
    
    class UpdateMatrix implements PressListener

@@ -187,6 +187,16 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
    
+   /** Set to false to disable flicking between tabs. You can still switch between the tabs by clicking on them.
+    * Sample:
+    * <pre>
+      TabbedContainer.allowFlick = false;
+      TabbedContainer tc = new TabbedContainer(caps);
+      TabbedContainer.allowFlick = true;
+    * </pre>
+    */
+   public static boolean allowFlick = Settings.fingerTouch;
+   
    private TabbedContainer(int count)
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
@@ -195,7 +205,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       started = true;
       focusHandler = true;
       containers = new Container[count];
-      if (Settings.fingerTouch)
+      if (allowFlick)
       {
          flick = new Flick(this);
          flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
@@ -212,6 +222,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          c.ignoreOnAddAgain = c.ignoreOnRemove = true;
       }
       disabled = new boolean[count];
+   }
+   
+   protected void computeClipRect()
+   {
+      bagClipY0 = clientRect.y;           // -this.y; 
+      bagClipYf = bagClipY0 + clientRect.height; // y0 + parent.height;
+      bagClipX0 = clientRect.x;           // -this.x;
+      bagClipXf = bagClipX0 + clientRect.width;  //  x0 + parent.width;
    }
    
    public void initUI()
@@ -250,7 +268,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          }
       if (!on && activeIndex == tabIndex) // move to next tab
          setActiveTab(nextEnabled(activeIndex,true));
-      if (Settings.fingerTouch)
+      if (flick != null)
       {
          containers[tabIndex].setEnabled(on);
          if (!on) // tell Control.postEvent that the flick still needs to be called
@@ -759,7 +777,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (uiAndroid)
                try
                {
-                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop, true), r.x,r.y);
+                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop), r.x,r.y);
                }
                catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
             else
@@ -785,7 +803,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (uiAndroid)
             try
             {
-               Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true);
+               Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
                g.drawImage(img, r.x,r.y);
             }
             catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}

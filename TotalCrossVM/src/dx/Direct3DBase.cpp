@@ -93,8 +93,8 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    d3dDevice->CreateDeferredContext(0, &d3dcontext);
 
    DXRELEASE(depthStencil);                 DXRELEASE(pBlendState);                     DXRELEASE(pixelShader);
-   DXRELEASE(depthStencilView);             DXRELEASE(pRasterStateDisableClipping);     DXRELEASE(constantBuffer);
-   DXRELEASE(indexBuffer);                  DXRELEASE(pRasterStateEnableClipping);      DXRELEASE(vertexShaderT);
+   DXRELEASE(depthStencilView);             DXRELEASE(constantBuffer);
+   DXRELEASE(indexBuffer);                  DXRELEASE(vertexShaderT);
    DXRELEASE(pBufferColor);                 DXRELEASE(texVertexBuffer);                 DXRELEASE(inputLayoutT);
    DXRELEASE(pBufferRect);                  DXRELEASE(renderTexView);                   DXRELEASE(pixelShaderT);
    DXRELEASE(pBufferRectLC);                DXRELEASE(renderTex);                       DXRELEASE(vertexShaderLC);
@@ -197,15 +197,6 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
    DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
 
-   // setup clipping
-   D3D11_RASTERIZER_DESC rasterizerState = { D3D11_FILL_SOLID };
-   rasterizerState.CullMode = D3D11_CULL_FRONT;
-   rasterizerState.FrontCounterClockwise = true;
-   rasterizerState.DepthClipEnable = true;
-   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateDisableClipping));
-   rasterizerState.ScissorEnable = true;
-   DX::ThrowIfFailed(d3dDevice->CreateRasterizerState(&rasterizerState, &pRasterStateEnableClipping));
-
    // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
    bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
@@ -291,7 +282,6 @@ void Direct3DBase::setColor(int color, int alphaMask)
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    if (minimized) return;
-   int clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
    y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
    XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
@@ -305,7 +295,6 @@ void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h
    };
 
    setProgram(PROGRAM_LC);
-   setClip(clip);
    D3D11_MAPPED_SUBRESOURCE ms;
    d3dcontext->Map(pBufferRectLC, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
    memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                // copy the data
@@ -361,15 +350,10 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
 
-   int32 clip[4] = { Graphics_clipX1(g), Graphics_clipY1(g), Graphics_clipX2(g), Graphics_clipY2(g) };
-   setClip(clip);
-
    d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
    d3dcontext->IASetIndexBuffer(pixelsIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
    d3dcontext->IASetPrimitiveTopology(fill ? D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST: D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    d3dcontext->DrawIndexed(n, 0, 0);
-
-   setClip(null);
 
    delete cubeVertices;
 }
@@ -428,7 +412,7 @@ void Direct3DBase::fillRect(int x1, int y1, int x2, int y2, int color)
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int color)
+void Direct3DBase::drawPixels(float* glXYA, int count, int color)
 {
    if (minimized) return;
    int i;
@@ -438,8 +422,9 @@ void Direct3DBase::drawPixels(float* glcoords, float* glcolors, int count, int c
    XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
    for (i = count; --i >= 0;)
    {
-      float x = *glcoords++;  // TODO use glcolors
-      float y = *glcoords++;
+      float x = *glXYA++;
+      float y = *glXYA++;
+      glXYA++; // skip alpha
       cv->pos = XMFLOAT2(x, y + glShiftY); cv++;
       cv->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); cv++;
    }
@@ -520,8 +505,6 @@ void Direct3DBase::preRender()
    d3dcontext->OMSetRenderTargets(1, &renderTexView, depthStencilView);
    d3dcontext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
    curProgram = PROGRAM_NONE;
-   d3dcontext->RSSetState(pRasterStateDisableClipping);
-   clipSet = false;
 }
 
 void Direct3DBase::setProgram(whichProgram p)
@@ -529,9 +512,6 @@ void Direct3DBase::setProgram(whichProgram p)
    if (p == curProgram || minimized) return;
    lastRGB = 0xFAFFFFFF; // user may never set to this color
    curProgram = p;
-   clipRect.right = -1;
-   d3dcontext->RSSetState(pRasterStateDisableClipping);
-   clipSet = false;
    switch (p)
    {
       case PROGRAM_GC:
@@ -557,12 +537,12 @@ void Direct3DBase::setProgram(whichProgram p)
    d3dcontext->VSSetConstantBuffers(0, 1, &constantBuffer);
 }
 
-void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
 {
    if (minimized) return;
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
+   PixelConv* pt = onlyAlpha ? pf : (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
    if (!pt)
    {
       throwException(currentContext, OutOfMemoryError, "Cannot allocate memory for texture.");
@@ -572,14 +552,15 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    D3D11_TEXTURE2D_DESC textureDesc = { 0 };
    textureDesc.Width = width;
    textureDesc.Height = height;
-   textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+   textureDesc.Format = onlyAlpha ? DXGI_FORMAT_A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
    textureDesc.MipLevels = textureDesc.ArraySize = textureDesc.SampleDesc.Count = 1;
    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-   for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
+   if (!onlyAlpha)
+      for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
    D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
    textureSubresourceData.pSysMem = pt0;
-   textureSubresourceData.SysMemPitch = textureDesc.Width * 4; // Specify the size of a row in bytes
+   textureSubresourceData.SysMemPitch = textureDesc.Width * (onlyAlpha ? 1 : 4); // Specify the size of a row in bytes
    if (FAILED(d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
    else
@@ -587,14 +568,14 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
       ID3D11ShaderResourceView* textureView;
       D3D11_SHADER_RESOURCE_VIEW_DESC textureViewDesc;
       ZeroMemory(&textureViewDesc, sizeof(textureViewDesc));
-      textureViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+      textureViewDesc.Format = textureDesc.Format;
       textureViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
       textureViewDesc.Texture2D.MipLevels = 1;
       d3dDevice->CreateShaderResourceView(&texture[0], &textureViewDesc, &textureView);
       xmoveptr(&textureId[0], &texture);
       xmoveptr(&textureId[1], &textureView);
    }
-   xfree(pt0);
+   if (!onlyAlpha) xfree(pt0);
 }
 
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
@@ -610,59 +591,19 @@ void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList
       texture->Release();
 }
 
-static void swap(int32* a, int32* b)
+int lastTexView;
+void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
 {
-   int32 c = *a;
-   *a = *b;
-   *b = c;
-}
-void Direct3DBase::setClip(int32* clip)
-{
+   bool isDrawText = color != null;
    if (minimized) return;
-   bool doClip = clip != null;
-   if (!doClip && clipSet)
-      d3dcontext->RSSetState(pRasterStateDisableClipping);
-   else
-   if (doClip)
-   {
-      if (!clipSet)
-         d3dcontext->RSSetState(pRasterStateEnableClipping);
-      if (clip[0] != clipRect.left || clip[1] != clipRect.top || clip[2] != clipRect.right || clip[3] != clipRect.bottom)
-      {
-         if (clip[0] > clip[2])
-            swap(&clip[0], &clip[2]);
-         if (clip[1] > clip[3])
-            swap(&clip[1], &clip[3]);
-         clipRect.left = clip[0];
-         clipRect.top = clip[1] + glShiftY;
-         clipRect.right = clip[2];
-         clipRect.bottom = clip[3] + glShiftY;
-         if (clipRect.left   < 0) clipRect.left   = 0;
-         if (clipRect.top    < 0) clipRect.top    = 0;
-         if (clipRect.right  < 0) clipRect.right  = 0;
-         if (clipRect.bottom < 0) clipRect.bottom = 0;
-         d3dcontext->RSSetScissorRects(1, &clipRect);
-      }
-   }
-   clipSet = doClip;
-}
-
-void Direct3DBase::drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv *color, int32* clip, int32 alphaMask)
-{
-   if (minimized) return;
-   ID3D11Texture2D *texture;
    ID3D11ShaderResourceView *textureView;
-
-   xmoveptr(&texture, &textureId[0]);
    xmoveptr(&textureView, &textureId[1]);
    setProgram(PROGRAM_TEX);
    setColor(!color ? 0 : 0xFF000000 | (color->r << 16) | (color->g << 8) | color->b, alphaMask);
 
-   setClip(clip);
-
    dstY += glShiftY;
-   int32 dstY2 = dstY + h;
-   int32 dstX2 = dstX + w;
+   int32 dstY2 = isDrawText ? dstY + dstH : dstY + h;
+   int32 dstX2 = isDrawText ? dstX + dstW : dstX + w;
 
    float left = (float)x / (float)imgW, top = (float)y / (float)imgH, right = (float)(x + w) / (float)imgW, bottom = (float)(y + h) / (float)imgH; // 0,0,1,1
 

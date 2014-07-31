@@ -45,6 +45,7 @@ import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
+   public static final boolean GENERATE_FONT = false;
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
@@ -156,6 +157,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          bugreport();
       createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
+      if (GENERATE_FONT)
+      {
+         new totalcross.android.fontgen.FontGenerator("tahoma", new String[]{"","/aa","/rename:TCFont"});
+         AndroidUtils.debug("FINISHED");
+         exit(0);
+      }
    }
 
    public static Context getAppContext()
@@ -522,7 +529,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         eventThread.running = false;
+         if (eventThread != null) eventThread.running = false;
          loader.finish();
       }
       canQuit = true;
@@ -1053,9 +1060,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
             double[] llF = getLatLon(addressF);
-            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
             if (llI != null && llF != null)
             {
+               AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
@@ -1520,12 +1527,19 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                FileInputStream fin = new FileInputStream(ff);
                // check if there's a SIGSEGV, which indicates an vm abort
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
-               byte[] buf = new byte[4096];
+               byte[] buf = new byte[8192];
+               final String USELESS = /* #00  pc */ "/data/data/totalcross.appmbgs/lib/libtcvm.so (executeMethod)";
                boolean hasSIGSEGV = false;
-               for (int n; (n = fin.read(buf)) > 0;)
+               for (int n,idx; (n = fin.read(buf)) > 0;)
                {
-                  if (!hasSIGSEGV && new String(buf,0,n).contains("SIGSEGV"))
-                     hasSIGSEGV = true;
+                  String s = new String(buf,0,n);
+                  if ((idx = s.indexOf(">>> totalcross")) >= 0 && 
+                      (idx = s.indexOf("SIGSEGV",idx)) >= 0 && 
+                      (idx = s.indexOf("#00  pc",idx)) >= 0) // #00  pc 0016d748  /data/data/totalcross.appmbgs/lib/libtcvm.so (executeMethod)
+                  {
+                     if (!s.substring(idx+18,Math.min(s.length(),idx+18+USELESS.length())).equals(USELESS))
+                        hasSIGSEGV = true;
+                  }
                   zout.write(buf,0,n);
                }
                zout.closeEntry();

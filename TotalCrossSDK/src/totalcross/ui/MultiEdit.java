@@ -1143,7 +1143,7 @@ public class MultiEdit extends Container implements Scrollable
             if (npback == null)
                try
                {
-                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, enabled ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false,true);
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, enabled ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
                }
                catch (ImageException e) {}
             g.drawImage(npback, 0,0);

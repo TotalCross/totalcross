@@ -48,7 +48,7 @@ public class PathAnimation extends ControlAnimation
    private void update()
    {
       double distanceRemaining = Math.sqrt((xf-x)*(xf-x) + (yf-y)*(yf-y));
-      int speed = (int)computeSpeed(distanceRemaining);
+      int speed = (int)Math.ceil(computeSpeed(distanceRemaining));
       if ((x == xf && y == yf) || speed == 0)
       {
          x = xf; y = yf;

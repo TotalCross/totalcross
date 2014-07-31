@@ -54,7 +54,7 @@ public class ScrollContainerSample extends BaseContainer
       for (int i =0; i < lines; i++)
       {
          sc2.add(new Label("Name"+i),LEFT,AFTER);
-         sc2.add(new Edit("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"),xx,SAME); // fit
+         sc2.add(new Edit(""),xx,SAME,PARENTSIZE+200,PREFERRED); // fit
          sc2.add(new Button("Go"), AFTER,SAME,PREFERRED,SAME);
       }
 

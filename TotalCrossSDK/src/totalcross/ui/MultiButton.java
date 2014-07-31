@@ -94,8 +94,8 @@ public class MultiButton extends Control
             int c = enabled ? bc : Color.getCursorColor(tcolor);
             if (divColor == -1) divColor = Color.darker(c,92);
             if (selColor == -1) selColor = Color.darker(backColor,64);
-            npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, c, false,true);
-            npsel  = NinePatch.getInstance().getPressedInstance(npback, backColor, selColor, true);
+            npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, c, false);
+            npsel  = NinePatch.getInstance().getPressedInstance(npback, backColor, selColor);
          }
          // without this, clicking will make the button fade out
          g.backColor = parent.getBackColor();

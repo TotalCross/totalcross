@@ -1359,14 +1359,24 @@ If your desktop has the SDK installed, you may run the application from
  If your application can't found the SDK (or the right SDK if you have more
  than one installed), make sure that the environment variable 
 \family typewriter
-TOTALCROSS_HOME
+TOTALCROSS3_HOME
 \family default
  is pointing to the desired TotalCross installation folder.
  On some systems (Windows 8, for instance), 
 \family typewriter
-TOTALCROSS_HOME
+TOTALCROSS3_HOME
 \family default
  must be set both in user and system environment variables.
+ If there is no 
+\family typewriter
+TOTALCROSS3_HOME
+\family default
+, TotalCross will search for the variable used in older TotalCross versions,
+ which is 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+.
 \end_layout
 
 \end_inset
@@ -3464,8 +3474,8 @@ path
 
 type
 \family default
- : Packages the VM (and optionally Litebase) with the application, creating
- a single installation file.
+ : Packages the VM (and Litebase) with the application, creating a single
+ installation file.
  The type parameter can be one of the following: 
 \family typewriter
 demo
@@ -3484,150 +3494,8 @@ release+litebase
 \family default
  (where demo/release are the virtual machine types you want to include:
  the time-limited demonstration, or the release that requires activation).
- The DEMO SDKs must be in the path or in the 
-\family typewriter
-TOTALCROSS_HOME
-\family default
-/
-\family typewriter
- LITEBASE_HOME
-\family default
- environment variables, and the RELEASE SDKs must be in the same parent
- folder of the DEMO ones.
- Example: if 
-\family typewriter
-TOTALCROSS_HOME
-\family default
- points to 
-\family typewriter
-t:
-\backslash
-sdks
-\backslash
- TotalCrossSDK
-\family default
-, then the VMS must be at 
-\family typewriter
-t:
-\backslash
-sdks
-\backslash
-TotalCrossVMS
-\family default
-.
- If the
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-TOTALCROSS_HOME
-\family default
- and 
-\family typewriter
-LITEBASE_HOME
-\family default
- variables are not set, then all SDKs must be at the top-level folder of
- the 
-\family typewriter
-%TOTALCROSS_HOME%
-\backslash
-etc
-\family default
- folder.
-\begin_inset Newline newline
-\end_inset
-
-The files are always installed at the same folder of the application, so
- each application will have its own VM/litebase.
- You can optionally set four environment variables, pointing to the folder
- of each SDK (these will have priority over the other locations previously
- described): 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-TabPositions{4.5cm}
 \end_layout
 
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-TOTALCROSS_DEMO 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the TotalCross SDK folder
-\end_layout
-
-\begin_layout Itemize
-TOTALCROSS_RELEASE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the TotalCross VMS folder
-\end_layout
-
-\begin_layout Itemize
-LITEBASE_DEMO 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the Litebase SDK folder
-\end_layout
-
-\begin_layout Itemize
-LITEBASE_RELEASE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the Litebase VMS folder
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter

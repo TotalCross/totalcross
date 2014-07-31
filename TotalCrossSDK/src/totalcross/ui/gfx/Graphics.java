@@ -240,6 +240,15 @@ public final class Graphics
       transY = ty;
       if (f != null) setFont(f);
    }
+   
+   /** Expands the clipping limits. Used internally. */
+   public void expandClipLimits(int dx1, int dy1, int dx2, int dy2)
+   {
+      minX += dx1;
+      minY += dy1;
+      maxX += dx2;
+      maxY += dy2;
+   }
 
    /** Returns the palette used when the screen has 8 bpp.
     * You can view the palette online <a href='http://www.superwaba.org/tc/pal685_values.png' target=_blank>here</a>.
@@ -1064,8 +1073,11 @@ public final class Graphics
       if (clipX2 > maxX) clipX2 = maxX;
       if (clipY2 > maxY) clipY2 = maxY;
 
-      if (clipX2 > Settings.screenWidth)  clipX2 = Settings.screenWidth;
-      if (clipY2 > Settings.screenHeight) clipY2 = Settings.screenHeight;
+      int surfW = isControlSurface ? Settings.screenWidth : surface.getWidth();
+      int surfH = isControlSurface ? Settings.screenHeight: surface.getHeight();
+
+      if (clipX2 > surfW) clipX2 = surfW;
+      if (clipY2 > surfH) clipY2 = surfH;
 
       this.clipX1 = clipX1;
       this.clipY1 = clipY1;

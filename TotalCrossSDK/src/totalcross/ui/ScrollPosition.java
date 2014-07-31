@@ -185,9 +185,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                try
                {
                   if (verticalBar)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,false);
                   else
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,false);
                }
                catch (Exception e) {e.printStackTrace();}
             

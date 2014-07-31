@@ -1816,6 +1816,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       private int []bitIndexTable;
       private String fontName;
       private int numberWidth;
+      private int minusW;
 
       private UserFont(String fontName, String sufix, int size, totalcross.ui.font.Font base) throws Exception
       {
@@ -1835,6 +1836,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          this.ascent = size - this.descent;
          this.numberWidth = ubase.numberWidth * maxHeight / ubase.maxHeight;
          this.spaceWidth = ubase.spaceWidth * maxHeight / ubase.maxHeight;
+         this.minusW = ubase.minusW;
       }
       
       private UserFont(String fontName, String sufix) throws Exception
@@ -1849,7 +1851,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                is = openInputStream("vm/"+fileName); // for the release sdk, there's no etc/fonts. the tcfont.tcz is located at dist/vm/tcfont.tcz
                if (is == null)
-                  throw new Exception("file "+fileName+" not found"); // loaded = false
+               {
+                  is = openInputStream("etc/fonts/"+fileName); // if looking for the default font when debugging, use etc/fonts
+                  if (is == null)
+                     throw new Exception("file "+fileName+" not found"); // loaded = false
+               }
             }
             z = new TCZ(new IS2S(is));
             totalcross.io.ByteArrayStream fontChunks[];
@@ -1891,10 +1897,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
          //
+         minusW = antialiased == AA_8BPP ? 1 : 0;
          if (firstChar <= '0' && '0' <= lastChar)
          {
             index = (int)'0' - (int)firstChar;
-            numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+            numberWidth = bitIndexTable[index+1] - bitIndexTable[index] - minusW;
          }
          if (antialiased == AA_8BPP)
             nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
@@ -1903,7 +1910,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
       {
          int offset = bitIndexTable[index];
-         int width = bitIndexTable[index+1] - offset;
+         int width = bitIndexTable[index+1] - offset - minusW;
          totalcross.ui.image.Image img = new totalcross.ui.image.Image(width,maxHeight);
          int[] pixels = img.getPixels();
          for (int y = 0,idx=0; y < maxHeight; y++)
@@ -1922,7 +1929,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             bits.rowWIB = rowWidthInBytes;
             bits.charBitmapTable = bitmapTable;
             bits.offset = bitIndexTable[index];
-            bits.width = bitIndexTable[index+1] - bits.offset;
+            bits.width = bitIndexTable[index+1] - bits.offset - minusW;
             if (ubase != null)
                try
                {
@@ -1953,7 +1960,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (ch < ' ')
          return (ch == '\t') ? font.spaceWidth * totalcross.ui.font.Font.TAB_SIZE : 0; // guich@tc100: handle tabs
       int index = (int)ch - (int)font.firstChar;
-      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] : font.spaceWidth;
+      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] - font.minusW : font.spaceWidth;
    }
    
 

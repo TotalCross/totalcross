@@ -126,6 +126,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void flickEnded(boolean atPenDown)
    {
+      bag.releaseScreenShot();
    }
    
    public boolean canScrollContent(int direction, Object target)
@@ -425,6 +426,14 @@ public class ScrollContainer extends Container implements Scrollable
          case PenEvent.PEN_DOWN:
             scScrolled = false;
             break;
+         case PenEvent.PEN_DRAG_START:
+            if (Settings.isOpenGL && ((DragEvent)event).direction != 0 && isFirstBag((Control)event.target) && bag.offscreen == null && Settings.fingerTouch && bag.width < 4096 && bag.height < 4096) // 4k is the texture's limit on most devices
+               bag.takeScreenShot();
+            break;
+         case PenEvent.PEN_DRAG_END:
+            if (flick != null && Flick.currentFlick == null && bag.offscreen != null)
+               bag.releaseScreenShot();
+            break;
          case PenEvent.PEN_DRAG:
             if (event.target == sbV || event.target == sbH) break;
             if (Settings.fingerTouch)
@@ -460,6 +469,14 @@ public class ScrollContainer extends Container implements Scrollable
                scrollToControl((Control)event.target);
             break;
       }
+   }
+
+   private boolean isFirstBag(Control c)
+   {
+      for (; c != null; c = c.parent)
+         if (c instanceof ClippedContainer)
+            return c == bag;
+      return false;
    }
 
    /** Scrolls to the given page, which is the flick's scrollDistance (if set), or the control's height.

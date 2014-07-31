@@ -1157,17 +1157,8 @@ public class Window extends Container
          paintWindowBackground(gg);
          paintChildren();
       }
-      if (needsPaint)
-      {
-         needsPaint = false;
-         onWindowPaintFinished();
-         if (_focus != null && _focus.getParentWindow() == this)
-            _focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
-         lastHighlighted = null;
-         if (highlighted != null && this == topMost) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
-            drawHighlight(highlighted);
-         updateScreen(); // tc100
-      }
+      if (offscreen == null && Settings.onJavaSE)
+         updateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, and make it child of this one. All events in the behind window are deactivated.
@@ -1453,6 +1444,7 @@ public class Window extends Container
       int i,j,n;
       boolean eas = enableUpdateScreen;
       enableUpdateScreen = false;
+      boolean neededPaint = needsPaint;
       needsPaint = false; // prevent from updating the screen
       // guich@400_73 guich@400_76
       Object[] items = zStack.items;
@@ -1470,6 +1462,16 @@ public class Window extends Container
          if (i == lastFade)
             Graphics.fadeScreen(fadeValue);
          if (items[i] != null) ((Window)items[i])._doPaint();
+      }
+      if (neededPaint)
+      {
+         topMost.onWindowPaintFinished();
+         if (topMost._focus != null && topMost._focus.getParentWindow() == topMost)
+            topMost._focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
+         topMost.lastHighlighted = null;
+         if (topMost.highlighted != null) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
+            topMost.drawHighlight(topMost.highlighted);
+         updateScreen(); // tc100
       }
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.

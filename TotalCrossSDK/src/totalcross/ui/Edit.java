@@ -790,7 +790,7 @@ public class Edit extends Control
                try
                {
                   if (npback == null || focusColor != -1)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
                }
                catch (ImageException e) {e.printStackTrace();}
                g.drawImage(npback, 0,0);

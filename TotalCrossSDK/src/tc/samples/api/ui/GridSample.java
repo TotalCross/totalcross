@@ -39,7 +39,7 @@ public class GridSample extends BaseContainer
       tp.extraTabHeight = fmH/2;
       tp.activeTabBackColor = Color.ORANGE;
       tp.pressedColor = Color.YELLOW;
-      add(tp, LEFT,TOP,FILL,FILL);
+      add(tp, LEFT+fmH/2,TOP,FILL-fmH/2,FILL);
       tp.setContainer(0, new Grid1());
       tp.setContainer(1, new Grid2());
       tp.setContainer(2, new Grid3());
