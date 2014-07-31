@@ -74,160 +74,9 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
       add(l=new Label("Command: "),LEFT,TOP+1);
       add(btGo = new Button("Go"));
       btGo.setRect(RIGHT, SAME, PREFERRED,PREFERRED+2);
-      add(cbCmd = new ComboBox(commands));
-      cbCmd.setRect(AFTER,SAME,FIT-1,PREFERRED,l);
-      add(cbLog = new ComboBox());
-      cbLog.enableHorizontalScroll();
-      cbLog.fullWidth = true;
-      cbLog.setRect(LEFT,BOTTOM,FILL,PREFERRED+1);
-
-      int h = ((cbLog.getPos().y-cbCmd.getRect().y2())>>1) -2;
-      add(lbLocal = new ListBox());
-      lbLocal.enableHorizontalScroll();
-      lbLocal.setRect(LEFT,AFTER+1,FILL,h,btGo);
-      add(lbRemote = new ListBox());
-      lbRemote.enableHorizontalScroll();
-      lbRemote.setRect(LEFT,AFTER+1,FILL,h);
-      cbCmd.setSelectedIndex(0);
-      lbLocal.add("Local");
-      lbRemote.add("Remote");
-      btGo.setEnabled(false);
-
-      if (Settings.appSettings != null)
+      btGo.addPressListener(new PressListener()
       {
-         String []uup = Convert.tokenizeString(Settings.appSettings,'|');
-         if (uup.length == 4)
-         {
-            url  = uup[0]; if (url.equals ("null")) url  = null;
-            user = uup[1]; if (user.equals("null")) user = null;
-            pass = uup[2]; if (pass.equals("null")) pass = null;
-            try
-				{
-					port = Convert.toInt(uup[3]);
-				}
-				catch (InvalidNumberException e)
-				{
-					MessageBox.showException(e, true);
-				}
-         }
-      }
-      repaintNow();
-      getParentWindow().popupMenuBar(); // activate the menu
-      mbar.moveBy(1); // show connection menu
-   }
-
-   public void onRemove()
-   {
-      if (ftp != null)
-      {
-         try
-         {
-            ftp.quit();
-         }
-         catch (FTPConnectionClosedException e)
-         {
-         }
-         catch (IOException e)
-         {
-         }
-      }
-
-      Settings.appSettings = url+"|"+user+"|"+pass+"|"+port;
-   }
-
-   public void onEvent(Event e)
-   {
-      if (e.type == ControlEvent.PRESSED)
-      {
-         if (e.target == mbar)
-         {
-            switch (mbar.getSelectedIndex())
-            {
-               case 1:
-                  new MessageBox("Help","This program is used to\nsend and get files from\na remote server. Select\nthe command and click in\nthe Go button. A\ndouble-click in a file\ninside the listbox will also\napply the command for it\n(if applicable).").popupNonBlocking();
-                  break;
-               case 2:
-                  new MessageBox("About","RemoteExplorer was created\nin one day with TotalCross.\n\nThis program is dedicated to\nVera Nardelli Campos\n(in memorium)").popupNonBlocking();
-                  break;
-               case 4:
-                  automaticTest();
-                  break;
-               case 6:
-                  cbLog.removeAll();
-                  break;
-               case 101:
-               {
-                  InputBox id = new InputBox("Connection Parameters", "Please enter the server's URL",url!=null?url:"");
-                  id.popup();
-                  if (id.getPressedButtonIndex() == 0)
-                     url = id.getValue();
-                  else
-                     break; // user cancelled
-                  if (user != null) // if no user was entered, go directly to it
-                     break;
-               }
-               case 102:
-               {
-                  InputBox id = new InputBox("Connection Parameters", "Please enter the username",user!=null?user:"");
-                  id.popup();
-                  if (id.getPressedButtonIndex() == 0)
-                     user = id.getValue();
-                  else
-                     break; // user cancelled
-                  if (pass != null) // if no pass was entered, go directly to it
-                     break;
-               }
-               case 103:
-               {
-                  InputBox id = new InputBox("Connection Parameters", "Please enter the password",pass!=null?pass:"");
-                  id.getEdit().setMode(Edit.PASSWORD); // set to password
-                  id.popup();
-                  if (id.getPressedButtonIndex() == 0)
-                     pass = id.getValue();
-                  break;
-               }
-               case 104:
-               {
-                  InputBox id = new InputBox("Connection Parameters", "Please enter the port", Convert.toString(port));
-                  id.getEdit().setValidChars("0123456789");
-                  id.popup();
-                  if (id.getPressedButtonIndex() == 0)
-							try
-							{
-								port = Convert.toInt(id.getValue());
-							}
-							catch (InvalidNumberException e1)
-							{
-								MessageBox.showException(e1, true);
-							}
-                  break;
-               }
-               case 106:
-                  if (url == null || user == null || pass == null)
-                     new MessageBox("Attention","You must set the url,\nuser name and password\nbefore trying to connect!").popupNonBlocking();
-                  else
-                     login();
-                  break;
-               case 107:
-                  logout();
-                  break;
-               case 109:
-                  try
-                  {
-                     if (ftp != null)
-                        ftp.forceClose();
-                     new MessageBox("Attention","FTP disconnected").popupNonBlocking();
-                  }
-                  catch (IOException e1)
-                  {
-                     MessageBox.showException(e1, true);
-                  }
-                  enableLogoutItems();
-                  break;
-            }
-         }
-         else
-         if (e.target == btGo)
+         public void controlPressed(ControlEvent e)
          {
             try
             {
@@ -275,11 +124,160 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
             }
             catch (Exception ex)
             {
-            	MessageBox.showException(ex, true);
+               MessageBox.showException(ex, true);
                handleException(ex);
             }
          }
+      });
+      add(cbCmd = new ComboBox(commands));
+      cbCmd.setRect(AFTER,SAME,FIT-1,PREFERRED,l);
+      add(cbLog = new ComboBox());
+      cbLog.enableHorizontalScroll();
+      cbLog.fullWidth = true;
+      cbLog.setRect(LEFT,BOTTOM,FILL,PREFERRED+1);
+
+      int h = ((cbLog.getPos().y-cbCmd.getRect().y2())>>1) -2;
+      add(lbLocal = new ListBox());
+      lbLocal.enableHorizontalScroll();
+      lbLocal.setRect(LEFT,AFTER+1,FILL,h,btGo);
+      add(lbRemote = new ListBox());
+      lbRemote.enableHorizontalScroll();
+      lbRemote.setRect(LEFT,AFTER+1,FILL,h);
+      cbCmd.setSelectedIndex(0);
+      lbLocal.add("Local");
+      lbRemote.add("Remote");
+      btGo.setEnabled(false);
+
+      if (Settings.appSettings != null)
+      {
+         String []uup = Convert.tokenizeString(Settings.appSettings,'|');
+         if (uup.length == 4)
+         {
+            url  = uup[0]; if (url.equals ("null")) url  = null;
+            user = uup[1]; if (user.equals("null")) user = null;
+            pass = uup[2]; if (pass.equals("null")) pass = null;
+            try
+				{
+					port = Convert.toInt(uup[3]);
+				}
+				catch (InvalidNumberException e)
+				{
+					MessageBox.showException(e, true);
+				}
+         }
       }
+      repaintNow();
+      getParentWindow().popupMenuBar(); // activate the menu
+      mbar.moveBy(1); // show connection menu
+      mbar.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            switch (mbar.getSelectedIndex())
+            {
+               case 1:
+                  new MessageBox("Help","This sample is used to\nsend and get files from\na remote server. Select\nthe command and click in\nthe Go button. A\ndouble-click in a file\ninside the listbox will also\napply the command for it\n(if applicable).").popupNonBlocking();
+                  break;
+               case 2:
+                  new MessageBox("About","This sample was created\nin one day with TotalCross.\n\nThis program is dedicated to\nVera Nardelli Campos\n(in memorium)").popupNonBlocking();
+                  break;
+               case 4:
+                  automaticTest();
+                  break;
+               case 6:
+                  cbLog.removeAll();
+                  break;
+               case 101:
+               {
+                  InputBox id = new InputBox("Connection Parameters", "Please enter the server's URL",url!=null?url:"");
+                  id.popup();
+                  if (id.getPressedButtonIndex() == 0)
+                     url = id.getValue();
+                  else
+                     break; // user cancelled
+                  if (user != null) // if no user was entered, go directly to it
+                     break;
+               }
+               case 102:
+               {
+                  InputBox id = new InputBox("Connection Parameters", "Please enter the username",user!=null?user:"");
+                  id.popup();
+                  if (id.getPressedButtonIndex() == 0)
+                     user = id.getValue();
+                  else
+                     break; // user cancelled
+                  if (pass != null) // if no pass was entered, go directly to it
+                     break;
+               }
+               case 103:
+               {
+                  InputBox id = new InputBox("Connection Parameters", "Please enter the password",pass!=null?pass:"");
+                  id.getEdit().setMode(Edit.PASSWORD); // set to password
+                  id.popup();
+                  if (id.getPressedButtonIndex() == 0)
+                     pass = id.getValue();
+                  break;
+               }
+               case 104:
+               {
+                  InputBox id = new InputBox("Connection Parameters", "Please enter the port", Convert.toString(port));
+                  id.getEdit().setValidChars("0123456789");
+                  id.popup();
+                  if (id.getPressedButtonIndex() == 0)
+                     try
+                     {
+                        port = Convert.toInt(id.getValue());
+                     }
+                     catch (InvalidNumberException e1)
+                     {
+                        MessageBox.showException(e1, true);
+                     }
+                  break;
+               }
+               case 106:
+                  if (url == null || user == null || pass == null)
+                     new MessageBox("Attention","You must set the url,\nuser name and password\nbefore trying to connect!").popupNonBlocking();
+                  else
+                     login();
+                  break;
+               case 107:
+                  logout();
+                  break;
+               case 109:
+                  try
+                  {
+                     if (ftp != null)
+                        ftp.forceClose();
+                     new MessageBox("Attention","FTP disconnected").popupNonBlocking();
+                  }
+                  catch (IOException e1)
+                  {
+                     MessageBox.showException(e1, true);
+                  }
+                  enableLogoutItems();
+                  break;
+            }
+         }
+      });
+   }
+
+   public void onRemove()
+   {
+      if (ftp != null)
+      {
+         try
+         {
+            ftp.quit();
+         }
+         catch (FTPConnectionClosedException e)
+         {
+         }
+         catch (IOException e)
+         {
+         }
+      }
+
+      Settings.appSettings = url+"|"+user+"|"+pass+"|"+port;
    }
 
    private void refreshDir() throws Exception
