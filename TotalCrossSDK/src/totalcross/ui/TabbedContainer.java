@@ -226,8 +226,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    
    protected void computeClipRect()
    {
-      bagClipY0 = clientRect.y;           // -this.y; 
-      bagClipYf = bagClipY0 + clientRect.height; // y0 + parent.height;
+      bagClipY0 = 0;           // include top otherwise the arrows will not be drawn 
+      bagClipYf = this.height; // y0 + parent.height;
       bagClipX0 = clientRect.x;           // -this.x;
       bagClipXf = bagClipX0 + clientRect.width;  //  x0 + parent.width;
    }
