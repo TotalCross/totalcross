@@ -60,7 +60,8 @@ static bool surfaceWillChange;
 
 VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
-float ftransp[16], f255[256];
+float ftransp[16];
+float f255[256];
 int32 flen;
 float *glXYA;//[flen*2]; x,y
 static float texcoords[16], lrcoords[8], shcolors[12],shcoords[8];
