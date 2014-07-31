@@ -64,7 +64,7 @@ public class BaseContainer extends Container
          if (infoImg == null)
             infoImg = new Image("ui/images/ic_dialog_info.png");
          if (timerImg == null)
-            timerImg = new Image("ui/images/ic_dialog_time.png");
+            timerImg = new Image("ui/images/crono.png");
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
