@@ -54,7 +54,7 @@ extern int32 setShiftYonNextUpdateScreen;
 
 extern VoidPs* imgTextures;
 
-void setShiftYgl();
+void setShiftYgl(int32 shiftY);
 
 extern void setTimerInterval(int32 t);
 
