@@ -26,6 +26,7 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 
 public class FTPSample extends BaseContainer // TO BE FINISHED
 {
@@ -68,6 +69,7 @@ public class FTPSample extends BaseContainer // TO BE FINISHED
       };
       miLogout.isEnabled = false;
       getParentWindow().setMenuBar(mbar = new MenuBar(new MenuItem[][]{m0,m1}));
+      mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
 
       Label l;
       String [] commands = {"List","Change dir","Send - just a sample","Receive - just a sample"};
