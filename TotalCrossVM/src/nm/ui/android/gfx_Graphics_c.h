@@ -334,7 +334,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
    }
-   if (checkfloatBuffer(currentContext, n))
+   if (checkGLfloatBuffer(currentContext, n))
    {
       int32 i;
       float *glV = glXYA;
@@ -708,7 +708,7 @@ static void setProjectionMatrix(float w, float h)
 }
 
 /////////////////////////////////////////////////////////////////////////
-bool checkfloatBuffer(Context c, int32 n)
+bool checkGLfloatBuffer(Context c, int32 n)
 {
    if (n > flen)
    {
@@ -752,7 +752,7 @@ bool setupGL(int width, int height)
     ftransp[15] = 1;
     for (i = 0; i <= 255; i++)
         f255[i] = (float)i/(float)255;
-    return checkfloatBuffer(mainContext,1000);
+    return checkGLfloatBuffer(mainContext,1000);
 }
 
 #ifdef ANDROID
