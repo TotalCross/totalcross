@@ -49,7 +49,7 @@ bool checkGlError(const char* op, int line)
 #define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
 
 #ifdef ANDROID
-static void setProjectionMatrix(GLfloat w, GLfloat h);
+static void setProjectionMatrix(float w, float h);
 static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
@@ -60,10 +60,10 @@ static bool surfaceWillChange;
 
 VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
-GLfloat ftransp[16], f255[256];
+float ftransp[16], f255[256];
 int32 flen;
-GLfloat *glXYA;//[flen*2]; x,y
-static GLfloat texcoords[16], lrcoords[8], shcolors[12],shcoords[8];
+float *glXYA;//[flen*2]; x,y
+static float texcoords[16], lrcoords[8], shcolors[12],shcoords[8];
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
@@ -333,7 +333,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
       lrpLastRGB = pc.pixel;
       glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
    }
-   if (checkGLfloatBuffer(currentContext, n))
+   if (checkfloatBuffer(currentContext, n))
    {
       int32 i;
       float *glV = glXYA;
@@ -487,13 +487,13 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    bool isDrawText = color != null;
    if (textureId[0] == 0) return;
 
-   GLfloat* coords = texcoords;
+   float* coords = texcoords;
 
    setCurrentProgram(isDrawText ? textProgram : textureProgram);
    if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
       glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR
 
-   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
+   float left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
 
    // coordinates
    coords[0 ] = coords[12] = dstX;
@@ -679,10 +679,10 @@ void flushAll()
    glFlush(); GL_CHECK_ERROR
 }
 
-static void setProjectionMatrix(GLfloat w, GLfloat h)
+static void setProjectionMatrix(float w, float h)
 {
    double t = -glShiftY, b = h-glShiftY; // f = 1, n = -1
-   GLfloat mat[] =
+   float mat[] =
    {
       2.0/w,    0.0,   0.0, -1.0,
       0.0,    2.0/(t-b),   0.0,  -(t+b)/(t-b),
@@ -707,14 +707,14 @@ static void setProjectionMatrix(GLfloat w, GLfloat h)
 }
 
 /////////////////////////////////////////////////////////////////////////
-bool checkGLfloatBuffer(Context c, int32 n)
+bool checkfloatBuffer(Context c, int32 n)
 {
    if (n > flen)
    {
       xfree(glXYA);
       flen = n*3/2;
       int len = flen*3;
-      glXYA = (GLfloat*)xmalloc(sizeof(GLfloat)*len);
+      glXYA = (float*)xmalloc(sizeof(float)*len);
       if (!glXYA)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
@@ -747,11 +747,11 @@ bool setupGL(int width, int height)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GL_CHECK_ERROR
 
     for (i = 0; i < 14; i++)
-        ftransp[i+1] = (GLfloat)(i<<4) / (GLfloat)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
+        ftransp[i+1] = (float)(i<<4) / (float)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
     ftransp[15] = 1;
     for (i = 0; i <= 255; i++)
-        f255[i] = (GLfloat)i/(GLfloat)255;
-    return checkGLfloatBuffer(mainContext,1000);
+        f255[i] = (float)i/(float)255;
+    return checkfloatBuffer(mainContext,1000);
 }
 
 #ifdef ANDROID
