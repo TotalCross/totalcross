@@ -1,4 +1,4 @@
-<h2>TotalCross 3.04 build 2288</h2>
+<h2>TotalCross 3.04 build 2289</h2>
 . lots of performance improvements in opengl, graphics is now 2x faster, in some android tablets is 3x faster. flicking is much smoother.<br>
 . added Toast class used to show a message using fade and transparency. added Button.BORDER_ROUND. Fixed getScreenShot not correctly handling control with transparentBackground. Now Toast is used to show the UI benchmark in TotalCrossAPI<br>
 . added TopMenu.autoClose and totalTime. added TopMenu.percWidth, so the user can change the default width<br>
@@ -24,6 +24,7 @@
 . now sending the debug to console window in iOS<br>
 . in ios, when it gets out of memory, instead of returning null to the allocation, it kills the application. but before doing so, it calls a didReceiveMemoryWarning method. now we intercept that method and at the next block of memory above 1MB that you try to allocate, an OutOfMemoryError is thrown. Better this than just kill the application<br>
 . fixed FTPSample's menu not working<br>
+. now PieChart's distanceOfSelectedPie is measured in font height.<br>
 
 <h2>TotalCross 3.03 build 2227</h2>
 . improved speed of TabbedContainer drag and flick by drawing the tabs in an image and drawing that image instead of calling the drawing methods. its far smoother than before.<br>
