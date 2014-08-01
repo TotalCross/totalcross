@@ -1731,7 +1731,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       // step 3: create space in the buffer so it can save all the circle
       size+=2;
       if (pie) size++;
-      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) < (uint32)size)
+      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) != (uint32)size) // guich@tc304: changed < to != to fix a glytch when drawing two pies with different radius
       {
          *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
          if (*xPointsObj == null)
