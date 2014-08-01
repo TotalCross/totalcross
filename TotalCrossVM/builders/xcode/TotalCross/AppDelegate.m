@@ -17,7 +17,7 @@
 @implementation AppDelegate
 
 #ifdef DEBUG
-#define APPNAME "TotalCrossAPI"
+#define TCZNAME "TotalCrossAPI"
 #endif
 
 -(void) initApp
@@ -49,8 +49,8 @@
    [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
    const char* name =
-#ifdef APPNAME
-       APPNAME;
+#ifdef TCZNAME
+       TCZNAME;
 #else
        [[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
