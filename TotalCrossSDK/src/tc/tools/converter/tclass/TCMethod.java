@@ -247,7 +247,11 @@ public final class TCMethod implements TCConstants
          String tcClassName = "totalcross"+className.substring(4);
          try
          {
-            c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+            int index = tcClassName.indexOf('$');
+            if (index < 0)
+               c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+            else
+               c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
          }
          catch (ClassNotFoundException e)
          {

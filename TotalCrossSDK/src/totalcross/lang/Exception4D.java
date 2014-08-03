@@ -45,5 +45,29 @@ public class Exception4D extends Throwable
    {
       super(msg);
    }
+   
+   /**
+    * Create an exception with a message and a cause.
+    *
+    * @param s the message string
+    * @param cause the cause of this error
+    * @since 1.4
+    */
+   public Exception4D(String s, Throwable cause)
+   {
+     super(s, cause);
+   }
+
+   /**
+    * Create an exception with a given cause, and a message of
+    * <code>cause == null ? null : cause.toString()</code>.
+    *
+    * @param cause the cause of this exception
+    * @since 1.4
+    */
+   public Exception4D(Throwable cause)
+   {
+     super(cause);
+   }
 }
 

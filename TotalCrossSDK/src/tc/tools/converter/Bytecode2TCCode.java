@@ -2002,6 +2002,25 @@ public class Bytecode2TCCode implements JConstants, TCConstants
    {
       if (name.startsWith("totalcross/lang/"))
          return "java/lang/" + name.substring(16);
+      if (name.startsWith("totalcross/util/AbstractList") || name.startsWith("totalcross/util/AbstractMap") 
+       || name.startsWith("totalcross/util/Map")) 
+         return name.replace("totalcross", "java");
+      if (name.equals("totalcross/util/AbstractCollection4D")) 
+         return "java/util/AbstractCollection4D";
+      if (name.equals("totalcross/util/Collection4D")) 
+         return "java/util/Collection4D";
+      if (name.equals("totalcross/util/ConcurrentModificationException4D")) 
+         return "java/util/ConcurrentModificationException4D";
+      if (name.equals("totalcross/util/Iterator4D")) 
+         return "java/util/Iterator4D";
+      if (name.equals("totalcross/util/List4D")) 
+         return "java/util/List4D";
+      if (name.equals("totalcross/util/ListIterator4D")) 
+         return "java/util/ListIterator4D";
+      if (name.equals("totalcross/util/NoSuchElementException4D")) 
+         return "java/util/NoSuchElementException4D";
+      if (name.equals("totalcross/util/Set4D")) 
+         return "java/util/Set4D";
       return name;
    }
 

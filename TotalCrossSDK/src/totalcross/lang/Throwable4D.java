@@ -39,6 +39,16 @@ public class Throwable4D
     protected String msg;
 
     public String trace;
+    
+    /**
+     * The cause of the throwable, including null for an unknown or non-chained
+     * cause. This may only be set once; so the field is set to
+     * <code>this</code> until initialized.
+     *
+     * @serial the cause, or null if unknown, or this if not yet set
+     * @since 1.4
+     */
+    private Throwable4D cause = this;
 
     /** Constructs an empty Exception. */
     public Throwable4D()
@@ -49,6 +59,34 @@ public class Throwable4D
     public Throwable4D(String msg)
     {
 	    this.msg = msg;
+    }
+    
+    /**
+     * Instantiate this Throwable with the given message and cause. Note that
+     * the message is unrelated to the message of the cause.
+     * {@link #fillInStackTrace()} will be called to set up the stack trace.
+     *
+     * @param message the message to associate with the Throwable
+     * @param cause the cause, may be null
+     * @since 1.4
+     */
+    public Throwable4D(String message, Throwable4D cause)
+    {
+      this(message);
+      this.cause = cause;
+    }
+
+    /**
+     * Instantiate this Throwable with the given cause. The message is then
+     * built as <code>cause == null ? null : cause.toString()</code>.
+     * {@link #fillInStackTrace()} will be called to set up the stack trace.
+     *
+     * @param cause the cause, may be null
+     * @since 1.4
+     */
+    public Throwable4D(Throwable4D cause)
+    {
+      this(cause == null ? null : cause.toString(), cause);
     }
 
     /** Returns the message passed on the constructor. May be null. */
