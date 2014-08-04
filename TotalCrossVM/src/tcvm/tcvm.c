@@ -990,7 +990,7 @@ throwNoSuchMethodError:
       }              
       paramsStr[slen-1] = 0;
    }
-   tcvmCreateException(context, NoSuchMethodError, (int32)(code-method->code), 0, "%s %s(%s). The current VM may not be compatible with this program.", className, methodName, slen == 0 ? "" : paramsStr == null ? "..." : paramsStr);
+   tcvmCreateException(context, NoSuchMethodError, (int32)(code-method->code), 0, "%s %s(%s). The current VM may not be compatible with this program OR there may be a bug in the Java compiler; try to upgrade or downgrade your JDK.", className, methodName, slen == 0 ? "" : paramsStr == null ? "..." : paramsStr);
    xfree(paramsStr);
    goto handleException;
 }
