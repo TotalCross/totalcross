@@ -84,9 +84,15 @@ public class Image4D extends GfxSurface
 
    public Image4D(byte []fullDescription) throws ImageException
    {
-      if (fullDescription.length < 4)
+      this(fullDescription, fullDescription.length);
+   }
+   
+   public Image4D(byte []fullDescription, int len) throws ImageException
+   {
+      if (len < 4)
          throw new ImageException("Invalid image description");
       ByteArrayStream bas = new ByteArrayStream(fullDescription);
+      if (len != fullDescription.length) try {bas.setPos(len); bas.mark();} catch (Exception e) {}
       bas.skipBytes(4); // first 4 bytes are read directly from the fullDescription buffer
       imageParse(bas, fullDescription);
       if (width == 0)
