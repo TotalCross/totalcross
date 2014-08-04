@@ -161,6 +161,8 @@ public class Image extends GfxSurface
    */
    public Image(int width, int height) throws ImageException
    {
+      if (width <= 0 || height <= 0)
+         throw new totalcross.ui.image.ImageException("Invalid width "+width+" or height "+height);
       this.width = width;
       this.height = height;
       try
@@ -1193,6 +1195,8 @@ public class Image extends GfxSurface
    
    private Image getCopy(int w, int h) throws ImageException
    {
+      if (w <= 0 || h <= 0)
+         throw new totalcross.ui.image.ImageException("Invalid width "+w+" or height "+h);
       Image i = new Image(w,h);
       // copy other attributes
       return i;
