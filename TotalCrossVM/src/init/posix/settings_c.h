@@ -273,7 +273,6 @@ void updateDaylightSavings(Context currentContext)
 
 #if defined (ANDROID)
 #include "sys/system_properties.h"
-extern bool lowmemDevice;
 bool fillSettings(Context currentContext)
 {
    JNIEnv* env = getJNIEnv();
@@ -326,7 +325,6 @@ bool fillSettings(Context currentContext)
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "romVersion", "I");
    *tcSettings.romVersionPtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
-   lowmemDevice = *tcSettings.romVersionPtr < 400;
 
    // locale
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "daylightSavings", "Z");
