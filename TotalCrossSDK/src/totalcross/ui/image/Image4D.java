@@ -52,8 +52,6 @@ public class Image4D extends GfxSurface
    
    public Image4D(int width, int height) throws ImageException
    {
-      if (width <= 0 || height <= 0)
-         throw new totalcross.ui.image.ImageException("Invalid width "+width+" or height "+height);
       this.width = width;
       this.height = height;
       try
@@ -350,8 +348,6 @@ public class Image4D extends GfxSurface
    {
       if (type != ALPHA_INSTANCE && type != FADED_INSTANCE && newW == width && newH == height && (angle%360) == 0 && brightness == 0 && contrast == 0)
          return this;
-      if (newW <= 0 || newH <= 0)
-         throw new totalcross.ui.image.ImageException("Invalid width "+newW+" or height "+newH);
       
       newW *= frameCount;
       Image4D imageOut = getCopy(newW, newH);
