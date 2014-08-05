@@ -409,13 +409,16 @@ TCObject allocObject(Context currentContext, uint32 size)
    o = allocObjWith(size);
    if (!o) // no more memory to create this object? Run the GC to free up memory
    {
-tryAgain:
-      #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
-      UNLOCKVAR(omm);
-      gc(currentContext);
-      LOCKVAR(omm);
-      o = allocObjWith(size);
-      #endif
+      if (size < 1024*1024)
+      {
+      tryAgain:
+         #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
+         UNLOCKVAR(omm);
+         gc(currentContext);
+         LOCKVAR(omm);
+         o = allocObjWith(size);
+         #endif
+      }
       if (!o)
       {
          // still no memory? allocate a new chunk and place it at the OBJARRAY_MAX_INDEX
@@ -976,7 +979,6 @@ void gc(Context currentContext)
 
    skippedGC = objCreated = 0;
    if (tcSettings.gcCount) (*tcSettings.gcCount)++;
-
    IF_HEAP_ERROR(objStack->heap)
    {
       goto heaperror;
