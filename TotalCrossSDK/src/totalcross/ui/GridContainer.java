@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -57,6 +58,10 @@ public class GridContainer extends Container
    /** The container that has the page number and first/last arrows.
     * Only works when orientation is horizontal, and is null otherwise. */
    public NumericPagePosition pagepos;
+   
+   /** A percentage that defines the heihgt of the arrow buttons. Defaults to 200 in penless devices, 100 otherwise.
+    */
+   public int buttonsHeight = Settings.fingerTouch ? 200 : 100;
    
    /** Constructs a GridContainer with the given orientation
     * @see #HORIZONTAL_ORIENTATION
@@ -137,53 +142,54 @@ public class GridContainer extends Container
          if (direction == Graphics.ARROW_LEFT)
             g.fillRect(xx-2,yy,2,height);
          else
-            g.fillRect(xx+fmH/2,yy,2,height);
+            g.fillRect(xx+fmH*buttonsHeight/100/2+1,yy,2,height);
       }
    }
    
    public void initUI()
    {
       boolean isHoriz = orientation == HORIZONTAL_ORIENTATION;
+      int hh = fmH * buttonsHeight / 100;
       if (isHoriz)
       {
          pagepos.setBackColor(Color.darker(backColor,16));
-         add(pagepos,CENTER,BOTTOM,PARENTSIZE+30,fmH);
+         add(pagepos,CENTER,BOTTOM,PARENTSIZE+30,hh);
          pagepos.setPosition(1);      
          sc.flick.setScrollDistance(width);
 
-         btFirst = new FLArrowButton(Graphics.ARROW_LEFT,fmH/2,foreColor);
-         add(btFirst,LEFT,BOTTOM,PARENTSIZE+18,fmH);
+         btFirst = new FLArrowButton(Graphics.ARROW_LEFT,hh/2,foreColor);
+         add(btFirst,LEFT,BOTTOM,PARENTSIZE+18,hh);
 
-         btPrev = new ArrowButton(Graphics.ARROW_LEFT,fmH/2,foreColor);
+         btPrev = new ArrowButton(Graphics.ARROW_LEFT,hh/2,foreColor);
          btPrev.setBorder(Button.BORDER_NONE);
-         add(btPrev,AFTER,BOTTOM,PARENTSIZE+17,fmH);
+         add(btPrev,AFTER,BOTTOM,PARENTSIZE+17,hh);
          btPrev.autoRepeat = true;
 
          add(sc,LEFT,TOP,FILL,FIT);
 
-         btLast = new FLArrowButton(Graphics.ARROW_RIGHT,fmH/2,foreColor);
-         add(btLast,RIGHT,BOTTOM,PARENTSIZE+18,fmH);
+         btLast = new FLArrowButton(Graphics.ARROW_RIGHT,hh/2,foreColor);
+         add(btLast,RIGHT,BOTTOM,PARENTSIZE+18,hh);
 
-         btNext = new ArrowButton(Graphics.ARROW_RIGHT,fmH/2,foreColor);
+         btNext = new ArrowButton(Graphics.ARROW_RIGHT,hh/2,foreColor);
          btNext.setBorder(Button.BORDER_NONE);
-         add(btNext,BEFORE,BOTTOM,PARENTSIZE+17,fmH);
+         add(btNext,BEFORE,BOTTOM,PARENTSIZE+17,hh);
          btNext.autoRepeat = true;
 
          sc.flick.forcedFlickDirection = orientation == HORIZONTAL_ORIENTATION ? Flick.HORIZONTAL_DIRECTION_ONLY : Flick.VERTICAL_DIRECTION_ONLY;
       }
       else
       {
-         btFirst = new ArrowButton(Graphics.ARROW_UP,fmH/2,foreColor);
+         btFirst = new ArrowButton(Graphics.ARROW_UP,hh/2,foreColor);
          btFirst.setBorder(Button.BORDER_NONE);
-         add(btFirst,LEFT,BOTTOM,PARENTSIZE+50,fmH);
-         btFirst.setArrowSize(fmH/2);
+         add(btFirst,LEFT,BOTTOM,PARENTSIZE+50,hh);
+         btFirst.setArrowSize(hh/2);
          
          add(sc,LEFT,TOP,FILL,FIT);
          
-         btLast = new ArrowButton(Graphics.ARROW_DOWN,fmH/2,foreColor);
+         btLast = new ArrowButton(Graphics.ARROW_DOWN,hh/2,foreColor);
          btLast.setBorder(Button.BORDER_NONE);
-         add(btLast,RIGHT,BOTTOM,PARENTSIZE+50,fmH);
-         btLast.setArrowSize(fmH/2);
+         add(btLast,RIGHT,BOTTOM,PARENTSIZE+50,hh);
+         btLast.setArrowSize(hh/2);
       }
       sc.flick.forcedFlickDirection = orientation == HORIZONTAL_ORIENTATION ? Flick.HORIZONTAL_DIRECTION_ONLY : Flick.VERTICAL_DIRECTION_ONLY;
    }
