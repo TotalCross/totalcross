@@ -115,6 +115,9 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
 
+   if (width == 0 || height == 0 || newWidth == 0 || newHeight == 0) 
+      return true;
+
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
 
@@ -348,6 +351,7 @@ static void getScaledInstance(TCObject thisObj, TCObject newObj)
    int32 x,y;
    Pixel *dst,*src;
 
+   if (newWidth != 0 && newHeight != 0 && thisWidth != 0 && thisHeight != 0)
    for (y = 0; y < newHeight; y++, hf += hi)
    {
       wf = thisWidth / w;
