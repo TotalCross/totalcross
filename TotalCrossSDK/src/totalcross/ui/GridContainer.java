@@ -61,7 +61,7 @@ public class GridContainer extends Container
    
    /** A percentage that defines the heihgt of the arrow buttons. Defaults to 200 in penless devices, 100 otherwise.
     */
-   public int buttonsHeight = Settings.fingerTouch ? 200 : 100;
+   public int buttonsHeight = Settings.fingerTouch ? Control.isTablet ? 200 : 150 : 100;
    
    /** Constructs a GridContainer with the given orientation
     * @see #HORIZONTAL_ORIENTATION
