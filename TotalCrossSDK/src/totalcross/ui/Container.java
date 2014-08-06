@@ -107,7 +107,7 @@ public class Container extends Control
     * 
     * @since TotalCross 1.68
     */
-   public static int TRANSITION_TIME = Settings.onJavaSE ? 500 : 1000;
+   public static int TRANSITION_TIME = 500;
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
@@ -167,17 +167,9 @@ public class Container extends Control
     */
    static void setNextTransitionEffect(int t)
    {
-      if (!Settings.isIOS())
-      {
-         nextTransitionEffect = t;
-         if (t != TRANSITION_NONE)
-            try
-            {
-               screen0 = MainWindow.getScreenShot();
-               screen0.lockChanges();
-            }
-            catch (Throwable e) {}
-      }
+      nextTransitionEffect = t;
+      if (t != TRANSITION_NONE)
+         screen0 = MainWindow.getScreenShot();
    }
 
    static Image screen0;

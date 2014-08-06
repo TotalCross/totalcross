@@ -296,6 +296,7 @@ public class MainMenu extends BaseContainer
    public void initUI()
    {
       super.initUI(); // important!
+      transitionEffect = TRANSITION_CLOSE;
       
       // single-row
       topmenu = new ButtonMenu(categs, ButtonMenu.SINGLE_ROW);

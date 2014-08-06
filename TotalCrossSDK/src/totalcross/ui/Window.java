@@ -1195,7 +1195,7 @@ public class Window extends Container
          if (newWin.offscreen == null)
          {
             enableUpdateScreen = true;
-            //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
+            setNextTransitionEffect(newWin.transitionEffect);
             repaintActiveWindows();
          }
       }
