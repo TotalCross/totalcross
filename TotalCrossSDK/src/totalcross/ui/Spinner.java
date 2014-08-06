@@ -25,6 +25,9 @@ import totalcross.util.concurrent.*;
  * 
  * To start the spin call the start method, and to stop it call the stop method.
  * 
+ * If you try to run a spinner inside a tight loop, be sure to call <code>Window.pumpEvents</code> or the spinner will not be
+ * updated. Without this, it will work in Java but not on devices. 
+ * 
  * @since TotalCross 1.3
  */
 public class Spinner extends Control implements Runnable
