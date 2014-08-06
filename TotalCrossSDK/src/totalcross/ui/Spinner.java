@@ -185,7 +185,7 @@ public class Spinner extends Control implements Runnable
    public void update()
    {
       int now = Vm.getTimeStamp();
-      if ((now - last) > 40)
+      if ((now - last) > 40) // prevents calling pumpEvents too fast
       {
          Window.pumpEvents();
          last = now;
