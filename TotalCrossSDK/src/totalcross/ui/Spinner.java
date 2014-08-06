@@ -25,7 +25,7 @@ import totalcross.util.concurrent.*;
  * 
  * To start the spin call the start method, and to stop it call the stop method.
  * 
- * If you try to run a spinner inside a tight loop, be sure to call <code>Window.pumpEvents</code> or the spinner will not be
+ * If you try to run a spinner inside a tight loop, be sure to call <code>spinner.update()</code> or the spinner will not be
  * updated. Without this, it will work in Java but not on devices. 
  * 
  * @since TotalCross 1.3
@@ -178,5 +178,17 @@ public class Spinner extends Control implements Runnable
          }
          Vm.sleep(120); // with safeSleep, the vm starts to behave slowly and strangely
       }      
+   }
+   
+   int last;
+   /** Updates the spinner; call this when using the spinner inside a loop. */
+   public void update()
+   {
+      int now = Vm.getTimeStamp();
+      if ((now - last) > 40)
+      {
+         Window.pumpEvents();
+         last = now;
+      }
    }
 }
