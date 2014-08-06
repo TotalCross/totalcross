@@ -1408,6 +1408,8 @@ public class Window extends Container
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
       applyTransitionEffect();
+      if (Toast.btn != null)
+         try {Toast.btn.bringToFront();} catch (Exception e) {}
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.

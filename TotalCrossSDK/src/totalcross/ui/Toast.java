@@ -25,6 +25,9 @@ public class Toast
    /** The font to be used. Defaults to the default bold font. */
    public static Font font = MainWindow.getDefaultFont().asBold();
    
+   /** The toast component used to show the text. */
+   public static Button btn;
+   
    /** Shows a toast message using the given parameters.
     * Sample:
     * <pre>
@@ -38,7 +41,7 @@ public class Toast
       try
       {
          final Window parent = Window.getTopMost();
-         final Button btn = new Button("");
+         btn = new Button("");
          btn.eventsEnabled = false;
          btn.setText(message);
          btn.setBorder(Button.BORDER_ROUND);
@@ -53,6 +56,7 @@ public class Toast
             public void onAnimationFinished(ControlAnimation anim)
             {
                parent.remove(btn);
+               btn = null;
             }
          }, -1)).start();
          FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
@@ -60,7 +64,7 @@ public class Toast
       catch (Exception e)
       {
          e.printStackTrace();
-
+         btn = null;
       }
 
    }
