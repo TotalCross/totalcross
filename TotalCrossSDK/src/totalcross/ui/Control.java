@@ -305,8 +305,8 @@ public class Control extends GfxSurface
          offscreen = null;
          Image offscreen = new Image(width,height);
          Graphics g = offscreen.getGraphics();
-         if (!transparentBackground && parent != null) 
-         {     
+         if (!transparentBackground && parent != null && !(parent.parent != null && parent.parent instanceof ScrollContainer && parent.parent.transparentBackground)) // last clause prevents a white background on SAV's menu 
+         {
             g.backColor = parent.backColor;
             g.fillRect(0,0,width,height);
          }
