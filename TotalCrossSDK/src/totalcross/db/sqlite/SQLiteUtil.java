@@ -193,4 +193,15 @@ public class SQLiteUtil
       return getStrings1("SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'android_metadata' AND name != 'sqlite_sequence';");
    }
    
+   /** Handles single quote when inserting or retrieving data from Sqlite.
+    * Example:
+    * <pre>
+    * String s = SQLiteUtil.fixQuote("'",true); // returns ''
+    * String s = SQLiteUtil.fixQuote("''",false); // returns '
+    * </pre>
+    */
+   public static String fixQuote(String s, boolean toSqlite)
+   {
+      return toSqlite ? Convert.replace(s,"'","''") : Convert.replace(s,"''","'");
+   }
 }
