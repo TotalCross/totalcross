@@ -22,12 +22,13 @@ import tc.samples.api.*;
 
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 import totalcross.util.*;
 
 /** Creating pdb files in TotalCross - the Definitive Guide. */
 
-public class PDBFileSample extends BaseContainer
+public class PDBFileSample extends BaseContainer implements Runnable
 {
    static final String CREATOR_ID = Settings.applicationId;
    static final String TYPEC = "TEST";
@@ -41,6 +42,11 @@ public class PDBFileSample extends BaseContainer
    {
       super.initUI();
       addLog(LEFT, TOP, FILL, FILL, null);
+      MainWindow.getMainWindow().runOnMainThread(this); // allow animation
+   }
+   
+   public void run()
+   {
       lblog.ihtBackColors = new IntHashtable(10);
 
       try
