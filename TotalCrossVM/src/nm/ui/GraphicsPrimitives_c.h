@@ -1056,8 +1056,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                   {
                      if ((*current & *ands++) != 0 && x >= xMin)
                      {
-                        *xya++ = (float)x+1;
-                        *xya++ = (float)y+1;
+                        *xya++ = (float)x;
+                        *xya++ = (float)y;
                         *xya++ = 1;
                         nn++;
                      }
@@ -1116,8 +1116,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
                      // alpha
                      // vertices
-                     *xya++ = (float)x+1;
-                     *xya++ = (float)y+1;
+                     *xya++ = (float)x;
+                     *xya++ = (float)y;
                      *xya++ = ftransp[transparency];
                      nn++;
                   }
@@ -1162,12 +1162,12 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                                x0, y, width, height,                                     // target bitmap position
                                uf->ubase->maxW, uf->ubase->maxH, &fc, 255);              // total bitmap size
                else
-               { 
-                  uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+               {                         
+                  uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width+diffW, height);
                   if (alpha)
                   {                             
                      int32 nn=0;
-                     rowWIB = width;
+                     rowWIB = width+diffW;
                      start = alpha + istart * rowWIB;
                      xya = glXYA;
                      for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
@@ -1181,8 +1181,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    
                            // alpha
                            // vertices
-                           *xya++ = (float)x+1;
-                           *xya++ = (float)y+1;
+                           *xya++ = (float)x;
+                           *xya++ = (float)y;
                            *xya++ = f255[transparency];
                            nn++;
                         }
@@ -1194,11 +1194,11 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif // case 2
-            {                                                                                    
-               uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+            {
+               uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width+diffW, height);
                if (alpha)
                {                             
-                  rowWIB = width;
+                  rowWIB = width+diffW;
                   start = alpha + istart * rowWIB;
                   for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                   {
