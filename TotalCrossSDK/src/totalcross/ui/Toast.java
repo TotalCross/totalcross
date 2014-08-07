@@ -27,6 +27,7 @@ public class Toast
    
    /** The toast component used to show the text. */
    public static Button btn;
+   private static ControlAnimation animation;
    
    /** Shows a toast message using the given parameters.
     * Sample:
@@ -38,9 +39,11 @@ public class Toast
     */
    public static void show(final String message, final int delay)
    {
+      final Window parent = Window.getTopMost();
+      if (btn != null)
+         parent.remove(btn);
       try
       {
-         final Window parent = Window.getTopMost();
          btn = new Button("");
          btn.eventsEnabled = false;
          btn.setText(message);
@@ -49,14 +52,19 @@ public class Toast
          btn.setFont(font);
          FadeAnimation.maxFade = fade;
          parent.add(btn, posX, posY, width, height);
-         ControlAnimation animation = FadeAnimation.create(btn, true, null, -1);
+         animation = FadeAnimation.create(btn, true, null, -1);
          animation.delayAfterFinish = delay;
+         final Button thisBtn = btn;
          animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
          {
             public void onAnimationFinished(ControlAnimation anim)
             {
-               parent.remove(btn);
-               btn = null;
+               if (thisBtn == btn) // button may change if user tries to show several Toasts
+               {
+                  if (btn != null)
+                     parent.remove(btn);
+                  btn = null;
+               }
             }
          }, -1)).start();
          FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
