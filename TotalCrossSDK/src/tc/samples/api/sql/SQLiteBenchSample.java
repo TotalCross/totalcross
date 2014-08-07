@@ -17,6 +17,7 @@
 package tc.samples.api.sql;
 
 import tc.samples.api.BaseContainer;
+
 import totalcross.sql.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
@@ -24,7 +25,7 @@ import totalcross.ui.*;
 /**
  * Performs a benchmark in the SQLite.
  */
-public class SQLiteBenchSample extends BaseContainer
+public class SQLiteBenchSample extends BaseContainer implements Runnable
 {
    /**
     * The connection with SQLite.
@@ -330,6 +331,8 @@ public class SQLiteBenchSample extends BaseContainer
       return time;
    }
 
+   
+   ProgressBar pbTotal;
    /**
     * Initializes the user interface.
     */
@@ -338,10 +341,15 @@ public class SQLiteBenchSample extends BaseContainer
       super.initUI();
       add(new Label("Try also BenchLitebase, in the samples folder"),CENTER,TOP);
       // User interface.
-      ProgressBar pbTotal = new ProgressBar(0, 13);
+      pbTotal = new ProgressBar(0, 13);
       add(pbInserts = new ProgressBar(0, 500), CENTER, AFTER + 5);
       add(pbTotal, CENTER, AFTER + 5);
       addLog(LEFT, AFTER + 5, FILL, FILL, null);
+      MainWindow.getMainWindow().runOnMainThread(this); // allow animation
+   }
+   
+   public void run()
+   {      
       pbInserts.suffix = "00 of " + NRECS;
       pbTotal.suffix = " of 13";
 
