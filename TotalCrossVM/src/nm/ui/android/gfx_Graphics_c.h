@@ -893,7 +893,7 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #endif
    // erase buffer with keyboard's background color
    PixelConv gray;
-   gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
+   gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFFFF;
    glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
    glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
    resetGlobals();
