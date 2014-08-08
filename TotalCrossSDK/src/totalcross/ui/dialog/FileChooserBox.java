@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.ui.tree.*;
 import totalcross.util.*;
 
@@ -80,6 +81,7 @@ public class FileChooserBox extends Window
 	protected Vector selectedNodes; // guich@tc115_4: used in multiple selections
 	protected ComboBox cbRoot;
 	protected Button btRefresh;
+	protected ImageControl preview;
    private int previouslySelectedRootIndex = -1;
 
    /* return the number of files found in the current directory
@@ -101,6 +103,9 @@ public class FileChooserBox extends Window
     * Usually you set this to the index of the "Ok" button. 
     */
    public int defaultButton = -1; // guich@tc125_23
+   
+   /** Set to true to use a preview window to show photo thumbnails */
+   public boolean showPreview = true;
    
    class LoadOnDemandTree extends Tree
    {
@@ -193,6 +198,13 @@ public class FileChooserBox extends Window
       if (multipleSelection)
          selectedNodes = new Vector();
       tree.setFont(font);
+      if (showPreview)
+      {
+         add(preview = new ImageControl(), LEFT+2,BEFORE-2,FILL-2,PARENTSIZE+30);
+         preview.setBackColor(Color.getCursorColor(backColor));
+         preview.setEventsEnabled(true);
+         preview.centerImage = preview.scaleToFit = true;
+      }
       add(tree, LEFT+2,btRefresh == null ? TOP+2 : AFTER+2, FILL-2, FIT - 5, btRefresh);
       //tree.dontShowFileAndFolderIcons();
       int c = getBackColor();
@@ -321,73 +333,103 @@ public class FileChooserBox extends Window
    }
 
    private int lastPenUp;
+   private StringBuffer sbp = new StringBuffer(128);
 	public void onEvent(Event e)
 	{
-	   switch (e.type)
+	   try
 	   {
-	      case PenEvent.PEN_UP:
-      	   if (defaultButton >= 0 && !(e.target instanceof ScrollBar) && !(e.target instanceof Button))
-      	   {
-      	      int curTime = Vm.getTimeStamp();
-      	      if ((curTime-lastPenUp) < 1000)
-      	      {
-      	         selectedIndex = defaultButton;
-      	         this.unpop();
-      	      }
-      	      else lastPenUp = curTime;
-      	   }
-      	   break;
-	      case ControlEvent.PRESSED:
-      		if (e.target == pbg)
-            {
-               selectedIndex = pbg.getSelectedIndex();
-      			this.unpop();
-            }
-            else
-            if (e.target == tree)
-            {
-               lastSelected = tree.getSelectedItem();
-               if (lastSelected != null && multipleSelection)
-                  if (lastSelected.isChecked)
-                     selectedNodes.addElement(lastSelected);
-                  else
-                     selectedNodes.removeElement(lastSelected);
-            }
-            else
-            if (cbRoot != null) // guich@tc126_10
-               try
+   	   switch (e.type)
+   	   {
+   	      case PenEvent.PEN_UP:
+         	   if (defaultButton >= 0 && !(e.target instanceof ScrollBar) && !(e.target instanceof Button))
+         	   {
+         	      int curTime = Vm.getTimeStamp();
+         	      if ((curTime-lastPenUp) < 1000)
+         	      {
+         	         selectedIndex = defaultButton;
+         	         this.unpop();
+         	      }
+         	      else lastPenUp = curTime;
+         	   }
+         	   break;
+   	      case ControlEvent.PRESSED:
+         		if (e.target == pbg)
                {
-                  if (e.target == cbRoot)
+                  selectedIndex = pbg.getSelectedIndex();
+         			this.unpop();
+               }
+               else
+               if (e.target == tree)
+               {
+                  lastSelected = tree.getSelectedItem();
+                  if (lastSelected != null)
                   {
-                     int selectedIndex = cbRoot.getSelectedIndex();
-                     if (previouslySelectedRootIndex != selectedIndex)
-                     {
-                        mountTree((String) cbRoot.getSelectedItem());
-                        tree.setModel(tmodel);
-                        tree.reload();
-                        previouslySelectedRootIndex = selectedIndex;
-                     }
-                  }
-                  else 
-                  if (e.target == btRefresh)
-                  {
-                     String selectedItem = (String) cbRoot.getSelectedItem();
-                     if (selectedItem != null || initialPath != null)
-                     {
-                        mountTree(initialPath != null ? initialPath : selectedItem);
-                        //tree.setModel(tmodel);
-                        //tree.reload();
-                     }
+                     if (showPreview && isImage(lastSelected.getNodeName()))
+                        try
+                        {
+                           sbp.setLength(0);
+                           appendPath(sbp,lastSelected);
+                           byte[] bytes = new File(sbp.toString(), File.READ_ONLY).readAndClose();
+                           preview.setImage(new Image(bytes));
+                        }
+                        catch (Exception ee)
+                        {
+                           preview.setImage(null);
+                           if (Settings.onJavaSE) ee.printStackTrace();
+                        }                        
+                     if (multipleSelection)
+                        if (lastSelected.isChecked)
+                           selectedNodes.addElement(lastSelected);
+                        else
+                           selectedNodes.removeElement(lastSelected);
                   }
                }
-               catch (IOException e1)
-               {
-                  new MessageBox(msgInvalidVolumeTitle, msgInvalidVolumeMessage).popupNonBlocking();
-                  cbRoot.setSelectedIndex(previouslySelectedRootIndex);
-               }
-      		break;
+               else
+               if (cbRoot != null) // guich@tc126_10
+                  try
+                  {
+                     if (e.target == cbRoot)
+                     {
+                        int selectedIndex = cbRoot.getSelectedIndex();
+                        if (previouslySelectedRootIndex != selectedIndex)
+                        {
+                           mountTree((String) cbRoot.getSelectedItem());
+                           tree.setModel(tmodel);
+                           tree.reload();
+                           previouslySelectedRootIndex = selectedIndex;
+                        }
+                     }
+                     else 
+                     if (e.target == btRefresh)
+                     {
+                        String selectedItem = (String) cbRoot.getSelectedItem();
+                        if (selectedItem != null || initialPath != null)
+                        {
+                           mountTree(initialPath != null ? initialPath : selectedItem);
+                           //tree.setModel(tmodel);
+                           //tree.reload();
+                        }
+                     }
+                  }
+                  catch (IOException e1)
+                  {
+                     new MessageBox(msgInvalidVolumeTitle, msgInvalidVolumeMessage).popupNonBlocking();
+                     cbRoot.setSelectedIndex(previouslySelectedRootIndex);
+                  }
+         		break;
+         }
+	   }
+      catch (Exception ee)
+      {
+         if (Settings.onJavaSE) ee.printStackTrace();
       }
 	}
+
+   private boolean isImage(String f)
+   {
+      f = f.toLowerCase();
+      return f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".png");
+   }
 
    /** Returns the button index used to close this window. */
    public int getPressedButtonIndex()
