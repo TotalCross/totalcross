@@ -1,4 +1,4 @@
-<h2>TotalCross 3.05 build 2297</h2>
+<h2>TotalCross 3.05 build 2300</h2>
 . fixed a glytch when drawing two pies with different radius<br>
 . now if an error occurs during startup we exit the vm in iOS<br>
 . an user with android 2.36 reported an out of memory trying to create a texture of 2048x20, so we now limit it to 1024 in Android.<br>
@@ -15,6 +15,17 @@
 . fixed problem when the Toast button is being displayed and you swap between containers.<br>
 . added Spinner.update, which must be called if you use the Spinner inside of a loop. This makes Spinner usable again.<br>
 . fixed white background when you add a transparentBackground's container inside a TopMenu.<br>
+. reenabled transition effects, now using takeScreenShot.<br>
+. added SQLiteUtil.fixQuote.<br>
+. added TRANSITION_FADE, a new transition effect. fixed File and PDBFile samples regarding animation<br>
+. fixed Toast when more than one is shown at the same time.<br>
+. improved accurateness of font when drawing on an image.<br>
+. fixed ImageControl now scaling the image if scaleToFit is true and a new image was set<br>
+. added FileChooserBox.showPreview, to show the preview of selected photos (on by default)<br>
+. added Settings.optimizeScroll to allow you to disable the scroll optimization using offscreen images<br>
+. fixed ImageModifiersSample setting the image's background to black; now it is transparent<br>
+. fixed drawRoundGradient not using the clip.<br>
+. fixed tc.Deploy in linux when the classname is given using full path and the current working directory is part of that full path<br>
 
 <h2>TotalCross 3.04 build 2289</h2>
 . lots of performance improvements in opengl, graphics is now 2x faster, in some android tablets is 3x faster. flicking is much smoother.<br>
