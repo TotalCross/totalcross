@@ -1040,7 +1040,7 @@ public class Image extends GfxSurface
     * 100 is not scaling, 200 doubles the size, 50 shrinks the image by 2
     * @param angle the rotation angle, expressed in trigonometric degrees
     * @param fillColor the fill color; -1 indicates the transparent color of this image or
-    * Color.WHITE if the transparentColor was not set.
+    * Color.WHITE if the transparentColor was not set; use 0 for a transparent background, or 0xFF000000 for the BLACK color.
     */
    public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException
    {

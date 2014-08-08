@@ -83,7 +83,7 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
    TCObject newObj = p->obj[1];
    int32 percScale = p->i32[0];
    int32 angle = p->i32[1];
-   Pixel color = makePixelRGB(p->i32[2]);
+   Pixel color = p->i32[2] == 0 ? (Pixel)0 : makePixelRGB(p->i32[2]);
    FuncType type = (FuncType)p->i32[5];
    switch (type)
    {
