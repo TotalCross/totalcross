@@ -73,6 +73,8 @@ public class FileChooserBox extends Window
 	public static String msgRefresh = " Refresh ";
 	/** The title of a message box that appears if the user tries to access a volume and an error is issued by the operating system. Defaults to "Error". You can localize it if you want. */
 	public static String msgInvalidVolumeTitle = "Error";
+   /** The " Preview " button title. You can localize it if you want. */
+   public static String previewTitle = " Preview ";
    /** The body of a message box that appears if the user tries to access a volume and an error is issued by the operating system. Defaults to "Unable to read the contents of the selected volume. Make sure the volume is mounted and you have enough privileges to query its contents.". You can localize it if you want. */
 	public static String msgInvalidVolumeMessage = "Unable to read the contents of the selected volume. Make sure the volume is mounted and you have enough privileges to query its contents.";
 	protected String[] buttonCaptions;
@@ -83,6 +85,8 @@ public class FileChooserBox extends Window
 	protected Button btRefresh;
 	protected ImageControl preview;
    private int previouslySelectedRootIndex = -1;
+   private Button btnPreview;
+   private Container tap;
 
    /* return the number of files found in the current directory
     * @since TotalCross 1.53 
@@ -104,8 +108,11 @@ public class FileChooserBox extends Window
     */
    public int defaultButton = -1; // guich@tc125_23
    
+   /** The preview height in percentage of the total height. Defaults to 30. */
+   public static final int PREVIEW_HEIGHT = 30;
+   
    /** Set to true to use a preview window to show photo thumbnails */
-   public boolean showPreview = true;
+   public boolean showPreview;
    
    class LoadOnDemandTree extends Tree
    {
@@ -198,14 +205,16 @@ public class FileChooserBox extends Window
       if (multipleSelection)
          selectedNodes = new Vector();
       tree.setFont(font);
+      add(tap = new Container(), LEFT+2,btRefresh == null ? TOP+2 : AFTER+2, FILL-2, FIT - 5, btRefresh);
       if (showPreview)
       {
-         add(preview = new ImageControl(), LEFT+2,BEFORE-2,FILL-2,PARENTSIZE+30);
+         add(btnPreview = new Button(previewTitle),LEFT+2,BOTTOM-2);
+         tap.add(preview = new ImageControl(), LEFT,BOTTOM,FILL,PARENTSIZE+PREVIEW_HEIGHT);
          preview.setBackColor(Color.getCursorColor(backColor));
          preview.setEventsEnabled(true);
          preview.centerImage = preview.scaleToFit = true;
       }
-      add(tree, LEFT+2,btRefresh == null ? TOP+2 : AFTER+2, FILL-2, FIT - 5, btRefresh);
+      tap.add(tree, LEFT,TOP, FILL, showPreview ? PARENTSIZE+69 : FILL, btRefresh);
       //tree.dontShowFileAndFolderIcons();
       int c = getBackColor();
       if (cbRoot != null) cbRoot.setBackColor(Color.brighter(c));
@@ -353,6 +362,14 @@ public class FileChooserBox extends Window
          	   }
          	   break;
    	      case ControlEvent.PRESSED:
+   	         if (showPreview && e.target == btnPreview)
+   	         {
+   	            preview.setImage(null);
+   	            boolean b = !preview.isVisible();
+ 	               preview.setVisible(b);
+   	            tree.setRect(KEEP,KEEP,KEEP,PARENTSIZE+(b ? 100-PREVIEW_HEIGHT : 100));
+   	         }
+   	         else
          		if (e.target == pbg)
                {
                   selectedIndex = pbg.getSelectedIndex();
@@ -364,7 +381,7 @@ public class FileChooserBox extends Window
                   lastSelected = tree.getSelectedItem();
                   if (lastSelected != null)
                   {
-                     if (showPreview)
+                     if (showPreview && preview.isVisible())
                         try
                         {
                            if (!isImage(lastSelected.getNodeName()))
