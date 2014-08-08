@@ -946,7 +946,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                   event.consumed = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
                   {
-                     takeScreenShots();
+                     if (Settings.optimizeScroll) takeScreenShots();
                      flickTimerStarted = false;
                      isScrolling = scScrolled = true;
                   }

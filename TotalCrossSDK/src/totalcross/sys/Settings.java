@@ -811,6 +811,11 @@ public final class Settings
     */
    public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
    
+   /** Set to false to disable the scroll optimization using images. This optimization
+    * greatly improves performance but uses more memory.
+    */
+   public static boolean optimizeScroll = Settings.isOpenGL;
+   
 
    // this class can't be instantiated
 	private Settings()
