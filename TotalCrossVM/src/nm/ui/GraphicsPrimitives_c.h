@@ -2612,8 +2612,9 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
    bool hasRadius = (topLeftRadius + topRightRadius + bottomLeftRadius + bottomRightRadius) > 0;
    Pixel p;
    bool drawFadedPixels = !Graphics_useOpenGL(g);
-#ifdef __gl2_h_
-   bool optimize = Graphics_useOpenGL(g) && topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
+#ifdef __gl2_h_    
+   int32 clipX1 = Graphics_clipX1(g) - Graphics_transX(g), clipY1 = Graphics_clipY1(g) - Graphics_transY(g), clipX2 = Graphics_clipX2(g) - Graphics_transX(g), clipY2 = Graphics_clipY2(g) - Graphics_transY(g);
+   bool optimize = Graphics_useOpenGL(g) && (startX >= clipX1 && startY >= clipY1 && endX < clipX2 && endY < clipY2) && topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
 #else
    bool optimize = false;
 #endif
