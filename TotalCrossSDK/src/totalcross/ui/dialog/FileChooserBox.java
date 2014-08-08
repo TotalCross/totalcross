@@ -364,13 +364,18 @@ public class FileChooserBox extends Window
                   lastSelected = tree.getSelectedItem();
                   if (lastSelected != null)
                   {
-                     if (showPreview && isImage(lastSelected.getNodeName()))
+                     if (showPreview)
                         try
                         {
-                           sbp.setLength(0);
-                           appendPath(sbp,lastSelected);
-                           byte[] bytes = new File(sbp.toString(), File.READ_ONLY).readAndClose();
-                           preview.setImage(new Image(bytes));
+                           if (!isImage(lastSelected.getNodeName()))
+                              preview.setImage(null);
+                           else
+                           {
+                              sbp.setLength(0);
+                              appendPath(sbp,lastSelected);
+                              byte[] bytes = new File(sbp.toString(), File.READ_ONLY).readAndClose();
+                              preview.setImage(new Image(bytes));
+                           }
                         }
                         catch (Exception ee)
                         {
