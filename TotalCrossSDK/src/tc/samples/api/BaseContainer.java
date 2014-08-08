@@ -110,6 +110,7 @@ public class BaseContainer extends Container
                            if (helpMessage == null) 
                               return;
                            MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
+                           mb.transitionEffect = TRANSITION_FADE;
                            mb.footerColor = mb.headerColor = UIColors.messageboxBack;
                            mb.setIcon(infoImg);
                            mb.popup();

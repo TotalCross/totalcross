@@ -1247,12 +1247,11 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-/* transitions on Window is not working fine on android.
-          int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+         int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
          if (nextTrans == TRANSITION_NONE)
             loadBehind(); // guich@200b4: restore the saved window
          setNextTransitionEffect(nextTrans);
-*/         topMost.eventsEnabled = true;
+         topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
          else
@@ -1392,7 +1391,7 @@ public class Window extends Container
          setNextTransitionEffect(newContainer.transitionEffect);
       else
       if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
-         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
+         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_FADE ? TRANSITION_FADE : lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
       // remove the last container
       if (lastSwappedContainer != null)
          remove(lastSwappedContainer);
