@@ -94,6 +94,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private TCEventThread eventThread;
    private boolean isMainClass;
    private boolean isDemo;
+   private static String key;
 
    public Launcher()
    {
@@ -390,6 +391,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
       System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
+      System.out.println("   /r <key>         : specify a registration key to be used to activate TotalCross when required");
       System.out.println("The class name that extends MainWindow must always be the last argument");
    }
 
@@ -461,6 +463,13 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                      toBpp = toInt(scr[2]);
                }
                System.out.println("Screen is "+toWidth+"x"+toHeight+"x"+toBpp);
+            }
+            else
+            if (args[i].equalsIgnoreCase("/r"))
+            {
+               key = args[++i].toUpperCase(); 
+               if (key.length() != 24)
+                  throw new Exception("Invalid registration key");
             }
             else
             if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -584,6 +593,18 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
+      if (key == null)
+      {
+         System.out.println("Error: you must provide a registration key!");
+         System.exit(0);
+         return;
+      }
+      checkKey();
+   }
+   
+   private void checkKey()
+   {
+      
    }
 
    private String[] tokenizeString(String string, char c)
