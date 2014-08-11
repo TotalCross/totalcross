@@ -85,7 +85,6 @@ public class MainWindow extends Window implements totalcross.MainClass
    public MainWindow(String title, byte style) // guich@112
    {
       super(title,style);
-      mainThread = Thread.currentThread();
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
@@ -369,6 +368,7 @@ public class MainWindow extends Window implements totalcross.MainClass
      */
    final public void appStarting(int timeAvail) // guich@200b4_107 - guich@tc126_46: added timeAvail parameter to show MessageBox from inside here.
    {
+      mainThread = Thread.currentThread();
       timeAvailable = timeAvail;
       gfx = new Graphics(this); // revalidate the pixels
       startTimer = addTimer(1); // guich@567_17
