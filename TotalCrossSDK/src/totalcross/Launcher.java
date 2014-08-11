@@ -41,6 +41,8 @@ import java.io.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
+import java.security.*;
+import java.security.cert.*;
 import java.util.zip.*;
 
 import totalcross.io.*;
@@ -604,7 +606,28 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    
    private void checkKey()
    {
-      
+      /*
+       W:\>openssl req -new -newkey rsa:4096 -days 30 -nodes -x509 -keyout totalcross.key 
+       -out totalcross.cert -subj "/C=BR/ST=CE/L=FORTALEZA/O=TotalCross MGP/CN=Guilherme Campos Hazan
+       /OU=54434C423B6869C50039C06F"
+       */
+      try
+      {
+         InputStream inStream = new FileInputStream("w:\\totalcross.cert");
+         CertificateFactory cf = CertificateFactory.getInstance("X.509");
+         X509Certificate cert = (X509Certificate)cf.generateCertificate(inStream);
+         Principal p = cert.getIssuerDN(); // OU=54434C423B6869C50039C06F, CN=Guilherme Campos Hazan, O=TotalCross MGP, L=FORTALEZA, ST=CE, C=BR
+         java.util.Date exp = cert.getNotAfter(); int iexp = (1900+exp.getYear()) * 10000 + (exp.getMonth()+1) * 100 + exp.getDate(); 
+         java.util.Date tod = new java.util.Date(2014,7,30); int itod = tod.getYear() * 10000 + (tod.getMonth()+1) * 100 + tod.getDate();
+         boolean expired = itod >= iexp;
+         System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+itod);
+         System.out.println(p);
+         inStream.close();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
    }
 
    private String[] tokenizeString(String string, char c)
