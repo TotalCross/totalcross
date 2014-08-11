@@ -304,16 +304,7 @@ public class Control extends GfxSurface
       {
          offscreen = null;
          Image offscreen = new Image(width,height);
-         Graphics g = offscreen.getGraphics();
-         if (!transparentBackground && parent != null && !(parent.parent != null && parent.parent instanceof ScrollContainer && parent.parent.transparentBackground)) // last clause prevents a white background on SAV's menu 
-         {
-            g.backColor = parent.backColor;
-            g.fillRect(0,0,width,height);
-         }
-         g.setFont(font);
-         if (asWindow != null)
-            asWindow.paintWindowBackground(g);
-         paint2shot(g,this) ;
+         paint2shot(offscreen.getGraphics());
          this.offscreen = offscreen;
          this.offscreen.applyChanges();
       }
@@ -323,6 +314,19 @@ public class Control extends GfxSurface
       }
    }
    
+   void paint2shot(Graphics g)
+   {
+      if (!transparentBackground && parent != null && !(parent.parent != null && parent.parent instanceof ScrollContainer && parent.parent.transparentBackground)) // last clause prevents a white background on SAV's menu 
+      {
+         g.backColor = parent.backColor;
+         g.fillRect(0,0,width,height);
+      }
+      g.setFont(font);
+      if (asWindow != null)
+         asWindow.paintWindowBackground(g);
+      paint2shot(g,this);
+   }
+
    /** Releases the screen shot. */
    public void releaseScreenShot()
    {
@@ -336,11 +340,14 @@ public class Control extends GfxSurface
       //  this.refreshGraphics(g,0,top);
       if (this.asWindow == null) 
          this.onPaint(g);
+      Window w = getParentWindow();      
+      int x0 = w.x;
+      int y0 = w.y;
       if (asContainer != null)
          for (Control child = asContainer.children; child != null; child = child.next)
             if (child.visible)
             {
-               child.refreshGraphics(g,0,top);
+               child.refreshGraphics(g,0,top,x0,y0);
                child.onPaint(g);
                if (child.asContainer != null)
                   child.asContainer.paint2shot(g,top);
@@ -977,7 +984,7 @@ public class Control extends GfxSurface
             parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
          else
          {
-            Graphics g = refreshGraphics(gfx, 0, null);
+            Graphics g = refreshGraphics(gfx, 0, null,0,0);
             if (g != null)
             {
                onPaint(g);
@@ -1014,10 +1021,10 @@ public class Control extends GfxSurface
      */
    public Graphics getGraphics()
    {
-      return refreshGraphics(gfx, 0, null);
+      return refreshGraphics(gfx, 0, null,0,0);
    }
 
-   Graphics refreshGraphics(Graphics g, int expand, Control topParent)
+   Graphics refreshGraphics(Graphics g, int expand, Control topParent, int tx0, int ty0)
    {
       if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
          return null;
@@ -1043,7 +1050,7 @@ public class Control extends GfxSurface
             delta = (sy+sh)-(cy+c.height);
             if (delta > 0) sh -= delta;
          }
-      g.refresh(sx-expand,sy-expand,sw+expand+expand,sh+expand+expand, tx, ty, font);
+      g.refresh(sx+tx0-expand,sy-expand+ty0,sw+expand+expand,sh+expand+expand, tx+tx0, ty+ty0, font);
       return g;
    }
 
@@ -1438,7 +1445,7 @@ public class Control extends GfxSurface
             font = setFont; fm = font.fm; fmH = font.fm.height;
             setRect(setX, setY, setW, setH, setRel, true);
             font = current; fm = font.fm; fmH = font.fm.height;
-            refreshGraphics(gfx, 0, null);
+            refreshGraphics(gfx, 0, null,0,0);
          }
          if (recursive && asContainer != null)
          {

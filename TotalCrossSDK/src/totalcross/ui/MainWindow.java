@@ -19,6 +19,7 @@
 
 package totalcross.ui;
 
+import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
@@ -625,9 +626,27 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       try
       {
+         // get main window
          mainWindowInstance.takeScreenShot();
          Image img = mainWindowInstance.offscreen;
          mainWindowInstance.releaseScreenShot();
+         // now paint other windows
+         int lastFade = 1000;
+         for (int j = 0,n=zStack.size(); j < n; j++)
+            if (((Window)zStack.items[j]).fadeOtherWindows)
+               lastFade = j;
+         for (int i = 0, n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
+         {
+            if (i == lastFade)
+               img.applyFade(fadeValue);
+            if (i > 0 && zStack.items[i] != null) 
+            {
+               Window w = (Window)zStack.items[i];
+               Graphics g = img.getGraphics();
+               g.translate(w.x,w.y);
+               w.paint2shot(g);
+            }
+         }
          img.lockChanges();
          return img;
       }

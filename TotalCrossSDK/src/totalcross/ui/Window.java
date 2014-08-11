@@ -1174,6 +1174,8 @@ public class Window extends Container
          if (isScreenShifted())
             shiftScreen(null,0);
          setSIP(SIP_HIDE,null,false);
+         if (newWin.transitionEffect != TRANSITION_NONE)
+            setNextTransitionEffect(newWin.transitionEffect);
          if (newWin.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this window was popped?
             newWin.reposition();
          newWin.popped = true;
@@ -1195,8 +1197,10 @@ public class Window extends Container
          if (newWin.offscreen == null)
          {
             enableUpdateScreen = true;
-            setNextTransitionEffect(newWin.transitionEffect);
-            repaintActiveWindows();
+            if (newWin.transitionEffect != TRANSITION_NONE)
+               applyTransitionEffect();
+            else
+               repaintActiveWindows();
          }
       }
    }
@@ -1236,10 +1240,12 @@ public class Window extends Container
          setTitle(oldTitle);
          oldTitle = null;
       }
+      Window lastTopMost = topMost;
+      int nextTrans = lastTopMost.transitionEffect == TRANSITION_FADE ? TRANSITION_FADE : lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+      setNextTransitionEffect(nextTrans);
       onUnpop();
       eventsEnabled = false;
       MainWindow.mainWindowInstance.removeTimers(this);
-      Window lastTopMost = topMost;
       try
       {
          zStack.pop();
@@ -1247,10 +1253,6 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
-         if (nextTrans == TRANSITION_NONE)
-            loadBehind(); // guich@200b4: restore the saved window
-         setNextTransitionEffect(nextTrans);
          topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
@@ -1270,7 +1272,10 @@ public class Window extends Container
          postUnpop();
          popped = false;
          needsPaint = true;
-         repaintActiveWindows();
+         if (transitionEffect != TRANSITION_NONE)
+            applyTransitionEffect();
+         else
+            repaintActiveWindows();
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1651,7 +1656,7 @@ public class Window extends Container
    private void drawHighlight(Control c, boolean highlighted)
    {
       int n = UIColors.highlightColors.length;
-      Graphics g = c.refreshGraphics(c.gfx, n, null);
+      Graphics g = c.refreshGraphics(c.gfx, n, null,0,0);
       if (g != null)
       {
          int offset = 0;

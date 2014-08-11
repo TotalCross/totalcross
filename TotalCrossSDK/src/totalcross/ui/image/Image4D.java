@@ -199,6 +199,7 @@ public class Image4D extends GfxSurface
    {
       if (pixels == null) return null;
       gfx.setFont(MainWindow.getDefaultFont());
+      gfx.refresh(0,0,width,height,0,0,null);
       return gfx;
    }
 
@@ -611,4 +612,6 @@ public class Image4D extends GfxSurface
       gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       return copy;
    }   
+
+   native public void applyFade(int fadeValue);
 }

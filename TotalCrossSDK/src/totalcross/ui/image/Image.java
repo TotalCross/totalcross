@@ -400,6 +400,7 @@ public class Image extends GfxSurface
    public Graphics getGraphics()
    {
       if (Launcher.instance.mainWindow != null) gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
+      gfx.refresh(0,0,width,height,0,0,null);
       return gfx;
    }
    
@@ -2247,5 +2248,27 @@ public class Image extends GfxSurface
    final public Image smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
    {
       return smoothScaledFromResolution(originalRes);
+   }
+
+   /** Applies the given fade value to r,g,b of this image while preserving the alpha value. */
+   public void applyFade(int fadeValue)
+   {
+      int[] pixels = (int[])this.pixels;
+      int lastColor = -1, lastFaded=0;
+      for (int j = pixels.length; --j >= 0;)
+      {
+         int rgb = pixels[j];
+         if (rgb == lastColor)
+            pixels[j] = lastFaded;
+         else
+         {
+            lastColor = rgb;
+            int a = ((rgb >> 24) & 0xFF);
+            int r = ((rgb >> 16) & 0xFF) * fadeValue / 255;
+            int g = ((rgb >> 8 ) & 0xFF) * fadeValue / 255;
+            int b =  (rgb        & 0xFF) * fadeValue / 255;
+            lastFaded = pixels[j] = (a << 24) | (r << 16) | (g << 8) | b;
+         }
+      }
    }
 }
