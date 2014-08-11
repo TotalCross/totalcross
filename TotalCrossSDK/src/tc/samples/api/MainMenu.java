@@ -296,6 +296,7 @@ public class MainMenu extends BaseContainer
    public void initUI()
    {
       super.initUI(); // important!
+      transitionEffect = TRANSITION_CLOSE;
       
       // single-row
       topmenu = new ButtonMenu(categs, ButtonMenu.SINGLE_ROW);
@@ -321,6 +322,7 @@ public class MainMenu extends BaseContainer
    Class itemClasses;
    private void showMenu(String[] names)
    {
+      setNextTransitionEffect(TRANSITION_FADE);
       if (menu != null) remove(menu);
       menu = new ButtonMenu(names, ButtonMenu.SINGLE_COLUMN);
       
@@ -331,11 +333,11 @@ public class MainMenu extends BaseContainer
          menu.buttonHorizGap = menu.buttonVertGap = 200;
       }
       else menu.buttonHorizGap = 50;
-      
       add(menu,LEFT,AFTER,FILL,FILL,topmenu);
+      applyTransitionEffect();
    }
    
-   int topmenuSel;   
+   int topmenuSel=-1;   
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED)
@@ -344,16 +346,20 @@ public class MainMenu extends BaseContainer
          {
             if (e.target == topmenu)
             {
-               topmenuSel = topmenu.getSelectedIndex();
-               if (topmenuSel == -1)
+               int sel = topmenu.getSelectedIndex();
+               if (sel != topmenuSel)
                {
-                  remove(menu);
-                  setTitle(BaseContainer.defaultTitle);
-               }
-               else
-               {
-                  setTitle(BaseContainer.defaultTitle+" - "+categs[topmenuSel]);
-                  showMenu(items[topmenuSel]);
+                  topmenuSel = sel;
+                  if (topmenuSel == -1)
+                  {
+                     remove(menu);
+                     setTitle(BaseContainer.defaultTitle);
+                  }
+                  else
+                  {
+                     setTitle(BaseContainer.defaultTitle+" - "+categs[topmenuSel]);
+                     showMenu(items[topmenuSel]);
+                  }
                }
             }
             else

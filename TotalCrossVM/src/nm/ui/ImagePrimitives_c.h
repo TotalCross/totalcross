@@ -115,6 +115,9 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
 
+   if (width == 0 || height == 0 || newWidth == 0 || newHeight == 0) 
+      return true;
+
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
 
@@ -348,6 +351,7 @@ static void getScaledInstance(TCObject thisObj, TCObject newObj)
    int32 x,y;
    Pixel *dst,*src;
 
+   if (newWidth != 0 && newHeight != 0 && thisWidth != 0 && thisHeight != 0)
    for (y = 0; y < newHeight; y++, hf += hi)
    {
       wf = thisWidth / w;
@@ -767,4 +771,26 @@ static bool nativeEquals(TCObject thisObj, TCObject otherObj)
       if (*p1 != *p2)
          return false;
    return true;
+}
+
+static void applyFade(TCObject obj, int32 fadeValue)
+{
+   int32 frameCount = Image_frameCount(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 len = ARRAYOBJ_LEN(pixelsObj);
+   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+
+   for (; len-- > 0; pixels++)
+   {
+      int32 r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+      int32 g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+      int32 b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
+   }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+   Image_changed(obj) = true;
 }

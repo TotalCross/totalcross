@@ -53,14 +53,9 @@ public class BaseContainer extends Container
    {
       try
       {
+         transitionEffect = TRANSITION_OPEN;
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
-/*         if (isMainMenu) 
-         {
-            backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
-            setForeColor(0xBFCFFF);
-         }
-*/         
          if (infoImg == null)
             infoImg = new Image("ui/images/ic_dialog_info.png");
          if (timerImg == null)
@@ -115,6 +110,7 @@ public class BaseContainer extends Container
                            if (helpMessage == null) 
                               return;
                            MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
+                           mb.transitionEffect = TRANSITION_FADE;
                            mb.footerColor = mb.headerColor = UIColors.messageboxBack;
                            mb.setIcon(infoImg);
                            mb.popup();

@@ -100,6 +100,7 @@ totalcross/ui/image/Image|native public void applyColor2(int color);
 totalcross/ui/image/Image|native public totalcross.ui.image.Image setTransparentColor(int color);
 totalcross/ui/image/Image|native public void applyChanges();
 totalcross/ui/image/Image|native private void freeTexture();
+totalcross/ui/image/Image|native public void applyFade(int fadeValue);
 totalcross/ui/gfx/Graphics|native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
 totalcross/ui/gfx/Graphics|native public void dither(int x, int y, int w, int h);
 totalcross/ui/image/Image|native public void createJpg(totalcross.io.Stream s, int quality);

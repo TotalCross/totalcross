@@ -675,6 +675,12 @@ public class Utils
    // className   "tc/samples/ui/gadgets/UIGadgets"
    public static String getBaseFolder(String currentDir, String passed, String className)
    {
+      // currentDir: /home/raphael/Documentos/projetos/totalcross/marte/trunk/n 
+      // passed    : /home/raphael/Documentos/projetos/totalcross/marte/trunk/n/build/classes/main/Carregar.class
+      // className : main/Carregar
+      String className2 = className.endsWith(".class") ? className : className+".class";
+      if (passed.startsWith(currentDir) && passed.endsWith(className2))
+         return passed.substring(0,passed.length() - className2.length());
       // normalize the slashes
       currentDir = currentDir.replace('/',DeploySettings.SLASH).replace('\\',DeploySettings.SLASH);
       if (passed.indexOf(':') >= 0) // passed a full path? ignore the current dir

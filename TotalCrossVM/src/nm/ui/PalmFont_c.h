@@ -431,12 +431,18 @@ Cleanup: /* CLEANUP */
 }
 
 #ifdef __gl2_h_
+bool lowmemDevice;
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha);
 static bool buildFontTexture(Context currentContext, UserFont uf)
 {  
    int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
    int16 *charX = uf->charX + ch, *charY = uf->charY + ch;
-   int32 widthsCount=0,maxW=2048, maxH=0, w=0, offset=0;
+   int32 widthsCount=0, maxH=0, w=0, offset=0;
+#ifdef ANDROID   
+   int32 maxW = 1024;
+#else   
+   int32 maxW = 2048;
+#endif
    int32 widths[10] = {0}, *ww = widths; // currently char height 80 uses 4 width blocks
    // compute char position to build the alpha map. the original map is splitted up to the maximum's width
    for (; ch <= last; ch++)

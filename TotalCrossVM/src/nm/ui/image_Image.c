@@ -83,7 +83,7 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
    TCObject newObj = p->obj[1];
    int32 percScale = p->i32[0];
    int32 angle = p->i32[1];
-   Pixel color = makePixelRGB(p->i32[2]);
+   Pixel color = p->i32[2] == 0 ? (Pixel)0 : makePixelRGB(p->i32[2]);
    FuncType type = (FuncType)p->i32[5];
    switch (type)
    {
@@ -158,7 +158,7 @@ TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native pri
    freeTexture(p->obj[0],true);
 #endif   
 }
-
+//////////////////////////////////////////////////////////////////////////
 bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality); // JpegLoader.c
 TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
 {
@@ -166,6 +166,13 @@ TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native pu
    TCObject stream = p->obj[1];
    int32 quality = p->i32[0];
    /*bool ret = */image2jpeg(p->currentContext, thisObj, stream, quality);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native public void applyFade(int fadeValue);
+{
+   TCObject thisObj = p->obj[0];
+   int32 fadeValue = p->i32[0];
+   applyFade(thisObj, fadeValue);
 }
 
 #ifdef ENABLE_TEST_SUITE

@@ -25,6 +25,10 @@ public class Toast
    /** The font to be used. Defaults to the default bold font. */
    public static Font font = MainWindow.getDefaultFont().asBold();
    
+   /** The toast component used to show the text. */
+   public static Button btn;
+   private static ControlAnimation animation;
+   
    /** Shows a toast message using the given parameters.
     * Sample:
     * <pre>
@@ -35,10 +39,12 @@ public class Toast
     */
    public static void show(final String message, final int delay)
    {
+      final Window parent = Window.getTopMost();
+      if (btn != null)
+         parent.remove(btn);
       try
       {
-         final Window parent = Window.getTopMost();
-         final Button btn = new Button("");
+         btn = new Button("");
          btn.eventsEnabled = false;
          btn.setText(message);
          btn.setBorder(Button.BORDER_ROUND);
@@ -46,13 +52,19 @@ public class Toast
          btn.setFont(font);
          FadeAnimation.maxFade = fade;
          parent.add(btn, posX, posY, width, height);
-         ControlAnimation animation = FadeAnimation.create(btn, true, null, -1);
+         animation = FadeAnimation.create(btn, true, null, -1);
          animation.delayAfterFinish = delay;
+         final Button thisBtn = btn;
          animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
          {
             public void onAnimationFinished(ControlAnimation anim)
             {
-               parent.remove(btn);
+               if (thisBtn == btn) // button may change if user tries to show several Toasts
+               {
+                  if (btn != null)
+                     parent.remove(btn);
+                  btn = null;
+               }
             }
          }, -1)).start();
          FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
@@ -60,7 +72,7 @@ public class Toast
       catch (Exception e)
       {
          e.printStackTrace();
-
+         btn = null;
       }
 
    }

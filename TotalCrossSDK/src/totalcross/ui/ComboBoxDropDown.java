@@ -170,7 +170,7 @@ public class ComboBoxDropDown extends Window
             break;
          //case KeyEvent.ACTION_KEY_PRESS: // kmeehl@tc100 - guich@tc113_9: commented out
          case ControlEvent.PRESSED:
-            if (event.target == lb)
+            if (event.target == lb && topMost == this) // guich@tc305: fix problem when a MLB is inside a window, this unpop was closing the window
                unpop();
             break;
       }

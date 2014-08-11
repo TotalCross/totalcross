@@ -100,6 +100,18 @@ public class ImageControl extends Control
             g.foreColor = borderColor;
             g.drawRect(0,0,getImageWidth(),getImageHeight());
          }
+         if (scaleToFit)
+            try
+            {
+               if (width < height)
+                  this.img = img.hwScaledFixedAspectRatio(this.width,false);
+               else
+                  this.img = img.hwScaledFixedAspectRatio(this.height,true);
+            }
+            catch (ImageException e)
+            {
+               // keep original image
+            }
          if (centerImage)
          {
             lastX = (width-getImageWidth())/2;
@@ -205,7 +217,10 @@ public class ImageControl extends Control
       if (scaleToFit)
          try
          {
-            img = img.hwScaledFixedAspectRatio(this.width,false);
+            if (width < height)
+               img = img.hwScaledFixedAspectRatio(this.width,false);
+            else
+               img = img.hwScaledFixedAspectRatio(this.height,true);
          }
          catch (ImageException e)
          {

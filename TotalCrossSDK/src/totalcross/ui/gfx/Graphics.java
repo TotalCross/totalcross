@@ -176,7 +176,6 @@ public final class Graphics
    public static void fadeScreen(int fadeValue)
    {
       int[] pixels = (int[])Graphics.mainWindowPixels;
-      boolean dec = fadeValue > 0;
       int lastColor = -1, lastFaded=0;
       for (int j = pixels.length; --j >= 0;)
       {
@@ -186,22 +185,11 @@ public final class Graphics
          else
          {
             lastColor = rgb;
-            int r = ((rgb >> 16) & 0xFF) - fadeValue;
-            int g = ((rgb >> 8) & 0xFF) - fadeValue;
-            int b = (rgb & 0xFF) - fadeValue;
-            if (dec) // if the value is being decreased, it will never be greater than the max value
-            {
-               if (r < 0) r = 0; 
-               if (g < 0) g = 0; 
-               if (b < 0) b = 0; 
-            }
-            else
-            {
-               if (r > 255) r = 255;
-               if (g > 255) g = 255;
-               if (b > 255) b = 255;
-            }
-            lastFaded = pixels[j] = (r << 16) | (g << 8) | b;
+            int a = ((rgb >> 24) & 0xFF);
+            int r = ((rgb >> 16) & 0xFF) * fadeValue / 255;
+            int g = ((rgb >> 8 ) & 0xFF) * fadeValue / 255;
+            int b =  (rgb        & 0xFF) * fadeValue / 255;
+            lastFaded = pixels[j] = (a << 24) | (r << 16) | (g << 8) | b;
          }
       }
    }

@@ -145,6 +145,7 @@ public class OtherControlsSample extends BaseContainer
                try
                {
                   FileChooserBox fcb = new FileChooserBox(null);
+                  fcb.showPreview = true;
                   fcb.multipleSelection = ch.isChecked(); // guich@tc115_4
                   fcb.mountTree("device/");
                   fcb.popup();

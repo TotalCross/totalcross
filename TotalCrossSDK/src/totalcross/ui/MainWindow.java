@@ -19,6 +19,7 @@
 
 package totalcross.ui;
 
+import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
@@ -607,8 +608,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       // no messages, please. just ignore
    }
 
-   static Image screenShotImage;
-   /** Takes a screen shot of the current screen. 
+   /** Takes a screen shot of the current screen. Since TotalCross 3.06, it uses Control.takeScreenShot. 
     * Here's a sample:
     * <pre>
     * Image img = MainWindow.getScreenShot();
@@ -622,39 +622,36 @@ public class MainWindow extends Window implements totalcross.MainClass
     * 
     * @since TotalCross 1.3
     */
-   public static Image getScreenShot() throws ImageException
+   public static Image getScreenShot()
    {
-      Graphics gscr = mainWindowInstance.getGraphics();
-      int w = Settings.screenWidth;
-      int h = Settings.screenHeight;
-      Image img;
-      if (Settings.platform.equals(Settings.WINDOWSPHONE))
+      try
       {
-         img = screenShotImage = new Image(w,h);
-         repaintActiveWindows();
-         img.applyChanges();
-         screenShotImage = null;
-      }
-      else
-      {
-         img = new Image(w,h);
-         Graphics gimg = img.getGraphics();
-         enableUpdateScreen = false;
-         repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
-         enableUpdateScreen = true;
-         int buf[] = new int[w];
-         for (int y = 0; y < h; y++)
+         // get main window
+         mainWindowInstance.takeScreenShot();
+         Image img = mainWindowInstance.offscreen;
+         mainWindowInstance.releaseScreenShot();
+         // now paint other windows
+         int lastFade = 1000;
+         for (int j = 0,n=zStack.size(); j < n; j++)
+            if (((Window)zStack.items[j]).fadeOtherWindows)
+               lastFade = j;
+         for (int i = 0, n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
          {
-            gscr.getRGB(buf, 0,0,y,w,1);
-            gimg.setRGB(buf, 0,0,y,w,1);
+            if (i == lastFade)
+               img.applyFade(fadeValue);
+            if (i > 0 && zStack.items[i] != null) 
+            {
+               Window w = (Window)zStack.items[i];
+               Graphics g = img.getGraphics();
+               g.translate(w.x,w.y);
+               w.paint2shot(g);
+            }
          }
-         if (Settings.isOpenGL)
-            img.applyChanges();
-         else
-            if (Settings.onJavaSE)
-               img.setTransparentColor(-1);
+         img.lockChanges();
+         return img;
       }
-      return img;
+      catch (Throwable e) {}
+      return null;
    }
 
    // stuff to let a thread update the screen

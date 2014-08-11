@@ -146,7 +146,7 @@ public class MessageBox extends Window
          Vm.vibrate(200);
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
-      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
+      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_FADE : TRANSITION_NONE;
       ha = 6 * Settings.screenHeight/160; // guich@450_24: increase arrow size if screen size change
       wa = ha*2+1; // guich@570_52: now wa is computed from ha
       if (text == null)

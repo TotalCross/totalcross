@@ -1,4 +1,33 @@
-<h2>TotalCross 3.04 build 2287</h2>
+<h2>TotalCross 3.05 build 2300</h2>
+. fixed a glytch when drawing two pies with different radius<br>
+. now if an error occurs during startup we exit the vm in iOS<br>
+. an user with android 2.36 reported an out of memory trying to create a texture of 2048x20, so we now limit it to 1024 in Android.<br>
+. added Image constructor (byte[] bytes, int length) so one can decrease memory usage by reusing a load buffer when reading lots of images<br>
+. improved "no such method" error message to suggest an upgrade or downgrade of the JDK<br>
+. fixed deployment of wp8 when not using single apk for android<br>
+. added Convert.remove, to remove a set of chars from a String<br>
+. fixed problem when a ComboBoxDropDown was inside a Window and clicking outside to close it was closing the window too<br>
+. added GridContainer.buttonsHeight, to increase the height of the arrows area<br>
+. dont force a gc when loading an image (blocks above 1mb). this greatly improves response on ImageBook<br>
+. removed duplicate warning on ios console<br>
+. fixed getSmoothScaledInstance and getScaledInstance crashing when image's width or height is 0<br>
+. improved javadocs for Spinner class teaching how to make it work on OpenGL platforms.<br>
+. fixed problem when the Toast button is being displayed and you swap between containers.<br>
+. added Spinner.update, which must be called if you use the Spinner inside of a loop. This makes Spinner usable again.<br>
+. fixed white background when you add a transparentBackground's container inside a TopMenu.<br>
+. reenabled transition effects, now using takeScreenShot.<br>
+. added SQLiteUtil.fixQuote.<br>
+. added TRANSITION_FADE, a new transition effect. fixed File and PDBFile samples regarding animation<br>
+. fixed Toast when more than one is shown at the same time.<br>
+. improved accurateness of font when drawing on an image.<br>
+. fixed ImageControl now scaling the image if scaleToFit is true and a new image was set<br>
+. added FileChooserBox.showPreview, to show the preview of selected photos (on by default)<br>
+. added Settings.optimizeScroll to allow you to disable the scroll optimization using offscreen images<br>
+. fixed ImageModifiersSample setting the image's background to black; now it is transparent<br>
+. fixed drawRoundGradient not using the clip.<br>
+. fixed tc.Deploy in linux when the classname is given using full path and the current working directory is part of that full path<br>
+
+<h2>TotalCross 3.04 build 2289</h2>
 . lots of performance improvements in opengl, graphics is now 2x faster, in some android tablets is 3x faster. flicking is much smoother.<br>
 . added Toast class used to show a message using fade and transparency. added Button.BORDER_ROUND. Fixed getScreenShot not correctly handling control with transparentBackground. Now Toast is used to show the UI benchmark in TotalCrossAPI<br>
 . added TopMenu.autoClose and totalTime. added TopMenu.percWidth, so the user can change the default width<br>
@@ -24,6 +53,9 @@
 . now sending the debug to console window in iOS<br>
 . in ios, when it gets out of memory, instead of returning null to the allocation, it kills the application. but before doing so, it calls a didReceiveMemoryWarning method. now we intercept that method and at the next block of memory above 1MB that you try to allocate, an OutOfMemoryError is thrown. Better this than just kill the application<br>
 . fixed FTPSample's menu not working<br>
+. increased TotalCrossAPI font and window size when running in win32<br>
+. fixed Grid's arrows not being drawn<br>
+. now PieChart's distanceOfSelectedPie is measured in font height.<br>
 
 <h2>TotalCross 3.03 build 2227</h2>
 . improved speed of TabbedContainer drag and flick by drawing the tabs in an image and drawing that image instead of calling the drawing methods. its far smoother than before.<br>
@@ -112,7 +144,7 @@
 . added SpinList.wrapAround<br>
 . the demo box now appears in all platforms. to deploy to a store (apple or google) you must use the purchased vm.<br>
 . trying to bypass problems when jdk is installed in a path with spaces.<br>
-. fixed screen not being shifted in landscape mode in android >= 3.0<br>
+. fixed screen not being shifted in landscape mode in android &gt;= 3.0<br>
 . fixed all keyboard problems in android regarding the way that the vm uses to detect that the sip was closed, using finishComposingText<br>
 . fixed special "keyboard close" key support on lg<br>
 . Deploy now supports adding splash images on iOS (launch image). Right now it only supports 640x1136, which is required for iPhone 5. More sizes will be added later.<br>

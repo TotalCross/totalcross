@@ -17,6 +17,7 @@
 package tc.samples.api.sql;
 
 import tc.samples.api.BaseContainer;
+
 import totalcross.sql.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
@@ -24,7 +25,7 @@ import totalcross.ui.*;
 /**
  * Performs a benchmark in the SQLite.
  */
-public class SQLiteBenchSample extends BaseContainer
+public class SQLiteBenchSample extends BaseContainer 
 {
    /**
     * The connection with SQLite.

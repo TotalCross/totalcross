@@ -1056,8 +1056,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                   {
                      if ((*current & *ands++) != 0 && x >= xMin)
                      {
-                        *xya++ = (float)x+1;
-                        *xya++ = (float)y+1;
+                        *xya++ = (float)x;
+                        *xya++ = (float)y;
                         *xya++ = 1;
                         nn++;
                      }
@@ -1116,8 +1116,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
                      // alpha
                      // vertices
-                     *xya++ = (float)x+1;
-                     *xya++ = (float)y+1;
+                     *xya++ = (float)x;
+                     *xya++ = (float)y;
                      *xya++ = ftransp[transparency];
                      nn++;
                   }
@@ -1162,12 +1162,12 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
                                x0, y, width, height,                                     // target bitmap position
                                uf->ubase->maxW, uf->ubase->maxH, &fc, 255);              // total bitmap size
                else
-               { 
-                  uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+               {                         
+                  uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width+diffW, height);
                   if (alpha)
                   {                             
                      int32 nn=0;
-                     rowWIB = width;
+                     rowWIB = width+diffW;
                      start = alpha + istart * rowWIB;
                      xya = glXYA;
                      for (; r < rmax; start+=rowWIB, r++,y++)    // draw each row
@@ -1181,8 +1181,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    
                            // alpha
                            // vertices
-                           *xya++ = (float)x+1;
-                           *xya++ = (float)y+1;
+                           *xya++ = (float)x;
+                           *xya++ = (float)y;
                            *xya++ = f255[transparency];
                            nn++;
                         }
@@ -1194,11 +1194,11 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
             }
             else
    #endif // case 2
-            {                                                                                    
-               uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width, height);
+            {
+               uint8* alpha = getResizedCharPixels(currentContext, uf->ubase, ch, width+diffW, height);
                if (alpha)
                {                             
-                  rowWIB = width;
+                  rowWIB = width+diffW;
                   start = alpha + istart * rowWIB;
                   for (row=row0; r < rmax; start+=rowWIB, r++,row += pitch)    // draw each row
                   {
@@ -1731,7 +1731,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       // step 3: create space in the buffer so it can save all the circle
       size+=2;
       if (pie) size++;
-      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) < (uint32)size)
+      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) != (uint32)size) // guich@tc304: changed < to != to fix a glytch when drawing two pies with different radius
       {
          *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
          if (*xPointsObj == null)
@@ -2612,8 +2612,9 @@ static void drawRoundGradient(Context currentContext, TCObject g, int32 startX, 
    bool hasRadius = (topLeftRadius + topRightRadius + bottomLeftRadius + bottomRightRadius) > 0;
    Pixel p;
    bool drawFadedPixels = !Graphics_useOpenGL(g);
-#ifdef __gl2_h_
-   bool optimize = Graphics_useOpenGL(g) && topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
+#ifdef __gl2_h_    
+   int32 clipX1 = Graphics_clipX1(g) - Graphics_transX(g), clipY1 = Graphics_clipY1(g) - Graphics_transY(g), clipX2 = Graphics_clipX2(g) - Graphics_transX(g), clipY2 = Graphics_clipY2(g) - Graphics_transY(g);
+   bool optimize = Graphics_useOpenGL(g) && (startX >= clipX1 && startY >= clipY1 && endX < clipX2 && endY < clipY2) && topLeftRadius == topRightRadius && bottomLeftRadius == bottomRightRadius && topLeftRadius == bottomLeftRadius;
 #else
    bool optimize = false;
 #endif

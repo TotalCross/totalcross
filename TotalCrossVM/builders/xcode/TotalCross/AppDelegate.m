@@ -17,7 +17,7 @@
 @implementation AppDelegate
 
 #ifdef DEBUG
-#define APPNAME "TotalCrossAPI"
+#define TCZNAME "TotalCrossAPI"
 #endif
 
 -(void) initApp
@@ -49,15 +49,19 @@
    [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
    const char* name =
-#ifdef APPNAME
-       APPNAME;
+#ifdef TCZNAME
+       TCZNAME;
 #else
        [[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
-   [tcvm startVM:&context appName:(char*)name];
-   [Litebase fillNativeProcAddressesLB];
-    
-   [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
+   NSInteger ret = [tcvm startVM:&context appName:(char*)name];
+   if (ret != 0)
+      exit(ret);
+   else
+   {
+      [Litebase fillNativeProcAddressesLB];
+      [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
+   }
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

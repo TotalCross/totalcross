@@ -16,12 +16,14 @@ import java.io.File;
 import java.io.FilenameFilter;
 import org.apache.commons.io.FileUtils;
 import tc.tools.deployer.zip.SilverlightZip;
+
 import totalcross.io.ByteArrayStream;
 import totalcross.io.IOException;
 import totalcross.sys.Convert;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.Hashtable;
+
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
 
@@ -30,7 +32,7 @@ public class Deployer4WP8
    public Deployer4WP8() throws Exception
    {
       // locate template and target
-      File templateFile = new File(Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "wp8/TotalCross.xap"));
+      File templateFile = new File(Convert.appendPath(DeploySettings.etcDir, "../dist/vm/wp8/TotalCross.xap"));
       
       // create the output folder
       final String targetDir = Convert.appendPath(DeploySettings.targetDir, "/wp8/");
