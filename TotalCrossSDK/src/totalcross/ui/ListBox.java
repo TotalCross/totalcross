@@ -191,7 +191,7 @@ public class ListBox extends Container implements Scrollable
     */ 
    public static double itemHeightFactor = uiAndroid ? DEFAULT_ITEM_HEIGHT_FACTOR : 1;
    
-   private double ihFactor = itemHeightFactor;
+   protected double ihFactor = itemHeightFactor;
    
    /** Used by the DBListBox to store the data column that is displayed. */
    protected int dataCol=-1;
@@ -205,7 +205,6 @@ public class ListBox extends Container implements Scrollable
    /** Creates a Listbox with the given items. */
    public ListBox(Object []items)
    {
-      started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
       sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
       sbar.focusTraversable = false;
