@@ -19,7 +19,6 @@
 
 package totalcross.ui;
 
-import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
@@ -85,7 +84,6 @@ public class MainWindow extends Window implements totalcross.MainClass
    public MainWindow(String title, byte style) // guich@112
    {
       super(title,style);
-      mainThread = Thread.currentThread();
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
@@ -95,9 +93,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (Settings.fingerTouch) // guich@tc120_48
          Settings.touchTolerance = fmH/2;
       
-      if ((""+Settings.deviceId).indexOf("Treo") >= 0) // guich@tc113_36: disable virtual keyboard for all Treo family
-         Settings.virtualKeyboard = false;
-
       // update some settings
       setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
@@ -369,6 +364,7 @@ public class MainWindow extends Window implements totalcross.MainClass
      */
    final public void appStarting(int timeAvail) // guich@200b4_107 - guich@tc126_46: added timeAvail parameter to show MessageBox from inside here.
    {
+      mainThread = Thread.currentThread();
       timeAvailable = timeAvail;
       gfx = new Graphics(this); // revalidate the pixels
       startTimer = addTimer(1); // guich@567_17
