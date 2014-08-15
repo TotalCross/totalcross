@@ -2671,6 +2671,7 @@ error:
                if (xstrstr(value, cridStr) == value)
                {
                   getFullFileName(value, fullPath, buffer);
+                  TC_debug("nome: %s", buffer);
                   if ((i = lbfileDelete(null, buffer, false)))
                   {
                      fileError(p->currentContext, i, value);
