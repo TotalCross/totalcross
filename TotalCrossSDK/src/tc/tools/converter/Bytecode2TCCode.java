@@ -2003,14 +2003,29 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       if (name.startsWith("totalcross/lang/"))
          return "java/lang/" + name.substring(16);
       if (name.startsWith("totalcross/util/AbstractList") || name.startsWith("totalcross/util/AbstractMap") 
+       || name.startsWith("totalcross/util/Collections") || name.startsWith("totalcross/util/HashMap")  
        || name.startsWith("totalcross/util/Map")) 
          return name.replace("totalcross", "java");
       if (name.equals("totalcross/util/AbstractCollection4D")) 
          return "java/util/AbstractCollection4D";
+      if (name.equals("totalcross/util/AbstractSequentialList4D")) 
+         return "java/util/AbstractSequentialList4D";
+      if (name.equals("totalcross/util/AbstractSet4D")) 
+         return "java/util/AbstractSet4D";
+      if (name.equals("totalcross/util/ArrayList4D")) 
+         return "java/util/ArrayList4D";
+      if (name.equals("totalcross/util/BitSet4D")) 
+         return "java/util/BitSet4D";
       if (name.equals("totalcross/util/Collection4D")) 
          return "java/util/Collection4D";
+      if (name.equals("totalcross/util/Comparator4D")) 
+         return "java/util/Comparator4D";
       if (name.equals("totalcross/util/ConcurrentModificationException4D")) 
-         return "java/util/ConcurrentModificationException4D";
+         return "java/util/ConcurrentModificationException4D";     
+      if (name.equals("totalcross/util/Dictionary4D")) 
+         return "java/util/Dictionary4D";
+      if (name.equals("totalcross/util/Enumeration4D")) 
+         return "java/util/Enumeration4D"; 
       if (name.equals("totalcross/util/Iterator4D")) 
          return "java/util/Iterator4D";
       if (name.equals("totalcross/util/List4D")) 
@@ -2021,6 +2036,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/util/NoSuchElementException4D";
       if (name.equals("totalcross/util/Set4D")) 
          return "java/util/Set4D";
+      if (name.equals("totalcross/util/SortedMap4D")) 
+         return "java/util/SortedMap4D";
+      if (name.equals("totalcross/util/SortedSet4D")) 
+         return "java/util/SortedSet4D";
       return name;
    }
 

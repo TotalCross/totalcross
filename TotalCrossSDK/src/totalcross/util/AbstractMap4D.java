@@ -168,24 +168,6 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
   }
 
   /**
-   * Create a shallow copy of this Map, no keys or values are copied. The
-   * default implementation simply calls <code>super.clone()</code>.
-   *
-   * @return the shallow clone
-   * @throws CloneNotSupportedException if a subclass is not Cloneable
-   * @see Cloneable
-   * @see Object#clone()
-   */
-  protected Object clone() throws CloneNotSupportedException
-  {
-    AbstractMap4D<K, V> copy = (AbstractMap4D<K, V>) super.clone();
-    // Clear out the caches; they are stale.
-    copy.keys = null;
-    copy.values = null;
-    return copy;
-  }
-
-  /**
    * Returns true if this contains a mapping for the given key. This
    * implementation does a linear search, O(n), over the
    * <code>entrySet()</code>, returning <code>true</code> if a match
@@ -648,7 +630,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
-  static final boolean equals(Object o1, Object o2)
+  public static final boolean equals(Object o1, Object o2)
   {
     return o1 == o2 || (o1 != null && o1.equals(o2));
   }
@@ -661,7 +643,7 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
    */
   // Package visible for use throughout java.util.
   // It may be inlined since it is final.
-  static final int hashCode(Object o)
+  public static final int hashCode(Object o)
   {
     return o == null ? 0 : o.hashCode();
   }

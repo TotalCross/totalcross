@@ -380,7 +380,7 @@ public final class TCMethod implements TCConstants
          {
             name = java2totalcross(name);
             js = java2totalcross(js);
-            found &= name.equals(js) || name.equals(js+"4D");
+            found &= name.equals(js) || name.equals(js+"4D") || Convert.replace(name, "4D", "").equals(js);
          }
       }
       return found;
