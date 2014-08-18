@@ -119,6 +119,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private int tempSelected=-1;
    private int []wplains,wbolds;
    private boolean scScrolled;
+   private String[] strCaptions0;
+   
+   /** Set to true to automatically shrink the captions to prevent using arrows. Works only for String-based captions. */
+   public boolean autoShrinkCaptions;
 
    /** Enables or not the arrows if scroll is needed. */
    public boolean showArrows = true;
@@ -289,7 +293,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public TabbedContainer(String []strCaptions)
    {
       this(strCaptions.length);
-      this.strCaptions = strCaptions;
+      this.strCaptions = this.strCaptions0 = strCaptions;
       onFontChanged();
    }
 
@@ -508,6 +512,24 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    protected void onBoundsChanged(boolean screenChanged)
    {
       int i;
+      if (autoShrinkCaptions)
+      {
+         Vm.arrayCopy(strCaptions0, 0, strCaptions = new String[strCaptions0.length], 0, strCaptions.length);
+         onFontChanged();
+         int idx = 0;
+         while (mustScroll())
+         {
+            String s = strCaptions[idx];
+            int l = s.length();
+            if (s.charAt(l-1) == '.')
+               l--;
+            s = s.substring(0,l-1).concat(".");
+            strCaptions[idx] = s;
+            if (++idx == strCaptions.length)
+               idx = 0;
+            onFontChanged();
+         }
+      }
       onFontChanged();
       computeTabsRect();
       int borderGap = style==Window.NO_BORDER || uiAndroid ? 0 : 1; // guich@400_89

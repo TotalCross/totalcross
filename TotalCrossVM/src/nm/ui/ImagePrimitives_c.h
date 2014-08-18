@@ -777,14 +777,14 @@ static void applyFade(TCObject obj, int32 fadeValue)
 {
    int32 frameCount = Image_frameCount(obj);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
-   int32 len = ARRAYOBJ_LEN(pixelsObj);
+   int32 len = ARRAYOBJ_LEN(pixelsObj), r,g,b;
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
 
    for (; len-- > 0; pixels++)
    {
-      int32 r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
-      int32 g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
-      int32 b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
+      r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+      g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+      b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
    }
 
    if (frameCount != 1)

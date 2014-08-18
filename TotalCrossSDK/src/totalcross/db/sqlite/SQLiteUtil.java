@@ -204,4 +204,12 @@ public class SQLiteUtil
    {
       return toSqlite ? Convert.replace(s,"'","''") : Convert.replace(s,"''","'");
    }
+
+   /** Changes a date in format 2014-02-19 00:00:00:000 to a totalcross.util.Date. 
+    */
+   public static Date fromSqlDate(String sqldate) throws InvalidDateException
+   {
+      int sp = sqldate.indexOf(' ');
+      return new Date(sp == -1 ? sqldate : sqldate.substring(0,sp), Settings.DATE_YMD);
+   }
 }
