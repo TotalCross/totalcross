@@ -317,4 +317,10 @@ public class File4D extends RandomAccessStream
       close();
       return ret;
    }
+   
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      writeBytes(bytes, 0, bytes.length);
+      close();
+   }
 }
