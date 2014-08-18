@@ -595,7 +595,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (key == null)
+      if (false && key == null)
       {
          System.out.println("Error: you must provide a registration key!");
          System.exit(0);
@@ -618,7 +618,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          X509Certificate cert = (X509Certificate)cf.generateCertificate(inStream);
          Principal p = cert.getIssuerDN(); // OU=54434C423B6869C50039C06F, CN=Guilherme Campos Hazan, O=TotalCross MGP, L=FORTALEZA, ST=CE, C=BR
          java.util.Date exp = cert.getNotAfter(); int iexp = (1900+exp.getYear()) * 10000 + (exp.getMonth()+1) * 100 + exp.getDate(); 
-         java.util.Date tod = new java.util.Date(2014,7,30); int itod = tod.getYear() * 10000 + (tod.getMonth()+1) * 100 + tod.getDate();
+         java.util.Date tod = new java.util.Date(); int itod = (1900+tod.getYear()) * 10000 + (tod.getMonth()+1) * 100 + tod.getDate();
          boolean expired = itod >= iexp;
          System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+itod);
          System.out.println(p);
