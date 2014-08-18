@@ -18,6 +18,7 @@
 package totalcross.io;
 
 import java.net.URISyntaxException;
+
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -1368,4 +1369,18 @@ public class File extends RandomAccessStream
       close();
       return ret;
    }
+
+   /** Writes byte array to this file and closes itself. A handy method that can be used like this:
+    * <pre>
+    * new File(...,File.CREATE_EMPTY).writeAndClose(Vm.getFile("myfile.txt"));
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      writeBytes(bytes, 0, bytes.length);
+      close();
+   }
+
 }

@@ -26,6 +26,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.ui.media.*;
 import totalcross.unit.*;
 import totalcross.util.*;
 import totalcross.util.concurrent.*;
@@ -107,6 +108,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
 
       canDrag = false; // we can't drag the mainwindow.
+      Sound.setEnabled(true);
    }
    
    /** Returns true if this is the main thread.

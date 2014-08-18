@@ -100,4 +100,23 @@ public final class Sound
       int freq = (int)Math.round(440.0 * Math.pow (2, ((double)midiNoteNumber-69.0) / 12));
       tone(freq,duration);
    }
+   
+   /** Plays the given short wav or mp3 file. Make sure that the sounds are enabled, or you will not hear it!
+    * Works on Android and iOS, but does not work on JavaSE since Java does not support MP3 files.
+    * 
+    * The file must be located in the file system.
+    * If you store a mp3 file in the TCZ, you can get it out using this code:
+    * <pre>
+    * new File("device/mysound.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("mysound.mp3"));
+    * </pre>
+    * Then you play it using:
+    * <pre>
+    * Sound.play("device/mysound.mp3");
+    * </pre>
+    * The last sound is cached, so playing it again is fast. If you want to unload it, just call <code>Sound.play("");</code>,
+    * but this is not needed since small mp3/wav files consumes just a few memory.
+    */
+   public static void play(String filename)
+   {
+   }
 }

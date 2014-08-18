@@ -116,11 +116,22 @@ static int32 privateGetTimeStamp()
    return now.tv_sec * 1000 + now.tv_usec / 1000;
 }
 
-static bool pfileIsDir(TCHARP path, int32 slot)
+static bool pfileIsDir(TCHARP dir, TCHARP file)
 {
    struct stat statData;
+   int len;
+   TCHAR fullpath[MAX_PATHNAME];
+   fullpath[0] = 0;
+   tcscat(fullpath, dir);
+   len = tcslen(fullpath);
+   if (fullpath[len-1] != '/')
+   {
+      fullpath[len++] = '/';
+      fullpath[len] = 0;
+   }
+   tcscat(&fullpath[len], file);
 
-   if (stat(path, &statData))
+   if (stat(fullpath, &statData))
       return false;
 
    return S_ISDIR(statData.st_mode);
@@ -161,7 +172,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
          }
          tcscat(fileName, entry->d_name);
 
-         isDir = pfileIsDir(fileName, 0);
+         isDir = pfileIsDir(path,fileName);
          if (isDir)
             tcscat(fileName, TEXT("/"));
 #ifdef ANDROID // Android has a bug that result in files being added more than once. so, check if it already exists

@@ -76,6 +76,7 @@ TC_API void tuzZF_close(NMParams p);
 TC_API void tuzZF_entries(NMParams p);
 TC_API void tuzZF_getEntry_s(NMParams p);
 TC_API void tuzZF_getEntryStream_s(NMParams p);
+TC_API void tumS_play_s(NMParams p);
 TC_API void tumS_beep(NMParams p);
 TC_API void tumS_tone_ii(NMParams p);
 TC_API void tumS_setEnabled_b(NMParams p);
@@ -835,6 +836,10 @@ TC_API void tuzZF_getEntry_s(NMParams p) // totalcross/util/zip/ZipFile native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile native public totalcross.io.Stream getEntryStream(String name) throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_play_s(NMParams p) // totalcross/ui/media/Sound native public static void play(String filename);
 {
 }
 //////////////////////////////////////////////////////////////////////////

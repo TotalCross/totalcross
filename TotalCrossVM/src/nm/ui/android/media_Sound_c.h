@@ -10,6 +10,20 @@
  *********************************************************************************/
 
 
+static void soundPlay(CharP filename)
+{
+   JNIEnv *env = getJNIEnv();
+   if (env)                      
+   {
+      JChar buf[MAX_PATHNAME];
+      jstring s;
+      int32 len = xstrlen(filename);
+      CharP2JCharPBuf(filename,len,buf,true);
+      s = (*env)->NewString(env,buf,len);
+      (*env)->CallStaticVoidMethod(env, applicationClass, jsoundPlay, s); 
+      (*env)->DeleteLocalRef(env, s);
+   }
+}
 
 static void soundSetEnabled(bool b)
 {
