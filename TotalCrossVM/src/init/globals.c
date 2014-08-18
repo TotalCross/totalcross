@@ -231,7 +231,7 @@ jmethodID jclipboard;
 TSoundSettings soundSettings;
 #ifdef ANDROID
 jmethodID jtone;
-jmethodID jsoundEnable;
+jmethodID jsoundEnable,jsoundPlay;
 #endif
 
 

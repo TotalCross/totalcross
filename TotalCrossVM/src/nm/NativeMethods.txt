@@ -75,6 +75,7 @@ totalcross/util/zip/ZipFile|native public void close() throws totalcross.io.IOEx
 totalcross/util/zip/ZipFile|native public String[] entries();
 totalcross/util/zip/ZipFile|native public String getEntry(String name);
 totalcross/util/zip/ZipFile|native public totalcross.io.Stream getEntryStream(String name) throws IOException;
+totalcross/ui/media/Sound|native public static void play(String filename);
 totalcross/ui/media/Sound|native public static void beep();
 totalcross/ui/media/Sound|native public static void tone(int freq, int duration);
 totalcross/ui/media/Sound|native public static void setEnabled(boolean on);

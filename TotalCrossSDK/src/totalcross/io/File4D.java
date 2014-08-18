@@ -193,7 +193,7 @@ public class File4D extends RandomAccessStream
       if (path.equals("/"))
          return null;
 
-      return new File(path.substring(0, path.lastIndexOf('/')), DONT_OPEN, slot);      
+      return new File(path.substring(0, path.lastIndexOf('/')), DONT_OPEN);      
    }
 
    public static File getCardVolume() throws totalcross.io.IOException
@@ -316,5 +316,11 @@ public class File4D extends RandomAccessStream
       readBytes(ret,0,len);
       close();
       return ret;
+   }
+   
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      writeBytes(bytes, 0, bytes.length);
+      close();
    }
 }

@@ -202,7 +202,7 @@ extern jmethodID jclipboard;
 // media_Sound.c
 extern TSoundSettings soundSettings;
 #ifdef ANDROID
-extern jmethodID jtone,jsoundEnable;
+extern jmethodID jtone,jsoundEnable,jsoundPlay;
 #endif
 
 // ConnectionManager.c
