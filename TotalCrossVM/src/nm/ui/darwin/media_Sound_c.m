@@ -9,6 +9,11 @@
 #import <AudioToolbox/AudioToolbox.h>
 #include "xtypes.h"
 
+void iphone_soundPlay(CharP filename)
+{
+}
+
+
 void iphone_soundBeep()
 {
    AudioServicesPlayAlertSound(kSystemSoundID_Vibrate);

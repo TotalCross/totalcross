@@ -1582,4 +1582,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          }
       }.start();
    }
+   
+   private static SoundPool player;
+   private static Hashtable<String,Integer> htSounds = new Hashtable<String,Integer>(10);
+   public static void soundPlay(String filename)
+   {
+      if (player == null)
+         player = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+      if (!htSounds.containsKey(filename))
+         htSounds.put(filename, player.load(filename, 1));
+      int id = htSounds.get(filename);
+      player.play(id, 1.0f, 1.0f, 0, 0, 1.0f);
+  }
 }

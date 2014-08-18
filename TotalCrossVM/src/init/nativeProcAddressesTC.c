@@ -81,6 +81,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_entries"), &tuzZF_entries);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntry_s"), &tuzZF_getEntry_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntryStream_s"), &tuzZF_getEntryStream_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tumS_play_s"), &tumS_play_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_beep"), &tumS_beep);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_tone_ii"), &tumS_tone_ii);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_setEnabled_b"), &tumS_setEnabled_b);
@@ -106,6 +107,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_setTransparentColor_i"), &tuiI_setTransparentColor_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyChanges"), &tuiI_applyChanges);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTexture"), &tuiI_freeTexture);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFade_i"), &tuiI_applyFade_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillShadedRect_iiiibbiii"), &tugG_fillShadedRect_iiiibbiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);

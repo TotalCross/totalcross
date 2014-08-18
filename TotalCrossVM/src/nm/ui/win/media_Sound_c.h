@@ -13,6 +13,11 @@
 
 #include "media_Sound.h"
 
+static void soundPlay(CharP filename)
+{
+}
+
+
 /*****   soundBeep   *****
  *
  * MessageBeep

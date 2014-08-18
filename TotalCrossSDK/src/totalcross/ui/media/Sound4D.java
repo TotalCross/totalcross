@@ -24,6 +24,7 @@ public final class Sound4D
    {
    }
 
+   native public static void play(String filename);
    native public static void beep();
    native public static void tone(int freq, int duration);
    native public static void setEnabled(boolean on);
