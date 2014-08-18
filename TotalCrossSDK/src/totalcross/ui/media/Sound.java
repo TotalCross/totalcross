@@ -102,6 +102,7 @@ public final class Sound
    }
    
    /** Plays the given short wav or mp3 file. Make sure that the sounds are enabled, or you will not hear it!
+    * Works on Android and iOS, but does not work on JavaSE since Java does not support MP3 files.
     * 
     * The file must be located in the file system.
     * If you store a mp3 file in the TCZ, you can get it out using this code:
