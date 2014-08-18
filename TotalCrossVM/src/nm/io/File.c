@@ -83,11 +83,7 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
 TC_API void tiF_getDeviceAlias(NMParams p) // totalcross/io/File native private static String getDeviceAlias();
 {
 #if defined (darwin)
-   #if defined (THEOS)
-      p->retO = createStringObjectFromCharP(p->currentContext, "/private/var/mobile", -1);
-   #else
-      p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
-   #endif
+   p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
    setObjectLock(p->retO, UNLOCKED);
 #else
    p->retO = null;
