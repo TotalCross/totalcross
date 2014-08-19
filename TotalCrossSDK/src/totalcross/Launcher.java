@@ -176,7 +176,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
                runtimeInstructions();
-            loadBaseFonts();
             Object o = c.newInstance();
             if (o instanceof MainClass && !(o instanceof MainWindow))
             {
@@ -1676,38 +1675,44 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    static final int AA_4BPP = 1;
    static final int AA_8BPP = 2;
    static int []realSizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
-   static totalcross.ui.font.Font []baseFontN = new totalcross.ui.font.Font[realSizes.length], baseFontB = new totalcross.ui.font.Font[realSizes.length];
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
-   private boolean useRealFont;
-   private void loadBaseFonts()
+   private static boolean useRealFont;
+   static Hashtable htBaseFonts = new Hashtable(5); // 
+   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size)
    {
-      useRealFont = true;
-      for (int i = 0; i < realSizes.length; i++)
+      String key = name+"|"+bold+"|"+size;
+      totalcross.ui.font.Font f = (totalcross.ui.font.Font)htBaseFonts.get(key);
+      if (f == null)
       {
-         baseFontN[i] = totalcross.ui.font.Font.getFont(false,realSizes[i]); baseFontN[i].removeFromCache();
-         baseFontB[i] = totalcross.ui.font.Font.getFont(true, realSizes[i]); baseFontB[i].removeFromCache();
+         int i;
+         for (i = 0; i < realSizes.length-1; i++)
+            if (size <= realSizes[i])
+               break;
+      
+         useRealFont = true;
+         f = totalcross.ui.font.Font.getFont(name,bold,realSizes[i]); 
+         if (f != null) 
+         {
+            f.removeFromCache();
+            htBaseFonts.put(key,f); 
+         }         
+         useRealFont = false;
       }
-      useRealFont = false;
-   }
-   static totalcross.ui.font.Font getBaseFont(boolean bold, int size)
-   {
-      int i;
-      for (i = 0; i < realSizes.length-1; i++)
-         if (size <= realSizes[i])
-            break;
-      return bold ? baseFontB[i] : baseFontN[i];
+      
+      return f;
    }
 
    private UserFont loadUF(String fontName, String suffix)
    {
       try
       {
-         if (!useRealFont && fontName.equals(totalcross.ui.font.Font.DEFAULT) && suffix.endsWith("u0"))
+         if (!useRealFont && suffix.endsWith("u0")) // test if there's another 8bpp native font.
          {
             boolean bold = suffix.charAt(1) == 'b';
             int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
-            totalcross.ui.font.Font base = getBaseFont(bold, size); 
-            return new UserFont(fontName, suffix, size, base);
+            totalcross.ui.font.Font base = getBaseFont(fontName, bold, size);
+            if (base != null)
+               return new UserFont(fontName, suffix, size, base);
          }
          return new UserFont(fontName, suffix);
       }
