@@ -601,16 +601,14 @@ public class Deployer4Android
          if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
             name = targetTCZ+".tcz";
          FileInputStream fis;
-         String foundPath = null;
          try
          {
-            fis = new FileInputStream(foundPath = pathname);
+            fis = new FileInputStream(pathname);
          }
          catch (FileNotFoundException fnfe)
          {
-            fis = new FileInputStream(foundPath = totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
          }
-         System.out.println("*** found "+foundPath);
          byte[] bytes = new byte[fis.available()];
          fis.read(bytes);
          fis.close();
