@@ -91,7 +91,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
    if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
    if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = 800;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = min32(800,rect.bottom-rect.top);} else
    {
       width = defScrW == -1 ? 240 : defScrW;
       height = defScrH == -1 ? 320 : defScrH;
