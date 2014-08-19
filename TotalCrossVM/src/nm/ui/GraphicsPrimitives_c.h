@@ -889,6 +889,7 @@ static void fillRect(Context currentContext, TCObject g, int32 x, int32 y, int32
 static uint8 _ands8[8] = {0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};
 bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* ret); // PalmFont_c.h
 uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32 w, int32 h);
+extern float* glXYAF;
 
 static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth)
 {
@@ -910,7 +911,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 #ifdef __gl2_h_
    int32 charXY[2];
    float *xya;
-#endif        
+#endif
    int32 diffW;
    bool isVert = Graphics_isVerticalText(g);
    bool isGL = Graphics_useOpenGL(g);
@@ -998,11 +999,11 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
          bitmapTable = uf->bitmapTable;
          first = uf->fontP.firstChar;
          last = uf->fontP.lastChar;
-#ifdef __gl2_h_
-         if (!checkGLfloatBuffer(currentContext, uf->ubase->fontP.maxHeight * uf->ubase->fontP.maxWidth))
-            return;
-#endif
       }
+#ifdef __gl2_h_
+      if (!checkGLfloatBuffer(currentContext, uf->fontP.maxHeight * uf->fontP.maxWidth))
+         return;
+#endif
       // valid char, get its start
       offset = bitIndexTable[ch];
       width0 = width = bitIndexTable[ch+1] - offset - diffW;
