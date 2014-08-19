@@ -547,7 +547,7 @@ target: samples
 
    <property name="samples.includes" value="tc/samples"/>
    <copy todir="${output}/classes" verbose="true">
-      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
+      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.pkg, **/*.mp3, **/*.tcz, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
    </copy>
 
    <subant target="deploy-app" inheritall="yes">
