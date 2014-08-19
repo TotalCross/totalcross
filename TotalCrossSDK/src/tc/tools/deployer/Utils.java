@@ -150,7 +150,7 @@ public class Utils
          if (pathname.endsWith("/")) // a folder?
          {
             v.removeElementAt(i);
-            String[] ff = new File(pathname).listFiles();
+            String[] ff = new File(findPath(pathname,true)).listFiles();
             if (ff != null)
                for (int j = 0; j < ff.length; j++)
                   vextra.addElement(pathname+ff[j]+(pathnames.length > 1 && acceptsPath ? ","+pathnames[1] : ""));
