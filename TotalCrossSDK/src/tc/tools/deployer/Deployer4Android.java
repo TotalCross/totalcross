@@ -11,7 +11,9 @@
 
 package tc.tools.deployer;
 
+import totalcross.io.FileNotFoundException;
 import totalcross.util.*;
+
 import tc.tools.converter.bb.*;
 import tc.tools.converter.bb.attribute.Code;
 import tc.tools.converter.bb.attribute.LocalVariableTable;
@@ -20,7 +22,6 @@ import tc.tools.converter.bb.constant.Integer;
 import tc.tools.converter.bb.constant.NameAndType;
 import tc.tools.converter.bb.constant.UTF8;
 import tc.tools.converter.bb.constant.Class;
-
 import java.io.*;
 import java.util.zip.*;
 
@@ -605,9 +606,16 @@ public class Deployer4Android
          {
             fis = new FileInputStream(pathname);
          }
-         catch (FileNotFoundException fnfe)
+         catch (java.io.FileNotFoundException fnfe)
          {
-            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            try
+            {
+               fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            }
+            catch (java.io.FileNotFoundException fnfe2)
+            {
+               fis = new FileInputStream(Utils.findPath(pathname,true));
+            }
          }
          byte[] bytes = new byte[fis.available()];
          fis.read(bytes);
