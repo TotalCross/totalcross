@@ -22,6 +22,7 @@ import tc.samples.api.io.device.*;
 import tc.samples.api.lang.reflection.*;
 import tc.samples.api.lang.thread.*;
 import tc.samples.api.map.*;
+import tc.samples.api.media.*;
 import tc.samples.api.net.*;
 import tc.samples.api.net.mail.*;
 import tc.samples.api.phone.*;
@@ -111,6 +112,11 @@ public class MainMenu extends BaseContainer
       "GoogleMaps",
    };
    
+   String[] mediaItems = 
+   {
+      "Sound",
+   };
+   
    String[] netItems =
    {
       "Mail",
@@ -155,6 +161,7 @@ public class MainMenu extends BaseContainer
       "io",
       "lang",
       "map",
+      "media",
       "net",
       "phone",
       "sql",
@@ -226,6 +233,10 @@ public class MainMenu extends BaseContainer
    {      
       GoogleMapsSample.class,
    };     
+   Class[] mediaClasses = 
+   {      
+      MediaSample.class,
+   };     
    Class[] netClasses =
    {      
       MailSample.class,
@@ -272,6 +283,7 @@ public class MainMenu extends BaseContainer
       ioItems,
       langItems, 
       mapItems, 
+      mediaItems,
       netItems,
       phoneItems,
       sqlItems,
@@ -286,7 +298,8 @@ public class MainMenu extends BaseContainer
       cryptoClasses,
       ioClasses,
       langClasses, 
-      mapClasses, 
+      mapClasses,
+      mediaClasses,
       netClasses,
       phoneClasses,
       sqlClasses,
