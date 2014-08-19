@@ -30,7 +30,7 @@
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
 #ifdef ANDROID
-bool getSDCardPath(char* buf)
+static bool getSDCardPath(char* buf)
 {
    JNIEnv *env = getJNIEnv();                                      
    jstring path = (*env)->CallStaticObjectMethod(env, applicationClass, jgetSDCardPath);
@@ -43,6 +43,12 @@ bool getSDCardPath(char* buf)
       buf[0] = 0;
    return buf[0] != 0;               
 }
+#ifndef LITEBASE
+bool _getSDCardPath(char* buf)
+{
+   return bool getSDCardPath(buf);
+}
+#endif
 #endif
 /*
  *
