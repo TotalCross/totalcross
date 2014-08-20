@@ -171,7 +171,9 @@ public class Utils
       }            
       if (!new File(s).exists())
          s = Utils.findPath(s,true);
-      Utils.copyFile(s, Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s))), false);
+      String to = Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s)));
+      System.out.println("copying "+s+" to "+to);
+      Utils.copyFile(s, to, false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception
