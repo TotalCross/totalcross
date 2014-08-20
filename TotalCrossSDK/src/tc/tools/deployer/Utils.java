@@ -157,7 +157,10 @@ public class Utils
          }         
       }
       if (vextra.size() > 0)
+      {
          v.addElements(vextra.toObjectArray());
+         for (int i = 0; i < v.size(); i++) System.out.println("v["+i+"]: "+v.items[i]);
+      }
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception
