@@ -157,10 +157,21 @@ public class Utils
          }         
       }
       if (vextra.size() > 0)
-      {
          v.addElements(vextra.toObjectArray());
-         for (int i = 0; i < v.size(); i++) System.out.println("v["+i+"]: "+v.items[i]);
-      }
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static void copyEntry(String s, String targetDir) throws Exception
+   {
+      String tpath = "";
+      if (s.indexOf(',') >= 0)
+      {
+         String [] ss = s.split(",");
+         s = ss[0];
+         tpath = ss[1];
+      }            
+      if (!new File(s).exists())
+         s = Utils.findPath(s,true);
+      Utils.copyFile(s, Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s))), false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception
