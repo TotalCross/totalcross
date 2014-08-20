@@ -208,7 +208,6 @@ public class Utils
             if (path.contains("system32")) // ignores the ones copied to C:/Windows/system32
                continue;
             p = path+"/"+fileName;
-            System.out.println("*** 1.searching for "+p);
             if (new File(p).exists())
                return p;
             // check if its a jar file. If it is, then use its path to try to find the file
@@ -216,7 +215,6 @@ public class Utils
             {
                path = getParentFolder(path);
                p = path+"/"+fileName;
-               System.out.println("*** 2.searching for "+p);
                if (new File(p).exists())
                   return p;
             }

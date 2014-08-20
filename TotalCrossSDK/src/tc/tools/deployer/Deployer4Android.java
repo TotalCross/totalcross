@@ -601,7 +601,6 @@ public class Deployer4Android
          if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
             name = targetTCZ+".tcz";
          FileInputStream fis;
-         System.out.println("**** searching "+pathname);
          try
          {
             fis = new FileInputStream(pathname);
