@@ -11,21 +11,17 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayOutputStream;
+import de.schlichtherle.truezip.file.*;
+import java.io.*;
 import java.io.File;
-import java.io.FilenameFilter;
-import org.apache.commons.io.FileUtils;
-import tc.tools.deployer.zip.SilverlightZip;
+import org.apache.commons.io.*;
+import tc.tools.deployer.zip.*;
 
-import totalcross.io.ByteArrayStream;
+import totalcross.io.*;
 import totalcross.io.IOException;
-import totalcross.sys.Convert;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.util.Hashtable;
-
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TVFS;
+import totalcross.sys.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 public class Deployer4WP8
 {
@@ -70,9 +66,16 @@ public class Deployer4WP8
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("wp8.pkg", ht);
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
+      Vector v = new Vector(extras);
+      Utils.preprocessPKG(v,true);
       if (extras.length > 0)
          for (int i = 0; i < extras.length; i++)
-            sz.putEntry(extras[i], new File(extras[i]));
+         {
+            File ff = new File(extras[i]);
+            if (!ff.exists())
+               ff = new File(Utils.findPath(extras[i],true));            
+            sz.putEntry(extras[i], ff);
+         }
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));
