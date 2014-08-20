@@ -105,8 +105,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private static final byte FOCUSMODE_INSIDE_CONTAINERS = 2;
    private byte focusMode;
    private boolean brightBack;
-   /** Set to true to enable the beep when a tab is clicked */
-   public  boolean beepOn; // guich@230_37
    /** Set the arrows color right after the constructor and after calling setCaptionsColor, which also change this property. */
    public int arrowsColor = Color.BLACK;
    private Font bold;
@@ -1025,7 +1023,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                }
                if (sel != activeIndex && sel >= 0 && !disabled[sel])
                {
-                  if (beepOn && !Settings.onJavaSE) Sound.beep(); // guich@300_7
                   tempSelected = sel;
                   if (!uiAndroid)
                      setActiveTab(sel);
