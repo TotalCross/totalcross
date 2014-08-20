@@ -172,6 +172,7 @@ public class Utils
       if (!new File(s).exists())
          s = Utils.findPath(s,true);
       String to = Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s)));
+      try {new File(getParent(to)).createDir();} catch (Exception e) {} // try to create target dir      
       System.out.println("copying "+s+" to "+to);
       Utils.copyFile(s, to, false);
    }
