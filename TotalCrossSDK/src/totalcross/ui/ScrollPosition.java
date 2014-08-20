@@ -332,8 +332,17 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void timerTriggered(TimerEvent e)
    {
-      if (timer != null && timer.triggered && visible && autoHide && Flick.currentFlick == null && !isPenDown)
-         resetHandle();
+      if (timer != null && timer.triggered)
+      {
+         if (visible && autoHide && Flick.currentFlick == null && !isPenDown)
+            resetHandle();
+         if (!isDisplayed())
+         {
+            removeTimer(timer);
+            removeTimerListener(this);
+            timer = null;
+         }
+      }
    }
 
    public boolean wasScrolled()
