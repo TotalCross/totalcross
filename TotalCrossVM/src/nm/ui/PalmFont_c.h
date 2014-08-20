@@ -71,7 +71,6 @@ static void destroyUF(int32 i32, VoidP ptr)
 void fontDestroy()
 {
    VoidPs *list, *head;
-   int32 i;
    htTraverse(&htBaseFonts, destroyUF);
 
    list = head = openFonts;
