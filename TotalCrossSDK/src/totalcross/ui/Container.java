@@ -224,6 +224,7 @@ public class Container extends Control
                boolean isClose = transitionEffect == TRANSITION_CLOSE;
                Image s0 = isClose ? screen1 : screen0;
                Image s1 = isClose ? screen0 : screen1;
+               boolean noDelay = Settings.platform.equals(Settings.WIN32); // the delay does not work well on win32
                for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
                {
                   int ini = Vm.getTimeStamp();
@@ -241,7 +242,7 @@ public class Container extends Control
                   int remainingTime = TRANSITION_TIME - totalElapsed;
                   if (remainingTime <= 0)
                      break;
-                  if (frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+                  if (!noDelay && frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
                   {
                      Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
                      step = 1;
