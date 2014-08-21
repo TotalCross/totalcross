@@ -143,6 +143,12 @@ public final class Graphics
       this.surface = surface;
    }
 
+   /** Returns true if the source surface is from a Control (if false, its an Image). */   
+   public boolean isControlSurface()
+   {
+      return isControlSurface;
+   }
+
    /** Fades all window pixels with the given value. The window is not repainted, so,
     * if you fade it to bright, you will have to repaint the window to get the original pixels back.
     * Also, don't forget to call updateWindow after this method.
