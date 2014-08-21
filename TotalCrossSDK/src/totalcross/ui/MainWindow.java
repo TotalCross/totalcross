@@ -647,7 +647,7 @@ public class MainWindow extends Window implements totalcross.MainClass
                Window w = (Window)zStack.items[i];
                Graphics g = img.getGraphics();
                g.translate(w.x,w.y);
-               w.paint2shot(g);
+               w.paint2shot(g,true);
             }
          }
          img.lockChanges();
