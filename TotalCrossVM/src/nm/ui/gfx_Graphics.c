@@ -700,45 +700,18 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
 #ifdef __gl2_h_
    glFillRect(0,0,appW,appH,0,p->i32[0]);
 #else   
-   //int32 ini = getTimeStamp();
    if (graphicsLock(&screen, true))
    {
-      int32 fadeValue = p->i32[0], j,r,g,b;
-      PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
-      bool dec = fadeValue > 0;
-      PixelConv lastColor, lastFaded, rgb;
-      lastColor.pixel = lastFaded.pixel = rgb.pixel = -1;
-      for (j = screen.screenH * screen.screenW; j-- > 0; f++)
+      int32 fadeValue = p->i32[0], len,r,g,b;
+      PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
+      for (len = screen.screenH * screen.screenW; len-- > 0; pixels++)
       {
-         if (f->pixel == lastColor.pixel) // uigadgets have a cache hit of 90%
-            f->pixel = lastFaded.pixel;
-         else
-         {
-            lastColor.pixel = f->pixel;
-            r = f->r - fadeValue;
-            g = f->g - fadeValue;
-            b = f->b - fadeValue;
-            if (dec) // if the value is being decreased, it will never be greater than the max value
-            {
-               if (r < 0) r = 0; 
-               if (g < 0) g = 0; 
-               if (b < 0) b = 0; 
-            }
-            else
-            {
-               if (r > 255) r = 255;
-               if (g > 255) g = 255;
-               if (b > 255) b = 255;
-            }                 
-            f->r = r;
-            f->g = g;
-            f->b = b;
-            lastFaded.pixel = f->pixel;
-         }
+         r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+         g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+         b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
       }
       graphicsLock(&screen, false);
    }                          
-   //debug("elapsed %d ms",getTimeStamp()-ini);
 #endif   
 }
 //////////////////////////////////////////////////////////////////////////
