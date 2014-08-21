@@ -343,14 +343,19 @@ public class Control extends GfxSurface
       Window w = getParentWindow();      
       int x0 = w.x;
       int y0 = w.y;
+      Rect rtop = top.getRect();
       if (asContainer != null)
          for (Control child = asContainer.children; child != null; child = child.next)
             if (child.visible)
             {
-               child.refreshGraphics(g,0,top,x0,y0);
-               child.onPaint(g);
-               if (child.asContainer != null)
-                  child.asContainer.paint2shot(g,top);
+               Rect r = child.getAbsoluteRect();
+               if (rtop.intersects(r))
+               {
+                  child.refreshGraphics(g,0,top,x0,y0);
+                  child.onPaint(g);
+                  if (child.asContainer != null)
+                     child.asContainer.paint2shot(g,top);
+               }
             }
    }
    
