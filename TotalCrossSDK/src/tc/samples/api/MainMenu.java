@@ -271,7 +271,7 @@ public class MainMenu extends BaseContainer
 
    protected String getHelpMessage()
    {
-      return "This is a TotalCross "+Settings.versionStr+"."+Settings.buildNumber+" sample that shows most of the Application Programming Interfaces available in the SDK. You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
+      return "This is a TotalCross "+Settings.versionStr+"."+Settings.buildNumber+" sample that shows most of the Application Programming Interfaces available in the SDK. You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE+", gc ran "+Settings.gcCount+" in "+Settings.gcTime+"ms";
    }
    
    ButtonMenu topmenu;
@@ -324,6 +324,7 @@ public class MainMenu extends BaseContainer
       setInfo(DEFAULT_INFO);
 
       String cmd = MainWindow.getCommandLine();
+cmd = "/t15";      
       if (cmd != null && cmd.startsWith("/t"))
          try 
          {
