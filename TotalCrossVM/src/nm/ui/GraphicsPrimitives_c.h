@@ -217,7 +217,14 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       srcHeight = (int32)(Image_height(srcSurf) * Image_hwScaleH(srcSurf));
       if (forcedSmoothScale && (Image_hwScaleW(srcSurf) != 1 || Image_hwScaleH(srcSurf) != 1))
       {
-         TCObject newSurf = executeMethod(currentContext, getMethod(OBJ_CLASS(srcSurf), false, Image_hwScaleW(srcSurf) < 1 && Image_hwScaleH(srcSurf) < 1 ? "getSmoothScaledInstance" : "getScaledInstance",2,J_INT,J_INT), srcSurf, srcWidth, srcHeight).asObj;
+         static Method mGetScaledInstance, mGetSmoothScaledInstance;
+         TCObject newSurf;
+         if (mGetScaledInstance == null)
+         {
+            mGetScaledInstance       = getMethod(OBJ_CLASS(srcSurf), false, "getScaledInstance", 2, J_INT, J_INT);
+            mGetSmoothScaledInstance = getMethod(OBJ_CLASS(srcSurf), false, "getSmoothScaledInstance", 2, J_INT, J_INT);
+         }
+         newSurf = executeMethod(currentContext, Image_hwScaleW(srcSurf) < 1 && Image_hwScaleH(srcSurf) < 1 ? mGetSmoothScaledInstance : mGetScaledInstance, srcSurf, srcWidth, srcHeight).asObj;
          if (newSurf == null)
             currentContext->thrownException = null;
          else
