@@ -727,7 +727,7 @@ public class Window extends Container
             if (_focus != null && _focus != this && (_focus == _dragEvent.target || x == 10000) && type == PenEvent.PEN_UP) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever -- x = 10000 is sent when a multitouch will begin
                _focus.postEvent(_penEvent);
             if (!onClickedOutside(_penEvent)) // if clicked outside was not handled by this method...
-               if (type == PenEvent.PEN_DOWN && beepIfOut) // alert him! - ds: i changed this accordingly to your comments about win32 problems
+               if (type == PenEvent.PEN_DOWN && beepIfOut && !fadeOtherWindows) // alert him! - ds: i changed this accordingly to your comments about win32 problems
                   Sound.beep();
             return;
          }
