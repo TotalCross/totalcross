@@ -251,7 +251,6 @@ public class Animation extends Control
   /**
    * Enable the posting of events. By default the posting of events are disabled.
    *
-   * @param <code>true</code> to enable posting of events; <code>false</code>, otherwise.
    */
   public void enableEvents(int mask) // fdie@341_3
   {
