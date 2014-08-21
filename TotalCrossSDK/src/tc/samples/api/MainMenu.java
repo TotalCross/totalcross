@@ -324,7 +324,7 @@ public class MainMenu extends BaseContainer
       setInfo(DEFAULT_INFO);
 
       String cmd = MainWindow.getCommandLine();
-cmd = "/t15";      
+      
       if (cmd != null && cmd.startsWith("/t"))
          try 
          {
