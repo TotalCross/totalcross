@@ -224,15 +224,17 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
             mGetScaledInstance       = getMethod(OBJ_CLASS(srcSurf), false, "getScaledInstance", 2, J_INT, J_INT);
             mGetSmoothScaledInstance = getMethod(OBJ_CLASS(srcSurf), false, "getSmoothScaledInstance", 2, J_INT, J_INT);
          }
+         disableGC = true; // the gc may collect the image before we lock it here (*)
          newSurf = executeMethod(currentContext, Image_hwScaleW(srcSurf) < 1 && Image_hwScaleH(srcSurf) < 1 ? mGetSmoothScaledInstance : mGetScaledInstance, srcSurf, srcWidth, srcHeight).asObj;
          if (newSurf == null)
             currentContext->thrownException = null;
          else
          {
             srcSurf = newSurf;
-            setObjectLock(newSurf, LOCKED);
+            setObjectLock(newSurf, LOCKED); // (*)
             unlockSrc = true;
          }
+         disableGC = false;
          srcPitch = srcWidth = Image_width(srcSurf);
          srcHeight = Image_height(srcSurf);
       }
