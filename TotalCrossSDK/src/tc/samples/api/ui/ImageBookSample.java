@@ -101,9 +101,11 @@ public class ImageBookSample extends BaseContainer
             lastIni = lastMinIdx;
             lastEnd = lastMaxIdx;
             ex = null;
+            Vm.tweak(Vm.TWEAK_DISABLE_GC,true);
             for (int i = lastMinIdx; i <= lastMaxIdx && lastcur == current; i++)
                if (loaded[i] == null)
                   loaded[i] = loadImage(i);
+            Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
          }
       }
       
@@ -119,7 +121,7 @@ public class ImageBookSample extends BaseContainer
                buf = new byte[s];
             f.readBytes(buf,0,s);
             f.close();
-            img = new Image(buf);
+            img = new Image(buf,s);
          }
          catch (IOException ioe)
          {
