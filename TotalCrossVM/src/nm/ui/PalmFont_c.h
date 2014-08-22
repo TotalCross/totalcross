@@ -427,11 +427,11 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
    int16 *charX = uf->charX + ch, *charY = uf->charY + ch;
    int32 widthsCount=0, maxH=0, w=0, offset=0;
 #ifdef ANDROID
-   int32 maxW = *tcSettings.romVersionPtr >= 400 ? 2048 : 1024; // galaxy tab 3 devices dont like 1024!
+   int32 maxW = 1024;
 #else
    int32 maxW = 2048;
 #endif
-   int32 widths[10] = {0}, *ww = widths; // currently char height 80 uses 4 width blocks
+   int32 widths[32] = {0}, *ww = widths; // eg: height 80 uses 4 width blocks, height 240 uses 9 blocks
    // compute char position to build the alpha map. the original map is splitted up to the maximum's width
    for (; ch <= last; ch++)
    {
@@ -439,7 +439,7 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
       if ((w+r) > maxW || ch == last)
       {
          if (ch == last) w += r; else widthsCount++;
-         if (ww == widths) maxW = (w+3) >> 2 << 2; // limits the next max widths to this one - align so we can optimize the loop
+         if (ww == widths || w > maxW) maxW = w; // limits the next max widths to this one - align so we can optimize the loop
          *ww++ = w;
          if ((w+r) > maxW) y += fontH;
          if (ch == last) w -= r; else w = 0;
