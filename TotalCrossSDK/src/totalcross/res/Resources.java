@@ -92,7 +92,7 @@ public class Resources
                loadImages("totalcross/res/android/");
                break;
          }
-         try {if (!new File("device/chime.mp3").exists()) new File("device/chime.mp3",File.CREATE_EMPTY).writeAndClose(Vm.getFile("totalcross/res/mp3/chime.mp3"));} catch (Exception e) {e.printStackTrace();}
+         try {if (!new File("device/chime.mp3").exists()) new File("device/chime.mp3",File.CREATE_EMPTY).writeAndClose(Vm.getFile("totalcross/res/mp3/chime.mp3"));} catch (Exception e) {if (!Settings.onJavaSE) e.printStackTrace();}
       }
       catch (Throwable t)
       {

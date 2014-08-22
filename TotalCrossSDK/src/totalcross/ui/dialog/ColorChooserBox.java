@@ -196,7 +196,6 @@ public class ColorChooserBox extends Window implements PenListener
                   if (err)
                   {
                      v = 0;
-                     Sound.beep();
                      ed.setText("0");
                   }
                   else

@@ -39,6 +39,7 @@ public final class Graphics4D
    protected int pitch;
    private int alpha;
    public boolean isVerticalText;
+   private boolean isControlSurface;
    // instance doubles
    protected double lastPPD; // used by arcPiePointDrawAndFill
    // instance objects
@@ -67,7 +68,14 @@ public final class Graphics4D
       this.surface = surface;
       if (surface instanceof totalcross.ui.image.Image)
          alpha = 0xFF000000;
+      else
+         isControlSurface = true;
       create(surface);
+   }
+
+   public boolean isControlSurface()
+   {
+      return isControlSurface;
    }
 
    public static int[] getPalette()

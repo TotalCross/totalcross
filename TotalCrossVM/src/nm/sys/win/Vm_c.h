@@ -67,7 +67,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    xmemzero(&si, sizeof(si));
    startInfo = &si;
 #endif
-   if (lstrcmp(szCommand,L"unregister service")==0)
+   if (lstrcmp(szCommand,TEXT("unregister service"))==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll")),srv;
       DeregisterServiceProc deregisterService = (DeregisterServiceProc)GetProcAddress(dll, TEXT("DeregisterService"));
@@ -79,7 +79,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       FreeLibrary(dll);
       return ret;
    }
-   if (xstrcmp(szCommand,L"register service")==0)
+   if (lstrcmp(szCommand,TEXT("register service"))==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll"));
       RegisterServiceProc registerService = (RegisterServiceProc)GetProcAddress(dll, TEXT("RegisterService"));

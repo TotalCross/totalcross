@@ -1281,10 +1281,7 @@ public class Edit extends Control
                      ke.key = Convert.toLowerCase((char)ke.key);
 
                   if (!isCharValid((char)ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
-                  {
-                     Sound.beep();
                      break;
-                  }
                }
                if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                {
@@ -1342,7 +1339,6 @@ public class Edit extends Control
                      newInsertPos++;
                      clearSelect = true;
                   }
-                  else Sound.beep();
                boolean isMove = true;
                switch (ke.key)
                {
@@ -1664,7 +1660,7 @@ public class Edit extends Control
    {
       String pasted = Vm.clipboardPaste();
       if (pasted == null || pasted.length() == 0)
-         Sound.beep();
+         ;
       else
       {
          showTip(this, pasteStr, 500, -1);

@@ -105,8 +105,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private static final byte FOCUSMODE_INSIDE_CONTAINERS = 2;
    private byte focusMode;
    private boolean brightBack;
-   /** Set to true to enable the beep when a tab is clicked */
-   public  boolean beepOn; // guich@230_37
    /** Set the arrows color right after the constructor and after calling setCaptionsColor, which also change this property. */
    public int arrowsColor = Color.BLACK;
    private Font bold;
@@ -517,17 +515,23 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          Vm.arrayCopy(strCaptions0, 0, strCaptions = new String[strCaptions0.length], 0, strCaptions.length);
          onFontChanged();
          int idx = 0;
-         while (mustScroll())
+         int med = 0; for (i = 0; i < strCaptions.length; i++) med += strCaptions[i].length(); 
+         int tries = med; med /= strCaptions.length;
+         while (mustScroll() && tries-- > 0)
          {
             String s = strCaptions[idx];
             int l = s.length();
-            if (s.charAt(l-1) == '.')
-               l--;
-            s = s.substring(0,l-1).concat(".");
-            strCaptions[idx] = s;
+            if (l >= med)
+            {
+               if (s.charAt(l-1) == '.')
+                  l--;
+               s = s.substring(0,l-1).concat(".");
+               strCaptions[idx] = s;
+               onFontChanged();
+               med = 0; for (i = 0; i < strCaptions.length; i++) med += strCaptions[i].length(); med /= strCaptions.length;
+            }
             if (++idx == strCaptions.length)
                idx = 0;
-            onFontChanged();
          }
       }
       onFontChanged();
@@ -556,7 +560,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    private boolean mustScroll()
    {
-      return count > 1 && getPreferredWidth() > this.width; // guich@564_10: support scroll - guich@573_2: only add arrows if there's more than one tab
+      if (!allSameWidth)
+         return count > 1 && getPreferredWidth() > this.width; // guich@564_10: support scroll - guich@573_2: only add arrows if there's more than one tab
+      // guich@tc306: if all same width, use a different formula
+      int each = width / count - 12; // 12 = space between tabs
+      for (int i = 0; i < count; i++)
+         if (wbolds[i] > each)
+            return true;
+      return false;
    }
 
    private void addArrows()
@@ -1012,7 +1023,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                }
                if (sel != activeIndex && sel >= 0 && !disabled[sel])
                {
-                  if (beepOn && !Settings.onJavaSE) Sound.beep(); // guich@300_7
                   tempSelected = sel;
                   if (!uiAndroid)
                      setActiveTab(sel);

@@ -607,7 +607,14 @@ public class Deployer4Android
          }
          catch (FileNotFoundException fnfe)
          {
-            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            try
+            {
+               fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            }
+            catch (FileNotFoundException fnfe2)
+            {
+               fis = new FileInputStream(Utils.findPath(pathname,true));
+            }
          }
          byte[] bytes = new byte[fis.available()];
          fis.read(bytes);

@@ -150,7 +150,7 @@ public class Utils
          if (pathname.endsWith("/")) // a folder?
          {
             v.removeElementAt(i);
-            String[] ff = new File(pathname).listFiles();
+            String[] ff = new File(findPath(pathname,true)).listFiles();
             if (ff != null)
                for (int j = 0; j < ff.length; j++)
                   vextra.addElement(pathname+ff[j]+(pathnames.length > 1 && acceptsPath ? ","+pathnames[1] : ""));
@@ -158,6 +158,22 @@ public class Utils
       }
       if (vextra.size() > 0)
          v.addElements(vextra.toObjectArray());
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static void copyEntry(String s, String targetDir) throws Exception
+   {
+      String tpath = "";
+      if (s.indexOf(',') >= 0)
+      {
+         String [] ss = s.split(",");
+         s = ss[0];
+         tpath = ss[1];
+      }            
+      if (!new File(s).exists())
+         s = Utils.findPath(s,true);
+      String to = Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s)));
+      try {new File(getParent(to)).createDir();} catch (Exception e) {} // try to create target dir      
+      Utils.copyFile(s, to, false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception

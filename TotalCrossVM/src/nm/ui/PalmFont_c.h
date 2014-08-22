@@ -17,8 +17,8 @@ static char defaultFontName[16];
 
 static int32 realSizes[] = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
 #define SIZE_LEN (sizeof(realSizes)/sizeof(realSizes[0]))
-UserFont baseFontN[SIZE_LEN],baseFontB[SIZE_LEN];
 bool useRealFont;
+Hashtable htBaseFonts;
 
 bool fontInit(Context currentContext)
 {
@@ -45,7 +45,8 @@ bool fontInit(Context currentContext)
    if (fontsHeap == null)
       return false;
    htUF = htNew(23, null);
-   if (!htUF.items)
+   htBaseFonts = htNew(23,null);
+   if (!htUF.items || !htBaseFonts.items)
    {
       heapDestroy(fontsHeap);
       return false;
@@ -56,37 +57,23 @@ bool fontInit(Context currentContext)
       alert("Font file is missing.\nPlease install TCFont.tcz");
       heapDestroy(fontsHeap);
       htFree(&htUF, null);
-   }
-   else
-   {
-      int32 i;
-      useRealFont = true;
-      for (i = 0; i < SIZE_LEN; i++)
-      {
-         baseFontN[i] = loadUserFont(currentContext, defaultFont, false, realSizes[i], ' ');
-         baseFontB[i] = loadUserFont(currentContext, defaultFont, true,  realSizes[i], ' ');
-      }
-      useRealFont = false;
+      htFree(&htBaseFonts, null);
    }
    return defaultFont != null;
 }
 
-static void destroyUF(UserFont uf)
+static void destroyUF(int32 i32, VoidP ptr)
 {
+   UserFont uf = (UserFont)ptr;
    xfree(uf->tempbufs);
 }
 
 void fontDestroy()
 {
    VoidPs *list, *head;
-   int32 i;
-   list = head = openFonts;
-   for (i = 0; i < SIZE_LEN; i++)
-   {
-      destroyUF(baseFontN[i]);
-      destroyUF(baseFontB[i]);
-   }
+   htTraverse(&htBaseFonts, destroyUF);
 
+   list = head = openFonts;
    if (head != null)
    do
    {
@@ -97,6 +84,7 @@ void fontDestroy()
    openFonts = null;
    heapDestroy(fontsHeap);
    htFree(&htUF, null);
+   htFree(&htBaseFonts, null);
 }
 
 static FontFile findFontFile(char* fontName)
@@ -438,12 +426,12 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
    int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
    int16 *charX = uf->charX + ch, *charY = uf->charY + ch;
    int32 widthsCount=0, maxH=0, w=0, offset=0;
-#ifdef ANDROID   
+#ifdef ANDROID
    int32 maxW = 1024;
-#else   
+#else
    int32 maxW = 2048;
 #endif
-   int32 widths[10] = {0}, *ww = widths; // currently char height 80 uses 4 width blocks
+   int32 widths[32] = {0}, *ww = widths; // eg: height 80 uses 4 width blocks, height 240 uses 9 blocks
    // compute char position to build the alpha map. the original map is splitted up to the maximum's width
    for (; ch <= last; ch++)
    {
@@ -451,7 +439,7 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
       if ((w+r) > maxW || ch == last)
       {
          if (ch == last) w += r; else widthsCount++;
-         if (ww == widths) maxW = (w+3) >> 2 << 2; // limits the next max widths to this one - align so we can optimize the loop
+         if (ww == widths || w > maxW) maxW = w; // limits the next max widths to this one - align so we can optimize the loop
          *ww++ = w;
          if ((w+r) > maxW) y += fontH;
          if (ch == last) w -= r; else w = 0;
@@ -485,45 +473,56 @@ bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* r
 }
 
 void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
-static void reset1Font(UserFont uf)
+static void reset1font(int32 i32, VoidP ptr)
 {
-   if (uf)
-   {
+   UserFont uf = (UserFont)ptr;
 #ifdef WP8
-      if (uf->textureId[0] != 0)
-         glDeleteTexture(null, uf->textureId, false);
-      uf->textureId[1] = 0;
+   if (uf->textureId[0] != 0)
+      glDeleteTexture(null, uf->textureId, false);
+   uf->textureId[1] = 0;
 #endif
-      uf->textureId[0] = 0;
-   }
+   uf->textureId[0] = 0;
 }
 #endif
 
 void resetFontTexture()
 {
    #ifdef __gl2_h_
-   int32 j;
-   for (j = 0; j < SIZE_LEN; j++)
-   {
-      reset1Font(baseFontN[j]);
-      reset1Font(baseFontB[j]);
-   }
+   htTraverse(&htBaseFonts, reset1font);
    #endif
 }
 
-static UserFont getBaseFont(bool bold, int32 size)
+static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int32 size)
 {
-   int32 i;
-   for (i = 0; i < SIZE_LEN-1; i++)
-      if (size <= realSizes[i])
-         break;
-   return bold ? baseFontB[i] : baseFontN[i];
+   char keyStr[64];
+   int32 key;
+   UserFont f = null;
+   
+   xstrprintf(keyStr, "%d|%d|%s",(int)bold, size, ff->name);
+   key = hashCode(keyStr);
+   
+   f = htGetPtr(&htBaseFonts, key);
+   if (f == null)
+   {
+      int32 i;
+      for (i = 0; i < SIZE_LEN-1; i++)
+         if (size <= realSizes[i])
+            break;
+   
+      useRealFont = true;
+      f = loadUserFont(currentContext, ff, bold, realSizes[i], ' ');
+      useRealFont = false;
+      if (f != null) 
+         htPutPtr(&htBaseFonts, key, f); 
+   }
+   return f;
 }
 
 UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size, JChar c)
 {
    char fullname[100];
    UserFont uf;
+   UserFont ubase;
    uint32 bitmapTableSize, bitIndexTableSize, numberOfChars, uIndex, hash;
    int32 nlen, vsize, i;
    TCZFile uftcz;
@@ -549,9 +548,8 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
       return uf;
 
    // in opengl, if using the default system font, create an alias of the default font size that will be resized in realtime
-   if (!useRealFont && baseFontN[0] != null && c <= 255 && xstrlen(ff->name) == xstrlen(defaultFontName) && xstrncasecmp(ff->name, defaultFontName, xstrlen(defaultFontName)) == 0)
+   if (!useRealFont && c <= 255 && (ubase = getBaseFont(currentContext, ff, bold, size)) != null)
    {
-      UserFont ubase = getBaseFont(bold, size);
       int32 ubaseH = ubase->fontP.maxHeight;
       uf = newXH(UserFont, fontsHeap);
       // take a copy of the font file

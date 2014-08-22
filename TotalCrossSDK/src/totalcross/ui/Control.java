@@ -304,7 +304,7 @@ public class Control extends GfxSurface
       {
          offscreen = null;
          Image offscreen = new Image(width,height);
-         paint2shot(offscreen.getGraphics());
+         paint2shot(offscreen.getGraphics(),false);
          this.offscreen = offscreen;
          this.offscreen.applyChanges();
       }
@@ -314,7 +314,7 @@ public class Control extends GfxSurface
       }
    }
    
-   void paint2shot(Graphics g)
+   void paint2shot(Graphics g, boolean shift)
    {
       if (!transparentBackground && parent != null && !(parent.parent != null && parent.parent instanceof ScrollContainer && parent.parent.transparentBackground)) // last clause prevents a white background on SAV's menu 
       {
@@ -324,7 +324,7 @@ public class Control extends GfxSurface
       g.setFont(font);
       if (asWindow != null)
          asWindow.paintWindowBackground(g);
-      paint2shot(g,this);
+      paint2shot(g,this,shift);
    }
 
    /** Releases the screen shot. */
@@ -334,23 +334,28 @@ public class Control extends GfxSurface
       Window.needsPaint = true;
    }
    
-   void paint2shot(Graphics g, Control top)
+   void paint2shot(Graphics g, Control top, boolean shift)
    {
       // if (asContainer != null || asWindow != null)
       //  this.refreshGraphics(g,0,top);
       if (this.asWindow == null) 
          this.onPaint(g);
       Window w = getParentWindow();      
-      int x0 = w.x;
-      int y0 = w.y;
+      int x0 = shift ? w.x : 0;
+      int y0 = shift ? w.y : 0;
+      Rect rtop = top.getRect();
       if (asContainer != null)
          for (Control child = asContainer.children; child != null; child = child.next)
             if (child.visible)
             {
-               child.refreshGraphics(g,0,top,x0,y0);
-               child.onPaint(g);
-               if (child.asContainer != null)
-                  child.asContainer.paint2shot(g,top);
+               Rect r = child.getAbsoluteRect();
+               if (rtop.intersects(r))
+               {
+                  child.refreshGraphics(g,0,top,x0,y0);
+                  child.onPaint(g);
+                  if (child.asContainer != null)
+                     child.asContainer.paint2shot(g,top,shift);
+               }
             }
    }
    

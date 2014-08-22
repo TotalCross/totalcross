@@ -682,10 +682,7 @@ public class MultiEdit extends Container implements Scrollable
                         else if (capitalise == Edit.ALL_LOWER) ke.key = Convert.toLowerCase((char) ke.key);
    
                         if (!isCharValid((char) ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
-                        {
-                           Sound.beep();
                            break;
-                        }
                      }
                      if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                      {
@@ -1078,7 +1075,7 @@ public class MultiEdit extends Container implements Scrollable
    {
       String pasted = Convert.replace(Vm.clipboardPaste(), Convert.CRLF, "\n");
       if (pasted == null || pasted.length() == 0)
-         Sound.beep();
+         ;
       else
       {
          showTip(this, Edit.pasteStr, 500, -1);

@@ -76,10 +76,11 @@ TC_API bool debug(const char *s, ...)
 bool debugStr(char *s)
 {
 #ifdef ANDROID   
-   if (debugMode == MODE_ADB && s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
+   if (s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
    {  
       __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
-      return true;
+      if (debugMode == MODE_ADB)
+         return true;
    }
 #elif defined darwin
    iphoneDebug(s);

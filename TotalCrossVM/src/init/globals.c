@@ -125,6 +125,7 @@ jmethodID jsetElapsed;
 #endif
 
 // objectmemorymanager.c
+bool disableGC = 0;
 bool runningGC = 0;
 bool runningFinalizer = 0;
 TCObjectArray freeList = { 0 }; // the array with lists of free objects

@@ -25,8 +25,11 @@ import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
 import tc.tools.deployer.ipa.*;
 import tc.tools.deployer.ipa.blob.*;
+
 import totalcross.sys.Convert;
 import totalcross.util.Hashtable;
+import totalcross.util.Vector;
+
 import com.dd.plist.*;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
@@ -101,12 +104,19 @@ public class Deployer4IPhoneIPA
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
+      Vector v = new Vector(extras);
+      Utils.preprocessPKG(v,true);
       if (extras.length > 0)
       {
          TFile pkgFolder = new TFile(appFolder, "pkg");
          pkgFolder.mkdir();
          for (int i = 0; i < extras.length; i++)
-            new TFile(extras[i]).cp(new TFile(pkgFolder, Utils.getFileName(extras[i])));
+         {
+            File ff = new File(extras[i]);
+            if (!ff.exists())
+               ff = new File(Utils.findPath(extras[i],true));            
+            new TFile(ff.getPath()).cp(new TFile(pkgFolder, Utils.getFileName(extras[i])));
+         }
       }
       
       // get references to the contents of the appFolder

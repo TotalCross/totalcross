@@ -61,7 +61,7 @@ public class Flick implements PenListener, TimerListener
     * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
     * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
     */
-   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE/10;
+   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE/(Settings.platform.equals(Settings.ANDROID) ? 10.0 : 5.0);
    public double flickAcceleration = defaultFlickAcceleration;
 
    // Device pixel densities in dpi.

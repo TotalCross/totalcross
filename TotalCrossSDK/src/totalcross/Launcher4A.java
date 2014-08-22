@@ -1597,6 +1597,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastSound = filename;
          lastSoundID =  player.load(filename, 1);
       }
-      player.play(lastSoundID, 1.0f, 1.0f, 0, 0, 1.0f);
+      for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, 1.0f, 1.0f, 0, 0, 1.0f) == 0 && i++ < 10;)
+         try {Thread.sleep(100);} catch (Exception e) {}
   }
 }

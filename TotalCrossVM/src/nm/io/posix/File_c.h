@@ -29,7 +29,7 @@
 
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
-#ifdef ANDROID
+#if defined(ANDROID) && !defined(LITEBASE_H)
 bool getSDCardPath(char* buf)
 {
    JNIEnv *env = getJNIEnv();                                      

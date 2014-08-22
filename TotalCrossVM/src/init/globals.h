@@ -110,7 +110,7 @@ extern jmethodID jsetElapsed;
 #endif
 
 // objectmemorymanager.c
-extern bool runningGC,runningFinalizer;
+extern bool runningGC,runningFinalizer,disableGC;
 extern TCObjectArray freeList; // the array with lists of free objects
 extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList; // locked objects list
