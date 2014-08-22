@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Byte4D
 {
-   public static final Class TYPE = Byte.class;
+   public static final Class<Byte> TYPE = Byte.class;
    byte v;
    
    public Byte4D(byte v)
@@ -26,6 +26,10 @@ public class Byte4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Byte4D valueOf(byte b)
+   {
+      return new Byte4D(b);
    }
    public static Byte4D valueOf(String s) throws NumberFormatException
    {

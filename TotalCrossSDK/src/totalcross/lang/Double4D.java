@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Double4D
 {
-   public static final Class TYPE = Double.class;
+   public static final Class<Double> TYPE = Double.class;
    double v;
    
    public Double4D(double v)
@@ -29,6 +29,10 @@ public class Double4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Double4D valueOf(double d)
+   {
+      return new Double4D(d);
    }
    public static Double4D valueOf(String s) throws NumberFormatException
    {

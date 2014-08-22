@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Character4D
 {
-   public static final Class TYPE = Character.class;
+   public static final Class<Character> TYPE = Character.class;
    char v;
    
    public Character4D(char v)
@@ -22,6 +22,10 @@ public class Character4D
    public int hashCode()
    {
       return v;
+   }
+   public static Character4D valueOf(char c)
+   {
+      return new Character4D(c);
    }
    public String toString()
    {

@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Long4D
 {
-   public static final Class TYPE = Long.class;
+   public static final Class<Long> TYPE = Long.class;
    long v;
    
    public Long4D(long v)
@@ -26,6 +26,10 @@ public class Long4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public Long4D valueOf(long l)
+   {
+      return new Long4D(l);
    }
    public static Long4D valueOf(String s) throws NumberFormatException
    {

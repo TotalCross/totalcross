@@ -4,7 +4,7 @@ package totalcross.lang;
 
 public class Float4D extends Double4D
 {
-   public static final Class TYPE = Float.class;
+   public static final Class<Float> TYPE = Float.class;
    double v;
    
    public Float4D(double v)

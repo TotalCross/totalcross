@@ -408,4 +408,9 @@ public class Vector
          items[j] = temp;
       }
    }
+   
+   public Object elementAt(int i)
+   {
+      return items[i];
+   }
 }

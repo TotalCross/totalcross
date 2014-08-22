@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Short4D
 {
-   public static final Class TYPE = Short.class;
+   public static final Class<Short> TYPE = Short.class;
    short v;
    
    public Short4D(short v)
@@ -26,6 +26,10 @@ public class Short4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Short4D valueOf(short s)
+   {
+      return new Short4D(s);
    }
    public static Short4D valueOf(String s) throws NumberFormatException
    {

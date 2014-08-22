@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Integer4D
 {
-   public static final Class TYPE = Integer.class;
+   public static final Class<Integer> TYPE = Integer.class;
    int v;
    
    public Integer4D(int v)
@@ -27,6 +27,11 @@ public class Integer4D
    {
       return super.toString()+" v="+v;
    }
+   public static Integer4D valueOf(int i)
+   {
+      return new Integer4D(i);
+   }
+   
    public static Integer4D valueOf(String s) throws NumberFormatException
    {
       try

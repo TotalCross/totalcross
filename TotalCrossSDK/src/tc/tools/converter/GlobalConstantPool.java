@@ -462,9 +462,15 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          value = value.substring(0,value.length()-2);
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
+      value = value.replace('/','.');
+      
+      if (value.equals("java.util.Vector")) value = "totalcross.util.Vector";
+      else
+      if (value.equals("java.util.Hashtable")) value = "totalcross.util.Hashtable";
+      else
       if (value.indexOf("StringBuilder") >= 0)
          value = value.replaceFirst("StringBuilder", "StringBuffer");
-      value = value.replace('/','.');
+
       if (htCls.exists(value))
          return ((TCValue)htCls.get(value)).index;
 
