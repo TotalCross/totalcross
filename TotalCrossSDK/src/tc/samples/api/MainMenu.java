@@ -40,6 +40,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
+@SuppressWarnings("rawtypes")
 public class MainMenu extends BaseContainer
 {
    private ButtonMenu menu;

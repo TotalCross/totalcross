@@ -317,7 +317,6 @@ public class BigDecimal implements Comparable
     * Translates a <code>long</code> unscaled value and an <code>int</code> scale into a <code>BigDecimal</code>. This "static factory method" is 
     * provided in preference to a <code>(long, int)</code> constructor because it allows for reuse of frequently used <code>BigDecimal</code> values.
     *
-    * @param unscaledVal Unscaled value of the <code>BigDecimal</code>.
     * @param scale Scale of the <code>BigDecimal</code>.
     * @return A <code>BigDecimal</code> whose value is <tt>(unscaledVal &times; 10<sup>-scale</sup>)</tt>.
     */
@@ -483,7 +482,7 @@ public class BigDecimal implements Comparable
     * Returns a <code>BigDecimal</code> whose value is <code>(this / val)</code>, and whose scale is <code>this.scale()</code>. If rounding must be 
     * performed to generate a result with the given scale, an <code>ArithmeticException</code> is thrown.
     * 
-    * @param val The value by which this <code>BigDecimal</code> is to be divided.
+    * @param divisor The value by which this <code>BigDecimal</code> is to be divided.
     * @return <code>(this / val)</code>.
     * @throws ArithmeticException If <code>val == 0</code>, or <code>this.scale()</code> is insufficient to represent the result of the division 
     * exactly.

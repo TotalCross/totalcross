@@ -24,7 +24,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 import totalcross.util.*;
 
 /**

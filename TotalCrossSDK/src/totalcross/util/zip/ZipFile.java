@@ -40,7 +40,7 @@ public class ZipFile
    public ZipEntry[] entries()
    {
       ZipEntry[] entries = new ZipEntry[nativeFile.size()];
-      Enumeration e = nativeFile.entries();
+      Enumeration<?> e = nativeFile.entries();
 
       for (int i = 0 ; e.hasMoreElements() ; i++)
          entries[i] = new ZipEntry(((java.util.zip.ZipEntry) e.nextElement()).getName());

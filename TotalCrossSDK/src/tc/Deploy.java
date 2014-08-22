@@ -161,7 +161,7 @@ public class Deploy
    //flsobral@tc115: just a mark for quick search, see class documentation above.
    static class JarClassPathLoader
    {
-      private static final Class[] parameters = new Class[] { URL.class };
+      private static final Class<?>[] parameters = new Class[] { URL.class };
 
       public static void addFile(String s) throws java.io.IOException
       {
@@ -177,7 +177,7 @@ public class Deploy
       public static void addURL(URL u) throws java.io.IOException
       {
          URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-         Class sysclass = URLClassLoader.class;
+         Class<?> sysclass = URLClassLoader.class;
 
          try
          {

@@ -24,7 +24,6 @@ import totalcross.ui.font.FontMetrics;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
-import totalcross.ui.media.Sound;
 import totalcross.util.Vector;
 
 /**

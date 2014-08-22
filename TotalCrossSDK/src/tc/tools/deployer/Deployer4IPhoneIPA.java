@@ -42,7 +42,7 @@ public class Deployer4IPhoneIPA
    public static final String appleRootCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleRootCA.pem");
    public static final String appleWWDRCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleWWDRCA.pem");
    
-   private Map ipaContents = new HashMap();
+   private Map<String, TFile> ipaContents = new HashMap<String, TFile>();
    
    MobileProvision Provision;
    
@@ -304,7 +304,7 @@ public class Deployer4IPhoneIPA
        SHA1Digest digest = new SHA1Digest();
        ByteArrayOutputStream aux = new ByteArrayOutputStream();
        
-       Set ignoredFiles = new HashSet();
+       Set<String> ignoredFiles = new HashSet<String>();
        ignoredFiles.add("Info.plist");
        ignoredFiles.add("CodeResources");
        ignoredFiles.add("_CodeSignature/CodeResources");
@@ -332,7 +332,7 @@ public class Deployer4IPhoneIPA
       return dictionary;
    }
    
-   private void fillCodeResourcesFiles(TFile rootFile, final Set ignoredFiles, final NSDictionary files, final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
+   private void fillCodeResourcesFiles(TFile rootFile, final Set<String> ignoredFiles, final NSDictionary files, final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
    {
       rootFile.listFiles(new FilenameFilter()
       {

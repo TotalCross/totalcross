@@ -67,7 +67,6 @@ import totalcross.util.*;
  * @see        Matcher#setTarget(java.lang.String)
  * @see        Matcher#setTarget(java.lang.String,int,int)
  * @see        Matcher#setTarget(char[],int,int)
- * @see        Matcher#setTarget(java.io.Reader,int)
  * @see        MatchResult
  * @see        MatchResult#group(int)
  * @see        MatchResult#start(int)
@@ -99,7 +98,7 @@ public class Pattern implements /*Serializable,*/REFlags{
    
   /**
    * Compiles an expression with default flags.
-   * @param      <code>regex</code>   the Perl5-compatible regular expression string.
+   * @param      regex   the Perl5-compatible regular expression string.
    * @exception  PatternSyntaxException  if the argument doesn't correspond to perl5 regex syntax.
    * @see        Pattern#Pattern(java.lang.String,java.lang.String)
    * @see        Pattern#Pattern(java.lang.String,int)
@@ -120,8 +119,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * <li><b>u</b> - predefined classes are regarded as belonging to Unicode, corresponds to REFLlags.UNICODE; this may yield some performance penalty.
    * <li><b>X</b> - compatibility with XML Schema, corresponds to REFLlags.XML_SCHEMA.
    * </ul>
-   * @param      <code>regex</code>  the Perl5-compatible regular expression string.
-   * @param      <code>flags</code>  the Perl5-compatible flags.
+   * @param      regex  the Perl5-compatible regular expression string.
+   * @param      flags  the Perl5-compatible flags.
    * @exception  PatternSyntaxException  if the argument doesn't correspond to perl5 regex syntax.
    * see REFlags
    */
@@ -141,8 +140,8 @@ public class Pattern implements /*Serializable,*/REFlags{
    * <li><b>REFLlags.UNICODE</b> - predefined classes are regarded as belonging to Unicode, corresponds to '<b>u</b>'; this may yield some performance penalty.
    * <li><b>REFLlags.XML_SCHEMA</b> - compatibility with XML Schema, corresponds to '<b>X</b>'.
    * </ul>
-   * @param      <code>regex</code>  the Perl5-compatible regular expression string.
-   * @param      <code>flags</code>  the Perl5-compatible flags.
+   * @param      regex  the Perl5-compatible regular expression string.
+   * @param      flags  the Perl5-compatible flags.
    * @exception  PatternSyntaxException  if the argument doesn't correspond to perl5 regex syntax.
    * see REFlags
    */
@@ -265,9 +264,9 @@ public class Pattern implements /*Serializable,*/REFlags{
    * Returns a matcher taking a text stream as target.
    * <b>Note that this is not a true POSIX-style stream matching</b>, i.e. the whole length of the text is preliminary read and stored in a char array.
    * @param text a text stream
-   * @param len the length to read from a stream; if <code>len</code> is <code>-1</code>, the whole stream is read in.
+   * @param length the length to read from a stream; if <code>len</code> is <code>-1</code>, the whole stream is read in.
    * @exception IOException indicates an IO problem
-   * @exception OutOfMemoryException if a stream is too lengthy
+   * @exception OutOfMemoryError if a stream is too lengthy
    */
    public Matcher matcher(CharStream text,int length)throws IOException{
       Matcher m=new Matcher(this);
@@ -313,7 +312,7 @@ public class Pattern implements /*Serializable,*/REFlags{
    * Note that a series of adjacent matches are regarded as a single separator.
    * The same as new RETokenizer(Pattern,String);
    * @see RETokenizer 
-   * @see RETokenizer#RETokenizer(jregex.Pattern,java.lang.String)
+   * @see RETokenizer#RETokenizer(totalcross.util.regex.Pattern,java.lang.String)
    * 
    */
    public RETokenizer tokenizer(String text){
@@ -325,7 +324,7 @@ public class Pattern implements /*Serializable,*/REFlags{
    * Note that a series of adjacent matches are regarded as a single separator.
    * The same as new RETokenizer(Pattern,char[],int,int);
    * @see RETokenizer 
-   * @see RETokenizer#RETokenizer(jregex.Pattern,char[],int,int)
+   * @see RETokenizer#RETokenizer(totalcross.util.regex.Pattern,char[],int,int)
    */
    public RETokenizer tokenizer(char[] data,int off,int len){
       return new RETokenizer(this,data,off,len);
@@ -336,7 +335,6 @@ public class Pattern implements /*Serializable,*/REFlags{
    * Note that a series of adjacent matches are regarded as a single separator.
    * The same as new RETokenizer(Pattern,Reader,int);
    * @see RETokenizer 
-   * @see RETokenizer#RETokenizer(jregex.Pattern,java.io.Reader,int)
    */
    public RETokenizer tokenizer(CharStream in,int length) throws IOException{
       return new RETokenizer(this,in,length);

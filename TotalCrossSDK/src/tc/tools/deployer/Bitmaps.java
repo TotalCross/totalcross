@@ -604,7 +604,7 @@ class IconStore extends Hashtable
       if (store.largestSplashImage == null)
          img =  whiteImage(width,height);
       else
-         img = store.largestSplashImage.getSmoothScaledInstance(width, height, store.largestSplashImage.transparentColor);
+         img = store.largestSplashImage.getSmoothScaledInstance(width, height);
       if (img.getHeight() != height || img.getWidth() != width)
          throw new ImageException("splash" + img.getHeight() + "x" + img.getWidth() + " must be " + width + "x" + height);
       return img;
@@ -621,7 +621,7 @@ class IconStore extends Hashtable
       if (store.largestSquareIcon == null)
          img =  whiteImage(size,size);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSquareIcon.transparentColor);
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size);
       if (img.getHeight() != size || img.getWidth() != size)
          throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + size + "x" + size);
       return img;
@@ -638,7 +638,7 @@ class IconStore extends Hashtable
       if (store.largestSquareIcon == null)
          img =  whiteImage(width,height);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(width, height, store.largestSquareIcon.transparentColor);
+         img = store.largestSquareIcon.getSmoothScaledInstance(width, height);
       if (img.getHeight() != height || img.getWidth() != width)
          throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + height + "x" + width);
       return img;

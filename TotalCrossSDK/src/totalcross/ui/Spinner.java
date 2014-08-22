@@ -115,8 +115,6 @@ public class Spinner extends Control implements Runnable
    {
       synchronized (lock)
       {
-         g.useAA = true;
-         
          int astep = 360/slots;
          int a = 360;
          

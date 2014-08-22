@@ -1022,7 +1022,7 @@ class Term implements REFlags{
          case '\\':
             if(i>=out) throw new PatternSyntaxException("Escape without a character");
             c=data[i++];
-            esc: switch(c){
+            switch(c){
                case 'f':
                   c='\f'; // form feed
                   break;

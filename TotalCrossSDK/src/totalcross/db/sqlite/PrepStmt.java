@@ -64,7 +64,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#finalize()
+     * @see totalcross.db.sqlite.Stmt#finalize()
      */
     
     protected void finalize() throws SQLException {
@@ -129,7 +129,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#executeBatch()
+     * @see totalcross.db.sqlite.Stmt#executeBatch()
      */
     
     public int[] executeBatch() throws SQLException {
@@ -148,7 +148,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#getUpdateCount()
+     * @see totalcross.db.sqlite.Stmt#getUpdateCount()
      */
     
     public int getUpdateCount() throws SQLException {
@@ -534,7 +534,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     // UNUSED ///////////////////////////////////////////////////////
 
     /**
-     * @see org.sqlite.Stmt#execute(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#execute(java.lang.String)
      */
     
     public boolean execute(String sql) throws SQLException {
@@ -542,7 +542,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#executeUpdate(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#executeUpdate(java.lang.String)
      */
     
     public int executeUpdate(String sql) throws SQLException {
@@ -550,7 +550,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#executeQuery(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#executeQuery(java.lang.String)
      */
     
     public ResultSet executeQuery(String sql) throws SQLException {
@@ -558,7 +558,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#addBatch(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#addBatch(java.lang.String)
      */
     
     public void addBatch(String sql) throws SQLException {

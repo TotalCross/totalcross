@@ -338,11 +338,11 @@ public class File extends RandomAccessStream
             try
             {
                // RandomAccessFile.getChannel()
-               java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel", null);
-               Object fileChannel = getChannel.invoke(fileEx, null);
+               java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel", (Class<?>)null);
+               Object fileChannel = getChannel.invoke((Object)fileEx, (Object)null);
                // FileChannel.tryLock() -> returns null if the file is already locked.
-               java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock", null);
-               if (tryLock.invoke(fileChannel, null) == null) 
+               java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock", (Class<?>)null);
+               if (tryLock.invoke((Object)fileChannel, (Object)null) == null) 
                {
                   // close everything and throw IOException.
                   ((java.io.RandomAccessFile) fileEx).close();

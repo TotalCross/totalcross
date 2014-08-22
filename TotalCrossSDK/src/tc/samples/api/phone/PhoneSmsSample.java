@@ -43,7 +43,7 @@ public class PhoneSmsSample extends BaseContainer
       add(edNumber = new Edit(), AFTER, TOP);
       edNumber.setKeyboard(Edit.KBD_NUMERIC);
       add(btSend = new Button("Send"), LEFT + 3, BOTTOM);
-      add(btReceive = new Button("Receive"), RIGHT - 3, BOTTOM);
+      //add(btReceive = new Button("Receive"), RIGHT - 3, BOTTOM);
       add(edMsg = new MultiEdit(), LEFT, AFTER, FILL, FIT, edNumber);
    }
 
@@ -58,7 +58,7 @@ public class PhoneSmsSample extends BaseContainer
                SMS.send(edNumber.getText(), edMsg.getText());
                new MessageBox("Status","SMS message sent.").popup();
             }
-            else if (event.target == btReceive)
+/*            else if (event.target == btReceive)
             {
                edMsg.setText("Program is blocked until a message is received.");
                edMsg.repaintNow();
@@ -66,7 +66,7 @@ public class PhoneSmsSample extends BaseContainer
                edNumber.setText(answer[0]);
                edMsg.setText(answer[1]);
             }
-         }
+*/         }
          catch (IOException e)
          {
             MessageBox.showException(e, false);

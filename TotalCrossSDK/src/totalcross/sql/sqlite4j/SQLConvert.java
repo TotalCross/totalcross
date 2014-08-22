@@ -43,9 +43,11 @@ class SQLConvert
       if (x != null)
          try
          {
-            int d = x.getDate();
-            int m = x.getMonth()+1;
-            int y = x.getYear()+1900;
+            java.util.Calendar c = java.util.Calendar.getInstance();
+            c.setTime(x);
+            int y = c.get(java.util.Calendar.YEAR);
+            int m = c.get(java.util.Calendar.MONTH) + 1;
+            int d = c.get(java.util.Calendar.DAY_OF_MONTH);
             return new Date(d, m, y);
          }
          catch (Exception e)

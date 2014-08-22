@@ -264,7 +264,7 @@ public final class Vm
          {
             // guich@120: the ideal were that all classes should be re-instantiated, because any static methods that
             // used the last MainWindow are now pointing to invalid data.
-            Class c = Class.forName(command);
+            Class<?> c = Class.forName(command);
             Launcher.instance.setNewMainWindow((totalcross.ui.MainWindow) c.newInstance(), args);
             status = 0;
          }

@@ -115,7 +115,7 @@ public class RASConnectionSOAP extends RASConnection
       ByteArrayStream bas = new ByteArrayStream(decodedResponse);
 
       int id = 0;
-      Class packetClass;
+      Class<?> packetClass;
       Packet packet = null;
 
       // Receive packet
@@ -123,7 +123,7 @@ public class RASConnectionSOAP extends RASConnection
       try
       {
          id = ds.readInt();
-         packetClass = (Class) Packet.packetClasses.get(id);
+         packetClass = (Class<?>) Packet.packetClasses.get(id);
          if (packetClass == null)
             throw new CommException("Unsupported packet received: " + id);
          packet = (Packet) packetClass.newInstance();

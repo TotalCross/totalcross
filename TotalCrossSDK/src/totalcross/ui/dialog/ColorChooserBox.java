@@ -23,7 +23,6 @@ import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 
 /** Shows a color dialog that can be used to select a color. There are several ways to choose a color:
  * <ul>

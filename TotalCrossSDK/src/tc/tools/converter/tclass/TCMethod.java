@@ -242,7 +242,7 @@ public final class TCMethod implements TCConstants
       if (J2TC.inProhibitedList(className,false) && !htAlreadyChecked.exists(params))
       {
          htAlreadyChecked.put(params,"");
-         Class c4D;
+         Class<?> c4D;
          // checks if class java.xxx exists as a totalcross.xxx4D class
          String tcClassName = "totalcross"+className.substring(4);
          try
@@ -264,7 +264,7 @@ public final class TCMethod implements TCConstants
          boolean found = false;
          if (method.equals(GlobalConstantPool.CONSTRUCTOR_NAME)) // is this a constructor?
          {
-            java.lang.reflect.Constructor[] consts = c4D.getDeclaredConstructors();
+            java.lang.reflect.Constructor<?>[] consts = c4D.getDeclaredConstructors();
             for (int i = 0; i < consts.length; i++)
                if (areParametersCompatible(params,consts[i].getParameterTypes()))
                {
@@ -337,7 +337,7 @@ public final class TCMethod implements TCConstants
    }
 
    // jiargs is what the user is calling; args is from the method retrieved with introspection in the totalcross/xxx4D class
-   private static boolean areParametersCompatible(int[] jiargs, Class[] args)
+   private static boolean areParametersCompatible(int[] jiargs, Class<?>[] args)
    {
       int jiargsLen = jiargs.length-2;
       int argsLen = args == null ? 0 : args.length;

@@ -1877,6 +1877,7 @@ public class Image extends GfxSurface
       {
       }
 
+      @SuppressWarnings("rawtypes")
       public void setProperties(java.util.Hashtable props)
       {
       }

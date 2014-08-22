@@ -86,7 +86,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private int[] screenPixels = new int[0];
    private int lookupR[], lookupG[], lookupB[], lookupGray[];
    private int pal685[];
-   private Class _class; // used by the openInputStream method.
+   private Class<?> _class; // used by the openInputStream method.
    protected MemoryImageSource screenMis;
    protected java.awt.Image screenImg;
    private AlertBox alert;
@@ -98,6 +98,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private boolean isDemo;
    private static String key;
 
+   @SuppressWarnings("deprecation")
    public Launcher()
    {
       totalcross.sys.Settings.showDesktopMessages = false; // guich@500_1: avoid messages when calling retroguard
@@ -145,6 +146,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("===================================");
    }
 
+   @SuppressWarnings("static-access")
    public void init()
    {
       boolean showInstructionsOnError = true;
@@ -174,7 +176,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                className = className.substring(0,className.length()-6);
             className = className.replace('/','.');
 
-            Class c = _class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
+            Class<?> c = _class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
             showInstructionsOnError = false;
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
@@ -229,9 +231,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       } // guich@120
    }
 
-   private static boolean checkIfMainClass(Class c)
+   private static boolean checkIfMainClass(Class<?> c)
    {
-      Class []interfaces = c.getInterfaces();
+      Class<?> []interfaces = c.getInterfaces();
       if (interfaces != null)
          for (int i = 0; i < interfaces.length; i++)
             if (interfaces[i].getName().equals("totalcross.MainClass"))
@@ -616,8 +618,21 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          CertificateFactory cf = CertificateFactory.getInstance("X.509");
          X509Certificate cert = (X509Certificate)cf.generateCertificate(inStream);
          Principal p = cert.getIssuerDN(); // OU=54434C423B6869C50039C06F, CN=Guilherme Campos Hazan, O=TotalCross MGP, L=FORTALEZA, ST=CE, C=BR
-         java.util.Date exp = cert.getNotAfter(); int iexp = (1900+exp.getYear()) * 10000 + (exp.getMonth()+1) * 100 + exp.getDate(); 
-         java.util.Date tod = new java.util.Date(); int itod = (1900+tod.getYear()) * 10000 + (tod.getMonth()+1) * 100 + tod.getDate();
+         java.util.Date exp = cert.getNotAfter(); 
+         java.util.Calendar c = java.util.Calendar.getInstance();
+         
+         c.setTime(exp);
+         int y = c.get(java.util.Calendar.YEAR);
+         int m = c.get(java.util.Calendar.MONTH) + 1;
+         int d = c.get(java.util.Calendar.DAY_OF_MONTH);
+         int iexp = y * 10000 + m * 100 + d;
+         
+         java.util.Date tod = new java.util.Date(); 
+         c.setTime(tod);
+         y = c.get(java.util.Calendar.YEAR);
+         m = c.get(java.util.Calendar.MONTH) + 1;
+         d = c.get(java.util.Calendar.DAY_OF_MONTH);
+         int itod = y * 10000 + m * 100 + d;
          boolean expired = itod >= iexp;
          System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+itod);
          System.out.println(p);
@@ -1183,6 +1198,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       return getPathOf(main)+"/";
    }
    /** used in some classes so they can correctly open files. now can open jar files. */
+   @SuppressWarnings("resource")
    public InputStream openInputStream(String path)
    {
       String sread = "\nopening for read "+path+"\n";
@@ -1699,6 +1715,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       } catch (SecurityException se) {totalcross.sys.Settings.userName = null;}
    }
 
+   @SuppressWarnings("deprecation")
    public void settingsRefresh(boolean callStoreSettings) // guich@tc115_81
    {
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33

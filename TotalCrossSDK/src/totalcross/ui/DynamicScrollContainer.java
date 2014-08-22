@@ -160,8 +160,6 @@ public class DynamicScrollContainer extends ScrollContainer
 
 	/**
 	 * Returns the top most {@link AbstractView} that starts within the viewable area
-	 * 
-	 * @return
 	 */
 	public AbstractView getTopMostVisibleView()
 	{
@@ -447,7 +445,6 @@ public class DynamicScrollContainer extends ScrollContainer
 		 * 
 		 * @param yStart
 		 * @param yEnd
-		 * @return
 		 */
 		public Vector getVisibleViewsVec(int yStart, int yEnd, int scrollDirection)
 		{
@@ -529,7 +526,6 @@ public class DynamicScrollContainer extends ScrollContainer
 		 * Returns view number <code>no<code> contained within this {@link DataSource}
 		 * 
 		 * @param no
-		 * @return
 		 */
 		public AbstractView getView(int no)
 		{
