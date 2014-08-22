@@ -1,4 +1,4 @@
-<h2>TotalCross 3.06 build </h2>
+<h2>TotalCross 3.06 build 2328</h2>
 . fixing transition effects for Window<br>
 . implemented support for TRANSITION_FADE to be used in Window. adde Image.applyFade. fixed Graphics.fadeScreen being different on java and device.<br>
 . fixed freezing that was occuring at desktop when you use /scale and try to update the screen from a thread.<br>
@@ -12,6 +12,19 @@
 . added File.writeAndClose<br>
 . increased flick speed by 2*<br>
 . fixed crash with fonts when using big font sizes<br>
+. removing ScrollPosition timer to avoid keeping them active<br>
+. fixed problem of a Toast being left on screen when a tooltip was being displayed.<br>
+. fixed Convert.toDouble("2014/03/03") resulting in 2014.0<br>
+. fixed pkg file handing when creating win32 and linux folders<br>
+. fixed open/close transition effect on win32<br>
+. fixed AnimationSample on win32 due to open transition effect.<br>
+. fixed Graphics.fadeScreen was different of Image.applyFade<br>
+. dont beep if we already have a visual effect of Windows's outside area<br>
+. takeScreenShot only take a shot of visible elements. this fixes the shot of the ImageBook taking too much time<br>
+. fixed TopMenu sample painting the screenshot at a shifted place; bug introduced with fade transition<br>
+. fixed gc being called almost 100x when loading the ImageBook in Win32.<br>
+. disable gc while loading images in ImageBookSample to improve performance<br>
+. fixed buffer overrun when loading font textures.<br>
 
 <h2>TotalCross 3.05 build 2300</h2>
 . fixed a glytch when drawing two pies with different radius<br>
