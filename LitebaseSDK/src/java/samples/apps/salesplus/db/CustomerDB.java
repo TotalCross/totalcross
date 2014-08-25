@@ -71,7 +71,7 @@ public class CustomerDB
     *
     * @param customer The customer to be inserted or updated.
     * @param update Indicates if the customer is being updated or inserted.
-    * @param return <code>1</code> if the record was updated or inserted; <code>0</code> if no record was updated.
+    * @return <code>1</code> if the record was updated or inserted; <code>0</code> if no record was updated.
     */
    public static int write(Customer customer, boolean update)
    {

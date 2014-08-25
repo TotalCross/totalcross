@@ -1770,7 +1770,7 @@ class LitebaseParser
     * Error message with code.
     * 
     * @param error The error code.
-    * @throws SQLParseException.
+    * @throws SQLParseException
     */
    void yyerror(int error) throws SQLParseException
    {
@@ -1782,7 +1782,7 @@ class LitebaseParser
     * Error message with a error message.
     * 
     * @param message The error message.
-    * @throws SQLParseException.
+    * @throws SQLParseException
     */
    private void yyerrorWithMessage(String message)
    {

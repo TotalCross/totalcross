@@ -87,7 +87,7 @@ public class OrderDB
    /**
     * Inserts or updates an order.
     *
-    * @param item The item related to the order.
+    * @param order The item related to the order.
     * @param update Indicates if the order is being updated or inserted.
     */
    public static void write(Order order, boolean update)
