@@ -213,12 +213,12 @@ public class PortConnector extends Stream
          mEnableReceiveTimeout.invoke(port,new Object[]{new Integer(100)});
 
          // thisInputStream = port.getInputStream();
-         Method mGetInputStream = cSerialPort.getMethod("getInputStream", (Class<?>[])null);
-         thisInputStream = mGetInputStream.invoke(port,(Object)null);
+         Method mGetInputStream = cSerialPort.getMethod("getInputStream");
+         thisInputStream = mGetInputStream.invoke(port);
 
          // thisOutputStream = port.getOutputStream();
-         Method mGetOutputStream = cSerialPort.getMethod("getOutputStream", (Class<?>[])null);
-         thisOutputStream = mGetOutputStream.invoke(port,(Object)null);
+         Method mGetOutputStream = cSerialPort.getMethod("getOutputStream");
+         thisOutputStream = mGetOutputStream.invoke(port);
 
          portConnectorRef = port;
       }
@@ -259,8 +259,8 @@ public class PortConnector extends Stream
       try
       {
          // ((javax.comm.SerialPort)thisPortConnector).close();
-         Method m = portConnectorRef.getClass().getSuperclass().getMethod("close", (Class<?>[])null);
-         m.invoke(portConnectorRef,(Object)null);
+         Method m = portConnectorRef.getClass().getSuperclass().getMethod("close");
+         m.invoke(portConnectorRef);
       }
       catch (Throwable e)
       {
@@ -312,8 +312,8 @@ public class PortConnector extends Stream
       try
       {
          //return ((java.io.InputStream)thisInputStream).available();
-         Method m = thisInputStream.getClass().getSuperclass().getMethod("available", (Class<?>[])null);
-         Integer i = (Integer)m.invoke(thisInputStream,(Object)null);
+         Method m = thisInputStream.getClass().getSuperclass().getMethod("available");
+         Integer i = (Integer)m.invoke(thisInputStream);
          return i.intValue();
       }
       catch (Throwable t)
@@ -448,8 +448,8 @@ public class PortConnector extends Stream
       {
          //java.util.Enumeration portIds = javax.comm.CommPortIdentifier.getPortIdentifiers();
          Class<?> cpi = Class.forName("javax.comm.CommPortIdentifier"); // get the class
-         Method mGetPortIdentifiers = cpi.getMethod("getPortIdentifiers", (Class<?>[])null);
-         java.util.Enumeration<?> portIds = (java.util.Enumeration<?>)mGetPortIdentifiers.invoke(null,(Object)null);
+         Method mGetPortIdentifiers = cpi.getMethod("getPortIdentifiers");
+         java.util.Enumeration<?> portIds = (java.util.Enumeration<?>)mGetPortIdentifiers.invoke(null);
 
          if (number == 0)
          {
@@ -457,8 +457,8 @@ public class PortConnector extends Stream
             {
                // return ((javax.comm.CommPortIdentifier)portIds.nextElement()).getName();
                Object oCommPortIdentifier = portIds.nextElement();
-               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName", (Class<?>[])null);
-               String portName = (String)mGetName.invoke(oCommPortIdentifier,(Object)null);
+               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName");
+               String portName = (String)mGetName.invoke(oCommPortIdentifier);
                return portName;
             }
          }
@@ -468,8 +468,8 @@ public class PortConnector extends Stream
             {
                // portName = ((javax.comm.CommPortIdentifier)portIds.nextElement()).getName();
                Object oCommPortIdentifier = portIds.nextElement();
-               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName", (Class<?>[])null);
-               String portName = (String)mGetName.invoke(oCommPortIdentifier,(Object)null);
+               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName");
+               String portName = (String)mGetName.invoke(oCommPortIdentifier);
                if (portName.indexOf(number+'0') != -1)
                   return portName;
             }
