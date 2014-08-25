@@ -1626,6 +1626,7 @@ public class Grid extends Container implements Scrollable
       ds = null;
       lastStartingRow = -1;
 
+      allChecked = false;
       gridOffset = itemsCount = 0;
       selectedLine = -1; // guich@580_4
       sbVert.setMaximum(0);
@@ -1663,7 +1664,7 @@ public class Grid extends Container implements Scrollable
          for (int i = itemsCount-1; i >= 0; i--)
             if (cc == null || cc.isEnabled(i+row0,0)) // guich@580_31
                items[i] = value;
-         checkedCount = check ? items.length : 0; // guich@tc123_30
+         checkedCount = check ? itemsCount : 0; // guich@tc123_30
       }
    }
 
