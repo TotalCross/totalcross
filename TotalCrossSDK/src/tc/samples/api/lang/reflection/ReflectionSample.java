@@ -66,7 +66,7 @@ public class ReflectionSample extends BaseContainer
                // in = d.number;
                int in = fnumb.getInt(o);
                // ba = d.getAge();
-               byte ba = ((Byte)mage.invoke((Object)o, (Object)null)).byteValue();
+               byte ba = ((Byte)mage.invoke(o, (Object[])null)).byteValue();
                // show in list
                log("name: "+sn);
                log("address: "+sa);

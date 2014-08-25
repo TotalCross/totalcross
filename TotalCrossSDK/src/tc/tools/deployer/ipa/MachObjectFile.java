@@ -22,7 +22,7 @@ public class MachObjectFile
 
    public byte[] data;
 
-   private List commands = new ArrayList();
+   private List<MachLoadCommand> commands = new ArrayList<MachLoadCommand>();
 
    private MachLoadCommandCodeSignature lc_signature = null;
    private MachLoadCommandSegment lc_segment = null;

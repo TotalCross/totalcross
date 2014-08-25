@@ -27,7 +27,7 @@ public class SilverlightZip
    private ZipOutputStream zos;
    private BlackHoleOutputStream nos = new BlackHoleOutputStream();
 
-   private Hashtable entries = new Hashtable();
+   private Hashtable<String,ZipEntry> entries = new Hashtable<String,ZipEntry>();
 
    public SilverlightZip(File outputFile) throws FileNotFoundException
    {

@@ -20,7 +20,7 @@ import de.schlichtherle.truezip.file.TVFS;
 
 public class InvalidateIPA
 {
-   private Map ipaContents = new HashMap();
+   private Map<String, TFile> ipaContents = new HashMap<String, TFile>();
 
    private MobileProvision Provision;
    private File appleRootCA;
@@ -213,7 +213,7 @@ public class InvalidateIPA
       SHA1Digest digest = new SHA1Digest();
       ByteArrayOutputStream aux = new ByteArrayOutputStream();
 
-      Set ignoredFiles = new HashSet();
+      Set<String> ignoredFiles = new HashSet<String>();
       ignoredFiles.add("Info.plist");
       ignoredFiles.add("CodeResources");
       ignoredFiles.add("_CodeSignature/CodeResources");
@@ -241,7 +241,7 @@ public class InvalidateIPA
       return dictionary;
    }
 
-   private void fillCodeResourcesFiles(TFile rootFile, final Set ignoredFiles, final NSDictionary files,
+   private void fillCodeResourcesFiles(TFile rootFile, final Set<String> ignoredFiles, final NSDictionary files,
          final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
    {
       rootFile.listFiles(new FilenameFilter()

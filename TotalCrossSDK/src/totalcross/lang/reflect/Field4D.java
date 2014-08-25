@@ -7,11 +7,11 @@ public class Field4D
    int primitiveType;
    Object nativeStruct; // TClass
    String name;
-   Class declaringClass; // class that owns this field
-   Class type;
+   Class<?> declaringClass; // class that owns this field
+   Class<?> type;
    String cached;
 
-   public Class getDeclaringClass()
+   public Class<?> getDeclaringClass()
    {
       return declaringClass;
    }
@@ -25,7 +25,7 @@ public class Field4D
    {
       return mod;
    }
-   public Class getType()
+   public Class<?> getType()
    {
       return type;
    }

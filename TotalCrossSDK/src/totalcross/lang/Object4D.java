@@ -70,5 +70,5 @@ public class Object4D
    /** Returns the Class that this object represents.
      * @since SuperWaba 3.4
      */
-   native public final Class getClass4D();
+   native public final Class<?> getClass4D();
 }

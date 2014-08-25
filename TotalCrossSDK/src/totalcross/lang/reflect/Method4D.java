@@ -5,14 +5,14 @@ public class Method4D implements Member4D
    int mod;
    Object nativeStruct; // TClass
    String name;
-   Class declaringClass; // class that owns this method
-   Class parameterTypes[];
-   Class exceptionTypes[];
-   Class type;
-   Class returnType;
+   Class<?> declaringClass; // class that owns this method
+   Class<?> parameterTypes[];
+   Class<?> exceptionTypes[];
+   Class<?> type;
+   Class<?> returnType;
    String cached;
 
-   public Class getDeclaringClass()
+   public Class<?> getDeclaringClass()
    {
       return declaringClass;
    }
@@ -26,7 +26,7 @@ public class Method4D implements Member4D
    {
       return mod;
    }
-   public Class getType()
+   public Class<?> getType()
    {
       return type;
    }
@@ -46,7 +46,7 @@ public class Method4D implements Member4D
       return declaringClass.getName().hashCode() ^ name.hashCode();
    }
    
-   static String toString(Class c)
+   static String toString(Class<?> c)
    {
       if (c == Void.TYPE) return "void";
       if (!c.isPrimitive())
@@ -77,16 +77,16 @@ public class Method4D implements Member4D
       return cached = sb.append(')').toString();
    }
    
-   public Class getReturnType()
+   public Class<?> getReturnType()
    {
       return returnType;
    }
    
-   public Class[] getParameterTypes()
+   public Class<?>[] getParameterTypes()
    {
       return parameterTypes;
    }
-   public Class[] getExceptionTypes()
+   public Class<?>[] getExceptionTypes()
    {
       return exceptionTypes;
    }

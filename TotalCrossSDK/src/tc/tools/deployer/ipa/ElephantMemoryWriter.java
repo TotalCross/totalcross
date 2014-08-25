@@ -8,7 +8,7 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
 {
    byte[] buffer;
    public int pos;
-   Stack positions = new Stack();
+   Stack<Integer> positions = new Stack<Integer>();
 
    public ElephantMemoryWriter()
    {
@@ -64,7 +64,7 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
 
    public void moveBack()
    {
-      this.pos = ((Integer) positions.pop()).intValue();
+      this.pos = positions.pop();
    }
 
    public int getPos()
@@ -84,7 +84,7 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
 
    public void memorize()
    {
-      positions.push(Integer.valueOf(this.pos));
+      positions.push(this.pos);
    }
 
    public int size()

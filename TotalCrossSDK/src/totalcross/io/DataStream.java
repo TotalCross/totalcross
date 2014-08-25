@@ -949,7 +949,7 @@ public class DataStream extends Stream
          totalcross.io.IOException
    {
       String className = readString();
-      Class c = Class.forName(className);
+      Class<?> c = Class.forName(className);
       Object o = c.newInstance();
       ((Storable) o).loadState(this);
       return o;
