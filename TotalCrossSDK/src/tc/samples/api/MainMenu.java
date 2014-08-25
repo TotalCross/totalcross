@@ -406,11 +406,5 @@ public class MainMenu extends BaseContainer
    public void onAddAgain()
    {
       getParentWindow().setMenuBar(null);
-      java.util.Hashtable<String, Integer> ht = new java.util.Hashtable<String, Integer>(10);
-      ht.containsKey("dede");
-      ht.put("babi",7);
-      ht.put("dedé",5);
-      ht.put("juju",2);
-      
    }
 }
