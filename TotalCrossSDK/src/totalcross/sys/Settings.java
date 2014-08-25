@@ -491,6 +491,7 @@ public final class Settings
     * Setting this field to true allows the execution of multiple instances of the same application.
     * When the application is started, it first checks if there is a running instance of the same application. If so, the
     * running instance is moved to the foreground and the starting application exits.
+    * This only works for Win32 and WinCE.
     * @since TotalCross 1.0
     */
    public static boolean multipleInstances;
