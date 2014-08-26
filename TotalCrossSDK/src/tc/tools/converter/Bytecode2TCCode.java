@@ -2025,7 +2025,9 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       if (name.equals("totalcross/util/Dictionary4D")) 
          return "java/util/Dictionary4D";
       if (name.equals("totalcross/util/Enumeration4D")) 
-         return "java/util/Enumeration4D"; 
+         return "java/util/Enumeration4D";
+      if (name.equals("totalcross/util/HashSet4D")) 
+         return "java/util/HashSet4D"; 
       if (name.equals("totalcross/util/Iterator4D")) 
          return "java/util/Iterator4D";
       if (name.equals("totalcross/util/List4D")) 
