@@ -652,7 +652,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @param key the key
    * @return the bucket number
    */
-  final int hash(Object key)
+  public final int hash(Object key)
   {
     return key == null ? 0 : Math.abs(key.hashCode() % buckets.length);
   }
