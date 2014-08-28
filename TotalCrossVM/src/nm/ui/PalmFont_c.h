@@ -65,7 +65,11 @@ bool fontInit(Context currentContext)
 static void destroyUF(int32 i32, VoidP ptr)
 {
    UserFont uf = (UserFont)ptr;
-   xfree(uf->tempbufs);
+   if (uf != null && uf->tempbufssize > 0)   
+   {
+      xfree(uf->tempbufs);
+      uf->tempbufssize = 0;
+   }   
 }
 
 void fontDestroy()
