@@ -68,6 +68,7 @@ public class FlowContainer extends Container
       lines = 1;
       // position first control
       Control c = children;
+      if (c == null) return;
       c.setRect(LEFT,TOP,PREFERRED,PREFERRED);
       int g = Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? hgap*fmH/100 : hgap;
       // position next controls
