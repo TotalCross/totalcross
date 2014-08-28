@@ -1827,7 +1827,7 @@ public class Control extends GfxSurface
     * A scroll occurs before a flick is started.
     * @since TotalCross 1.3
     */
-   protected boolean hadParentScrolled()
+   public boolean hadParentScrolled()
    {
       for (Container c = parent; c != null; c = c.parent)
          if (c instanceof Scrollable && ((Scrollable)c).wasScrolled())
