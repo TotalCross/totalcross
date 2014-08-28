@@ -587,7 +587,6 @@ public class MultiEdit extends Container implements Scrollable
                   blinkTimer = addTimer(350);
                break;
             case ControlEvent.FOCUS_OUT:
-               lastInsertPos = insertPos;
                focusOut();
                break;
             case KeyEvent.KEY_PRESS:
@@ -997,7 +996,7 @@ public class MultiEdit extends Container implements Scrollable
          boolean insertChanged = (newInsertPos != startSelectPos);
          if (insertChanged && cursorShowing) 
             Window.needsPaint = true; // erase cursor at old insert position
-         insertPos = newInsertPos;
+         lastInsertPos = insertPos = newInsertPos;
          if (redraw || insertChanged)
             Window.needsPaint = true;
       }
