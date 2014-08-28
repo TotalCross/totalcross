@@ -1495,10 +1495,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
                String[] commands =
                   {
-                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
+                     "logcat -v threadtime -d DEBUG:I TotalCross:I *:S >/sdcard/IssueReport/bugreport.txt \n",
+/*                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
                      "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
                      "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
-                  };
+*/                  };
       /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
                    "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
                    "logcat -d >> /sdcard/IssueReport/bugreport.txt\n",
@@ -1516,7 +1517,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   l2 = f.length();
                   if (l1 == l2)
                      break;
-               }            
+               }
                long end = System.currentTimeMillis();
                AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/bugreport.txt in "+(end-ini)+"ms with "+l2+" bytes");
                // zip the bugreport
