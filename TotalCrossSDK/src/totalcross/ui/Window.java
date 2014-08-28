@@ -237,11 +237,9 @@ public class Window extends Container
    /** Used to hide the virtual keyboard */
    public static final int SIP_HIDE = 10000;
    /** Used to place the virtual keyboard on top of screen.
-   * @deprecated Use SIP_SHOW/SIP_HIDE only
    */
    public static final int SIP_TOP = 10001;
    /** Used to place the virtual keyboard on bottom of screen.
-    * @deprecated Use SIP_SHOW/SIP_HIDE only
     */
    public static final int SIP_BOTTOM = 10002;
    /** Used to show the virtual keyboard, without changing the position */

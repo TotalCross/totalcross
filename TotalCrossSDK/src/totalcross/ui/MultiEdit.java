@@ -24,7 +24,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 import totalcross.util.*;
 
 /**
@@ -71,6 +70,8 @@ public class MultiEdit extends Container implements Scrollable
    public static boolean hasCursorWhenNotEditable = true; // guich@340_23
    /** Set to true if you want the control to decide whether to gain/lose focus automatically, without having to press ACTION. */ 
    protected boolean improvedGeographicalFocus;
+   /** The last insert position before this control looses focus. */
+   public int lastInsertPos;
 
    protected IntVector first = new IntVector(5); //JR@0.4.  indices of first character of each line. the value of last is len(text)+1
    private int firstToDraw; //JR@0.4
@@ -995,7 +996,7 @@ public class MultiEdit extends Container implements Scrollable
          boolean insertChanged = (newInsertPos != startSelectPos);
          if (insertChanged && cursorShowing) 
             Window.needsPaint = true; // erase cursor at old insert position
-         insertPos = newInsertPos;
+         lastInsertPos = insertPos = newInsertPos;
          if (redraw || insertChanged)
             Window.needsPaint = true;
       }
@@ -1439,5 +1440,14 @@ public class MultiEdit extends Container implements Scrollable
    protected boolean willOpenKeyboard()
    {
       return editable && (kbdType == Edit.KBD_DEFAULT || kbdType == Edit.KBD_KEYBOARD);
+   }
+   
+   /** Sets the cursor position, ranging from 0 to the text' length.
+    * You can use this with <code>lastInsertPos</code> to recover cursor position. 
+    */
+   public void setCursorPos(int pos)
+   {
+      if (0 <= pos && pos < chars.length())
+         insertPos = pos;
    }
 }
