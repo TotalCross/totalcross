@@ -74,19 +74,19 @@ public class ComboBox extends Container
     * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
     * popup list, but keep others with the PopupMenu, you can do something like:
     * <pre>
-    * public class MyListBox extends ListBox
-    * {
-    *    public MyListBox(String[] items)
-    *    {
-    *       super(items);
-    *    }
-    * }
-    * ...
-    * ComboBox cb = new ComboBox(new MyListBox(items));
+    *  // at the begining of your program:
+    *  ComboBox.usePopupMenu = true;
+    *  // when you want to create the standalone ComboBox
+    *  ComboBox.usePopupMenu = false; // turn flag off
+    *  .. create the ComboBox
+    *  ComboBox.usePopupMenu = true; // turn flag on again
     * </pre>
+    * An internal copy of the flag is set at the constructor.
     * @since TotalCross 1.5
     */
    public static boolean usePopupMenu = true;
+   
+   private static boolean _usePopupMenu;
    
    /** Creates an empty ComboBox */
    public ComboBox()
@@ -115,6 +115,7 @@ public class ComboBox extends Container
    /** Constructs a ComboBox with the given PopList. */
    public ComboBox(ComboBoxDropDown userPopList) // guich@340_36
    {
+      _usePopupMenu = usePopupMenu;
       clearValueInt = defaultClearValueInt;
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
@@ -485,7 +486,7 @@ public class ComboBox extends Container
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
-      if (uiAndroid && usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
+      if (uiAndroid && _usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
       {
          if (pop.lb.itemCount == 0)
             opened = false;
