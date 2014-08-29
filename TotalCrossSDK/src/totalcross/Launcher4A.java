@@ -1495,9 +1495,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
                String[] commands =
                   {
-                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
-                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
-                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
+                     "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/bugreport.txt \n",
+//                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
+//                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
+//                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
                   };
       /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
                    "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
@@ -1528,31 +1529,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                // check if there's a SIGSEGV, which indicates an vm abort
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
                byte[] buf = new byte[8192];
-               final String USELESS = /* #00  pc */ "/data/data/totalcross.appmbgs/lib/libtcvm.so (executeMethod)";
-               boolean hasSIGSEGV = false;
-               for (int n,idx; (n = fin.read(buf)) > 0;)
-               {
-                  String s = new String(buf,0,n);
-                  if ((idx = s.indexOf(">>> totalcross")) >= 0 && 
-                      (idx = s.indexOf("SIGSEGV",idx)) >= 0 && 
-                      (idx = s.indexOf("#00  pc",idx)) >= 0) // #00  pc 0016d748  /data/data/totalcross.appmbgs/lib/libtcvm.so (executeMethod)
-                  {
-                     if (!s.substring(idx+18,Math.min(s.length(),idx+18+USELESS.length())).equals(USELESS))
-                        hasSIGSEGV = true;
-                  }
+               for (int n; (n = fin.read(buf)) > 0;)
                   zout.write(buf,0,n);
-               }
                zout.closeEntry();
                zout.close();
                fin.close();
                end = System.currentTimeMillis();
                ff.delete();
                AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
-               if (!hasSIGSEGV)
-               {
-                  AndroidUtils.debug("SIGSEGV NOT FOUND; Aborting email.");
-                  return;
-               }
                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                Display display = wm.getDefaultDisplay();
                
