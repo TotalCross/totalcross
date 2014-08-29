@@ -795,6 +795,11 @@ CompatibilityResult areClassesCompatible(Context currentContext, TCClass s, Char
    className = s->name;
    sIsArray = s->flags.isArray;
 tryAgain:
+   if (ident == null || className == null)
+   {
+      debug("areClassesCompatible: %X (%s) / %X (%s)", ident, ident ? ident : "null", className, className ? className : "null");
+      return NOT_COMPATIBLE;
+   }
    tIsArray = *ident == '[';
    if (strEq(ident,className)) // quick test
       result = COMPATIBLE;

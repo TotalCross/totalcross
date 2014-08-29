@@ -66,8 +66,17 @@ static void tcvmCreateException(Context currentContext, Throwable t, int32 pc, i
          vsprintf(str, message, args);
          va_end(args);
       }
-      if (t == OutOfMemoryError)
+      if (t == OutOfMemoryError)           
+      {
          currentContext->thrownException = currentContext->OutOfMemoryErrorObj;
+         if (message)
+         {
+            *Throwable_msg(currentContext->thrownException) = createStringObjectFromCharP(currentContext, str,-1);
+            setObjectLock(*Throwable_msg(currentContext->thrownException), UNLOCKED);
+            if (*Throwable_msg(currentContext->thrownException) == null)
+               debug("out of memory error reason: %s",str);
+         }
+      }
       else
          createException(currentContext, t, false, message != null ? str : null);
       fillStackTrace(currentContext, currentContext->thrownException, pc, currentContext->callStack + decTrace);
@@ -947,7 +956,11 @@ handleException:
          }
          mutex = Lock_mutex(o);
          if (mutex != null) // guich@tc126_62
-            RELEASE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         {
+            MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
+            if (pmutex)
+               RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+         }
          NEXT_OP
       }
       // end of opcodes

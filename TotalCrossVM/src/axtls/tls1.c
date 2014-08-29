@@ -278,7 +278,7 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl)
 #ifdef CONFIG_SSL_CERT_VERIFICATION
     x509_free(ssl->x509_ctx);
 #endif
-
+    memset(ssl,0,sizeof(SSL)); // guich
     free(ssl);
 }
 
