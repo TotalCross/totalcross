@@ -45,8 +45,6 @@ public class SpinnerSample extends BaseContainer
          {
             bt.setVisible(false);
             l.setVisible(true);
-            sp1.start();
-            sp2.start();
             int end = Vm.getTimeStamp()+5000;
             while (Vm.getTimeStamp() < end)
             {
@@ -61,8 +59,6 @@ public class SpinnerSample extends BaseContainer
 
    public void onRemove() // stop spinners at end
    {
-      sp1.stop();
-      sp2.stop();
       l.setVisible(false);
       bt.setVisible(true);
    }
