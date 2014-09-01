@@ -676,8 +676,12 @@ class Index
             
             if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
-               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);  
-               while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos].record < record);
+               // juliana@281_1: corrected a possible index corruption.
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
+                   && (keyFound.record >= record || keyFound.record == Key.NO_VALUE))
+                  pos--;
+               while (++pos < size && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
+                   && (keyFound.record < record || keyFound.record == Key.NO_VALUE));
             }
 
             if (children[0] == Node.LEAF)
