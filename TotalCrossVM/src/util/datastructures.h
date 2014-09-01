@@ -200,9 +200,11 @@ bool type##sContains(type##s *l, type value)        \
    if (head)                                        \
       do                                            \
       {                                             \
-      	if (l->value == value)                      \
-      		 return true;                             \
-        l = l->next;                                \
+         if (l == null)                             \
+            return false;                           \
+      	if (l->value == value)                     \
+      		return true;                            \
+         l = l->next;                               \
       } while (head != l);                          \
    return false;                                    \
 }
