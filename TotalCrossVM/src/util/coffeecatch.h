@@ -1,3 +1,5 @@
+// http://blog.httrack.com/blog/2013/08/23/catching-posix-signals-on-android/
+
 /* CoffeeCatch, a tiny native signal handler/catcher for JNI code.
  * (especially for Android/Dalvik)
  *
