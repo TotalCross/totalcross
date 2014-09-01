@@ -327,15 +327,15 @@ TC_API void heapDestroyPrivate(Heap m, bool added2list)
    {
       MemBlock mb = m->current->next;
       //xmemzero(m->current->block, ARRAYLEN(m->current->block)); // erase the block to make sure that no pointers inside of it are reused
-      freeArray(m->current->block);
-      xfree(m->current);
+      SIG_TRY {freeArray(m->current->block);} SIG_CATCH {debug(SIG_MSG);} SIG_END
+      SIG_TRY {xfree(m->current);           } SIG_CATCH {debug(SIG_MSG);} SIG_END
       m->current = mb;
    }
    m->finalizerFunc = null;
    if (added2list)
    {
       LOCKVAR(createdHeaps);
-      createdHeaps = VoidPsRemove(createdHeaps, m, null);
+      SIG_TRY {createdHeaps = VoidPsRemove(createdHeaps, m, null); } SIG_CATCH {debug(SIG_MSG);} SIG_END
       UNLOCKVAR(createdHeaps);
    }
    xfree(m);
