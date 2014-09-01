@@ -30,10 +30,10 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 306;
+   public static int version = 307;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "3.06";
+   public static String versionStr = "3.07";
     
    /** Current build number.
     * @since TotalCross 1.53 
