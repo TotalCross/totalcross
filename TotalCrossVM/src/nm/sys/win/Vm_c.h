@@ -67,6 +67,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    xmemzero(&si, sizeof(si));
    startInfo = &si;
 #endif
+#ifdef WINCE
    if (lstrcmp(szCommand,TEXT("unregister service"))==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll")),srv;
@@ -93,6 +94,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       FreeLibrary(dll);
       return srv != 0;
    }
+#endif
 #endif
    //XXX all below should be reworked
 #if !defined WP8
