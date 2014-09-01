@@ -117,6 +117,7 @@
 #if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
 #include "dlmalloc.h"                                                         
 #endif
+#include "../util/coffeecatch.h"
 #include "xtypes.h"
 #include "../event/specialkeys.h"
 #include "mem.h"
