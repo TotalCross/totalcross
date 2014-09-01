@@ -90,7 +90,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    destroyGlobals();
 }
 
-static int32 exitProgram(int32 exitcode)
+SIG_SAFE int32 exitProgram(int32 exitcode)
 {            
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
@@ -98,15 +98,23 @@ static int32 exitProgram(int32 exitcode)
    if (isMainWindow) destroyEvent();
    if (exitCode != 106)
       storeSettings(true);
-   destroyAll();
-   mainClass = null;
+   SIG_TRY
+   {
+      destroyAll();
+      mainClass = null;
+   }
+   SIG_CATCH
+   {
+      debug(SIG_MSG);
+   }
+   SIG_END
    if (rebootOnExit) // set by Vm.exitAndReboot
       rebootDevice();      
-#ifdef ANDROID
+   #ifdef ANDROID
    privateExit(exitcode); // exit from the android vm
-#elif defined(WP8)
+   #elif defined(WP8)
    appExit();
-#endif
+   #endif
    return exitCode;
 }
 
