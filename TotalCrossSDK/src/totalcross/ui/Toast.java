@@ -36,12 +36,14 @@ public class Toast
     * Toast.show("\n"+message+"\n", 2000);
     * </pre>
     * See the public static fields of this class to show how you can customize the appearance.
+    * Calling with a nulled message will make the last toast disappear.
     */
    public static void show(final String message, final int delay)
    {
       final Window parent = Window.getTopMost();
       if (btn != null)
          parent.remove(btn);
+      if (message != null)
       try
       {
          btn = new Button("");

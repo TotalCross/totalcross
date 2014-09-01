@@ -86,7 +86,7 @@ public class ComboBox extends Container
     */
    public static boolean usePopupMenu = true;
    
-   private static boolean _usePopupMenu;
+   private boolean _usePopupMenu;
    
    /** Creates an empty ComboBox */
    public ComboBox()
