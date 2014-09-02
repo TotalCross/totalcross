@@ -462,11 +462,6 @@ static void coffeecatch_copy_context(native_code_handler_struct *const t,
   _Unwind_Backtrace(coffeecatch_unwind_callback, t);
 #endif
 
-  if (t->frames_size != 0) {
-    DEBUG(print("called _Unwind_Backtrace()\n"));
-  } else {
-    DEBUG(print("called _Unwind_Backtrace(), but no traces\n"));
-  }
 #endif
 }
 
