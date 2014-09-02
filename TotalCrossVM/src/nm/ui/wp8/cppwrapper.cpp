@@ -244,7 +244,7 @@ void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
 }
 
-void dxDeleteTexture(TCObject img, int32* textureId,)
+void dxDeleteTexture(TCObject img, int32* textureId)
 {
    Direct3DBase::getLastInstance()->deleteTexture(img, textureId);
 }
