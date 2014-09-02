@@ -283,7 +283,10 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
          recreateTextures(true); // first we delete the textures before the gl context is invalid
       else
       if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
-         recreateTextures(false); // now we set the changed flag for all textures
+      {
+         if (lastWindow)
+            recreateTextures(false); // now we set the changed flag for all textures
+      }
       else
          surfaceWillChange = true; // block all screen updates
       return;
