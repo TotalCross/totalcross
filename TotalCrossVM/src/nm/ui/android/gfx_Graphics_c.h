@@ -58,7 +58,6 @@ static EGLContext _context;
 static void destroyEGL();
 static bool surfaceWillChange;
 
-VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
 extern float ftransp[16];
 extern float f255[256];
@@ -413,7 +412,7 @@ void initTexture()
    glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    int32 i;
    PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
@@ -465,23 +464,18 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          *textureId = 0;
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       }
-      else
-      if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
-         imgTextures = VoidPsAdd(imgTextures, img, null);
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    if (!onlyAlpha) xfree(pt0);
 }
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId)
 {
    if (textureId != null && textureId[0] != 0)
    {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
       *textureId = 0;
    }
-   if (updateList && VoidPsContains(imgTextures, img))
-      imgTextures = VoidPsRemove(imgTextures, img, null);
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)

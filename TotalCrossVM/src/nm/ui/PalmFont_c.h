@@ -424,7 +424,7 @@ Cleanup: /* CLEANUP */
 
 #ifdef __gl2_h_
 bool lowmemDevice;
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha);
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 static bool buildFontTexture(Context currentContext, UserFont uf)
 {  
    int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
@@ -470,19 +470,19 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
 bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* ret)
 {
    if (uf->textureId[0] == 0 && (uf->maxW != 0 || buildFontTexture(currentContext, uf)))
-      glLoadTexture(currentContext, null, uf->textureId, (Pixel*)uf->textureAlphas, uf->maxW, uf->maxH, false, true);
+      glLoadTexture(currentContext, null, uf->textureId, (Pixel*)uf->textureAlphas, uf->maxW, uf->maxH, true);
    ret[0] = uf->charX[ch];
    ret[1] = uf->charY[ch];
    return uf->textureId[0] != 0;
 }
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
+void glDeleteTexture(TCObject img, int32* textureId);
 static void reset1font(int32 i32, VoidP ptr)
 {
    UserFont uf = (UserFont)ptr;
 #ifdef WP8
    if (uf->textureId[0] != 0)
-      glDeleteTexture(null, uf->textureId, false);
+      glDeleteTexture(null, uf->textureId);
    uf->textureId[1] = 0;
 #endif
    uf->textureId[0] = 0;

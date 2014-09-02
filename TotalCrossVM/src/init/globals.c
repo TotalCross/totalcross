@@ -80,6 +80,7 @@ TScreenSurface screen = { 0 };
 TCClass uiColorsClass = { 0 };
 int32* shiftScreenColorP = NULL;
 int32* vistaFadeStepP = NULL;
+TCClass imageClass;
 
 // mem.c
 #ifdef INITIAL_MEM

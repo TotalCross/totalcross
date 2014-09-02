@@ -21,8 +21,8 @@
 #include "openglWrapper.h"
 #endif
 
-void applyChanges(Context currentContext, TCObject obj, bool updateList);
-void freeTexture(TCObject obj, bool updateList);
+void applyChanges(Context currentContext, TCObject obj);
+void freeTexture(TCObject obj);
 
 static void setCurrentFrame(TCObject obj, int32 nr)
 {
@@ -690,7 +690,7 @@ void setTransparentColor(TCObject obj, Pixel color)
 }
 
 #ifdef __gl2_h_                         
-void applyChanges(Context currentContext, TCObject obj, bool updateList)
+void applyChanges(Context currentContext, TCObject obj)
 {
    int32 frameCount = Image_frameCount(obj);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
@@ -700,57 +700,61 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
       int32 height = Image_height(obj);
 #ifdef WP8
-      glDeleteTexture(obj, Image_textureId(obj), false);
+      glDeleteTexture(obj, Image_textureId(obj));
 #endif
-      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList,false);
+      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
    }
    Image_changed(obj) = false;
 }
 
-void freeTexture(TCObject img, bool updateList)
+void freeTexture(TCObject img)
 {                                       
-   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null, updateList); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
+   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
 }
 
-extern VoidPs* imgTextures;
 void resetFontTexture(); // PalmFont_c.h
 #ifdef ANDROID
+static void onImage(int32 delTex, VoidP ptr)
+{
+   TCObject img = (TCObject)ptr;
+   debugStr("visiting %X");
+   if (Image_textureId(img))
+   {
+      if (delTex)
+         glDeleteTexture(img, Image_textureId(img));
+      else
+      {
+         Image_textureId(img)[0] = 0;
+         Image_textureId(img)[1] = 0;
+      }
+      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+   }
+}
+
 void recreateTextures(bool delTex) // called by opengl when the application changes the opengl surface
 {
-   VoidPs* current = imgTextures;        
-   if (current)
-      do
-      {    
-         TCObject img = (TCObject)current->value;
-         if (delTex)
-            glDeleteTexture(img, Image_textureId(img), false);
-         else
-         {
-            Image_textureId(img)[0] = 0;
-            Image_textureId(img)[1] = 0;
-         }
-         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;      
-      } while (imgTextures != current);
+   visitImages(onImage, delTex);
    if (!delTex)
       resetFontTexture();
 }
 #else
+static void onImage(int32 dumb, VoidP ptr)
+{
+   TCObject img = (TCObject)ptr;
+   if (Image_textureId(img))
+   {
+      #ifndef WP8 // in wp8 we have to delete the texture when applying the changes
+      // glDeleteTexture(img, Image_textureId(img)); - TODO use this on iOS
+      Image_textureId(img)[0] = 0;
+      Image_textureId(img)[1] = 0;
+      #endif
+      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+   }
+}
+
 void recreateTextures() // called by opengl when the application changes the opengl surface
 {
-   VoidPs* current = imgTextures;        
-   if (current)
-      do
-      {    
-         TCObject img = (TCObject)current->value;
-#ifndef WP8 // in wp8 we have to delete the texture when applying the changes
-         // glDeleteTexture(img, Image_textureId(img), false); - TODO use this on iOS
-         Image_textureId(img)[0] = 0;
-         Image_textureId(img)[1] = 0;
-#endif
-         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;      
-      } while (imgTextures != current);
+   visitImages(onImage, 0);
    resetFontTexture();
 }
 #endif // ANDROID

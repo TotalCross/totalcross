@@ -30,7 +30,6 @@ static int32 desiredglShiftY;
 
 int32 setShiftYonNextUpdateScreen;
 
-VoidPs* imgTextures;
 TCGfloat ftransp[16];
 int32 appW, appH, glShiftY;
 int32 flen;
@@ -194,24 +193,14 @@ void glSetLineWidth(int32 w)
 {
 }
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId)
 {
-   dxDeleteTexture(img, textureId, updateList);
-   if (updateList && img && VoidPsContains(imgTextures, img))
-   {
-      int n1 = listGetCount(imgTextures);
-      imgTextures = VoidPsRemove(imgTextures, img, null);
-      int n2 = listGetCount(imgTextures);
-      if (n1 - 1 != n2)
-         debug("**** tinha %d, tirou 1 mas ficou %d", n1, n2);
-   }
+   dxDeleteTexture(img, textureId);
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
-   dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList, onlyAlpha);
-   if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
-      imgTextures = VoidPsAdd(imgTextures, img, null);
+   dxLoadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)

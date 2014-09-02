@@ -647,6 +647,7 @@ bool initClassInfo()
    SETUP_MUTEX;
    INIT_MUTEX(classLoaderLock);
    htLoadedClasses = htNew(0xFF,null);
+   imageClass = loadClass(mainContext, "totalcross.ui.image.Image", false);
    return true;
 }
 

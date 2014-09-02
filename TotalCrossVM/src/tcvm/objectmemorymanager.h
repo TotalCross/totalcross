@@ -72,6 +72,7 @@ typedef void (*gcFunc)(Context currentContext);
 bool initObjectMemoryManager();
 void destroyObjectMemoryManager();
 void runFinalizers();
+void visitImages(VisitElementFunc onImage, int32 param);
 
 /// Changes the object lock state, in a NON-RECURSIVE way.
 /// Locking an object: The object will be removed from the used list and will never be garbage collected.
