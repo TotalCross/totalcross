@@ -26,19 +26,24 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
    hostnameStr = CFStringCreateWithCString(NULL, hostname, kCFStringEncodingASCII);
    if (hostnameStr == NULL)
       return -2;
+   [(id)hostnameStr autorelease];
    
    host = CFHostCreateWithName(NULL, hostnameStr);
    if (host == NULL)
       return -3;
+   [(id)host autorelease];
    
    success = CFHostStartInfoResolution(host, kCFHostAddresses, &error);
    if (!success)
-      { debug("error in CFHostStartInfoResolution: %d %d",(int)error.domain,(int)error.error);
-   return -4;}
+   {
+      debug("error in CFHostStartInfoResolution: %d %d",(int)error.domain,(int)error.error);
+      return -4;
+   }
    
    addresses = CFHostGetAddressing(host, &success);
    if (!success)
       return -5;
+   [(id)addresses autorelease];
    
    if (addresses != NULL)
    {
@@ -57,24 +62,5 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
          }
       }
    }
-   
-   CFRelease(host);
-      
-   
-//   CFSocketRef socketRef = CFSocketCreate(
-//                              NULL,       // default allocator
-//                              PF_INET,
-//                              SOCK_STREAM,
-//                              IPPROTO_TCP,
-//                              0,          // kCFSocketNoCallBack
-//                              NULL,       // no callback function
-//                              NULL);         // CFSocketContext
-//   
-//   if (socketRef == NULL)
-//      return -1;
-//   
-//   int handle = CFSocketGetNative(socketRef);
-//   CFRelease(socketRef);
-   
    return 0;
 }

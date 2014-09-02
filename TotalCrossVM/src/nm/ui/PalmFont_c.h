@@ -443,7 +443,7 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
       if ((w+r) > maxW || ch == last)
       {
          if (ch == last) w += r; else widthsCount++;
-         if (ww == widths || w > maxW) maxW = w; // limits the next max widths to this one - align so we can optimize the loop
+         //if (ww == widths || w > maxW) maxW = w; // limits the next max widths to this one - align so we can optimize the loop
          *ww++ = w;
          if ((w+r) > maxW) y += fontH;
          if (ch == last) w -= r; else w = 0;

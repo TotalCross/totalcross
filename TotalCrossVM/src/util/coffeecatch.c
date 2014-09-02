@@ -51,20 +51,6 @@
 #include <dlfcn.h>
 #include "coffeecatch.h"
 
-/*#define NDK_DEBUG 1*/
-#if ( defined(NDK_DEBUG) && ( NDK_DEBUG == 1 ) )
-#define DEBUG(A) do { A; } while(0)
-#define FD_ERRNO 2
-static void print(const char *const s) {
-  size_t count;
-  for(count = 0; s[count] != '\0'; count++) ;
-  /* write() is async-signal-safe. */
-  (void) write(FD_ERRNO, s, count);
-}
-#else
-#define DEBUG(A)
-#endif
-
 /* Alternative stack size. */
 #define SIG_STACK_BUFFER_SIZE SIGSTKSZ
 
@@ -295,8 +281,6 @@ coffeecatch_unwind_callback(struct _Unwind_Context* context, void* arg) {
 
   const uintptr_t ip = _Unwind_GetIP(context);
 
-  DEBUG(print("called unwind callback\n"));
-
   if (ip != 0x0) {
     if (s->frames_skip == 0) {
       s->frames[s->frames_size] = ip;
@@ -309,7 +293,6 @@ coffeecatch_unwind_callback(struct _Unwind_Context* context, void* arg) {
   if (s->frames_size == BACKTRACE_FRAMES_MAX) {
     return _URC_END_OF_STACK;
   } else {
-    DEBUG(print("returned _URC_OK\n"));
     return _URC_OK;
   }
 }
@@ -343,12 +326,8 @@ static ssize_t coffeecatch_backtrace_signal(siginfo_t* si, void* sc,
                                      max_depth);
       release_my_map_info_list(info);
       return size;
-    } else {
-      DEBUG(print("symbols not founs in libcorkscrew.so\n"));
     }
     dlclose(libcorkscrew);
-  } else {
-    DEBUG(print("libcorkscrew.so could not be loaded\n"));
   }
   return -1;
 }
@@ -417,8 +396,6 @@ static void coffeecatch_try_jump_userland(native_code_handler_struct*
 
   /* Valid context ? */
   if (t != NULL && t->ctx_is_set) {
-    DEBUG(print("calling siglongjmp()\n"));
-
     /* Invalidate the context */
     t->ctx_is_set = 0;
 
@@ -521,8 +498,6 @@ static void coffeecatch_signal_pass(const int code, siginfo_t *const si,
                                     void *const sc) {
   native_code_handler_struct *t;
 
-  DEBUG(print("caught signal\n"));
-
   /* Call the "real" Java handler for JIT and internals. */
   coffeecatch_call_old_signal_handler(code, si, sc);
 
@@ -548,7 +523,6 @@ static void coffeecatch_signal_pass(const int code, siginfo_t *const si,
   }
 
   /* Nope. (abort() is signal-safe) */
-  DEBUG(print("calling abort()\n"));
   signal(SIGABRT, SIG_DFL);
   abort();
 }
@@ -560,8 +534,6 @@ static void coffeecatch_signal_abort(const int code, siginfo_t *const si,
   native_code_handler_struct *t;
 
   (void) sc; /* UNUSED */
-
-  DEBUG(print("caught abort\n"));
 
   /* Ensure we do not deadlock. Default of ALRM is to die.
    * (signal() and alarm() are signal-safe) */
@@ -582,11 +554,9 @@ static void coffeecatch_signal_abort(const int code, siginfo_t *const si,
   }
 
   /* No such restore point, call old signal handler then. */
-  DEBUG(print("calling old signal handler\n"));
   coffeecatch_call_old_signal_handler(code, si, sc);
 
   /* Nope. (abort() is signal-safe) */
-  DEBUG(print("calling abort()\n"));
   abort();
 }
 
@@ -596,8 +566,6 @@ static int coffeecatch_handler_setup_global(void) {
     size_t i;
     struct sigaction sa_abort;
     struct sigaction sa_pass;
-
-    DEBUG(print("installing global signal handlers\n"));
 
     /* Setup handler structure. */
     memset(&sa_abort, 0, sizeof(sa_abort));
@@ -632,7 +600,6 @@ static int coffeecatch_handler_setup_global(void) {
       return -1;
     }
 
-    DEBUG(print("installed global signal handlers\n"));
   }
 
   /* OK. */
@@ -646,8 +613,6 @@ static int coffeecatch_handler_setup_global(void) {
  **/
 static int coffeecatch_handler_setup(int setup_thread) {
   int code;
-
-  DEBUG(print("setup for a new handler\n"));
 
   /* Initialize globals. */
   if (pthread_mutex_lock(&native_code_g.mutex) != 0) {
@@ -668,8 +633,6 @@ static int coffeecatch_handler_setup(int setup_thread) {
     stack_t stack;
     native_code_handler_struct *const t =
       calloc(sizeof(native_code_handler_struct), 1);
-
-    DEBUG(print("installing thread alternative stack\n"));
 
     /* Initialize structure */
     t->stack_buffer_size = SIG_STACK_BUFFER_SIZE;
@@ -693,8 +656,6 @@ static int coffeecatch_handler_setup(int setup_thread) {
     if (pthread_setspecific(native_code_thread, t) != 0) {
       return -1;
     }
-
-    DEBUG(print("installed thread alternative stack\n"));
   }
 
   /* OK. */
@@ -712,7 +673,6 @@ static int coffeecatch_handler_cleanup() {
   /* Cleanup locals. */
   native_code_handler_struct *const t = coffeecatch_get();
   if (t != NULL) {
-    DEBUG(print("removing thread alternative stack\n"));
 
     /* Erase thread-specific value now (detach). */
     if (pthread_setspecific(native_code_thread, NULL) != 0) {
@@ -720,21 +680,18 @@ static int coffeecatch_handler_cleanup() {
     }
 
     /* Restore previous alternative stack. */
-    if (sigaltstack(&t->stack_old, NULL) != 0) {
-      return -1;
-    }
-
-    /* Free alternative stack */
-    if (t->stack_buffer != NULL) {
-      free(t->stack_buffer);
-      t->stack_buffer = NULL;
-      t->stack_buffer_size = 0;
+    if (sigaltstack(&t->stack_old, NULL) == 0)
+    {
+       /* Free alternative stack */
+       if (t->stack_buffer != NULL) {
+          free(t->stack_buffer);
+          t->stack_buffer = NULL;
+          t->stack_buffer_size = 0;
+       }
     }
 
     /* Free structure. */
     free(t);
-
-    DEBUG(print("removed thread alternative stack\n"));
   }
 
   /* Cleanup globals. */
@@ -744,8 +701,6 @@ static int coffeecatch_handler_cleanup() {
   assert(native_code_g.initialized != 0);
   if (--native_code_g.initialized == 0) {
     size_t i;
-
-    DEBUG(print("removing global signal handlers\n"));
 
     /* Restore signal handler. */
     for(i = 0; native_sig_catch[i] != 0; i++) {
@@ -764,8 +719,6 @@ static int coffeecatch_handler_cleanup() {
     if (pthread_key_delete(native_code_thread) != 0) {
       assert(! "pthread_key_delete() failed");
     }
-
-    DEBUG(print("removed global signal handlers\n"));
   }
   if (pthread_mutex_unlock(&native_code_g.mutex) != 0) {
     assert(! "pthread_mutex_unlock() failed");
@@ -885,6 +838,7 @@ static const char* coffeecatch_desc_sig(int sig, int code) {
       return "Child";
     }
     break;
+#ifndef darwin
   case SIGPOLL:
     switch(code) {
     case POLL_IN:
@@ -903,6 +857,7 @@ static const char* coffeecatch_desc_sig(int sig, int code) {
       return "Pool";
     }
     break;
+#endif
   case SIGABRT:
     return "Process abort signal";
   case SIGALRM:
@@ -1009,7 +964,9 @@ uintptr_t coffeecatch_get_backtrace(ssize_t index) {
  * Get the program counter, given a pointer to a ucontext_t context.
  **/
 static uintptr_t coffeecatch_get_pc_from_ucontext(const ucontext_t *uc) {
-#if (defined(__arm__))
+#ifdef darwin
+   return 0;//uc->uc_mcontext->fs;
+#elif (defined(__arm__))
   return uc->uc_mcontext.arm_pc;
 #elif (defined(__x86_64__))
   return uc->uc_mcontext.gregs[REG_RIP];
