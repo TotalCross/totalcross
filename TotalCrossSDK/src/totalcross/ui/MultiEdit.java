@@ -583,7 +583,7 @@ public class MultiEdit extends Container implements Scrollable
                if (!Settings.fingerTouch)
                   showSip(); // guich@tc126_21
                hasFocus = true;
-               if (blinkTimer == null) 
+               if (blinkTimer == null && (editable || hasCursorWhenNotEditable)) 
                   blinkTimer = addTimer(350);
                break;
             case ControlEvent.FOCUS_OUT:
