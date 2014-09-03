@@ -792,6 +792,11 @@ CompatibilityResult areClassesCompatible(Context currentContext, TCClass s, Char
    bool sIsArray,tIsArray;
    CharP className;
 
+   if (s == null)
+   {
+      debug("areClassesCompatible: class s is null");
+      return NOT_COMPATIBLE;
+   }
    className = s->name;
    sIsArray = s->flags.isArray;
 tryAgain:
