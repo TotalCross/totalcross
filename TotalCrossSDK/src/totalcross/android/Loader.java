@@ -19,19 +19,20 @@ package totalcross.android;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
+import android.database.*;
 import android.net.*;
 import android.os.*;
+import android.provider.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
+import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 import totalcross.*;
 import totalcross.android.compat.*;
-
-import com.intermec.aidc.*; 
-import java.util.concurrent.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -42,6 +43,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int JUST_QUIT = 1234324331;
    private static final int MAP_RETURN = 1234324332;
    private static final int ZXING_RETURN = 1234324333;
+   private static final int EXTCAMERA_RETURN = 1234324334;
    private static final int CAMERA_PIC_REQUEST = 1337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
@@ -99,6 +101,16 @@ public class Loader extends Activity implements BarcodeReadListener
             Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
             Launcher4A.callingZXing = false;
             break;
+         case EXTCAMERA_RETURN:
+            String[] projection = { MediaStore.Images.Media.DATA}; 
+            Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null); 
+            int column_index_data = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA); 
+            cursor.moveToFirst(); 
+            String capturedImageFilePath = cursor.getString(column_index_data);
+            if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN))
+               resultCode = RESULT_OK+1; // error
+            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            break;
       }
    }
    
@@ -137,11 +149,23 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
 
+   private String imageFN;
    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation)
    {
       try
       {
+         imageFN = s;
          String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+         if (quality == 999)
+         {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");  
+            capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);  
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);  
+            startActivityForResult(intent, EXTCAMERA_RETURN);
+         }
+         else
          if ("SK GT-7340".equals(deviceId))
          {
             Uri outputFileUri = Uri.fromFile(new File(s));
@@ -317,6 +341,7 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
    
+   Uri capturedImageURI;
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -327,32 +352,18 @@ public class Loader extends Activity implements BarcodeReadListener
       {
          if (command.equalsIgnoreCase("broadcast"))
          {
-            try 
-            {               
-               Intent intent = new Intent();
-               if (launchCode != 0)
-                  intent.addFlags(launchCode);
-               intent.setAction(args);
-               sendBroadcast(intent);
-            } 
-            catch (Exception e) 
-            {
-               AndroidUtils.handleException(e,false);
-            }
+            Intent intent = new Intent();
+            if (launchCode != 0)
+               intent.addFlags(launchCode);
+            intent.setAction(args);
+            sendBroadcast(intent);
          }
          else
          if (command.equalsIgnoreCase("cmd"))
          {
-            try 
-            {               
-               java.lang.Process process = Runtime.getRuntime().exec(args);
-               if (wait)
-                  process.waitFor();
-            } 
-            catch (IOException e) 
-            {
-               AndroidUtils.handleException(e,false);
-            }
+            java.lang.Process process = Runtime.getRuntime().exec(args);
+            if (wait)
+               process.waitFor();
          }
          else
          if (command.equalsIgnoreCase("kingsoft"))
@@ -443,13 +454,13 @@ public class Loader extends Activity implements BarcodeReadListener
             else
                startActivity(i);
          }
-         if (!wait)
-            finish();
       }
       catch (Throwable e)
       {
          AndroidUtils.handleException(e,false);
       }
+      if (!wait)
+         finish();
    }
    
    public void onConfigurationChanged(Configuration config)
