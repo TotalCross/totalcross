@@ -220,15 +220,13 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 static GLint lastProg=-1;
 static Pixel lrpLastRGB = -2, lastTextRGB, lastTextId;
 static float lastAlphaMask = -1;
-static bool setCurrentProgram(GLint prog)
+static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
    {
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
       if (lastProg != textureProgram && lastProg != textProgram) lrpLastRGB = -2;
-      return true;
    }
-   return false;
 }
 static void resetGlobals()
 {
@@ -314,7 +312,6 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
-   setCurrentProgram(pointsProgram);
    pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
    pointsXYA = glGetAttribLocation(pointsProgram, "a_xya"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(pointsXYA); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
@@ -324,22 +321,21 @@ static void initPoints()
 static int pixLastRGB = -1;
 void glDrawPixels(int32 n, int32 rgb)
 {
-   bool changed = setCurrentProgram(pointsProgram);
+   setCurrentProgram(pointsProgram);
    if (pixLastRGB != rgb)
    {
       PixelConv pc;
       pc.pixel = pixLastRGB = rgb;
       glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
    }
-   if (changed)
-      {glVertexAttribPointer(pointsXYA, 3, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR}
+   glVertexAttribPointer(pointsXYA, 3, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
    glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
 }
 
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
 {
    PixelConv pc;
-   bool changed = setCurrentProgram(lrpProgram);
+   setCurrentProgram(lrpProgram);
    pc.pixel = rgb;
    pc.a = 255;
    if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
@@ -356,7 +352,7 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
          *glV++ = (float)(*x++ + tx);
          *glV++ = (float)(*y++ + ty);
       }
-      if (changed) {glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR}
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
       glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0, n); GL_CHECK_ERROR
    }
 }
@@ -364,7 +360,6 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
 static void initShade()
 {
    shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
-   setCurrentProgram(shadeProgram);
    shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
    shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
@@ -374,9 +369,9 @@ static void initShade()
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   bool changed = setCurrentProgram(shadeProgram);
-   if (changed) {glVertexAttribPointer(shadeColor, 3, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR}
-   if (changed) {glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR}
+   setCurrentProgram(shadeProgram);
+   glVertexAttribPointer(shadeColor, 3, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
+   glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
 
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
@@ -411,7 +406,6 @@ void initTexture()
 {
    // images
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
-   setCurrentProgram(textureProgram);
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
    textureAlpha = glGetUniformLocation(textureProgram, "alpha"); GL_CHECK_ERROR
    textureProjMat = glGetUniformLocation(textureProgram, "projectionMatrix"); GL_CHECK_ERROR
@@ -420,7 +414,6 @@ void initTexture()
 
    // text char
    textProgram = createProgram(TEXT_VERTEX_CODE, TEXT_FRAGMENT_CODE);
-   setCurrentProgram(textProgram);
    textPoint = glGetAttribLocation(textProgram, "vertexPoint"); GL_CHECK_ERROR
    textRGB   = glGetUniformLocation(textProgram, "rgb"); GL_CHECK_ERROR
    textProjMat = glGetUniformLocation(textProgram, "projectionMatrix"); GL_CHECK_ERROR
@@ -501,7 +494,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 
    float* coords = texcoords;
 
-   bool changed = setCurrentProgram(isDrawText ? textProgram : textureProgram);
+   setCurrentProgram(isDrawText ? textProgram : textureProgram);
    if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
       {glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR}
 
@@ -517,7 +510,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[9 ] = coords[13] = dstY;
    coords[11] = coords[15] = top;
    
-   if (changed) {glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR}
+   glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    if (!isDrawText && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
    {
@@ -535,14 +528,12 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 void initLineRectPoint()
 {
    lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
-   setCurrentProgram(lrpProgram);
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
    lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
    glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
    lrpProjMat = glGetUniformLocation(lrpProgram, "projectionMatrix"); GL_CHECK_ERROR
 
    dotProgram = createProgram(DOT_VERTEX_CODE, DOT_FRAGMENT_CODE);
-   setCurrentProgram(dotProgram);
    dotColor1 = glGetUniformLocation(dotProgram, "color1"); GL_CHECK_ERROR
    dotColor2 = glGetUniformLocation(dotProgram, "color2"); GL_CHECK_ERROR
    dotPosition = glGetAttribLocation(dotProgram, "a_Position"); GL_CHECK_ERROR
@@ -553,8 +544,8 @@ void initLineRectPoint()
 
 void glSetLineWidth(int32 w)
 {
-   bool changed = setCurrentProgram(lrpProgram);
-   if (changed) {glLineWidth(w); GL_CHECK_ERROR}
+   setCurrentProgram(lrpProgram);
+   glLineWidth(w); GL_CHECK_ERROR
 }
 
 typedef enum
@@ -567,8 +558,8 @@ typedef enum
 void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a, LRPType type)
 {
    float* coords = lrcoords;
-   bool changed = setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
-   if (changed) {glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR}
+   setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
+   glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
