@@ -717,7 +717,6 @@ void resetFontTexture(); // PalmFont_c.h
 static void onImage(int32 delTex, VoidP ptr)
 {
    TCObject img = (TCObject)ptr;
-   debugStr("visiting %X");
    if (Image_textureId(img))
    {
       if (delTex)
