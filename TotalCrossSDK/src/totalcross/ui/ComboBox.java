@@ -36,6 +36,9 @@ import totalcross.util.*;
 
 public class ComboBox extends Container
 {
+   public static final int ARROWSTYLE_DOWNDOT = 1;
+   public static final int ARROWSTYLE_PAGEFLIP = 1;
+   public static int arrowStyle = ARROWSTYLE_PAGEFLIP;
    protected ComboBoxDropDown pop;
    Button btn;
    private boolean armed;
@@ -320,15 +323,16 @@ public class ComboBox extends Container
    private Image getArrowImage() 
    {
       Image img;
+      Image img0 = arrowStyle == ARROWSTYLE_PAGEFLIP ? Resources.comboArrow2 : Resources.comboArrow;
       int s = fmH;
       try
       {
-         img = Resources.comboArrow.getSmoothScaledInstance(s,s);
+         img = img0.getSmoothScaledInstance(s,s);
          img.applyColor2(backColor);
       }
       catch (ImageException e)
       {
-         img = Resources.comboArrow;
+         img = img0;
       }
       return img;
    }
