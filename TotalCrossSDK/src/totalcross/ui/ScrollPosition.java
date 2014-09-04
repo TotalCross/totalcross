@@ -46,6 +46,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    private boolean verticalScroll,isPenDown,autoHide = AUTO_HIDE;
    private Image npback,handle;
    private TimerEvent timer;
+   private int visibleCount;
    
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
@@ -81,7 +82,6 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       this(VERTICAL);
    }
 
-   int visibleCount;
    /** Constructs a ScrollPosition with the given orientation.
     * @see #VERTICAL
     * @see #HORIZONTAL
@@ -342,10 +342,13 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    {
       if (timer != null && timer.triggered)
       {
-         if (visible && autoHide && visibleCount > 1)
+         if (visible && autoHide && visibleCount >= 0)
          {
             if (--visibleCount == 0)
+            {
                visible = false;
+               Window.needsPaint = true;
+            }
             return;
          }
          if (visible && autoHide && Flick.currentFlick == null && !isPenDown)
