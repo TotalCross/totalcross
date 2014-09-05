@@ -819,8 +819,12 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, &key, true)]; // juliana@201_3
          if (pos < (size = curr->size) && keyEquals(context, &key, keyFound, numberColumns, plainDB)) 
          {
-            while (pos >= 0 && keyEquals(context, &key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos--].record >= record);  
-            while (++pos < size && keyEquals(context, &key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos].record < record);
+            // juliana@281_1: corrected a possible index corruption.
+            while (pos >= 0 && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record >= record || keyFound->record == NO_VALUE))
+               pos--;
+            while (++pos < size && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record < record || keyFound->record == NO_VALUE));
          }
          
          if (nodeIsLeaf(curr))
