@@ -820,8 +820,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          if (pos < (size = curr->size) && keyEquals(context, &key, keyFound, numberColumns, plainDB)) 
          {
             // juliana@281_1: corrected a possible index corruption.
-			   while (pos >= 0 && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
-             && (keyFound->record >= record || keyFound->record == NO_VALUE))
+            while (pos >= 0 && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record >= record || keyFound->record == NO_VALUE))
                pos--;
             while (++pos < size && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
                 && (keyFound->record < record || keyFound->record == NO_VALUE));
