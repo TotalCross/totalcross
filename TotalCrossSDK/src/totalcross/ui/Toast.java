@@ -40,42 +40,48 @@ public class Toast
     */
    public static void show(final String message, final int delay)
    {
-      final Window parent = Window.getTopMost();
-      if (btn != null)
-         parent.remove(btn);
-      if (message != null)
-      try
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
       {
-         btn = new Button("");
-         btn.eventsEnabled = false;
-         btn.setText(message);
-         btn.setBorder(Button.BORDER_ROUND);
-         btn.setBackForeColors(backColor, foreColor);
-         btn.setFont(font);
-         FadeAnimation.maxFade = fade;
-         parent.add(btn, posX, posY, width, height);
-         animation = FadeAnimation.create(btn, true, null, -1);
-         animation.delayAfterFinish = delay;
-         final Button thisBtn = btn;
-         animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
+         public void run()
          {
-            public void onAnimationFinished(ControlAnimation anim)
+            final Window parent = Window.getTopMost();
+            if (btn != null)
+               parent.remove(btn);
+            if (message != null)
+            try
             {
-               if (thisBtn == btn) // button may change if user tries to show several Toasts
+               btn = new Button("");
+               btn.eventsEnabled = false;
+               btn.setText(message);
+               btn.setBorder(Button.BORDER_ROUND);
+               btn.setBackForeColors(backColor, foreColor);
+               btn.setFont(font);
+               FadeAnimation.maxFade = fade;
+               parent.add(btn, posX, posY, width, height);
+               animation = FadeAnimation.create(btn, true, null, -1);
+               animation.delayAfterFinish = delay;
+               final Button thisBtn = btn;
+               animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
                {
-                  if (btn != null)
-                     parent.remove(btn);
-                  btn = null;
-               }
+                  public void onAnimationFinished(ControlAnimation anim)
+                  {
+                     if (thisBtn == btn) // button may change if user tries to show several Toasts
+                     {
+                        if (btn != null)
+                           parent.remove(btn);
+                        btn = null;
+                     }
+                  }
+               }, -1)).start();
+               FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
             }
-         }, -1)).start();
-         FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         btn = null;
-      }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+               btn = null;
+            }
+         }
+      });
 
    }
 }

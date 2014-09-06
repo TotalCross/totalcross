@@ -2211,7 +2211,12 @@ public class Grid extends Container implements Scrollable
          col--;
       if (itemsCount > 1 && vItems != null)
       {
-         int sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(getItem(1)[col]) : sortTypes[col]; // guich@565_1: support numeric sort
+         int sortType,lin=0;
+         do
+         {
+            sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(getItem(lin)[col]) : sortTypes[col]; // guich@565_1: support numeric sort
+         }
+         while (sortType == Convert.SORT_STRING && ++lin < itemsCount);
          try
          {
             // autodetect the sort type
@@ -2229,7 +2234,7 @@ public class Grid extends Container implements Scrollable
             // try again, moving invalid values out of the sort
             int lowestValid = 0, highestValid = itemsCount-1;
             Date d = sortType == Convert.SORT_DATE ? new Date() : null;
-            for (int i = 0, n = itemsCount; i < n; i++)
+            for (int i = 0; i <= highestValid; i++)
             {
                try 
                {
