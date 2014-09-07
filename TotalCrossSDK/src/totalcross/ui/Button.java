@@ -118,7 +118,7 @@ public class Button extends Control
    public int AUTO_DELAY = 150;
    
    protected String text;
-   protected Image img,imgDis;
+   protected Image img,img0,imgDis;
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
@@ -214,6 +214,10 @@ public class Button extends Control
     * @since TotalCross 2.0
     */
    public boolean underlinedText;
+   
+   /** The height of the image based on the button's height, ranging from 1 to 100. Used when an image is passed as parameter in one of the constructors. 
+    */
+   public int imageHeightFactor;
 
    /** Creates a button that shows the given text and image.
     * @param text The text to be displayed
@@ -227,7 +231,7 @@ public class Button extends Control
    public Button(String text, Image img, int textPosition, int gap)
    {
       if (text != null) setText(text);
-      this.img = img;
+      this.img = this.img0 = img;
       this.tiGap = gap;
       txtPos = textPosition;
       this.localCommonGap = commonGap;
@@ -568,6 +572,8 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      if (imageHeightFactor != 0 && img0 != null)
+         try {img = img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);} catch (Throwable t) {img = img0;}
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (isAndroidStyle && clip == null)
          clip = new Rect();
