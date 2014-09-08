@@ -83,7 +83,7 @@
 #ifndef SIGCATCH_H
 #define SIGCATCH_H
 
-#ifdef WIN32
+#if defined(WIN32) || defined(darwin)
 #define SIG_TRY if (1)
 #define SIG_CATCH else if (0)
 #define SIG_END
