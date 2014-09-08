@@ -102,19 +102,19 @@ SIG_SAFE int32 exitProgram(int32 exitcode)
    {
       destroyAll();
       mainClass = null;
+      if (rebootOnExit) // set by Vm.exitAndReboot
+         rebootDevice();      
+      #ifdef ANDROID
+      privateExit(exitcode); // exit from the android vm
+      #elif defined(WP8)
+      appExit();
+      #endif
    }
    SIG_CATCH
    {
       debug(SIG_MSG);
    }
    SIG_END
-   if (rebootOnExit) // set by Vm.exitAndReboot
-      rebootDevice();      
-   #ifdef ANDROID
-   privateExit(exitcode); // exit from the android vm
-   #elif defined(WP8)
-   appExit();
-   #endif
    return exitCode;
 }
 
