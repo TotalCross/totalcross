@@ -36,7 +36,7 @@ import totalcross.util.*;
 
 public class ComboBox extends Container
 {
-   public static final int ARROWSTYLE_DOWNDOT = 1;
+   public static final int ARROWSTYLE_DOWNDOT = 0;
    public static final int ARROWSTYLE_PAGEFLIP = 1;
    public static int arrowStyle = ARROWSTYLE_PAGEFLIP;
    protected ComboBoxDropDown pop;
