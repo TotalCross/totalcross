@@ -426,7 +426,8 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    int32 i;
    PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
-   bool err;
+   bool err;                               
+   //debug("glLoadTexture %X (%dx%d): orig: %d",img, width,height, *textureId);
    if (onlyAlpha)
       pt = pt0 = (PixelConv*)pixels;
    else
@@ -439,14 +440,14 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       }
    }
    if (!textureAlreadyCreated)
-   {
+   {  
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
       if (err)
       {
          invalidateTextures(true); // try to free memory and try again
          glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
          if (err)
-         {
+         {                             
             throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
             return;
          }

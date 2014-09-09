@@ -719,6 +719,7 @@ static void onImage(int32 delTex, VoidP ptr)
    TCObject img = (TCObject)ptr;
    if (Image_textureId(img))
    {
+      //if (Image_textureId(img) && Image_textureId(img)[0]) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),Image_textureId(img)[0]);
       if (delTex)
          glDeleteTexture(img, Image_textureId(img));
       else
