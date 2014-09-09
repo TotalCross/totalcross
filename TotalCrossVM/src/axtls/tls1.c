@@ -979,8 +979,6 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
  */
 int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 {                                
-   SIG_TRY 
-   {
     int msg_length = length;
     int ret, pad_bytes = 0;
     ssl->bm_index = msg_length;
@@ -1058,12 +1056,6 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
         return ret;
 
     return length;  /* just return what we wanted to send */
-   }
-   SIG_CATCH
-   {
-      return -1;
-   }
-   SIG_END    
 }
 
 /**
