@@ -253,7 +253,7 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(bool delTex); // imagePrimitives_c.h
+void invalidateTextures(bool delTex); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);
 int32 desiredglShiftY;
@@ -278,12 +278,12 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       }
       else
       if (width == -998)
-         recreateTextures(true); // first we delete the textures before the gl context is invalid
+         invalidateTextures(true); // first we delete the textures before the gl context is invalid
       else
       if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
       {
          if (lastWindow)
-            recreateTextures(false); // now we set the changed flag for all textures
+            invalidateTextures(false); // now we set the changed flag for all textures
       }
       else
          surfaceWillChange = true; // block all screen updates
@@ -303,7 +303,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       if (window == null) {debug("window is null. surface is %X. app will likely crash...",surface);}
       destroyEGL();
       initGLES(&screen);
-      recreateTextures(false); // now we set the changed flag for all textures
+      invalidateTextures(false); // now we set the changed flag for all textures
    }
    lastWindow = window;
 }
@@ -443,8 +443,13 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
       if (err)
       {
-         throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
-         return;
+         invalidateTextures(true); // try to free memory and try again
+         glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+         if (err)
+         {
+            throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
+            return;
+         }
       }
    }
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.

@@ -730,7 +730,7 @@ static void onImage(int32 delTex, VoidP ptr)
    }
 }
 
-void recreateTextures(bool delTex) // called by opengl when the application changes the opengl surface
+void invalidateTextures(bool delTex) // called by opengl when the application changes the opengl surface
 {
    visitImages(onImage, delTex);
    if (!delTex)
@@ -751,7 +751,7 @@ static void onImage(int32 dumb, VoidP ptr)
    }
 }
 
-void recreateTextures() // called by opengl when the application changes the opengl surface
+void invalidateTextures() // called by opengl when the application changes the opengl surface
 {
    visitImages(onImage, 0);
    resetFontTexture();

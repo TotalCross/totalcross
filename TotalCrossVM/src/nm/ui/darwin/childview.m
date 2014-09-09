@@ -59,7 +59,7 @@ void graphicsSetupIOS()
    [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
 }
 
-void recreateTextures();
+void invalidateTextures();
 
 - (UIDeviceOrientation)getOrientation
 {
@@ -155,7 +155,7 @@ void recreateTextures();
    CGSize res = [self getResolution];
    setupGL(res.width,res.height);
    realAppH = appH;
-   recreateTextures();
+   invalidateTextures();
 }
 
 - (void)updateScreen

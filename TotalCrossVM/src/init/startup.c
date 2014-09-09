@@ -90,7 +90,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    destroyGlobals();
 }
 
-SIG_SAFE int32 exitProgram(int32 exitcode)
+int32 exitProgram(int32 exitcode)
 {            
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
