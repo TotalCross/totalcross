@@ -709,6 +709,7 @@ void applyChanges(Context currentContext, TCObject obj)
 
 void freeTexture(TCObject img)
 {                                       
+   if (ENABLE_TEXTURE_TRACE) debug("freeing texture %X (%dx%d): %d (count: %d)",img,Image_width(img),Image_height(img),Image_textureId(img)[0],Image_instanceCount(img));
    glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
 }
 
@@ -719,7 +720,7 @@ static void onImage(int32 delTex, VoidP ptr)
    TCObject img = (TCObject)ptr;
    if (Image_textureId(img))
    {
-      //if (Image_textureId(img) && Image_textureId(img)[0]) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),Image_textureId(img)[0]);
+      if (ENABLE_TEXTURE_TRACE && Image_textureId(img) && Image_textureId(img)[0]) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),Image_textureId(img)[0]);
       if (delTex)
          glDeleteTexture(img, Image_textureId(img));
       else

@@ -278,12 +278,18 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       }
       else
       if (width == -998)
+      {
+         if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
          invalidateTextures(true); // first we delete the textures before the gl context is invalid
+      }
       else
       if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
       {
          if (lastWindow)
+         {
+            if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 1");
             invalidateTextures(false); // now we set the changed flag for all textures
+         }
       }
       else
          surfaceWillChange = true; // block all screen updates
@@ -303,6 +309,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       if (window == null) {debug("window is null. surface is %X. app will likely crash...",surface);}
       destroyEGL();
       initGLES(&screen);
+      if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
       invalidateTextures(false); // now we set the changed flag for all textures
    }
    lastWindow = window;
@@ -426,8 +433,8 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    int32 i;
    PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
-   bool err;                               
-   //debug("glLoadTexture %X (%dx%d): orig: %d",img, width,height, *textureId);
+   bool err;
+   int32 tidorig = textureId[0];
    if (onlyAlpha)
       pt = pt0 = (PixelConv*)pixels;
    else
@@ -481,6 +488,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       }
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
+   if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
    if (!onlyAlpha) xfree(pt0);
 }
 
