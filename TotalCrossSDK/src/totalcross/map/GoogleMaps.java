@@ -22,6 +22,49 @@ package totalcross.map;
  */
 public class GoogleMaps
 {
+   private abstract static class MapItem
+   {
+      abstract protected void serialize(StringBuffer sb);
+   }
+   
+   public static class Circle extends MapItem
+   {
+      double clat, clon, rad;
+      boolean filled;
+      int color;
+      protected void serialize(StringBuffer sb)
+      {
+         sb.append("*C*,").append(clat).append(",").append(clon).append(",").append(rad).append(",").append(filled).append(",").append(color);
+      }
+   }
+   public static class Shape extends MapItem
+   {
+      double[] lats, lons;
+      boolean filled;
+      int color;
+      protected void serialize(StringBuffer sb)
+      {
+         sb.append("*S*,").append(lats.length).append(",");
+         for (int i = 0; i < lats.length; i++)
+            sb.append(lats[i]).append(",").append(lons[i]).append(",");
+         sb.append(filled).append(",").append(color);
+      }
+   }
+   public static class Place extends MapItem
+   {
+      double lat,lon;
+      String pinFilename;
+      String caption, detail;
+      int backColor, capColor, detColor;
+      protected void serialize(StringBuffer sb)
+      {
+         sb.append("*P*,\"").append(pinFilename).append("\",\"").append(caption).append("\",\"").append(detail)
+           .append(",").append(backColor).append(",").append(capColor).append(",").append(detColor);
+      }
+   }
+   
+   
+   
    /** Shows the given address in a separate viewer.
     * 
     * If you want to show your current location, you will have to turn
@@ -50,9 +93,27 @@ public class GoogleMaps
    }
    native static boolean showAddress4D(String address, boolean showSatellitePhotos);
 
+   /** Shows the route between two points. The traversed points is a sequence of lat,lon coordinates comma-separated.
+    */
    public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
    {
       return true;
    }
    native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+   
+   /** Shows an array of MapItem elements in the map. The map is zommed in a way that all coordinates are visible.
+    * See the Circle, Shape and Place map items.
+    */
+   public static boolean showMap(MapItem[] items, boolean showSatellitePhotos)
+   {
+      StringBuffer sb = new StringBuffer(items.length * 100);
+      sb.append("***");
+      items[0].serialize(sb);
+      for (int i = 1; i < items.length; i++)
+      {
+         sb.append("|");
+         items[i].serialize(sb);
+      }
+      return showAddress(sb.toString(), showSatellitePhotos);
+   }
 }

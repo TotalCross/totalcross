@@ -149,6 +149,21 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
 
+   private void callGoogleMap(String items, boolean sat)
+   {
+      try
+      {
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".MapViewer"));
+         intent.putExtra("items",items);
+         intent.putExtra("sat",sat);
+         startActivityForResult(intent, MAP_RETURN);
+      }
+      catch (Throwable e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
+   }
+
    private String imageFN;
    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation)
    {
@@ -205,6 +220,7 @@ public class Loader extends Activity implements BarcodeReadListener
    public static final int FULLSCREEN = 7;
    public static final int ROUTE = 8;
    public static final int ZXING_SCAN = 9;
+   public static final int MAPITEMS = 10;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -272,6 +288,9 @@ public class Loader extends Activity implements BarcodeReadListener
                break;
             case EXEC:
                intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
+               break;
+            case MAPITEMS:
+               callGoogleMap(b.getString("items"), b.getBoolean("sat"));
                break;
             case MAP:
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
