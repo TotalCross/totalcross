@@ -256,7 +256,6 @@ public class Container extends Control
          }
          catch (Throwable e) {}
          screen0 = null;
-         Vm.gc();
       }
    }
 
