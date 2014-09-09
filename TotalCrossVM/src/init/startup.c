@@ -98,7 +98,7 @@ SIG_SAFE int32 exitProgram(int32 exitcode)
    if (isMainWindow) destroyEvent();
    if (exitCode != 106)
       storeSettings(true);
-   SIG_TRY
+//   SIG_TRY
    {
       destroyAll();
       mainClass = null;
@@ -110,11 +110,11 @@ SIG_SAFE int32 exitProgram(int32 exitcode)
       appExit();
       #endif
    }
-   SIG_CATCH
+/*   SIG_CATCH
    {
       debug(SIG_MSG);
    }
-   SIG_END
+   SIG_END*/
    return exitCode;
 }
 
