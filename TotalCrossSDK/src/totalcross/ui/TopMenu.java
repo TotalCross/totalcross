@@ -29,6 +29,8 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
     * other directions will take 80% of the screen's width. Must be ser before calling <code>popup()</code>. */
    public int percWidth;
    private AnimationListener alist;
+   /** The width in pixels instead of percentage of screen's width. */
+   public int widthInPixels;
    
    public static class Item extends Container
    {
@@ -112,14 +114,15 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    private void setRect()
    {
+      int ww = widthInPixels != 0 ? widthInPixels : SCREENSIZE+(percWidth > 0 ? percWidth : 50);
       switch (animDir)
       {
          case LEFT:
          case RIGHT:
-            setRect(animDir,TOP,SCREENSIZE+(percWidth > 0 ? percWidth : 50),FILL); 
+            setRect(animDir,TOP,ww,FILL); 
             break;
          default:
-            setRect(100000,100000,SCREENSIZE+(percWidth > 0 ? percWidth : 80),WILL_RESIZE); 
+            setRect(100000,100000,ww,WILL_RESIZE); 
             break;
       }
    }
