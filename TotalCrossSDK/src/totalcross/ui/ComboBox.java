@@ -324,7 +324,8 @@ public class ComboBox extends Container
    {
       Image img;
       Image img0 = arrowStyle == ARROWSTYLE_PAGEFLIP ? Resources.comboArrow2 : Resources.comboArrow;
-      int s = fmH;
+      int s = arrowStyle == ARROWSTYLE_PAGEFLIP ? height : fmH;
+      if (s == 0) s = fmH;
       try
       {
          img = img0.getSmoothScaledInstance(s,s);
@@ -349,9 +350,7 @@ public class ComboBox extends Container
          pop.setFont(font);
       // guich@tc100b3: resize the arrow based on the font.
       boolean uiAndroid = Control.uiAndroid;
-      if (uiAndroid)
-         btn.setImage(getArrowImage());
-      else
+      if (!uiAndroid)
       {
          ArrowButton ab = (ArrowButton)btn;
          int newWH = getArrowWidth();
@@ -379,7 +378,11 @@ public class ComboBox extends Container
       switch (Settings.uiStyle)
       {
          case Settings.Android:
-            btn.setRect(width - btnW - 3, 2, btnW, height-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 4),null,screenChanged);
+            btn.setImage(getArrowImage());
+            if (arrowStyle == ARROWSTYLE_PAGEFLIP)
+               btn.setRect(width - btnW - 1, 0, btnW, height-2,null,screenChanged);
+            else
+               btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
             break;
          default: // guich@573_6: both Flat and Vista use this
             btn.setRect(width - btnW - 3, 1, btnW + 2, height - 2, null, screenChanged);
