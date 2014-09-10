@@ -118,6 +118,7 @@
 #include "dlmalloc.h"                                                         
 #endif
 #include "xtypes.h"
+#include "../util/coffeecatch.h"
 #include "../event/specialkeys.h"
 #include "mem.h"
 #include "datastructures.h"

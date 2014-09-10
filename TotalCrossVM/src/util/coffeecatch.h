@@ -83,7 +83,7 @@
 #ifndef SIGCATCH_H
 #define SIGCATCH_H
 
-#if 1 // disabling this because it proves to be unstable - defined(WIN32) || defined(darwin)
+#if defined(WIN32) || defined(darwin)
 #define SIG_TRY if (1)
 #define SIG_CATCH else if (0)
 #define SIG_END

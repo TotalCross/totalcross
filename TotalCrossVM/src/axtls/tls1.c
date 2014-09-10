@@ -979,8 +979,10 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
  */
 int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 {                                
-    int msg_length = length;
-    int ret, pad_bytes = 0;
+   SIG_TRY 
+   {
+    volatile int msg_length = length;
+    volatile int ret, pad_bytes = 0;
     ssl->bm_index = msg_length;
 
     /* if our state is bad, don't bother */
@@ -994,9 +996,9 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
     if (IS_SET_SSL_FLAG(SSL_TX_ENCRYPTED))
     {
-        int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
+        volatile int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
                             SSL_CLIENT_WRITE : SSL_SERVER_WRITE;
-        uint8_t hmac_header[SSL_RECORD_SIZE];
+        volatile uint8_t hmac_header[SSL_RECORD_SIZE];
 
         hmac_header[0] = protocol;
         hmac_header[1] = 0x03;
@@ -1023,7 +1025,7 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
         /* add padding? */
         if (ssl->cipher_info->padding_size)
         {
-            int last_blk_size = msg_length%ssl->cipher_info->padding_size;
+            volatile int last_blk_size = msg_length%ssl->cipher_info->padding_size;
             pad_bytes = ssl->cipher_info->padding_size - last_blk_size;
 
             /* ensure we always have at least 1 padding byte */
@@ -1054,6 +1056,12 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
     if ((ret = send_raw_packet(ssl, protocol)) <= 0)
         return ret;
+   }
+   SIG_CATCH
+   {
+      return -1;
+   }
+   SIG_END
 
     return length;  /* just return what we wanted to send */
 }
