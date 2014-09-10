@@ -133,7 +133,7 @@ JNIEnv* getJNIEnv()
    return env;
 }
 
-void callExecuteProgram() // called from android/gfz_Graphics_c.h
+void callExecuteProgram() // called from android/gfx_Graphics_c.h
 {
    executeProgram(tczname[0] ? tczname : NULL);
 }
