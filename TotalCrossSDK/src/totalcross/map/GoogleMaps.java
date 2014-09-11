@@ -29,12 +29,12 @@ public class GoogleMaps
    
    public static class Circle extends MapItem
    {
-      double clat, clon, rad;
+      double lat, lon, rad;
       boolean filled;
       int color;
       protected void serialize(StringBuffer sb)
       {
-         sb.append("*C*,").append(clat).append(",").append(clon).append(",").append(rad).append(",").append(filled).append(",").append(color);
+         sb.append("*C*,").append(lat).append(",").append(lon).append(",").append(rad).append(",").append(filled).append(",").append(color);
       }
    }
    public static class Shape extends MapItem
@@ -58,8 +58,8 @@ public class GoogleMaps
       int backColor, capColor, detColor;
       protected void serialize(StringBuffer sb)
       {
-         sb.append("*P*,\"").append(pinFilename).append("\",\"").append(caption).append("\",\"").append(detail)
-           .append(",").append(backColor).append(",").append(capColor).append(",").append(detColor);
+         sb.append("*P*,\"").append(pinFilename.replace('"','\'')).append("\",\"").append(caption.replace('"','\'')).append("\",\"").append(detail.replace('"','\''))
+           .append("\",").append(lat).append(",").append(lon).append(",").append(backColor).append(",").append(capColor).append(",").append(detColor);
       }
    }
    

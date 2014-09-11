@@ -27,23 +27,23 @@ public class MapViewer extends MapActivity
 
    static class Circle extends MapItem
    {
-      double clat, clon, rad;
+      int clat, clon, rad;
       boolean filled;
       int color;
       Circle(String s)
       {
          String[] ss = s.split(",");
          int i = 1;
-         clat = Double.valueOf(ss[i++]);
-         clon = Double.valueOf(ss[i++]);
-         rad  = Double.valueOf(ss[i++]);
+         clat = toCoordI(Double.valueOf(ss[i++]));
+         clon = toCoordI(Double.valueOf(ss[i++]));
+         rad  = toCoordI(Double.valueOf(ss[i++]));
          filled = ss[i++].equals("true");
          color = Integer.valueOf(ss[i++]);
       }
    }
    static class Shape extends MapItem
    {
-      double[] lats, lons;
+      int[] lats, lons;
       boolean filled;
       int color;
       Shape(String s)
@@ -51,12 +51,12 @@ public class MapViewer extends MapActivity
          String[] ss = s.split(",");
          int i = 1;
          int n = Integer.valueOf(ss[i++]);
-         lats = new double[n];
-         lons = new double[n];
+         lats = new int[n];
+         lons = new int[n];
          for (int j = 0; j < n; j++)
          {
-            lats[j] = Double.valueOf(ss[i++]);
-            lons[j] = Double.valueOf(ss[i++]);
+            lats[j] = toCoordI(Double.valueOf(ss[i++]));
+            lons[j] = toCoordI(Double.valueOf(ss[i++]));
          }
          filled = ss[i++].equals("true");
          color = Integer.valueOf(ss[i++]);
@@ -64,14 +64,23 @@ public class MapViewer extends MapActivity
    }
    static class Place extends MapItem
    {
-      double lat,lon;
+      int lat,lon;
       String pinFilename;
       String caption, detail;
       int backColor, capColor, detColor;
       Place(String s)
       {
-//         sb.append("*P*,\"").append(pinFilename).append("\",\"").append(caption).append("\",\"").append(detail)
-//           .append(",").append(backColor).append(",").append(capColor).append(",").append(detColor);
+         // *P*,"aaa","bbb","ccc",22.0,-22.1,0,1,2  - 
+         String[] ss = s.split("\"");
+         pinFilename = ss[1];
+         caption = ss[3];
+         detail = ss[5];
+         ss = ss[6].split(",");
+         lat = toCoordI(Double.valueOf(ss[1]));
+         lon = toCoordI(Double.valueOf(ss[2]));
+         backColor = toCoordI(Integer.valueOf(ss[3]));
+         capColor = toCoordI(Integer.valueOf(ss[4]));
+         detColor = toCoordI(Integer.valueOf(ss[5]));
       }
    }
   
@@ -92,7 +101,7 @@ public class MapViewer extends MapActivity
             items[i] = new Place(s);
             
       }
-      return null;
+      return items;
    }
    
    /** Called when the activity is first created. */
@@ -107,7 +116,6 @@ public class MapViewer extends MapActivity
          mRadius = Launcher4A.deviceFontHeight/2;
       }
 
-      @Override
       public boolean draw(Canvas canvas, MapView mapView, boolean shadow, long when)
       {
          Projection projection = mapView.getProjection();
@@ -179,8 +187,8 @@ public class MapViewer extends MapActivity
       {
          double lat = extras.getDouble("lat");
          double lon = extras.getDouble("lon");
-         ilat = (int)(lat * 1e6);
-         ilon = (int)(lon * 1e6);
+         ilat = toCoordI(lat);
+         ilon = toCoordI(lon);
          overs.add(new MyOverLay(new GeoPoint(ilat,ilon)));
       }      
       // move the map to the given point
@@ -188,6 +196,11 @@ public class MapViewer extends MapActivity
       if (ilat != 0 || ilon != 0) 
          mc.setCenter(new GeoPoint(ilat,ilon));
       mc.setZoom(21);
+   }
+   
+   private static int toCoordI(double v)
+   {
+      return (int)(v * 1e6);
    }
 
    protected boolean isRouteDisplayed()
