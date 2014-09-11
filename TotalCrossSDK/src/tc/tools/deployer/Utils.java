@@ -203,6 +203,8 @@ public class Utils
             return p;
          if (new File(p=(DeploySettings.currentDir+"/"+fileName)).exists()) // guich@570_7: also search in the current working directory
             return p.replace('\\','/');
+         if (new File(p=(DeploySettings.baseDir+"/"+fileName)).exists()) // guich@570_7: also search in the current working directory
+            return p.replace('\\','/');
       }
       catch (Exception e)
       {
