@@ -98,23 +98,15 @@ int32 exitProgram(int32 exitcode)
    if (isMainWindow) destroyEvent();
    if (exitCode != 106)
       storeSettings(true);
-   SIG_TRY
-   {
-      destroyAll();
-      mainClass = null;
-      if (rebootOnExit) // set by Vm.exitAndReboot
-         rebootDevice();      
-      #ifdef ANDROID
-      privateExit(exitcode); // exit from the android vm
-      #elif defined(WP8)
-      appExit();
-      #endif
-   }
-   SIG_CATCH
-   {
-      debug(SIG_MSG);
-   }
-   SIG_END
+   destroyAll();
+   mainClass = null;
+   if (rebootOnExit) // set by Vm.exitAndReboot
+      rebootDevice();      
+   #ifdef ANDROID
+   privateExit(exitcode); // exit from the android vm
+   #elif defined(WP8)
+   appExit();
+   #endif
    return exitCode;
 }
 
