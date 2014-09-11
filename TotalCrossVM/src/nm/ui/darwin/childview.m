@@ -59,8 +59,6 @@ void graphicsSetupIOS()
    [EAGLContext setCurrentContext:DEVICE_CTX->_childview->glcontext];
 }
 
-void invalidateTextures();
-
 - (UIDeviceOrientation)getOrientation
 {
    int o = [[UIDevice currentDevice] orientation];
