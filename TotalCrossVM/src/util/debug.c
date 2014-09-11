@@ -60,8 +60,7 @@ TC_API bool debug(const char *s, ...)
    if (debugstr == null) // guich@tc120_3: check disableDebug
    {
 #ifdef ANDROID   
-      if (debugMode == MODE_ADB) // allow vm debugging
-         debugStr((char*)s);
+      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
 #endif         
       return false;  
    }
