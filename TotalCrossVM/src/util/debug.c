@@ -78,7 +78,7 @@ bool debugStr(char *s)
 #ifdef ANDROID   
    if (s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
    {  
-      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
+      __android_log_write(ANDROID_LOG_INFO, "TotalCross", s);
       if (debugMode == MODE_ADB)
          return true;
    }
