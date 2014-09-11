@@ -450,6 +450,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
       if (err)
       {
+         debug("Out of texture memory to allow %dx%d. Releasing old textures and trying again.",width,height);
          invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
          glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
          if (err)
