@@ -1598,8 +1598,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastSoundID =  player.load(filename, 1);
       }
       AudioManager audio = (AudioManager) loader.getSystemService(Context.AUDIO_SERVICE);
-      int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-      int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+      int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_SYSTEM);
+      int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_SYSTEM);
       float volume    = (float)volumeLevel/maxVolume;
       
       for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, volume, volume, 0, 0, 1.0f) == 0 && i++ < 10;)
