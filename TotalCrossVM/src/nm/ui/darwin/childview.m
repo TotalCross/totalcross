@@ -153,7 +153,7 @@ void graphicsSetupIOS()
    CGSize res = [self getResolution];
    setupGL(res.width,res.height);
    realAppH = appH;
-   invalidateTextures();
+   invalidateTextures(INVTEX_INVALIDATE);
 }
 
 - (void)updateScreen
