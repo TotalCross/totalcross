@@ -22,44 +22,51 @@ package totalcross.map;
  */
 public class GoogleMaps
 {
-   private abstract static class MapItem
+   public abstract static class MapItem
    {
       abstract protected void serialize(StringBuffer sb);
    }
    
+   private static int toCoordI(double v)
+   {
+      return (int)(v * 1e6);
+   }
+
    public static class Circle extends MapItem
    {
-      double lat, lon, rad;
-      boolean filled;
-      int color;
+      public double lat, lon;
+      /** Radius in meters */
+      public double rad;
+      public boolean filled;
+      public int color;
       protected void serialize(StringBuffer sb)
       {
-         sb.append("*C*,").append(lat).append(",").append(lon).append(",").append(rad).append(",").append(filled).append(",").append(color);
+         sb.append("*C*,").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(rad).append(",").append(filled).append(",").append(color);
       }
    }
    public static class Shape extends MapItem
    {
-      double[] lats, lons;
-      boolean filled;
-      int color;
+      public double[] lats, lons;
+      public boolean filled;
+      public int color;
       protected void serialize(StringBuffer sb)
       {
          sb.append("*S*,").append(lats.length).append(",");
          for (int i = 0; i < lats.length; i++)
-            sb.append(lats[i]).append(",").append(lons[i]).append(",");
+            sb.append(toCoordI(lats[i])).append(",").append(toCoordI(lons[i])).append(",");
          sb.append(filled).append(",").append(color);
       }
    }
    public static class Place extends MapItem
    {
-      double lat,lon;
-      String pinFilename;
-      String caption, detail;
-      int backColor, capColor, detColor;
+      public double lat,lon;
+      public String pinFilename;
+      public String caption, detail;
+      public int backColor, capColor, detColor;
       protected void serialize(StringBuffer sb)
       {
          sb.append("*P*,\"").append(pinFilename.replace('"','\'')).append("\",\"").append(caption.replace('"','\'')).append("\",\"").append(detail.replace('"','\''))
-           .append("\",").append(lat).append(",").append(lon).append(",").append(backColor).append(",").append(capColor).append(",").append(detColor);
+           .append("\",").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(backColor).append(",").append(capColor).append(",").append(detColor);
       }
    }
    

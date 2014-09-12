@@ -19,12 +19,14 @@ package tc.samples.api.map;
 import tc.samples.api.*;
 
 import totalcross.io.device.gps.*;
+import totalcross.map.*;
 import totalcross.net.*;
 import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 
 public class GoogleMapsSample extends BaseContainer
 {
@@ -113,6 +115,43 @@ public class GoogleMapsSample extends BaseContainer
                      new MessageBox("Attention","Internet is not available!").popup();
                      return;
                   }
+                  GoogleMaps.Circle c = new GoogleMaps.Circle();
+                  c.lat = -3.73243;
+                  c.lon = -38.483414;
+                  c.color = Color.BLUE;
+                  c.filled = false;
+                  c.rad = 70;
+                  GoogleMaps.Circle c2 = new GoogleMaps.Circle();
+                  c2.lat = -3.73243;
+                  c2.lon = -38.483424;
+                  c2.color = Color.RED;
+                  c2.filled = true;
+                  c2.rad = 30;
+                  GoogleMaps.Circle c3 = new GoogleMaps.Circle();
+                  c3.lat = -3.73243;
+                  c3.lon = -38.483464;
+                  c3.color = Color.ORANGE | 0xAA000000;
+                  c3.filled = true;
+                  c3.rad = 25;
+                  GoogleMaps.Shape s1 = new GoogleMaps.Shape();
+                  s1.color = Color.YELLOW | 0X88000000;
+                  s1.filled = true;
+                  s1.lats = new double[]{-3.73143,-3.73243,-3.73193};
+                  s1.lons = new double[]{-38.483424, -38.483524, -38.483124};
+                  GoogleMaps.Place p1 = new GoogleMaps.Place();
+                  p1.lat = s1.lats[2];
+                  p1.lon = s1.lons[2];
+                  p1.backColor = Color.WHITE;
+                  p1.capColor = Color.BLACK;
+                  p1.detColor = 0x444444;
+                  p1.caption = "Home location";
+                  p1.detail = "Rua Tavares Coutinho 2050\nAp 102 - Varjota\nCeará - Brazil";
+                  p1.pinFilename = "";
+                  
+                  GoogleMaps.showMap(new GoogleMaps.MapItem[]{c,c2,c3,s1,p1},false);
+                  if (true) return;
+                  
+                  
                   String addr = null;
                   int sel = rg.getSelectedIndex();
                   switch (sel)

@@ -1601,6 +1601,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_SYSTEM);
       int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_SYSTEM);
       float volume    = (float)volumeLevel/maxVolume;
+      for (int i = 0; i <= 5; i++)
+         AndroidUtils.debug("@@@ "+i+": "+audio.getStreamVolume(i)+" / "+audio.getStreamMaxVolume(i));
       
       for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, volume, volume, 0, 0, 1.0f) == 0 && i++ < 10;)
          try {Thread.sleep(100);} catch (Exception e) {}
