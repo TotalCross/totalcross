@@ -37,9 +37,6 @@ exception statement from your version. */
 
 package totalcross.lang;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-
 /**
  * This class represents a Java enumeration.  All enumerations are
  * subclasses of this class.

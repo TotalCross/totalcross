@@ -2038,6 +2038,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/util/ListIterator4D";
       if (name.equals("totalcross/util/NoSuchElementException4D")) 
          return "java/util/NoSuchElementException4D";
+      if (name.equals("totalcross/util/RandomAccess4D")) 
+         return "java/util/RandomAccess4D";
       if (name.equals("totalcross/util/Set4D")) 
          return "java/util/Set4D";
       if (name.equals("totalcross/util/SortedMap4D")) 
