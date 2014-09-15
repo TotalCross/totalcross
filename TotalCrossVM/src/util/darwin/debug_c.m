@@ -35,12 +35,15 @@ void privateAlert(CharP cstr)
 {
    AlertPopup *alert = [AlertPopup alloc];
    NSString *message =  [NSString stringWithCString: cstr encoding: NSISOLatin1StringEncoding];
-   showingAlert = true;
    if ([NSThread isMainThread])
       [alert popup: message];
-   else if (allowMainThread())
+   else
+   if (allowMainThread())
+   {
+      showingAlert = true;
       [alert performSelectorOnMainThread:@selector(popup:) withObject: message waitUntilDone: YES];
-   while (showingAlert) sleep(1);
+      while (showingAlert) sleep(1);
+   }
 }
 
 void iphoneDebug(CharP s)
