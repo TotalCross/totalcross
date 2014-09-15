@@ -62,12 +62,25 @@ public class MapViewer extends MapActivity
       {
          Paint paint = new Paint();
          paint.setAntiAlias(true);
-         Point point = new Point();
-         projection.toPixels(geo, point);
          paint.setColor(color);
          paint.setStyle(filled ? Paint.Style.FILL_AND_STROKE : Paint.Style.STROKE);
-         float frad = projection.metersToEquatorPixels((float)rad);
-         RectF oval = new RectF(point.x - frad, point.y - frad, point.x + frad, point.y + frad);
+         RectF oval;
+         if (rad > 0) // in meters?
+         {
+            Point point = new Point();
+            projection.toPixels(geo, point);
+            float frad = projection.metersToEquatorPixels((float)rad);
+            oval = new RectF(point.x - frad, point.y - frad, point.x + frad, point.y + frad);
+         }
+         else // in coords delta
+         {
+            double r = -rad;
+            float la = fromCoord(geo.getLatitudeE6()), lo = fromCoord(geo.getLongitudeE6());
+            Point p1 = projection.toPixels(new GeoPoint(toCoord(la-r),toCoord(lo-r)), null);
+            Point p2 = projection.toPixels(new GeoPoint(toCoord(la+r),toCoord(lo+r)), null);
+            AndroidUtils.debug(p1+" - "+p2);
+            oval = new RectF(p1.x,p1.y,p2.x,p2.y);
+         }
          canvas.drawOval(oval, paint);
       }
    }
@@ -115,62 +128,108 @@ public class MapViewer extends MapActivity
    private class Place extends MapItem
    {
       GeoPoint geo;
-      String pinFilename;
-      String caption, detail;
-      int backColor, capColor, detColor;
+      String caption, details[];
+      int backColor, capColor, detColor, pinColor;
+      int fontPerc;
       Place(String s)
       {
-         // *P*,"aaa","bbb","ccc",22.0,-22.1,0,1,2  - 
+         // *P*,"aaa","bbb",22.0,-22.1,0,1,2,3,150 
          String[] ss = s.split("\"");
-         pinFilename = ss[1];
-         caption = ss[3];
-         detail = ss[5];
-         ss = ss[6].split(",");
+         caption = ss[1]; if (caption.equals("null")) caption = null;
+         details = ss[3].split("\n");
+         ss = ss[4].split(",");
          int lat = Integer.valueOf(ss[1]);
          int lon = Integer.valueOf(ss[2]);
          geo = new GeoPoint(lat,lon);
          computeBounds(lat,lon);
-         backColor = Integer.valueOf(ss[3]); if ((backColor & 0xFF000000) == 0) backColor |= 0xFF000000;
-         capColor = Integer.valueOf(ss[4]);  if ((capColor  & 0xFF000000) == 0) capColor  |= 0xFF000000;
-         detColor = Integer.valueOf(ss[5]);  if ((detColor  & 0xFF000000) == 0) detColor  |= 0xFF000000;
+         backColor= Integer.valueOf(ss[3]); if ((backColor & 0xFF000000) == 0) backColor |= 0xFF000000;
+         capColor = Integer.valueOf(ss[4]); if ((capColor  & 0xFF000000) == 0) capColor  |= 0xFF000000;
+         detColor = Integer.valueOf(ss[5]); if ((detColor  & 0xFF000000) == 0) detColor  |= 0xFF000000;
+         pinColor = Integer.valueOf(ss[6]); if ((pinColor  & 0xFF000000) == 0) pinColor  |= 0xFF000000;
+         fontPerc = Integer.valueOf(ss[7]);
       }
-      private void drawPin(Canvas canvas, Projection projection)
+      private void drawBaloon(Canvas canvas, Projection projection) // above
+      {
+         Paint paint2= new Paint();
+         float frad = mRadius * fontPerc / 100;//projection.metersToEquatorPixels((float)mRadius);
+         Point point = new Point();
+         projection.toPixels(geo, point);
+         point.y -= frad * 4; // shift above pin
+         float textH = frad*2;
+         paint2.setTextSize(textH);  //set text size
+
+         // compute max text width
+         FontMetrics fm = new FontMetrics();
+         paint2.setTextAlign(Paint.Align.CENTER);
+         paint2.getFontMetrics(fm);
+         paint2.setFakeBoldText(true);
+         boolean hasCap = caption != null;
+         float ww = hasCap ? paint2.measureText(caption) : 0;
+         paint2.setFakeBoldText(false);
+         for (int i = 0; i < details.length; i++)
+            ww = Math.max(ww, paint2.measureText(details[i]));
+         float yy = point.y - frad*2*((hasCap?1:0)+details.length+1)-frad;
+         ww += textH; // give some extra space
+         
+         // draw baloon
+         //canvas.drawRect(point.x - ww/2, yy, point.x + ww/2, point.y-frad, mpaint);
+         Paint mpaint= new Paint();
+         mpaint.setStyle(Style.FILL);
+         Path path = new Path();
+         path.addRect(point.x - ww/2, yy, point.x + ww/2, point.y-frad-frad, Path.Direction.CCW);
+         path.moveTo(point.x-frad,point.y-frad-frad);
+         path.lineTo(point.x,point.y-frad/2);
+         path.lineTo(point.x+frad,point.y-frad-frad);
+         float delta = frad/4;
+         
+         mpaint.setColor(darker(backColor));
+         path.offset(delta,delta);
+         canvas.drawPath(path, mpaint);
+         
+         mpaint.setColor(backColor);
+         path.offset(-delta,-delta);
+         canvas.drawPath(path, mpaint);
+         
+         // draw text
+         yy += textH; // text's anchor is at bottom
+         if (hasCap)
+         {
+            paint2.setFakeBoldText(true);
+            paint2.setColor(capColor);
+            canvas.drawText(caption, point.x, yy, paint2); // title
+            yy += textH;
+         }
+         paint2.setFakeBoldText(false);
+         paint2.setColor(detColor);
+         for (int i = 0; i < details.length; i++, yy += textH)
+            canvas.drawText(details[i], point.x, yy, paint2);
+      }
+      private int darker(int c)
+      {
+         int a = (c >> 24) & 0xFF;
+         int r = (c >> 16) & 0xFF;
+         int g = (c >> 8) & 0xFF;
+         int b = c & 0xFF;
+         r -= 64; if (r < 0) r = 0;
+         g -= 64; if (g < 0) g = 0;
+         b -= 64; if (b < 0) b = 0;
+         return (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      private void drawPin(Canvas canvas, Projection projection) // below
       {
          Paint paint = new Paint();
          paint.setAntiAlias(true);
-         float frad = projection.metersToEquatorPixels((float)mRadius);
+         float frad = mRadius * fontPerc / 100;//projection.metersToEquatorPixels((float)mRadius);
          Point point = new Point();
          projection.toPixels(geo, point);
          point.y -= frad * 3;
-         paint.setColor(backColor);
+         paint.setColor(pinColor);
          paint.setStyle(Paint.Style.FILL_AND_STROKE);
          Path path = new Path();
          RectF oval = new RectF(point.x - frad, point.y - frad, point.x + frad, point.y + frad);
          path.addArc(oval, 150,240);
          path.lineTo(point.x,point.y+frad*3);
          canvas.drawPath(path, paint);
-      }
-      private void drawBaloon(Canvas canvas, Projection projection)
-      {
-         Paint mpaint= new Paint();
-         mpaint.setColor(backColor);
-         mpaint.setStyle(Style.FILL);
-         Paint paint2= new Paint();
-         paint2.setColor(capColor);
-         float frad = projection.metersToEquatorPixels((float)mRadius);
-         Point point = new Point();
-         projection.toPixels(geo, point);
-         point.y -= frad * 4;
-         paint2.setTextSize(frad*2);  //set text size
-
-         FontMetrics fm = new FontMetrics();
-         paint2.setTextAlign(Paint.Align.CENTER);
-         paint2.getFontMetrics(fm);
-         float ww = paint2.measureText(caption);
-         
-         
-         canvas.drawRect(point.x - ww/2, point.y - frad*2, point.x + ww/2, point.y, mpaint);
-         canvas.drawText(caption, point.x, point.y, paint2); //x=300,y=300    
       }
       public void draw(Canvas canvas, Projection projection)
       {
@@ -266,16 +325,13 @@ public class MapViewer extends MapActivity
       List<Overlay> overs = mapview.getOverlays();
       String items = extras.getString("items");
       if (items != null)
-      {
-         AndroidUtils.debug("items: "+items);
          overs.add(new MyItemsOverLay(getItems(items)));
-      }
       else
       {
          double lat = extras.getDouble("lat");
          double lon = extras.getDouble("lon");
-         int ilat = toCoordI(lat);
-         int ilon = toCoordI(lon);
+         int ilat = toCoord(lat);
+         int ilon = toCoord(lon);
          computeBounds(ilat,ilon);
          overs.add(new MyOverLay(new GeoPoint(ilat,ilon)));
       }      
@@ -284,27 +340,23 @@ public class MapViewer extends MapActivity
       int clat = (ilatMin + ilatMax) / 2;
       int clon = (ilonMin + ilonMax) / 2;
       mc.setCenter(new GeoPoint(clat,clon));
-      mc.setZoom(21);
+      if (ilatMax == ilatMin || ilonMax == ilonMin)
+         mc.setZoom(21);
+      else
+         mc.zoomToSpan(ilatMax-ilatMin,ilonMax-ilonMin);
    }
    
-   private static int toCoordI(double v)
+   private static int toCoord(double v)
    {
       return (int)(v * 1e6);
+   }
+   private static float fromCoord(int i)
+   {
+      return (float)i / 1e6f;
    }
    
    protected boolean isRouteDisplayed()
    {
       return false;
-   }
-
-   void centerMap(MapView mapView, GeoPoint center, int offX, int offY)
-   {
-      GeoPoint tl = mapView.getProjection().fromPixels(0, 0);
-      GeoPoint br = mapView.getProjection().fromPixels(mapView.getWidth(), mapView.getHeight());
-
-      int newLon = offX * (br.getLongitudeE6() - tl.getLongitudeE6()) / mapView.getWidth() + center.getLongitudeE6(); 
-      int newLat = offY * (br.getLatitudeE6() - tl.getLatitudeE6()) / mapView.getHeight() + center.getLatitudeE6();
-
-      mapView.getController().setCenter(new GeoPoint(newLat, newLon));
    }
 }
