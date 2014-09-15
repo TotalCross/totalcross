@@ -12,7 +12,12 @@ bool allowMainThread();
 @end
 
 @implementation AlertPopup
+bool showingAlert;
 
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+   showingAlert = false;
+}
 - (void)popup:(id)message
 {
    [[ self initWithTitle:@"ALERT"
@@ -30,10 +35,12 @@ void privateAlert(CharP cstr)
 {
    AlertPopup *alert = [AlertPopup alloc];
    NSString *message =  [NSString stringWithCString: cstr encoding: NSISOLatin1StringEncoding];
+   showingAlert = true;
    if ([NSThread isMainThread])
       [alert popup: message];
    else if (allowMainThread())
       [alert performSelectorOnMainThread:@selector(popup:) withObject: message waitUntilDone: YES];
+   while (showingAlert) sleep(1);
 }
 
 void iphoneDebug(CharP s)
