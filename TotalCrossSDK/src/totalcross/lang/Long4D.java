@@ -11,6 +11,10 @@ public class Long4D
    {
       this.v = v;
    }
+   public Long4D(String s) throws NumberFormatException
+   {
+      v = parseLong(s);
+   }
    public long longValue()
    {
       return v;
@@ -22,6 +26,10 @@ public class Long4D
    public int hashCode()
    {
       return (int)(v ^ (v >>> 32));
+   }
+   public String toString(long l)
+   {
+      return Convert.toString(l);
    }
    public String toString()
    {
@@ -41,5 +49,20 @@ public class Long4D
       {
          throw new NumberFormatException(ine.getMessage());
       }
+   }
+   public static long parseLong(String s) throws NumberFormatException
+   {
+      try
+      {
+         return Convert.toLong(s);
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
+   }
+   public int intValue()
+   {
+     return (int) v;
    }
 }

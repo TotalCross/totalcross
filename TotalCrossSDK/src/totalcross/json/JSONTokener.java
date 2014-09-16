@@ -1,11 +1,5 @@
 package totalcross.json;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
 
 /*
 Copyright (c) 2002 JSON.org
@@ -45,8 +39,11 @@ public class JSONTokener {
     private long    index;
     private long    line;
     private char    previous;
-    private Reader  reader;
+    //private ByteArrayStream  reader;
     private boolean usePrevious;
+    
+    private int idx,len;
+    private String source;
 
 
     /**
@@ -54,10 +51,8 @@ public class JSONTokener {
      *
      * @param reader     A reader.
      */
-    public JSONTokener(Reader reader) {
-        this.reader = reader.markSupported()
-            ? reader
-            : new BufferedReader(reader);
+/*    public JSONTokener(ByteArrayStream reader) {
+        this.reader = reader;//reader.markSupported()? reader: new BufferedReader(reader);
         this.eof = false;
         this.usePrevious = false;
         this.previous = 0;
@@ -65,16 +60,16 @@ public class JSONTokener {
         this.character = 1;
         this.line = 1;
     }
-
+*/
 
     /**
      * Construct a JSONTokener from an InputStream.
      * @param inputStream The source.
      */
-    public JSONTokener(InputStream inputStream) throws JSONException {
+/*    public JSONTokener(InputStream inputStream) throws JSONException {
         this(new InputStreamReader(inputStream));
     }
-
+*/
 
     /**
      * Construct a JSONTokener from a string.
@@ -82,7 +77,9 @@ public class JSONTokener {
      * @param s     A source string.
      */
     public JSONTokener(String s) {
-        this(new StringReader(s));
+       source = s;
+       len = s.length();
+        //this(new ByteArrayStream(s.getBytes()));//StringReader(s));
     }
 
 
@@ -152,11 +149,7 @@ public class JSONTokener {
             this.usePrevious = false;
             c = this.previous;
         } else {
-            try {
-                c = this.reader.read();
-            } catch (IOException exception) {
-                throw new JSONException(exception);
-            }
+            c = idx == len ? 0 : source.charAt(idx++);//this.reader.read();
 
             if (c <= 0) { // End of stream
                 this.eof = true;
@@ -404,18 +397,18 @@ public class JSONTokener {
             long startIndex = this.index;
             long startCharacter = this.character;
             long startLine = this.line;
-            this.reader.mark(1000000);
+            int oldIdx = idx;//this.reader.mark(1000000);
             do {
                 c = this.next();
                 if (c == 0) {
-                    this.reader.reset();
+                    idx = oldIdx;//this.reader.reset();
                     this.index = startIndex;
                     this.character = startCharacter;
                     this.line = startLine;
                     return c;
                 }
             } while (c != to);
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             throw new JSONException(exception);
         }
         this.back();

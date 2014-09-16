@@ -24,9 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.*;
+
+import totalcross.util.Hashtable;
+import totalcross.util.Vector;
 
 /**
  * Converts a Property file data into JSONObject and back.
@@ -40,13 +41,13 @@ public class Property {
      * @return JSONObject
      * @throws JSONException
      */
-    public static JSONObject toJSONObject(java.util.Properties properties) throws JSONException {
+    public static JSONObject toJSONObject(/*java.util.Properties*/Hashtable properties) throws JSONException {
         JSONObject jo = new JSONObject();
-        if (properties != null && !properties.isEmpty()) {
-            Enumeration enumProperties = properties.propertyNames();
-            while(enumProperties.hasMoreElements()) {
-                String name = (String)enumProperties.nextElement();
-                jo.put(name, properties.getProperty(name));
+        if (properties != null && properties.size() > 0) {
+            Vector v = properties.getKeys();//Enumeration enumProperties = properties.propertyNames();
+            for (int i = 0, n = v.size(); i < n; i++) {
+                String name = (String)v.items[i];//enumProperties.nextElement();
+                jo.put(name, properties.get(name));
             }
         }
         return jo;
@@ -58,8 +59,8 @@ public class Property {
      * @return java.util.Properties
      * @throws JSONException
      */
-    public static Properties toProperties(JSONObject jo)  throws JSONException {
-        Properties  properties = new Properties();
+    public static /*Properties*/Hashtable toProperties(JSONObject jo)  throws JSONException {
+        /*Properties*/Hashtable  properties = new Hashtable(jo.length());
         if (jo != null) {
             Iterator<String> keys = jo.keys();
             while (keys.hasNext()) {

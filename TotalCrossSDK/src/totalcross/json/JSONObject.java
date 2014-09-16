@@ -24,21 +24,10 @@ package totalcross.json;
  SOFTWARE.
  */
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.Set;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its external
@@ -334,7 +323,7 @@ public class JSONObject {
      * @throws JSONException
      *             If any JSONExceptions are detected.
      */
-    public JSONObject(String baseName, Locale locale) throws JSONException {
+/*    public JSONObject(String baseName, Locale locale) throws JSONException {
         this();
         ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale,
                 Thread.currentThread().getContextClassLoader());
@@ -365,7 +354,7 @@ public class JSONObject {
                 target.put(path[last], bundle.getString((String) key));
             }
         }
-    }
+    }*/
 
     /**
      * Accumulate values under a key. It is similar to the put method except
@@ -985,7 +974,7 @@ public class JSONObject {
 
 // If klass is a System class then set includeSuperClass to false.
 
-        boolean includeSuperClass = klass.getClassLoader() != null;
+        boolean includeSuperClass = true;//klass.getClassLoader() != null;
 
         Method[] methods = includeSuperClass ? klass.getMethods() : klass
                 .getDeclaredMethods();
@@ -1202,20 +1191,20 @@ public class JSONObject {
      * @return A String correctly formatted for insertion in a JSON text.
      */
     public static String quote(String string) {
-        StringWriter sw = new StringWriter();
-        synchronized (sw.getBuffer()) {
+        StringBuffer sw = new StringBuffer(1024);
+        //synchronized (sw.getBuffer()) {
             try {
                 return quote(string, sw).toString();
             } catch (IOException ignored) {
                 // will never happen - we are writing to a string writer
                 return "";
             }
-        }
+        //}
     }
 
-    public static Writer quote(String string, Writer w) throws IOException {
+    public static StringBuffer quote(String string, StringBuffer w) throws IOException {
         if (string == null || string.length() == 0) {
-            w.write("\"\"");
+            w.append("\"\"");
             return w;
         }
 
@@ -1225,50 +1214,50 @@ public class JSONObject {
         int i;
         int len = string.length();
 
-        w.write('"');
+        w.append('"');
         for (i = 0; i < len; i += 1) {
             b = c;
             c = string.charAt(i);
             switch (c) {
             case '\\':
             case '"':
-                w.write('\\');
-                w.write(c);
+                w.append('\\');
+                w.append(c);
                 break;
             case '/':
                 if (b == '<') {
-                    w.write('\\');
+                    w.append('\\');
                 }
-                w.write(c);
+                w.append(c);
                 break;
             case '\b':
-                w.write("\\b");
+                w.append("\\b");
                 break;
             case '\t':
-                w.write("\\t");
+                w.append("\\t");
                 break;
             case '\n':
-                w.write("\\n");
+                w.append("\\n");
                 break;
             case '\f':
-                w.write("\\f");
+                w.append("\\f");
                 break;
             case '\r':
-                w.write("\\r");
+                w.append("\\r");
                 break;
             default:
                 if (c < ' ' || (c >= '\u0080' && c < '\u00a0')
                         || (c >= '\u2000' && c < '\u2100')) {
-                    w.write("\\u");
+                    w.append("\\u");
                     hhhh = Integer.toHexString(c);
-                    w.write("0000", 0, 4 - hhhh.length());
-                    w.write(hhhh);
+                    w.append("0000".substring(0, 4 - hhhh.length()));
+                    w.append(hhhh);
                 } else {
-                    w.write(c);
+                    w.append(c);
                 }
             }
         }
-        w.write('"');
+        w.append('"');
         return w;
     }
 
@@ -1458,10 +1447,10 @@ public class JSONObject {
      *             If the object contains an invalid number.
      */
     public String toString(int indentFactor) throws JSONException {
-        StringWriter w = new StringWriter();
-        synchronized (w.getBuffer()) {
+        StringBuffer w = new StringBuffer(1024);
+        //synchronized (w.getBuffer()) {
             return this.write(w, indentFactor, 0).toString();
-        }
+        //}
     }
 
     /**
@@ -1559,12 +1548,11 @@ public class JSONObject {
             if (object instanceof Map) {
                 return new JSONObject((Map<String, Object>) object);
             }
-            Package objectPackage = object.getClass().getPackage();
-            String objectPackageName = objectPackage != null ? objectPackage
-                    .getName() : "";
+            //Package objectPackage = object.getClass().getPackage();
+            String objectPackageName = object.getClass().getName();//objectPackage != null ? objectPackage.getName() : "";
             if (objectPackageName.startsWith("java.")
                     || objectPackageName.startsWith("javax.")
-                    || object.getClass().getClassLoader() == null) {
+                    /*|| object.getClass().getClassLoader() == null*/) {
                 return object.toString();
             }
             return new JSONObject(object);
@@ -1582,14 +1570,14 @@ public class JSONObject {
      * @return The writer.
      * @throws JSONException
      */
-    public Writer write(Writer writer) throws JSONException {
+    public StringBuffer write(StringBuffer writer) throws JSONException {
         return this.write(writer, 0, 0);
     }
 
-    static final Writer writeValue(Writer writer, Object value,
+    static final StringBuffer writeValue(StringBuffer writer, Object value,
             int indentFactor, int indent) throws JSONException, IOException {
         if (value == null || value.equals(null)) {
-            writer.write("null");
+            writer.append("null");
         } else if (value instanceof JSONObject) {
             ((JSONObject) value).write(writer, indentFactor, indent);
         } else if (value instanceof JSONArray) {
@@ -1602,9 +1590,9 @@ public class JSONObject {
         } else if (value.getClass().isArray()) {
             new JSONArray(value).write(writer, indentFactor, indent);
         } else if (value instanceof Number) {
-            writer.write(numberToString((Number) value));
+            writer.append(numberToString((Number) value));
         } else if (value instanceof Boolean) {
-            writer.write(value.toString());
+            writer.append(value.toString());
         } else if (value instanceof JSONString) {
             Object o;
             try {
@@ -1612,16 +1600,16 @@ public class JSONObject {
             } catch (Exception e) {
                 throw new JSONException(e);
             }
-            writer.write(o != null ? o.toString() : quote(value.toString()));
+            writer.append(o != null ? o.toString() : quote(value.toString()));
         } else {
             quote(value.toString(), writer);
         }
         return writer;
     }
 
-    static final void indent(Writer writer, int indent) throws IOException {
+    static final void indent(StringBuffer writer, int indent) throws IOException {
         for (int i = 0; i < indent; i += 1) {
-            writer.write(' ');
+            writer.append(' ');
         }
     }
 
@@ -1634,20 +1622,20 @@ public class JSONObject {
      * @return The writer.
      * @throws JSONException
      */
-    Writer write(Writer writer, int indentFactor, int indent)
+    StringBuffer write(StringBuffer writer, int indentFactor, int indent)
             throws JSONException {
         try {
             boolean commanate = false;
             final int length = this.length();
             Iterator<String> keys = this.keys();
-            writer.write('{');
+            writer.append('{');
 
             if (length == 1) {
                 Object key = keys.next();
-                writer.write(quote(key.toString()));
-                writer.write(':');
+                writer.append(quote(key.toString()));
+                writer.append(':');
                 if (indentFactor > 0) {
-                    writer.write(' ');
+                    writer.append(' ');
                 }
                 writeValue(writer, this.map.get(key), indentFactor, indent);
             } else if (length != 0) {
@@ -1655,26 +1643,26 @@ public class JSONObject {
                 while (keys.hasNext()) {
                     Object key = keys.next();
                     if (commanate) {
-                        writer.write(',');
+                        writer.append(',');
                     }
                     if (indentFactor > 0) {
-                        writer.write('\n');
+                        writer.append('\n');
                     }
                     indent(writer, newindent);
-                    writer.write(quote(key.toString()));
-                    writer.write(':');
+                    writer.append(quote(key.toString()));
+                    writer.append(':');
                     if (indentFactor > 0) {
-                        writer.write(' ');
+                        writer.append(' ');
                     }
                     writeValue(writer, this.map.get(key), indentFactor, newindent);
                     commanate = true;
                 }
                 if (indentFactor > 0) {
-                    writer.write('\n');
+                    writer.append('\n');
                 }
                 indent(writer, indent);
             }
-            writer.write('}');
+            writer.append('}');
             return writer;
         } catch (IOException exception) {
             throw new JSONException(exception);

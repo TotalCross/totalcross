@@ -1,5 +1,7 @@
 package totalcross.json;
 
+import totalcross.sys.*;
+
 
 /*
  Copyright (c) 2013 JSON.org
@@ -290,7 +292,7 @@ public class Kim {
      * @return The position immediately after the copy.
      */
     public int copy(byte[] bytes, int at) {
-        System.arraycopy(this.bytes, 0, bytes, at, this.length);
+        Vm.arrayCopy(this.bytes, 0, bytes, at, this.length);
         return at + this.length;
     }
 
@@ -314,7 +316,12 @@ public class Kim {
         if (this.hashcode != that.hashcode) {
             return false;
         }
-        return java.util.Arrays.equals(this.bytes, that.bytes);
+        if (this.bytes.length != that.bytes.length)
+           return false;
+        for (int i = this.bytes.length; --i >= 0;)
+           if (this.bytes[i] != that.bytes[i])
+              return false;
+        return true;//java.util.Arrays.equals(this.bytes, that.bytes);
     }
 
     /**

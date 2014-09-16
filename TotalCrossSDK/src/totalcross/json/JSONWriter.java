@@ -1,7 +1,5 @@
 package totalcross.json;
 
-import java.io.IOException;
-import java.io.Writer;
 
 /*
 Copyright (c) 2006 JSON.org
@@ -88,12 +86,12 @@ public class JSONWriter {
     /**
      * The writer that will receive the output.
      */
-    protected Writer writer;
+    protected StringBuffer writer;
 
     /**
      * Make a fresh JSONWriter. It can be used to build one JSON text.
      */
-    public JSONWriter(Writer w) {
+    public JSONWriter(StringBuffer w) {
         this.comma = false;
         this.mode = 'i';
         this.stack = new JSONObject[maxdepth];
@@ -114,10 +112,10 @@ public class JSONWriter {
         if (this.mode == 'o' || this.mode == 'a') {
             try {
                 if (this.comma && this.mode == 'a') {
-                    this.writer.write(',');
+                    this.writer.append(',');
                 }
-                this.writer.write(string);
-            } catch (IOException e) {
+                this.writer.append(string);
+            } catch (Exception e) {
                 throw new JSONException(e);
             }
             if (this.mode == 'o') {
@@ -163,8 +161,8 @@ public class JSONWriter {
         }
         this.pop(mode);
         try {
-            this.writer.write(c);
-        } catch (IOException e) {
+            this.writer.append(c);
+        } catch (Exception e) {
             throw new JSONException(e);
         }
         this.comma = true;
@@ -207,14 +205,14 @@ public class JSONWriter {
             try {
                 this.stack[this.top - 1].putOnce(string, Boolean.TRUE);
                 if (this.comma) {
-                    this.writer.write(',');
+                    this.writer.append(',');
                 }
-                this.writer.write(JSONObject.quote(string));
-                this.writer.write(':');
+                this.writer.append(JSONObject.quote(string));
+                this.writer.append(':');
                 this.comma = false;
                 this.mode = 'o';
                 return this;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new JSONException(e);
             }
         }

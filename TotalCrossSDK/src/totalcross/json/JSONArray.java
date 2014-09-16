@@ -24,14 +24,9 @@ package totalcross.json;
  SOFTWARE.
  */
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 
 /**
  * A JSONArray is an ordered sequence of values. Its external text form is a
@@ -906,10 +901,10 @@ public class JSONArray {
      * @throws JSONException
      */
     public String toString(int indentFactor) throws JSONException {
-        StringWriter sw = new StringWriter();
-        synchronized (sw.getBuffer()) {
+        StringBuffer sw = new StringBuffer();
+        //synchronized (sw.getBuffer()) {
             return this.write(sw, indentFactor, 0).toString();
-        }
+        //}
     }
 
     /**
@@ -921,7 +916,7 @@ public class JSONArray {
      * @return The writer.
      * @throws JSONException
      */
-    public Writer write(Writer writer) throws JSONException {
+    public StringBuffer write(StringBuffer writer) throws JSONException {
         return this.write(writer, 0, 0);
     }
 
@@ -938,12 +933,12 @@ public class JSONArray {
      * @return The writer.
      * @throws JSONException
      */
-    Writer write(Writer writer, int indentFactor, int indent)
+    StringBuffer write(StringBuffer writer, int indentFactor, int indent)
             throws JSONException {
         try {
             boolean commanate = false;
             int length = this.length();
-            writer.write('[');
+            writer.append('[');
 
             if (length == 1) {
                 JSONObject.writeValue(writer, this.myArrayList.get(0),
@@ -953,10 +948,10 @@ public class JSONArray {
 
                 for (int i = 0; i < length; i += 1) {
                     if (commanate) {
-                        writer.write(',');
+                        writer.append(',');
                     }
                     if (indentFactor > 0) {
-                        writer.write('\n');
+                        writer.append('\n');
                     }
                     JSONObject.indent(writer, newindent);
                     JSONObject.writeValue(writer, this.myArrayList.get(i),
@@ -964,11 +959,11 @@ public class JSONArray {
                     commanate = true;
                 }
                 if (indentFactor > 0) {
-                    writer.write('\n');
+                    writer.append('\n');
                 }
                 JSONObject.indent(writer, indent);
             }
-            writer.write(']');
+            writer.append(']');
             return writer;
         } catch (IOException e) {
             throw new JSONException(e);
