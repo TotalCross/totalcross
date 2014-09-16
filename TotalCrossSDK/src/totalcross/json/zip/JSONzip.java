@@ -1,5 +1,7 @@
 package totalcross.json.zip;
 
+import totalcross.sys.*;
+
 /*
  Copyright (c) 2013 JSON.org
 
@@ -219,7 +221,7 @@ public abstract class JSONzip implements None, PostMortem {
      * @param string The string to be written to the log.
      */
     static void log(String string) {
-        System.out.print(string);
+        Vm.debug(string);
     }
 
     /**
