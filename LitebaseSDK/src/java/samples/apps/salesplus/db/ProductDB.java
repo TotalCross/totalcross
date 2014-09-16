@@ -80,7 +80,7 @@ public class ProductDB
     *
     * @param product The product to be inserted or updated.
     * @param update Indicates if the product is being updated or inserted.
-    * @param return <code>1</code> if the record was updated or inserted; <code>0</code> if no record was updated.
+    * @return <code>1</code> if the record was updated or inserted; <code>0</code> if no record was updated.
     */
    public static int write(Product product, boolean update)
    {
@@ -161,7 +161,7 @@ public class ProductDB
    /**
     * Retrieves a product information based on the product name.
     *
-    * @param prodCode The product name.
+    * @param prodName The product name.
     * @return The product if found or <code>null</code> if none is found.
     */
    public static Product getFromName(String prodName) // infoName
