@@ -14,8 +14,8 @@
 package tc.tools.converter;
 
 import tc.*;
-
 import totalcross.io.*;
+import totalcross.sys.*;
 import totalcross.util.*;
 
 /** Constant pool specification.
@@ -338,8 +338,15 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (last == ';') // class name? Lxxx; -> xxx
       {
          value = value.substring(1,len-1);
-         if (value.endsWith("4D"))
-            value = value.substring(0,value.length()-2);
+         
+         int index = value.indexOf("4D");
+         
+         if (index >= 0)
+         {
+            value = value.substring(0, index) + value.substring(index + 2);
+            if (value.startsWith("totalcross.util") && value.indexOf(".zip") < 0)
+               value = Convert.replace(value, "totalcross", "java");
+         }
          if (value.startsWith("totalcross.lang"))
             value = totalcross.sys.Convert.replace(value, "totalcross.lang", "java.lang");
       }
@@ -458,8 +465,14 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
 
    public static int putCls(String value) // pure class name: value must be a single class, no arrays, no Lxxx; !
    {
-      if (value.endsWith("4D"))
-         value = value.substring(0,value.length()-2);
+      int index = value.indexOf("4D");
+      if (index >= 0)
+      {
+         value = value.substring(0, index) + value.substring(index + 2);
+         if (value.startsWith("totalcross.util") && value.indexOf(".zip") < 0)
+            value = Convert.replace(value, "totalcross", "java");
+      }
+      
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
       value = value.replace('/','.');
@@ -475,7 +488,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          return ((TCValue)htCls.get(value)).index;
 
       if (value.startsWith("totalcross.lang."))
-         value = totalcross.sys.Convert.replace(value, "totalcross.lang.", "java.lang.");
+         value = Convert.replace(value, "totalcross.lang.", "java.lang.");
       int idx = put(value, POOL_CLS, htCls, vCls);
       if (idx >= 4095 && checkLimit) // guich@tc110_23: corrected limit
       {
@@ -651,8 +664,15 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       try
       {
          ident = ident.replace('/','.');
-         if (ident.endsWith("4D"))
-            ident = ident.substring(0,ident.length()-2);
+         
+         int index = ident.indexOf("4D");
+         
+         if (index >= 0)
+         {
+            ident = ident.substring(0, index) + ident.substring(index + 2);
+            if (ident.startsWith("totalcross.util") && ident.indexOf(".zip") < 0 )
+               ident = Convert.replace(ident, "totalcross", "java");
+         }
          if (ident.startsWith("totalcross.lang."))
             ident = totalcross.sys.Convert.replace(ident, "totalcross.lang.", "java.lang.");
          return ((TCValue)htCls.get(ident.hashCode())).index;

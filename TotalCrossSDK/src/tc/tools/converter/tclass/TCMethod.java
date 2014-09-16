@@ -247,7 +247,11 @@ public final class TCMethod implements TCConstants
          String tcClassName = "totalcross"+className.substring(4);
          try
          {
-            c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+            int index = tcClassName.indexOf('$');
+            if (index < 0)
+               c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+            else
+               c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
          }
          catch (ClassNotFoundException e)
          {
@@ -376,7 +380,7 @@ public final class TCMethod implements TCConstants
          {
             name = java2totalcross(name);
             js = java2totalcross(js);
-            found &= name.equals(js) || name.equals(js+"4D");
+            found &= name.equals(js) || name.equals(js+"4D") || Convert.replace(name, "4D", "").equals(js);
          }
       }
       return found;
