@@ -176,7 +176,7 @@ public class MapViewer extends MapActivity
          Paint mpaint= new Paint();
          mpaint.setStyle(Style.FILL);
          Path path = new Path();
-         path.addRect(point.x - ww/2, yy, point.x + ww/2, point.y-frad-frad, Path.Direction.CCW);
+         path.addRoundRect(new RectF(point.x - ww/2, yy, point.x + ww/2, point.y-frad-frad), textH/2,textH/2, Path.Direction.CCW);
          path.moveTo(point.x-frad,point.y-frad-frad);
          path.lineTo(point.x,point.y-frad/2);
          path.lineTo(point.x+frad,point.y-frad-frad);
