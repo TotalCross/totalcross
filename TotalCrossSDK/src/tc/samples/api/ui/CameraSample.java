@@ -88,9 +88,10 @@ public class CameraSample extends BaseContainer
                {
                   File f = new File(ret, File.READ_ONLY);
                   int s = f.getSize();
+                  Image img = null;
                   try
                   {
-                     Image img = new Image(f);
+                     img = new Image(f);
                      //img.transparentColor = Image.NO_TRANSPARENT_COLOR; // doesn't make sense on photos to have a transparent background
                      ic.setImage(img);
                      btnRotate.setEnabled(true);
@@ -107,6 +108,19 @@ public class CameraSample extends BaseContainer
                      new MessageBox("Error","Out of memory trying to load the image. The picture was taken but it cannot be shown here. If you selected a resolution that is not too big (under 1MP), then this error means that this resolution is not really supported on the camera, alghough it is listed, and a possible big default resolution was selected instead. Select another resolution.").popup();
                   }
                   f.close();
+                  if (img != null && Settings.isOpenGL) // guich@tc307: check if there's enough memory to load the image. If there isn't, show just a smaller view of the image
+                  {
+                     try
+                     {
+                        img.applyChanges();
+                     }
+                     catch (OutOfMemoryError oome)
+                     {
+                        img = img.smoothScaledFixedAspectRatio(ic.getHeight(),true);
+                        ic.setImage(img);
+                        new MessageBox("Error","There's not enough memory to show the whole image, so we will decrease its size to show on screen. Note that the original image will remain untouched.").popup();
+                     }
+                  }
                   repaint();
                }
                else

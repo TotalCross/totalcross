@@ -189,20 +189,21 @@ public final class J2TC implements JConstants, TCConstants
                      {
                         BC018_ldc ldc = (BC018_ldc)bcs[j];
                         DeploySettings.appTitle = Utils.stripNonLetters((String)ldc.val.asObj); // if the user wrote "Agenda 1.0", break at the "Agenda"
+                        continue;
                      }
                   }
-                  else
+                  // else - commented out for classes that don't extend MainWindow directly
                   // super("Agenda",TAB_ONLY_BORDER)
                   //    0    0:aload_0
                   //    1    1:ldc1            #1   <String "Agenda">
                   //    2    3:iconst_4
                   //    3    4:invokespecial   #13  <Method void MainWindow(String, byte)>
-                  if ((j+2) < bcs.length && bcs[j+2].bc == 183)
+                  if ((j+2) < bcs.length && (bcs[j+1].bc == 183 || bcs[j+2].bc == 183))
                   {
-                     BC183_invokespecial invoke = (BC183_invokespecial)bcs[j+2];
+                     BC183_invokespecial invoke = (BC183_invokespecial)bcs[bcs[j+2].bc == 183 ? j+2 : j+1];
                      String className = invoke.className;
                      String signature = invoke.signature;
-                     if ((className.equals(totalcrossUiMainWindow) || className.equals(superClass)) && signature.equals("<init>(Ljava/lang/String;B)"))
+                     if ((className.equals(totalcrossUiMainWindow) || className.equals(superClass)) && signature.startsWith("<init>(Ljava/lang/String;"))
                      {
                         BC018_ldc ldc = (BC018_ldc)bcs[j];
                         DeploySettings.appTitle = Utils.stripNonLetters((String)ldc.val.asObj); // if the user wrote "Agenda 1.0", break at the "Agenda"

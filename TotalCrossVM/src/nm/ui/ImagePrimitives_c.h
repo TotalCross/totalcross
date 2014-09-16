@@ -21,8 +21,8 @@
 #include "openglWrapper.h"
 #endif
 
-void applyChanges(Context currentContext, TCObject obj, bool updateList);
-void freeTexture(TCObject obj, bool updateList);
+void applyChanges(Context currentContext, TCObject obj);
+void freeTexture(TCObject obj);
 
 static void setCurrentFrame(TCObject obj, int32 nr)
 {
@@ -690,7 +690,7 @@ void setTransparentColor(TCObject obj, Pixel color)
 }
 
 #ifdef __gl2_h_                         
-void applyChanges(Context currentContext, TCObject obj, bool updateList)
+void applyChanges(Context currentContext, TCObject obj)
 {
    int32 frameCount = Image_frameCount(obj);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
@@ -700,57 +700,72 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
       int32 height = Image_height(obj);
 #ifdef WP8
-      glDeleteTexture(obj, Image_textureId(obj), false);
+      glDeleteTexture(obj, Image_textureId(obj));
 #endif
-      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList,false);
+      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
+      Image_lastAccess(obj) = getTimeStamp();
    }
    Image_changed(obj) = false;
 }
 
-void freeTexture(TCObject img, bool updateList)
+void freeTexture(TCObject img)
 {                                       
-   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null, updateList); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
+   if (ENABLE_TEXTURE_TRACE) debug("freeing texture %X (%dx%d): %d (count: %d)",img,Image_width(img),Image_height(img),Image_textureId(img)[0],Image_instanceCount(img));
+   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
 }
 
-extern VoidPs* imgTextures;
 void resetFontTexture(); // PalmFont_c.h
 #ifdef ANDROID
-void recreateTextures(bool delTex) // called by opengl when the application changes the opengl surface
+static int timestampOldLimit;
+static void onImage(int32 it, VoidP ptr)
 {
-   VoidPs* current = imgTextures;        
-   if (current)
-      do
-      {    
-         TCObject img = (TCObject)current->value;
-         if (delTex)
-            glDeleteTexture(img, Image_textureId(img), false);
-         else
-         {
-            Image_textureId(img)[0] = 0;
-            Image_textureId(img)[1] = 0;
-         }
-         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;      
-      } while (imgTextures != current);
-   if (!delTex)
+   TCObject img = (TCObject)ptr;
+   int32 *ids = Image_textureId(img);
+   if (ids && ids[0])
+   {
+      if (ENABLE_TEXTURE_TRACE) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),ids[0]);
+      switch ((INVTEX)it)
+      {
+         case INVTEX_INVALIDATE:
+            ids[0] = ids[1] = 0;
+            break;
+         case INVTEX_DEL_ALL:
+            glDeleteTexture(img, ids);
+            break;
+         case INVTEX_DEL_ONLYOLD:
+            if (Image_lastAccess(img) != -1 && Image_lastAccess(img) < timestampOldLimit)
+               glDeleteTexture(img, ids);
+            break;
+      }
+      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+   }
+}
+
+void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
+{
+   timestampOldLimit = it == INVTEX_DEL_ONLYOLD ? getTimeStamp() - 10000 : 0; // delete textures
+   visitImages(onImage, it);
+   if (it == INVTEX_INVALIDATE)
       resetFontTexture();
 }
 #else
-void recreateTextures() // called by opengl when the application changes the opengl surface
+static void onImage(int32 dumb, VoidP ptr)
 {
-   VoidPs* current = imgTextures;        
-   if (current)
-      do
-      {    
-         TCObject img = (TCObject)current->value;
-#ifndef WP8 // in wp8 we have to delete the texture when applying the changes
-         // glDeleteTexture(img, Image_textureId(img), false); - TODO use this on iOS
-         Image_textureId(img)[0] = 0;
-         Image_textureId(img)[1] = 0;
-#endif
-         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;      
-      } while (imgTextures != current);
+   TCObject img = (TCObject)ptr;
+   if (Image_textureId(img))
+   {
+      #ifndef WP8 // in wp8 we have to delete the texture when applying the changes
+      // glDeleteTexture(img, Image_textureId(img)); - TODO use this on iOS
+      Image_textureId(img)[0] = 0;
+      Image_textureId(img)[1] = 0;
+      #endif
+      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+   }
+}
+
+void invalidateTextures() // called by opengl when the application changes the opengl surface
+{
+   visitImages(onImage, 0);
    resetFontTexture();
 }
 #endif // ANDROID

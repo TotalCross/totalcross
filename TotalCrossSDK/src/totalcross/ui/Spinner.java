@@ -163,17 +163,21 @@ public class Spinner extends Control implements Runnable
    {
       return running;
    }
+
+   private void step()
+   {
+      if (getParentWindow() == Window.topMost) // don't update if we loose focus
+      {
+         slot0++;
+         repaintNow();
+      }
+   }
    
    public void run()
    {
-      Window w = getParentWindow();
       while (running)
       {
-         if (w == Window.topMost) // don't update if we loose focus
-         {
-            slot0++;
-            repaintNow();
-         }
+         step();
          Vm.sleep(120); // with safeSleep, the vm starts to behave slowly and strangely
       }      
    }
@@ -183,8 +187,9 @@ public class Spinner extends Control implements Runnable
    public void update()
    {
       int now = Vm.getTimeStamp();
-      if ((now - last) > 40) // prevents calling pumpEvents too fast
+      if ((now - last) > 120) // prevents calling pumpEvents too fast
       {
+         step();
          Window.pumpEvents();
          last = now;
       }

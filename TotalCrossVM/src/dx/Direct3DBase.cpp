@@ -20,7 +20,7 @@ static Direct3DBase ^instance;
 extern "C" 
 { 
    extern int32 appW, appH, glShiftY;
-   void recreateTextures();
+   void invalidateTextures();
    void repaintActiveWindows(Context currentContext);
 }
 
@@ -476,7 +476,7 @@ void Direct3DBase::lifeCycle(bool minimizing)
    if (minimizing) minimized = true; // will be set to false in the ContentProvider
    postOnMinimizeOrRestore(minimizing);
    if (minimized)
-      recreateTextures();
+      invalidateTextures();
 }
 
 void Direct3DBase::updateScreen()
@@ -537,7 +537,7 @@ void Direct3DBase::setProgram(whichProgram p)
    d3dcontext->VSSetConstantBuffers(0, 1, &constantBuffer);
 }
 
-void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
+void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    if (minimized) return;
    int32 i;
@@ -578,7 +578,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    if (!onlyAlpha) xfree(pt0);
 }
 
-void Direct3DBase::deleteTexture(TCObject img, int32* textureId, bool updateList)
+void Direct3DBase::deleteTexture(TCObject img, int32* textureId)
 {
    if (!textureId) return;
    ID3D11Texture2D *texture;

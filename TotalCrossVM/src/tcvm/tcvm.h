@@ -15,7 +15,7 @@
 #define TCVM_H
 
 //#define ENABLE_TRACE
-
+#define ENABLE_TEXTURE_TRACE 0
 
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
@@ -118,6 +118,7 @@
 #include "dlmalloc.h"                                                         
 #endif
 #include "xtypes.h"
+#include "../util/coffeecatch.h"
 #include "../event/specialkeys.h"
 #include "mem.h"
 #include "datastructures.h"

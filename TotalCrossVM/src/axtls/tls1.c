@@ -278,7 +278,7 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl)
 #ifdef CONFIG_SSL_CERT_VERIFICATION
     x509_free(ssl->x509_ctx);
 #endif
-
+    memset(ssl,0,sizeof(SSL)); // guich
     free(ssl);
 }
 
@@ -351,7 +351,7 @@ int add_cert(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
     if (i == CONFIG_SSL_MAX_CERTS) /* too many certs */
     {
 #ifdef CONFIG_SSL_FULL_MODE
-        printf("Error: maximum number of certs added - change of "
+        debug("Error: maximum number of certs added - change of "
                 "compile-time configuration required\n");
 #endif
         ret = SSL_ERROR_TOO_MANY_CERTS;
@@ -398,7 +398,7 @@ int add_cert_auth(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
     if (i > CONFIG_X509_MAX_CA_CERTS)
     {
 #ifdef CONFIG_SSL_FULL_MODE
-        printf("Error: maximum number of CA certs added - change of "
+        debug("Error: maximum number of CA certs added - change of "
                 "compile-time configuration required\n");
 #endif
         ret = SSL_ERROR_TOO_MANY_CERTS;
@@ -859,7 +859,7 @@ void finished_digest(SSL *ssl, const char *label, uint8_t *digest)
     }
 
 #if 0
-    printf("label: %s\n", label);
+    debug("label: %s\n", label);
     print_blob("master secret", ssl->master_secret, 48);
     print_blob("mac_buf", mac_buf, q-mac_buf);
     print_blob("finished digest", digest, SSL_FINISHED_HASH_SIZE);
@@ -978,9 +978,11 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
  * Send an encrypted packet with padding bytes if necessary.
  */
 int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
-{
-    int msg_length = length;
-    int ret, pad_bytes = 0;
+{                                
+   SIG_TRY 
+   {
+    volatile int msg_length = length;
+    volatile int ret, pad_bytes = 0;
     ssl->bm_index = msg_length;
 
     /* if our state is bad, don't bother */
@@ -994,9 +996,9 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
     if (IS_SET_SSL_FLAG(SSL_TX_ENCRYPTED))
     {
-        int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
+        volatile int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
                             SSL_CLIENT_WRITE : SSL_SERVER_WRITE;
-        uint8_t hmac_header[SSL_RECORD_SIZE];
+        volatile uint8_t hmac_header[SSL_RECORD_SIZE];
 
         hmac_header[0] = protocol;
         hmac_header[1] = 0x03;
@@ -1023,7 +1025,7 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
         /* add padding? */
         if (ssl->cipher_info->padding_size)
         {
-            int last_blk_size = msg_length%ssl->cipher_info->padding_size;
+            volatile int last_blk_size = msg_length%ssl->cipher_info->padding_size;
             pad_bytes = ssl->cipher_info->padding_size - last_blk_size;
 
             /* ensure we always have at least 1 padding byte */
@@ -1054,6 +1056,12 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
     if ((ret = send_raw_packet(ssl, protocol)) <= 0)
         return ret;
+   }
+   SIG_CATCH
+   {
+      return -1;
+   }
+   SIG_END
 
     return length;  /* just return what we wanted to send */
 }
@@ -1206,7 +1214,7 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
             add_packet(ssl, &buf[2], 3);
             ret = process_sslv23_client_hello(ssl);
 #else
-            printf("Error: no SSLv23 handshaking allowed\n"); TTY_FLUSH();
+            debug("Error: no SSLv23 handshaking allowed\n"); TTY_FLUSH();
             ret = SSL_ERROR_NOT_SUPPORTED;
 #endif
             goto error; /* not an error - just get out of here */
@@ -1784,8 +1792,8 @@ void DISPLAY_STATE(SSL *ssl, int is_send, uint8_t state, int not_ok)
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_STATES))
         return;
 
-    printf(not_ok ? "Error - invalid State:\t" : "State:\t");
-    printf(is_send ? "sending " : "receiving ");
+    debug(not_ok ? "Error - invalid State:\t" : "State:\t");
+    debug(is_send ? "sending " : "receiving ");
 
     switch (state)
     {
@@ -1835,7 +1843,7 @@ void DISPLAY_STATE(SSL *ssl, int is_send, uint8_t state, int not_ok)
             break;
     }
 
-    printf("%s\n", str);
+    debug("%s\n", str);
     TTY_FLUSH();
 }
 
@@ -1869,7 +1877,7 @@ void DISPLAY_RSA(SSL *ssl, const char *label, const RSA_CTX *rsa_ctx)
 void DISPLAY_BYTES(SSL *ssl, const char *format,
         const uint8_t *data, int size, ...)
 {
-#if !defined(PALMOS)
+#if 0 //!defined(PALMOS)
     va_list(ap);
 
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_BYTES))
@@ -1890,83 +1898,83 @@ EXP_FUNC void STDCALL ssl_display_error(int error_code)
     if (error_code == SSL_OK)
         return;
 
-    printf("Error: ");
+    debug("Error: ");
 
     /* X509 error? */
     if (error_code < SSL_X509_OFFSET)
     {
         x509_display_error(error_code - SSL_X509_OFFSET);
-        printf("\n");
+        debug("\n");
         return;
     }
 
     /* SSL alert error code */
     if (error_code > SSL_ERROR_CONN_LOST)
     {
-        printf("SSL error %d\n", -error_code);
+        debug("SSL error %d\n", -error_code);
         return;
     }
 
     switch (error_code)
     {
         case SSL_ERROR_DEAD:
-            printf("connection dead");
+            debug("connection dead");
             break;
 
         case SSL_ERROR_INVALID_HANDSHAKE:
-            printf("invalid handshake");
+            debug("invalid handshake");
             break;
 
         case SSL_ERROR_INVALID_PROT_MSG:
-            printf("invalid protocol message");
+            debug("invalid protocol message");
             break;
 
         case SSL_ERROR_INVALID_HMAC:
-            printf("invalid mac");
+            debug("invalid mac");
             break;
 
         case SSL_ERROR_INVALID_VERSION:
-            printf("invalid version");
+            debug("invalid version");
             break;
 
         case SSL_ERROR_INVALID_SESSION:
-            printf("invalid session");
+            debug("invalid session");
             break;
 
         case SSL_ERROR_NO_CIPHER:
-            printf("no cipher");
+            debug("no cipher");
             break;
 
         case SSL_ERROR_CONN_LOST:
-            printf("connection lost");
+            debug("connection lost");
             break;
 
         case SSL_ERROR_BAD_CERTIFICATE:
-            printf("bad certificate");
+            debug("bad certificate");
             break;
 
         case SSL_ERROR_INVALID_KEY:
-            printf("invalid key");
+            debug("invalid key");
             break;
 
         case SSL_ERROR_FINISHED_INVALID:
-            printf("finished invalid");
+            debug("finished invalid");
             break;
 
         case SSL_ERROR_NO_CERT_DEFINED:
-            printf("no certificate defined");
+            debug("no certificate defined");
             break;
 
         case SSL_ERROR_NOT_SUPPORTED:
-            printf("Option not supported");
+            debug("Option not supported");
             break;
 
         default:
-            printf("undefined as yet - %d", error_code);
+            debug("undefined as yet - %d", error_code);
             break;
     }
 
-    printf("\n");
+    debug("\n");
     TTY_FLUSH();
 }
 
@@ -1978,52 +1986,52 @@ void DISPLAY_ALERT(SSL *ssl, int alert)
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_STATES))
         return;
 
-    printf("Alert: ");
+    debug("Alert: ");
 
     switch (alert)
     {
         case SSL_ALERT_CLOSE_NOTIFY:
-            printf("close notify");
+            debug("close notify");
             break;
 
         case SSL_ALERT_INVALID_VERSION:
-            printf("invalid version");
+            debug("invalid version");
             break;
 
         case SSL_ALERT_BAD_CERTIFICATE:
-            printf("bad certificate");
+            debug("bad certificate");
             break;
 
         case SSL_ALERT_UNEXPECTED_MESSAGE:
-            printf("unexpected message");
+            debug("unexpected message");
             break;
 
         case SSL_ALERT_BAD_RECORD_MAC:
-            printf("bad record mac");
+            debug("bad record mac");
             break;
 
         case SSL_ALERT_HANDSHAKE_FAILURE:
-            printf("handshake failure");
+            debug("handshake failure");
             break;
 
         case SSL_ALERT_ILLEGAL_PARAMETER:
-            printf("illegal parameter");
+            debug("illegal parameter");
             break;
 
         case SSL_ALERT_DECODE_ERROR:
-            printf("decode error");
+            debug("decode error");
             break;
 
         case SSL_ALERT_DECRYPT_ERROR:
-            printf("decrypt error");
+            debug("decrypt error");
             break;
 
         default:
-            printf("alert - (unknown %d)", alert);
+            debug("alert - (unknown %d)", alert);
             break;
     }
 
-    printf("\n");
+    debug("\n");
     TTY_FLUSH();
 }
 
@@ -2051,7 +2059,7 @@ EXP_FUNC void STDCALL ssl_display_error(int error_code) {}
 EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx,
                         int client_fd, const uint8_t *session_id)
 {
-    printf(unsupported_str);
+    debug(unsupported_str);
     return NULL;
 }
 #endif
@@ -2059,13 +2067,13 @@ EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx,
 #if !defined(CONFIG_SSL_CERT_VERIFICATION)
 EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl)
 {
-    printf(unsupported_str);
+    debug(unsupported_str);
     return -1;
 }
 
 EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
 {
-    printf(unsupported_str);
+    debug(unsupported_str);
     return NULL;
 }
 

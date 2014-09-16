@@ -11,6 +11,10 @@ import totalcross.ui.image.*;
  */
 public class TopMenu extends Window implements PathAnimation.AnimationFinished
 {
+   public static interface AnimationListener
+   {
+      public void onAnimationFinished();
+   }
    /** The percentage of the area used for the icon and the caption */
    public static int percIcon = 20, percCap = 80;
    private Control []items;
@@ -24,6 +28,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    /** The percentage of the screen that this TopMenu will take: LEFT/RIGHT will take 50% of the screen's width, 
     * other directions will take 80% of the screen's width. Must be ser before calling <code>popup()</code>. */
    public int percWidth;
+   private AnimationListener alist;
+   /** The width in pixels instead of percentage of screen's width. */
+   public int widthInPixels;
    
    public static class Item extends Container
    {
@@ -107,14 +114,15 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    
    private void setRect()
    {
+      int ww = widthInPixels != 0 ? widthInPixels : SCREENSIZE+(percWidth > 0 ? percWidth : 50);
       switch (animDir)
       {
          case LEFT:
          case RIGHT:
-            setRect(animDir,TOP,SCREENSIZE+(percWidth > 0 ? percWidth : 50),FILL); 
+            setRect(animDir,TOP,ww,FILL); 
             break;
          default:
-            setRect(100000,100000,SCREENSIZE+(percWidth > 0 ? percWidth : 80),WILL_RESIZE); 
+            setRect(100000,100000,ww,WILL_RESIZE); 
             break;
       }
    }
@@ -193,6 +201,12 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    }
    public void unpop()
    {
+      unpop(null);
+   }
+   
+   public void unpop(AnimationListener alist)
+   {
+      this.alist = alist;
       try
       {
          if (animDir == CENTER)
@@ -209,6 +223,12 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    public void onAnimationFinished(ControlAnimation anim)
    {
       super.unpop();
+   }
+   public void postUnpop()
+   {
+      super.postUnpop();
+      if (alist != null)
+         alist.onAnimationFinished();
    }
    public void onPopup()
    {

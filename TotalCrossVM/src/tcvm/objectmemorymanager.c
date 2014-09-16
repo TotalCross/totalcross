@@ -888,6 +888,24 @@ void finalizeObject(TCObject o, TCClass c)
    }
 }
 
+void visitImages(VisitElementFunc onImage, int32 param) // visits all images
+{
+   TCObjectArray usedL;
+   TCObject o;
+   int32 i;                    
+   if (destroyingApplication) return;
+      
+   for (i = 0, usedL = usedList; i <= OBJARRAY_MAX_INDEX; i++, usedL++)
+      if (*usedL)
+         for (o=OBJ_PROPERTIES(*usedL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
+            if (OBJ_CLASS(o) == imageClass) // if user defined a dontFinalize field and set it to true, don't call finalize
+               onImage(param,o);
+   if (lockList)
+   for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
+      if (OBJ_CLASS(o) == imageClass) // if user defined a dontFinalize field and set it to true, don't call finalize
+         onImage(param,o);
+}
+
 void runFinalizers() // calls finalize of all objects in use
 {
    TCObjectArray usedL;

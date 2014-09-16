@@ -58,7 +58,6 @@ static EGLContext _context;
 static void destroyEGL();
 static bool surfaceWillChange;
 
-VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
 extern float ftransp[16];
 extern float f255[256];
@@ -95,8 +94,9 @@ static float texcoords[16], lrcoords[8], shcolors[12],shcoords[8];
 static GLuint textureProgram;
 static GLuint texturePoint;
 static GLuint textureAlpha;
+static GLuint textureProjMat;
 
-/////// 
+///////
 
 #define TEXT_VERTEX_CODE  \
       "attribute vec4 vertexPoint;" \
@@ -124,6 +124,7 @@ static GLuint textureAlpha;
 static GLuint textProgram;
 static GLuint textPoint;
 static GLuint textRGB;
+static GLuint textProjMat;
 
 //////////// points (text)
 
@@ -140,6 +141,7 @@ static GLuint textRGB;
 static GLuint pointsProgram;
 static GLuint pointsXYA;
 static GLuint pointsColor;
+static GLuint pointsProjMat;
 
 ///////////// line, rect, point
 
@@ -156,7 +158,8 @@ static GLuint pointsColor;
 static GLuint lrpProgram;
 static GLuint lrpPosition;
 static GLuint lrpColor;
-static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+static GLuint lrpProjMat;
+static GLushort rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
 ///////////// line, rect, point
 
@@ -177,6 +180,7 @@ static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 static GLuint dotProgram;
 static GLuint dotPosition,dotIsVert;
 static GLuint dotColor1,dotColor2;
+static GLuint dotProjMat;
 
 ///////////// shaded rect
 
@@ -193,6 +197,7 @@ static GLuint dotColor1,dotColor2;
 static GLuint shadeProgram;
 static GLuint shadePosition;
 static GLuint shadeColor;
+static GLuint shadeProjMat;
 
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
@@ -248,7 +253,6 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(bool delTex); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);
 int32 desiredglShiftY;
@@ -273,10 +277,19 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       }
       else
       if (width == -998)
-         recreateTextures(true); // first we delete the textures before the gl context is invalid
+      {
+         if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
+         invalidateTextures(INVTEX_DEL_ALL); // first we delete the textures before the gl context is invalid
+      }
       else
       if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
-         recreateTextures(false); // now we set the changed flag for all textures
+      {
+         if (lastWindow)
+         {
+            if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 1");
+            invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
+         }
+      }
       else
          surfaceWillChange = true; // block all screen updates
       return;
@@ -292,9 +305,11 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (lastWindow && lastWindow != window)
    {
+      if (window == null) {debug("window is null. surface is %X. app will likely crash...",surface);}
       destroyEGL();
       initGLES(&screen);
-      recreateTextures(false); // now we set the changed flag for all textures
+      if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
+      invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
    }
    lastWindow = window;
 }
@@ -303,10 +318,10 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
 static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
-   setCurrentProgram(pointsProgram);
    pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
    pointsXYA = glGetAttribLocation(pointsProgram, "a_xya"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(pointsXYA); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   pointsProjMat = glGetUniformLocation(pointsProgram, "projectionMatrix"); GL_CHECK_ERROR
 }
 
 static int pixLastRGB = -1;
@@ -351,11 +366,11 @@ void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n
 static void initShade()
 {
    shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
-   setCurrentProgram(shadeProgram);
    shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
    shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   shadeProjMat = glGetUniformLocation(shadeProgram, "projectionMatrix"); GL_CHECK_ERROR
 }
 
 void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
@@ -390,34 +405,35 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
       shcolors[8] = shcolors[11] = f255[c1.b];
    }
 
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); GL_CHECK_ERROR
 }
 
 void initTexture()
 {
    // images
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
-   setCurrentProgram(textureProgram);
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
    textureAlpha = glGetUniformLocation(textureProgram, "alpha"); GL_CHECK_ERROR
+   textureProjMat = glGetUniformLocation(textureProgram, "projectionMatrix"); GL_CHECK_ERROR
 
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
 
    // text char
    textProgram = createProgram(TEXT_VERTEX_CODE, TEXT_FRAGMENT_CODE);
-   setCurrentProgram(textProgram);
    textPoint = glGetAttribLocation(textProgram, "vertexPoint"); GL_CHECK_ERROR
    textRGB   = glGetUniformLocation(textProgram, "rgb"); GL_CHECK_ERROR
+   textProjMat = glGetUniformLocation(textProgram, "projectionMatrix"); GL_CHECK_ERROR
 
    glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList, bool onlyAlpha)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    int32 i;
    PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
+   int32 tidorig = textureId[0];
    if (onlyAlpha)
       pt = pt0 = (PixelConv*)pixels;
    else
@@ -434,8 +450,14 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
       if (err)
       {
-         throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
-         return;
+         debug("Out of texture memory to allow %dx%d. Releasing old textures and trying again.",width,height);
+         invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
+         glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+         if (err)
+         {
+            throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
+            return;
+         }
       }
    }
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
@@ -464,23 +486,19 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          *textureId = 0;
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
       }
-      else
-      if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
-         imgTextures = VoidPsAdd(imgTextures, img, null);
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
+   if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
    if (!onlyAlpha) xfree(pt0);
 }
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId)
 {
    if (textureId != null && textureId[0] != 0)
    {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
       *textureId = 0;
    }
-   if (updateList && VoidPsContains(imgTextures, img))
-      imgTextures = VoidPsRemove(imgTextures, img, null);
 }
 
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
@@ -492,7 +510,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 
    setCurrentProgram(isDrawText ? textProgram : textureProgram);
    if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
-      glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR
+      {glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR}
 
    float left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
 
@@ -505,7 +523,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[6 ] = coords[10] = right;
    coords[9 ] = coords[13] = dstY;
    coords[11] = coords[15] = top;
-   
+
    glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    if (!isDrawText && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
@@ -524,18 +542,18 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
 void initLineRectPoint()
 {
    lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
-   setCurrentProgram(lrpProgram);
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
    lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
    glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
+   lrpProjMat = glGetUniformLocation(lrpProgram, "projectionMatrix"); GL_CHECK_ERROR
 
    dotProgram = createProgram(DOT_VERTEX_CODE, DOT_FRAGMENT_CODE);
-   setCurrentProgram(dotProgram);
    dotColor1 = glGetUniformLocation(dotProgram, "color1"); GL_CHECK_ERROR
    dotColor2 = glGetUniformLocation(dotProgram, "color2"); GL_CHECK_ERROR
    dotPosition = glGetAttribLocation(dotProgram, "a_Position"); GL_CHECK_ERROR
    dotIsVert = glGetUniformLocation(dotProgram, "isVert"); GL_CHECK_ERROR
    glEnableVertexAttribArray(dotPosition); GL_CHECK_ERROR
+   dotProjMat = glGetUniformLocation(dotProgram, "projectionMatrix"); GL_CHECK_ERROR
 }
 
 void glSetLineWidth(int32 w)
@@ -576,7 +594,7 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
    {
       coords[0] = x;
       coords[1] = y;
-      coords[2] = w;  // x2
+      coords[2] = w; // x2
       coords[3] = h; // y2
       glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
    }
@@ -586,7 +604,7 @@ void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a,
       coords[1] = coords[7] = y;
       coords[3] = coords[5] = y+h;
       coords[4] = coords[6] = x+w;
-      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); GL_CHECK_ERROR
    }
 }
 
@@ -677,7 +695,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
 
 void flushAll()
 {
-   glFlush(); GL_CHECK_ERROR
+   //glFlush(); GL_CHECK_ERROR
 }
 
 static void setProjectionMatrix(float w, float h)
@@ -690,13 +708,13 @@ static void setProjectionMatrix(float w, float h)
       0.0,      0.0,  -1.0,  0.0,
       0.0,      0.0,   0.0,  1.0
    };
-   
-   setCurrentProgram(textProgram);    glUniformMatrix4fv(glGetUniformLocation(textProgram,    "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(dotProgram);     glUniformMatrix4fv(glGetUniformLocation(dotProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+
+   setCurrentProgram(textProgram);    glUniformMatrix4fv(textProjMat   , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(textureProgram); glUniformMatrix4fv(textureProjMat, 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(lrpProjMat    , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(dotProgram);     glUniformMatrix4fv(dotProjMat    , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(pointsProjMat , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(shadeProjMat  , 1, 0, mat); GL_CHECK_ERROR
 #ifdef darwin
     int fw,fh;
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &fw);
@@ -779,6 +797,7 @@ bool initGLES(ScreenSurface /*screen*/unused)
    EGLint width;
    EGLint height;
 
+   if (!window)                                                             {debug("window is null"); return false;}
    if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)    {debug("eglGetDisplay() returned error %d", eglGetError()); return false;}
    if (!eglInitialize(display, 0, 0))                                       {debug("eglInitialize() returned error %d", eglGetError()); return false;}
    if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs))         {debug("eglChooseConfig() returned error %d", eglGetError()); destroyEGL(); return false;}
@@ -894,7 +913,8 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
    // erase buffer with keyboard's background color
    PixelConv gray;
    gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFFFF;
-   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
-   glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1);
+   glClear(GL_COLOR_BUFFER_BIT);
+   glClear(GL_DEPTH_BUFFER_BIT);
    resetGlobals();
 }

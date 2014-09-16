@@ -148,14 +148,14 @@ TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native pu
 {
 #ifdef __gl2_h_    
    TCObject thisObj = p->obj[0];
-   applyChanges(p->currentContext,thisObj,true);
+   applyChanges(p->currentContext,thisObj);
 #endif    
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
 {  
 #ifdef __gl2_h_                         
-   freeTexture(p->obj[0],true);
+   freeTexture(p->obj[0]);
 #endif   
 }
 //////////////////////////////////////////////////////////////////////////

@@ -19,12 +19,10 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.Font;
-import totalcross.ui.font.FontMetrics;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.util.Vector;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * TabbedContainer is a bar of text or image tabs.
@@ -269,7 +267,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          }
       if (!on && activeIndex == tabIndex) // move to next tab
          setActiveTab(nextEnabled(activeIndex,true));
-      if (flick != null)
+      if (Settings.fingerTouch)
       {
          containers[tabIndex].setEnabled(on);
          if (!on) // tell Control.postEvent that the flick still needs to be called

@@ -162,6 +162,7 @@
 #define Image_transparentColor(o)   FIELD_I32(o, 6)
 #define Image_useAlpha(o)           FIELD_I32(o, 7)
 #define Image_alphaMask(o)          FIELD_I32(o, 8)
+#define Image_lastAccess(o)         FIELD_I32(o, 9)
 
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)

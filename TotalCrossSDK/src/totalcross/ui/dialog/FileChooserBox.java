@@ -87,6 +87,7 @@ public class FileChooserBox extends Window
    private int previouslySelectedRootIndex = -1;
    private Button btnPreview;
    private Container tap;
+   private static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
 
    /* return the number of files found in the current directory
     * @since TotalCross 1.53 
@@ -162,9 +163,34 @@ public class FileChooserBox extends Window
       this.ff = ff;
       this.buttonCaptions = buttonCaptions;
       tmodel = new TreeModel();
-      if (Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
-         cbRoot = new ComboBox(File.listRoots());
+      if (isAndroid || Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
+         cbRoot = new ComboBox(listRoots());
    }
+	
+	private static String[] listRoots()
+	{
+	   if (!isAndroid)
+	      return File.listRoots();
+	   Vector v = new Vector(10);
+	   v.addElement("device/");
+	   try
+	   {
+         String[] ll = new File("/mnt").listFiles();
+         for (int i = 0; i < ll.length; i++)
+         {
+            String dir = "/mnt/"+ll[i];
+            try
+            {
+               if (new File(dir).listFiles() != null)
+                  v.addElement(dir);
+            } catch (Exception e) {}
+         }
+	   }
+	   catch (Exception e)
+	   {
+	   }
+	   return (String[]) v.toObjectArray();
+	}
 
    /** Constructs a file chooser with "Select a file" as the window title, and "Select" and "Cancel" buttons.
     * @param ff The Filter. Pass null to accept all files.
@@ -181,7 +207,7 @@ public class FileChooserBox extends Window
          if (cbRoot != null) // guich@tc126_10
          {
             cbRoot.removeAll();
-            cbRoot.add(File.listRoots());
+            cbRoot.add(listRoots());
             selectedIndex = previouslySelectedRootIndex = -1;
          }
          return;
@@ -256,6 +282,12 @@ public class FileChooserBox extends Window
          int firstSlash = filePath.indexOf('/');
          if (firstSlash != -1)
          {
+            if (isAndroid && filePath.startsWith("/mnt"))
+            {
+               int otherSlash = filePath.indexOf(firstSlash+1);
+               if (otherSlash != -1)
+                  firstSlash = otherSlash;
+            }
             cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true);
             previouslySelectedRootIndex = cbRoot.getSelectedIndex();
          }

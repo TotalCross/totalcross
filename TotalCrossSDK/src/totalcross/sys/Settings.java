@@ -30,10 +30,10 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 306;
+   public static int version = 307;
     
    /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "3.06";
+   public static String versionStr = "3.07";
     
    /** Current build number.
     * @since TotalCross 1.53 
@@ -491,6 +491,7 @@ public final class Settings
     * Setting this field to true allows the execution of multiple instances of the same application.
     * When the application is started, it first checks if there is a running instance of the same application. If so, the
     * running instance is moved to the foreground and the starting application exits.
+    * This only works for Win32 and WinCE.
     * @since TotalCross 1.0
     */
    public static boolean multipleInstances;

@@ -1701,39 +1701,44 @@ public class Control extends GfxSurface
    {
       // although this code is not much eficient, the number of listeners for a single control will be only one, most of the times.
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
-      {
-         Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
-         switch (e.type)
+         try
          {
-            case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
-            case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
-            case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
-            case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
-            case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
-            case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
-            case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
-            case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
-            case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
-            case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
-            case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
-            case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
-            case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
-            case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
-            case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
-            case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
-            case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
-            case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
-            case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
-            case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
-            case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
-            case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
-            case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
-            case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
-            case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
-            case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
+            Listener l = (Listener)listeners.items[i];
+            if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+            switch (e.type)
+            {
+               case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
+               case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
+               case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+               case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
+               case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
+               case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
+               case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
+               case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
+               case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
+               case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
+               case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
+               case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
+               case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
+               case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
+               case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
+               case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
+               case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
+               case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
+               case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
+               case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
+               case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
+               case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
+               case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
+               case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
+               case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
+               case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
+            }
          }
-      }
+         catch (ClassCastException ee) // prevent totalcross.ui.event.PenEvent is not compatible with totalcross.ui.event.DragEvent
+         {
+            if (Settings.onJavaSE) throw ee;
+         }
    }
 
    /**
@@ -1827,7 +1832,7 @@ public class Control extends GfxSurface
     * A scroll occurs before a flick is started.
     * @since TotalCross 1.3
     */
-   protected boolean hadParentScrolled()
+   public boolean hadParentScrolled()
    {
       for (Container c = parent; c != null; c = c.parent)
          if (c instanceof Scrollable && ((Scrollable)c).wasScrolled())

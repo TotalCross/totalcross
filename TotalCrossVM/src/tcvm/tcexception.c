@@ -236,7 +236,8 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
    {
       callStack -= 2;
       //int2hex((int32)callStack, 6, c); c += 6; *c++ = ' '; - used when debugging
-      m = (Method)callStack[0];
+      m = (Method)callStack[0];  
+      if (!m) break;      
       oldpc = (Code)callStack[1];
       line = (m->lineNumberLine != null) ? locateLine(m, first ? pc0 : ((int32)(oldpc - m->code))) : -1;
       c = dumpMethodInfo(c, m, line, c0 + sizeof(currentContext->exmsg) - 2);

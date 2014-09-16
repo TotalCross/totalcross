@@ -134,4 +134,10 @@ public class RadioGroupController
    {
       return (Radio)members.items[idx];
    }
+   
+   /** Returns the number of Radio's. */
+   public int getSize()
+   {
+      return members.size();
+   }
 }

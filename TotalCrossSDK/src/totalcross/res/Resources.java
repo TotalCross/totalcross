@@ -54,6 +54,7 @@ public class Resources
    public static Image back;
    public static Image menu;
    public static Image comboArrow;
+   public static Image comboArrow2;
    
    public static String chimeMP3 = "device/chime.mp3";
    
@@ -74,7 +75,8 @@ public class Resources
       exit     = new Image(folder+"exit.png");
       back     = new Image(folder+"back.png");
       menu     = new Image(folder+"menu.png");
-      comboArrow = new Image(folder+"comboArrow.png");
+      comboArrow  = new Image(folder+"comboArrow.png");
+      comboArrow2 = new Image(folder+"comboArrow2.png");
       
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");

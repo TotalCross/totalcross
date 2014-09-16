@@ -36,6 +36,9 @@ import totalcross.util.*;
 
 public class ComboBox extends Container
 {
+   public static final int ARROWSTYLE_DOWNDOT = 0;
+   public static final int ARROWSTYLE_PAGEFLIP = 1;
+   public static int arrowStyle = ARROWSTYLE_PAGEFLIP;
    protected ComboBoxDropDown pop;
    Button btn;
    private boolean armed;
@@ -74,19 +77,19 @@ public class ComboBox extends Container
     * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
     * popup list, but keep others with the PopupMenu, you can do something like:
     * <pre>
-    * public class MyListBox extends ListBox
-    * {
-    *    public MyListBox(String[] items)
-    *    {
-    *       super(items);
-    *    }
-    * }
-    * ...
-    * ComboBox cb = new ComboBox(new MyListBox(items));
+    *  // at the begining of your program:
+    *  ComboBox.usePopupMenu = true;
+    *  // when you want to create the standalone ComboBox
+    *  ComboBox.usePopupMenu = false; // turn flag off
+    *  .. create the ComboBox
+    *  ComboBox.usePopupMenu = true; // turn flag on again
     * </pre>
+    * An internal copy of the flag is set at the constructor.
     * @since TotalCross 1.5
     */
    public static boolean usePopupMenu = true;
+   
+   private boolean _usePopupMenu;
    
    /** Creates an empty ComboBox */
    public ComboBox()
@@ -115,6 +118,7 @@ public class ComboBox extends Container
    /** Constructs a ComboBox with the given PopList. */
    public ComboBox(ComboBoxDropDown userPopList) // guich@340_36
    {
+      _usePopupMenu = usePopupMenu;
       clearValueInt = defaultClearValueInt;
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
@@ -319,15 +323,17 @@ public class ComboBox extends Container
    private Image getArrowImage() 
    {
       Image img;
-      int s = fmH;
+      Image img0 = arrowStyle == ARROWSTYLE_PAGEFLIP ? Resources.comboArrow2 : Resources.comboArrow;
+      int s = arrowStyle == ARROWSTYLE_PAGEFLIP ? height : fmH;
+      if (s == 0) s = fmH;
       try
       {
-         img = Resources.comboArrow.getSmoothScaledInstance(s,s);
+         img = img0.getSmoothScaledInstance(s,s);
          img.applyColor2(backColor);
       }
       catch (ImageException e)
       {
-         img = Resources.comboArrow;
+         img = img0;
       }
       return img;
    }
@@ -344,9 +350,7 @@ public class ComboBox extends Container
          pop.setFont(font);
       // guich@tc100b3: resize the arrow based on the font.
       boolean uiAndroid = Control.uiAndroid;
-      if (uiAndroid)
-         btn.setImage(getArrowImage());
-      else
+      if (!uiAndroid)
       {
          ArrowButton ab = (ArrowButton)btn;
          int newWH = getArrowWidth();
@@ -374,7 +378,11 @@ public class ComboBox extends Container
       switch (Settings.uiStyle)
       {
          case Settings.Android:
-            btn.setRect(width - btnW - 3, 2, btnW, height-4,null,screenChanged);
+            btn.setImage(getArrowImage());
+            if (arrowStyle == ARROWSTYLE_PAGEFLIP)
+               btn.setRect(width - btnW - 1, 0, btnW, height-2,null,screenChanged);
+            else
+               btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
             break;
          default: // guich@573_6: both Flat and Vista use this
             btn.setRect(width - btnW - 3, 1, btnW + 2, height - 2, null, screenChanged);
@@ -485,7 +493,7 @@ public class ComboBox extends Container
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
-      if (uiAndroid && usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
+      if (uiAndroid && _usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
       {
          if (pop.lb.itemCount == 0)
             opened = false;

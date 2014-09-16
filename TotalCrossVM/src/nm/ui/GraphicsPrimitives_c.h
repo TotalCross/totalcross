@@ -320,9 +320,10 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
       int frame;
 
       if (Image_changed(srcSurf))
-         applyChanges(currentContext, srcSurf, true);
+         applyChanges(currentContext, srcSurf);
       fc = Image_frameCount(srcSurf);
       frame = (fc <= 1) ? 0 : Image_currentFrame(srcSurf);
+      Image_lastAccess(srcSurf) = getTimeStamp();
 /*img*/ glDrawTexture(Image_textureId(srcSurf), srcX+frame*srcPitch,srcY,width,height, dstX,dstY, 0,0, fc > 1 ? (int32)(Image_widthOfAllFrames(srcSurf) * Image_hwScaleW(srcSurf)) : srcWidth,srcHeight, null, alphaMask);
    }
    else

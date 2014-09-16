@@ -1626,6 +1626,7 @@ public class Grid extends Container implements Scrollable
       ds = null;
       lastStartingRow = -1;
 
+      allChecked = false;
       gridOffset = itemsCount = 0;
       selectedLine = -1; // guich@580_4
       sbVert.setMaximum(0);
@@ -1663,7 +1664,7 @@ public class Grid extends Container implements Scrollable
          for (int i = itemsCount-1; i >= 0; i--)
             if (cc == null || cc.isEnabled(i+row0,0)) // guich@580_31
                items[i] = value;
-         checkedCount = check ? items.length : 0; // guich@tc123_30
+         checkedCount = check ? itemsCount : 0; // guich@tc123_30
       }
    }
 
@@ -2209,31 +2210,67 @@ public class Grid extends Container implements Scrollable
       if (checkEnabled)
          col--;
       if (itemsCount > 1 && vItems != null)
+      {
+         int sortType,lin=0;
+         do
+         {
+            sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(getItem(lin)[col]) : sortTypes[col]; // guich@565_1: support numeric sort
+         }
+         while (sortType == Convert.SORT_STRING && ++lin < itemsCount);
          try
          {
             // autodetect the sort type
-            String s = getItem(1)[col];  // guich@565_1: support numeric sort
-            int sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(s) : sortTypes[col];
             switch (sortType)
             {
-               case Convert.SORT_INT:             
-                  try
-                  {
-                     qsortInt         (col, 0, itemsCount-1, ascending);
-                  }
-                  catch (InvalidNumberException ine) // search as double if there's a problem
-                  {
-                     qsortDouble      (col, 0, itemsCount-1, ascending);
-                     sortTypes[col] = Convert.SORT_DOUBLE;
-                  }
-                  break;
+               case Convert.SORT_INT:             qsortInt         (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_DOUBLE:          qsortDouble      (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_DATE:            qsortDate        (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_STRING_NOCASE:   qsortStringNocase(col, 0, itemsCount-1, ascending); break;
                default:                           qsortString      (col, 0, itemsCount-1, ascending); break;
             }
          }
-         catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
+         catch (Exception e) 
+         {
+            // try again, moving invalid values out of the sort
+            int lowestValid = 0, highestValid = itemsCount-1;
+            Date d = sortType == Convert.SORT_DATE ? new Date() : null;
+            for (int i = 0; i <= highestValid; i++)
+            {
+               try 
+               {
+                  switch (sortType)
+                  {
+                     case Convert.SORT_INT:    Convert.toInt(((String[])vItems.items[i])[col]); break;
+                     case Convert.SORT_DOUBLE: Convert.toDouble(((String[])vItems.items[i])[col]); break;
+                     case Convert.SORT_DATE:   d.set(((String[])vItems.items[i])[col], Settings.dateFormat); break;
+                     default: return; // get out - dont know what kind of exceptions can be thrown with String
+                  }                  
+               } 
+               catch (Exception ee) 
+               {
+                  if (ascending)
+                     swap(lowestValid++, i);
+                  else
+                     swap(highestValid--, i);
+               }
+            }   
+            try
+            {
+               // sort as string the invalid part
+               if (ascending)
+                  qsortStringNocase(col, 0, lowestValid-1, ascending);
+               else
+                  qsortStringNocase(col, highestValid, itemsCount-1, ascending);
+               switch (sortType)
+               {
+                  case Convert.SORT_INT:             qsortInt         (col, lowestValid, highestValid, ascending); break;
+                  case Convert.SORT_DOUBLE:          qsortDouble      (col, lowestValid, highestValid, ascending); break;
+                  case Convert.SORT_DATE:            qsortDate        (col, lowestValid, highestValid, ascending); break;
+               }
+            }
+            catch (Exception eee) {if (Settings.onJavaSE) e.printStackTrace();}
+         }
+      }
    }
    /** Performs a quicksort in the items of the given column. This method does not work if there's a datasource assigned. */
    public void qsort(int col) // guich@563_7
@@ -2252,6 +2289,19 @@ public class Grid extends Container implements Scrollable
       qsort(checkEnabled ? col+1 : col, ascending);
    }
 
+   private void swap(int low, int high)
+   {
+      if (checkEnabled)
+      {
+         int t = ivChecks.items[low];
+         ivChecks.items[low] = ivChecks.items[high];
+         ivChecks.items[high] = t;
+      }
+      Object temp = vItems.items[low];
+      vItems.items[low] = vItems.items[high];
+      vItems.items[high] = temp;
+   }
+   
    private void qsortInt(int col, int first, int last, boolean ascending) throws InvalidNumberException // guich@220_34
    {
       if (first >= last)
@@ -2260,7 +2310,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       int mid = Convert.toInt(((String[])items[(first+last) >> 1])[col]);
       while (true)
@@ -2280,18 +2329,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2305,15 +2345,13 @@ public class Grid extends Container implements Scrollable
       return s.equals("") ? -1 : Convert.toDouble(s,def); // guich@tc210: support empty cells
    }
    private void qsortDouble(int col, int first, int last, boolean ascending) throws InvalidNumberException // guich@220_34
-   {
-      
+   {      
       if (first >= last)
          return;
       int low = first;
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       double mid = getDoubleValue(((String[])items[(first+last) >> 1])[col], Convert.MIN_DOUBLE_VALUE);
       while (true)
@@ -2333,18 +2371,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2361,7 +2390,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
       byte df = Settings.dateFormat;
 
       Date d = new Date();
@@ -2383,18 +2411,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2411,7 +2430,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       String mid = ((String[])items[(first+last) >> 1])[col];
       while (true)
@@ -2431,18 +2449,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2459,7 +2468,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       String mid = ((String[])items[(first+last) >> 1])[col].toLowerCase();
       while (true)
@@ -2479,18 +2487,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)

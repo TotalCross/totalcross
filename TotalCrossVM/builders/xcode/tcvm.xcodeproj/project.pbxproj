@@ -403,6 +403,8 @@
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
 		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
+		3A55FCFF19B61CDF0066C862 /* coffeecatch.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A55FCFD19B61CDF0066C862 /* coffeecatch.c */; };
+		3A55FD0019B61CDF0066C862 /* coffeecatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A55FCFE19B61CDF0066C862 /* coffeecatch.h */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
 		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
@@ -826,6 +828,8 @@
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
 		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
+		3A55FCFD19B61CDF0066C862 /* coffeecatch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = coffeecatch.c; sourceTree = "<group>"; };
+		3A55FCFE19B61CDF0066C862 /* coffeecatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = coffeecatch.h; sourceTree = "<group>"; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
 		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
@@ -1765,6 +1769,8 @@
 		0F8C8C161549CFC700E0967F /* util */ = {
 			isa = PBXGroup;
 			children = (
+				3A55FCFD19B61CDF0066C862 /* coffeecatch.c */,
+				3A55FCFE19B61CDF0066C862 /* coffeecatch.h */,
 				0F8C8C191549CFC700E0967F /* darwin */,
 				0F8C8C1B1549CFC700E0967F /* datastructures.c */,
 				0F8C8C1C1549CFC700E0967F /* datastructures.h */,
@@ -1934,6 +1940,7 @@
 				0F8C8CFA1549CFC700E0967F /* GPS_c.h in Headers */,
 				0F8C8CFC1549CFC700E0967F /* RadioDevice.h in Headers */,
 				0F8C8CFD1549CFC700E0967F /* RadioDevice_c.h in Headers */,
+				3A55FD0019B61CDF0066C862 /* coffeecatch.h in Headers */,
 				0F8C8CFF1549CFC700E0967F /* device_PortConnector.h in Headers */,
 				0F8C8D001549CFC700E0967F /* device_PortConnector_test.h in Headers */,
 				0F8C8D021549CFC700E0967F /* File.h in Headers */,
@@ -2315,6 +2322,7 @@
 				0F8C8DFD1549CFC700E0967F /* datastructures.c in Sources */,
 				0F8C8DFF1549CFC700E0967F /* debug.c in Sources */,
 				0F8C8E011549CFC700E0967F /* dlmalloc.c in Sources */,
+				3A55FCFF19B61CDF0066C862 /* coffeecatch.c in Sources */,
 				15E4ED11189C35510012D8ED /* Reflection.c in Sources */,
 				0F8C8E031549CFC700E0967F /* errormsg.c in Sources */,
 				0F8C8E051549CFC700E0967F /* guid.c in Sources */,

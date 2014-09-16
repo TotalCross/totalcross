@@ -1461,6 +1461,7 @@ public class Window extends Container
       for (j = 0,n=zStack.size(); j < n; j++)
          if (((Window)items[j]).fadeOtherWindows)
             lastFade = j;
+      if (i == -1) i = 0;
       for (n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
       {
          if (i == lastFade)
