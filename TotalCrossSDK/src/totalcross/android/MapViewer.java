@@ -245,7 +245,6 @@ public class MapViewer extends MapActivity
       for (int i = 0; i < ss.length; i++)
       {
          String s = ss[i];
-         AndroidUtils.debug("item["+i+"]: "+s);
          if (s.startsWith("*S*"))
             items[i] = new Shape(s);
          else
