@@ -493,13 +493,52 @@ target: device
 
   <echo message="create the device TCBase.tcz file" />
   <mkdir dir="${dist}" />
+  
+  <!-- all but ui classes -->
   <delete file="${output}/tcsdk.jar"/>
   <delete file="${output}/tcsdk_.jar"/>
   <copy file="${src}/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
   <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
-    includes="totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/util/regex/*.class,totalcross/xml/*.class,totalcross/json/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
-    excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*"
+    includes="totalcross/util/*.class,totalcross/util/regex/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/json/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/unit/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/json/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
+    excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/res/*.class"
+    />
+  </jar>
+
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/device_${versionStr}.map">
+       <keep name="*"><field access="public protected" /></keep>
+       <keepclassmembers>
+         <method name="*" />
+         <field access="!public !protected !private" />
+       </keepclassmembers>
+       <keepattribute name="LineNumberTable" />
+
+       <injar path="${output}/tcsdk_.jar" />
+       <outjar path="${output}/tcsdk.jar" />
+   </proguard>
+
+  <echo message="deploy the non-UI jar package file" />
+  <java classname="tc.Deploy" fork="yes" dir="${output}">
+    <classpath>
+        <pathelement location="${output}/classes"/>
+        <pathelement location="${sdk.root}"/>
+    </classpath>
+    <arg value="${output}/tcsdk.jar"/>
+    <arg line="/n TCBase"/>
+    <arg line="${tcdeploy_line}"/>
+    <arg line="-win32"/>
+    <arg line="/a TCvm"/>
+  </java>
+
+  <copy file="${output}/install/win32/TCBase.tcz" todir="${dist}/vm"/>
+  
+  <!-- ui classes -->
+  
+  <delete file="${output}/tcsdk.jar"/>
+  <delete file="${output}/tcsdk_.jar"/>
+  <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
+    <fileset dir="${output}/classes"
+    includes="totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class"
     />
     <fileset dir="${src}" includes="totalcross/res/**" />
   </jar>
@@ -516,20 +555,22 @@ target: device
        <outjar path="${output}/tcsdk.jar" />
    </proguard>
 
-  <echo message="deploy the jar package file" />
+  <echo message="deploy the UI jar package file" />
   <java classname="tc.Deploy" fork="yes" dir="${output}">
     <classpath>
         <pathelement location="${output}/classes"/>
         <pathelement location="${sdk.root}"/>
     </classpath>
     <arg value="${output}/tcsdk.jar"/>
-    <arg line="/n TCBase"/>
+    <arg line="/n TCUI"/>
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>
     <arg line="/a TCvm"/>
   </java>
 
-  <copy file="${output}/install/win32/TCBase.tcz" todir="${dist}/vm"/>
+  <copy file="${output}/install/win32/TCUI.tcz" todir="${dist}/vm"/>
+
+   
   <copy file="${fonts}/TCFont.tcz" todir="${dist}/vm"/>
 
 </target>
