@@ -19,7 +19,7 @@ public class TestCollections extends TestSuite
 
    public TestCollections()
    {
-      super("Litebase Test Suite");
+      super("Collections Test Suite");
       if (Settings.platform.equals(Settings.ANDROID))
          Vm.debug(Vm.ALTERNATIVE_DEBUG);
       
@@ -46,6 +46,10 @@ public class TestCollections extends TestSuite
       addTestCase(TestAbstractMap.class);
       addTestCase(TestAbstractSequentialList.class);
       addTestCase(TestAbstractSet.class);
+      addTestCase(TestDictionary.class);
+      
+      // Classes
+      addTestCase(TestArrayList.class);
       
       addTestCase(TestGenerics.class);
    }
