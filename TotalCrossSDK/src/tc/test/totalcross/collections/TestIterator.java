@@ -40,4 +40,8 @@ class Test4 implements Iterator
    {
       return new Object();
    }
+   
+   public void remove()
+   {
+   }
 }
