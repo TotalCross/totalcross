@@ -156,7 +156,7 @@ public class GoogleMapsSample extends BaseContainer
                         c.filled = true;
                         c.rad = hh/2;
                         
-                        GoogleMaps.showMap(new GoogleMaps.MapItem[]{p1,s1,s2,c},false);
+                        GoogleMaps.showMap(new GoogleMaps.MapItem[]{p1,s1,s2,c},chSat.isChecked());
                         return;
                      case 1:
                         gpsNotCancelled = true;
