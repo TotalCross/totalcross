@@ -63,7 +63,7 @@ public final class Convert
       newLauncherInstance();
    }
 
-   private static char []b2h = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+   public static char []b2h = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
    private static byte []h2b = new byte['f' + 1];
    private static byte h2bInvalid = (byte)0xFF;
    static
