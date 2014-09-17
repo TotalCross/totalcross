@@ -581,6 +581,7 @@ public class Deployer4Android
          // tc is always included
          // include non-binary files
          vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
          vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
          vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
       }         

@@ -519,6 +519,7 @@ target: Linux builds
       <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
       <arg line="-t ${target.path}/dist/vm/linux"/>
       <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${source.sdk.path}/dist/vm/TCUI.tcz"/>
       <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     </java>
 </target>
