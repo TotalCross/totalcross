@@ -50,6 +50,7 @@ public class TestCollections extends TestSuite
       
       // Classes
       addTestCase(TestArrayList.class);
+      addTestCase(TestBitSet.class);
       
       addTestCase(TestGenerics.class);
    }
