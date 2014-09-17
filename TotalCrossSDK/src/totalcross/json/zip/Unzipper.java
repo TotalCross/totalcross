@@ -1,9 +1,7 @@
 package totalcross.json.zip;
 
-import totalcross.json.JSONArray;
-import totalcross.json.JSONException;
-import totalcross.json.JSONObject;
-import totalcross.json.Kim;
+import totalcross.json.*;
+import totalcross.sys.*;
 
 /*
  Copyright (c) 2012 JSON.org
@@ -159,7 +157,10 @@ public class Unzipper extends JSONzip {
         while (true) {
             if (at >= allocation) {
                 allocation *= 2;
-                bytes = java.util.Arrays.copyOf(bytes, allocation);
+                byte[] nbytes = new byte[allocation];
+                Vm.arrayCopy(bytes, 0, nbytes, 0, bytes.length);
+                bytes = nbytes;
+                //bytes = java.util.Arrays.copyOf(bytes, allocation);
             }
             int c = huff.read(this.bitreader);
             if (c == end) {
@@ -285,13 +286,7 @@ public class Unzipper extends JSONzip {
                 bytes[length] = bcd[c];
                 length += 1;
             }
-            Object value;
-            try {
-                value = JSONObject.stringToValue(new String(bytes, 0, length,
-                        "US-ASCII"));
-            } catch (java.io.UnsupportedEncodingException e) {
-                throw new JSONException(e);
-            }
+            Object value = JSONObject.stringToValue(new String(bytes, 0, length/*"US-ASCII"*/));
             this.valuekeep.register(value);
             return value;
         case 2:

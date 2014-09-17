@@ -2290,6 +2290,7 @@ public final class Convert
    public static final long DOUBLE_NAN_BITS = 0x7ff8000000000000L;
    public static final double DOUBLE_POSITIVE_INFINITY_VALUE = longBitsToDouble(DOUBLE_POSITIVE_INFINITY_BITS);
    public static final double DOUBLE_NEGATIVE_INFINITY_VALUE = longBitsToDouble(DOUBLE_NEGATIVE_INFINITY_BITS);
+   public static final double DOUBLE_NAN_VALUE = longBitsToDouble(DOUBLE_NAN_BITS);
    static class Constants // get rid of symbols not used in device.
    {
       private static String spaces = "";

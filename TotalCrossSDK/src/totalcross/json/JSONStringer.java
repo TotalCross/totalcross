@@ -61,7 +61,7 @@ public class JSONStringer extends JSONWriter {
      * Make a fresh JSONStringer. It can be used to build one JSON text.
      */
     public JSONStringer() {
-        super(new StringWriter());
+        super(new StringBuffer(1024));
     }
 
     /**

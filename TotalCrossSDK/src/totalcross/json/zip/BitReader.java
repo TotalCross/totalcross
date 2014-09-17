@@ -1,6 +1,6 @@
 package totalcross.json.zip;
 
-import java.io.IOException;
+import totalcross.io.IOException;
 
 public interface BitReader {
 

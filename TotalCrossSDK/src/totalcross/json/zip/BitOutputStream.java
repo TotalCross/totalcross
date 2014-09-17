@@ -1,7 +1,6 @@
 package totalcross.json.zip;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import totalcross.io.*;
 
 /*
  Copyright (c) 2013 JSON.org
@@ -43,7 +42,7 @@ public class BitOutputStream implements BitWriter {
     /**
      * The destination of the bits.
      */
-    private OutputStream out;
+    private Stream out;
 
     /**
      * Holder of bits not yet written.
@@ -62,7 +61,7 @@ public class BitOutputStream implements BitWriter {
      * @param out
      *            An Output Stream
      */
-    public BitOutputStream(OutputStream out) {
+    public BitOutputStream(Stream out) {
         this.out = out;
     }
 
@@ -105,9 +104,10 @@ public class BitOutputStream implements BitWriter {
                 padding -= 1;
             }
         }
-        this.out.flush();
+        //this.out.flush();
     }
 
+    byte[] buf = new byte[1];
     /**
      * Write some bits. Up to 32 bits can be written at a time.
      *
@@ -135,7 +135,8 @@ public class BitOutputStream implements BitWriter {
             nrBits += actual;
             this.vacant -= actual;
             if (this.vacant == 0) {
-                this.out.write(this.unwritten);
+                buf[0] = (byte)this.unwritten;
+                this.out.writeBytes(buf,0,1);
                 this.unwritten = 0;
                 this.vacant = 8;
             }

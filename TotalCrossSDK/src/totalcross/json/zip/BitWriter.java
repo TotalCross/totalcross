@@ -1,6 +1,6 @@
 package totalcross.json.zip;
 
-import java.io.IOException;
+import totalcross.io.*;
 
 /**
  * A bitwriter is a an interface that allows for doing output at the bit level.

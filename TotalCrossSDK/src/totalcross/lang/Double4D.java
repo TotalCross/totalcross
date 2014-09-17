@@ -11,6 +11,10 @@ public class Double4D
    {
       this.v = v;
    }
+   public Double4D(String s) throws NumberFormatException
+   {
+      this.v = parseDouble(s);
+   }
    public double doubleValue()
    {
       return v;
@@ -44,5 +48,36 @@ public class Double4D
       {
          throw new NumberFormatException(ine.getMessage());
       }
+   }
+   public static double parseDouble(String str) throws NumberFormatException
+   {
+      try
+      {
+         return Convert.toDouble(str);
+      }
+      catch (InvalidNumberException e)
+      {
+         throw new NumberFormatException(e.getMessage());
+      }
+   }
+   public static boolean isNaN(double v)
+   {
+      return v == Convert.DOUBLE_NAN_VALUE;
+   }
+   public static boolean isInfinite(double v)
+   {
+      return v == Convert.DOUBLE_POSITIVE_INFINITY_VALUE || v == Convert.DOUBLE_NEGATIVE_INFINITY_VALUE;
+   }
+   public static String toString(double d)
+   {
+      return Convert.toString(d);
+   }
+   public boolean isInfinite()
+   {
+      return v == Convert.DOUBLE_POSITIVE_INFINITY_VALUE || v == Convert.DOUBLE_NEGATIVE_INFINITY_VALUE;
+   }
+   public boolean isNaN()
+   {
+      return v == Convert.DOUBLE_NAN_VALUE;
    }
 }

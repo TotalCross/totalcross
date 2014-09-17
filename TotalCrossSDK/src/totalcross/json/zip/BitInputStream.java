@@ -1,7 +1,6 @@
 package totalcross.json.zip;
 
-import java.io.IOException;
-import java.io.InputStream;
+import totalcross.io.*;
 
 /*
  Copyright (c) 2013 JSON.org
@@ -47,7 +46,7 @@ public class BitInputStream implements BitReader {
     /**
      * The source of the bits.
      */
-    private InputStream in;
+    private Stream in;
 
     /**
      * The number of bits read so far. This is used in padding.
@@ -61,7 +60,7 @@ public class BitInputStream implements BitReader {
      * @param in
      *            An InputStream.
      */
-    public BitInputStream(InputStream in) {
+    public BitInputStream(Stream in) {
         this.in = in;
     }
 
@@ -114,6 +113,8 @@ public class BitInputStream implements BitReader {
         return result;
     }
 
+    
+    private byte[] buf = new byte[1];
     /**
      * Read some bits.
      *
@@ -132,10 +133,10 @@ public class BitInputStream implements BitReader {
         int result = 0;
         while (width > 0) {
             if (this.available == 0) {
-                this.unread = this.in.read();
-                if (this.unread < 0) {
+                this.in.readBytes(buf,0,1);/* <= 0) this.unread < 0) {
                     throw new IOException("Attempt to read past end.");
-                }
+                }*/
+                this.unread = buf[0];
                 this.available = 8;
             }
             int take = width;
