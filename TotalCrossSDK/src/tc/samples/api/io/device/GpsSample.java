@@ -157,4 +157,10 @@ public class GpsSample extends BaseContainer
          MessageBox.showException(ex,true);
       }
    }
+   
+   public void onRemove()
+   {
+      if (gpsThread != null)
+         gpsThread.stop();
+   }
 }
