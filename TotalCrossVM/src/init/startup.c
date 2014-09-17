@@ -376,6 +376,13 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       alert("TCBase not found or corrupted. Please reinstall TotalCross");
       return 101;
    }
+   xstrcpy(tcbase, "TCUI.tcz");
+   if (!tczLoad(currentContext, tcbase))
+   {
+      alert("TCUI not found or corrupted. Please reinstall TotalCross");
+      return 103;
+   }
+   
    initException(); // load exceptions
 
    xstrcpy(argsLower, args);

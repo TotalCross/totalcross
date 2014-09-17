@@ -55,8 +55,9 @@ public class Deployer4WP8
 
       // tcz
       sz.putEntry(new File(DeploySettings.tczFileName).getName(), new File(DeploySettings.tczFileName));
-      // TCBase
+      // TCBase & TCUI
       sz.putEntry("TCBase.tcz", new File(DeploySettings.distDir, "vm/TCBase.tcz"));
+      sz.putEntry("TCUI.tcz",   new File(DeploySettings.distDir, "vm/TCUI.tcz"));
       // TCFont
       sz.putEntry(new File(DeploySettings.fontTCZ).getName(), new File(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ));
       // Litebase
