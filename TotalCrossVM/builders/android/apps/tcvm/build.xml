@@ -100,6 +100,7 @@
 	    <mkdir dir="${android.deploy}/assets" />
 	    <zip destfile="${android.deploy}/assets/tcfiles.zip" filesonly="true" compress="no">
 	      <zipfileset dir="${source.sdk.path}/dist/vm"      includes="TCBase.tcz" />
+	      <zipfileset dir="${source.sdk.path}/dist/vm"      includes="TCUI.tcz" />
 	      <zipfileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.tcz" />
 	    </zip>    	
     </target>

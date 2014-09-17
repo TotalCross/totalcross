@@ -94,8 +94,9 @@ public class Deployer4IPhoneIPA
       
       // Add tcz
       new TFile(DeploySettings.tczFileName).cp(new TFile(appFolder, new File(DeploySettings.tczFileName).getName()));
-      // TCBase
+      // TCBase & TCUI
       new TFile(DeploySettings.distDir, "vm/TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
+      new TFile(DeploySettings.distDir, "vm/TCUI.tcz").cp(new TFile(appFolder, "TCUI.tcz"));
       // TCFont
       new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
       // Litebase
