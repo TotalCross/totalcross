@@ -107,6 +107,7 @@ public class GPS
    private StringBuffer sb = new StringBuffer(512);
    private static boolean nativeAPI = Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
    private static boolean isOpen;
+   boolean dontFinalize;
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:
@@ -187,6 +188,7 @@ public class GPS
     */
    public void stop()
    {
+      dontFinalize = true;
       isOpen = false;
       if (sp == null)
          stopGPS();
