@@ -451,8 +451,13 @@ public class Window extends Container
          _controlEvent.update(highlighted);
          highlighted.postEvent(_controlEvent); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_OUT event
          highlighted = null;
-         drawHighlight(null);
-         updateScreen();
+         if (Settings.isOpenGL)
+            needsPaint = true;
+         else
+         {
+            drawHighlight(null);
+            updateScreen();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1554,8 +1559,13 @@ public class Window extends Container
             c.postEvent(_controlEvent); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_IN event
             highlighted = c;
          }
-         drawHighlight(highlighted);
-         updateScreen();
+         if (Settings.isOpenGL)
+            needsPaint = true;
+         else
+         {
+            drawHighlight(highlighted);
+            updateScreen();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
