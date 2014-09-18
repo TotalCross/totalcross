@@ -2639,7 +2639,7 @@ public class Grid extends Container implements Scrollable
    {
       if (htImages == null)
          htImages = new Hashtable(20);
-      htImages.put(tag, image.hwScaledFixedAspectRatio(fmH,true));
+      htImages.put(tag, Settings.enableWindowTransitionEffects ? image.smoothScaledFixedAspectRatio(fmH,true) : image.hwScaledFixedAspectRatio(fmH,true));
    }
 
    private class NextEdit extends Thread
