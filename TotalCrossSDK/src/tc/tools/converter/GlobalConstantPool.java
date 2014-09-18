@@ -348,7 +348,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
                value = Convert.replace(value, "totalcross", "java");
          }
          if (value.startsWith("totalcross.lang"))
-            value = totalcross.sys.Convert.replace(value, "totalcross.lang", "java.lang");
+            value = Convert.replace(value, "totalcross", "java");
       }
       else
       {
@@ -465,6 +465,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
 
    public static int putCls(String value) // pure class name: value must be a single class, no arrays, no Lxxx; !
    {
+      value = value.replace('/','.');
       int index = value.indexOf("4D");
       if (index >= 0)
       {
@@ -475,7 +476,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
-      value = value.replace('/','.');
+      
       
       if (value.equals("java.util.Vector")) value = "totalcross.util.Vector";
       else
@@ -489,6 +490,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
 
       if (value.startsWith("totalcross.lang."))
          value = Convert.replace(value, "totalcross.lang.", "java.lang.");
+     
       int idx = put(value, POOL_CLS, htCls, vCls);
       if (idx >= 4095 && checkLimit) // guich@tc110_23: corrected limit
       {
