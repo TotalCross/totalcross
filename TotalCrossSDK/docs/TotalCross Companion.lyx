@@ -1480,6 +1480,10 @@ TCBase.tcz
 \family typewriter
 TCFont.tcz
 \family default
+, 
+\family typewriter
+TCUI.tcz
+\family default
 , and 
 \family typewriter
 LitebaseLib.tcz
@@ -6133,7 +6137,11 @@ tcvm.dll
 \family typewriter
 tcbase.tcz
 \family default
- and 
+, 
+\family typewriter
+TCUI.tcz
+\family default
+, and 
 \family typewriter
 tcfont.tcz
 \family default
@@ -9950,6 +9958,19 @@ TCBase.tcz
 
 \begin_layout Itemize
 102 If it was not possible to initialize the event handler.
+\end_layout
+
+\begin_layout Itemize
+103 If it was not possible to load 
+\family typewriter
+TCUI.tcz
+\family default
+.
+ 
+\family typewriter
+TCUI.tcz
+\family default
+ was not found or is corrupted.
 \end_layout
 
 \begin_layout Itemize
