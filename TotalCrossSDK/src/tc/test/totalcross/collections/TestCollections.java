@@ -51,6 +51,10 @@ public class TestCollections extends TestSuite
       // Classes
       addTestCase(TestArrayList.class);
       addTestCase(TestBitSet.class);
+      addTestCase(TestHashMap.class);
+      addTestCase(TestHashSet.class);
+      addTestCase(TestLinkedHashMap.class);
+      addTestCase(TestLinkedHashSet.class);
       
       addTestCase(TestGenerics.class);
    }
