@@ -2030,8 +2030,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/util/HashSet4D"; 
       if (name.equals("totalcross/util/Iterator4D")) 
          return "java/util/Iterator4D";
-      if (name.equals("totalcross/util/LinkedHashMap4D")) 
-         return "java/util/LinkedHashMap4D";
+      if (name.equals("totalcross/util/LinkedHashSet4D")) 
+         return "java/util/LinkedHashSet4D";
       if (name.equals("totalcross/util/List4D")) 
          return "java/util/List4D";
       if (name.equals("totalcross/util/ListIterator4D")) 
