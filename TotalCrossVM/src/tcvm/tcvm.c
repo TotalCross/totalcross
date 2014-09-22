@@ -628,6 +628,7 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
+               nmp->retO = null;
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here
