@@ -573,7 +573,7 @@ public class Button extends Control
    protected void onBoundsChanged(boolean screenChanged)
    {
       if (imageHeightFactor != 0 && img0 != null)
-         try {img = img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);} catch (Throwable t) {img = img0;}
+         try {img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);} catch (Throwable t) {img = img0;}
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (isAndroidStyle && clip == null)
          clip = new Rect();
