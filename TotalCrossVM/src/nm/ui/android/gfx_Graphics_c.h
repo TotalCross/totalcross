@@ -96,7 +96,7 @@ static GLuint texturePoint;
 static GLuint textureAlpha;
 static GLuint textureProjMat;
 
-/////// 
+///////
 
 #define TEXT_VERTEX_CODE  \
       "attribute vec4 vertexPoint;" \
@@ -253,7 +253,6 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(bool delTex); // imagePrimitives_c.h
 
 void setTimerInterval(int32 t);
 int32 desiredglShiftY;
@@ -278,12 +277,18 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       }
       else
       if (width == -998)
-         recreateTextures(true); // first we delete the textures before the gl context is invalid
+      {
+         if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
+         invalidateTextures(INVTEX_DEL_ALL); // first we delete the textures before the gl context is invalid
+      }
       else
       if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
       {
          if (lastWindow)
-            recreateTextures(false); // now we set the changed flag for all textures
+         {
+            if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 1");
+            invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
+         }
       }
       else
          surfaceWillChange = true; // block all screen updates
@@ -303,7 +308,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       if (window == null) {debug("window is null. surface is %X. app will likely crash...",surface);}
       destroyEGL();
       initGLES(&screen);
-      recreateTextures(false); // now we set the changed flag for all textures
+      if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
+      invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
    }
    lastWindow = window;
 }
@@ -427,6 +433,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
+   int32 tidorig = textureId[0];
    if (onlyAlpha)
       pt = pt0 = (PixelConv*)pixels;
    else
@@ -443,8 +450,14 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
       if (err)
       {
-         throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
-         return;
+         debug("Out of texture memory to allow %dx%d. Releasing old textures and trying again.",width,height);
+         invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
+         glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+         if (err)
+         {
+            throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
+            return;
+         }
       }
    }
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
@@ -475,6 +488,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       }
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
+   if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
    if (!onlyAlpha) xfree(pt0);
 }
 
@@ -509,7 +523,7 @@ void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 d
    coords[6 ] = coords[10] = right;
    coords[9 ] = coords[13] = dstY;
    coords[11] = coords[15] = top;
-   
+
    glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
    if (!isDrawText && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
@@ -694,7 +708,7 @@ static void setProjectionMatrix(float w, float h)
       0.0,      0.0,  -1.0,  0.0,
       0.0,      0.0,   0.0,  1.0
    };
-   
+
    setCurrentProgram(textProgram);    glUniformMatrix4fv(textProjMat   , 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram); glUniformMatrix4fv(textureProjMat, 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);     glUniformMatrix4fv(lrpProjMat    , 1, 0, mat); GL_CHECK_ERROR

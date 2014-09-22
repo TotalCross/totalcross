@@ -283,7 +283,11 @@ public class FileChooserBox extends Window
          if (firstSlash != -1)
          {
             if (isAndroid && filePath.startsWith("/mnt"))
-               firstSlash = filePath.indexOf(firstSlash+1);
+            {
+               int otherSlash = filePath.indexOf(firstSlash+1);
+               if (otherSlash != -1)
+                  firstSlash = otherSlash;
+            }
             cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true);
             previouslySelectedRootIndex = cbRoot.getSelectedIndex();
          }

@@ -158,7 +158,7 @@ public class Deployer4IPhoneIPA
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.equals("*"))
-         bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.trim().toLowerCase();
+         bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.replace(" ","").trim().toLowerCase();
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
       // overwrite updated info.plist inside the zip file

@@ -325,10 +325,10 @@ TC_API void heapDestroyPrivate(Heap m, bool added2list)
    //debug("Freeing heap created at %s (%d). setjmp at %s (%d): %X",m->ex.creationFile,m->ex.creationLine,m->ex.setjmpFile, m->ex.setjmpLine, m);
    while (m->current != null)
    {
-      MemBlock mb = m->current->next;
+      volatile MemBlock mb = m->current->next;
       //xmemzero(m->current->block, ARRAYLEN(m->current->block)); // erase the block to make sure that no pointers inside of it are reused
       SIG_TRY {freeArray(m->current->block);} SIG_CATCH {debug(SIG_MSG);} SIG_END
-      SIG_TRY {xfree(m->current);           } SIG_CATCH {debug(SIG_MSG);} SIG_END
+      SIG_TRY {xfree(m->current);           } SIG_CATCH {debug(SIG_MSG);} SIG_END      
       m->current = mb;
    }
    m->finalizerFunc = null;

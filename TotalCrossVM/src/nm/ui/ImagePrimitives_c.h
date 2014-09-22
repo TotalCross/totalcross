@@ -703,37 +703,49 @@ void applyChanges(Context currentContext, TCObject obj)
       glDeleteTexture(obj, Image_textureId(obj));
 #endif
       glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
+      Image_lastAccess(obj) = getTimeStamp();
    }
    Image_changed(obj) = false;
 }
 
 void freeTexture(TCObject img)
 {                                       
+   if (ENABLE_TEXTURE_TRACE) debug("freeing texture %X (%dx%d): %d (count: %d)",img,Image_width(img),Image_height(img),Image_textureId(img)[0],Image_instanceCount(img));
    glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
 }
 
 void resetFontTexture(); // PalmFont_c.h
 #ifdef ANDROID
-static void onImage(int32 delTex, VoidP ptr)
+static int timestampOldLimit;
+static void onImage(int32 it, VoidP ptr)
 {
    TCObject img = (TCObject)ptr;
-   if (Image_textureId(img))
+   int32 *ids = Image_textureId(img);
+   if (ids && ids[0])
    {
-      if (delTex)
-         glDeleteTexture(img, Image_textureId(img));
-      else
+      if (ENABLE_TEXTURE_TRACE) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),ids[0]);
+      switch ((INVTEX)it)
       {
-         Image_textureId(img)[0] = 0;
-         Image_textureId(img)[1] = 0;
+         case INVTEX_INVALIDATE:
+            ids[0] = ids[1] = 0;
+            break;
+         case INVTEX_DEL_ALL:
+            glDeleteTexture(img, ids);
+            break;
+         case INVTEX_DEL_ONLYOLD:
+            if (Image_lastAccess(img) != -1 && Image_lastAccess(img) < timestampOldLimit)
+               glDeleteTexture(img, ids);
+            break;
       }
       Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
    }
 }
 
-void recreateTextures(bool delTex) // called by opengl when the application changes the opengl surface
+void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
 {
-   visitImages(onImage, delTex);
-   if (!delTex)
+   timestampOldLimit = it == INVTEX_DEL_ONLYOLD ? getTimeStamp() - 10000 : 0; // delete textures
+   visitImages(onImage, it);
+   if (it == INVTEX_INVALIDATE)
       resetFontTexture();
 }
 #else
@@ -751,7 +763,7 @@ static void onImage(int32 dumb, VoidP ptr)
    }
 }
 
-void recreateTextures() // called by opengl when the application changes the opengl surface
+void invalidateTextures() // called by opengl when the application changes the opengl surface
 {
    visitImages(onImage, 0);
    resetFontTexture();

@@ -90,7 +90,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    destroyGlobals();
 }
 
-SIG_SAFE int32 exitProgram(int32 exitcode)
+int32 exitProgram(int32 exitcode)
 {            
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
@@ -98,16 +98,8 @@ SIG_SAFE int32 exitProgram(int32 exitcode)
    if (isMainWindow) destroyEvent();
    if (exitCode != 106)
       storeSettings(true);
-   SIG_TRY
-   {
-      destroyAll();
-      mainClass = null;
-   }
-   SIG_CATCH
-   {
-      debug(SIG_MSG);
-   }
-   SIG_END
+   destroyAll();
+   mainClass = null;
    if (rebootOnExit) // set by Vm.exitAndReboot
       rebootDevice();      
    #ifdef ANDROID
@@ -412,6 +404,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
              return exitProgram(103);
           }
           waitUntilStarted();
+          imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
           mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
           gcContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError");
           lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
@@ -476,6 +469,7 @@ jumpArgument:
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+   imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
    loadExceptionClasses(currentContext); // guich@tc112_18
    voidTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Void",      false), "TYPE");
    booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");

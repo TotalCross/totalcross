@@ -36,7 +36,7 @@
          bool targetExists = [[NSFileManager defaultManager] fileExistsAtPath:targetFilePath];
          NSDate *sourceDate = [[[NSFileManager defaultManager] attributesOfItemAtPath:sourceFilePath error:&error] objectForKey:NSFileCreationDate];
          NSDate *targetDate = !targetExists ? nil : [[[NSFileManager defaultManager] attributesOfItemAtPath:targetFilePath error:&error] objectForKey:NSFileCreationDate];
-         if (!targetExists || [sourceDate compare:targetDate] == NSOrderedAscending) // pkg date is more recent than target?
+         if (!targetExists || [targetDate compare:sourceDate] == NSOrderedAscending) // pkg date is more recent than target?
          {
             if (targetExists) //File exist, delete it
                [[NSFileManager defaultManager] removeItemAtPath:targetFilePath error:&error];

@@ -9,6 +9,26 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
+/**
+Although not implemented here, here's now to send email to a GMAIL account:
+<pre>
+   Message m = new Message();
+   m.addFrom(new Address[] { new Address("me@gmail.com", "Me") });
+   m.addRecipient(RecipientType.TO, new Address("you@gmail.com", "You"));
+   m.subject = "me and you";
+   m.setText("we're good friends");
+   
+   MailSession s = MailSession.getDefaultInstance();
+   s.put(MailSession.SMTP_HOST, new Properties.Str("smtp.gmail.com"));
+   s.put(MailSession.SMTP_USER, new Properties.Str("postmaster@gmail.com"));
+   s.put(MailSession.SMTP_PASS, new Properties.Str("a good password!));
+   s.put(MailSession.SMTP_PORT, new Properties.Int(587));
+   s.put(MailSession.SMTP_AUTH, new Properties.Boolean(true));
+   s.put(MailSession.SMTP_STARTTLS, new Properties.Boolean(true));
+   SMTPSSLTransport.send(m, s);
+</pre>
+ */
+
 public class MailSample extends BaseContainer
 {
    MessageContainer messagePanel;

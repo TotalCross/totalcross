@@ -1,3 +1,39 @@
+<h2>TotalCross 3.07 build 2362</h2>
+. fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>
+. now the ComboBox.usePopupMenu can be specified for a single popup<br>
+. Control.hadParentScrolled is now public<br>
+. prevent NPE at the FlowContainer if there are no controls<br>
+. added RadioGroupController.getSize<br>
+. undeprecated some SIP constants<br>
+. added MultiEdit.lastInsertPos and setCursorPos<br>
+. removed need of a thread to the Spinner. See SpinnerSample<br>
+. several changes to try to prevent sigsev faults<br>
+. fixed crash when using File.exists for a directory that does not exists<br>
+. now FileChooserBox allows to browse the contents of external cards<br>
+. dont create cursor timer on MultiEdit when it is not editable<br>
+. now in CameraSample, we test if there's enough texture memory to show the image and if not, we decrease its size so it can be shown.<br>
+. added a way to call the external camera application: passing 999 to the quality parameter<br>
+. added TopMenu.AnimationListener so you can track when the unpop really finished due to animation. the TopMenuSample shows how to use the TopMenu.AnimationFinished interface<br>
+. fixed grid.sort when the columns have an invalid value. now the invalid value is moved out the sort range, and its sorted as String<br>
+. added ScrollPosition.VISIBLE_COUNT. Now the ScrollPosition shows itself for 1 second so the user can see that he can scroll. Based on newer android native l&f<br>
+. added a new ComboBox arrow style: ARROWSTYLE_PAGEFLIP. added ComboBox.arrowStyle so you can select between each.<br>
+. fixed grid's sort detect that was failing due to invalid string at index 1<br>
+. now Toast.show runs on ui thread so you can safely call it from a thread<br>
+. fixed LineReader in infinite loop when returnEmptyLines is true<br>
+. added Button.imageHeightFactor, so the button's image shrinks based on button's height<br>
+. fixed application title not being set for classes that dont directly extends MainWindow<br>
+. prevent problems if apptitle has spaces<br>
+. added TopMenu.widthInPixels<br>
+. now when a bind texture fails, we delete all old textures and try again.<br>
+. fixed leak: font texture was not being deleted<br>
+. fixed File.createDir throwing exceptions in win32<br>
+. now Sound.play respects the system volume to respect the sound/volume icon in taskbar<br>
+. added instructions of how to connect to GMail using TotalCross to src/totalcross/net/mail/Message.java<br>
+. updated version of TotalCrossAPI in the Android market<br>
+. fixed alert not being shown in ios when an unhandled exception was thrown<br>
+. improved GoogleMap api for android. see the new "TotalCross MGP location" in the TotalCrossAPI sample and also GoogleMap javadocs<br>
+. now the GPS class throws an IOException if there's already an open instance of it.<br>
+
 <h2>TotalCross 3.06 build 2328</h2>
 . fixing transition effects for Window<br>
 . implemented support for TRANSITION_FADE to be used in Window. adde Image.applyFade. fixed Graphics.fadeScreen being different on java and device.<br>

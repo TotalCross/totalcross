@@ -480,9 +480,12 @@ void glDeleteTexture(TCObject img, int32* textureId);
 static void reset1font(int32 i32, VoidP ptr)
 {
    UserFont uf = (UserFont)ptr;
-#ifdef WP8
    if (uf->textureId[0] != 0)
+   {
+      if (ENABLE_TEXTURE_TRACE) debug("reset1font: %d",uf->textureId[0]);
       glDeleteTexture(null, uf->textureId);
+   }
+#ifdef WP8
    uf->textureId[1] = 0;
 #endif
    uf->textureId[0] = 0;

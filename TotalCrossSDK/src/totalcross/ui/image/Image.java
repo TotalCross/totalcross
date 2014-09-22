@@ -54,6 +54,8 @@ import totalcross.util.zip.*;
  * 
  * Note: TotalCross does not support grayscale PNG with alpha-channel. Convert the image to true-color with
  * alpha-channel and it will work fine (the only backdraw is that the new image will be bigger).
+ * 
+ * The hwScale methods should not be used in images that are shown using transition effects.
  *
  * @see Graphics
  */

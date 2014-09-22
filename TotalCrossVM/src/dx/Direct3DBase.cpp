@@ -20,7 +20,7 @@ static Direct3DBase ^instance;
 extern "C" 
 { 
    extern int32 appW, appH, glShiftY;
-   void recreateTextures();
+   void invalidateTextures();
    void repaintActiveWindows(Context currentContext);
 }
 
@@ -476,7 +476,7 @@ void Direct3DBase::lifeCycle(bool minimizing)
    if (minimizing) minimized = true; // will be set to false in the ContentProvider
    postOnMinimizeOrRestore(minimizing);
    if (minimized)
-      recreateTextures();
+      invalidateTextures();
 }
 
 void Direct3DBase::updateScreen()

@@ -242,9 +242,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try
             {
-               img = img.getHwScaledInstance(
-                     img.getWidth() * imageS / img.getHeight(),
-                     imageS);
+               img = Settings.enableWindowTransitionEffects ? img.getSmoothScaledInstance(img.getWidth() * imageS / img.getHeight(),imageS) : img.getHwScaledInstance(img.getWidth() * imageS / img.getHeight(),imageS);
             }
             catch (ImageException ie)
             {

@@ -19,12 +19,14 @@ package tc.samples.api.map;
 import tc.samples.api.*;
 
 import totalcross.io.device.gps.*;
+import totalcross.map.*;
 import totalcross.net.*;
 import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 
 public class GoogleMapsSample extends BaseContainer
 {
@@ -50,10 +52,11 @@ public class GoogleMapsSample extends BaseContainer
          int g = fmH/4;
          add(sc = new ScrollContainer(false, true),LEFT,TOP,FILL,FILL);
          
-         sc.add(new Label("Select the parameters"),LEFT+g,TOP);
-         sc.add(new Ruler(),LEFT+g,AFTER+g,FILL-g,PREFERRED);
          rg = new RadioGroupController();
          Radio r;
+         sc.add(new Label("Select the parameters"),LEFT+g,TOP);
+         sc.add(r = new Radio(" TotalCross MGP locatoin",rg),LEFT+g,AFTER+g,FILL,PREFERRED); r.leftJustify = true;
+         sc.add(new Ruler(),LEFT+g,AFTER+g,FILL-g,PREFERRED);
          sc.add(r = new Radio(" Current location",rg),LEFT+g,AFTER+g,FILL,PREFERRED); r.leftJustify = true;
          sc.add(chGPS = new Check("Use GPS if activated."),LEFT+2*g,AFTER+g,FILL,PREFERRED);
          sc.add(r = new Radio(" Address",rg),LEFT+g,AFTER+2*g,FILL,PREFERRED); r.leftJustify = true;
@@ -82,10 +85,10 @@ public class GoogleMapsSample extends BaseContainer
    private void enableControls()
    {
       int idx = rg.getSelectedIndex();
-      chGPS.setEnabled(idx == 0);
-      edAddr.setEnabled(idx == 1);
-      edLat.setEnabled(idx == 2);
-      edLon.setEnabled(idx == 2);
+      chGPS.setEnabled(idx == 1);
+      edAddr.setEnabled(idx == 2);
+      edLat.setEnabled(idx == 3);
+      edLon.setEnabled(idx == 3);
    }
    
    private ProgressBox mbgps;
@@ -113,11 +116,49 @@ public class GoogleMapsSample extends BaseContainer
                      new MessageBox("Attention","Internet is not available!").popup();
                      return;
                   }
-                  String addr = null;
                   int sel = rg.getSelectedIndex();
+                  String addr = null;
                   switch (sel)
                   {
                      case 0:
+                        // text
+                        GoogleMaps.Place p1 = new GoogleMaps.Place();
+                        p1.lat = -3.778284;
+                        p1.lon = -38.482617;
+                        p1.backColor = Color.WHITE;
+                        p1.capColor = Color.BLACK;
+                        p1.detColor = 0x444444;
+                        p1.pinColor = Color.RED;
+                        p1.caption = "TotalCross MGP";
+                        p1.fontPerc = 150;
+                        p1.detail = "Av Norte 2920\nLuciano Cavalcante\nCeará - Brazil";
+                        // now draw the brazilian's flag
+                        double ww = -0.0003, hh = -0.0002;
+                        double left = p1.lat + ww/4, right = left + ww;
+                        double top = p1.lon - hh, bottom = top + hh+hh;
+                        // green rectangle
+                        GoogleMaps.Shape s1 = new GoogleMaps.Shape();
+                        s1.color = Color.GREEN;
+                        s1.filled = true;
+                        s1.lats = new double[]{left,right,right,left};
+                        s1.lons = new double[]{top,top,bottom,bottom};
+                        // yellow losangle
+                        GoogleMaps.Shape s2 = new GoogleMaps.Shape();
+                        s2.color = Color.YELLOW;
+                        s2.filled = true;
+                        s2.lats = new double[]{left+(right-left)/2,right,left+(right-left)/2,left};
+                        s2.lons = new double[]{top,top+(bottom-top)/2,bottom,top+(bottom-top)/2};
+                        // blue circle
+                        GoogleMaps.Circle c = new GoogleMaps.Circle();
+                        c.lat = (left+right)/2;
+                        c.lon = (top+bottom)/2;
+                        c.color = Color.BLUE;
+                        c.filled = true;
+                        c.rad = hh/2;
+                        
+                        GoogleMaps.showMap(new GoogleMaps.MapItem[]{p1,s1,s2,c},chSat.isChecked());
+                        return;
+                     case 1:
                         gpsNotCancelled = true;
                         if (chGPS.isChecked())
                         {
@@ -205,10 +246,10 @@ public class GoogleMapsSample extends BaseContainer
                            mb.unpop();
                         }
                         break;
-                     case 1: 
+                     case 2: 
                         addr = edAddr.getText();
                         break;
-                     case 2:
+                     case 3:
                         addr = "@"+edLat.getText()+","+edLon.getText();
                         break;
                   }

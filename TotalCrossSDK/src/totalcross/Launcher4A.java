@@ -1107,6 +1107,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
+            if (address.startsWith("***")) // MapItems?
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAPITEMS);
+               b.putString("items", address.substring(3));
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+               
             double [] ll = getLatLon(address);
             if (ll != null)
             {
@@ -1581,7 +1597,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          lastSound = filename;
          lastSoundID =  player.load(filename, 1);
       }
-      for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, 1.0f, 1.0f, 0, 0, 1.0f) == 0 && i++ < 10;)
-         try {Thread.sleep(100);} catch (Exception e) {}
+      AudioManager audio = (AudioManager) loader.getSystemService(Context.AUDIO_SERVICE);
+      int ring = audio.getRingerMode();
+      if (ring == AudioManager.RINGER_MODE_NORMAL) // 4.4 does not returns correct values for volume methods
+      {
+         int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_SYSTEM);
+         int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_SYSTEM);
+         float volume    = (float)volumeLevel/maxVolume;
+         for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, volume, volume, 0, 0, 1.0f) == 0 && i++ < 10;)
+            try {Thread.sleep(100);} catch (Exception e) {}
+      }
   }
 }

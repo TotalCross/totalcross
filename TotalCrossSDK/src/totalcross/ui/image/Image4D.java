@@ -33,6 +33,7 @@ public class Image4D extends GfxSurface
    public int transparentColor = Color.WHITE;
    public boolean useAlpha; // guich@tc126_12
    public int alphaMask=255;
+   public int lastAccess=-1;
    
    // object
    private int[] pixels; // must be at Object position 0

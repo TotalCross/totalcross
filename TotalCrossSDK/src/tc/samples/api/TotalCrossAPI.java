@@ -25,7 +25,7 @@ public class TotalCrossAPI extends MainWindow
    static
    {
       Settings.resizableWindow = true;
-      Settings.appVersion = "1.02";
+      Settings.appVersion = "1.03";
       Settings.windowSize = Settings.WINDOWSIZE_480X640;
       Settings.windowFont = 16;
    }

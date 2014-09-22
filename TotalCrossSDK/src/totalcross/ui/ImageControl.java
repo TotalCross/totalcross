@@ -31,7 +31,7 @@ public class ImageControl extends Control
 {
    /** The amount to scroll when in penless mode. Defaults to 10. */
    public static int scrollValue = 10;
-   private Image img,imgBack;
+   private Image img,img0,imgBack;
    private int startX,startY;
    private Coord c = new Coord();
    private boolean isEventEnabled, canDrag;
@@ -87,7 +87,7 @@ public class ImageControl extends Control
     */
    public void setImage(Image img)
    {
-      this.img = img;
+      this.img = this.img0 = img;
       c.x = c.y = lastX = lastY = 0;
       tempHwScale=NOTEMP;
       // test if it is really loaded.
@@ -104,9 +104,9 @@ public class ImageControl extends Control
             try
             {
                if (width < height)
-                  this.img = img.hwScaledFixedAspectRatio(this.width,false);
+                  this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
                else
-                  this.img = img.hwScaledFixedAspectRatio(this.height,true);
+                  this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
             }
             catch (ImageException e)
             {
@@ -218,9 +218,9 @@ public class ImageControl extends Control
          try
          {
             if (width < height)
-               img = img.hwScaledFixedAspectRatio(this.width,false);
+               this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
             else
-               img = img.hwScaledFixedAspectRatio(this.height,true);
+               this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
          }
          catch (ImageException e)
          {

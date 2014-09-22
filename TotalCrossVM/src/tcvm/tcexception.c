@@ -248,6 +248,8 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
    {
       if (c != c0) // was something filled in?
       {
+         if (currentContext != gcContext && exception == currentContext->OutOfMemoryErrorObj)
+            debug("OutOfMemory:\n%s",c0);
          *Throwable_trace(exception) = createStringObjectFromCharP(currentContext, c0, (int32)(c-c0));
          if (*Throwable_trace(exception))
             setObjectLock(*Throwable_trace(exception), UNLOCKED);

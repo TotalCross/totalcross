@@ -15,7 +15,7 @@
 #define TCVM_H
 
 //#define ENABLE_TRACE
-
+#define ENABLE_TEXTURE_TRACE 0
 
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
@@ -117,8 +117,8 @@
 #if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
 #include "dlmalloc.h"                                                         
 #endif
-#include "../util/coffeecatch.h"
 #include "xtypes.h"
+#include "../util/coffeecatch.h"
 #include "../event/specialkeys.h"
 #include "mem.h"
 #include "datastructures.h"
