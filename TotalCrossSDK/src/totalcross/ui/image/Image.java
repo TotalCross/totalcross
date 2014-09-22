@@ -17,6 +17,9 @@
 
 package totalcross.ui.image;
 
+import java.awt.GraphicsEnvironment;
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
 import totalcross.*;
 import totalcross.io.*;
 import totalcross.sys.*;
@@ -1721,7 +1724,10 @@ public class Image extends GfxSurface
          {
             java.awt.Component component = new java.awt.Component() {};
             java.awt.MediaTracker tracker = new java.awt.MediaTracker(component);
-            java.awt.Image image = java.awt.Toolkit.getDefaultToolkit().createImage(input,0,len);
+
+            java.awt.Image image = GraphicsEnvironment.isHeadless() ?
+                  ImageIO.read(new ByteArrayInputStream(input, 0, len)) :
+                  java.awt.Toolkit.getDefaultToolkit().createImage(input, 0, len);
 
             tracker.addImage(image, 0);
             tracker.waitForAll();
@@ -1735,6 +1741,11 @@ public class Image extends GfxSurface
          }
          catch (InterruptedException e)
          {
+         }
+         catch (java.io.IOException e)
+         {
+            // should never happen
+            e.printStackTrace();
          }
       }
 
