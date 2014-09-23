@@ -41,8 +41,8 @@
 
 <!-- javac settings -->
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.1"/>
-<property name="compile.source"          value="1.2"/>
+<property name="compile.target"          value="7"/>
+<property name="compile.source"          value="7"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
