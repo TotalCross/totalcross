@@ -110,7 +110,7 @@ static Type checkPrimitiveField(NMParams p, Type from, bool isGet) // check if t
       throwException(p->currentContext, NullPointerException, "Argument array is null");
    else
    {
-      if (strEq(OBJ_CLASS(Field_type(o))->name, "java.lang.String"))
+      if (OBJ_CLASS(Field_type(o))->flags.isString)
       {
          TNMParams params;
 

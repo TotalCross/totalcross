@@ -728,7 +728,7 @@ notYetLinked:
             if (code->op.op == CALL_virtual)
             {
                c = OBJ_CLASS(regO[code->mtd.this_]); // search for the method starting on the class pointed by "this"
-               if (c->flags.isString && strEq(className, "java.lang.Class")) // strEq(c->name, "java.lang.String")
+               if (c->flags.isString && strEq(className, "java.lang.Class"))
                {
                   TNMParams params;
 
