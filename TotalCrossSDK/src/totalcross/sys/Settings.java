@@ -32,7 +32,7 @@ public final class Settings
    */
    public static int version = 308;
     
-   /** Field that represents the version in a string form, like "1.36beta" */
+   /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
    public static String versionStr = "3.08";
     
    /** Current build number.
