@@ -748,6 +748,27 @@ TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graph
    TCObject g = p->obj[0];
    fillShadedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], makePixelRGB(p->i32[6]), makePixelRGB(p->i32[7]), p->i32[8]);
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
+{       
+   TCObject g = p->obj[0];
+   int32 x1 = p->i32[0], y1 = p->i32[1], x2 = p->i32[2], y2 = p->i32[3], t = p->i32[4];
+   int32 dx = abs32(x2-x1); 
+   int32 dy = abs32(y2-y1); 
+   int32 tlx[4],tly[4];
+   t /= 2;
+   if (dx > dy)
+   {
+      tlx[0] = tlx[1] = x1; tlx[2] = tlx[3] = x2;
+      tly[0] = y1+t; tly[1] = y1-t; tly[2] = y2-t; tly[3] = y2+t;
+   }
+   else
+   {
+      tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
+      tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
+   }
+   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "gfx_Graphics_test.h"

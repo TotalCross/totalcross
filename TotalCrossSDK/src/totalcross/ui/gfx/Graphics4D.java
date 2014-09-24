@@ -275,6 +275,7 @@ public final class Graphics4D
    native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
    native public void dither(int x, int y, int w, int h);
    native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
+   native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
    
    /** Dumb method to keep compilation compatibility with TC 1 */
    public void eraseRect(int x, int y, int w, int h)
@@ -326,6 +327,7 @@ public final class Graphics4D
    {
       drawImage(image, x,y, doClip);
    }
+
 
    /** Dumb field to keep compilation compatibility with TC 1 */
    public int drawOp;

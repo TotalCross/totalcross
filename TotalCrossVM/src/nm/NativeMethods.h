@@ -179,6 +179,7 @@ TC_API void tugG_drawText_siiiibi(NMParams p);
 TC_API void tugG_drawText_siiiiibi(NMParams p);
 TC_API void tugG_drawText_siibi(NMParams p);
 TC_API void tugG_drawText_siiibi(NMParams p);
+TC_API void tugG_drawThickLine_iiiii(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
 TC_API void tufFM_charWidth_c(NMParams p);

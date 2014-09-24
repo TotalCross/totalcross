@@ -87,8 +87,7 @@ public abstract class PointLineChart extends Chart
                   {
                      Coord c1 = (Coord) v.items[j];
                      Coord c2 = (Coord) v.items[j + 1];
-                     for (int k = -(thick>>1); k <= (thick>>1); k++)
-                        g.drawLine(c1.x, c1.y-k, c2.x, c2.y-k);
+                     g.drawThickLine(c1.x, c1.y, c2.x, c2.y, thick);
                   }
             }
          }

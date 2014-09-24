@@ -161,6 +161,7 @@ totalcross/ui/gfx/Graphics|native public void drawText(StringBuffer sb, int chrS
 totalcross/ui/gfx/Graphics|native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
 totalcross/ui/gfx/Graphics|native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
 totalcross/ui/gfx/Graphics|native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
+totalcross/ui/gfx/Graphics|native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
 totalcross/ui/font/Font|native void fontCreate();
 totalcross/ui/font/FontMetrics|native void fontMetricsCreate();
 totalcross/ui/font/FontMetrics|native public int charWidth(char c);
