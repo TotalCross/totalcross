@@ -117,7 +117,7 @@ public class CameraViewer extends Activity // guich@tc126_34
             camera.setDisplayOrientation(result);
 		
             parameters.setPictureFormat(PixelFormat.JPEG);
-            if (Build.VERSION.SDK_INT >= 14 && getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS))
+            if (Build.VERSION.SDK_INT >= 14 && getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS) && !inFocusExclusionList())
                parameters.setFocusMode("continuous-picture"); // FOCUS_MODE_CONTINUOUS_PICTURE 
             if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
@@ -137,6 +137,12 @@ public class CameraViewer extends Activity // guich@tc126_34
             }
             camera.startPreview();
          }
+      }
+
+      private boolean inFocusExclusionList()
+      {
+         String id = Settings4A.deviceId;
+         return id.indexOf("GT-S7580") != -1;
       }
    }
 

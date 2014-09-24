@@ -324,11 +324,10 @@ public class ComboBox extends Container
    {
       Image img;
       Image img0 = arrowStyle == ARROWSTYLE_PAGEFLIP ? Resources.comboArrow2 : Resources.comboArrow;
-      int s = arrowStyle == ARROWSTYLE_PAGEFLIP ? height : fmH;
-      if (s == 0) s = fmH;
+      int s = fmH;
       try
       {
-         img = img0.getSmoothScaledInstance(s,s);
+         img = arrowStyle == ARROWSTYLE_PAGEFLIP ? img0.smoothScaledFixedAspectRatio(s,false) : img0.getSmoothScaledInstance(s,s);
          img.applyColor2(backColor);
       }
       catch (ImageException e)
@@ -380,7 +379,7 @@ public class ComboBox extends Container
          case Settings.Android:
             btn.setImage(getArrowImage());
             if (arrowStyle == ARROWSTYLE_PAGEFLIP)
-               btn.setRect(width - btnW - 1, 0, btnW, height-2,null,screenChanged);
+               btn.setRect(width - btnW - 1, height-fmH-2, btnW, fmH,null,screenChanged);
             else
                btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
             break;
@@ -597,7 +596,7 @@ public class ComboBox extends Container
             g.drawImage(img, 0,0);
 //            Graphics gg = img.getGraphics();
 //            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
-            g.setClip(2,2,width-btnW-8,height-4);
+            g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);
          }
          catch (ImageException e) {e.printStackTrace();}
       else

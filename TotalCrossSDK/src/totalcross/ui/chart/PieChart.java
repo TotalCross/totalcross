@@ -33,8 +33,8 @@ import totalcross.ui.gfx.*;
 
 public class PieChart extends Chart
 {
-   /** Specifies the distance that the selected pie will be placed from the rest of the pie. Defaults to fmH*2. */
-   public int distanceOfSelectedPie = Font.NORMAL_SIZE*2;
+   /** Specifies the distance that the selected pie will be placed from the rest of the pie. Defaults to fmH. */
+   public int distanceOfSelectedPie = Font.NORMAL_SIZE;
    /** Specifies the selected pie. */
    public int selectedSeries=-1;
    /** The suffix used in the legend to display the values. E.G.: "%". Defaults to blank.

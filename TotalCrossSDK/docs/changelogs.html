@@ -1,4 +1,4 @@
-<h2>TotalCross 3.07 build 2362</h2>
+<h2>TotalCross 3.07 build 2372</h2>
 . fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>
 . now the ComboBox.usePopupMenu can be specified for a single popup<br>
 . Control.hadParentScrolled is now public<br>
@@ -31,8 +31,12 @@
 . added instructions of how to connect to GMail using TotalCross to src/totalcross/net/mail/Message.java<br>
 . updated version of TotalCrossAPI in the Android market<br>
 . fixed alert not being shown in ios when an unhandled exception was thrown<br>
-. improved GoogleMap api for android. see the new "TotalCross MGP location" in the TotalCrossAPI sample and also GoogleMap javadocs<br>
 . now the GPS class throws an IOException if there's already an open instance of it.<br>
+. fixed gps being closed during a screen rotation after a first try.<br>
+. changed GPSSample to stop the gps thread when pressing back<br>
+. dont use hwScale methods if transition effect is on, to prevent the dynamic smooth resize of images during screenshot<br>
+. fixed keyboard navigation on opengl devices leading to blue screen<br>
+. prevent crash if another thread tries to create an object while we're traversing the images list<br>
 
 <h2>TotalCross 3.06 build 2328</h2>
 . fixing transition effects for Window<br>

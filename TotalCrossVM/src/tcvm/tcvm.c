@@ -628,6 +628,7 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
+               nmp->retO = null;
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here
@@ -727,7 +728,7 @@ notYetLinked:
             if (code->op.op == CALL_virtual)
             {
                c = OBJ_CLASS(regO[code->mtd.this_]); // search for the method starting on the class pointed by "this"
-               if (strEq(className, "java.lang.Class") && strEq(c->name, "java.lang.String"))
+               if (c->flags.isString && strEq(className, "java.lang.Class"))
                {
                   TNMParams params;
 

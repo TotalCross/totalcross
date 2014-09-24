@@ -737,8 +737,8 @@ static void onImage(int32 it, VoidP ptr)
                glDeleteTexture(img, ids);
             break;
       }
-      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
    }
+   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
 
 void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
@@ -759,8 +759,8 @@ static void onImage(int32 dumb, VoidP ptr)
       Image_textureId(img)[0] = 0;
       Image_textureId(img)[1] = 0;
       #endif
-      Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
    }
+   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
 
 void invalidateTextures() // called by opengl when the application changes the opengl surface

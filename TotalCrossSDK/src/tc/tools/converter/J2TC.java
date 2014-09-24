@@ -162,6 +162,7 @@ public final class J2TC implements JConstants, TCConstants
       return tc;
    }
 
+   private static final String APPVER_VALID = "0123456789.";
    private static void searchForProperties(ByteCode bcs[], String superClass)
    {
       // Settings.appCreatorId = "Flor";
@@ -259,7 +260,12 @@ public final class J2TC implements JConstants, TCConstants
                         DeploySettings.applicationId = totalcross.sys.Settings.applicationId = value;
                      else
                      if (field.equals("appVersion"))
+                     {
                         DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
+                        for (int i = 0, n = value.length(); i < n; i++)
+                           if (APPVER_VALID.indexOf(value.charAt(i)) == -1)
+                              throw new IllegalArgumentException("Settings.versionStr '"+value+"' can only have digits and a dot.");
+                     }
                      else
                      if (field.equals("companyInfo"))
                         DeploySettings.companyInfo = value;

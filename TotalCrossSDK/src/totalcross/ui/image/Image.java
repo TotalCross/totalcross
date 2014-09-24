@@ -17,6 +17,9 @@
 
 package totalcross.ui.image;
 
+import java.awt.GraphicsEnvironment;
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
 import totalcross.*;
 import totalcross.io.*;
 import totalcross.sys.*;
@@ -51,6 +54,8 @@ import totalcross.util.zip.*;
  * 
  * Note: TotalCross does not support grayscale PNG with alpha-channel. Convert the image to true-color with
  * alpha-channel and it will work fine (the only backdraw is that the new image will be bigger).
+ * 
+ * The hwScale methods should not be used in images that are shown using transition effects.
  *
  * @see Graphics
  */
@@ -1721,7 +1726,10 @@ public class Image extends GfxSurface
          {
             java.awt.Component component = new java.awt.Component() {};
             java.awt.MediaTracker tracker = new java.awt.MediaTracker(component);
-            java.awt.Image image = java.awt.Toolkit.getDefaultToolkit().createImage(input,0,len);
+
+            java.awt.Image image = GraphicsEnvironment.isHeadless() ?
+                  ImageIO.read(new ByteArrayInputStream(input, 0, len)) :
+                  java.awt.Toolkit.getDefaultToolkit().createImage(input, 0, len);
 
             tracker.addImage(image, 0);
             tracker.waitForAll();
@@ -1735,6 +1743,11 @@ public class Image extends GfxSurface
          }
          catch (InterruptedException e)
          {
+         }
+         catch (java.io.IOException e)
+         {
+            // should never happen
+            e.printStackTrace();
          }
       }
 

@@ -213,7 +213,7 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
                TCClass target;
                CharP pt, po;
 
-               if (strEq(OBJ_CLASS(classes[j])->name, "java.lang.String"))
+               if (OBJ_CLASS(classes[j])->flags.isString)
                {
                   TNMParams params;
 

@@ -451,8 +451,13 @@ public class Window extends Container
          _controlEvent.update(highlighted);
          highlighted.postEvent(_controlEvent); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_OUT event
          highlighted = null;
-         drawHighlight(null);
-         updateScreen();
+         if (Settings.isOpenGL)
+            needsPaint = true;
+         else
+         {
+            drawHighlight(null);
+            updateScreen();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1451,38 +1456,44 @@ public class Window extends Container
       boolean neededPaint = needsPaint;
       needsPaint = false; // prevent from updating the screen
       // guich@400_73 guich@400_76
-      Object[] items = zStack.items;
-      Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
-      for (i=zStack.size(); --i > 0;) // search for the the most top window with the same size of MainWindow - 0=mainwindow, so we skip it
-         if (((Window)items[i]).getRect().equals(mainWindowRect))
-            break;
-      // guich@tc120_43: find the last fadeOtherWindows
-      int lastFade = 1000;
-      for (j = 0,n=zStack.size(); j < n; j++)
-         if (((Window)items[j]).fadeOtherWindows)
-            lastFade = j;
-      if (i == -1) i = 0;
-      for (n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
+      boolean callUS = true;
+      try
       {
-         if (i == lastFade)
-            Graphics.fadeScreen(fadeValue);
-         if (items[i] != null) ((Window)items[i])._doPaint();
+         Object[] items = zStack.items;
+         Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
+         for (i=zStack.size(); --i > 0;) // search for the the most top window with the same size of MainWindow - 0=mainwindow, so we skip it
+            if (((Window)items[i]).getRect().equals(mainWindowRect))
+               break;
+         // guich@tc120_43: find the last fadeOtherWindows
+         int lastFade = 1000;
+         for (j = 0,n=zStack.size(); j < n; j++)
+            if (((Window)items[j]).fadeOtherWindows)
+               lastFade = j;
+         if (i == -1) i = 0;
+         for (n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
+         {
+            if (i == lastFade)
+               Graphics.fadeScreen(fadeValue);
+            if (items[i] != null) ((Window)items[i])._doPaint();
+         }
+         if (neededPaint)
+         {
+            topMost.onWindowPaintFinished();
+            if (topMost._focus != null && topMost._focus.getParentWindow() == topMost)
+               topMost._focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
+            topMost.lastHighlighted = null;
+            if (topMost.highlighted != null) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
+               topMost.drawHighlight(topMost.highlighted);
+            updateScreen(); // tc100
+         }
       }
-      if (neededPaint)
-      {
-         topMost.onWindowPaintFinished();
-         if (topMost._focus != null && topMost._focus.getParentWindow() == topMost)
-            topMost._focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
-         topMost.lastHighlighted = null;
-         if (topMost.highlighted != null) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
-            topMost.drawHighlight(topMost.highlighted);
-         updateScreen(); // tc100
-      }
+      catch (Exception e) {e.printStackTrace(); callUS = false;}
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.
       
       enableUpdateScreen = eas;
-      updateScreen();
+      if (callUS)
+         updateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Called by the main event handler to handle the focus change keys. Only
@@ -1548,8 +1559,13 @@ public class Window extends Container
             c.postEvent(_controlEvent); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_IN event
             highlighted = c;
          }
-         drawHighlight(highlighted);
-         updateScreen();
+         if (Settings.isOpenGL)
+            needsPaint = true;
+         else
+         {
+            drawHighlight(highlighted);
+            updateScreen();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1603,13 +1619,10 @@ public class Window extends Container
       enableUpdateScreen = false; requestFocus(); enableUpdateScreen = true; // if resize occured in an edit, remove the focus from it.
       rTitle = null; // guich@tc120_37
       reposition();
-      final TimerEvent te = topMost.addTimer(10);
-      topMost.addTimerListener(new TimerListener()
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
       {
-         public void timerTriggered(TimerEvent e)
+         public void run()
          {
-            topMost.removeTimerListener(this);
-            topMost.removeTimer(te);
             repaintActiveWindows();
          }
       });

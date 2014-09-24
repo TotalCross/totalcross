@@ -27,6 +27,9 @@ Although not implemented here, here's now to send email to a GMAIL account:
    s.put(MailSession.SMTP_STARTTLS, new Properties.Boolean(true));
    SMTPSSLTransport.send(m, s);
 </pre>
+If you receive error 534, see:
+https://accounts.google.com/b/0/DisplayUnlockCaptcha
+
  */
 
 public class MailSample extends BaseContainer
