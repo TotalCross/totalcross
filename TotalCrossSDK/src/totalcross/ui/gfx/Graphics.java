@@ -3117,21 +3117,21 @@ public final class Graphics
    {
       drawImage(image, x,y, doClip);
    }
-   /** Draws a thick line. */
+   /** Draws a thick line. You should use odd values for t(hickness). */
    public void drawThickLine(int x1, int y1, int x2, int y2, int t)
    {
-      
       if (tlx == null) {tlx=new int[4]; tly=new int[4];}
-      int dx = x2-x1; if (dx < 0) dx = 0;
-      int dy = y2-y1; if (dy < 0) dy = 0;
+      int dx = x2-x1; if (dx < 0) dx = -dx;
+      int dy = y2-y1; if (dy < 0) dy = -dy;
+      t /= 2;
       if (dx > dy)
       {
          tlx[0] = tlx[1] = x1; tlx[2] = tlx[3] = x2;
-         tly[0] = y1; tly[1] = y1-t; tly[2] = y2-t; tly[3] = y2;
+         tly[0] = y1+t; tly[1] = y1-t; tly[2] = y2-t; tly[3] = y2+t;
       }
       else
       {
-         tlx[0] = x1; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2;
+         tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
          tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
       }
       int c = backColor; backColor = foreColor;
