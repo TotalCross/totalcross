@@ -62,9 +62,9 @@ package totalcross.lang;
 public final class StringBuffer4D
 {
    /** The buffer is used for character storage. */
-   private char charbuf[];
+   char charbuf[];
    /** The count is the number of characters in the buffer. */
-   private int count;
+   int count;
 
    public static final int STARTING_SIZE = 16; // read by the StringBuffer test cases.
 
@@ -270,8 +270,256 @@ public final class StringBuffer4D
       return this;
    }
    
-   public StringBuffer4D append(StringBuffer4D s)
+   /**
+    * Append the <code>StringBuffer4D</code> value of the argument to this
+    * <code>StringBuffer4D</code>. This behaves the same as
+    * <code>append((Object) stringBuffer)</code>, except it is more efficient.
+    *
+    * @param stringBuffer the <code>StringBuffer4D</code> to convert and append
+    * @return this <code>StringBuffer4D</code>
+    * @see #append(Object)
+    */
+   public StringBuffer4D append(StringBuffer4D stringBuffer)
    {
-      return this.append(s.toString());
+      return append(stringBuffer.charbuf,0,count);
+   }
+
+   /**
+    * Delete a character from this <code>StringBuffer4D</code>.
+    *
+    * @param index the index of the character to delete
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if index is out of bounds
+    */
+   public StringBuffer4D deleteCharAt(int index)
+   {
+      return delete4D(index, index + 1);
+   }
+
+   /**
+    * Replace characters between index <code>start</code> (inclusive) and
+    * <code>end</code> (exclusive) with <code>str</code>. If <code>end</code>
+    * is larger than the size of this StringBuffer4D, all characters after
+    * <code>start</code> are replaced.
+    *
+    * @param start the beginning index of characters to delete (inclusive)
+    * @param end the ending index of characters to delete (exclusive)
+    * @param str the new <code>String</code> to insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if start or end are out of bounds
+    * @throws NullPointerException if str is null
+    */
+   public StringBuffer4D replace(int start, int end, String4D str)
+   {
+      if (start < 0 || start > count || start > end)
+         throw new StringIndexOutOfBoundsException(start);
+
+      int len = str.chars.length;
+      // Calculate the difference in 'count' after the replace.
+      int delta = len - (end > count ? count : end) + start;
+      ensureCapacity(count + delta);
+
+      if (delta != 0 && end < count)
+         String4D.copyChars(charbuf, end, charbuf, end + delta, count - end);
+
+      str.getChars(0, len, charbuf, start);
+      count += delta;
+      return this;
+   }
+
+   /**
+    * Creates a substring of this StringBuffer4D, starting at a specified index
+    * and ending at the end of this StringBuffer4D.
+    *
+    * @param beginIndex index to start substring (base 0)
+    * @return new String which is a substring of this StringBuffer4D
+    * @throws StringIndexOutOfBoundsException if beginIndex is out of bounds
+    * @see #substring(int, int)
+    */
+   public String4D substring(int beginIndex)
+   {
+     return substring(beginIndex, count);
+   }
+
+   /**
+    * Creates a substring of this StringBuffer4D, starting at a specified index
+    * and ending at one character before a specified index.
+    *
+    * @param beginIndex index to start at (inclusive, base 0)
+    * @param endIndex index to end at (exclusive)
+    * @return new String which is a substring of this StringBuffer4D
+    * @throws StringIndexOutOfBoundsException if beginIndex or endIndex is out
+    *         of bounds
+    */
+   public String4D substring(int beginIndex, int endIndex)
+   {
+     int len = endIndex - beginIndex;
+     if (beginIndex < 0 || endIndex > count || endIndex < beginIndex)
+        throw new StringIndexOutOfBoundsException();
+     if (len == 0)
+        return new String4D();
+     return new String4D(charbuf, beginIndex, len);
+   }
+
+   /**
+    * Insert a subarray of the <code>char[]</code> argument into this
+    * <code>StringBuffer4D</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param str the <code>char[]</code> to insert
+    * @param str_offset the index in <code>str</code> to start inserting from
+    * @param len the number of characters to insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws NullPointerException if <code>str</code> is <code>null</code>
+    * @throws StringIndexOutOfBoundsException if any index is out of bounds
+    */
+   public StringBuffer4D insert(int offset, char[] str, int str_offset, int len)
+   {
+      if (offset < 0 || offset > count || len < 0 || str_offset < 0 || str_offset > str.length - len)
+         throw new StringIndexOutOfBoundsException();
+      ensureCapacity(count + len);
+      String4D.copyChars(charbuf, offset, charbuf, offset + len, count - offset);
+      String4D.copyChars(str, str_offset, charbuf, offset, len);
+      count += len;
+      return this;
+   }
+
+   /**
+    * Insert the <code>String</code> value of the argument into this
+    * <code>StringBuffer4D</code>. Uses <code>String.valueOf()</code> to convert
+    * to <code>String</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param obj the <code>Object</code> to convert and insert
+    * @return this <code>StringBuffer4D</code>
+    * @exception StringIndexOutOfBoundsException if offset is out of bounds
+    * @see String#valueOf(Object)
+    */
+   public StringBuffer4D insert(int offset, Object obj)
+   {
+      return insert(offset, obj == null ? "null" : obj.toString());
+   }
+
+   /**
+    * Insert the <code>String</code> argument into this
+    * <code>StringBuffer4D</code>. If str is null, the String "null" is used
+    * instead.
+    *
+    * @param offset the place to insert in this buffer
+    * @param str the <code>String</code> to insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    */
+   public StringBuffer4D insert(int offset, String4D str)
+   {
+      if (offset < 0 || offset > count)
+         throw new StringIndexOutOfBoundsException(offset);
+       if (str == null)
+          str = new String4D(new char[]{'n','u','l','l'});
+       int len = str.chars.length;
+       ensureCapacity(count + len);
+       String4D.copyChars(charbuf, offset, charbuf, offset + len, count - offset);
+       str.getChars(0, len, charbuf, offset);
+       count += len;
+       return this;
+   }
+
+   /**
+    * Insert the <code>char[]</code> argument into this
+    * <code>StringBuffer4D</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param data the <code>char[]</code> to insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws NullPointerException if <code>data</code> is <code>null</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    * @see #insert(int, char[], int, int)
+    */
+   public StringBuffer4D insert(int offset, char[] data)
+   {
+      return insert(offset, data, 0, data.length);
+   }
+
+   /**
+    * Insert the <code>String</code> value of the argument into this
+    * <code>StringBuffer4D</code>. Uses <code>String.valueOf()</code> to convert
+    * to <code>String</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param bool the <code>boolean</code> to convert and insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    * @see String#valueOf(boolean)
+    */
+   public StringBuffer4D insert(int offset, boolean bool)
+   {
+      return insert(offset, bool ? "true" : "false");
+   }
+
+   /**
+    * Insert the <code>char</code> argument into this <code>StringBuffer4D</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param ch the <code>char</code> to insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    */
+   public StringBuffer4D insert(int offset, char ch)
+   {
+      if (offset < 0 || offset > count)
+         throw new StringIndexOutOfBoundsException(offset);
+       ensureCapacity(count + 1);
+       String4D.copyChars(charbuf, offset, charbuf, offset + 1, count - offset);
+       charbuf[offset] = ch;
+       count++;
+       return this;
+   }
+
+   /**
+    * Insert the <code>String</code> value of the argument into this
+    * <code>StringBuffer4D</code>. Uses <code>String.valueOf()</code> to convert
+    * to <code>String</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param inum the <code>int</code> to convert and insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    * @see String#valueOf(int)
+    */
+   public StringBuffer4D insert(int offset, int inum)
+   {
+      return insert(offset, String.valueOf(inum));
+   }
+
+   /**
+    * Insert the <code>String</code> value of the argument into this
+    * <code>StringBuffer4D</code>. Uses <code>String.valueOf()</code> to convert
+    * to <code>String</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param lnum the <code>long</code> to convert and insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    * @see String#valueOf(long)
+    */
+   public StringBuffer4D insert(int offset, long lnum)
+   {
+      return insert(offset, String.valueOf(lnum));
+   }
+
+   /**
+    * Insert the <code>String</code> value of the argument into this
+    * <code>StringBuffer4D</code>. Uses <code>String.valueOf()</code> to convert
+    * to <code>String</code>.
+    *
+    * @param offset the place to insert in this buffer
+    * @param dnum the <code>double</code> to convert and insert
+    * @return this <code>StringBuffer4D</code>
+    * @throws StringIndexOutOfBoundsException if offset is out of bounds
+    * @see String#valueOf(double)
+    */
+   public StringBuffer4D insert(int offset, double dnum)
+   {
+      return insert(offset, String.valueOf(dnum));
    }
 }
