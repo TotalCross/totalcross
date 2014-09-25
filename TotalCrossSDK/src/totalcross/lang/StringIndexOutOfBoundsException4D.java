@@ -45,4 +45,14 @@ public class StringIndexOutOfBoundsException4D extends IndexOutOfBoundsException
    {
 	   super(msg);
    }
+
+   /**
+    * Create an exception noting the illegal index.
+    *
+    * @param index the invalid index
+    */
+   public StringIndexOutOfBoundsException4D(int index)
+   {
+     super("String index out of range: " + index);
+   }
 }

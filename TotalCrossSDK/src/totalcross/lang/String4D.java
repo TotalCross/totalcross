@@ -131,6 +131,21 @@ public final class String4D
       this.chars = value;
    }
 
+   /**
+    * Creates a new String using the character sequence represented by
+    * the StringBuffer. Subsequent changes to buf do not affect the String.
+    *
+    * @param buffer StringBuffer to copy
+    * @throws NullPointerException if buffer is null
+    */
+   public String4D(StringBuffer4D buffer)
+   {
+      chars = new char[buffer.count];
+      String4D.copyChars(buffer.charbuf, 0, chars, 0, chars.length);
+   }
+
+
+
    /** Returns the length of the string in characters. */
    public int length()
    {
@@ -351,20 +366,6 @@ public final class String4D
    public boolean contains(String4D part)
    {
       return indexOf(part) != -1;
-   }
-
-
-   /**
-    * Creates a new String using the character sequence represented by
-    * the StringBuffer. Subsequent changes to buf do not affect the String.
-    *
-    * @param buffer StringBuffer to copy
-    * @throws NullPointerException if buffer is null
-    */
-   public String4D(StringBuffer4D buffer)
-   {
-      chars = new char[buffer.count];
-      String4D.copyChars(buffer.charbuf, 0, chars, 0, chars.length);
    }
 
 

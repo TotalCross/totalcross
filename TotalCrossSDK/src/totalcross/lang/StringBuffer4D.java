@@ -522,4 +522,81 @@ public final class StringBuffer4D
    {
       return insert(offset, String.valueOf(dnum));
    }
+
+   /**
+    * Finds the first instance of a substring in this StringBuilder.
+    *
+    * @param str String to find
+    * @return location (base 0) of the String, or -1 if not found
+    * @throws NullPointerException if str is null
+    */
+   public int indexOf(String4D str)
+   {
+     return indexOf(str, 0);
+   }
+
+   /**
+    * Finds the first instance of a String in this StringBuffer, starting at
+    * a given index.  If starting index is less than 0, the search starts at
+    * the beginning of this String.  If the starting index is greater than the
+    * length of this String, or the substring is not found, -1 is returned.
+    *
+    * @param str String to find
+    * @param fromIndex index to start the search
+    * @return location (base 0) of the String, or -1 if not found
+    * @throws NullPointerException if str is null
+    * @since 1.4
+    */
+   public int indexOf(String4D str, int fromIndex)
+   {
+     if (fromIndex < 0)
+       fromIndex = 0;
+     int limit = count - str.chars.length;
+     for ( ; fromIndex <= limit; fromIndex++)
+       if (regionMatches(fromIndex, str))
+         return fromIndex;
+     return -1;
+   }
+
+   /**
+    * Finds the last instance of a substring in this StringBuffer.
+    *
+    * @param str String to find
+    * @return location (base 0) of the String, or -1 if not found
+    * @throws NullPointerException if str is null
+    */
+   public int lastIndexOf(String4D str)
+   {
+     return lastIndexOf(str, count - str.chars.length);
+   }
+
+   /**
+    * Finds the last instance of a String in this StringBuffer, starting at a
+    * given index.  If starting index is greater than the maximum valid index,
+    * then the search begins at the end of this String.  If the starting index
+    * is less than zero, or the substring is not found, -1 is returned.
+    *
+    * @param str String to find
+    * @param fromIndex index to start the search
+    * @return location (base 0) of the String, or -1 if not found
+    * @throws NullPointerException if str is null
+    */
+   public int lastIndexOf(String4D str, int fromIndex)
+   {
+     fromIndex = Math.min(fromIndex, count - str.chars.length);
+     for ( ; fromIndex >= 0; fromIndex--)
+       if (regionMatches(fromIndex, str))
+         return fromIndex;
+     return -1;
+   }
+
+   private boolean regionMatches(int toffset, String4D other)
+   {
+     int len = other.chars.length;
+     int index = 0;
+     while (--len >= 0)
+       if (charbuf[toffset++] != other.chars[index++])
+         return false;
+     return true;
+   }
 }
