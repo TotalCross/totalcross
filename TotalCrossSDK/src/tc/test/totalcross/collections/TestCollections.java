@@ -46,6 +46,7 @@ public class TestCollections extends TestSuite
       addTestCase(TestAbstractCollection.class);
       addTestCase(TestAbstractList.class);
       addTestCase(TestAbstractMap.class);
+      addTestCase(TestAbstractQueue.class);
       addTestCase(TestAbstractSequentialList.class);
       addTestCase(TestAbstractSet.class);
       addTestCase(TestDictionary.class);
