@@ -30,11 +30,13 @@ public class TestCollections extends TestSuite
       // Tests interfaces.
       addTestCase(TestCollection.class);
       addTestCase(TestComparator.class);
+      addTestCase(TestDeque.class);
       addTestCase(TestEnumeration.class);
       addTestCase(TestIterator.class);
       addTestCase(TestList.class);
       addTestCase(TestListIterator.class);
       addTestCase(TestMap.class);
+      addTestCase(TestQueue.class);
       addTestCase(TestRandomAccess.class);
       addTestCase(TestSet.class);
       addTestCase(TestSortedMap.class);
@@ -55,6 +57,7 @@ public class TestCollections extends TestSuite
       addTestCase(TestHashSet.class);
       addTestCase(TestLinkedHashMap.class);
       addTestCase(TestLinkedHashSet.class);
+      addTestCase(TestLinkedList.class);
       
       addTestCase(TestGenerics.class);
    }

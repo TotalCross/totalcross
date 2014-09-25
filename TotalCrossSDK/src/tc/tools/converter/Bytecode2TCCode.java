@@ -2004,7 +2004,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/lang/" + name.substring(16);
       if (name.startsWith("totalcross/util/AbstractList") || name.startsWith("totalcross/util/AbstractMap") 
        || name.startsWith("totalcross/util/Collections") || name.startsWith("totalcross/util/HashMap")  
-       || name.startsWith("totalcross/util/LinkedHashMap") || name.startsWith("totalcross/util/Map")) 
+       || name.startsWith("totalcross/util/LinkedHashMap") || name.startsWith("totalcross/util/LinkedList")
+       || name.startsWith("totalcross/util/Map")) 
          return name.replace("totalcross", "java");
       if (name.equals("totalcross/util/AbstractCollection4D")) 
          return "java/util/AbstractCollection4D";
@@ -2022,6 +2023,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/util/Comparator4D";
       if (name.equals("totalcross/util/ConcurrentModificationException4D")) 
          return "java/util/ConcurrentModificationException4D";     
+      if (name.equals("totalcross/util/Deque4D")) 
+         return "java/util/Deque4D";
       if (name.equals("totalcross/util/Dictionary4D")) 
          return "java/util/Dictionary4D";
       if (name.equals("totalcross/util/Enumeration4D")) 
@@ -2038,6 +2041,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/util/ListIterator4D";
       if (name.equals("totalcross/util/NoSuchElementException4D")) 
          return "java/util/NoSuchElementException4D";
+      if (name.equals("totalcross/util/Queue4D")) 
+         return "java/util/Queue4D";
       if (name.equals("totalcross/util/RandomAccess4D")) 
          return "java/util/RandomAccess4D";
       if (name.equals("totalcross/util/Set4D")) 

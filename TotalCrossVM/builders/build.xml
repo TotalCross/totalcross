@@ -633,7 +633,7 @@ target: checks if we must update the versions of the files prior to a build.
 <target name="buildPostInstall" >
 
   <property name="temp" value="${base.temp.path}/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
+  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
