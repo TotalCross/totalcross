@@ -31,6 +31,16 @@ void glClearClip();
 void glSetClip(int32 x1, int32 y1, int32 x2, int32 y2);
 void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2);
 
+void setupLookupBuffers()
+{
+   int32 i;
+   for (i = 0; i < 14; i++)
+      ftransp[i + 1] = (float)(i << 4) / (float)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
+   ftransp[15] = 1;
+   for (i = 0; i <= 255; i++)
+      f255[i] = (float)i / (float)255;
+}
+
 static void glDrawPixelG(TCObject g, int32 xx, int32 yy, int32 color, int32 alpha)
 {
    xx += Graphics_transX(g);
@@ -3169,6 +3179,7 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
 /////////////// Start of Device-dependant functions ///////////////
 static bool startupGraphics(int16 appTczAttr) // there are no threads running at this point
 {
+   setupLookupBuffers();
    return graphicsStartup(&screen, appTczAttr);
 }
 
