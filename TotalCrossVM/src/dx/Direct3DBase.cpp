@@ -256,7 +256,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 
 void Direct3DBase::setColor(int color, int alphaMask)
 {
-   if (color == lastRGB || minimized) return;
+   if (alphaMask == 255 && (color == lastRGB || minimized)) return;
    lastRGB = color;
    aa = ((color >> 24) & 0xFF) / 255.0f;
    rr = ((color >> 16) & 0xFF) / 255.0f;
