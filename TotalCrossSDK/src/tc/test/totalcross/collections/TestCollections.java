@@ -36,6 +36,7 @@ public class TestCollections extends TestSuite
       addTestCase(TestList.class);
       addTestCase(TestListIterator.class);
       addTestCase(TestMap.class);
+      addTestCase(TestNavigableMap.class);
       addTestCase(TestNavigableSet.class);
       addTestCase(TestQueue.class);
       addTestCase(TestRandomAccess.class);
