@@ -39,8 +39,7 @@ import totalcross.sys.*;
  * if (vec.size() > 5)
  * ...
  * </pre>
- * <br>For efficiency, get and set is made directly through the <items> public array.
- * <b>Please use the add and remove methods to manipulate the Vector.</b>
+ * This Vector class does not support Generics; use the ArrayList class instead.
  */
 public class Vector
 {

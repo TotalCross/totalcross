@@ -64,7 +64,6 @@ public class Throwable4D
     /**
      * Instantiate this Throwable with the given message and cause. Note that
      * the message is unrelated to the message of the cause.
-     * {@link #fillInStackTrace()} will be called to set up the stack trace.
      *
      * @param message the message to associate with the Throwable
      * @param cause the cause, may be null
@@ -79,7 +78,6 @@ public class Throwable4D
     /**
      * Instantiate this Throwable with the given cause. The message is then
      * built as <code>cause == null ? null : cause.toString()</code>.
-     * {@link #fillInStackTrace()} will be called to set up the stack trace.
      *
      * @param cause the cause, may be null
      * @since 1.4

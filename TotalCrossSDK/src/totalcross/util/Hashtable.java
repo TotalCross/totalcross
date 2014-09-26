@@ -57,6 +57,8 @@ modifications.
 *     if (n != null) 
 *        // "two = " + Convert.toInt(n);
 * </pre>
+* This Hashtable class does not support Generics; use the HashMap class instead.
+
 */
 public class Hashtable
 {

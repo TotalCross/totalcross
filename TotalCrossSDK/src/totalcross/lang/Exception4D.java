@@ -33,7 +33,7 @@ package totalcross.lang;
  * available.
  */
 
-public class Exception4D extends Throwable
+public class Exception4D extends Throwable4D
 {
    /** Constructs an empty Exception. */
    public Exception4D()
@@ -53,7 +53,7 @@ public class Exception4D extends Throwable
     * @param cause the cause of this error
     * @since 1.4
     */
-   public Exception4D(String s, Throwable cause)
+   public Exception4D(String s, Throwable4D cause)
    {
      super(s, cause);
    }
@@ -65,7 +65,7 @@ public class Exception4D extends Throwable
     * @param cause the cause of this exception
     * @since 1.4
     */
-   public Exception4D(Throwable cause)
+   public Exception4D(Throwable4D cause)
    {
      super(cause);
    }
