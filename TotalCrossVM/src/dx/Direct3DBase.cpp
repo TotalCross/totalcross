@@ -542,12 +542,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    if (minimized) return;
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = onlyAlpha ? pf : (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
-   if (!pt)
-   {
-      throwException(currentContext, OutOfMemoryError, "Cannot allocate memory for texture.");
-      return;
-   }
+   PixelConv ptemp;
    ID3D11Texture2D *texture;
    D3D11_TEXTURE2D_DESC textureDesc = { 0 };
    textureDesc.Width = width;
@@ -557,9 +552,9 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
    if (!onlyAlpha)
-      for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
+      for (i = width*height; --i >= 0; pf++) { ptemp.pixel = pf->pixel; pf->a = ptemp.r; pf->b = ptemp.g; pf->g = ptemp.b; pf->r = ptemp.a; }
    D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
-   textureSubresourceData.pSysMem = pt0;
+   textureSubresourceData.pSysMem = pixels;
    textureSubresourceData.SysMemPitch = textureDesc.Width * (onlyAlpha ? 1 : 4); // Specify the size of a row in bytes
    if (FAILED(d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
@@ -575,7 +570,8 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
       xmoveptr(&textureId[0], &texture);
       xmoveptr(&textureId[1], &textureView);
    }
-   if (!onlyAlpha) xfree(pt0);
+   if (!onlyAlpha)
+      for (pf = (PixelConv*)pixels, i = width*height; --i >= 0; pf++) { ptemp.pixel = pf->pixel; pf->a = ptemp.r; pf->b = ptemp.g; pf->g = ptemp.b; pf->r = ptemp.a; }
 }
 
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId)
