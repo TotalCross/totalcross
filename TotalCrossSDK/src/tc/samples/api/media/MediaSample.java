@@ -37,17 +37,8 @@ public class MediaSample extends BaseContainer
             add(new Label("This sample runs only on the\nAndroid, iOS and Windows Phone platforms",CENTER),CENTER,CENTER);
             return;
          }
-         boolean recreate = false;
-         if (!new File("device/sample.mp3").exists())
-            recreate = true;
-         else
-         {
-            File f = new File("device/sample.mp3", File.READ_ONLY);
-            recreate = f.getSize() == 0;
-            f.close();
-         }
-         if (recreate) // extract file from tcz
-            new File("device/sample.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("sample.mp3"));
+         // you may write the file only once; here we write always because it is pretty small, just 29k
+         new File("device/sample.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("tc/samples/api/sample.mp3"));
          
          final Button b = new Button("Play MP3 sample");
          add(b, CENTER,CENTER);

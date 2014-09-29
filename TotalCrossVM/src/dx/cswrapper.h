@@ -58,6 +58,9 @@ namespace PhoneDirect3DXamlAppComponent
      int cameraStatus();
      Platform::String^ cameraFilename();
 
+     // Media
+     void nativeSoundPlayCS(Platform::String^ filename);
+
      // Others
      void appExit();
      void appSetFullScreen();

@@ -24,6 +24,8 @@ using System.IO;
 using Windows.Storage;
 using System.IO.IsolatedStorage;
 using System.Xml.Linq;
+using Microsoft.Phone.BackgroundAudio;
+using System.Windows.Resources;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -313,6 +315,25 @@ namespace PhoneDirect3DXamlAppInterop
             flags |= 32;
 
          return flags;
+      }
+
+      public void nativeSoundPlayCS(String filename)
+      {
+         //Deployment.Current.Dispatcher.BeginInvoke(() =>
+         //{
+            try
+            {
+               if (BackgroundAudioPlayer.Instance.PlayerState == PlayState.Playing)
+                  BackgroundAudioPlayer.Instance.Stop();
+               BackgroundAudioPlayer.Instance.Track = new AudioTrack(new Uri(filename, UriKind.Absolute), "Title", "Artist", "Album", null/*, "Tag", EnabledPlayerControls.None*/);
+               BackgroundAudioPlayer.Instance.Play();
+            }
+            catch (Exception e) 
+            { 
+               String s = e.Message;
+               s = "";
+            }
+         //});
       }
 
       public void nativeStopGPSCS() // GPS

@@ -1076,6 +1076,7 @@ public final class J2TC implements JConstants, TCConstants
       htValidExtensions.put(".jpeg","");
       htValidExtensions.put(".png","");
       htValidExtensions.put(".wav","");
+      htValidExtensions.put(".mp3","");
       htValidExtensions.put(".pdf","");
       htValidExtensions.put(".class","");
    }
