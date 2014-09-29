@@ -5,6 +5,8 @@
 #define HAS_TCHAR
 #include "tcvm.h"
 
+static float f255[256];
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
@@ -29,6 +31,8 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
+   for (int i = 0; i <= 255; i++)
+      f255[i] = (float)i / (float)255;
    initialize();
 }
 
@@ -276,8 +280,6 @@ void Direct3DBase::setColor(int color, int alphaMask)
 
    d3dcontext->VSSetConstantBuffers(1, 1, &pBufferColor);
 }
-
-extern float* f255;
 
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
