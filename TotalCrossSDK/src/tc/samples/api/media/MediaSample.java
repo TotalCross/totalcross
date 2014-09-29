@@ -32,13 +32,21 @@ public class MediaSample extends BaseContainer
       try
       {
          super.initUI();
-         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())
+         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS() && !Settings.platform.equals(Settings.WINDOWSPHONE))
          {
-            add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
+            add(new Label("This sample runs only on the\nAndroid, iOS and Windows Phone platforms",CENTER),CENTER,CENTER);
             return;
          }
-         
-         if (!new File("device/sample.mp3").exists()) // extract file from tcz
+         boolean recreate = false;
+         if (!new File("device/sample.mp3").exists())
+            recreate = true;
+         else
+         {
+            File f = new File("device/sample.mp3", File.READ_ONLY);
+            recreate = f.getSize() == 0;
+            f.close();
+         }
+         if (recreate) // extract file from tcz
             new File("device/sample.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("sample.mp3"));
          
          final Button b = new Button("Play MP3 sample");
