@@ -239,7 +239,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public HashMap4D(int initialCapacity, double loadFactor)
+  public HashMap4D(int initialCapacity, float loadFactor)
   {
     if (initialCapacity < 0)
       throw new IllegalArgumentException("Illegal Capacity: "

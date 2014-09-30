@@ -270,7 +270,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public LinkedHashMap4D(int initialCapacity, double loadFactor)
+  public LinkedHashMap4D(int initialCapacity, float loadFactor)
   {
     super(initialCapacity, loadFactor);
     accessOrder = false;
@@ -286,7 +286,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public LinkedHashMap4D(int initialCapacity, double loadFactor,
+  public LinkedHashMap4D(int initialCapacity, float loadFactor,
                        boolean accessOrder)
   {
     super(initialCapacity, loadFactor);

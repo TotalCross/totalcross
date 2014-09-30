@@ -19,7 +19,7 @@ public class TestLinkedHashSet extends TestCase
    public void testRun()
    {
       Test23 test1 = new Test23();
-      LinkedHashSet test2 = new Test23(10);
+      LinkedHashSet test2 = new Test23(10, 0.1f);
       HashSet test3 = new Test23(test2);
    }
 }
@@ -31,9 +31,9 @@ class Test23 extends LinkedHashSet
       super();
    }
   
-   public Test23(int initialCapacity)
+   public Test23(int initialCapacity, float load)
    {
-      super(initialCapacity);
+      super(initialCapacity, load);
    }
 
    public Test23(Collection c)

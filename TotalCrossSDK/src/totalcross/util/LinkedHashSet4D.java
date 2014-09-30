@@ -121,7 +121,7 @@ public class LinkedHashSet4D<T> extends HashSet4D<T>
    * @throws IllegalArgumentException if either argument is negative, or
    *         if loadFactor is POSITIVE_INFINITY or NaN
    */
-  public LinkedHashSet4D(int initialCapacity, double loadFactor)
+  public LinkedHashSet4D(int initialCapacity, float loadFactor)
   {
     super(initialCapacity, loadFactor);
   }
@@ -147,8 +147,8 @@ public class LinkedHashSet4D<T> extends HashSet4D<T>
    * @param load the initial load factor
    * @return the backing HashMap
    */
-  HashMap<T, String> init(int capacity, float load)
+  HashMap4D<T, String> init(int capacity, float load)
   {
-    return new LinkedHashMap<T, String>(capacity, load);
+    return new LinkedHashMap4D<T, String>(capacity, load);
   }
 }

@@ -352,6 +352,9 @@ public final class TCMethod implements TCConstants
       {
          String name = args[i].getName();
          String js = GlobalConstantPool.getClassName(jiargs[i+2]);
+         
+         if (name == "float")
+            name = "double";
          if (js.charAt(0) == '&') // primitive type?
             found &= name.equals(GlobalConstantPool.getPrimitiveJavaName(js));
          else

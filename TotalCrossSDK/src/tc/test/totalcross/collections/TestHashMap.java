@@ -20,7 +20,7 @@ public class TestHashMap extends TestCase
    {
       Test20 test1 = new Test20();
       HashMap test2 = new Test20(test1);
-      AbstractMap test3 = new Test20(10);
+      AbstractMap test3 = new Test20(10, 0.1f);
       
       assertEquals(0, test1.size());
       assertEquals(0, test2.size());
@@ -136,8 +136,8 @@ class Test20 extends HashMap
       super(m);
    }
    
-   public Test20(int initialCapacity)
+   public Test20(int initialCapacity, float load)
    {
-      super(initialCapacity);
+      super(initialCapacity, load);
    }
 }

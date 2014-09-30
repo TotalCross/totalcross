@@ -111,7 +111,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    * @throws IllegalArgumentException if either argument is negative, or
    *         if loadFactor is POSITIVE_INFINITY or NaN
    */
-  public HashSet4D(int initialCapacity, double loadFactor)
+  public HashSet4D(int initialCapacity, float loadFactor)
   {
     map = init(initialCapacity, loadFactor);
   }
@@ -216,7 +216,7 @@ public class HashSet4D<T> extends AbstractSet<T>
    * @param load the initial load factor
    * @return the backing HashMap
    */
-  HashMap4D init(int capacity, double load)
+  HashMap4D init(int capacity, float load)
   {
     return new HashMap4D(capacity, load);
   }

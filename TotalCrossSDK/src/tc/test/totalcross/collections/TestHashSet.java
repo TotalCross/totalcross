@@ -19,7 +19,7 @@ public class TestHashSet extends TestCase
    public void testRun()
    {
       Test21 test1 = new Test21();
-      HashSet test2 = new Test21(10);
+      HashSet test2 = new Test21(10, 0.1f);
       AbstractSet test3 = new Test21(test2);
       
       assertTrue(test1.add(null));
@@ -59,9 +59,9 @@ class Test21 extends HashSet
       super();
    }
    
-   public Test21(int initialCapacity)
+   public Test21(int initialCapacity, float load)
    {
-      super(initialCapacity);
+      super(initialCapacity, load);
    }
    
    public Test21(Collection c)
