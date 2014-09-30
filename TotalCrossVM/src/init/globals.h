@@ -237,9 +237,6 @@ extern int32 threadCount;
 // class.c
 extern TCObject *voidTYPE,*booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 
-// MainWindow
-extern TCObject *screenShotImagePtr;
-
 // These are set in the application's constructor
 extern uint32 applicationId;
 extern char applicationIdStr[5];

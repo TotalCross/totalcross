@@ -765,11 +765,6 @@ bool setupGL(int width, int height)
     glEnable(GL_BLEND); GL_CHECK_ERROR // enable color alpha channel
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GL_CHECK_ERROR
 
-    for (i = 0; i < 14; i++)
-        ftransp[i+1] = (float)(i<<4) / (float)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
-    ftransp[15] = 1;
-    for (i = 0; i <= 255; i++)
-        f255[i] = (float)i/(float)255;
     return checkGLfloatBuffer(mainContext,1000);
 }
 
@@ -849,6 +844,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
+
    return initGLES(screen);
 }
 

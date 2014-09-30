@@ -80,6 +80,9 @@ int32 dxGetScreenSize();
 void dxprivateScreenChange();
 void cameraClick(NMParams p);
 
+// Media
+void nativeSoundPlayCPP(CharP filename);
+
 // Etc
 double getFontHeightCPP();
 void privateWindowSetSIP(bool visible);

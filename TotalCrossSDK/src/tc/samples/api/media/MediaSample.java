@@ -32,14 +32,13 @@ public class MediaSample extends BaseContainer
       try
       {
          super.initUI();
-         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())
+         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS() && !Settings.platform.equals(Settings.WINDOWSPHONE))
          {
-            add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
+            add(new Label("This sample runs only on the\nAndroid, iOS and Windows Phone platforms",CENTER),CENTER,CENTER);
             return;
          }
-         
-         if (!new File("device/sample.mp3").exists()) // extract file from tcz
-            new File("device/sample.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("sample.mp3"));
+         // you may write the file only once; here we write always because it is pretty small, just 29k
+         new File("device/sample.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("tc/samples/api/sample.mp3"));
          
          final Button b = new Button("Play MP3 sample");
          add(b, CENTER,CENTER);

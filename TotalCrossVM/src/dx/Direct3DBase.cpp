@@ -5,6 +5,8 @@
 #define HAS_TCHAR
 #include "tcvm.h"
 
+static float f255[256];
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 using namespace Windows::Foundation;
@@ -29,6 +31,8 @@ Direct3DBase::Direct3DBase(PhoneDirect3DXamlAppComponent::CSwrapper ^cs)
 {
    csharp = cs;
    instance = this;
+   for (int i = 0; i <= 255; i++)
+      f255[i] = (float)i / (float)255;
    initialize();
 }
 
@@ -256,7 +260,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 
 void Direct3DBase::setColor(int color, int alphaMask)
 {
-   if (color == lastRGB || minimized) return;
+   if (alphaMask == 255 && (color == lastRGB || minimized)) return;
    lastRGB = color;
    aa = ((color >> 24) & 0xFF) / 255.0f;
    rr = ((color >> 16) & 0xFF) / 255.0f;
@@ -277,15 +281,13 @@ void Direct3DBase::setColor(int color, int alphaMask)
    d3dcontext->VSSetConstantBuffers(1, 1, &pBufferColor);
 }
 
-#define f255(x) ((float)x/255.0f)
-
 void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
    if (minimized) return;
    y += glShiftY;
    float x1 = (float)x, y1 = (float)y, x2 = x1 + w, y2 = y1 + h;
-   XMFLOAT4 color1 = XMFLOAT4(f255(c2.r), f255(c2.g), f255(c2.b), f255(c2.a));
-   XMFLOAT4 color2 = XMFLOAT4(f255(c1.r), f255(c1.g), f255(c1.b), f255(c1.a));
+   XMFLOAT4 color1 = XMFLOAT4(f255[c2.r], f255[c2.g], f255[c2.b], f255[c2.a]);
+   XMFLOAT4 color2 = XMFLOAT4(f255[c1.r], f255[c1.g], f255[c1.b], f255[c1.a]);
    VertexPositionColor cubeVertices[] = // position, color
    {
       { XMFLOAT2(x1, y1), horiz ? color1 : color1 },
@@ -303,28 +305,19 @@ void Direct3DBase::fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h
    UINT stride = sizeof(VertexPositionColor);
    UINT offset = 0;
    d3dcontext->IASetVertexBuffers(0, 1, &pBufferRectLC, &stride, &offset);
-   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    d3dcontext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
    d3dcontext->DrawIndexed(6, 0, 0);
 }
 
-void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int32* yy, int32 count, int32 tx, int32 ty, int color, bool fill)
+void Direct3DBase::checkPixBuf(int n)
 {
-   if (minimized) return;
-   int i;
-   int n = count;
-   VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
-   ty += glShiftY;
-   setColor(color,255);
-   XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
-   for (i = count; --i >= 0; cv++)
-      cv->pos = XMFLOAT2((float)(*xx++ + tx), (float)(*yy++ + ty)); 
-   setProgram(PROGRAM_GC);
-
    if (n > lastPixelsCount)
    {
+      int i;
       DXRELEASE(pixelsIndexBuffer);
-      DXRELEASE(pBufferPixels);
+      DXRELEASE(pBufferPixelsDL);
+      DXRELEASE(pBufferPixelsDP);
       // cache the pixels index
       unsigned short *cubeIndexes = new unsigned short[n];
       for (i = n; --i >= 0;) cubeIndexes[i] = i;
@@ -335,22 +328,41 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
       DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
       delete cubeIndexes;
 
+      // draw lines
       D3D11_BUFFER_DESC bd = { 0 };
       bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
       bd.ByteWidth = sizeof(VertexPosition)* n;             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
+      d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixelsDL);       // create the buffer
+      // draw pixels
+      bd.ByteWidth = sizeof(VertexPositionColor)* n;             // size is the VERTEX struct * 3
+      d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixelsDP);       // create the buffer
    }
+}
+
+void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int32* yy, int32 count, int32 tx, int32 ty, int color, bool fill)
+{
+   if (minimized) return;
+   int i;
+   int n = count;
+   VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
+   ty += glShiftY;
+   setColor(color,255);
+   for (i = count; --i >= 0; cv++)
+      cv->pos = XMFLOAT2((float)(*xx++ + tx), (float)(*yy++ + ty)); 
+   setProgram(PROGRAM_GC);
+
+   checkPixBuf(n);
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
-   memcpy(ms.pData, cubeVertices, sizeof(VertexPosition)* n);                // copy the data
-   d3dcontext->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
+   d3dcontext->Map(pBufferPixelsDL, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   memcpy(ms.pData, cubeVertices, sizeof(VertexPosition)* n);                    // copy the data
+   d3dcontext->Unmap(pBufferPixelsDL, NULL);                                     // unmap the buffer
    UINT stride = sizeof(VertexPosition);
    UINT offset = 0;
 
-   d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
+   d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixelsDL, &stride, &offset);
    d3dcontext->IASetIndexBuffer(pixelsIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
    d3dcontext->IASetPrimitiveTopology(fill ? D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST: D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    d3dcontext->DrawIndexed(n, 0, 0);
@@ -417,50 +429,27 @@ void Direct3DBase::drawPixels(float* glXYA, int count, int color)
    if (minimized) return;
    int i;
    int n = count * 2;
-   VertexPosition *cubeVertices = new VertexPosition[n], *cv = cubeVertices;// position, color
-   setColor(color,255);
-   XMFLOAT3 xcolor = XMFLOAT3(rr, gg, bb);
+   XMFLOAT4 cor = XMFLOAT4(f255[(color >> 16) & 0xFF], f255[(color >> 8) & 0xFF], f255[color & 0xFF], 0);
+   VertexPositionColor *cubeVertices = new VertexPositionColor[n], *cv = cubeVertices;// position, color
    for (i = count; --i >= 0;)
    {
       float x = *glXYA++;
       float y = *glXYA++;
-      glXYA++; // skip alpha
-      cv->pos = XMFLOAT2(x, y + glShiftY); cv++;
-      cv->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); cv++;
+      cor.w   = *glXYA++; // alpha
+      cv->pos = XMFLOAT2(x, y + glShiftY); cv->color = cor;  cv++;
+      cv->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); cv->color = cor;  cv++;
    }
-   setProgram(PROGRAM_GC);
-
-   if (n > lastPixelsCount)
-   {
-      DXRELEASE(pixelsIndexBuffer);
-      DXRELEASE(pBufferPixels);
-      // cache the pixels index
-      unsigned short *cubeIndexes = new unsigned short[n];
-      for (i = n; --i >= 0;) cubeIndexes[i] = i;
-      lastPixelsCount = n;
-
-      D3D11_SUBRESOURCE_DATA indexBufferData = { cubeIndexes,0,0 };
-      CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndexes[0]) * n, D3D11_BIND_INDEX_BUFFER);
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
-      delete cubeIndexes;
-
-      D3D11_BUFFER_DESC bd = { 0 };
-      bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-      bd.ByteWidth = sizeof(VertexPosition)* n;             // size is the VERTEX struct * 3
-      bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
-      bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
-   }
-
+   setProgram(PROGRAM_LC);
+   checkPixBuf(n);
    D3D11_MAPPED_SUBRESOURCE ms;
-   d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
-   memcpy(ms.pData, cubeVertices, sizeof(VertexPosition)* n);                // copy the data
-   d3dcontext->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
-   UINT stride = sizeof(VertexPosition);
+   d3dcontext->Map(pBufferPixelsDP, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   memcpy(ms.pData, cubeVertices, sizeof(VertexPositionColor)* n);               // copy the data
+   d3dcontext->Unmap(pBufferPixelsDP, NULL);                                     // unmap the buffer
+   UINT stride = sizeof(VertexPositionColor);
    UINT offset = 0;
-   d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixels, &stride, &offset);
+   d3dcontext->IASetVertexBuffers(0, 1, &pBufferPixelsDP, &stride, &offset);
    d3dcontext->IASetIndexBuffer(pixelsIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+   d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST); // POINTLIST results in points being drawn in a slightly different position
    d3dcontext->DrawIndexed(n, 0, 0);
 
    delete cubeVertices;
@@ -542,12 +531,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    if (minimized) return;
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = onlyAlpha ? pf : (PixelConv*)xmalloc(width*height * 4), *pt0 = pt;
-   if (!pt)
-   {
-      throwException(currentContext, OutOfMemoryError, "Cannot allocate memory for texture.");
-      return;
-   }
+   PixelConv ptemp;
    ID3D11Texture2D *texture;
    D3D11_TEXTURE2D_DESC textureDesc = { 0 };
    textureDesc.Width = width;
@@ -557,9 +541,9 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
    if (!onlyAlpha)
-      for (i = width*height; --i >= 0; pt++, pf++) { pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a; }
+      for (i = width*height; --i >= 0; pf++) { ptemp.pixel = pf->pixel; pf->a = ptemp.r; pf->b = ptemp.g; pf->g = ptemp.b; pf->r = ptemp.a; }
    D3D11_SUBRESOURCE_DATA textureSubresourceData = { 0 };
-   textureSubresourceData.pSysMem = pt0;
+   textureSubresourceData.pSysMem = pixels;
    textureSubresourceData.SysMemPitch = textureDesc.Width * (onlyAlpha ? 1 : 4); // Specify the size of a row in bytes
    if (FAILED(d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
@@ -575,7 +559,8 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
       xmoveptr(&textureId[0], &texture);
       xmoveptr(&textureId[1], &textureView);
    }
-   if (!onlyAlpha) xfree(pt0);
+   if (!onlyAlpha)
+      for (pf = (PixelConv*)pixels, i = width*height; --i >= 0; pf++) { ptemp.pixel = pf->pixel; pf->a = ptemp.r; pf->b = ptemp.g; pf->g = ptemp.b; pf->r = ptemp.a; }
 }
 
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId)

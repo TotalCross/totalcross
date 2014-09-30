@@ -66,16 +66,22 @@ public class Deployer4WP8
       // add pkg files
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("wp8.pkg", ht);
-      String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
-      Vector v = new Vector(extras);
+      Vector v = new Vector(Utils.joinGlobalWithLocals(ht, null, true));
       Utils.preprocessPKG(v,true);
+      String[] extras = (String[])v.toObjectArray();
       if (extras.length > 0)
          for (int i = 0; i < extras.length; i++)
          {
-            File ff = new File(extras[i]);
+            String pathname = extras[i];
+            File ff = new File(pathname);
             if (!ff.exists())
-               ff = new File(Utils.findPath(extras[i],true));            
-            sz.putEntry(extras[i], ff);
+            {
+               ff = new File(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+               if (!ff.exists())
+                  ff = new File(Utils.findPath(extras[i],true));
+            }
+            if (ff.exists())
+               sz.putEntry(extras[i], ff);
          }
 
       // add icons
