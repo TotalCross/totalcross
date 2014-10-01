@@ -880,7 +880,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\TotalCross\TotalCrossSDK\dist\vm\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
