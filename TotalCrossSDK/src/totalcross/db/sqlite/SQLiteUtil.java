@@ -130,6 +130,14 @@ public class SQLiteUtil
       return getStrings(rs, new Vector(vectorInitialSize));
    }
    
+   public String[][] getStrings(String sql) throws SQLException
+   {
+      ResultSet rs = executeQuery(sql);
+      String[][] ret = rs.next() ? getStrings(rs, new Vector(vectorInitialSize)) : null;
+      rs.close();
+      return ret;
+   }
+   
    public String getString(String sql) throws SQLException
    {
       ResultSet rs = executeQuery(sql);
