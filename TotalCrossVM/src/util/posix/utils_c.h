@@ -118,6 +118,12 @@ static int32 privateGetTimeStamp()
 
 static bool pfileIsDir(TCHARP dir, TCHARP file)
 {
+#ifdef darwin
+   struct stat statData;
+   if (stat(file, &statData))
+      return false;
+   return S_ISDIR(statData.st_mode);
+#else
    struct stat statData;
    int len;
    TCHAR fullpath[MAX_PATHNAME];
@@ -133,8 +139,8 @@ static bool pfileIsDir(TCHARP dir, TCHARP file)
 
    if (stat(fullpath, &statData))
       return false;
-
    return S_ISDIR(statData.st_mode);
+#endif   
 }
 
 static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options)
