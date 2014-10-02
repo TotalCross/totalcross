@@ -55,6 +55,43 @@ TC_API void jlO_getClass(NMParams p) // java/lang/Object native public final Cla
       setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object clone() throws CloneNotSupportedException;
+{
+   TCObject thisObj = p->obj[0];
+   TCClass thisClass = OBJ_CLASS(thisObj);
+   TCObject cloneObj;
+   int32 length = ARRAYLENV(thisClass->interfaces);
+
+   while (--length >= 0 && !strEq(thisClass->interfaces[length]->name, "java.lang.Clonable"));
+   if (length < 0)
+       throwExceptionNamed(p->currentContext, "java.lang.CloneNotSupportedException", "");
+   else if (cloneObj = createObject(p->currentContext, thisClass->name))
+   {
+      FieldArray* allFields = thisClass->instanceFields;
+
+      // int
+      FieldArray fields = allFields[RegI];
+      length = ARRAYLENV(fields);
+      while (--length >= 0)
+         FIELD_I32(cloneObj, length) = FIELD_I32(thisObj, length);
+
+      // long
+      fields = allFields[RegD];
+      length = ARRAYLENV(fields);
+      while (--length >= 0)
+         FIELD_DBL(cloneObj, thisClass, length) = FIELD_DBL(thisObj, thisClass, length);
+
+      // double
+      fields = allFields[RegD];
+      length = ARRAYLENV(fields);
+      while (--length >= 0)
+         FIELD_I64(cloneObj, thisClass, length) = FIELD_I64(thisObj, thisClass, length);
+   }
+   else
+      p->retO = null;
+}
+//////////////////////////////////////////////////////////////////////////
+
 TC_API void jlO_nativeHashCode(NMParams p) // java/lang/Object native private int nativeHashCode();
 {
    p->retI = (int32)p->obj[0]; // return the address as the hashcode

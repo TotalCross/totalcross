@@ -335,6 +335,7 @@ TC_API void tpSMS_receive(NMParams p);
 TC_API void jlO_toStringNative(NMParams p);
 TC_API void jlO_nativeHashCode(NMParams p);
 TC_API void jlO_getClass(NMParams p);
+TC_API void jlO_clone(NMParams p);
 TC_API void jlS_toUpperCase(NMParams p);
 TC_API void jlS_toLowerCase(NMParams p);
 TC_API void jlS_valueOf_d(NMParams p);

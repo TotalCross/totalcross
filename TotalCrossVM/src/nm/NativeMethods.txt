@@ -317,6 +317,7 @@ totalcross/phone/SMS|native public static String[] receive() throws totalcross.i
 java/lang/Object|native private String toStringNative();
 java/lang/Object|native private int nativeHashCode();
 java/lang/Object|native public final Class getClass();
+java/lang/Object|native protected Object clone() throws CloneNotSupportedException;
 java/lang/String|native public String toUpperCase();
 java/lang/String|native public String toLowerCase();
 java/lang/String|native public static String valueOf(double d);
