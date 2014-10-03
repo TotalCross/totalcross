@@ -3179,7 +3179,9 @@ void fillShadedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 
 /////////////// Start of Device-dependant functions ///////////////
 static bool startupGraphics(int16 appTczAttr) // there are no threads running at this point
 {
+#ifdef __gl2_h_
    setupLookupBuffers();
+#endif   
    return graphicsStartup(&screen, appTczAttr);
 }
 

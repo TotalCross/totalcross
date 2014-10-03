@@ -29,6 +29,8 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
+/** ATTENTION: THE SSL IMPLEMENTATION IS BUGGY; USE IT AT YOUR OWN RISK! */
+
 public class SecureSocketSample extends BaseContainer
 {
    Button btnOpen, btnAction, btnClear;

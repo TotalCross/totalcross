@@ -114,11 +114,10 @@
 
 #endif
 
-#if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
+#if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
 #include "dlmalloc.h"                                                         
 #endif
 #include "xtypes.h"
-#include "../util/coffeecatch.h"
 #include "../event/specialkeys.h"
 #include "mem.h"
 #include "datastructures.h"
