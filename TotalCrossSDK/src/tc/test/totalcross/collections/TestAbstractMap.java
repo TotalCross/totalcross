@@ -34,17 +34,17 @@ public class TestAbstractMap extends TestCase
       catch (NullPointerException exception) {}
       try
       {
-         test1.clear();
+         test2.clear();
          fail("2");
       }
       catch (NullPointerException exception) {}
       try
       {
-         test1.clear();
+         test3.clear();
          fail("3");
       }
       catch (NullPointerException exception) {}
-      
+
       try
       {
          test1.containsKey(null);
@@ -379,13 +379,44 @@ public class TestAbstractMap extends TestCase
       }
       catch (NullPointerException exception) {} 
       
+      try
+      {
+         test1.clone();
+      }
+      catch (CloneNotSupportedException e)
+      {
+         fail("55");
+      }
+      
+      try
+      {
+         ((Test14)test2).clone();
+      }
+      catch (CloneNotSupportedException e)
+      {
+         fail("56");
+      }
+      
+      try
+      {
+         ((Test14)test3).clone();
+      }
+      catch (CloneNotSupportedException e)
+      {
+         fail("57");
+      }
    } 
 }
 
-class Test14 extends AbstractMap
+class Test14 extends AbstractMap implements Cloneable
 {
    public Set entrySet()
    {
       return null;
+   }
+   
+   public Object clone() throws CloneNotSupportedException
+   {
+      return super.clone();
    }
 }

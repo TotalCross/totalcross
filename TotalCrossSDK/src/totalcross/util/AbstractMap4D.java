@@ -168,6 +168,24 @@ public abstract class AbstractMap4D<K, V> implements Map<K, V>
   }
 
   /**
+   * Create a shallow copy of this Map, no keys or values are copied. The
+   * default implementation simply calls <code>super.clone()</code>.
+   *
+   * @return the shallow clone
+   * @throws CloneNotSupportedException if a subclass is not Cloneable
+   * @see Cloneable
+   * @see Object#clone()
+   */
+  protected Object clone() throws CloneNotSupportedException
+  {
+    AbstractMap4D<K, V> copy = (AbstractMap4D<K, V>) super.clone();
+    // Clear out the caches; they are stale.
+    copy.keys = null;
+    copy.values = null;
+    return copy;
+  }
+  
+  /**
    * Returns true if this contains a mapping for the given key. This
    * implementation does a linear search, O(n), over the
    * <code>entrySet()</code>, returning <code>true</code> if a match
