@@ -120,7 +120,7 @@ static bool pfileIsDir(TCHARP dir, TCHARP file)
 {
 #ifdef darwin
    struct stat statData;
-   if (stat(dir, &statData))
+   if (stat(file, &statData))
       return false;
    return S_ISDIR(statData.st_mode);
 #else
