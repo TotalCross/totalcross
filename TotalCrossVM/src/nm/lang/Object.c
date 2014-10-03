@@ -86,6 +86,12 @@ TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object cl
       length = ARRAYLENV(fields);
       while (--length >= 0)
          FIELD_I64(cloneObj, thisClass, length) = FIELD_I64(thisObj, thisClass, length);
+
+      // object
+      fields = allFields[RegO];
+      length = ARRAYLENV(fields);
+      while (--length >= 0)
+         FIELD_OBJ(cloneObj, thisClass, length) = FIELD_OBJ(thisObj, thisClass, length);
    }
    else
       p->retO = null;
