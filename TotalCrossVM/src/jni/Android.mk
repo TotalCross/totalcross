@@ -57,7 +57,6 @@ UTIL_FILES =                                  \
 	$(TC_SRCDIR)/util/utils.c                  \
 	$(TC_SRCDIR)/util/mem.c                    \
 	$(TC_SRCDIR)/util/errormsg.c               \
-	$(TC_SRCDIR)/util/coffeecatch.c            \
 	$(TC_SRCDIR)/util/nativelib.c              \
 	$(TC_SRCDIR)/util/guid.c                   \
 	$(TC_SRCDIR)/util/xtypes.c
@@ -269,7 +268,7 @@ LOCAL_MODULE     := tcvm
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/scanner $(TC_INCLUDEDIR)/sqlite $(TC_INCLUDEDIR)/nm
 LOCAL_LDLIBS     := -llog -ldl -lGLESv2 -lEGL -landroid
-LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES) -funwind-tables -Wl,--no-merge-exidx-entries
+LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
 LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map
 
 include $(BUILD_SHARED_LIBRARY)
