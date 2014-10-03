@@ -979,10 +979,8 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
  */
 int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 {                                
-   SIG_TRY 
-   {
-    volatile int msg_length = length;
-    volatile int ret, pad_bytes = 0;
+    int msg_length = length;
+    int ret, pad_bytes = 0;
     ssl->bm_index = msg_length;
 
     /* if our state is bad, don't bother */
@@ -1056,12 +1054,6 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
     if ((ret = send_raw_packet(ssl, protocol)) <= 0)
         return ret;
-   }
-   SIG_CATCH
-   {
-      return -1;
-   }
-   SIG_END
 
     return length;  /* just return what we wanted to send */
 }
