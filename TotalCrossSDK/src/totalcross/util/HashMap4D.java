@@ -97,12 +97,11 @@ import totalcross.sys.Convert;
 public class HashMap4D<K, V> extends AbstractMap4D<K, V>
   implements Map<K, V>
 {
-  /**
-   * Default number of buckets. This is the value the JDK 1.3 uses. Some
-   * early documentation specified this value as 101. That is incorrect.
-   * Package visible for use by HashSet.
-   */
-  static final int DEFAULT_CAPACITY = 11;
+   /**
+    * Default number of buckets; this is currently set to 16.
+    * Package visible for use by HashSet.
+    */
+   static final int DEFAULT_CAPACITY = 16;
 
   /**
    * The default load factor; this is explicitly specified by the spec.
@@ -334,34 +333,37 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    */
   public V put(K key, V value)
   {
-    int idx = hash(key);
-    HashEntry<K, V> e = buckets[idx];
+     int idx = hash(key);
+     HashEntry<K, V> e = buckets[idx];
 
-    while (e != null)
-      {
-        if (AbstractCollection4D.equals(key, e.key))
-          {
-            e.access(); // Must call this for bookkeeping in LinkedHashMap.
-	    V r = e.value;
-            e.value = value;
-            return r;
-          }
-        else
-          e = e.next;
-      }
+     int hash1 = key == null ? 0 : key.hashCode();
+     while (e != null)
+       {
+         int hash2 = e.key == null ? 0 : e.key.hashCode();
 
-    // At this point, we know we need to add a new entry.
-    modCount++;
-    if (++size > threshold)
-      {
-        rehash();
-        // Need a new hash value to suit the bigger table.
-        idx = hash(key);
-      }
+         if ((hash1 == hash2) && equals(key, e.key))
+           {
+             e.access(); // Must call this for bookkeeping in LinkedHashMap.
+             V r = e.value;
+             e.value = value;
+             return r;
+           }
+         else
+           e = e.next;
+       }
 
-    // LinkedHashMap cannot override put(), hence this call.
-    addEntry(key, value, idx, true);
-    return null;
+     // At this point, we know we need to add a new entry.
+     modCount++;
+     if (++size > threshold)
+       {
+         rehash();
+         // Need a new hash value to suit the bigger table.
+         idx = hash(key);
+       }
+
+     // LinkedHashMap cannot override put(), hence this call.
+     addEntry(key, value, idx, true);
+     return null;
   }
 
   /**
