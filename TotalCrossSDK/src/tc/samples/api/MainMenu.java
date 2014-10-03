@@ -244,7 +244,7 @@ public class MainMenu extends BaseContainer
       FTPSample.class,
       ServerSocketSample.class,
       SocketSample.class,
-      SecureSocketSample.class,
+     // SecureSocketSample.class, - buggy
    };     
    Class[] phoneClasses =
    {      
