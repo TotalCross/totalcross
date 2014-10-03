@@ -89,6 +89,14 @@ void privateWindowSetSIP(bool visible);
 void appExit();
 void appSetFullScreen();
 
+// Settings                   
+bool isVirtualKeyboard();
+int getOSVersion();
+double getDpiX();
+double getDpiY();
+void getDeviceIdCPP(CharP buf);
+void getRomSerialNumberCPP(CharP buf);
+
 #ifdef __cplusplus
 }
 #endif

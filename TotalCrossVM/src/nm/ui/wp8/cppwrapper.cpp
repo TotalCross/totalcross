@@ -97,7 +97,7 @@ char *GetVmPathWP8()
 	return vmPathWP8;
 }
 
-char *GetDisplayNameWP8()
+char *GetDisplayNameWP8() // no longer used
 {
 	if (devId[0] == '\0') {
 	   Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
@@ -133,7 +133,9 @@ void vibrate(DWORD32 milliseconds)
 
 DWORD32 getFreeMemoryWP8()
 {
-   return (DWORD32)MemoryManager::ProcessCommittedLimit;
+   //long ret = (DWORD32)MemoryManager::ProcessCommittedLimit;
+   long long ret2 = Direct3DBase::getLastInstance()->csharp->getFreeMemory();
+   return (DWORD32)ret2;
 }
 
 void alertCPP(JCharP jCharStr)
@@ -330,3 +332,31 @@ void nativeSoundPlayCPP(char* filename)
    Platform::String^ p_string = ref new Platform::String(w_char);
    Direct3DBase::getLastInstance()->csharp->nativeSoundPlayCS(p_string);
 }
+
+bool isVirtualKeyboard()
+{
+   return Direct3DBase::getLastInstance()->csharp->isVirtualKeyboard();
+}
+double getDpiX()
+{
+   return Direct3DBase::getLastInstance()->csharp->getDpiX();
+}
+double getDpiY()
+{
+   return Direct3DBase::getLastInstance()->csharp->getDpiY();
+}
+int getOSVersion()
+{
+   return Direct3DBase::getLastInstance()->csharp->getOSVersion();
+}
+void getDeviceIdCPP(CharP ret)
+{
+   Platform::String ^name = Direct3DBase::getLastInstance()->csharp->getDeviceId();
+   WideCharToMultiByte(CP_ACP, 0, name->Data(), name->Length(), ret, name->Length() + 1, NULL, NULL);
+}
+void getRomSerialNumberCPP(CharP ret)
+{
+   Platform::String ^name = Direct3DBase::getLastInstance()->csharp->getSerialNumber();
+   WideCharToMultiByte(CP_ACP, 0, name->Data(), name->Length(), ret, name->Length() + 1, NULL, NULL);
+}
+

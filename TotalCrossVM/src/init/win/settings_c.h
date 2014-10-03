@@ -799,19 +799,20 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #endif
 #endif
 
+#ifdef WP8
+   *(tcSettings.romVersionPtr) = getOSVersion();
+   getRomSerialNumberCPP(romSerialNumber);
+   getDeviceIdCPP(deviceId);
+   *(tcSettings.virtualKeyboardPtr) = isVirtualKeyboard();
+   platform = "WindowsPhone";
+   //   xstrcpy(deviceId, GetDisplayNameWP8());
+#else
    // OS version
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-#ifndef WP8
    GetVersionEx(&osvi);
-#else
-   osvi.dwMajorVersion = 6;
-   osvi.dwMinorVersion = 2;
-   osvi.dwBuildNumber = 0;
-   osvi.dwPlatformId = 0;
-   osvi.szCSDVersion[0] = '\0';
+   *(tcSettings.romVersionPtr) = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #endif
 
-   *(tcSettings.romVersionPtr)   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #ifdef WINCE
    romSerialNumber[0] = 0;
    if (*(tcSettings.romVersionPtr) >= 400)
@@ -859,10 +860,6 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    len = sizeof(deviceId);
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
-# else
-   //XXX deviceId must be getted automatically
-   platform = "WindowsPhone";
-   xstrcpy(deviceId, GetDisplayNameWP8());
 # endif
 
 #if !defined WP8
@@ -879,15 +876,12 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    }
 #endif
 
-   len = sizeof(userName);
-   
+ 
 #if !defined WP8 
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
       queryRegistry(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Logon User Name", userName, sizeof(userName)) || // first, try as a winnt machine
       queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
       ;
-#else
-   xstrcpy(userName, "Windows Phone 8 User");
 #endif
 #endif
    {

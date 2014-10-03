@@ -47,6 +47,8 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 	screen->extension = deviceCtx;
 	screen->pitch = screen->screenW * screen->bpp / 8;
 	screen->pixels = (uint8*)1;
+   screen->hRes = (int)getDpiX();
+   screen->vRes = (int)getDpiY();
 	return screen->pixels != null;
 }
 
