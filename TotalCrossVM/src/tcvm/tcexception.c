@@ -245,14 +245,15 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
    }
    *c = 0;
    if (exception != null)
-   {
+   {                    
+      TCObject *trace = Throwable_trace(exception);
       if (c != c0) // was something filled in?
       {
          if (currentContext != gcContext && exception == currentContext->OutOfMemoryErrorObj)
             debug("OutOfMemory:\n%s",c0);
-         *Throwable_trace(exception) = createStringObjectFromCharP(currentContext, c0, (int32)(c-c0));
-         if (*Throwable_trace(exception))
-            setObjectLock(*Throwable_trace(exception), UNLOCKED);
+         *trace = createStringObjectFromCharP(currentContext, c0, (int32)(c-c0));
+         if (*trace)
+            setObjectLock(*trace, UNLOCKED);
          else
          if (currentContext != gcContext)
             debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,c0);
@@ -261,7 +262,7 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
             debug("Exception thrown in finalize: %s\n%s", OBJ_CLASS(exception)->name,c0); // guich@tc126_63
       }
       else
-         *Throwable_trace(exception) = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj
+         *trace = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj
    }
 }
 
