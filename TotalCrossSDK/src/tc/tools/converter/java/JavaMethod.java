@@ -32,6 +32,8 @@ public final class JavaMethod
 
    public static String[] splitParams(String s, StringBuffer ret) // return the parameters array and the return type in the string buffer
    {
+      if (s.indexOf("CharSequence") >= 0) // allow String.replace without CharSequence 
+         s = s.replace("CharSequence","String");
       Vector v = vec;
       v.removeAllElements();
       ret.setLength(0);
