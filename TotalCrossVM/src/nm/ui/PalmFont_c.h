@@ -62,11 +62,13 @@ bool fontInit(Context currentContext)
    return defaultFont != null;
 }
 
+#define ISDEAD(x) ((int)(x) & 0xFFFF0000) == 0xDEAD0000
 static void destroyUF(int32 i32, VoidP ptr)
 {
    UserFont uf = (UserFont)ptr;
    if (uf != null && uf->tempbufssize > 0)   
    {
+      if (ISDEAD(uf->tempbufs)) debug("IS DEAD: uf->tempbufs");
       xfree(uf->tempbufs);
       uf->tempbufssize = 0;
    }   
@@ -74,18 +76,33 @@ static void destroyUF(int32 i32, VoidP ptr)
 
 void fontDestroy()
 {
+   /*
+   signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr deadbaad
+   #00  pc 00017908  /system/lib/libc.so                                       
+   #01  pc 00013792  /system/lib/libc.so                                       
+   #02  pc 000155f8  /system/lib/libc.so (dlfree)                              
+   #03  pc 00016148  /system/lib/libc.so (free)                                
+   #04  pc 000eec20  /data/data/totalcross.appadmo/lib/libtcvm.so (fontDestroy)
+   CAN'T FIND WHERE!
+   */
    VoidPs *list, *head;
    htTraverse(&htBaseFonts, destroyUF);
 
    list = head = openFonts;
    if (head != null)
-   do
    {
-      FontFile ff = (FontFile)list->value;
-      tczClose(ff->tcz);
-      list = list->next;
-   } while (list != head);
+if (ISDEAD(head)) debug("IS DEAD: head");
+      do
+      {
+         FontFile ff = (FontFile)list->value;
+if (ISDEAD(ff)) debug("IS DEAD: ff");
+         tczClose(ff->tcz);
+         list = list->next;
+if (ISDEAD(list)) debug("IS DEAD: list");
+      } while (list != head);
+   }
    openFonts = null;
+if (ISDEAD(fontsHeap)) debug("IS DEAD: fontsHeap");
    heapDestroy(fontsHeap);
    htFree(&htUF, null);
    htFree(&htBaseFonts, null);
