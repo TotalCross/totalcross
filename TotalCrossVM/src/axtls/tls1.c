@@ -983,6 +983,9 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
     int ret, pad_bytes = 0;
     ssl->bm_index = msg_length;
 
+    if (!ssl)
+      return 0;
+      
     /* if our state is bad, don't bother */
     if (ssl->hs_status == SSL_ERROR_DEAD)
         return SSL_ERROR_CONN_LOST;
