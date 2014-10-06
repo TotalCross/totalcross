@@ -64,7 +64,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
    private static final String limitReached1 =
       "\nThe maximum number of ";
    private static final String limitReached2 =
-      " for a TCZ file has been reached. Now you have to options two bypass this limitation:\n\n" +
+      " for a TCZ file has been reached. Now you have two options to bypass this limitation:\n\n" +
       "1) You will have to split your TCZ into two files, one is the main file, and the other is a library file. If you name the library file with 'Lib' suffix, it will be automatically loaded when your application starts. Otherwise, you can name it with any name and call Vm.attachLibrary to dynamically bind it.\n\n" +
       "2) Another option is to obfuscate your code using Proguard. Why obfuscation will work? Because it will rename all private and package access fields, methods and classes with the same name, thus, will decrease the number of identifiers.\n" +
       "First, download Proguard 3.9 from here:\n" +
@@ -476,14 +476,15 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
-      
-      
+            
       if (value.equals("java.util.Vector")) value = "totalcross.util.Vector";
       else
       if (value.equals("java.util.Hashtable")) value = "totalcross.util.Hashtable";
       else
       if (value.indexOf("StringBuilder") >= 0)
          value = value.replaceFirst("StringBuilder", "StringBuffer");
+      else
+      if (value.equals("java.lang.CharSequence")) value = "java.lang.String"; // used in the replace method
 
       if (htCls.exists(value))
          return ((TCValue)htCls.get(value)).index;
