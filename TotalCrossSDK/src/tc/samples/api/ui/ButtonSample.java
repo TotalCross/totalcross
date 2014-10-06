@@ -30,10 +30,10 @@ import totalcross.ui.image.*;
 public class ButtonSample extends BaseContainer
 {
    ScrollContainer sc;
+   private int ccount=10;
    
    public void initUI()
    {
-      super.initUI();
       try
       {
          super.initUI();
@@ -42,7 +42,14 @@ public class ButtonSample extends BaseContainer
          add(sc,LEFT,TOP,FILL,FILL);
          Button c;
    
-         sc.add(new Button("Simple button"), LEFT, AFTER, PREFERRED+gap, PREFERRED );
+         sc.add(c=new Button("Simple button"), LEFT, AFTER, PREFERRED+gap, PREFERRED );
+         c.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               if (--ccount == 0) MainWindow.exit(0);               
+            }
+         });
    
          sc.add(c = new Button("This is\na multi-line\nButton"), LEFT, AFTER + gap, PREFERRED+gap, PREFERRED+gap);
          c.setPressedColor(Color.ORANGE);
