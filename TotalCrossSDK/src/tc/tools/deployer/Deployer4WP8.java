@@ -36,7 +36,7 @@ public class Deployer4WP8
       if (!f.exists())
          f.mkdirs();
 
-      File tempFile = File.createTempFile(DeploySettings.appTitle, ".zip");
+      File tempFile = File.createTempFile(DeploySettings.appTitle+"temp", ".zip");
       tempFile.deleteOnExit();
       // create a copy of the original file
       FileUtils.copyFile(templateFile, tempFile);
