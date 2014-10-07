@@ -420,7 +420,8 @@ public class HttpStream extends Stream
 
    private int writeBytesSize;
 
-   private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
+   /** Returns true if the response code represents an error. */
+   public boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
    public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
