@@ -27,6 +27,7 @@ using System.Xml.Linq;
 using Microsoft.Phone.BackgroundAudio;
 using System.Windows.Resources;
 using Microsoft.Phone.Info;
+using System.Device.Location;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -490,6 +491,30 @@ namespace PhoneDirect3DXamlAppInterop
       public String getAppName()
       {
           return appName;
+      }
+
+      public bool showMap(String origin, String destination)
+      {
+         if (origin.StartsWith("@")) origin = origin.Substring(1);
+         if (destination.StartsWith("@")) destination = destination.Substring(1);
+         root.Dispatcher.BeginInvoke((Action)(() => // must run on ui thread
+         {
+            if (destination.Length == 0)
+            {
+               MapsTask maps = new MapsTask();
+               //maps.ZoomLevel = 0.1;
+               maps.SearchTerm = origin;
+               maps.Show();
+            }
+            else
+            {
+               BingMapsDirectionsTask direction = new BingMapsDirectionsTask();
+               direction.Start = new LabeledMapLocation(origin, null);
+               direction.End = new LabeledMapLocation(destination, null);//new GeoCoordinate(-3.758814, -38.484199));
+               direction.Show();
+            }
+         }));
+         return true;
       }
    }
 

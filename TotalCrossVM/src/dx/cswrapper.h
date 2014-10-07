@@ -73,6 +73,9 @@ namespace PhoneDirect3DXamlAppComponent
      double getDpiY();
      Platform::String^ getSerialNumber();
      int getOSVersion();
+
+     // Map
+     bool showMap(Platform::String^ origin, Platform::String^ destination);
    };
 }
 

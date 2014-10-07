@@ -246,7 +246,7 @@ TC_API int32 startProgram(Context currentContext)
    TCClass c;
    int32 retc;
    
-   retc = checkActivation(currentContext);
+   retc = ISNORAS;// checkActivation(currentContext);
    isDemo = retc == ISDEMO;
 
    // load libraries

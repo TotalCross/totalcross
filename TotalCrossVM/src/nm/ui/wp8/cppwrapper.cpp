@@ -360,3 +360,8 @@ void getRomSerialNumberCPP(CharP ret)
    WideCharToMultiByte(CP_ACP, 0, name->Data(), name->Length(), ret, name->Length() + 1, NULL, NULL);
 }
 
+bool showMap(JCharP originStr, int32 originLen, JCharP destinationStr, int32 destinationLen)
+{
+   return Direct3DBase::getLastInstance()->csharp->showMap(ref new Platform::String((wchar_t*)originStr, originLen), ref new Platform::String((wchar_t*)destinationStr, destinationLen));
+}
+

@@ -18,6 +18,7 @@ package tc.samples.api.map;
 
 import tc.samples.api.*;
 
+import totalcross.io.*;
 import totalcross.io.device.gps.*;
 import totalcross.map.*;
 import totalcross.net.*;
@@ -39,14 +40,16 @@ public class GoogleMapsSample extends BaseContainer
    Check chSat,chGPS;
    
    ScrollContainer sc;
+   private boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
+   
    public void initUI()
    {
       try
       {
          super.initUI();
-         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())
+         if (!Settings.onJavaSE && !isAndroid && !Settings.isIOS() && !Settings.platform.equals(Settings.WINDOWSPHONE))
          {
-            add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
+            add(new Label("This program runs on\nthe Android, Windows Phone\nor iOS platforms only",CENTER),CENTER,CENTER);
             return;
          }
          int g = fmH/4;
@@ -73,6 +76,8 @@ public class GoogleMapsSample extends BaseContainer
          sc.add(btnShow = new Button("Show map"),CENTER,AFTER+2*g,SCREENSIZE+80,PREFERRED+g);
          edLat.setValidChars("+-0123456789.");
          edLon.setValidChars("+-0123456789.");
+         edAddr.setText("Av. Sen. Carlos Jereissati 3000, Fortaleza, CE, brazil");
+         edTo.setText("Av Norte 2920, Fortaleza, CE, Brazil");
          rg.setSelectedIndex(0);
          enableControls();
       }
@@ -121,42 +126,47 @@ public class GoogleMapsSample extends BaseContainer
                   switch (sel)
                   {
                      case 0:
-                        // text
-                        GoogleMaps.Place p1 = new GoogleMaps.Place();
-                        p1.lat = -3.778284;
-                        p1.lon = -38.482617;
-                        p1.backColor = Color.WHITE;
-                        p1.capColor = Color.BLACK;
-                        p1.detColor = 0x444444;
-                        p1.pinColor = Color.RED;
-                        p1.caption = "TotalCross MGP";
-                        p1.fontPerc = 150;
-                        p1.detail = "Av Norte 2920\nLuciano Cavalcante\nCeará - Brazil";
-                        // now draw the brazilian's flag
-                        double ww = -0.0003, hh = -0.0002;
-                        double left = p1.lat + ww/4, right = left + ww;
-                        double top = p1.lon - hh, bottom = top + hh+hh;
-                        // green rectangle
-                        GoogleMaps.Shape s1 = new GoogleMaps.Shape();
-                        s1.color = Color.GREEN;
-                        s1.filled = true;
-                        s1.lats = new double[]{left,right,right,left};
-                        s1.lons = new double[]{top,top,bottom,bottom};
-                        // yellow losangle
-                        GoogleMaps.Shape s2 = new GoogleMaps.Shape();
-                        s2.color = Color.YELLOW;
-                        s2.filled = true;
-                        s2.lats = new double[]{left+(right-left)/2,right,left+(right-left)/2,left};
-                        s2.lons = new double[]{top,top+(bottom-top)/2,bottom,top+(bottom-top)/2};
-                        // blue circle
-                        GoogleMaps.Circle c = new GoogleMaps.Circle();
-                        c.lat = (left+right)/2;
-                        c.lon = (top+bottom)/2;
-                        c.color = Color.BLUE;
-                        c.filled = true;
-                        c.rad = hh/2;
-                        
-                        GoogleMaps.showMap(new GoogleMaps.MapItem[]{p1,s1,s2,c},chSat.isChecked());
+                        if (!isAndroid)
+                           GoogleMaps.showAddress(toLatLon("Av Norte 2920, Luciano Cavalcante, Fortaleza, CE, Brasil"), chSat.isChecked());
+                        else
+                        {
+                           // text
+                           GoogleMaps.Place p1 = new GoogleMaps.Place();
+                           p1.lat = -3.778284;
+                           p1.lon = -38.482617;
+                           p1.backColor = Color.WHITE;
+                           p1.capColor = Color.BLACK;
+                           p1.detColor = 0x444444;
+                           p1.pinColor = Color.RED;
+                           p1.caption = "TotalCross MGP";
+                           p1.fontPerc = 150;
+                           p1.detail = "Av Norte 2920\nLuciano Cavalcante\nCeará - Brazil";
+                           // now draw the brazilian's flag
+                           double ww = -0.0003, hh = -0.0002;
+                           double left = p1.lat + ww/4, right = left + ww;
+                           double top = p1.lon - hh, bottom = top + hh+hh;
+                           // green rectangle
+                           GoogleMaps.Shape s1 = new GoogleMaps.Shape();
+                           s1.color = Color.GREEN;
+                           s1.filled = true;
+                           s1.lats = new double[]{left,right,right,left};
+                           s1.lons = new double[]{top,top,bottom,bottom};
+                           // yellow losangle
+                           GoogleMaps.Shape s2 = new GoogleMaps.Shape();
+                           s2.color = Color.YELLOW;
+                           s2.filled = true;
+                           s2.lats = new double[]{left+(right-left)/2,right,left+(right-left)/2,left};
+                           s2.lons = new double[]{top,top+(bottom-top)/2,bottom,top+(bottom-top)/2};
+                           // blue circle
+                           GoogleMaps.Circle c = new GoogleMaps.Circle();
+                           c.lat = (left+right)/2;
+                           c.lon = (top+bottom)/2;
+                           c.color = Color.BLUE;
+                           c.filled = true;
+                           c.rad = hh/2;
+                           
+                           GoogleMaps.showMap(new GoogleMaps.MapItem[]{p1,s1,s2,c},chSat.isChecked());
+                        }
                         return;
                      case 1:
                         gpsNotCancelled = true;
@@ -246,8 +256,16 @@ public class GoogleMapsSample extends BaseContainer
                            mb.unpop();
                         }
                         break;
-                     case 2: 
+                     case 2:
                         addr = edAddr.getText();
+                        if (!isAndroid)
+                        {
+                           String tempAddr = toLatLon(addr);
+                           if (tempAddr == null)
+                              Vm.debug("Unabled to find coordinates for address (addr): "+addr);
+                           else
+                              addr = tempAddr;
+                        }
                         break;
                      case 3:
                         addr = "@"+edLat.getText()+","+edLon.getText();
@@ -262,7 +280,16 @@ public class GoogleMapsSample extends BaseContainer
                      try
                      {
                         String to = edTo.getText();
-                        if (to.length() > 0)
+                        if (!isAndroid && to.length() > 0)
+                        {
+                           String tempTo = toLatLon(to);
+                           if (tempTo == null)
+                              Vm.debug("Unable to find coordinates for address (to): "+to);
+                           else
+                              to = tempTo;
+                        }
+                        Vm.debug("addr: "+addr+", to: "+to);
+                        if (to != null && to.length() > 0)
                            ok = totalcross.map.GoogleMaps.showRoute(addr,to,null,chSat.isChecked());
                         else
                            ok = totalcross.map.GoogleMaps.showAddress(addr,chSat.isChecked());                        
@@ -275,6 +302,7 @@ public class GoogleMapsSample extends BaseContainer
                   }
                   if (!ok)
                   {
+                     if (mb != null) mb.unpop();
                      mb = new MessageBox("","Failed to show the map. Location not found.",null);
                      mb.popupNonBlocking();
                      Vm.safeSleep(2000);
@@ -288,5 +316,11 @@ public class GoogleMapsSample extends BaseContainer
       {
          MessageBox.showException(ee,true);
       }
+   }
+
+   private String toLatLon(String addr) throws IOException, InvalidNumberException
+   {
+      double[] ll = GoogleMaps.getLocation(addr);
+      return ll == null ? null : "@"+ll[0]+","+ll[1];
    }
 }

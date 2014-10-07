@@ -11,6 +11,10 @@
 
 package totalcross.map;
 
+import totalcross.io.*;
+import totalcross.net.*;
+import totalcross.sys.*;
+
 /** Shows a Google Maps viewer on a separate screen. 
  * Pressing back returns to the application.
  * 
@@ -169,5 +173,35 @@ public class GoogleMaps
          items[i].serialize(sb);
       }
       return showAddress(sb.toString(), showSatellitePhotos);
+   }
+   
+   /** Returns the location after searching Google. Requires internet connection and waits up to 20 seconds for an answer. 
+    * Returns the lat/lon pair, or null if a bad response code was returned. 
+    */
+   public static double[] getLocation(String address) throws IOException, InvalidNumberException
+   {
+      // connect to map web service
+      String url = "http://maps.googleapis.com/maps/api/geocode/xml?address=" + address.replace("  "," ").replace(' ','+') + "&sensor=false";
+      HttpStream hs = new HttpStream(new URI(url));
+      if (hs.badResponseCode)
+      {
+         Vm.debug("getLocation \""+url+"\" returned response code: "+hs.responseCode);
+         return null;
+      }
+      ByteArrayStream bas = new ByteArrayStream(2048);
+      bas.readFully(hs, 5, 2048);
+      String s = new String(bas.getBuffer(), 0, bas.available()).toLowerCase();
+      if (s.contains("<location_type>approximate</location_type>"))
+      {
+         Vm.debug("getLocation \""+url+"\" returned a bad location from google maps");
+         return null;
+      }
+      int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>",idx1);
+      int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>",idx1);
+      if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1)
+         return null;
+      String lat = s.substring(idx1+5,idx2);
+      String lon = s.substring(idx3+5,idx4);
+      return new double[]{Convert.toDouble(lat),Convert.toDouble(lon)};
    }
 }

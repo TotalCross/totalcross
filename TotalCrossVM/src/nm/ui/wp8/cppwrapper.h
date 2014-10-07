@@ -97,6 +97,9 @@ double getDpiY();
 void getDeviceIdCPP(CharP buf);
 void getRomSerialNumberCPP(CharP buf);
 
+// Map
+bool showMap(JCharP originStr, int32 originLen, JCharP destinationStr, int32 destinationLen);
+
 #ifdef __cplusplus
 }
 #endif
