@@ -462,7 +462,7 @@ public class HttpStream extends Stream
    private int writeBytesSize;
 
    /** Returns true if the response code represents an error. */
-   private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
+   public boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
    private CharacterConverter cc;
 
