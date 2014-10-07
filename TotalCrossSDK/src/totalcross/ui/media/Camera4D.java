@@ -62,7 +62,10 @@ public class Camera4D
    public String click() throws IOException
    {
       if (Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
+      {
+         if (initialDir != null) try {new File(initialDir).createDir();} catch (Exception e) {}
          return this.nativeClick();
+      }
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();
 
