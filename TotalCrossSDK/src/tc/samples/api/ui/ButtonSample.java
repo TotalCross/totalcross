@@ -114,10 +114,9 @@ public class ButtonSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               Control []btns = sc.getBagChildren();
-               for (int i = btns.length; --i >= 0;)
-                  if (btns[i] instanceof Button)
-                     btns[i].setEnabled(cc.isChecked());
+               for (Control c : sc.getBagChildren())
+                  if (c instanceof Button)
+                     c.setEnabled(cc.isChecked());
             }
          });
       }
