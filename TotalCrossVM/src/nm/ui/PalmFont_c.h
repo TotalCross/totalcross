@@ -62,7 +62,6 @@ bool fontInit(Context currentContext)
    return defaultFont != null;
 }
 
-#define ISDEAD(x) ((int)(x) & 0xFFFF0000) == 0xDEAD0000
 static void destroyUF(int32 i32, VoidP ptr)
 {
    UserFont uf = (UserFont)ptr;
@@ -76,33 +75,20 @@ static void destroyUF(int32 i32, VoidP ptr)
 
 void fontDestroy()
 {
-   /*
-   signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr deadbaad
-   #00  pc 00017908  /system/lib/libc.so                                       
-   #01  pc 00013792  /system/lib/libc.so                                       
-   #02  pc 000155f8  /system/lib/libc.so (dlfree)                              
-   #03  pc 00016148  /system/lib/libc.so (free)                                
-   #04  pc 000eec20  /data/data/totalcross.appadmo/lib/libtcvm.so (fontDestroy)
-   CAN'T FIND WHERE!
-   */
    VoidPs *list, *head;
    htTraverse(&htBaseFonts, destroyUF);
 
    list = head = openFonts;
    if (head != null)
    {
-if (ISDEAD(head)) debug("IS DEAD: head");
       do
       {
          FontFile ff = (FontFile)list->value;
-if (ISDEAD(ff)) debug("IS DEAD: ff");
          tczClose(ff->tcz);
          list = list->next;
-if (ISDEAD(list)) debug("IS DEAD: list");
       } while (list != head);
    }
    openFonts = null;
-if (ISDEAD(fontsHeap)) debug("IS DEAD: fontsHeap");
    heapDestroy(fontsHeap);
    htFree(&htUF, null);
    htFree(&htBaseFonts, null);
@@ -442,6 +428,13 @@ Cleanup: /* CLEANUP */
 #ifdef __gl2_h_
 bool lowmemDevice;
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+static int32 getMax(int32* values, int32 ret, int32 len)
+{
+   for (; --len >= 0; values++)
+      if (*values > ret)
+         ret = *values;
+   return ret;
+}
 static bool buildFontTexture(Context currentContext, UserFont uf)
 {  
    int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
@@ -475,6 +468,7 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
    {
       return false;
    }
+   maxW = getMax(widths, maxW, widthsCount);
    uf->textureAlphas = heapAlloc(fontsHeap, maxW * maxH);
    // create the alpha map
    for (w = 0; w < widthsCount; offset += widths[w++])
