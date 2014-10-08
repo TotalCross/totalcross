@@ -425,6 +425,13 @@ Cleanup: /* CLEANUP */
 #ifdef __gl2_h_
 bool lowmemDevice;
 void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+static int32 getMax(int32* values, int32 ret, int32 len)
+{
+   for (; --len >= 0; values++)
+      if (*values > ret)
+         ret = *values;
+   return ret;
+}
 static bool buildFontTexture(Context currentContext, UserFont uf)
 {  
    int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
@@ -458,6 +465,7 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
    {
       return false;
    }
+   maxW = getMax(widths, maxW, widthsCount);
    uf->textureAlphas = heapAlloc(fontsHeap, maxW * maxH);
    // create the alpha map
    for (w = 0; w < widthsCount; offset += widths[w++])
