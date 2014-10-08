@@ -67,7 +67,6 @@ static void destroyUF(int32 i32, VoidP ptr)
    UserFont uf = (UserFont)ptr;
    if (uf != null && uf->tempbufssize > 0)   
    {
-      if (ISDEAD(uf->tempbufs)) debug("IS DEAD: uf->tempbufs");
       xfree(uf->tempbufs);
       uf->tempbufssize = 0;
    }   
