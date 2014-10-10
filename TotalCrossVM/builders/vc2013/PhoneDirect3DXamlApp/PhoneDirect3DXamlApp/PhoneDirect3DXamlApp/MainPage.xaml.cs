@@ -111,11 +111,13 @@ namespace PhoneDirect3DXamlAppInterop
       // http://msdn.microsoft.com/en-us/library/windows/apps/microsoft.phone.info.deviceextendedproperties%28v=vs.105%29.aspx
       public double getDpiX()
       {
-         return (Double)Microsoft.Phone.Info.DeviceExtendedProperties.GetValue("RawDpiX");
+         object o;
+         return Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("RawDpiX", out o) ? (double)o : 0;
       }
       public double getDpiY()
       {
-         return (Double)Microsoft.Phone.Info.DeviceExtendedProperties.GetValue("RawDpiY");
+         object o;
+         return Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("RawDpiY", out o) ? (double)o : 0;
       }
       public String getSerialNumber()
       {
