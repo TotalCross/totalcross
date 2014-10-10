@@ -69,8 +69,7 @@ static bool privateDebug(char* str)
       }
       else
       {
-         fputs(str,fdebug);
-         err = (fputs("\r\n",fdebug) >= 0);
+         fprintf(fdebug, "%s\r\n", str);
          fflush(fdebug);
       }
    }
