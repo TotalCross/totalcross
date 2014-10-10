@@ -59,6 +59,7 @@ extern void setTimerInterval(int32 t);
 int32 abs32(int32 a);
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n);
 void glDrawPixels(int32 n, int32 rgb);
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 bool graphicsCreateScreenSurface(ScreenSurface screen);

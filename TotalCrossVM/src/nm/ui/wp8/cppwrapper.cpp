@@ -276,6 +276,11 @@ void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
    Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
 }
 
+void dxDrawPixelColors(int32* x, int32* y, PixelConv* colors, int32 n)
+{
+   Direct3DBase::getLastInstance()->drawPixelColors(x, y, colors, n);
+}
+
 void dxDrawPixels(float *glXYA, int count, int color)
 {
 	Direct3DBase::getLastInstance()->drawPixels(glXYA, count, color);

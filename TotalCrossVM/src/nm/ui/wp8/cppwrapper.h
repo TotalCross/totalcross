@@ -70,6 +70,7 @@ void dxUpdateScreen();
 void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int32 color, bool fill);
 void dxDrawLine(int x1, int y1, int x2, int y2, int color);
 void dxFillRect(int x1, int y1, int x2, int y2, int color);
+void dxDrawPixelColors(int32* x, int32* y, PixelConv* colors, int32 n);
 void dxDrawPixels(float *glXYA, int count, int color);
 void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 void dxDeleteTexture(TCObject img, int32* textureId);

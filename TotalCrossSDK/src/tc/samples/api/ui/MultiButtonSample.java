@@ -27,7 +27,7 @@ public class MultiButtonSample extends BaseContainer
    {
       super.initUI();
       ScrollContainer sc = new ScrollContainer(false, true);
-      sc.borderColor = headerBar.getBackColor();
+      sc.borderColor = 0x00AA00;//headerBar.getBackColor();
       sc.setBorderStyle(BORDER_ROUNDED); // sample of the new rounded border
       sc.setInsets(gap, gap, gap, gap);
 
