@@ -70,7 +70,7 @@ internal:
    void getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch);
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
-   void checkPixelsBuf(int32 n);
+   bool checkPixelsBuf(int32 n);
 
    ID3D11DeviceContext *d3dcontext, *d3dImedContext;
    ID3D11CommandList *d3dCommandList;

@@ -19,6 +19,17 @@ using namespace Windows::UI::Core;
 #define DXRELEASE(x) do {if (x) {x->Release(); x = null;}} while (0)
 static Direct3DBase ^instance;
 
+#define DxFailed(x) _DxFailed(x, /*__FILE__, */__LINE__) // file is always at Direct3DBase.cpp
+inline bool _DxFailed(HRESULT hr, /*const char *file, */int line)
+{
+   if (FAILED(hr))
+   {
+      debug("DX failed: %X (line %d)", hr, /*file, */line);// Platform::Exception::ex = Platform::Exception::CreateException(hr); // Set a breakpoint on this line to catch Win32 API errors.
+      return true;
+   }
+   return false;
+}
+
 extern "C" 
 { 
    extern int32 appW, appH, glShiftY;
@@ -93,7 +104,8 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
    //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
    D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_9_3 };
-   DX::ThrowIfFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext));
+   if (DxFailed(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, creationFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &d3dDevice, &m_featureLevel, &d3dImedContext)))
+      return;
    d3dDevice->CreateDeferredContext(0, &d3dcontext);
 
    DXRELEASE(depthStencil);                 DXRELEASE(pBlendState);                     DXRELEASE(pixelShader);
@@ -111,15 +123,15 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    renderTargetDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
 
    // Allocate a 2-D surface as the render target buffer.
-   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex));
-   DX::ThrowIfFailed(d3dDevice->CreateRenderTargetView(renderTex, nullptr, &renderTexView));
+   if (DxFailed(d3dDevice->CreateTexture2D(&renderTargetDesc, nullptr, &renderTex))) return;
+   if (DxFailed(d3dDevice->CreateRenderTargetView(renderTex, nullptr, &renderTexView))) return;
    host->CreateSynchronizedTexture(renderTex, &syncTex);
 
    // Create a depth stencil view.
    CD3D11_TEXTURE2D_DESC depthStencilDesc(DXGI_FORMAT_D24_UNORM_S8_UINT, appSize, appSize, 1, 1, D3D11_BIND_DEPTH_STENCIL);
-   DX::ThrowIfFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil));
+   if (DxFailed(d3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencil))) return;
    CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(D3D11_DSV_DIMENSION_TEXTURE2D);
-   DX::ThrowIfFailed(d3dDevice->CreateDepthStencilView(depthStencil, &depthStencilViewDesc, &depthStencilView));
+   if (DxFailed(d3dDevice->CreateDepthStencilView(depthStencil, &depthStencilViewDesc, &depthStencilView))) return;
 
    updateScreenMatrix();
 
@@ -130,7 +142,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
    indexBufferData.pSysMem = cubeIndices;
    CD3D11_BUFFER_DESC indexBufferDesc(sizeof(cubeIndices), D3D11_BIND_INDEX_BUFFER);
-   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer));
+   if (DxFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &indexBuffer))) return;
 
    // used in setColor for fillRect and drawLine and also textures
    {
@@ -139,7 +151,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
       bd.ByteWidth = sizeof(VertexColor);             // size is the VERTEX struct * 3
       bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor));       // create the buffer
+      if (DxFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferColor))) return;       // create the buffer
    }
    // used in fillRect and drawLine
    {
@@ -148,7 +160,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
       bd.ByteWidth = sizeof(VertexPosition)* 4;     // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect));       // create the buffer
+      if (DxFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRect))) return;       // create the buffer
    }
    // used in fillShadedRect
    {
@@ -157,7 +169,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
       bd.ByteWidth = sizeof(VertexPositionColor)* 4;             // size is the VERTEX
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC));       // create the buffer
+      if (DxFailed(d3dDevice->CreateBuffer(&bd, NULL, &pBufferRectLC))) return;       // create the buffer
    }
 
    /////////// TEXTURE
@@ -169,7 +181,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    samplerDesc.AddressU = samplerDesc.AddressV = samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP; // Feature level 9_3, the display device supports the use of 2-D textures with dimensions that are not powers of two under two conditions. First, only one MIP-map level for each texture can be created, and second, no wrap sampler modes for textures are allowed (that is, the AddressU, AddressV, and AddressW members of D3D11_SAMPLER_DESC cannot be set to D3D11_TEXTURE_ADDRESS_WRAP).
    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-   DX::ThrowIfFailed(d3dDevice->CreateSamplerState(&samplerDesc, &texsampler));
+   if (DxFailed(d3dDevice->CreateSamplerState(&samplerDesc, &texsampler))) return;
 
    D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
    depthDisabledStencilDesc.DepthEnable = false;
@@ -187,7 +199,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
    depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
    // Create the state using the device.
-   DX::ThrowIfFailed(d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState));
+   if (DxFailed(d3dDevice->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState))) return;
 
    // setup alpha blending
    D3D11_BLEND_DESC blendStateDescription = { 0 };
@@ -199,7 +211,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
    blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
    blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
-   DX::ThrowIfFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState));
+   if (DxFailed(d3dDevice->CreateBlendState(&blendStateDescription, &pBlendState))) return;
 
    // texture vertices
    D3D11_BUFFER_DESC bd = { 0 };
@@ -207,47 +219,47 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    bd.ByteWidth = sizeof(TextureVertex)* 8;             // size is the VERTEX struct * 3
    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer));       // create the buffer
+   if (DxFailed(d3dDevice->CreateBuffer(&bd, NULL, &texVertexBuffer))) return;       // create the buffer
 
    byte* buf;
    int len;
 
    buf = vs1buf; len = vs1len;
-   DX::ThrowIfFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShader));
+   if (DxFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShader))) return;
    const D3D11_INPUT_ELEMENT_DESC vertexDesc1[] =
    {
       { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
-   DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc1, ARRAYSIZE(vertexDesc1), buf, len, &inputLayout));
+   if (DxFailed(d3dDevice->CreateInputLayout(vertexDesc1, ARRAYSIZE(vertexDesc1), buf, len, &inputLayout))) return;
 
    buf = ps1buf; len = ps1len;
-   DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShader));
+   if (DxFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShader))) return;
    CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
-   DX::ThrowIfFailed(d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer));
+   if (DxFailed(d3dDevice->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer))) return;
 
    buf = vs2buf; len = vs2len;
-   DX::ThrowIfFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShaderT));
+   if (DxFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShaderT))) return;
    const D3D11_INPUT_ELEMENT_DESC vertexDesc2[] =
    {
       { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
-   DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc2, ARRAYSIZE(vertexDesc2), buf, len, &inputLayoutT));
+   if (DxFailed(d3dDevice->CreateInputLayout(vertexDesc2, ARRAYSIZE(vertexDesc2), buf, len, &inputLayoutT))) return;
 
    buf = ps2buf; len = ps2len;
-   DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderT));
+   if (DxFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderT))) return;
 
    buf = vs3buf; len = vs3len;
-   DX::ThrowIfFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShaderLC));
+   if (DxFailed(d3dDevice->CreateVertexShader(buf, len, nullptr, &vertexShaderLC))) return;
    const D3D11_INPUT_ELEMENT_DESC vertexDesc3[] =
    {
       { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
       { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0 },
    };
-   DX::ThrowIfFailed(d3dDevice->CreateInputLayout(vertexDesc3, ARRAYSIZE(vertexDesc3), buf, len, &inputLayoutLC));
+   if (DxFailed(d3dDevice->CreateInputLayout(vertexDesc3, ARRAYSIZE(vertexDesc3), buf, len, &inputLayoutLC))) return;
 
    buf = ps3buf; len = ps3len;
-   DX::ThrowIfFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderLC));
+   if (DxFailed(d3dDevice->CreatePixelShader(buf, len, nullptr, &pixelShaderLC))) return;
 
    // reset variables
    lastPixelsCount = lastLinesCount = 0;
@@ -329,7 +341,7 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
       for (i = count; --i >= 0;) indexes[i] = i;
       D3D11_SUBRESOURCE_DATA indexBufferData = { indexes, 0, 0 };
       CD3D11_BUFFER_DESC indexBufferDesc(sizeof(indexes[0]) * count, D3D11_BIND_INDEX_BUFFER);
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &linesIndexBuffer));
+      if (DxFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &linesIndexBuffer))) return;
       delete indexes;
 
       DXRELEASE(pBufferLines);
@@ -356,7 +368,7 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
    delete vertices;
 }
 
-void Direct3DBase::checkPixelsBuf(int32 n)
+bool Direct3DBase::checkPixelsBuf(int32 n)
 {
    if (n > lastPixelsCount)
    {
@@ -367,7 +379,8 @@ void Direct3DBase::checkPixelsBuf(int32 n)
       for (i = n; --i >= 0;) indexes[i] = i;
       D3D11_SUBRESOURCE_DATA indexBufferData = { indexes, 0, 0 };
       CD3D11_BUFFER_DESC indexBufferDesc(sizeof(indexes[0]) * n, D3D11_BIND_INDEX_BUFFER);
-      DX::ThrowIfFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer));
+      if (FAILED(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer))) 
+         return false;
       delete indexes;
 
       DXRELEASE(pBufferPixels);
@@ -376,8 +389,10 @@ void Direct3DBase::checkPixelsBuf(int32 n)
       bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
       bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
       bd.ByteWidth = sizeof(VertexPositionColor)* n;             // size is the VERTEX struct * 3
-      d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels);       // create the buffer
+      if (FAILED(d3dDevice->CreateBuffer(&bd, NULL, &pBufferPixels)))       // create the buffer
+         return false;
    }
+   return true;
 }
 
 void Direct3DBase::drawPixelColors(int32* xx, int32* yy, PixelConv* colors, int32 count)
@@ -395,7 +410,8 @@ void Direct3DBase::drawPixelColors(int32* xx, int32* yy, PixelConv* colors, int3
       v->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); v->color = cor;  v++;
    }
    setProgram(PROGRAM_LC);
-   checkPixelsBuf(n);
+   if (!checkPixelsBuf(n))
+      return;
 
    D3D11_MAPPED_SUBRESOURCE ms;
    d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
@@ -417,7 +433,7 @@ void Direct3DBase::drawPixels(float* glXYA, int count, int color)
    XMFLOAT4 cor = XMFLOAT4(f255[(color >> 16) & 0xFF], f255[(color >> 8) & 0xFF], f255[color & 0xFF], 0);
    if (count == 1) // drawLine for a single pixel is faster than drawPixels
    {
-      int32 x = *glXYA++, y = *glXYA++;
+      int32 x = (int32)*glXYA++, y = (int32)*glXYA++;
       int32 a = (int)(255.0f * *glXYA++);
       drawLine(x, y, x + 1, y + 1, (a << 24) | color);
       return;
@@ -433,10 +449,11 @@ void Direct3DBase::drawPixels(float* glXYA, int count, int color)
       v->pos = XMFLOAT2(x + 1, y + 1 + glShiftY); v->color = cor;  v++;
    }
    setProgram(PROGRAM_LC);
-   checkPixelsBuf(n);
+   if (!checkPixelsBuf(n))
+      return;
 
    D3D11_MAPPED_SUBRESOURCE ms;
-   d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+   if (DxFailed(d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms))) return;   // map the buffer
    memcpy(ms.pData, vertices, sizeof(vertices[0]) * n);               // copy the data
    d3dcontext->Unmap(pBufferPixels, NULL);                                     // unmap the buffer
    UINT stride = sizeof(vertices[0]);
