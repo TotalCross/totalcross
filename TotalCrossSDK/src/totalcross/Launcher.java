@@ -126,6 +126,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private void runtimeInstructions()
    {
       System.out.println("Current path: "+System.getProperty("user.dir"));
+      System.out.println("TotalCross "+Settings.versionStr+"."+Settings.buildNumber);
       // print instructions
       System.out.println("===================================");
       System.out.println("Device key emulations:");
@@ -175,7 +176,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
                runtimeInstructions();
-            loadBaseFonts();
             Object o = c.newInstance();
             if (o instanceof MainClass && !(o instanceof MainWindow))
             {
@@ -1026,9 +1026,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       if (toScale != 1) // guich@tc126_74 - guich@tc130 
       {
-         Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
-         g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
-         img.flush();
+         if (!MainWindow.isMainThread())
+            g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
+         else
+         {
+            Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+            g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
+            img.flush();
+         }
       }
       else
       if (g != null)
@@ -1670,38 +1675,44 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    static final int AA_4BPP = 1;
    static final int AA_8BPP = 2;
    static int []realSizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
-   static totalcross.ui.font.Font []baseFontN = new totalcross.ui.font.Font[realSizes.length], baseFontB = new totalcross.ui.font.Font[realSizes.length];
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
-   private boolean useRealFont;
-   private void loadBaseFonts()
+   private static boolean useRealFont;
+   static Hashtable htBaseFonts = new Hashtable(5); // 
+   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size)
    {
-      useRealFont = true;
-      for (int i = 0; i < realSizes.length; i++)
+      String key = name+"|"+bold+"|"+size;
+      totalcross.ui.font.Font f = (totalcross.ui.font.Font)htBaseFonts.get(key);
+      if (f == null)
       {
-         baseFontN[i] = totalcross.ui.font.Font.getFont(false,realSizes[i]); baseFontN[i].removeFromCache();
-         baseFontB[i] = totalcross.ui.font.Font.getFont(true, realSizes[i]); baseFontB[i].removeFromCache();
+         int i;
+         for (i = 0; i < realSizes.length-1; i++)
+            if (size <= realSizes[i])
+               break;
+      
+         useRealFont = true;
+         f = totalcross.ui.font.Font.getFont(name,bold,realSizes[i]); 
+         if (f != null) 
+         {
+            f.removeFromCache();
+            htBaseFonts.put(key,f); 
+         }         
+         useRealFont = false;
       }
-      useRealFont = false;
-   }
-   static totalcross.ui.font.Font getBaseFont(boolean bold, int size)
-   {
-      int i;
-      for (i = 0; i < realSizes.length-1; i++)
-         if (size <= realSizes[i])
-            break;
-      return bold ? baseFontB[i] : baseFontN[i];
+      
+      return f;
    }
 
    private UserFont loadUF(String fontName, String suffix)
    {
       try
       {
-         if (!useRealFont && fontName.equals(totalcross.ui.font.Font.DEFAULT) && suffix.endsWith("u0"))
+         if (!useRealFont && suffix.endsWith("u0")) // test if there's another 8bpp native font.
          {
             boolean bold = suffix.charAt(1) == 'b';
             int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
-            totalcross.ui.font.Font base = getBaseFont(bold, size); 
-            return new UserFont(fontName, suffix, size, base);
+            totalcross.ui.font.Font base = getBaseFont(fontName, bold, size);
+            if (base != null)
+               return new UserFont(fontName, suffix, size, base);
          }
          return new UserFont(fontName, suffix);
       }
@@ -1815,6 +1826,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       private int []bitIndexTable;
       private String fontName;
       private int numberWidth;
+      private int minusW;
 
       private UserFont(String fontName, String sufix, int size, totalcross.ui.font.Font base) throws Exception
       {
@@ -1834,6 +1846,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          this.ascent = size - this.descent;
          this.numberWidth = ubase.numberWidth * maxHeight / ubase.maxHeight;
          this.spaceWidth = ubase.spaceWidth * maxHeight / ubase.maxHeight;
+         this.minusW = ubase.minusW;
       }
       
       private UserFont(String fontName, String sufix) throws Exception
@@ -1848,7 +1861,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                is = openInputStream("vm/"+fileName); // for the release sdk, there's no etc/fonts. the tcfont.tcz is located at dist/vm/tcfont.tcz
                if (is == null)
-                  throw new Exception("file "+fileName+" not found"); // loaded = false
+               {
+                  is = openInputStream("etc/fonts/"+fileName); // if looking for the default font when debugging, use etc/fonts
+                  if (is == null)
+                     throw new Exception("file "+fileName+" not found"); // loaded = false
+               }
             }
             z = new TCZ(new IS2S(is));
             totalcross.io.ByteArrayStream fontChunks[];
@@ -1890,10 +1907,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
          //
+         minusW = antialiased == AA_8BPP ? 1 : 0;
          if (firstChar <= '0' && '0' <= lastChar)
          {
             index = (int)'0' - (int)firstChar;
-            numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+            numberWidth = bitIndexTable[index+1] - bitIndexTable[index] - minusW;
          }
          if (antialiased == AA_8BPP)
             nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
@@ -1902,7 +1920,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
       {
          int offset = bitIndexTable[index];
-         int width = bitIndexTable[index+1] - offset;
+         int width = bitIndexTable[index+1] - offset - minusW;
          totalcross.ui.image.Image img = new totalcross.ui.image.Image(width,maxHeight);
          int[] pixels = img.getPixels();
          for (int y = 0,idx=0; y < maxHeight; y++)
@@ -1921,7 +1939,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             bits.rowWIB = rowWidthInBytes;
             bits.charBitmapTable = bitmapTable;
             bits.offset = bitIndexTable[index];
-            bits.width = bitIndexTable[index+1] - bits.offset;
+            bits.width = bitIndexTable[index+1] - bits.offset - minusW;
             if (ubase != null)
                try
                {
@@ -1952,7 +1970,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (ch < ' ')
          return (ch == '\t') ? font.spaceWidth * totalcross.ui.font.Font.TAB_SIZE : 0; // guich@tc100: handle tabs
       int index = (int)ch - (int)font.firstChar;
-      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] : font.spaceWidth;
+      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] - font.minusW : font.spaceWidth;
    }
    
 

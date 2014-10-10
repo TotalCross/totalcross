@@ -261,8 +261,10 @@ public class ToolTip extends Label implements PenListener, MouseListener
             outside.consumed = false;
             control.postEvent(outside);
          }
-         removeTimer(displayTimer);
-         removeTimer(delayTimer);
+         if (displayTimer != null)
+            removeTimer(displayTimer);
+         if (delayTimer != null)
+            removeTimer(delayTimer);
          displayTimer = delayTimer = null;
       }
       if (shown && e != null)

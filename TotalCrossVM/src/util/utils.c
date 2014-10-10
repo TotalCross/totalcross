@@ -872,7 +872,7 @@ TC_API int32 getFreeMemory(bool maxblock)
 #else                         
    s = !maxblock ? 0 : privateGetFreeMemory(maxblock);
 #endif
-#if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
+#if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
    if (!maxblock)
       s += dlmallinfo().fordblks;
 #else // for android and iphone, return something different of 0

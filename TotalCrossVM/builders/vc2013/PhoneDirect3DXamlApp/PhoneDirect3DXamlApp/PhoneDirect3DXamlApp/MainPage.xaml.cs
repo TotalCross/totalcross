@@ -179,9 +179,17 @@ namespace PhoneDirect3DXamlAppInterop
           return fontHeight;
       }
 
-      public void privateAlertCS(String str) // Vm
+      public void privateAlertCS(String str, bool eventsInitialized) // Vm
       {
          alertIsVisible = true;
+         if (!eventsInitialized) // needed if an error occurs at vm startup
+            try
+            {
+               MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
+               alertIsVisible = false;
+               return;
+            }
+            catch (System.UnauthorizedAccessException e) { }
          Deployment.Current.Dispatcher.BeginInvoke(() =>
          {
             MessageBox.Show(str, "ALERT", MessageBoxButton.OK);
@@ -246,6 +254,13 @@ namespace PhoneDirect3DXamlAppInterop
                   break;
                }
          }
+      }
+      public void appSetFullScreen()
+      {
+         Deployment.Current.Dispatcher.BeginInvoke(() =>
+         {
+            SystemTray.IsVisible = false;
+         });
       }
       public void appExit()
       {
@@ -428,7 +443,7 @@ namespace PhoneDirect3DXamlAppInterop
     public partial class MainPage : PhoneApplicationPage
     {
         public Direct3DBackground d3dBackground;
-        private int specialKey;
+        private int specialKey, scale;
         private CSWrapper cs;
         private bool manipulating;
         public static MainPage instance;
@@ -439,7 +454,8 @@ namespace PhoneDirect3DXamlAppInterop
         public MainPage()
         {
             instance = this;
-            screenSize = (int) Math.Max(Application.Current.Host.Content.ActualWidth, Application.Current.Host.Content.ActualHeight);
+            scale = System.Windows.Application.Current.Host.Content.ScaleFactor;
+            screenSize = scaled(Math.Max(Application.Current.Host.Content.ActualWidth, Application.Current.Host.Content.ActualHeight));
             InitializeComponent();
             this.BackKeyPress += MainPage_BackKeyPress;
             this.MouseMove += MainPage_MouseMove;
@@ -466,7 +482,7 @@ namespace PhoneDirect3DXamlAppInterop
         void MainPage_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
            e.Handled = true;
-           double scale = isPortrait ? e.DeltaManipulation.Scale.Y : e.DeltaManipulation.Scale.X;
+           double scale = scaled(isPortrait ? e.DeltaManipulation.Scale.Y : e.DeltaManipulation.Scale.X);
            if (scale != 0)
            {
               if (!manipulating)
@@ -489,8 +505,8 @@ namespace PhoneDirect3DXamlAppInterop
            checkOrientation();
            // if sipH isnt set for current rotation, move it to bottom again
            if ((isPortrait && Settings.portSipH == 0) || (!isPortrait && Settings.landSipH == 0))
-              instance.cs.tbox.Margin = new Thickness(0, instance.ActualHeight * 10, 0, 0); // move to bottom
-           d3dBackground.OnScreenChanged(-1, (int)e.NewSize.Width, (int)e.NewSize.Height);
+              instance.cs.tbox.Margin = new Thickness(0, scaled(instance.ActualHeight * 10), 0, 0); // move to bottom
+           d3dBackground.OnScreenChanged(-1, scaled(e.NewSize.Width), scaled(e.NewSize.Height));
         }
 
         private void BeginListenForSIPChanged()
@@ -553,21 +569,21 @@ namespace PhoneDirect3DXamlAppInterop
         {
             e.Handled = true;
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerReleased((int)p.X, (int)p.Y);
+            d3dBackground.OnPointerReleased(scaled(p.X), scaled(p.Y));
         }
 
         void MainPage_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
             Point p = e.GetPosition(this);
-            d3dBackground.OnPointerPressed((int)p.X, (int)p.Y);
+            d3dBackground.OnPointerPressed(scaled(p.X), scaled(p.Y));
         }
 
         void MainPage_MouseMove(object sender, MouseEventArgs e)
         {
             Point p = e.GetPosition(this);
             if (!manipulating)
-               d3dBackground.OnPointerMoved((int)p.X, (int)p.Y);
+               d3dBackground.OnPointerMoved(scaled(p.X), scaled(p.Y));
         }
 
         void MainPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
@@ -585,34 +601,42 @@ namespace PhoneDirect3DXamlAppInterop
             d3dBackground.lifeCycle(false);
         }
 
+        private int scaled(double k)
+        {
+           return (int)(k * scale / 100);
+        }
         private void DrawingSurfaceBackground_Loaded(object sender, RoutedEventArgs e)
         {
-            if (d3dBackground == null)
-            {
-                cs = new CSWrapper(LayoutRoot);
-                cs.appName = ReadManifest();
-                d3dBackground = new Direct3DBackground(cs);
+           if (d3dBackground == null)
+           {
+              cs = new CSWrapper(LayoutRoot);
+              cs.appName = ReadManifest();
+              d3dBackground = new Direct3DBackground(cs);
 
-                cs.tbox.KeyDown += MainPage_KeyDown;
-                cs.tbox.TextChanged += tbox_TextChanged;
+              cs.tbox.KeyDown += MainPage_KeyDown;
+              cs.tbox.TextChanged += tbox_TextChanged;
 
-                int appW = (int)LayoutRoot.ActualWidth;
-                int appH = (int)LayoutRoot.ActualHeight;
-                d3dBackground.OnScreenChanged(-1, appW, appH);
-                d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
-                DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
-            }
+              int appW = scaled(LayoutRoot.ActualWidth);
+              int appH = scaled(LayoutRoot.ActualHeight);
+              d3dBackground.OnScreenChanged(-1, appW, appH);
+              d3dBackground.WindowBounds = d3dBackground.RenderResolution = d3dBackground.NativeResolution = new Windows.Foundation.Size(appW,appH);
+              DrawingSurface.SetContentProvider(d3dBackground.CreateContentProvider());
+           }
         }
 
         public static string ReadManifest()
         {
-            XElement xml = XElement.Load("TotalCrossManifest.xml");
-            var manifestElement = (from manifest in xml.Descendants("App") select manifest).SingleOrDefault();
-            if (manifestElement != null)
-            {
-                return manifestElement.Attribute("Name").Value;
-            }
-            return string.Empty;
+           try // allow debugging
+           {
+              XElement xml = XElement.Load("TotalCrossManifest.xml");
+              var manifestElement = (from manifest in xml.Descendants("App") select manifest).SingleOrDefault();
+              if (manifestElement != null)
+              {
+                 return manifestElement.Attribute("Name").Value;
+              }
+           }
+           catch (Exception) { }
+           return string.Empty;
         }
     }
 }

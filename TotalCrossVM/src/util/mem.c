@@ -126,7 +126,7 @@ static bool checkMemHeapLeaks();
 
 bool initMem()
 {
-   #if (defined(WIN32) && !defined(WINCE)) || defined(POSIX)
+   #if (defined(WIN32) && !defined(WINCE))
    leakCheckingEnabled = true;
    #endif
 #if defined HAS_MSPACE_1_AND_2
@@ -325,7 +325,7 @@ TC_API void heapDestroyPrivate(Heap m, bool added2list)
    //debug("Freeing heap created at %s (%d). setjmp at %s (%d): %X",m->ex.creationFile,m->ex.creationLine,m->ex.setjmpFile, m->ex.setjmpLine, m);
    while (m->current != null)
    {
-      MemBlock mb = m->current->next;
+      volatile MemBlock mb = m->current->next;
       //xmemzero(m->current->block, ARRAYLEN(m->current->block)); // erase the block to make sure that no pointers inside of it are reused
       freeArray(m->current->block);
       xfree(m->current);

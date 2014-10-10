@@ -376,12 +376,22 @@ static TCObject allocObjWith(uint32 size)
    return o;
 }
 
+extern bool iosLowMemory;
+
 TCObject allocObject(Context currentContext, uint32 size)
 {
    TCObject o = null;
    bool firstPass = true;
    ObjectProperties op;
 
+#ifdef darwin
+   if (iosLowMemory && size > 1024*1024)
+   {
+      iosLowMemory = false;
+      throwException(currentContext, OutOfMemoryError, "iOS low memory warning");
+      return null;
+   }
+#endif
    if (currentContext == gcContext) // a finalize method is creating an object? return null
    {
       throwException(currentContext, OutOfMemoryError, "Objects can't be allocated during finalize.");
@@ -399,13 +409,16 @@ TCObject allocObject(Context currentContext, uint32 size)
    o = allocObjWith(size);
    if (!o) // no more memory to create this object? Run the GC to free up memory
    {
-tryAgain:
-      #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
-      UNLOCKVAR(omm);
-      gc(currentContext);
-      LOCKVAR(omm);
-      o = allocObjWith(size);
-      #endif
+      if (size < 1024*1024)
+      {
+      tryAgain:
+         #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
+         UNLOCKVAR(omm);
+         gc(currentContext);
+         LOCKVAR(omm);
+         o = allocObjWith(size);
+         #endif
+      }
       if (!o)
       {
          // still no memory? allocate a new chunk and place it at the OBJARRAY_MAX_INDEX
@@ -875,6 +888,26 @@ void finalizeObject(TCObject o, TCClass c)
    }
 }
 
+void visitImages(VisitElementFunc onImage, int32 param) // visits all images
+{
+   TCObjectArray usedL;
+   TCObject o;
+   int32 i;                    
+   if (destroyingApplication) return;
+
+   LOCKVAR(omm);
+   for (i = 0, usedL = usedList; i <= OBJARRAY_MAX_INDEX; i++, usedL++)
+      if (*usedL)
+         for (o=OBJ_PROPERTIES(*usedL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
+            if (OBJ_CLASS(o) == imageClass) // if user defined a dontFinalize field and set it to true, don't call finalize
+               onImage(param,o);
+   if (lockList)
+   for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
+      if (OBJ_CLASS(o) == imageClass) // if user defined a dontFinalize field and set it to true, don't call finalize
+         onImage(param,o);
+   UNLOCKVAR(omm);
+}
+
 void runFinalizers() // calls finalize of all objects in use
 {
    TCObjectArray usedL;
@@ -897,8 +930,11 @@ void runFinalizers() // calls finalize of all objects in use
  #if defined(ANDROID) || defined(WINCE)
   #define CRITICAL_SIZE 2*1024*1024
   #define USE_MAX_BLOCK true
+ #elif defined(WIN32)
+  #define CRITICAL_SIZE 512*1024
+  #define USE_MAX_BLOCK false
  #else
-  #define CRITICAL_SIZE 5*1024*1024
+  #define CRITICAL_SIZE 2*1024*1024
   #define USE_MAX_BLOCK false
  #endif
 #endif
@@ -920,8 +956,7 @@ void gc(Context currentContext)
    TCObjectArray freeL, usedL;
    TCObject o;
    int32 iniT,endT, elapsed;
-   int32 nfree,nused,compIni;
-
+   int32 nfree,nused,compIni,freemem;
    LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
 
    iniT = getTimeStamp();
@@ -934,7 +969,8 @@ void gc(Context currentContext)
 #ifdef ALTERNATIVE_GC
    if ( IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
 #else
-   if ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && getFreeMemory(USE_MAX_BLOCK) > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
+   freemem = getFreeMemory(USE_MAX_BLOCK);
+   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
 #endif
    {
       skippedGC++;
@@ -943,6 +979,7 @@ void gc(Context currentContext)
       return;
    }
 #endif
+   //debug("gc %d (%dms / %d bytes)",tcSettings.gcCount ? *tcSettings.gcCount : 0,elapsed,freemem);
    if (destroyingApplication)
    {
       UNLOCKVAR(omm);
@@ -966,7 +1003,6 @@ void gc(Context currentContext)
 
    skippedGC = objCreated = 0;
    if (tcSettings.gcCount) (*tcSettings.gcCount)++;
-
    IF_HEAP_ERROR(objStack->heap)
    {
       goto heaperror;

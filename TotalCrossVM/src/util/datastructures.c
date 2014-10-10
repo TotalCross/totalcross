@@ -201,22 +201,25 @@ TC_API void htRemove(Hashtable *iht, int32 key)
  */
 TC_API void htFree(Hashtable *iht, VisitElementFunc freeElement)
 {
-   HtEntry **tab = iht->items;
-   HtEntry *e,*next;
-   int32 n = iht->hash;
-   if (tab == null)
-      return;
-   while (n-- >= 0)
-      for (e = *tab++; e != null ;)
-      {
-         next = e->next;
-         if (freeElement)
-            freeElement(e->i32, e->ptr);
-         if (iht->heap == null) xfree(e);
-         e = next;
-      }
-   if (iht->heap == null) xfree(iht->items);
-   iht->size = 0;
+   if (iht)
+   {
+      HtEntry **tab = iht->items;
+      HtEntry *e,*next;
+      int32 n = iht->hash;
+      if (tab == null)
+         return;
+      while (n-- >= 0)
+         for (e = *tab++; e != null ;)
+         {
+            next = e->next;
+            if (freeElement)
+               freeElement(e->i32, e->ptr);
+            if (iht->heap == null) xfree(e);
+            e = next;
+         }
+      if (iht->heap == null) xfree(iht->items);
+      iht->size = 0;
+   }
 }
 
 /* Frees the hashtable. An optional function can be passed as parameter

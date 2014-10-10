@@ -125,6 +125,7 @@ typedef struct linedevcaps_tag_v3 // we're targetting windows mobile 5 and beyon
 // This is a callback function invoked to determine status and events on the line device, addresses, or calls.
 static void CALLBACK lineCallbackFunc(DWORD hDevice, DWORD dwMsg, DWORD dwCallbackInstance, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3)
 {
+#ifdef WINCE
    CharP status = null;
 
    switch (dwMsg)
@@ -251,11 +252,13 @@ static void CALLBACK lineCallbackFunc(DWORD hDevice, DWORD dwMsg, DWORD dwCallba
    }
    if (status != null)
       statusChange(status);
+#endif
 }
 
 // Initialize the application's use of Tapi.dll.
 static bool InitializeTAPI()
 {
+#ifdef WINCE
    DWORD dwLineID, dwReturn, dwTimeCount = GetTickCount();
    bool found = false;
 
@@ -309,6 +312,7 @@ static bool InitializeTAPI()
       return false;
    }
    else
+#endif
       return true;
 }
 
@@ -361,6 +365,7 @@ typedef struct linecallparams_tag_v3               // Defaults:
 // Demonstrates the use of lineOpen, lineTranslateAddress, lineMakeCall.
 static VOID MakePhoneCall(LPCTSTR lpszPhoneNum)
 {
+#ifdef WINCE
    DWORD dwReturn,
    dwSizeOfTransOut = sizeof(LINETRANSLATEOUTPUT),
    dwSizeOfCallParams = sizeof(LINECALLPARAMS_v3);
@@ -443,6 +448,7 @@ exit:
    // then close it.
    if (MakeCallRequestID <= 0 && VoiceLineInfo.hLine)
       CurrentLineClose();
+#endif
 }
 
 static void dialNumber(CharP number)

@@ -64,7 +64,7 @@ static bool privateDebug(char* str)
    {
       closeDebug();
       debugMode = debugMode == MODE_TXT ? MODE_ADB : MODE_TXT;
-      return;
+      return true;
    }
    if (debugMode != MODE_ADB)
    {

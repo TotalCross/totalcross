@@ -107,20 +107,6 @@
 enumitem
 \end_modules
 \maintain_unincluded_children false
-\begin_local_layout
-Input fieldlist.inc
-
-Style Chapterstar
-Copystyle Chapter
-LatexName chapterstar
-LabelType Top_Environment
-LabelString "Unnumbered chapter"
-LabelFont
-Series Bold
-Size LARGE
-EndFont
-End
-\end_local_layout
 \language english
 \language_package default
 \inputencoding default
@@ -406,7 +392,7 @@ LatexCommand tableofcontents
 THE PLATFORM
 \end_layout
 
-\begin_layout Chapterstar
+\begin_layout Chapter*
 Welcome
 \end_layout
 
@@ -1290,24 +1276,24 @@ TCFont.tcz.
 samples
 \family default
 : Installation files for all samples.
- Litebase samples are also inside, prefixed by 
+ Litebase samples are also inside, in the folder 
 \family typewriter
-LB_
+litebase
 \family default
 .
- Lets take the UIControls sample, located at 
+ Lets take the TotalCrossAPI sample, located at 
 \family typewriter
 TotalCrossSDK
 \backslash
 dist
 \backslash
-samples
-\backslash
 
 \begin_inset Newline newline
 \end_inset
 
-UIControls
+samples
+\backslash
+TotalCrossAPI
 \family default
 .
  Inside there's an install folder, and below the following folders:
@@ -1373,14 +1359,24 @@ If your desktop has the SDK installed, you may run the application from
  If your application can't found the SDK (or the right SDK if you have more
  than one installed), make sure that the environment variable 
 \family typewriter
-TOTALCROSS_HOME
+TOTALCROSS3_HOME
 \family default
  is pointing to the desired TotalCross installation folder.
  On some systems (Windows 8, for instance), 
 \family typewriter
-TOTALCROSS_HOME
+TOTALCROSS3_HOME
 \family default
  must be set both in user and system environment variables.
+ If there is no 
+\family typewriter
+TOTALCROSS3_HOME
+\family default
+, TotalCross will search for the variable used in older TotalCross versions,
+ which is 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+.
 \end_layout
 
 \end_inset
@@ -1598,15 +1594,11 @@ Litebase Companion.pdf
 \end_layout
 
 \begin_layout Itemize
-The folders 
+The folder 
 \family typewriter
-lb
+html
 \family default
- and 
-\family typewriter
-tc
-\family default
-, which contains the generated javadocs.
+, which contains the generated javadocs for TotalCross and Litebase.
  Open the files 
 \family typewriter
 index.html
@@ -2818,7 +2810,7 @@ to
 The last argument passed to the launcher is always the qualified name of
  the main class of the application to be launched (for example, 
 \family typewriter
-tc.samples.ui.controls.UIControls
+tc.samples.api.TotalCrossAPI
 \family default
 ).
 \end_layout
@@ -3124,6 +3116,12 @@ The deployer automatically detects and includes
 Class.forName()
 \family default
  references.
+ Note that the parameter must be a string literal.
+ 
+\family typewriter
+Class.forName()
+\family default
+ will not work yet if the parameter is a variable containing the class name.
 \end_layout
 
 \end_deeper
@@ -3393,12 +3391,23 @@ platforms
 \family default
  : Pass a list of comma-separated platforms to let the generated file be
  installed.
- Currently works on Android.
- E.G.: 
+ Currently works on Android and Windows Phone 8.
+ The possible options are: 
 \family typewriter
 /i android
 \family default
+, 
+\family typewriter
+/i android,wp8
+\family default
+, and 
+\family typewriter
+/i wp8
+\family default
 .
+ On WP8, this parameter also automatically starts the application.
+ It is necessary to have the Windows Phone SDK installed to be able to use
+ it.
 \end_layout
 
 \begin_layout Itemize
@@ -3465,8 +3474,8 @@ path
 
 type
 \family default
- : Packages the VM (and optionally Litebase) with the application, creating
- a single installation file.
+ : Packages the VM (and Litebase) with the application, creating a single
+ installation file.
  The type parameter can be one of the following: 
 \family typewriter
 demo
@@ -3485,150 +3494,8 @@ release+litebase
 \family default
  (where demo/release are the virtual machine types you want to include:
  the time-limited demonstration, or the release that requires activation).
- The DEMO SDKs must be in the path or in the 
-\family typewriter
-TOTALCROSS_HOME
-\family default
-/
-\family typewriter
- LITEBASE_HOME
-\family default
- environment variables, and the RELEASE SDKs must be in the same parent
- folder of the DEMO ones.
- Example: if 
-\family typewriter
-TOTALCROSS_HOME
-\family default
- points to 
-\family typewriter
-t:
-\backslash
-sdks
-\backslash
- TotalCrossSDK
-\family default
-, then the VMS must be at 
-\family typewriter
-t:
-\backslash
-sdks
-\backslash
-TotalCrossVMS
-\family default
-.
- If the
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-TOTALCROSS_HOME
-\family default
- and 
-\family typewriter
-LITEBASE_HOME
-\family default
- variables are not set, then all SDKs must be at the top-level folder of
- the 
-\family typewriter
-%TOTALCROSS_HOME%
-\backslash
-etc
-\family default
- folder.
-\begin_inset Newline newline
-\end_inset
-
-The files are always installed at the same folder of the application, so
- each application will have its own VM/litebase.
- You can optionally set four environment variables, pointing to the folder
- of each SDK (these will have priority over the other locations previously
- described): 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-TabPositions{4.5cm}
 \end_layout
 
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-TOTALCROSS_DEMO 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the TotalCross SDK folder
-\end_layout
-
-\begin_layout Itemize
-TOTALCROSS_RELEASE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the TotalCross VMS folder
-\end_layout
-
-\begin_layout Itemize
-LITEBASE_DEMO 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the Litebase SDK folder
-\end_layout
-
-\begin_layout Itemize
-LITEBASE_RELEASE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the Litebase VMS folder
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
@@ -5352,6 +5219,29 @@ So there you have it, how to do OTA updates on iOS without needing the App
  
 \end_layout
 
+\begin_layout Standard
+\begin_inset Box Shadowbox
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Note that after iOS 7.1, the plist file must be server over an https connection.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Debugging
 \end_layout
@@ -5433,8 +5323,8 @@ tc.Deploy
 .
  There is no pre-requisite to generate it.
  After installing the Windows Phone SDK 8.0, it's only necessary to open
- Application Deployment, choose the target (the WP8 device or an emulator),
- and select the desired application 
+ Application Deployment, choose the target (the WP8 device), and select
+ the desired application 
 \family typewriter
 .xap
 \family default
@@ -5443,8 +5333,7 @@ tc.Deploy
 
 \begin_layout Standard
 Phones registered for development can only have one TotalCross application
- installed whereas WP8 emulator can have at most two TotalCross applications
- at the same time.
+ installed at the same time.
 \end_layout
 
 \begin_layout Subsection
@@ -5720,7 +5609,7 @@ setup.bat
 \begin_layout Standard
 So, if you want to test the 
 \family typewriter
-UIControls.apk
+TotalCrossAPI.apk
 \family default
 , from the command line, use:
 \end_layout
@@ -5728,7 +5617,7 @@ UIControls.apk
 \begin_layout Standard
 
 \family typewriter
-adb install -r UIControls.apk
+adb install -r TotalCrossAPI.apk
 \end_layout
 
 \begin_layout Standard
@@ -5736,7 +5625,7 @@ Remember to install the TotalCross and Litebase
 \family typewriter
 .apk
 \family default
-s (if your application is not deployed as a single package) as:
+ (if your application is not deployed as a single package) as:
 \end_layout
 
 \begin_layout Standard
@@ -5750,21 +5639,7 @@ vm
 \backslash
 android
 \backslash
-android-tcvm.apk
-\end_layout
-
-\begin_layout Standard
-
-\family typewriter
-adb install -r %LITEBASE_HOME%
-\backslash
-dist
-\backslash
-lib
-\backslash
-android
-\backslash
-android-litebase.apk
+TotalCross.apk
 \end_layout
 
 \begin_layout Standard
@@ -7956,6 +7831,8 @@ DriverManager.
 
 getConnection("jdbc:sqlite:XXXX
 \backslash
+
+\backslash
 YYYY.db")
 \family default
 , where 
@@ -8301,6 +8178,30 @@ There is no type checking in SQLite.
 \begin_layout Enumerate
 All string data inserted is stored in unicode.
  It's not possible to create an ascii database in order to save space.
+\end_layout
+
+\begin_layout Enumerate
+It is not possible to erase all indices in a single SQL statement such as
+ the one used in Litebase: 
+\family typewriter
+drop index * on table_name
+\family default
+.
+ Moreover, to drop a specific index, you must drop it using its name, using
+ 
+\family typewriter
+drop index IDX_NAME
+\family default
+, not 
+\family typewriter
+drop index on table_name(column_name)
+\family default
+.
+\end_layout
+
+\begin_layout Enumerate
+You can't alter a table to add or drop a primary key in SQLite.
+ 
 \end_layout
 
 \begin_layout Chapter
@@ -10174,7 +10075,7 @@ TCBase.tcz
 USER INTERFACE
 \end_layout
 
-\begin_layout Chapterstar
+\begin_layout Chapter*
 Overview
 \end_layout
 
@@ -12242,7 +12143,7 @@ totalcross.ui.Control
  JavaDoc.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 FontMetrics
@@ -12264,7 +12165,7 @@ Font
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -12285,7 +12186,7 @@ PushButtonGroup
  index and discover which one of the five had issued the event.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Object
@@ -12309,7 +12210,7 @@ int
 .
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -12322,7 +12223,7 @@ clearValueInt
  The default is: 0.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 String
@@ -12335,7 +12236,7 @@ clearValueStr
  The default is an empty string: “”.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 isHighlighting
@@ -12397,7 +12298,7 @@ true
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(int
@@ -12435,7 +12336,7 @@ height)
  control.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(Rect
@@ -12451,7 +12352,7 @@ setRect(r.x, r.y, r.width, r.height)
 .
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(int
@@ -12492,11 +12393,15 @@ Control
 
 relative)
 \family default
- Same as the first one, but coordinates will be relative to the given control
+
+\begin_inset Newline newline
+\end_inset
+
+Same as the first one, but coordinates will be relative to the given control
  instead of the last one added.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setRect(int
@@ -12536,7 +12441,7 @@ Control
 \end_inset
 
 relative,
-\begin_inset space ~
+\begin_inset Newline newline
 \end_inset
 
 boolean
@@ -12564,7 +12469,7 @@ false
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12602,7 +12507,7 @@ add(control);
 control.setRect(x, y, PREFERRED, PREFERRED);
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12648,7 +12553,7 @@ add(control);
 control.setRect(x, y, PREFERRED, PREFERRED, relative);
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12702,7 +12607,7 @@ add(control);
 control.setRect(x, y, width, height);
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Control
@@ -12742,7 +12647,7 @@ int
 \end_inset
 
 height,
-\begin_inset space ~
+\begin_inset Newline newline
 \end_inset
 
 Control
@@ -12798,7 +12703,7 @@ after
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 addTimer(int
@@ -12842,7 +12747,7 @@ addTimerListener()
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 removeTimer(Timer
@@ -12868,7 +12773,7 @@ false
  is returned if the timer could not be found (meaning it was not active).
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 getX()
@@ -12900,7 +12805,7 @@ getHeight()
  Returns the control’s bounds.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 getX2()
@@ -12927,7 +12832,7 @@ y+height-1
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 getParentWindow()
@@ -12944,7 +12849,7 @@ null
  If this control is a window, will return itself.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 repaint()
@@ -12977,7 +12882,7 @@ Window.needsPaint = true;
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 repaintNow()
@@ -12987,7 +12892,7 @@ repaintNow()
  (useful if you're removing some controls from a container) .
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setEnabled(boolean
@@ -13000,7 +12905,7 @@ enabled)
  The control’s appearance is also changed to reflect the state.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setBackColor(int
@@ -13012,7 +12917,7 @@ back)/getBackColor()
  Gets or sets the background color for the control.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 setForeColor(int
@@ -13055,7 +12960,7 @@ getBackColor()
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 clear()
@@ -13095,7 +13000,7 @@ clearValueStr()
  these two fields.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 reposition()
@@ -13111,7 +13016,7 @@ setRect()
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 onPaint(Graphics
@@ -13137,7 +13042,7 @@ Graphics
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 onBoundsChanged()
@@ -13150,7 +13055,7 @@ setRect()
  Good to compute positions that are dependant on the bounds.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 onWindowPaintFinished()
@@ -13274,6 +13179,10 @@ PEN_UP
 \family default
  (button, list box, push button group, scrollBar) or even a 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 WINDOW_CLOSED
 \family default
  (comboBox).
@@ -14165,7 +14074,7 @@ Event
 , which provides some useful members:
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -14177,7 +14086,7 @@ type
  This is the event number, used to detect which event was posted.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Object
@@ -14189,15 +14098,19 @@ target
  This one informs who is receiving the event (e.
  g.: the VM posts a 
 \family typewriter
-PenEvent.
+
 \begin_inset Newline newline
 \end_inset
 
-PEN_DOWN
+PenEvent.PEN_DOWN
 \family default
  to a control) or who is posting it (e.
  g.: the control posts an 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 ControlEvent.PRESSED
 \family default
 ).
@@ -14206,7 +14119,7 @@ ControlEvent.PRESSED
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 int
@@ -14250,7 +14163,7 @@ hh:mm:ss:millis
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 boolean
@@ -14658,7 +14571,11 @@ For each control we’ll see its characteristics, how to create them with
 
 \begin_layout Standard
 You can see most of the user interface controls available in TotalCross
- looking at the UIControls sample.
+ looking at the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample.
 \end_layout
 
 \begin_layout Standard
@@ -14702,7 +14619,11 @@ Buttons are the most used types of controls.
  They are used to invoke an action or to confirm something, like [ok] or
  [cancel].
  Here are some screenshots from some buttons using the Android style from
- the old sample UIGadgets and UIControls:
+ the old samples UIGadgets and UIControls (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -15243,7 +15164,7 @@ false
  
 \end_layout
 
-\begin_layout )tandard
+\begin_layout Standard
 Sample code:
 \end_layout
 
@@ -15519,7 +15440,11 @@ Edit is a control used to get text input when the user types using the keyboard
  or the grafitti area.
  It allows you to select text and cut/copy/paste it.
  Here are some screenshots from some edits using the Android style from
- the old UIGadgets samples and UIControls:
+ the old UIGadgets and UIControls samples (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -15693,24 +15618,6 @@ setMaxLength()
  If the user tries to enter text above the limit, a beep is sounded and
  the text is ignored.
  If you set a text greater than the maximum length, it will be truncated.
-\end_layout
-
-\begin_layout pubmize
-You can also set the valid characters that can be entered by using the 
-\family typewriter
-setValidChars()
-\family default
-	method.
- They are converted to uppercase to make the verification easy.
- If 
-\family typewriter
-null
-\family default
- is passed, any character can be entered.
- The characters are case insensitive.
- If you pass "" (empty string), no characters will be able to be inputted,
- and movement, delete and copy/paste operations will also be disabled.
- There are some predefined character sets that can be localized if necessary:
 \end_layout
 
 \begin_layout Itemize
@@ -16561,7 +16468,7 @@ n
 .
  A label never receives focus neither dispatches events.
  Here is a screenshot from a multi-lined label using the Android style from
- UIGadgets:
+ the old UIGadgets sample:
 \end_layout
 
 \begin_layout Standard
@@ -16601,7 +16508,7 @@ Label has three constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Label()
@@ -16613,7 +16520,7 @@ FILL
  as the preferred width.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Label(String
@@ -16628,7 +16535,7 @@ text)
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Label(String
@@ -17224,7 +17131,11 @@ Check is a control that has a rectangle with a check inside and a text at
 
 \begin_layout Standard
 Here are some screenshots from some checks using the Android style from
- UIControls:
+ the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -17389,7 +17300,7 @@ It has only one constructor:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Check(String
@@ -17642,7 +17553,11 @@ Radio is a control that allows the user to choose one of a predefined set
 
 \begin_layout Standard
 Here are some screenshots from some checks using the Android style from
- UIControls:
+ the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -17831,7 +17746,7 @@ It has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Radio(String
@@ -17843,7 +17758,7 @@ text)
  Creates a radio control displaying the given text.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Radio(String
@@ -18450,7 +18365,12 @@ ComboBoxDropDown
 
 \begin_layout Standard
 Here are some screenshots from a simple combo box using the Android style
- from UIControls (below the combo box component, there is a list box):
+ from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) Note that below the combo box component,
+ there is a list box:
 \end_layout
 
 \begin_layout Standard
@@ -18662,7 +18582,7 @@ ComboBox
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox()
@@ -18670,7 +18590,7 @@ ComboBox()
  Creates an empty combo box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox(ListBox
@@ -18681,6 +18601,10 @@ userListBox)
 \family default
  Creates a combo box with a 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 ComboBoxDropDown
 \family default
  containing the given list box.
@@ -18707,7 +18631,7 @@ true
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox(Object[]
@@ -18719,7 +18643,7 @@ items)
  Creates a combo box with the given items.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ComboBox(ComboBoxDropDown
@@ -18817,7 +18741,7 @@ add()
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object
@@ -18835,7 +18759,7 @@ add(Object[] items)
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -18847,7 +18771,7 @@ items)
  Adds an array of objects to the combo box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -18994,7 +18918,7 @@ To remove items from a combo box, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(int
@@ -19006,7 +18930,7 @@ itemIndex)
  Removes an object from the combo box by its index.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(Object
@@ -19018,7 +18942,7 @@ item)
  Removes the given object from the combo box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 removeAll()
@@ -19275,7 +19199,12 @@ The list box is a control that allows the user to select one item from a
 
 \begin_layout Standard
 Here are some screenshots from a simple list box using the Android style
- from UIControls (above the list box component, there is a combo box):
+ from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample).
+ Note that above the list box component, there is a combo box:
 \end_layout
 
 \begin_layout Standard
@@ -19510,7 +19439,7 @@ List box has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ListBox() 
@@ -19518,7 +19447,7 @@ ListBox()
 Creates an empty list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 ListBox(Object[]
@@ -19537,7 +19466,7 @@ You can append new items to your list box using one of the following methods:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object
@@ -19549,7 +19478,7 @@ item)
  Adds an object to the list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -19561,7 +19490,7 @@ moreItems)
  Adds an array of objects to the list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 add(Object[]
@@ -19718,7 +19647,7 @@ To remove items from a list box, you may use one of the following three
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(int
@@ -19730,7 +19659,7 @@ itemIndex)
  Removes an object from the list box by its index.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 remove(Object
@@ -19742,7 +19671,7 @@ item)
  Removes the given object from the list box.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 removeAll()
@@ -19870,7 +19799,7 @@ ListBox
 \end_layout
 
 \begin_deeper
-\begin_layout Standard
+\begin_layout Itemize
 
 \family typewriter
 protected
@@ -19912,7 +19841,7 @@ int
 dy)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 
 \family typewriter
 protected
@@ -19930,7 +19859,7 @@ getItemWidth(int
 index)
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 
 \family typewriter
 protected
@@ -20319,7 +20248,12 @@ An editable
 \family typewriter
 MultiEdit
 \family default
- from UIControls, also using Android style, can be seen below:
+ from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), also using Android style, can be
+ seen below:
 \end_layout
 
 \begin_layout Standard
@@ -20477,7 +20411,7 @@ MultiEdit
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 MultiEdit()
@@ -20499,7 +20433,7 @@ FIT
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 MultiEdit(int
@@ -20518,6 +20452,10 @@ spaceBetweenLines)
 \family default
  Creates a 
 \family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 MultiEdit
 \family default
  with a vertical scrollbar, the given number of rows and the default width
@@ -20536,7 +20474,7 @@ setRect()
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 MultiEdit(String
@@ -20561,6 +20499,10 @@ int
 
 spaceBetweenLines) 
 \family default
+
+\begin_inset Newline newline
+\end_inset
+
 Creates a 
 \family typewriter
 MultiEdit
@@ -20661,7 +20603,7 @@ MultiEdit
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 scrollToBottom()
@@ -20669,7 +20611,7 @@ scrollToBottom()
  Moves the scroll to the bottom.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 scrollToLine(int
@@ -20681,7 +20623,7 @@ line)
  Scrolls to the gives text line.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 scrollToTop()
@@ -20807,7 +20749,12 @@ The grid control is used to display tabulated data, which is represented
 \end_layout
 
 \begin_layout Standard
-Below are some examples of grid taken from GridTest using Android style.
+Below are some examples of grid taken from the old GridTest sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) using Android style.
 \end_layout
 
 \begin_layout Standard
@@ -21454,7 +21401,7 @@ Grid has two constructors:
 \end_layout
 
 \begin_deeper
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Grid(String[]
@@ -21487,7 +21434,7 @@ LEFT
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \family typewriter
 Grid(String[]
@@ -24460,7 +24407,7 @@ b4
  of the above picture:
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="3" columns="2">
 <features islongtable="true" longtabularalignment="center">
@@ -24585,22 +24532,22 @@ prints the following on the console:
 inline false
 status open
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@131f71a, dir: 1 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@15601ea, dir: 2 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@197d257, dir: 3 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Plain Layout
 
 totalcross.ui.ArrowButton@7259da, dir: 4
 \end_layout
@@ -24791,7 +24738,12 @@ which results in the following images using Android style, where the bottom
 \end_layout
 
 \begin_layout Standard
-Note that the top and bottom components of the sample UIControls are bars.
+Note that the top and bottom components of the the old UIControls sample
+ (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) are bars.
 \end_layout
 
 \begin_layout Standard
@@ -25813,7 +25765,7 @@ pressedLink
 \end_layout
 
 \begin_layout Standard
-Some images taken from the sample HtmlBrowser, which uses this control,
+Some images taken from the old sample HtmlBrowser, which uses this control,
  are shown here, where the application interface style was changed to Android:
 \end_layout
 
@@ -26462,7 +26414,12 @@ The resulting window from it looks like the screenshots below:
 \end_layout
 
 \begin_layout Standard
-From UIControls, the following screenshots were taken:
+From the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), the following screenshots were
+ taken:
 \end_layout
 
 \begin_layout Standard
@@ -26824,8 +26781,8 @@ setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
 \end_layout
 
 \begin_layout Standard
-The result of this sample is shown in the images below taken from UIGadgets
- using Android user interface style:
+The result of this sample is shown in the images below taken from the old
+ UIGadgets sample using Android user interface style:
 \end_layout
 
 \begin_layout Standard
@@ -27351,8 +27308,13 @@ position
 \family typewriter
 PagePosition
 \family default
- is shown in the image below from UIControls above the mouse cursor, where
- it is inside a 
+ is shown in the image below from the old UIControls sample (now inside
+ the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) above the mouse cursor, where it
+ is inside a 
 \family typewriter
 ButtonMenu
 \family default
@@ -27715,8 +27677,12 @@ Then set a timer to update the value.
 \end_layout
 
 \begin_layout Standard
-Here is some progress bar samples taken from UIControls and the old UIGadgets
- sample (using Android user interface style):
+Here is some progress bar samples taken from the old UIGadgets and UIControls
+ samples (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), using Android user interface style:
 \end_layout
 
 \begin_layout Standard
@@ -28620,7 +28586,7 @@ totalcross.ui.ScrollContainer
  JavaDoc.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 
 \end_layout
 
@@ -28672,8 +28638,12 @@ ButtonMenu
 \end_layout
 
 \begin_layout Standard
-Some images of it can be found in the UIControls sample when scrolling its
- main window:
+Some images of it can be found in the old UIControls sample (now inside
+ the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) when scrolling its main window:
 \end_layout
 
 \begin_layout Standard
@@ -28771,7 +28741,7 @@ setMaximum()
 setMinimum()
 \family default
  method (the value must always be ODD!).
- The slider is the component pointed by the mouse arrow in the UIControls
+ The slider is the component pointed by the mouse arrow in the old UIGadgets
  sample using the Android style below:
 \end_layout
 
@@ -28895,9 +28865,14 @@ which results in the following using Android style, which places two buttons
 \end_layout
 
 \begin_layout Standard
-The spacer is also used to separate the spinners in the Spinner Samples
- of UIControls and the back and next buttons from the Litebase sample PhotoDB
- (which uses the old Windows CE style):
+The spacer is also used to separate the spinners in the Spinner samples
+ of old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) and the back and next buttons from
+ the old Litebase sample PhotoDB using the old Windows CE style (now inside
+ the sample Address Book and using Android style):
 \begin_inset Newline newline
 \end_inset
 
@@ -29205,8 +29180,12 @@ setRect()
 \end_layout
 
 \begin_layout Standard
-Below are some screenshots taken from the old UIGadgets sample (using Android
- user interface style) and UIControls:
+Below are some screenshots taken from the old UIGadgets (using Android user
+ interface style) and UIControls (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample) samples:
 \end_layout
 
 \begin_layout Standard
@@ -29657,7 +29636,12 @@ MultiButton
  is a control that displays a single line button with a set of titles.
  It can be used to replace a check (with on/off) or a radio (with their
  options).
- Below there is a sample taken from UIControls:
+ Below there is a sample taken from old UIControls sample (now inside the
+ 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -29745,7 +29729,12 @@ ColumnChart
 
 \begin_layout Standard
 This is a a vertical column chart.
- Below are shown some screenshots taken from CharTest:
+ Below are shown some screenshots taken from the old sample CharTest (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -29873,7 +29862,12 @@ LineChart
 
 \begin_layout Standard
 This class represents a line chart.
- Below are shown some screenshots taken from CharTest:
+ Below are shown some screenshots taken from the old CharTest sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -29983,7 +29977,12 @@ PieChart
 
 \begin_layout Standard
 A simple pie chart.
- Below are shown some screenshots taken from CharTest:
+ Below are shown some screenshots taken from the old CharTest sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -30783,10 +30782,6 @@ public class TCTestWin extends MainWindow
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout FieldList
 
 \end_layout
 
@@ -33397,7 +33392,11 @@ Edit
 CURRENCY
 \family default
  and displays a calculator with six basic operations and a numeric pad.
- Here is a sample from UIControls:
+ Here is a sample from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -33672,7 +33671,11 @@ The month can be changed via keyboard using the left/right keys, and the
 \end_layout
 
 \begin_layout Standard
-Here is a sample from UIControls:
+Here is a sample from the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -34295,7 +34298,11 @@ pb.unpop();
 \end_layout
 
 \begin_layout Standard
-In the UIControls sample, there is some examples using 
+In the old UIControls sample (now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample), there is some examples using 
 \family typewriter
 ProgressBox
 \family default
@@ -34546,7 +34553,12 @@ public void onEvent(Event e)
 \end_layout
 
 \begin_layout Standard
-It looks like the following image taken from UIControls:
+It looks like the following image taken from the old UIControls sample (now
+ inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -36189,7 +36201,12 @@ public void initUI()
 \end_layout
 
 \begin_layout Standard
-Another example with an animated GIF: (adapted from GifAnimatedTest sample)
+Another example with an animated GIF: (adapted from the old GifAnimatedTest
+ sample now inside the 
+\family typewriter
+ui
+\family default
+ package from the TotalCrossAPI sample):
 \end_layout
 
 \begin_layout Standard
@@ -46774,7 +46791,7 @@ This class provides some preferences from the device configuration and other
  Look at its JavaDoc for more details.
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
  
 \end_layout
 
@@ -48868,7 +48885,7 @@ Stream
  
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 In I/O operations, usually it's faster and/or less resource consuming to
  send larger chunks of data at once, instead of sending several small chunks
  of data.
@@ -61960,7 +61977,7 @@ if (!Scanner.deactivate())
 
 \end_layout
 
-\begin_layout FieldList
+\begin_layout Itemize
 \begin_inset Box Shadowbox
 position "t"
 hor_pos "c"

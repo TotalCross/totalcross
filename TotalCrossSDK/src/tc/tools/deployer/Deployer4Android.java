@@ -188,7 +188,7 @@ public class Deployer4Android
       String []cmd = {javaExe,"-classpath",DeploySettings.pathAddQuotes(dxjar),"com.android.dx.command.Main","--dex","--output=classes.dex",new File(jarOut).getAbsolutePath()}; // guich@tc124_3: use the absolute path for the file
       String out = Utils.exec(cmd, targetDir);
       if (!new File(targetDir+"classes.dex").exists())
-         throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+cmd+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
+         throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+Utils.toString(cmd)+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
       new File(jarOut).delete(); // delete the jar
    }
    
@@ -250,6 +250,7 @@ public class Deployer4Android
             "res/menu/encode.xml",
             "res/menu/history.xml",
             "res/raw/beep.ogg",
+            "res/layout/route.xml",
 /*            "res/values/arrays.xml",
             "res/values/colors.xml",
             "res/values/dimens.xml",
@@ -275,10 +276,10 @@ public class Deployer4Android
       // include the vm and litebase
       if (tcFolder != null)
       {
-         //copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/libtcvm.so", zos);
-         //copyZipEntry(tcFolder+"Litebase.apk", "lib/armeabi/liblitebase.so", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/liblitebase.so", zos);
+         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
+         //copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/libtcvm.so", zos);
+         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/liblitebase.so", zos);
+         //copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi-v7a/liblitebase.so", zos);
       }
       
       zis.close();
@@ -606,7 +607,14 @@ public class Deployer4Android
          }
          catch (FileNotFoundException fnfe)
          {
-            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            try
+            {
+               fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            }
+            catch (FileNotFoundException fnfe2)
+            {
+               fis = new FileInputStream(Utils.findPath(pathname,true));
+            }
          }
          byte[] bytes = new byte[fis.available()];
          fis.read(bytes);

@@ -24,7 +24,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 import totalcross.util.*;
 
 /**
@@ -250,7 +249,7 @@ public class Edit extends Control
     * @since TotalCross 1.6
     */
    public boolean virtualKeyboard = Settings.virtualKeyboard;
-   
+
    /** Cursor thickness */
    public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
 
@@ -790,7 +789,7 @@ public class Edit extends Control
                try
                {
                   if (npback == null || focusColor != -1)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
                }
                catch (ImageException e) {e.printStackTrace();}
                g.drawImage(npback, 0,0);
@@ -1182,7 +1181,6 @@ public class Edit extends Control
                   popupKCC();
                   break;
                }
-               
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
@@ -1282,10 +1280,7 @@ public class Edit extends Control
                      ke.key = Convert.toLowerCase((char)ke.key);
 
                   if (!isCharValid((char)ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
-                  {
-                     Sound.beep();
                      break;
-                  }
                }
                if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                {
@@ -1343,7 +1338,6 @@ public class Edit extends Control
                      newInsertPos++;
                      clearSelect = true;
                   }
-                  else Sound.beep();
                boolean isMove = true;
                switch (ke.key)
                {
@@ -1665,7 +1659,7 @@ public class Edit extends Control
    {
       String pasted = Vm.clipboardPaste();
       if (pasted == null || pasted.length() == 0)
-         Sound.beep();
+         ;
       else
       {
          showTip(this, pasteStr, 500, -1);

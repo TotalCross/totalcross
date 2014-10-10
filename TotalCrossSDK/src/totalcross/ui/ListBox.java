@@ -191,7 +191,7 @@ public class ListBox extends Container implements Scrollable
     */ 
    public static double itemHeightFactor = uiAndroid ? DEFAULT_ITEM_HEIGHT_FACTOR : 1;
    
-   private double ihFactor = itemHeightFactor;
+   protected double ihFactor = itemHeightFactor;
    
    /** Used by the DBListBox to store the data column that is displayed. */
    protected int dataCol=-1;
@@ -205,7 +205,6 @@ public class ListBox extends Container implements Scrollable
    /** Creates a Listbox with the given items. */
    public ListBox(Object []items)
    {
-      started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
       sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
       sbar.focusTraversable = false;
@@ -574,6 +573,12 @@ public class ListBox extends Container implements Scrollable
    /** Select the given index and scroll to it if necessary. */
    public void setSelectedIndex(int i)
    {
+      setSelectedIndex(i, Settings.sendPressEventOnChange);
+   }
+   
+   /** Select the given index and scroll to it if necessary, sending or not the pressed event. */
+   public void setSelectedIndex(int i, boolean sendPressEvent)
+   {
       if (0 <= i && i < itemCount && i != selectedIndex/* && height != 0*/) // guich@tc100: commented height!=0 otherwise Watch's combobox will not be set properly
       {
          int vi = sbar.getVisibleItems();
@@ -595,7 +600,7 @@ public class ListBox extends Container implements Scrollable
             sbar.setValue(offset);
          }
          Window.needsPaint = true;
-         if (Settings.sendPressEventOnChange)
+         if (sendPressEvent)
             postPressedEvent();
       }
       else
@@ -608,7 +613,7 @@ public class ListBox extends Container implements Scrollable
             sbar.setValue(0);
             Window.needsPaint = true;
          }
-         if (Settings.sendPressEventOnChange)
+         if (sendPressEvent)
             postPressedEvent();
       }
    }
@@ -618,9 +623,16 @@ public class ListBox extends Container implements Scrollable
     */
    public void selectLast()
    {
+      selectLast(true);
+   }
+
+   /** Selects the last item added to this listbox, doing a scroll if needed, and sending or not the event. Calls repaintNow.
+    */
+   public void selectLast(boolean sendPressEvent)
+   {
       if (itemCount > 0)
       {
-         setSelectedIndex(itemCount-1);
+         setSelectedIndex(itemCount-1, sendPressEvent);
          repaintNow();
       }
    }
@@ -940,7 +952,7 @@ public class ListBox extends Container implements Scrollable
          if (npback == null)
             try
             {
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false,true);
+               npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false);
             }
          catch (ImageException e) {}
          g.drawImage(npback, 0,0);

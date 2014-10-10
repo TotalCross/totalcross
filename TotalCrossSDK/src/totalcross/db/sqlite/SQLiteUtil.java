@@ -9,25 +9,46 @@ import totalcross.util.*;
 /** Utility class to make convertion from Litebase to SQLite easier. 
  */
 
-
 public class SQLiteUtil
 {
-   public Connection con;
+   private Connection con;
    public int vectorInitialSize = 50;
+   private String fullPath;
 
-   public static Connection getConnectionAtAppPath(String table) throws SQLException
+   /** Open a connection at the given table */
+   public SQLiteUtil(String table) throws SQLException
    {
-      return DriverManager.getConnection("jdbc:sqlite:"+table);
+      this.fullPath = table;
    }
    
-   public static Connection getConnection(String path, String table) throws SQLException
+   /** Open a connection at the given path and table */
+   public SQLiteUtil(String path, String table) throws SQLException
    {
-      return DriverManager.getConnection("jdbc:sqlite:"+Convert.appendPath(path, table));
+      this(Convert.appendPath(path, table));
    }
    
-   public static Connection getConnectionAtMemory() throws SQLException
+   /** Open a connection at memory */
+   public SQLiteUtil() throws SQLException
    {
-      return DriverManager.getConnection("jdbc:sqlite:");
+      this("");
+   }
+   
+   /** Returns the connecton with the parameters passed in the constructor */
+   public Connection con() throws SQLException
+   {
+      if (con == null || con.isClosed())
+         con = DriverManager.getConnection("jdbc:sqlite:"+fullPath);
+      return con;
+   }
+   
+   public void close()
+   {
+      try
+      {
+         if (con != null) con.close();
+      }
+      catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
+      con = null;
    }
    
    public boolean tableExists(String tab) throws SQLException
@@ -39,7 +60,7 @@ public class SQLiteUtil
    {
       try
       {
-         Statement st = con.createStatement();
+         Statement st = con().createStatement();
          ResultSet rs = st.executeQuery(sql);
          boolean exists = rs.next();
          rs.close();
@@ -59,7 +80,7 @@ public class SQLiteUtil
 
    public ResultSet executeQuery(String s) throws SQLException
    {
-      return con.createStatement().executeQuery(s);
+      return con().createStatement().executeQuery(s);
    }
    public void close(ResultSet rs)
    {
@@ -109,6 +130,14 @@ public class SQLiteUtil
       return getStrings(rs, new Vector(vectorInitialSize));
    }
    
+   public String[][] getStrings(String sql) throws SQLException
+   {
+      ResultSet rs = executeQuery(sql);
+      String[][] ret = rs.next() ? getStrings(rs, new Vector(vectorInitialSize)) : null;
+      rs.close();
+      return ret;
+   }
+   
    public String getString(String sql) throws SQLException
    {
       ResultSet rs = executeQuery(sql);
@@ -147,24 +176,24 @@ public class SQLiteUtil
 
    public void startTransaction() throws SQLException
    {
-      con.setAutoCommit(false);
+      con().setAutoCommit(false);
    }
    
    public void finishTransaction() throws SQLException
    {
-      con.commit();
-      con.setAutoCommit(true);
+      con().commit();
+      con().setAutoCommit(true);
    }
    
    public void rollback() throws SQLException
    {
-      con.rollback();
-      con.setAutoCommit(true);
+      con().rollback();
+      con().setAutoCommit(true);
    }
 
    public PreparedStatement prepareStatement(String sql) throws SQLException
    {
-      return con.prepareStatement(sql);
+      return con().prepareStatement(sql);
    }
 
    public String[] listAllTables() 
@@ -172,4 +201,23 @@ public class SQLiteUtil
       return getStrings1("SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'android_metadata' AND name != 'sqlite_sequence';");
    }
    
+   /** Handles single quote when inserting or retrieving data from Sqlite.
+    * Example:
+    * <pre>
+    * String s = SQLiteUtil.fixQuote("'",true); // returns ''
+    * String s = SQLiteUtil.fixQuote("''",false); // returns '
+    * </pre>
+    */
+   public static String fixQuote(String s, boolean toSqlite)
+   {
+      return toSqlite ? Convert.replace(s,"'","''") : Convert.replace(s,"''","'");
+   }
+
+   /** Changes a date in format 2014-02-19 00:00:00:000 to a totalcross.util.Date. 
+    */
+   public static Date fromSqlDate(String sqldate) throws InvalidDateException
+   {
+      int sp = sqldate.indexOf(' ');
+      return new Date(sp == -1 ? sqldate : sqldate.substring(0,sp), Settings.DATE_YMD);
+   }
 }

@@ -16,7 +16,6 @@ package totalcross;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
-
 import android.app.*;
 import android.content.*;
 import android.content.pm.*;
@@ -373,5 +372,26 @@ public class AndroidUtils
        while ((bytesRead = input.read(buffer)) != -1)
            output.write(buffer, 0, bytesRead);
        return output.toByteArray();
+   }
+
+   public static boolean copyFile(String in, String out)
+   {
+      try
+      {
+         byte[] buf = new byte[4096];
+         FileInputStream fin = new FileInputStream(in);
+         FileOutputStream fout = new FileOutputStream(out);
+         int r;
+         while ((r=fin.read(buf,0,buf.length)) > 0)
+            fout.write(buf,0,r);
+         fin.close();
+         fout.close();
+         return true;
+      }
+      catch (Exception e)
+      {
+         handleException(e,false);
+         return false;
+      }
    }
 }

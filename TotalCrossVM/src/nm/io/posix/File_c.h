@@ -29,8 +29,8 @@
 
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
-#ifdef ANDROID
-static bool getSDCardPath(char* buf)
+#if defined(ANDROID) && !defined(LITEBASE_H)
+bool getSDCardPath(char* buf)
 {
    JNIEnv *env = getJNIEnv();                                      
    jstring path = (*env)->CallStaticObjectMethod(env, applicationClass, jgetSDCardPath);
@@ -351,20 +351,22 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
    #endif
       dir = opendir(path);
       if (dir)
-      while ((entry = readdir(dir)))
       {
-   #ifdef ANDROID
-         if (entry->d_off < lastOff)        
-            break;
-         lastOff = entry->d_off;
-   #endif
-         if ((entry->d_name[0] != '.') || ((entry->d_name[1] != '\0') && ((entry->d_name[1] != '.') || (entry->d_name[2] != '\0')))) /* warning: order matters! */
+         while ((entry = readdir(dir)))
          {
-            *isEmpty = false; // at least one file found. stop
-            break;
+      #ifdef ANDROID
+            if (entry->d_off < lastOff)        
+               break;
+            lastOff = entry->d_off;
+      #endif
+            if ((entry->d_name[0] != '.') || ((entry->d_name[1] != '\0') && ((entry->d_name[1] != '.') || (entry->d_name[2] != '\0')))) /* warning: order matters! */
+            {
+               *isEmpty = false; // at least one file found. stop
+               break;
+            }
          }
+         closedir(dir);
       }
-      closedir(dir);
    }
    else
    {

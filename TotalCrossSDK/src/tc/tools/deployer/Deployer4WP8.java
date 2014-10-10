@@ -11,26 +11,24 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayOutputStream;
+import de.schlichtherle.truezip.file.*;
+import java.io.*;
 import java.io.File;
-import java.io.FilenameFilter;
-import org.apache.commons.io.FileUtils;
-import tc.tools.deployer.zip.SilverlightZip;
-import totalcross.io.ByteArrayStream;
+import org.apache.commons.io.*;
+import tc.tools.deployer.zip.*;
+
+import totalcross.io.*;
 import totalcross.io.IOException;
-import totalcross.sys.Convert;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.util.Hashtable;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TVFS;
+import totalcross.sys.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 public class Deployer4WP8
 {
    public Deployer4WP8() throws Exception
    {
       // locate template and target
-      File templateFile = new File(Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "wp8/TotalCross.xap"));
+      File templateFile = new File(Convert.appendPath(DeploySettings.etcDir, "../dist/vm/wp8/TotalCross.xap"));
       
       // create the output folder
       final String targetDir = Convert.appendPath(DeploySettings.targetDir, "/wp8/");
@@ -38,7 +36,7 @@ public class Deployer4WP8
       if (!f.exists())
          f.mkdirs();
 
-      File tempFile = File.createTempFile(DeploySettings.appTitle, ".zip");
+      File tempFile = File.createTempFile(DeploySettings.appTitle+"temp", ".zip");
       tempFile.deleteOnExit();
       // create a copy of the original file
       FileUtils.copyFile(templateFile, tempFile);
@@ -68,9 +66,16 @@ public class Deployer4WP8
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("wp8.pkg", ht);
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
+      Vector v = new Vector(extras);
+      Utils.preprocessPKG(v,true);
       if (extras.length > 0)
          for (int i = 0; i < extras.length; i++)
-            sz.putEntry(extras[i], new File(Utils.getFileName(extras[i])));
+         {
+            File ff = new File(extras[i]);
+            if (!ff.exists())
+               ff = new File(Utils.findPath(extras[i],true));            
+            sz.putEntry(extras[i], ff);
+         }
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));
@@ -152,15 +157,6 @@ public class Deployer4WP8
                baos.reset();
                f.output(baos);
                byte[] content = baos.toByteArray();
-
-               if (DeploySettings.isFullScreen == true && "MainPage.xaml".equals(name))
-               {
-                  String mainPage = new String(content, "UTF-8");
-                  mainPage = mainPage.replace(
-                        "shell:SystemTray.IsVisible=\"True\"", "shell:SystemTray.IsVisible=\"False\"");
-                  content = mainPage.getBytes("UTF-8");
-               }
-
                zip.putEntry(baseDir == null ? f.getName() : Convert.appendPath(baseDir, f.getName()), content);
             }
             catch (java.io.IOException e)

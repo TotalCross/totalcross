@@ -54,7 +54,7 @@ static Err nativeUpdateLocation(Context currentContext, TCObject gpsObject, int3
    TCObject lastFix = GPS_lastFix(gpsObject);
    JNIEnv *env = getJNIEnv();
    jstring jgpsData;         
-   char gpsData[100];
+   char gpsData[255];
    char *split[7];
    int32 yy,mm,dd,HH,MM,SS;
    if (!env)

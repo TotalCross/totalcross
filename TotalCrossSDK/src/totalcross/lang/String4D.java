@@ -349,4 +349,8 @@ public final class String4D
    {
       return Convert.tokenizeString(toString(), sep);
    }
+   public boolean contains(String4D part)
+   {
+      return indexOf(part) != -1;
+   }
 }

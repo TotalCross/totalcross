@@ -30,10 +30,10 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 300;
+   public static int version = 308;
     
-   /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "3.0";
+   /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
+   public static String versionStr = "3.08";
     
    /** Current build number.
     * @since TotalCross 1.53 
@@ -491,6 +491,7 @@ public final class Settings
     * Setting this field to true allows the execution of multiple instances of the same application.
     * When the application is started, it first checks if there is a running instance of the same application. If so, the
     * running instance is moved to the foreground and the starting application exits.
+    * This only works for Win32 and WinCE.
     * @since TotalCross 1.0
     */
    public static boolean multipleInstances;
@@ -710,7 +711,6 @@ public final class Settings
     * Setting it to -1 (default value) will use half the current screen height.
     * 
     * This field is used in Windows CE devices only.
-    * @deprecated Unsupported on TC 2.1 and beyond.
     * @since TotalCross 1.3
     */
    public static int SIPBottomLimit = -1;
@@ -805,6 +805,18 @@ public final class Settings
     */
    public static boolean isOpenGL;
 
+   /** An optional value for the backspace key. Android 4.4.2 has a bug that prevents the backspace from working well;
+    * this bug is fixed in 4.4.3. The workaround is to define a unused key that will work as the backspace one.
+    * Defaults to the î key, used only if romVersion is 442.
+    */
+   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
+   
+   /** Set to false to disable the scroll optimization using images. This optimization
+    * greatly improves performance but uses more memory.
+    */
+   public static boolean optimizeScroll = Settings.isOpenGL;
+   
+
    // this class can't be instantiated
 	private Settings()
 	{
@@ -822,4 +834,6 @@ public final class Settings
    public static boolean isMinimized;
    /** Dumb field to keep compilation compatibility with TC 1 */
    public static boolean keypadOnly;
+   
+   public static final boolean debugging = buildNumber == 0;
 }

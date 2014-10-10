@@ -150,7 +150,7 @@ public class Utils
          if (pathname.endsWith("/")) // a folder?
          {
             v.removeElementAt(i);
-            String[] ff = new File(pathname).listFiles();
+            String[] ff = new File(findPath(pathname,true)).listFiles();
             if (ff != null)
                for (int j = 0; j < ff.length; j++)
                   vextra.addElement(pathname+ff[j]+(pathnames.length > 1 && acceptsPath ? ","+pathnames[1] : ""));
@@ -158,6 +158,22 @@ public class Utils
       }
       if (vextra.size() > 0)
          v.addElements(vextra.toObjectArray());
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static void copyEntry(String s, String targetDir) throws Exception
+   {
+      String tpath = "";
+      if (s.indexOf(',') >= 0)
+      {
+         String [] ss = s.split(",");
+         s = ss[0];
+         tpath = ss[1];
+      }            
+      if (!new File(s).exists())
+         s = Utils.findPath(s,true);
+      String to = Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s)));
+      try {new File(getParent(to)).createDir();} catch (Exception e) {} // try to create target dir      
+      Utils.copyFile(s, to, false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception
@@ -187,6 +203,8 @@ public class Utils
             return p;
          if (new File(p=(DeploySettings.currentDir+"/"+fileName)).exists()) // guich@570_7: also search in the current working directory
             return p.replace('\\','/');
+         if (new File(p=(DeploySettings.baseDir+"/"+fileName)).exists()) // guich@570_7: also search in the current working directory
+            return p.replace('\\','/');
       }
       catch (Exception e)
       {
@@ -205,6 +223,8 @@ public class Utils
          {
             String path = searchPath[i].replace('\\','/');
             path = path.replace("\"",""); // remove any " surrounding the path
+            if (path.contains("system32")) // ignores the ones copied to C:/Windows/system32
+               continue;
             p = path+"/"+fileName;
             if (new File(p).exists())
                return p;
@@ -673,6 +693,12 @@ public class Utils
    // className   "tc/samples/ui/gadgets/UIGadgets"
    public static String getBaseFolder(String currentDir, String passed, String className)
    {
+      // currentDir: /home/raphael/Documentos/projetos/totalcross/marte/trunk/n 
+      // passed    : /home/raphael/Documentos/projetos/totalcross/marte/trunk/n/build/classes/main/Carregar.class
+      // className : main/Carregar
+      String className2 = className.endsWith(".class") ? className : className+".class";
+      if (passed.startsWith(currentDir) && passed.endsWith(className2))
+         return passed.substring(0,passed.length() - className2.length());
       // normalize the slashes
       currentDir = currentDir.replace('/',DeploySettings.SLASH).replace('\\',DeploySettings.SLASH);
       if (passed.indexOf(':') >= 0) // passed a full path? ignore the current dir
@@ -783,7 +809,7 @@ public class Utils
       v.addElement(jar);
       v.addElement("tcandroidkey");
       String out = Utils.exec((String[])v.toObjectArray(), targetDir);
-      if (out != null)
+      if (out != null && !out.startsWith("INPUT:jar signed"))
          throw new DeployerException("An error occured when signing the APK. The output is "+out);
    }
    /////////////////////////////////////////////////////////////////////////////////////
@@ -803,5 +829,12 @@ public class Utils
       {
          return 100;
       }
+   }
+   public static String toString(String[] cmd)
+   {
+      StringBuilder sb = new StringBuilder(200);
+      for (int i = 0; i < cmd.length; i++)
+         sb.append(cmd[i]).append(" ");
+      return sb.toString();
    }
 }

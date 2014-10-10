@@ -221,7 +221,7 @@ import totalcross.util.Vector;
         <TR VALIGN="TOP">
           <TD align="CENTER" class="text1"><B>421</B></TD>
           <TD>Service not available, closing control connection. (May be a reply
-            to any command if the service knows it must shut down.)`</TD>
+            to any command if the service knows it must shut down.)'</TD>
         </TR>
         <TR VALIGN="TOP">
           <TD align="CENTER" class="text1"><B>425</B></TD>

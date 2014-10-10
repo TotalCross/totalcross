@@ -161,6 +161,8 @@
 #define Image_widthOfAllFrames(o)   FIELD_I32(o, 5)
 #define Image_transparentColor(o)   FIELD_I32(o, 6)
 #define Image_useAlpha(o)           FIELD_I32(o, 7)
+#define Image_alphaMask(o)          FIELD_I32(o, 8)
+#define Image_lastAccess(o)         FIELD_I32(o, 9)
 
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
@@ -181,10 +183,11 @@
 #define Control_width(o)            FIELD_I32(o, 3)
 #define Control_height(o)           FIELD_I32(o, 4)
 
-// generic surface - for Control or Image
+// generic surface - can only be used if "o" is a Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
+#define Graphics_isImageSurface(g)  (Surface_isImage(Graphics_surface(g)))
 #ifdef __gl2_h_
-#define Graphics_useOpenGL(g)             (!Surface_isImage(Graphics_surface(g)))
+#define Graphics_useOpenGL(g)             (!Graphics_isImageSurface(g))
 #else
 #define Graphics_useOpenGL(g)             (false)
 #endif

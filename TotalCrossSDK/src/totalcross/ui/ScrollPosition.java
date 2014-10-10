@@ -46,9 +46,16 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    private boolean verticalScroll,isPenDown,autoHide = AUTO_HIDE;
    private Image npback,handle;
    private TimerEvent timer;
+   private int visibleCount;
    
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
+   
+   /** By default, the ScrollPosition is shown during 1 second to let the user know that he can scroll.
+    * This value is a number that will be multiplied by 500. Defaults to 2, set to 0 to disable this feature.
+    * @since TotalCross 3.07
+    */
+   public static int VISIBLE_COUNT = 2;
    
    /** The bar color. Defaults to UIColors.positionbarColor but can be changed to something else. */
    public int barColor = UIColors.positionbarColor;
@@ -84,11 +91,12 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       super(orientation);
       btnInc.setVisible(false);
       btnDec.setVisible(false);
-      visible = !autoHide;
+      visible = true;//!autoHide;
       disableBlockIncrement = true;
       enableAutoScroll = false;
       if (autoHide) 
       {
+         visibleCount = VISIBLE_COUNT;
          timer = addTimer(500);
          addTimerListener(this);
       }
@@ -185,9 +193,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                try
                {
                   if (verticalBar)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,false);
                   else
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,false);
                }
                catch (Exception e) {e.printStackTrace();}
             
@@ -309,7 +317,11 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       isPenDown = false;
       if (Flick.currentFlick == null || e == null)
          resetHandle();
-      Window.topMost.cancelPenUpListeners.removeElement(this);
+      try
+      {
+         Window.topMost.cancelPenUpListeners.removeElement(this);
+      }
+      catch (Exception ee) {}
    }
 
    public void penDrag(DragEvent e)
@@ -332,8 +344,26 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void timerTriggered(TimerEvent e)
    {
-      if (timer != null && timer.triggered && visible && autoHide && Flick.currentFlick == null && !isPenDown)
-         resetHandle();
+      if (timer != null && timer.triggered)
+      {
+         if (visible && autoHide && visibleCount >= 0)
+         {
+            if (--visibleCount == 0)
+            {
+               visible = false;
+               Window.needsPaint = true;
+            }
+            return;
+         }
+         if (visible && autoHide && Flick.currentFlick == null && !isPenDown)
+            resetHandle();
+         if (!isDisplayed())
+         {
+            removeTimer(timer);
+            removeTimerListener(this);
+            timer = null;
+         }
+      }
    }
 
    public boolean wasScrolled()

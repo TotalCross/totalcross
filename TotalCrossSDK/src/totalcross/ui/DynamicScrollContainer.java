@@ -452,7 +452,7 @@ public class DynamicScrollContainer extends ScrollContainer
 		public Vector getVisibleViewsVec(int yStart, int yEnd, int scrollDirection)
 		{
 			Vector visibleViewsVec = new Vector(20);
-			if (viewCount == 0)
+			if (viewCount == 0 || views == null) // guich@tc307: prevent NPE at line 505 - AbstractView view = ((AbstractView) (views.items[i]));
 				return visibleViewsVec;
 			switch (scrollDirection)
 			{

@@ -27,9 +27,6 @@ VoidP privateLoadLibrary(CharP libName)
 
 #if !defined (WINCE)
    CharPToLower(libName); // are we loading ourselves?
-   if (strEq(libName, "tcsync"))
-      if ((library = GetModuleHandle("tcsync.dll")) != null)
-         return library;
 #endif
 
    library = tryAt("","",libName,".dll");
@@ -41,9 +38,9 @@ VoidP privateLoadLibrary(CharP libName)
    if (library == null && strEq(libName,"litebase"))
    {
       TCHAR litebasePath[MAX_PATHNAME];
-      if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
+      if (GetEnvironmentVariable(TEXT("TOTALCROSS3_HOME"), litebasePath, MAX_PATHNAME) != 0)
       {
-         tcscat(litebasePath, TEXT("/dist/lib/win32")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
+         tcscat(litebasePath, TEXT("/dist/vm/win32")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
          library = tryAt(litebasePath,"/",libName,".dll");
       }
    }
@@ -64,9 +61,6 @@ void privateUnloadLibrary(VoidP libPtr)
    GetModuleFileName(libPtr, libPath, MAX_PATH);
    TCHARP2CharPBuf(tcsrchr(libPath, '\\')+1, libName);
    CharPToLower(libName);
-
-   if (strEq(libName, "tcsync.dll"))
-      return;
 #endif
    FreeLibrary(libPtr);
 }

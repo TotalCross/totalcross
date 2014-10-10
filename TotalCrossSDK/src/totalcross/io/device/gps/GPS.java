@@ -106,6 +106,8 @@ public class GPS
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
    private static boolean nativeAPI = Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
+   private static boolean isOpen;
+   boolean dontFinalize;
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:
@@ -130,10 +132,11 @@ public class GPS
     * 
     * Under Windows Mobile and Android, uses the internal GPS api.
     * 
-    * @throws IOException
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS() throws IOException
    {
+      checkOpen();
       if (!nativeAPI || !startGPS())
       {
          if ("PIDION".equals(Settings.deviceId)) // guich@586_7
@@ -148,7 +151,7 @@ public class GPS
          sp.setFlowControl(false);
       }
    }
-
+   
    /**
     * Constructs a GPS control with the given serial port. For example:
     * 
@@ -159,9 +162,11 @@ public class GPS
     * </pre>
     * Don't use this constructor under Android nor Windows Mobile.
     * @see #GPS()
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS(PortConnector sp) throws IOException
    {
+      checkOpen();
       if (sp != null)
          this.sp = sp;
       else 
@@ -172,11 +177,19 @@ public class GPS
    private boolean startGPS() throws IOException {return false;}
    native boolean startGPS4D() throws IOException;
 
+   private void checkOpen() throws IOException
+   {
+      if (isOpen) throw new IOException("There's already an open instance of the GPS class");
+      isOpen = true;
+   }
+
    /**
     * Closes the underlying PortConnector or native api.
     */
    public void stop()
    {
+      dontFinalize = true;
+      isOpen = false;
       if (sp == null)
          stopGPS();
       else

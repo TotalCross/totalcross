@@ -228,8 +228,11 @@ static CharP parseScreenBounds(CharP cmd, int32 *xx, int32 *yy, int32 *ww, int32
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // GraphicsPrimitives_c.h
 
+void appSetFullScreen();
+
 static void setFullScreen()
 {
+#ifndef WP8
    int32 width = GetSystemMetrics(SM_CXSCREEN);
    int32 height = GetSystemMetrics(SM_CYSCREEN);
 #if !defined (WINCE) //flsobral@tc114_60: fixed fullscreen display on win32.
@@ -252,4 +255,7 @@ static void setFullScreen()
    SetForegroundWindow(mainHWnd);
    screen.screenY = screen.screenX = 0;
    screenChange(mainContext, width, height, screen.hRes, screen.vRes, false);
+#else
+   appSetFullScreen();
+#endif
 }

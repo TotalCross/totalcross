@@ -153,7 +153,7 @@ public class BigDecimal implements Comparable
          char c = num.charAt(point);
          if (c == '.')
          {
-            if (dot >= 0) throw new InvalidNumberException("multiple `.'s in number");
+            if (dot >= 0) throw new InvalidNumberException("multiple '.'s in number "+num);
             dot = point;
          }
          else if (c == 'e' || c == 'E')
@@ -274,7 +274,7 @@ public class BigDecimal implements Comparable
       // Now correct the exponent to account for the bits to the right
       // of the decimal.
       exponent -= mantissaBits;
-      // Ordinary numbers have an implied leading `1' bit.
+      // Ordinary numbers have an implied leading '1' bit.
       if (!denormal) mantissa |= (1L << mantissaBits);
 
       // Shave off factors of 10.

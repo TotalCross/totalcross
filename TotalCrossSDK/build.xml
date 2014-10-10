@@ -39,6 +39,8 @@
 <property name="output"                 value="${sdk.root}/../../temp"/>
 <property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
+<property name="lb.src"                 value="${sdk.root}/../../Litebase/LitebaseSDK/src/java"/>
+<property name="sqlite-jdbc"            value="sqlite-jdbc4-3.8.2"/>
 
 <!-- defined alxjoin task -->	
 <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${tools}/ant/tctasks.jar" />
@@ -184,7 +186,7 @@ target: compile
   	includeAntRuntime="false"
   >
      <classpath>
-        <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+        <pathelement location="${tools}/sqlite/${sqlite-jdbc}.jar"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
@@ -243,7 +245,7 @@ target: compile
   >
   	
     <classpath>
-       <pathelement location="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+       <pathelement location="${tools}/sqlite/${sqlite-jdbc}.jar"/>
        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
        <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
@@ -336,7 +338,7 @@ target: desktop
    <zip destfile="${dist}/tc.jar">
        <zipgroupfileset file="${dist}/tc_desktop.jar"/>
        <zipgroupfileset file="${dist}/tc_deploy.jar"/>
-       <zipgroupfileset file="${tools}/sqlite/sqlite-jdbc-3.7.15-M1.jar"/>
+       <zipgroupfileset file="${tools}/sqlite/${sqlite-jdbc}.jar"/>
    </zip>
    <delete file="${dist}/tc_desktop.jar" />
    <delete file="${dist}/tc_deploy.jar" />
@@ -425,14 +427,19 @@ target: javadoc
 
   <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
   <mkdir dir="${output}/javadoc" />
-  <copy todir="${output}/javadoc">
-    <fileset dir="${src}"
-    excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
-  </copy>
 
-  <echo message="Removing 4D and 4B methods" />
+  <!-- join lb javadoc -->  
+  <copy todir="${output}/javadoc"><fileset dir="${lb.src}" excludes="**/*4D*,tc/**,litebase/android/**"/></copy>
+  <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="public static native" value="//public static native"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="native static" value="//native static"><include name="**/*.java"/></replace>
+
+  <copy todir="${output}/javadoc">
+    <fileset dir="${src}" excludes="**/*4A*,**/*4B*,**/*4D*,tc/**,ras/**,totalcross/pim/**,totalcross/zxing/**,totalcross/android/**,totalcross/sql/sqlite4j/**"/>
+  </copy>
+  <echo message="Removing 4D methods" />
   <taskdef name="removemethod" classname="tc.tools.ant.RemoveMethod" classpath="${etc}/tools/ant/tctasks.jar" />
-  <removemethod methodname=".+(4B|4D)" keeporiginal="false">
+  <removemethod methodname=".+(4D)" keeporiginal="false">
     <fileset dir="${output}/javadoc" includes="totalcross/**/*.java" />
   </removemethod>
   
@@ -459,14 +466,19 @@ target: javadoc
     <arg line="-sourcepath ${output}/javadoc"/>
     <arg line="-windowtitle 'TotalCross SDK ${versionStr}'"/>
     <arg line="-d ${docs}/html"/>
+    <arg line="-doctitle 'Please read the changelogs &lt;a href=changelogs.html _target=blank &gt;here&lt;/a&gt;.'"/>
     <arg line="-source 1.2"/>
-    <arg line="-subpackages totalcross"/>
+    <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>
 
   <!-- replace all references in the javadocs, even if they don't create a link. -->
   <replace dir="${docs}/html/" token="java.lang." value="totalcross.lang."><include name="**/*.html"/></replace>
 
   <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
+
+  <copy file="${docs}/changelogs.html" todir="${docs}/html"/>
+
+  <!--replace file="${docs}/html/changelogs.html" token="@@@" value="@@BUILD_NUMBER@@"/-->
 
 </target>
 
@@ -486,7 +498,7 @@ target: device
   <copy file="${src}/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
   <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
-    includes="totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/util/regex/*.class,totalcross/xml/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
+    includes="totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/res/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/ui/*.class,totalcross/unit/*.class,totalcross/util/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/util/regex/*.class,totalcross/xml/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
     excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*"
     />
     <fileset dir="${src}" includes="totalcross/res/**" />
@@ -535,7 +547,7 @@ target: samples
 
    <property name="samples.includes" value="tc/samples"/>
    <copy todir="${output}/classes" verbose="true">
-      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
+      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.pkg, **/*.mp3, **/*.tcz, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
    </copy>
 
    <subant target="deploy-app" inheritall="yes">

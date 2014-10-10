@@ -19,13 +19,14 @@
 package tc.samples.game.scape;
 
 import totalcross.game.*;
+import totalcross.sys.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 
 public final class Block extends Sprite
 {
    // random generator for the starting speeds
-   private Random rand = new Random();
+   private static Random rand = new Random(1);
 
    // other important sprite the ball sprite must know about for interaction...
    private Ball ball;

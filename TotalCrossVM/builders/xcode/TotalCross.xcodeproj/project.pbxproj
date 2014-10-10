@@ -167,6 +167,11 @@
 			attributes = {
 				LastUpgradeCheck = 0430;
 				ORGANIZATIONNAME = "SuperWaba Ltda";
+				TargetAttributes = {
+					0F5AF5021507FA3600D6142B = {
+						DevelopmentTeam = W7XZ68AV26;
+					};
+				};
 			};
 			buildConfigurationList = 0F5AF4FD1507FA3600D6142B /* Build configuration list for PBXProject "TotalCross" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -257,7 +262,7 @@
 					"../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos",
 					"build/Release-iphoneos",
 				);
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "9E86B290-3B52-4C8C-8B94-89FA147675DD";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -327,7 +332,7 @@
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "9E86B290-3B52-4C8C-8B94-89FA147675DD";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
@@ -337,8 +342,8 @@
 		0F5AF53B1507FA3600D6142B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG = "1 $(inherited)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TotalCross/TotalCross-Prefix.pch";

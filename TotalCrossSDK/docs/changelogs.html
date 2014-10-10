@@ -1,0 +1,338 @@
+<h2>TotalCross 3.07 build 2372</h2>
+. fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>
+. now the ComboBox.usePopupMenu can be specified for a single popup<br>
+. Control.hadParentScrolled is now public<br>
+. prevent NPE at the FlowContainer if there are no controls<br>
+. added RadioGroupController.getSize<br>
+. undeprecated some SIP constants<br>
+. added MultiEdit.lastInsertPos and setCursorPos<br>
+. removed need of a thread to the Spinner. See SpinnerSample<br>
+. several changes to try to prevent sigsev faults<br>
+. fixed crash when using File.exists for a directory that does not exists<br>
+. now FileChooserBox allows to browse the contents of external cards<br>
+. dont create cursor timer on MultiEdit when it is not editable<br>
+. now in CameraSample, we test if there's enough texture memory to show the image and if not, we decrease its size so it can be shown.<br>
+. added a way to call the external camera application: passing 999 to the quality parameter<br>
+. added TopMenu.AnimationListener so you can track when the unpop really finished due to animation. the TopMenuSample shows how to use the TopMenu.AnimationFinished interface<br>
+. fixed grid.sort when the columns have an invalid value. now the invalid value is moved out the sort range, and its sorted as String<br>
+. added ScrollPosition.VISIBLE_COUNT. Now the ScrollPosition shows itself for 1 second so the user can see that he can scroll. Based on newer android native l&f<br>
+. added a new ComboBox arrow style: ARROWSTYLE_PAGEFLIP. added ComboBox.arrowStyle so you can select between each.<br>
+. fixed grid's sort detect that was failing due to invalid string at index 1<br>
+. now Toast.show runs on ui thread so you can safely call it from a thread<br>
+. fixed LineReader in infinite loop when returnEmptyLines is true<br>
+. added Button.imageHeightFactor, so the button's image shrinks based on button's height<br>
+. fixed application title not being set for classes that dont directly extends MainWindow<br>
+. prevent problems if apptitle has spaces<br>
+. added TopMenu.widthInPixels<br>
+. now when a bind texture fails, we delete all old textures and try again.<br>
+. fixed leak: font texture was not being deleted<br>
+. fixed File.createDir throwing exceptions in win32<br>
+. now Sound.play respects the system volume to respect the sound/volume icon in taskbar<br>
+. added instructions of how to connect to GMail using TotalCross to src/totalcross/net/mail/Message.java<br>
+. updated version of TotalCrossAPI in the Android market<br>
+. fixed alert not being shown in ios when an unhandled exception was thrown<br>
+. now the GPS class throws an IOException if there's already an open instance of it.<br>
+. fixed gps being closed during a screen rotation after a first try.<br>
+. changed GPSSample to stop the gps thread when pressing back<br>
+. dont use hwScale methods if transition effect is on, to prevent the dynamic smooth resize of images during screenshot<br>
+. fixed keyboard navigation on opengl devices leading to blue screen<br>
+. prevent crash if another thread tries to create an object while we're traversing the images list<br>
+
+<h2>TotalCross 3.06 build 2328</h2>
+. fixing transition effects for Window<br>
+. implemented support for TRANSITION_FADE to be used in Window. adde Image.applyFade. fixed Graphics.fadeScreen being different on java and device.<br>
+. fixed freezing that was occuring at desktop when you use /scale and try to update the screen from a thread.<br>
+. added back the SpinnerSample, now teaching how to use it inside a loop.<br>
+. added SQLiteUtil.fromSqlDate<br>
+. added String.contains(String)<br>
+. added TabbedContainer.autoShrinkCaptions<br>
+. if window is smaller than specified size in win32, use that window size instead<br>
+. fixed File.listFiles not adding a slash at the end of folders. seems to be a regression in the android's api<br>
+. added Sound.play to play short mp3/wav files.<br>
+. added File.writeAndClose<br>
+. increased flick speed by 2*<br>
+. fixed crash with fonts when using big font sizes<br>
+. removing ScrollPosition timer to avoid keeping them active<br>
+. fixed problem of a Toast being left on screen when a tooltip was being displayed.<br>
+. fixed Convert.toDouble("2014/03/03") resulting in 2014.0<br>
+. fixed pkg file handing when creating win32 and linux folders<br>
+. fixed open/close transition effect on win32<br>
+. fixed AnimationSample on win32 due to open transition effect.<br>
+. fixed Graphics.fadeScreen was different of Image.applyFade<br>
+. dont beep if we already have a visual effect of Windows's outside area<br>
+. takeScreenShot only take a shot of visible elements. this fixes the shot of the ImageBook taking too much time<br>
+. fixed TopMenu sample painting the screenshot at a shifted place; bug introduced with fade transition<br>
+. fixed gc being called almost 100x when loading the ImageBook in Win32.<br>
+. disable gc while loading images in ImageBookSample to improve performance<br>
+. fixed buffer overrun when loading font textures.<br>
+
+<h2>TotalCross 3.05 build 2300</h2>
+. fixed a glytch when drawing two pies with different radius<br>
+. now if an error occurs during startup we exit the vm in iOS<br>
+. an user with android 2.36 reported an out of memory trying to create a texture of 2048x20, so we now limit it to 1024 in Android.<br>
+. added Image constructor (byte[] bytes, int length) so one can decrease memory usage by reusing a load buffer when reading lots of images<br>
+. improved "no such method" error message to suggest an upgrade or downgrade of the JDK<br>
+. fixed deployment of wp8 when not using single apk for android<br>
+. added Convert.remove, to remove a set of chars from a String<br>
+. fixed problem when a ComboBoxDropDown was inside a Window and clicking outside to close it was closing the window too<br>
+. added GridContainer.buttonsHeight, to increase the height of the arrows area<br>
+. dont force a gc when loading an image (blocks above 1mb). this greatly improves response on ImageBook<br>
+. removed duplicate warning on ios console<br>
+. fixed getSmoothScaledInstance and getScaledInstance crashing when image's width or height is 0<br>
+. improved javadocs for Spinner class teaching how to make it work on OpenGL platforms.<br>
+. fixed problem when the Toast button is being displayed and you swap between containers.<br>
+. added Spinner.update, which must be called if you use the Spinner inside of a loop. This makes Spinner usable again.<br>
+. fixed white background when you add a transparentBackground's container inside a TopMenu.<br>
+. reenabled transition effects, now using takeScreenShot.<br>
+. added SQLiteUtil.fixQuote.<br>
+. added TRANSITION_FADE, a new transition effect. fixed File and PDBFile samples regarding animation<br>
+. fixed Toast when more than one is shown at the same time.<br>
+. improved accurateness of font when drawing on an image.<br>
+. fixed ImageControl now scaling the image if scaleToFit is true and a new image was set<br>
+. added FileChooserBox.showPreview, to show the preview of selected photos (on by default)<br>
+. added Settings.optimizeScroll to allow you to disable the scroll optimization using offscreen images<br>
+. fixed ImageModifiersSample setting the image's background to black; now it is transparent<br>
+. fixed drawRoundGradient not using the clip.<br>
+. fixed tc.Deploy in linux when the classname is given using full path and the current working directory is part of that full path<br>
+
+<h2>TotalCross 3.04 build 2289</h2>
+. lots of performance improvements in opengl, graphics is now 2x faster, in some android tablets is 3x faster. flicking is much smoother.<br>
+. added Toast class used to show a message using fade and transparency. added Button.BORDER_ROUND. Fixed getScreenShot not correctly handling control with transparentBackground. Now Toast is used to show the UI benchmark in TotalCrossAPI<br>
+. added TopMenu.autoClose and totalTime. added TopMenu.percWidth, so the user can change the default width<br>
+. allow closing the menu when dragging to the opposite open direction<br>
+. improved PathAnimation speed accurateness<br>
+. changed TotalCrossAPI: added a timer icon so we can test ui speed in all screens<br>
+. fixed ImageBook sample for ios<br>
+. now the default acceleration in Flick is based in the number of text lines of the device; this improves a lot the responsiveness in tablet devices. added Control.isTablet.<br>
+. added ControlAnimation.delayAfterFinish<br>
+. fixed some deploy problems when trying to delete the deploy folder<br>
+. fixed bug when clicking at the bottom most container of ListContainer sample. (issue 2431)<br>
+. fixed onWindowPaintFinished not being called anymore.<br>
+. fixed support for custom 1-bpp fonts<br>
+. fixed a clipping problem that occured if you place a button at the border of the screen and open an InputBox.<br>
+. fixed MultiEdit's sample cutting out the text<br>
+. added TabbedContainer.allowFlick, so you can disable flick between containers<br>
+. Now ControlBox breaks the text if its too long<br>
+. added more buttons on ButtonMenuSample when using tablets<br>
+. the screen is now less ugly in ios when taking a photo in landscape mode. couldn't fix the problem.<br>
+. fixed Graphics.setClip when the surface is an Image<br>
+. takeScreenShot no longer throws an exception; its ignored if there's no memory<br>
+. now if the ScrollContainer's bag size is reasonable, we take a screenshot to GREATLY improve performance<br>
+. now sending the debug to console window in iOS<br>
+. in ios, when it gets out of memory, instead of returning null to the allocation, it kills the application. but before doing so, it calls a didReceiveMemoryWarning method. now we intercept that method and at the next block of memory above 1MB that you try to allocate, an OutOfMemoryError is thrown. Better this than just kill the application<br>
+. fixed FTPSample's menu not working<br>
+. increased TotalCrossAPI font and window size when running in win32<br>
+. fixed Grid's arrows not being drawn<br>
+. now PieChart's distanceOfSelectedPie is measured in font height.<br>
+
+<h2>TotalCross 3.03 build 2227</h2>
+. improved speed of TabbedContainer drag and flick by drawing the tabs in an image and drawing that image instead of calling the drawing methods. its far smoother than before.<br>
+. added ControlAnimation, PathAnimation, FadeAnimation and TopMenu. Added samples.<br>
+. if pressed a button and started multitouch, issue a penup event so button can be released<br>
+. fixed crash that occurs sometimes when an unhandled exception was caught<br>
+. fixed deploy in java 7<br>
+. improved graphics performance on android tablets<br>
+. decreased distance needed to start flick on tablet devices<br>
+. fixed Image.hwScaleW/H not being supported on win32; now we create an image during the draw. it would be slow but win32 hardware makes it fast.<br>
+. fixed many bugs on draw/fill pie/arc.<br>
+
+<h2>TotalCross 3.02 build 2201</h2>
+. added Window.keyHook to bypass all key listeners and easily handle keys. Used in the TotalCrossAPI sample to handle the back key, and also in Motorola TC60 scanner.<br>
+. implemented support for the Motorola scanner TC60.<br>
+. fixed screen resolution on highres Windows Phone 8 devices.<br>
+. added automatic crash report for totalcross. note that the user must run the app again right after the error happens<br>
+. removed the backspace fix of android 4.4.2 bug for handling backspace. All devices must upgrade to 4.4.3 which fixes the bug. added Settings.optionalBackspaceKey, set to &icirc; on android 4.4.2 only, to bypass the backspace key bug of this Android version (you should instruct your costumers to use this key instead of backspace if their version is 4.4.2; you can replace this key by any other one at runtime).<br>
+. fixed vm crash when a problem occurs at a very beginning of the startup. fixed alert not showing anything when called at that point<br>
+. fixed black images when calling the camera in Android<br>
+. updated sqlite to 3.8.5. fixed crash when running on windows due to MSIZE<br>
+. enabled continuous focus on android's camera<br>
+. fixed npe when running FontGenerator<br>
+
+<h2>TotalCross 3.01 build 2177</h2>
+. fixed blue screen that appears when the keyboard is shifted and the device goes to sleep on Android<br>
+. now android is built using the old armeabi instruction set, since there's still lots of devices running it. removed areabi-v7a.<br>
+. integrated the changelogs into TotalCross' javadoc.<br>
+. updated sqlite3 to version 3.8.4.3 updated sqlite-jdbc to version 3.8.2 added ssqlite3_tc.h to make updates of sqlite3 easier.<br>
+. fixed html sample 5 sample<br>
+. fixed FontSample not working on rotation<br>
+. prevent app crash if back is pressed at mainmenu<br>
+. prevent aioobe on thread sample<br>
+. undeprecated Button.commonGap and fixed it not working during rotations (which was the cause of the deprecation)<br>
+. fixed connectionmanager.getLocalHost returning invalid chars.<br>
+. use rotation on camera<br>
+. fixed crash at startup of serversocket sample when there's no internet connection<br>
+. fixed getting ConnectionManager.getLocalHost on 3g connections in android<br>
+. fixed corruption when trying to update the user interface in a thread.<br>
+. added a common way to create a logging listbox and add items to it safely in the TotalCross API sample<br>
+. fixed ServerSocket not allowing a new connection when the stop button is pressed<br>
+. added a color scheme to Chart using colors from http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization/<br>
+. fixed drawArc connecting endpoints mistakenly<br>
+. fixed deploy of pkg files<br>
+. fixed maps not working because Geocoder api was retired<br>
+. now GoogleMaps shows a point in the location asked to be shown<br>
+. Corrected the recursion for creating dirs with File.createDir<br>
+. fixed problem when loading a route in single apk<br>
+. fixed coordinate convertion on map's route<br>
+. now using only old armeabi for Android to support old devices<br>
+. improved font readability on low resolution devices<br>
+. fixed FileChooserBox returning the last answer if the user reuses the component<br>
+. fixed strange chars that appears at Edit on android 4.4.2 and newer devices<br>
+
+<h2>TotalCross 3.0 build 2145</h2>
+. prevent aioobe under some undefined situations in Bluetooth.connect<br>
+. fixed activation problem when user changes Settings.dataPath<br>
+. fixed Whiteboard lags when using inside a Window<br>
+. changed ColorChooserBox to update the choosenColor on popup<br>
+. fixed rotation and frame resize problems in JavaSE when using /scaled.<br>
+. fixed problem on some android lg models where the keyboard would not open again if the user press the special blue-shift-down key to close the keyboard<br>
+. fixed ProgressBar showing incorrect bar for very big values for max/min<br>
+. fixed TimeBox throwing InvalidNumberException when passing an invalid argument in the constructor<br>
+. added ComboBox.enableSearch. <br>
+. now PopupMenu's width is smaller if text is small.<br>
+. added Radio/Check.textColor <br>
+. fixed deployer for wince not copying a provided inf file to the proper folder.<br>
+. Fixed bug in Hashtable.copyInto, it would throw a NPE when trying to copy entries without a key.<br>
+. fixed AlignedLabelsContainer not using the default fore color<br>
+. fixed Edit.setText with a negative value not working when currency mask is on.<br>
+. made several changes in the Chart classes<br>
+. fixed Settings.romVersion for Android, which was giving 2.29 for Android 2.3<br>
+. fixed garbage on Grid.Edit's when inserting text Conflicts:<br>
+. fixed Back/Escape key not working in AndroidUI when the focus moves to any control.<br>
+. added Settings.isOpenGL<br>
+. Created a method that returns the button at the given index of a ButtonMenu. You may customize it.<br>
+. added Container.BORDER_ROUNDED. added Container.borderColor<br>
+. added CalculatorBox.RangeCheck interface, and Edit.rangeCheck<br>
+. added MultiButton class, works like a single-line PushButtonGroup that can be used to replace Check and Radio<br>
+. changed disabled textColor for Radio and Check<br>
+. fixed PopupMenu Cancel button's size when the screen was in landscape<br>
+. improved ScrollContainer speed during dragging<br>
+. added Control.SCREENSIZEMIN/MAX which will use the minimum/maximum size of screen<br>
+. added Slider.sliderColor<br>
+. added Image.getFadedInstance(), to replace the one that takes a parameter as background. Changed all image controls to use this version instead. This version uses the image's alpha-channel. Conflicts:<br>
+. added SpinList.wrapAround<br>
+. the demo box now appears in all platforms. to deploy to a store (apple or google) you must use the purchased vm.<br>
+. trying to bypass problems when jdk is installed in a path with spaces.<br>
+. fixed screen not being shifted in landscape mode in android &gt;= 3.0<br>
+. fixed all keyboard problems in android regarding the way that the vm uses to detect that the sip was closed, using finishComposingText<br>
+. fixed special "keyboard close" key support on lg<br>
+. Deploy now supports adding splash images on iOS (launch image). Right now it only supports 640x1136, which is required for iPhone 5. More sizes will be added later.<br>
+. added flush to file.close and resize to prevent problems in android<br>
+. fixed fillRect not working correctly in Motorola Razr, because this device had a very odd screen width in landscape: 897!<br>
+. fixed Convert.toString(0.004,2) returning -0.00<br>
+. added Image.createJpg, to write jpeg files. it's supported on Blackberry.<br>
+. new font, using android's default font instead of tahoma, now going up to 70<br>
+. fixed java's 1.7 message when deploying: Executable name has embedded quote, split the arguments<br>
+. Corrected Date.getWeek()<br>
+. tooltip now has a rounded border in uiandroid<br>
+. added Settings.lineNumber. works on android only (ios has no api for it).<br>
+. fixed support for Convert.toDouble(".25")<br>
+. fixed MultiEdit not respecting the maxlength when pasting characters.<br>
+. fixed MainClass applications not working in linux.<br>
+. rewrote Convert.toString(double,n) to fix a strange value of Convert.toString(1.47,2) leading to 1.46<br>
+. added DynamicScrollContainer class. A contribution of Tomek Korzeniewski<br>
+. implemented Graphics.drawVerticalText. added isVerticalText.<br>
+. added Date.getSQLDate to be used with Litebase<br>
+. the ComboBox' popup shows the item count in the title<br>
+. label's setText splits the text if autoSplit is true<br>
+. fixed PopupMenu erasing last selection when a second popup is made<br>
+. added PopupList.keepIndexOnCancel, so the index is unchanged if the user press cancel<br>
+. fixed Tree throwing NPE if setBackColor was not called.<br>
+. decreased listbox selection height<br>
+. added Image.hwScaleW/hwScaleH and setHwScaleFixedAspectRatio, which just scales the texture inside the video card using hardware accelleration. works only on opengl platforms<br>
+. added MultiTouchEvent/Listeners. added MultiTouchTest sample. added ImageControl.hwScale, to support scale on this control in open gl platforms. scale is not yet perfect (not centering on button press)<br>
+. added ImageControl.tempHwScaleW/H to let a single image be displayed with several sizes<br>
+. added Control.PARENTSIZEMIN/MAX<br>
+. added ImageControl.getImageWidth/Height, scaleToFit added hw methods to Image in order to create shared instances of the same image but with a different hwScaledWidth/Height.<br>
+. added Control.PARENTSIZEMIN/MAX,SCREENSIZEMIN/MAX<br>
+. added ImageControlSample to UIControls to show the realtime scale working<br>
+. implemented support for hwScaleW/H in javase, emulating using scaled and smooth scaled<br>
+. created a way to emulate the MultiTouchEvent.SCALE in javaSE: drag the right mouse up to increase scale, release, draw down to decrease scale, release<br>
+. fixed Convert.toString(double) for the smaller double value<br>
+. fixed GoogleMaps sample using wrong coordinate when it was unable to get gps values<br>
+. fixed convertion of MIN_DOUBLE_VALUE (exponent values below -320)<br>
+. now using insecure bluetooth connection to prevent the pin message keep appearing all the time<br>
+. fixed memory corruption caused by Image.getPixelRow when the passed array was too small. Fixed some array initializations when using such method<br>
+. implemented unsecure bluetooth connection on android. pass * before the device's mac address<br>
+. fixed ProgressBox with two spinners being created during popup, because MessageBox' reposition was calling onPopup<br>
+. fixed freeze in ios that occurs when the keyboard is open and the screen is rotated<br>
+. fixed camera's cancel button not closing the screen<br>
+. added daylightSavingsMinutes and timeZoneMinutes to replace daylightSavings and timeZone.<br>
+. fixed a bug in ZipStream introduced with the forced flush in setSize.<br>
+. Corrected bug of tc.Deploy option /o not working properly.<br>
+. reset scale to 1 when changing image in ImageControl<br>
+. added Edit.cursorThickness to improve accuracy on highres devices<br>
+. Corrected a few PieChart problems.<br>
+. fixed Date.getTime not including the timezone<br>
+. Updated Camera API so that it can use frontal camera.<br>
+. updated adb to the one in level 19<br>
+. fixed problem not setting the camera parameters for devices that don't have a flash<br>
+. don't throw error on File.listFiles, let the user handle it when opening the file.<br>
+. now totalcross applications can be deployed to Android Play Store<br>
+. setTime() is now deprecated.<br>
+. don't throw error on FileChooserBox, let the user handle it when opening the file. (issue 2254)<br>
+. added totalcross.util.Enum to make easier to migrate enums used in sqlite<br>
+. ported jregex to totalcross<br>
+. changed ScrollContainer.reposition to keep the last positions when rotating the screen<br>
+. in Socket, use port 443 for https if not specified, fallback to 80 otherwise<br>
+. added Time(Date) constructor<br>
+. in SQLite, inserts without transaction are very slow on android!<br>
+. changed Date.getSQLDate to getSQLString. Added Date.getSQLLong, Time.getSQLString and Time.getSQLLong. fixed Time.getSQLLong not correctly printing the millis<br>
+. fixed drawImage not taking the hwScale into consideration (crmdesk 2270)<br>
+. fixed rotation problem that was leading to an image with a black box<br>
+. changed Grid.resizeMargin to be font-height dependant<br>
+. Testing getBuffer, setBuffer and toByteArray methods..<br>
+. now fonts are handled as textures, not as points<br>
+. fixed grid.qsort and also Convert.qsort when invalid elements are inserted in the array; now they are sorted to the end of the list. added Convert.toInt/toDouble with an extra default value argument.<br>
+. added Button.underlinedText, to make a button appear like an html link<br>
+. made the listbox more responsive during flick<br>
+. optimization to draw the MultiListBox faster. dont draw the selecte items during the draw of unselected items<br>
+. fixed Graphics.ellipse at device not drawing correctly when using gradient colors<br>
+. added MainWindow.runOnMainThread, to allow a thread update the screen indirectly. Used in Intermec's android scanner.<br>
+. Now it's possible to save the secret key on Windows 8.1.<br>
+. fixed white line that appears on top of MainWindow after calling setDefaultFont<br>
+. Now it is possible to check if there is a sdcard on WP8. But you can't use it yet. It is read-only. It's not possible to store Litebase files inside it. It's possible to copy a database to it, but it's treated differently.<br>
+. added CalculatorBox.cOrigDefault<br>
+. fixed ScrollPosition not keeping the last position after a scroll<br>
+. optimized drawDots for openGL<br>
+. Now if Camera.allowRotation is true, the camera will follow the device orientation.<br>
+. allow Launcher's scale up to 8x<br>
+. deprecated SIP_BOTTOM and SIP_TOP<br>
+. dont enqueue a mouse move if the screen is painting. this drastically improves performance on flick<br>
+. Now conversions of doubles with many decimals won't throw an exception, but precision is lost. It's better to use BigDecimal.<br>
+. The etcDir is no longer required when using the deployer to build libraries.<br>
+. Added SQLiteUtil class to make convertion from Litebase to SQLite easier.<br>
+. now gps is getting the correct number of satellites. now we also ignore network and only accept gps provider coordinates<br>
+. Added DBListBox to SQLite package.<br>
+. changed button sizes on Calendar<br>
+. prevent 100% cpu on ios<br>
+. fixed iOS 7 notification bar being drawn on top of application<br>
+. fixed memory leak on android when calling another activity or rotating the display<br>
+. increased Grid's arrow sizes for fingertouch devices <br>
+. added Grid.showArrows<br>
+. In ToolTip, consider the distance when deciding where to place it<br>
+. joined all UI samples into UIControls<br>
+. changed column/pie charts to work on ScrollContainers<br>
+. removed useAA/drawLineAA<br>
+. improving performance of Chart<br>
+. fixed infinite loop if GridContainer has rows=cols=1. still buggy with rows=2 / cols=1 and vice versa<br>
+. improved ImageBook sample to let the user resize the image<br>
+. added Control.isObscured, to check if a control is underneath a window. used by ClippedContainer to prevent painting obscured cells. 
+. fixed isVisibleAndInside using a bound greater than needed<br>
+. fixed definetively rotation problems in ios 7<br>
+. updated adb to version 1.0.31<br>
+. now in ios the packaged files are tested against the date and are overwritten if newer<br>
+. added semaphore to prevent crash when multiple threads try to access the mac (method and class) array. this fixes a problem when loading jpegs on a thread<br>
+. Grid: fixed stack overflow when sorting double columns with an empty cell ("")<br>
+. LatinIME: fails to delete pre-existing characters if view has no InputConnection and uses keycodes to handle input<br>
+. changed all references to TotalCrossSDK to TotalCross3. /p now is a single parameter, there's no more release nor demo. litebase is always packaged<br>
+. Added activeIcon for TabbedContainer.<br>
+. removed armeabi from android, used mostly on legacy devices.<br>
+. ignore invalid chars on MultiEdit when using paste<br>
+. TabbedContainer: increased size of the tab that remains on screen when its scrolled<br>
+. throw a RuntimeException if user is trying to get a font with size 0<br>
+. fixed Breakout and Scape game samples and game.Sprite not working on opengl<br>
+. joined 26 samples into one, TotalCrossAPI.<br>
+. reorganized the scanner sample and drivers<br>
+. added Color.getRandomColor<br>
+. shows build number on deploy<br>
+. fixed application relaunch on Android when its open directly after installing it.<br>

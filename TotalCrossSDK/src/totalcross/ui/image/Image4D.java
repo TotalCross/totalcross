@@ -32,6 +32,8 @@ public class Image4D extends GfxSurface
    private int currentFrame=-1, widthOfAllFrames;
    public int transparentColor = Color.WHITE;
    public boolean useAlpha; // guich@tc126_12
+   public int alphaMask=255;
+   public int lastAccess=-1;
    
    // object
    private int[] pixels; // must be at Object position 0
@@ -41,6 +43,7 @@ public class Image4D extends GfxSurface
    private Graphics4D gfx;
    private boolean[] changed = {true};
    private int []instanceCount = new int[1];
+   private Image4D[] master = new Image4D[1];
 
    // double
    public double hwScaleW=1,hwScaleH=1;
@@ -82,9 +85,15 @@ public class Image4D extends GfxSurface
 
    public Image4D(byte []fullDescription) throws ImageException
    {
-      if (fullDescription.length < 4)
+      this(fullDescription, fullDescription.length);
+   }
+   
+   public Image4D(byte []fullDescription, int len) throws ImageException
+   {
+      if (len < 4)
          throw new ImageException("Invalid image description");
       ByteArrayStream bas = new ByteArrayStream(fullDescription);
+      if (len != fullDescription.length) try {bas.setPos(len); bas.mark();} catch (Exception e) {}
       bas.skipBytes(4); // first 4 bytes are read directly from the fullDescription buffer
       imageParse(bas, fullDescription);
       if (width == 0)
@@ -111,6 +120,10 @@ public class Image4D extends GfxSurface
       this.transparentColor = src.transparentColor;
       this.useAlpha = src.useAlpha; // guich@tc126_12
       this.instanceCount = src.instanceCount; // shared among all instances
+      if (instanceCount[0] == 0) // first copy, create the array
+         this.master = new Image4D[]{src}; // must keep a copy of the original image
+      else
+         this.master = src.master;
       src.instanceCount[0]++;
    }
 
@@ -175,18 +188,19 @@ public class Image4D extends GfxSurface
 
    public int getHeight()
    {
-      return Settings.isOpenGL ? (int)(height * hwScaleH) : height;
+      return (int)(height * hwScaleH);
    }
 
    public int getWidth()
    {
-      return Settings.isOpenGL ? (int)(width * hwScaleW) : width;
+      return (int)(width * hwScaleW);
    }
 
    public Graphics4D getGraphics()
    {
       if (pixels == null) return null;
       gfx.setFont(MainWindow.getDefaultFont());
+      gfx.refresh(0,0,width,height,0,0,null);
       return gfx;
    }
 
@@ -599,4 +613,6 @@ public class Image4D extends GfxSurface
       gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       return copy;
    }   
+
+   native public void applyFade(int fadeValue);
 }

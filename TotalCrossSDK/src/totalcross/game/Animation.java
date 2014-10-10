@@ -223,7 +223,7 @@ public class Animation extends Control
    public void onPaint(Graphics gfx)
    {
       // fdie@400_51 : save animation background - no need in OpenGL, since the screen is fully painted at each frame
-      if (!Settings.isOpenGL)
+      if (!Settings.isOpenGL && gfx.isControlSurface())
          if (background == null)
          {
             // guich@tc100: on a screen rotation, we would have to re-get the background!
@@ -251,7 +251,6 @@ public class Animation extends Control
   /**
    * Enable the posting of events. By default the posting of events are disabled.
    *
-   * @param <code>true</code> to enable posting of events; <code>false</code>, otherwise.
    */
   public void enableEvents(int mask) // fdie@341_3
   {

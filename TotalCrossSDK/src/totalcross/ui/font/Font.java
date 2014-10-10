@@ -60,7 +60,7 @@ public final class Font
    /** The maximum font size: 48 for Windows32, unlimited for OpenGL platforms (the number here will be 80,
     * since this is the size that the base font was created; you can specify something higher, but it will use
     * upscaling, which usually results in a smooth font). */
-   public static int MAX_FONT_SIZE = Settings.platform.equals(Settings.WIN32) ? 48 : 80;
+   public static int MAX_FONT_SIZE = Settings.WIN32.equals(Settings.platform) ? 48 : 80;
 
    /** Returns the default font size, based on the screen's size.
     */

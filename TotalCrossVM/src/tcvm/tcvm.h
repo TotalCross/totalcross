@@ -15,7 +15,7 @@
 #define TCVM_H
 
 //#define ENABLE_TRACE
-
+#define ENABLE_TEXTURE_TRACE 0
 
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
@@ -114,7 +114,7 @@
 
 #endif
 
-#if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
+#if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
 #include "dlmalloc.h"                                                         
 #endif
 #include "xtypes.h"

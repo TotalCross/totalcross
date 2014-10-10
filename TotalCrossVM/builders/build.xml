@@ -160,7 +160,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
 
     <property name="buildNumber" value="-1" />
-	<replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path}/src/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,7 +194,9 @@ target: buildSkeleton - Build the folders
    <echo message="Building TotalCross SDK"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false">
+      <property name="buildNumber" value="${buildNumber}"/>
+   </ant>
 
    <!-- copy the changed files to the release folder -->
    <mkdir dir="${target.sdk.path}/dist/vm" />
@@ -238,20 +241,42 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
    <copy todir="${target.sdk3.path}/dist/vm/android/tc/lib">  <fileset dir="${target.sdk3.path}/dist/vm/android/lb/lib"/>               </copy>
 
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
+   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip,res/raw/beep.ogg"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
 
    <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
    <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
    <delete file="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
    
-   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
-    storepass="@ndroid$w" keypass="@ndroidsw">
+   <exec executable="jarsigner${exe}">
+      <arg line="-digestalg SHA1 -sigalg MD5withRSA -keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${target.sdk3.path}/dist/vm/android/TotalCross.apk tcandroidkey" />
+   </exec>
+
+   <!--signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw" sigalg="SHA1withRSA" digestalg="SHA1">
     <path><fileset dir="${target.sdk3.path}/dist/vm/android" includes="TotalCross.apk" /></path>
-   </signjar>
+   </signjar-->
 
 </target>
 
+<target name="reorganizeSamples" >
+  <property name="samples"  value="${target.sdk3.path}/dist/samples/"/>
+
+  <move todir="${samples}/app/Breakout"    failonerror="no"> <fileset dir="${samples}/Breakout"/>    </move>
+  <move todir="${samples}/app/Scape"       failonerror="no"> <fileset dir="${samples}/Scape"/>       </move>
+  <move todir="${samples}/app/Calculator"  failonerror="no"> <fileset dir="${samples}/Calculator"/>  </move>
+  <move todir="${samples}/app/BtChat"      failonerror="no"> <fileset dir="${samples}/BtChat"/>      </move>
+  <move todir="${samples}/app/WorldWatch"  failonerror="no"> <fileset dir="${samples}/WorldWatch"/>  </move>
+                                   
+  <move todir="${samples}/service/GPSLogger"           failonerror="no"> <fileset dir="${samples}/GPSLogger"/>           </move>
+  <move todir="${samples}/service/GPSLoggerController" failonerror="no"> <fileset dir="${samples}/GPSLoggerController"/> </move>
+  <move todir="${samples}/service/GPSLoggerViewer"     failonerror="no"> <fileset dir="${samples}/GPSLoggerViewer"/>     </move>
+  <move todir="${samples}/service/MailController"      failonerror="no"> <fileset dir="${samples}/MailController"/>      </move>
+  <move todir="${samples}/service/MailService"         failonerror="no"> <fileset dir="${samples}/MailService"/>         </move>
+  <move todir="${samples}/service/MailViewer"          failonerror="no"> <fileset dir="${samples}/MailViewer"/>          </move>
+   
+</target>   
+                                  
 <target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
 
   <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
@@ -261,26 +286,24 @@ target: buildInstalls - run installshield to create the SDK and Samples
    
    <!-- totalcross -->
    <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
-   <move todir="${target.sdk3.path}/docs/tc" > <fileset dir="${target.sdk3.path}/docs/html"/>    </move>
    
    <!-- litebase -->
-   <unzip src="${target.litebase.path}/dist/litebase.jar" dest="${base.temp.path}/jar"/>
-   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="true" includes="**" basedir="${base.temp.path}/jar"  />
-   <delete dir="${base.temp.path}/jar" />
-   
+   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="yes">
+    <zipgroupfileset dir="${target.litebase.path}/dist" includes="litebase.jar"/>
+   </zip>
+
    <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
-   <copy todir="${target.sdk3.path}/dist/samples" includeEmptyDirs="No" failonerror="No">
+   <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
       <fileset dir="${target.litebase.path}/dist/samples" />
-      <mapper type="glob" from="*" to="LB_*"/>
    </copy>
    <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
-   <copy todir="${target.sdk3.path}/docs/lb" ><fileset dir="${target.litebase.path}/docs/html"/></copy>
    <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
    
    <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
    
    <antcall target="mergeAPK" />
+   <antcall target="reorganizeSamples" />
 
 </target>
 
@@ -290,14 +313,13 @@ target: buildInstalls - run installshield to create the SDK and Samples
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildInstalls_sdk" >
-  <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
   
   <antcall target="createTotalCross3" />
 
   <property name="target.file"  value="${target.sdk.path}/../TotalCross3"/>
 
   <!-- delete old files -->
-  <delete file="${target.file}.exe" />
+  <delete file="${target.file}" />
 
   <!-- update readme files -->
   <copy file="SDK_sfx.diz" toDir="${rootpath}/">
@@ -308,7 +330,10 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
   <echo message="Creating ${target.file} file..."/>
   <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
-     <arg line='a -sfx -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file} ${target.sdk3.path}\*.*'/>
+     <arg line='a -sfx -y -ep1 -m5 -md64m -ma5 -r -s -idq -zSDK_sfx.diz ${target.file}.exe ${target.sdk3.path}\*.*'/>
+  </exec>
+  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file}.rar ${target.sdk3.path}\*.*'/>
   </exec>
 
   <!-- delete temp files -->
@@ -528,6 +553,7 @@ target: Android builds
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
   <delete dir="${android.temp}" failonerror="false" />
+  <sleep seconds="1"/>
   <mkdir dir="${android.temp}" />
 
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>
@@ -559,12 +585,17 @@ target: Android builds
    <unzip src="${apk}" dest="${out}"/>   
    <zip destfile="${out}/assets/tcfiles.zip"  includes="LitebaseLib.tcz" basedir="${source.lb.path}/dist/lib" update="yes" compress="no" keepcompression="no" />
    <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
-   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip" basedir="${out}" />
-   <zip destfile="${apk}"  includes="assets/tcfiles.zip" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
-   <signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
-    storepass="@ndroid$w" keypass="@ndroidsw">
+   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" />
+   <zip destfile="${apk}"  includes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
+
+   <exec executable="jarsigner${exe}">
+      <arg line="-digestalg SHA1 -sigalg MD5withRSA -keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${android.temp}/TotalCross.apk tcandroidkey" />
+   </exec>
+   
+   <!--signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
+    storepass="@ndroid$w" keypass="@ndroidsw"  sigalg="SHA1withRSA" digestalg="SHA1">
     <path><fileset dir="${android.temp}" includes="TotalCross.apk" /></path>
-   </signjar>
+   </signjar-->
 
 </target>
 

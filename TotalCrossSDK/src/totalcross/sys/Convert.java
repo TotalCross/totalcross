@@ -1686,6 +1686,26 @@ public final class Convert
       return hash;
    }
 
+   /** Removes the given set of chars from the String.
+    * Example:
+    * <pre>
+    * String s = Convert.remove("abcdef","df"); // returns "abce";
+    * </pre>
+    * @since TotalCross 3.05
+    */
+   public static String remove(String source, String chars)
+   {
+      if (chars.length() == 1) // use a faster method
+         return replace(source, chars, "");
+      int len = source.length();
+      StringBuffer sb = new StringBuffer(len);
+      char ch;
+      for (int i = 0; i < len; i++)
+         if (chars.indexOf(ch=source.charAt(i)) == -1)
+            sb.append(ch);
+      return sb.length() == len ? source : sb.toString();
+   }
+   
    /** Replace all occurences of the <code>from</code> String by the <code>to</code> String in the given <code>source</code> String.
     * @since TotalCross 1.0
     */

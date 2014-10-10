@@ -138,7 +138,7 @@ DWORD32 getFreeMemoryWP8()
 
 void alertCPP(JCharP jCharStr)
 {
-   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr));
+   Direct3DBase::getLastInstance()->csharp->privateAlertCS(ref new Platform::String((wchar_t*)jCharStr), eventsInitialized);
    while (Direct3DBase::getLastInstance()->csharp->isAlertVisible()) Sleep(10);
 }
 
@@ -239,19 +239,19 @@ int32 dxGetScreenSize()
    return Direct3DBase::getLastInstance()->csharp->getScreenSize();
 }
 
-void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
-   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
 }
 
-void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
+void dxDeleteTexture(TCObject img, int32* textureId)
 {
-   Direct3DBase::getLastInstance()->deleteTexture(img, textureId, updateList);
+   Direct3DBase::getLastInstance()->deleteTexture(img, textureId);
 }
 
-void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip)
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
 {
-   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip);
+   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, dstW, dstH, imgW, imgH, color, alphaMask);
 }
 
 void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int color, bool fill)
@@ -274,9 +274,9 @@ void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
    Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
 }
 
-void dxDrawPixels(float *glcoords, float *glcolors, int count, int color)
+void dxDrawPixels(float *glXYA, int count, int color)
 {
-	Direct3DBase::getLastInstance()->drawPixels(glcoords, glcolors, count, color);
+	Direct3DBase::getLastInstance()->drawPixels(glXYA, count, color);
 }
 
 double getFontHeightCPP()
@@ -315,4 +315,9 @@ void cameraClick(NMParams p)
 void appExit()
 {
    Direct3DBase::getLastInstance()->csharp->appExit();
+}
+
+void appSetFullScreen()
+{
+   Direct3DBase::getLastInstance()->csharp->appSetFullScreen();
 }

@@ -36,13 +36,16 @@ import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.zip.*;
 
+import totalcross.android.*;
 import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
+   public static final boolean GENERATE_FONT = false;
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
@@ -56,9 +59,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean appPaused;
    static PhoneListener phoneListener;
    static boolean showingAlert;
-   static int deviceFontHeight; // guich@tc126_69
+   public static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
+   static boolean lastWasPenDown;
+   
+   private static String appPath;
    private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
@@ -129,10 +135,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       super(context);
       // read all apk names, before loading the vm
       if (!isSingleAPK)
-      {
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
-      }
       loadAPK(appPath+"/apkname.txt",true);
+      Launcher4A.appPath = appPath;
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
@@ -148,7 +153,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       String vmPath = context.getApplicationInfo().dataDir;
+      if (hadCrash()) // note: if the crash occurs too early, the report may not be sent by the thread. and we cannot remove it from a thread or Android will shout.
+         bugreport();
+      createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
+      if (GENERATE_FONT)
+      {
+         new totalcross.android.fontgen.FontGenerator("tahoma", new String[]{"","/aa","/rename:TCFont"});
+         AndroidUtils.debug("FINISHED");
+         exit(0);
+      }
    }
 
    public static Context getAppContext()
@@ -252,6 +266,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       public boolean onScaleBegin(ScaleGestureDetector detector)
       {
          multiTouching = true;
+         if (lastWasPenDown) // if pressed a button and started multitouch, issue a penup event so button can be released
+         {
+            lastWasPenDown = false;
+            eventThread.pushEvent(PEN_UP, 0, 10000, 10000, 0, 0);
+         }
          eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 1, 0,0, 0, 0);
          return true;
       }
@@ -316,71 +335,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    // https://code.google.com/p/android/issues/detail?id=62306
    // http://stackoverflow.com/questions/18581636/android-cannot-capture-backspace-delete-press-in-soft-keyboard/19980975#19980975
 
-   class EditableAccomodatingLatinIMETypeNullIssues extends SpannableStringBuilder 
+   class MyInputConnection extends BaseInputConnection 
    {
-      EditableAccomodatingLatinIMETypeNullIssues(CharSequence source) 
-      {
-         super(source);
-      }
-
-      public SpannableStringBuilder replace(final int spannableStringStart, final int spannableStringEnd, CharSequence replacementSequence, int replacementStart, int replacementEnd) 
-      {
-         if (replacementEnd > replacementStart) 
-         {
-            super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, replacementSequence, replacementStart, replacementEnd);
-         }
-         if (spannableStringEnd > spannableStringStart) 
-         {
-            super.replace(0, length(), "", 0, 0);
-            return super.replace(0, 0, "/", 0, 1);
-         }
-         return super.replace(spannableStringStart, spannableStringEnd, replacementSequence, replacementStart, replacementEnd);
-      }
-   }
-   
-   class InputConnectionAccomodatingLatinIMETypeNullIssues extends BaseInputConnection 
-   {
-      Editable myEditable;
-      String dummy;
       KeyEvent delUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL);
       KeyEvent delDn = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
       
-      public InputConnectionAccomodatingLatinIMETypeNullIssues(View targetView, boolean fullEditor) 
+      public MyInputConnection(View targetView, boolean fullEditor) 
       {
          super(targetView, fullEditor);
       }
       
-      public Editable getEditable() 
-      {
-         if (Build.VERSION.SDK_INT >= 19) 
-         {
-            if (dummy == null)
-            {
-               char[] c = new char[1024]; // guich: set a reasonable size for the buffer
-               for (int i = 0; i < c.length; i++)
-                  c[i] = (i & 1) == 0 ? (char)255 : (char)257;
-               dummy = new String(c);      
-            }
-            if (myEditable == null) 
-            {
-               myEditable = new EditableAccomodatingLatinIMETypeNullIssues(dummy);
-               Selection.setSelection(myEditable, dummy.length());
-            }
-            else 
-            {
-               int myEditableLength = myEditable.length(); 
-               if (myEditableLength == 0) 
-               {
-                  myEditable.append(dummy);
-                  Selection.setSelection(myEditable, dummy.length());
-               }
-            }
-            return myEditable;
-         }
-         return super.getEditable();
-      }
-
       public boolean deleteSurroundingText(int beforeLength, int afterLength) 
       {
          for (int i =0; i < beforeLength; i++)
@@ -413,7 +377,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
       outAttrs.inputType = InputType.TYPE_NULL;
       outAttrs.actionLabel = null;
-      return new InputConnectionAccomodatingLatinIMETypeNullIssues(this, false);
+      return new MyInputConnection(this, false);
    }
    //////////////////////////////////////////////////////////////////////////////////
    
@@ -422,10 +386,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public boolean onKeyPreIme(int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK)
          return onKey(this, keyCode, event);
-      else
-         return false;
+      return false;
    }
    
    public static boolean hardwareKeyboardIsVisible;
@@ -434,9 +400,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       super.onSizeChanged(w, h, oldw, oldh);
    }
-
+   
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event)) 
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
          if (!hardwareKeyboardIsVisible && sipVisible)
@@ -514,8 +483,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       switch (event.getAction())
       {
-         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; break;
-         case MotionEvent.ACTION_UP:   type = PEN_UP;   break;
+         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; lastWasPenDown = true;  break;
+         case MotionEvent.ACTION_UP:   type = PEN_UP;   lastWasPenDown = false; break;
          case MotionEvent.ACTION_MOVE: type = PEN_DRAG; break;
          default: return false;
       }
@@ -560,7 +529,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         eventThread.running = false;
+         if (eventThread != null) eventThread.running = false;
          loader.finish();
       }
       canQuit = true;
@@ -652,7 +621,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeInitSize(Surface surface, int w, int h);
+   public native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -1041,22 +1010,45 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (address.startsWith("@"))
       {
          String[] st = address.substring(1).split(",");
-         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[0])};
+         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[1])};
       }
       else
-      {         
-         Geocoder g = new Geocoder(instance.getContext());
-         List<Address> al = g.getFromLocationName(address, 1);
-         if (al != null && al.size() > 0)
-         {
-            Address a = al.get(0);
-            if (a.hasLatitude() && a.hasLongitude())
-               return new double[]{a.getLatitude(),a.getLongitude()};
-         }
+      {
+         return getGeocode(address);
       }
       return null;
    }
    
+   private static double[] getGeocode(String address)
+   {
+      try
+      {
+         // connect to map web service
+         StringBuilder urlString = new StringBuilder(128).
+         append("http://maps.googleapis.com/maps/api/geocode/xml?address=").append(address.replace("  "," ").replace(' ','+')).append("&sensor=false");
+         //AndroidUtils.debug(urlString.toString());
+         HttpURLConnection urlConnection = (HttpURLConnection) new URL(urlString.toString()).openConnection();
+         urlConnection.connect();
+         byte[] bytes = AndroidUtils.readFully(urlConnection.getInputStream());
+         String s = new String(bytes).toLowerCase();
+         //AndroidUtils.debug(s);
+         if (s.contains("<location_type>approximate</location_type>"))
+            return null;
+         int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>",idx1);
+         int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>",idx1);
+         if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1)
+            return null;
+         String lat = s.substring(idx1+5,idx2);
+         String lon = s.substring(idx3+5,idx4);
+         return new double[]{Double.parseDouble(lat),Double.parseDouble(lon)};
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         return null;
+      }
+   }
+
    public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
    {
       boolean tryAgain = false;
@@ -1068,9 +1060,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
             double[] llF = getLatLon(addressF);
-            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
             if (llI != null && llF != null)
             {
+               AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
@@ -1115,6 +1107,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
+            if (address.startsWith("***")) // MapItems?
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAPITEMS);
+               b.putString("items", address.substring(3));
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+               
             double [] ll = getLatLon(address);
             if (ll != null)
             {
@@ -1197,6 +1205,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appPaused()
    {
+      deleteCrash();
       appPaused = true;
       instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
@@ -1208,6 +1217,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
+      createCrash();
       appPaused = false;
       instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
@@ -1344,7 +1354,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      if (realOfs == -1) // if not found, double the read buffer and try again
                      {
                         if (--j == 0)
+                        {
+                           raf.close();
                            throw new RuntimeException("Error: cannot find real offset in APK for "+a.name);
+                        }
                         buf = new byte[buf.length*2];
                         AndroidUtils.debug("read from "+pos+" to "+(pos+buf.length)+" but not found. doubling buffer to "+buf.length+"!");
                      }
@@ -1467,4 +1480,132 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
+   ///////////////// crash controller //////////////////////
+   private static void createCrash()
+   {
+      try {new FileOutputStream(appPath+"/crash.txt").close();} catch (Exception e) {}
+   }
+   private static void deleteCrash()
+   {
+      try {new File(appPath+"/crash.txt").delete();} catch (Exception e) {}
+   }
+   private static boolean hadCrash()
+   {
+      boolean b = false;
+      try {b = new File(appPath+"/crash.txt").exists(); deleteCrash();} catch (Exception e) {}
+      return b;
+   }
+   
+   private void bugreport() 
+   {
+      if (Settings4A.buildNumber != 0) // dont use when debugging
+      new Thread()
+      {
+         public void run() 
+         {
+            try 
+            {
+               // generate the bugreport
+               AndroidUtils.debug("Generating bugreport");
+               long ini = System.currentTimeMillis();
+               try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
+               String[] commands =
+                  {
+                     "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/bugreport.txt \n",
+//                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
+//                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
+//                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
+                  };
+      /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
+                   "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
+                   "logcat -d >> /sdcard/IssueReport/bugreport.txt\n",
+                  };
+      */         java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+               DataOutputStream os = new DataOutputStream(p.getOutputStream());
+               for (String tmpCmd : commands) 
+                  os.writeBytes(tmpCmd);
+               File f = new File("/sdcard/IssueReport/bugreport.txt"); // takes 33 seconds on a s3 mini
+               long l2 = 0;
+               while (true)
+               {
+                  long l1 = f.length();
+                  Thread.sleep(1000);
+                  l2 = f.length();
+                  if (l1 == l2)
+                     break;
+               }            
+               long end = System.currentTimeMillis();
+               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/bugreport.txt in "+(end-ini)+"ms with "+l2+" bytes");
+               // zip the bugreport
+               ini = System.currentTimeMillis();
+               FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
+               ZipOutputStream zout = new ZipOutputStream(fout);
+               File ff = new File("/sdcard/IssueReport/bugreport.txt");
+               FileInputStream fin = new FileInputStream(ff);
+               // check if there's a SIGSEGV, which indicates an vm abort
+               zout.putNextEntry(new ZipEntry("bugreport.txt"));
+               byte[] buf = new byte[8192];
+               for (int n; (n = fin.read(buf)) > 0;)
+                  zout.write(buf,0,n);
+               zout.closeEntry();
+               zout.close();
+               fin.close();
+               end = System.currentTimeMillis();
+               ff.delete();
+               AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
+               WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+               Display display = wm.getDefaultDisplay();
+               
+               // send by email
+               final Mail m = new Mail("totalcross", "t0t4lcr0ss"); 
+               String[] toArr = {"bugreport@totalcross.com","guich@totalcross.com"}; 
+               m.setTo(toArr);
+               m.setFrom("registro@totalcross.com"); 
+               m.setSubject("Bugreport TotalCross build #"+Settings4A.buildNumber); 
+               m.setBody(
+                     "Imei: "+Settings4A.imei+"\n"+
+                     "Serial: "+Settings4A.serialNumber+"\n"+
+                     "Device id: "+Settings4A.deviceId+"\n"+
+                     "OS version: "+Settings4A.romVersion+"\n"+
+                     "Processor: "+System.getProperty("os.arch")+"\n"+
+                     "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
+                     "Font: "+deviceFontHeight+"\n"
+               ); 
+               m.addAttachment("/sdcard/IssueReport/bugreport.zip");
+               m.send();
+               AndroidUtils.debug("Bugreport mail sent!");
+            }
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+         }
+      }.start();
+   }
+   
+   private static SoundPool player;
+   private static String lastSound;
+   private static int lastSoundID;
+   
+   public static void soundPlay(String filename)
+   {
+      if (player == null)
+         player = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+      if (!filename.equals(lastSound))
+      {
+         if (lastSound != null) player.unload(lastSoundID);
+         lastSound = filename;
+         lastSoundID =  player.load(filename, 1);
+      }
+      AudioManager audio = (AudioManager) loader.getSystemService(Context.AUDIO_SERVICE);
+      int ring = audio.getRingerMode();
+      if (ring == AudioManager.RINGER_MODE_NORMAL) // 4.4 does not returns correct values for volume methods
+      {
+         int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_SYSTEM);
+         int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_SYSTEM);
+         float volume    = (float)volumeLevel/maxVolume;
+         for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, volume, volume, 0, 0, 1.0f) == 0 && i++ < 10;)
+            try {Thread.sleep(100);} catch (Exception e) {}
+      }
+  }
 }

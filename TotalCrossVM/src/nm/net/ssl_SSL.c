@@ -54,16 +54,18 @@ TC_API void tnsSSL_dispose(NMParams p) // totalcross/net/ssl/SSL native public v
    int32 fd;
 
    if (!dontFinalize)
-   {
-      fd = ssl->client_fd; // we should access "ssl" only after checking the "dontFinalize" field
-      ssl_free(ssl);
-
-      LOCKVAR(htSSL);
-      htRemove(&htSSLSocket, fd); // remove socket object from the hash table when the ssl is disposed.
-      if (htSSLSocket.size == 0) // destroy the hash table if empty
-         destroyHT(p->currentContext, false);
-      UNLOCKVAR(htSSL);
-
+   {                
+      if (ssl)
+      {
+         fd = ssl->client_fd; // we should access "ssl" only after checking the "dontFinalize" field
+         ssl_free(ssl);
+   
+         LOCKVAR(htSSL);
+         htRemove(&htSSLSocket, fd); // remove socket object from the hash table when the ssl is disposed.
+         if (htSSLSocket.size == 0) // destroy the hash table if empty
+            destroyHT(p->currentContext, false);
+         UNLOCKVAR(htSSL);
+      }
       SSL_sslDontFinalize(sslObj) = true; //flsobral@tc114_36: don't finalize disposed objects.
    }
 #else

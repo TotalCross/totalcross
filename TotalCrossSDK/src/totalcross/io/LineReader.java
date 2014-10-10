@@ -216,7 +216,7 @@ public class LineReader
          if (!foundMore)
          {
             int len = i - lastOfs;
-            if (len > 0 || returnEmptyLines) // any remaining string on the buffer?
+            if (len > 0 || (foundMore && returnEmptyLines)) // any remaining string on the buffer?
             {
                ofs = len;
                lastOfs = 0;

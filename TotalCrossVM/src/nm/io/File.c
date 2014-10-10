@@ -83,11 +83,7 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
 TC_API void tiF_getDeviceAlias(NMParams p) // totalcross/io/File native private static String getDeviceAlias();
 {
 #if defined (darwin)
-   #if defined (THEOS)
-      p->retO = createStringObjectFromCharP(p->currentContext, "/private/var/mobile", -1);
-   #else
-      p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
-   #endif
+   p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
    setObjectLock(p->retO, UNLOCKED);
 #else
    p->retO = null;
@@ -166,6 +162,47 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
    }
 }
 //////////////////////////////////////////////////////////////////////////
+#ifdef WIN32
+#define FILE_EXISTS 183
+#else
+#define FILE_EXISTS 17
+#endif
+int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
+{
+   TCHARP c;
+   int nStringSize;
+   Err err;
+
+   if (fileExists(szPath, slot))
+      return 0;
+
+   for (nStringSize = stringSize, c = szPath + stringSize - 1; c >= szPath; c--, nStringSize--)
+      if (*c == '/')
+      {
+          *c = 0;
+          if (!createDirRec(p, szPath, nStringSize, slot))
+          {
+             *c = '/';
+             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != FILE_EXISTS) // ignore if EEXIST
+             {
+                throwExceptionWithCode(p->currentContext, IOException, err);
+                return 1;
+             }
+             else
+                return 0;
+          }
+          return 1;
+      }
+  
+   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != FILE_EXISTS)
+   {
+      throwExceptionWithCode(p->currentContext, IOException, err);
+      return 1;
+   }
+   else
+      return 0;
+}
+
 TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void createDir() throws totalcross.io.IOException;
 {
    TCObject file = p->obj[0];
@@ -173,7 +210,6 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
-   Err err;
 
    if (mode == INVALID)
       throwException(p->currentContext, IOException, "Invalid file object.");
@@ -182,16 +218,18 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
       throwException(p->currentContext, IOException, "Operation can ONLY be used in mode DONT_OPEN.");
    else
    {
-      JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
+      int stringSize = String_charsLen(path);
+      JCharP2TCHARPBuf(String_charsStart(path), stringSize, szPath);
       if (!replacePath(p,szPath,true))
          return;
       if (fileExists(szPath, slot))
          throwException(p->currentContext, IOException, "Directory already exists.");
       else
-      if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
-         throwExceptionWithCode(p->currentContext, IOException, err);
+         createDirRec(p, szPath, stringSize, slot); // this recursion will throw the exception
    }
 }
+
+
 //////////////////////////////////////////////////////////////////////////
 void closeDebug();
 

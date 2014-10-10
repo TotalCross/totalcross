@@ -74,6 +74,7 @@ extern TScreenSurface screen;
 extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
 extern int32* vistaFadeStepP;
+extern TCClass imageClass;
 
 // mem.c
 extern uint32 maxAvail; // in bytes
@@ -110,7 +111,7 @@ extern jmethodID jsetElapsed;
 #endif
 
 // objectmemorymanager.c
-extern bool runningGC,runningFinalizer;
+extern bool runningGC,runningFinalizer,disableGC;
 extern TCObjectArray freeList; // the array with lists of free objects
 extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList; // locked objects list
@@ -202,7 +203,7 @@ extern jmethodID jclipboard;
 // media_Sound.c
 extern TSoundSettings soundSettings;
 #ifdef ANDROID
-extern jmethodID jtone,jsoundEnable;
+extern jmethodID jtone,jsoundEnable,jsoundPlay;
 #endif
 
 // ConnectionManager.c

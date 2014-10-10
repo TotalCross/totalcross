@@ -1,2 +1,2 @@
 @adb logcat -c
-adb logcat TotalCross:I *:S
+adb logcat -v time TotalCross:I *:S

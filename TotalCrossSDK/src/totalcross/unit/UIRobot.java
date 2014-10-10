@@ -161,7 +161,7 @@ public class UIRobot
       if (ib.getPressedButtonIndex() == 1)
          throw new Exception("Cancelled");
       String name = ib.getValue() + ".robot";
-      flog = new File(robotFileName = Settings.appPath+"/"+name,File.CREATE_EMPTY,1);
+      flog = new File(robotFileName = Settings.appPath+"/"+name,File.CREATE_EMPTY);
       fds = new DataStreamLE(flog);
       lastTS = Vm.getTimeStamp();
       status = RECORDING; 
@@ -363,7 +363,7 @@ public class UIRobot
                      abort = false;
                      String item = recordedRobots[items == null ? i : items[i]];
                      fileName = item.substring(0,item.indexOf(' '));
-                     File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath+"/"+fileName : fileName,File.READ_WRITE,1);
+                     File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath+"/"+fileName : fileName,File.READ_WRITE);
                      robotFileName = f.getPath();
                      DataStreamLE ds = new DataStreamLE(f);
                      String st = "Starting "+fileName;
@@ -502,7 +502,7 @@ public class UIRobot
    private void saveScreenShot(String fileName, boolean recording) throws IOException, ImageException
    {
       fileName = getScreenShotName(fileName, recording);
-      File f = new File(fileName,File.CREATE_EMPTY,1);
+      File f = new File(fileName,File.CREATE_EMPTY);
       Image img = MainWindow.getScreenShot();
       img.createPng(f);
       f.close();      
@@ -526,8 +526,8 @@ public class UIRobot
       }
       String rec = getScreenShotName(fileName, true);
       String ply = getScreenShotName(fileName, false);
-      File frec = new File(rec, File.READ_WRITE,1);
-      File fply = new File(ply, File.READ_WRITE,1);
+      File frec = new File(rec, File.READ_WRITE);
+      File fply = new File(ply, File.READ_WRITE);
       byte[] cmp1 = cmpbuf1;
       byte[] cmp2 = cmpbuf2;
       int sr = frec.getSize();
@@ -662,7 +662,7 @@ public class UIRobot
    
    private void fillListOfRecordedRobots() throws Exception
    {
-      String[] list = new File(Settings.appPath,1).listFiles();
+      String[] list = new File(Settings.appPath).listFiles();
       recordedRobots = null;
       if (list != null && list.length > 0)
       {
@@ -670,7 +670,7 @@ public class UIRobot
          for (int i =0; i < list.length; i++)
             if (list[i].endsWith(".robot"))
             {
-               File f = new File(Settings.appPath+"/"+list[i],File.READ_WRITE,1);
+               File f = new File(Settings.appPath+"/"+list[i],File.READ_WRITE);
                Time t = f.getTime(File.TIME_MODIFIED);
                f.close();
                v.addElement(new StrTime(list[i]+" ("+new Date(t)+" "+t+")", t));
