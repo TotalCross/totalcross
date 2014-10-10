@@ -291,10 +291,11 @@ public class Bar extends Container
     * Adds an image button. 
     *
     * @param icon The image to the add to a button in the bar.
+    * @return The button index
     */
-   public void addButton(Image icon)
+   public int addButton(Image icon)
    {
-      addControl(new BarButton(null,icon));
+      return addControl(new BarButton(null,icon));
    }
    
    /** 
@@ -312,12 +313,14 @@ public class Bar extends Container
     * Adds a control to the bar. Not all types of controls are supported. 
     *
     * @param c The control to be added.
+    * @return The button index
     */
-   public void addControl(Control c)
+   public int addControl(Control c)
    {
       icons.addElement(c);
       for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1; // update appId used for selection
       if (initialized) initUI();
+      return icons.size();
    }
    
    /** 
