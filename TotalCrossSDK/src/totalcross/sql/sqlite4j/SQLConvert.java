@@ -43,15 +43,13 @@ class SQLConvert
       if (x != null)
          try
          {
-            java.util.Calendar c = java.util.Calendar.getInstance();
-            c.setTime(x);
-            int y = c.get(java.util.Calendar.YEAR);
-            int m = c.get(java.util.Calendar.MONTH) + 1;
-            int d = c.get(java.util.Calendar.DAY_OF_MONTH);
-            return new Date(d, m, y);
+            Time t = new totalcross.sys.Time(x.getTime(),true);
+            return new Date(t);
          }
          catch (Exception e)
          {
+            if (Settings.onJavaSE) e.printStackTrace();
+            return null;
          }
       return null;
    }
