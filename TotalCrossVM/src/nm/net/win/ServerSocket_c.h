@@ -26,7 +26,7 @@ static Err nativeClose(SERVER_SOCKET serverSocketHandle)
 
 static Err serverSocketCreate(SERVER_SOCKET* serverSocketHandle, int32 port, int32 backlog, CharP addr)
 {
-   SERVER_SOCKET serverSocketRef;
+   SERVER_SOCKET serverSocketRef = 0;
    SOCKADDR_IN internetAddr;
    WSADATA WSAData;
    PHOSTENT phostent;
