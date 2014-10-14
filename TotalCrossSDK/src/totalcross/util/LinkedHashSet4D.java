@@ -89,7 +89,7 @@ import java.util.*;
  * @status updated to 1.4
  */
 public class LinkedHashSet4D<T> extends HashSet4D<T>
-  implements Set<T>
+  implements Set<T>, Cloneable
 {
   /**
    * Construct a new, empty HashSet whose backing HashMap has the default

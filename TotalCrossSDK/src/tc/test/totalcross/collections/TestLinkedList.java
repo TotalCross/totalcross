@@ -336,6 +336,10 @@ public class TestLinkedList extends TestCase
       assertFalse(test1.removeLastOccurrence(null));
       assertFalse(test2.removeLastOccurrence(null));
       assertFalse(((LinkedList)test3).removeLastOccurrence(null));
+   
+      assertEquals(test1, test1.clone());
+      assertEquals(test2, test2.clone());
+      assertEquals(test3, ((LinkedList)test3).clone());
    }
 }
 
@@ -349,5 +353,10 @@ class Test24 extends LinkedList
    public Test24(Collection c)
    {
       super(c);
+   }
+   
+   public Object clone()
+   {
+      return super.clone();     
    }
 }

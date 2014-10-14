@@ -71,7 +71,7 @@ import java.util.*;
  * @status Complete to 1.6
  */
 public class LinkedList4D<T> extends AbstractSequentialList<T>
-  implements List<T>, Deque<T>
+  implements List<T>, Deque<T>, Cloneable
 {
   /**
    * The first element in the list.
@@ -632,6 +632,27 @@ public class LinkedList4D<T> extends AbstractSequentialList<T>
   {
     checkBoundsInclusive(index);
     return new LinkedListItr<T>(index);
+  }
+  
+  /**
+   * Create a shallow copy of this LinkedList (the elements are not cloned).
+   *
+   * @return an object of the same class as this object, containing the
+   *         same elements in the same order
+   */
+  public Object clone()
+  {
+    LinkedList<T> copy = null;
+    try
+      {
+        copy = (LinkedList<T>) super.clone();
+      }
+    catch (CloneNotSupportedException ex)
+      {
+      }
+    copy.clear();
+    copy.addAll(this);
+    return copy;
   }
 
   /**

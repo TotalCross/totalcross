@@ -121,10 +121,14 @@ public class TestHashMap extends TestCase
       assertFalse(set1.remove(null));
       assertFalse(set2.remove(null));
       assertFalse(set3.remove(null));
+      
+      assertEquals(test1, test1.clone());
+      assertEquals(test2, test2.clone());
+      assertEquals(test3, ((HashMap)test3).clone());
    }
 }
 
-class Test20 extends HashMap
+class Test20 extends HashMap implements Cloneable
 {
    public Test20()
    {
@@ -139,5 +143,10 @@ class Test20 extends HashMap
    public Test20(int initialCapacity, float load)
    {
       super(initialCapacity, load);
+   }
+   
+   public Object clone()
+   {
+      return super.clone();     
    }
 }

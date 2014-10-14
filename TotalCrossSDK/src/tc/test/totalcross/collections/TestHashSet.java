@@ -49,10 +49,14 @@ public class TestHashSet extends TestCase
       assertEquals(0, test1.size());
       assertEquals(0, test2.size());
       assertEquals(0, test3.size());
+      
+      assertEquals(test1, test1.clone());
+      assertEquals(test2, test2.clone());
+      assertEquals(test3, ((HashSet)test3).clone());
    }
 }
 
-class Test21 extends HashSet
+class Test21 extends HashSet implements Cloneable
 {
    public Test21()
    {
@@ -67,5 +71,10 @@ class Test21 extends HashSet
    public Test21(Collection c)
    {
       super(c);
+   }
+   
+   public Object clone()
+   {
+      return super.clone();     
    }
 }

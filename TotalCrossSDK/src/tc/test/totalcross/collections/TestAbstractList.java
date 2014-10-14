@@ -389,10 +389,36 @@ public class TestAbstractList extends TestCase
       assertTrue(test1.subList(0, 0) instanceof List);
       assertTrue(test2.subList(0, 0) instanceof List);
       assertTrue(((AbstractList)test3).subList(0, 0) instanceof List);
+   
+      try
+      {
+         assertEquals(test1, test1.clone());
+      }
+      catch (CloneNotSupportedException e)
+      {
+         fail("23");
+      }
+      try
+      {
+         assertEquals(test2, ((Test12)test2).clone());
+      }
+      catch (CloneNotSupportedException e)
+      {
+         fail("24");
+      }
+      try
+      {
+         assertEquals(test3, ((Test12)test3).clone());
+      }
+      catch (CloneNotSupportedException e)
+      {
+         fail("25");
+      }
+      
    }
 }
 
-class Test12 extends AbstractList
+class Test12 extends AbstractList implements Cloneable
 {
    public Object get(int index)
    {
@@ -402,5 +428,10 @@ class Test12 extends AbstractList
    public int size()
    {
       return 0;
+   }
+   
+   public Object clone() throws CloneNotSupportedException
+   {
+      return super.clone();
    }
 }

@@ -74,7 +74,7 @@ import java.util.*;
  * @status updated to 1.4
  */
 public class HashSet4D<T> extends AbstractSet<T>
-  implements Set<T>
+  implements Set<T>, Cloneable
 {
   /**
    * The HashMap which backs this Set.
@@ -149,6 +149,27 @@ public class HashSet4D<T> extends AbstractSet<T>
   public void clear()
   {
     map.clear();
+  }
+  
+  /**
+   * Returns a shallow copy of this Set. The Set itself is cloned; its
+   * elements are not.
+   *
+   * @return a shallow clone of the set
+   */
+  public Object clone()
+  {
+    HashSet4D<T> copy = null;
+    try
+      {
+        copy = (HashSet4D<T>) super.clone();
+      }
+    catch (CloneNotSupportedException x)
+      {
+        // Impossible to get here.
+      }
+    copy.map = (HashMap4D<T, String>) map.clone();
+    return copy;
   }
 
   /**

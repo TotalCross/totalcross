@@ -80,7 +80,7 @@ import totalcross.sys.*;
  * @status updated to 1.4
  */
 public class ArrayList4D<E> extends AbstractList<E>
-  implements List<E>, RandomAccess
+  implements List<E>, RandomAccess, Cloneable
 {
   /**
    * The default capacity for new ArrayLists.
@@ -233,6 +233,27 @@ public class ArrayList4D<E> extends AbstractList<E>
     return -1;
   }
 
+  /**
+   * Creates a shallow copy of this ArrayList (elements are not cloned).
+   *
+   * @return the cloned object
+   */
+  public Object clone()
+  {
+    ArrayList4D<E> clone = null;
+    try
+      {
+       Object[] obj = new Object[0].clone();
+        clone = (ArrayList4D<E>) super.clone();
+        clone.data = (E[]) data.clone();        
+      }
+    catch (CloneNotSupportedException e)
+      {
+        // Impossible to get here.
+      }
+    return clone;
+  }
+  
   /**
    * Returns an Object array containing all of the elements in this ArrayList.
    * The array is independent of this list.

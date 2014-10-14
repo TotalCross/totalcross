@@ -66,7 +66,7 @@ import totalcross.sys.*;
  * @author Eric Blake (ebb9@email.byu.edu)
  * @status updated to 1.4
  */
-public class BitSet4D
+public class BitSet4D implements Cloneable
 {
   /**
    * A common mask.
@@ -232,6 +232,28 @@ public class BitSet4D
       bits[i] = 0;
   }
 
+  /**
+   * Create a clone of this bit set, that is an instance of the same
+   * class and contains the same elements.  But it doesn't change when
+   * this bit set changes.
+   *
+   * @return the clone of this object.
+   */
+  public Object clone()
+  {
+    try
+      {
+        BitSet4D bs = (BitSet4D) super.clone();
+        bs.bits = (long[]) bits.clone();
+        return bs;
+      }
+    catch (CloneNotSupportedException e)
+      {
+        // Impossible to get here.
+        return null;
+      }
+  }
+  
   /**
    * Returns true if the <code>obj</code> is a bit set that contains
    * exactly the same elements as this bit set, otherwise false.

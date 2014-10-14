@@ -101,10 +101,13 @@ public class TestBitSet extends TestCase
       
       test1.xor(test2);
       test2.xor(test1);
+      
+      assertEquals(test1, test1.clone());
+      assertEquals(test2, test2.clone());
    }
 }
 
-class Test19 extends BitSet
+class Test19 extends BitSet implements Cloneable
 {
    public Test19()
    {
@@ -114,5 +117,10 @@ class Test19 extends BitSet
    public Test19(int nbits)
    {
       super(nbits);
+   }
+   
+   public Object clone()
+   {
+      return super.clone();     
    }
 }

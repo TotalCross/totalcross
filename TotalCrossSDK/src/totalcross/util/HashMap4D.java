@@ -95,7 +95,7 @@ import totalcross.sys.Convert;
  * @status updated to 1.4
  */
 public class HashMap4D<K, V> extends AbstractMap4D<K, V>
-  implements Map<K, V>
+  implements Map<K, V>, Cloneable
 {
    /**
     * Default number of buckets; this is currently set to 16.
@@ -463,6 +463,30 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
     return false;
   }
 
+  /**
+   * Returns a shallow clone of this HashMap. The Map itself is cloned,
+   * but its contents are not.  This is O(n).
+   *
+   * @return the clone
+   */
+  public Object clone()
+  {
+    HashMap4D<K, V> copy = null;
+    try
+      {
+        copy = (HashMap4D<K, V>) super.clone();
+      }
+    catch (CloneNotSupportedException x)
+      {
+        // This is impossible.
+      }
+    copy.buckets = (HashEntry<K, V>[]) new HashEntry[buckets.length];
+    copy.putAllInternal(this);
+    // Clear the entry cache. AbstractMap.clone() does the others.
+    copy.entries = null;
+    return copy;
+  }
+  
   /**
    * Returns a "set view" of this HashMap's keys. The set is backed by the
    * HashMap, so changes in one show up in the other.  The set supports
