@@ -190,7 +190,7 @@ jmethodID jvmExec;
 // utils.c
 int32 firstTS = 0;
 #ifdef ANDROID
-jmethodID jlistTCZs;
+jmethodID jlistTCZs,jgetFreeMemory;
 #endif
 
 // debug.c

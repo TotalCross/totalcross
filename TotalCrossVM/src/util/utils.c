@@ -869,7 +869,10 @@ TC_API int32 getFreeMemory(bool maxblock)
    int32 s;
 #ifdef INITIAL_MEM
    s = maxAvail;
-#else                         
+#elif defined ANDROID
+   JNIEnv *env = getJNIEnv();
+   return (*env)->CallStaticIntMethod(env, applicationClass, jgetFreeMemory);
+#else
    s = !maxblock ? 0 : privateGetFreeMemory(maxblock);
 #endif
 #if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)

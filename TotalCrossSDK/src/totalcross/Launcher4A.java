@@ -19,6 +19,7 @@
 package totalcross;
 
 import android.app.*;
+import android.app.ActivityManager.MemoryInfo;
 import android.content.*;
 import android.content.res.*;
 import android.graphics.*;
@@ -63,6 +64,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static int appHeightOnSipOpen;
    static int appTitleH;
    static boolean lastWasPenDown;
+   static ActivityManager activityManager;
+   static MemoryInfo mi = new MemoryInfo();
    
    private static String appPath;
    private static android.text.ClipboardManager clip;
@@ -134,6 +137,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       super(context);
       // read all apk names, before loading the vm
+      activityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
       if (!isSingleAPK)
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
       loadAPK(appPath+"/apkname.txt",true);
@@ -1480,6 +1484,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
+   public static int getFreeMemory()
+   {
+      activityManager.getMemoryInfo(mi);
+      return mi.availMem > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) mi.availMem;
+   }
    ///////////////// crash controller //////////////////////
    private static void createCrash()
    {
