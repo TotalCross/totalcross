@@ -601,7 +601,8 @@ bool indexSplitNode(Context context, Node* curr, int32 count)
    int32* ancestors = index->table->nodes;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
-   int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
+   // juliana@283_1: solved a bug which would buid corrupted indices when creating or recreating them.
+   int32 medPos = index->isOrdered? (curr->size - 2) : (curr->size / 2),
 
          btreeMaxNodes = index->btreeMaxNodes,
          left,

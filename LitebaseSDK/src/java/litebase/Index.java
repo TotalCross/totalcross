@@ -521,7 +521,8 @@ class Index
       int[] ancestors = table.db.driver.nodes; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
-      int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
+      // juliana@283_1: solved a bug which would buid corrupted indices when creating or recreating them.
+      int medPos = curr.index.isOrdered? (curr.size - 2) : (curr.size / 2);
   
       while (true)
       {
