@@ -326,7 +326,7 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
 {
    if (minimized) return;
    int i;
-   VertexPosition *vertices = new VertexPosition[count], *v = vertices;// position, color
+   VertexPosition *vertices = (VertexPosition*) xmalloc(sizeof(VertexPosition) * count), *v = vertices;// position, color
    ty += glShiftY;
    setColor(color,255);
    for (i = count; --i >= 0; v++)
@@ -337,12 +337,12 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
    {
       lastLinesCount = count;
       DXRELEASE(linesIndexBuffer);
-      unsigned short *indexes = new unsigned short[count];
+      unsigned short *indexes = (unsigned short *)xmalloc(sizeof(unsigned short) * count);
       for (i = count; --i >= 0;) indexes[i] = i;
       D3D11_SUBRESOURCE_DATA indexBufferData = { indexes, 0, 0 };
       CD3D11_BUFFER_DESC indexBufferDesc(sizeof(indexes[0]) * count, D3D11_BIND_INDEX_BUFFER);
       if (DxFailed(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &linesIndexBuffer))) return;
-      delete indexes;
+      xfree(indexes);
 
       DXRELEASE(pBufferLines);
       D3D11_BUFFER_DESC bd = { 0 };
@@ -365,7 +365,7 @@ void Direct3DBase::drawLines(Context currentContext, TCObject g, int32* xx, int3
    d3dcontext->IASetPrimitiveTopology(fill ? D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST: D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
    d3dcontext->DrawIndexed(count, 0, 0);
 
-   delete vertices;
+   xfree(vertices);
 }
 
 bool Direct3DBase::checkPixelsBuf(int32 n)
@@ -375,13 +375,16 @@ bool Direct3DBase::checkPixelsBuf(int32 n)
       int32 i;
       lastPixelsCount = n;
       DXRELEASE(pixelsIndexBuffer);
-      unsigned short *indexes = new unsigned short[n];
+      unsigned short *indexes = (unsigned short *)xmalloc(sizeof(unsigned short) * n);
       for (i = n; --i >= 0;) indexes[i] = i;
       D3D11_SUBRESOURCE_DATA indexBufferData = { indexes, 0, 0 };
       CD3D11_BUFFER_DESC indexBufferDesc(sizeof(indexes[0]) * n, D3D11_BIND_INDEX_BUFFER);
-      if (FAILED(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer))) 
+      if (FAILED(d3dDevice->CreateBuffer(&indexBufferDesc, &indexBufferData, &pixelsIndexBuffer)))
+      {
+         xfree(indexes);
          return false;
-      delete indexes;
+      }
+      xfree(indexes);
 
       DXRELEASE(pBufferPixels);
       D3D11_BUFFER_DESC bd = { 0 };
@@ -399,7 +402,7 @@ void Direct3DBase::drawPixelColors(int32* xx, int32* yy, PixelConv* colors, int3
 {
    if (minimized) return;
    int i, n = count * 2;
-   VertexPositionColor *vertices = new VertexPositionColor[n], *v = vertices;// position, color
+   VertexPositionColor *vertices = (VertexPositionColor *)xmalloc(sizeof(VertexPositionColor) * n), *v = vertices;// position, color
    for (i = count; --i >= 0;)
    {
       float x = (float) *xx++;
@@ -411,7 +414,10 @@ void Direct3DBase::drawPixelColors(int32* xx, int32* yy, PixelConv* colors, int3
    }
    setProgram(PROGRAM_LC);
    if (!checkPixelsBuf(n))
+   {
+      xfree(vertices);
       return;
+   }
 
    D3D11_MAPPED_SUBRESOURCE ms;
    d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
@@ -424,7 +430,7 @@ void Direct3DBase::drawPixelColors(int32* xx, int32* yy, PixelConv* colors, int3
    d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST); // POINTLIST results in points being drawn in a slightly different position
    d3dcontext->DrawIndexed(n, 0, 0);
 
-   delete vertices;
+   xfree(vertices);
 }
 
 void Direct3DBase::drawPixels(float* glXYA, int count, int color)
@@ -439,7 +445,7 @@ void Direct3DBase::drawPixels(float* glXYA, int count, int color)
       return;
    }
    int i, n = count * 2;
-   VertexPositionColor *vertices = new VertexPositionColor[n], *v = vertices;// position, color
+   VertexPositionColor *vertices = (VertexPositionColor *)xmalloc(sizeof(VertexPositionColor) * n), *v = vertices;// position, color
    for (i = count; --i >= 0;)
    {
       float x = *glXYA++;
@@ -450,7 +456,10 @@ void Direct3DBase::drawPixels(float* glXYA, int count, int color)
    }
    setProgram(PROGRAM_LC);
    if (!checkPixelsBuf(n))
+   {
+      xfree(vertices);
       return;
+   }
 
    D3D11_MAPPED_SUBRESOURCE ms;
    if (DxFailed(d3dcontext->Map(pBufferPixels, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms))) return;   // map the buffer
@@ -463,7 +472,7 @@ void Direct3DBase::drawPixels(float* glXYA, int count, int color)
    d3dcontext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST); // POINTLIST results in points being drawn in a slightly different position
    d3dcontext->DrawIndexed(n, 0, 0);
 
-   delete vertices;
+   xfree(vertices);
 }
 
 void Direct3DBase::drawLine(int x1, int y1, int x2, int y2, int color)
