@@ -772,20 +772,18 @@ void updateDaylightSavings(Context currentContext)
    TIME_ZONE_INFORMATION tzi;
    char timeZone[128];
 
-   if ((ret = GetTimeZoneInformation(&tzi)) != TIME_ZONE_ID_UNKNOWN)
-   {
-      (*tcSettings.timeZoneMinutesPtr) = -tzi.Bias; // for gmt-3 it returns 180
-      (*tcSettings.timeZonePtr) = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
-      (*tcSettings.daylightSavingsPtr) = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
-      if (*tcSettings.daylightSavingsPtr)
-         (*tcSettings.daylightSavingsMinutesPtr) = -tzi.DaylightBias;
+   ret = GetTimeZoneInformation(&tzi); // even if TIME_ZONE_ID_UNKNOWN is returned, the fields are filled correctly
+   (*tcSettings.timeZoneMinutesPtr) = -tzi.Bias; // for gmt-3 it returns 180
+   (*tcSettings.timeZonePtr) = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
+   (*tcSettings.daylightSavingsPtr) = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
+   if (*tcSettings.daylightSavingsPtr)
+      (*tcSettings.daylightSavingsMinutesPtr) = -tzi.DaylightBias;
 
-      if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
-         JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
-      else
-         JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
-      setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
-   }
+   if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
+      JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
+   else
+      JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
+   setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
 }
 
 bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
