@@ -86,7 +86,8 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
          }
 
          ext = ext->superClass;
-         className = ext->name;
+         if (ext)
+            className = ext->name;
    }
    //len = ARRAYLENV(fields); // pode retirar apos depurar!
 
