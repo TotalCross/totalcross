@@ -352,9 +352,9 @@ public final class TCMethod implements TCConstants
       {
          String name = args[i].getName();
          String js = GlobalConstantPool.getClassName(jiargs[i+2]);
-         
          if (name == "float")
             name = "double";
+
          if (js.charAt(0) == '&') // primitive type?
             found &= name.equals(GlobalConstantPool.getPrimitiveJavaName(js));
          else
@@ -372,7 +372,7 @@ public final class TCMethod implements TCConstants
                case 'S': suffix = "&S"; break;
                case 'I': suffix = "&I"; break;
                case 'J': suffix = "&L"; break;
-               case 'F': suffix = "&D"; break;
+               case 'F': suffix = "&F"; break;
                case 'D': suffix = "&D"; break;
                case 'L': suffix = name.substring(j+1,name.length()-1);
             }

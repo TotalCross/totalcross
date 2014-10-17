@@ -62,7 +62,7 @@ import java.util.*;
  * @status updated to 1.4
  */
 public abstract class AbstractSet4D<E>
-  extends AbstractCollection<E>
+  extends AbstractCollection4D<E>
   implements Set<E>
 {
   /**
