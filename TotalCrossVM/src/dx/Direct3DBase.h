@@ -60,8 +60,8 @@ internal:
    void loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
    void drawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
    void drawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int color, bool fill);
+   void drawPixelColors(int32* x, int32* y, PixelConv* colors, int32 count);
    void drawPixels(float *glXYA, int count, int color);
-   void checkPixBuf(int n);
    void drawLine(int x1, int y1, int x2, int y2, int color);
    void fillRect(int x1, int y1, int x2, int y2, int color);
    void fillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
@@ -70,6 +70,7 @@ internal:
    void getPixels(Pixel* dstPixels, int32 srcX, int32 srcY, int32 width, int32 height, int32 pitch);
    bool isLoadCompleted();
    void lifeCycle(bool suspending);
+   bool checkPixelsBuf(int32 n);
 
    ID3D11DeviceContext *d3dcontext, *d3dImedContext;
    ID3D11CommandList *d3dCommandList;
@@ -87,7 +88,7 @@ private:
    whichProgram curProgram;
    int lastRGB;
    float aa, rr, gg, bb;
-   int lastPixelsCount;
+   int lastPixelsCount,lastLinesCount;
    float clearColor[4]; // all 0
 	Context localContext;
 	bool vmStarted;
@@ -99,14 +100,14 @@ private:
    ID3D11RenderTargetView *renderTexView;
 
    D3D_FEATURE_LEVEL m_featureLevel;
-   ID3D11Buffer *pBufferRect, *pBufferPixelsDL, *pBufferPixelsDP, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
+   ID3D11Buffer *pBufferRect, *pBufferPixels, *pBufferLines, *pBufferColor, *texVertexBuffer, *pBufferRectLC;
 	ID3D11DepthStencilView* depthStencilView;
    ID3D11Texture2D *depthStencil;
    ID3D11SamplerState *texsampler;
    ID3D11DepthStencilState *depthDisabledStencilState;
    ID3D11BlendState *pBlendState;
    ID3D11InputLayout *inputLayout, *inputLayoutT, *inputLayoutLC;
-   ID3D11Buffer *indexBuffer, *pixelsIndexBuffer;
+   ID3D11Buffer *indexBuffer, *pixelsIndexBuffer, *linesIndexBuffer;
    ID3D11VertexShader *vertexShader, *vertexShaderT, *vertexShaderLC;
    ID3D11PixelShader *pixelShader, *pixelShaderT, *pixelShaderLC;
    ID3D11Buffer *constantBuffer;

@@ -64,7 +64,19 @@ namespace PhoneDirect3DXamlAppComponent
      // Others
      void appExit();
      void appSetFullScreen();
-	};
+
+     // Settings
+     long long getFreeMemory();
+     Platform::String^ getDeviceId();
+     bool isVirtualKeyboard();
+     double getDpiX();
+     double getDpiY();
+     Platform::String^ getSerialNumber();
+     int getOSVersion();
+
+     // Map
+     bool showMap(Platform::String^ origin, Platform::String^ destination);
+   };
 }
 
 #endif

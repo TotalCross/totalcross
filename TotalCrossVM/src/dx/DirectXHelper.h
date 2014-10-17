@@ -8,12 +8,6 @@
 
 namespace DX
 {
-	inline void ThrowIfFailed(HRESULT hr)
-	{
-		if (FAILED(hr))
-         throw Platform::Exception::CreateException(hr); // Set a breakpoint on this line to catch Win32 API errors.
-	}
-
 	// Function that reads from a binary file asynchronously.
 	inline Concurrency::task<Platform::Array<byte>^> ReadDataAsync(Platform::String^ filename)
 	{

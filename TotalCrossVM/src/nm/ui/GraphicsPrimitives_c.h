@@ -450,13 +450,18 @@ static void setPixel(Context currentContext, TCObject g, int32 x, int32 y, Pixel
    }
 }
 
+static PixelConv interpolatePC(PixelConv c, PixelConv d, int32 factor)
+{
+   int m = 255 - factor;
+   c.r = (c.r*factor + d.r*m) / 255;
+   c.g = (c.g*factor + d.g*m) / 255;
+   c.b = (c.b*factor + d.b*m) / 255;
+   return c;
+}
+
 static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
 {
-   int m = 255-factor;
-   c.r = (c.r*factor + d.r*m)/255;
-   c.g = (c.g*factor + d.g*m)/255;
-   c.b = (c.b*factor + d.b*m)/255;
-   return c.pixel;
+   return interpolatePC(c,d,factor).pixel;
 }
 
 static bool surelyOutsideClip(TCObject g, int32 x1, int32 y1, int32 x2, int32 y2)
@@ -2769,6 +2774,8 @@ static int getsetRGB(Context currentContext, TCObject g, TCObject dataObj, int32
 
 #define IN_BORDER 0
 #define OUT_BORDER 0x100
+#define OUT_BORDER_COUNT 6 // constant for all thicknesses
+#define VALID_BORDER_COUNT (7 * 7 - OUT_BORDER_COUNT)
 
 static int32 windowBorderAlpha[3][7][7] =
 {
@@ -2884,6 +2891,10 @@ static void drawVLineA(Context currentContext, TCObject g, int32 x, int32 y, int
    }
 }
 
+static bool pixelInside(TCObject g, int32 x, int32 y)
+{
+   return Graphics_clipX1(g) <= x && x <= Graphics_clipX2(g) && Graphics_clipY1(g) <= y && y <= Graphics_clipY2(g);
+}
 static void drawWindowBorder(Context currentContext, TCObject g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
    int32 a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
@@ -2893,8 +2904,14 @@ static void drawWindowBorder(Context currentContext, TCObject g, int32 xx, int32
    int32 y1l = yy+7;
    int32 x2r = x2-6;
    int32 y2r = y2-6;
-
+#ifdef WP8
+   int32 brW = thickness * 2; // cant understand why this is needed
    // horizontal and vertical lines
+   fillRect(currentContext, g, x1l, yy, x2r - x1l, thickness, borderColor.pixel); // top
+   fillRect(currentContext, g, x1l, y2 - thickness, x2r - x1l, brW, borderColor.pixel); // bottom
+   fillRect(currentContext, g, xx , y1l, thickness, y2r - y1l, borderColor.pixel); // left
+   fillRect(currentContext, g, x2 - thickness, y1l, brW, y2r - y1l, borderColor.pixel); // right
+#else
    for (i = 0; i < 3; i++)
    {
       a = windowBorderAlpha[thickness-1][i][0];
@@ -2905,61 +2922,122 @@ static void drawWindowBorder(Context currentContext, TCObject g, int32 xx, int32
       drawVLineA(currentContext, g, xx+i,y1l,y2r-y1l,borderColor, a); // left
       drawVLineA(currentContext, g, x2-i,y1l,y2r-y1l,borderColor, a); // right
    }
-   // round corners
-   for (j = 0; j < 7; j++)
-   {
-      int32 top = yy+j, bot = y2r+j;
-      for (i = 0; i < 7; i++)
-      {
-         int left = xx+i, right = x2r+i;
-         // top left
-         a = windowBorderAlpha[thickness-1][j][6-i];
-         if (a != OUT_BORDER)
-         {
-            if (a == 0)
-               setPixel(currentContext, g, left,top,titleColor.pixel);
-            else
-            if (a < 0)
-               setPixel(currentContext, g, left,top,interpolate(borderColor, titleColor, -a));
-            else
-               setPixelA(currentContext, g, left,top,borderColor, a);
-         }
+#endif   
 
-         // top right
-         a = windowBorderAlpha[thickness-1][j][i];
-         if (a != OUT_BORDER)
+   // round corners
+#if defined __gl2_h_
+   if (Graphics_useOpenGL(g))
+   {
+      
+      int32 tx = Graphics_transX(g), ty = Graphics_transY(g);
+      int32 px[VALID_BORDER_COUNT * 4], py[VALID_BORDER_COUNT * 4], nn=0;
+      PixelConv cc[VALID_BORDER_COUNT * 4];
+      for (j = 0; j < 7; j++)
+      {
+         int32 top = yy + j + ty, bot = y2r + j + ty;
+         for (i = 0; i < 7; i++)
          {
-            if (a == 0)
-               setPixel(currentContext, g, right,top,titleColor.pixel);
-            else
-            if (a < 0)
-               setPixel(currentContext, g, right,top,interpolate(borderColor, titleColor, -a));
-            else
-               setPixelA(currentContext, g, right,top,borderColor, a);
+            int32 left = xx + i + tx, right = x2r + i + tx;
+            // top left
+            a = windowBorderAlpha[thickness - 1][j][6 - i];
+            if (pixelInside(g,left,top) && a != OUT_BORDER)
+            {
+               px[nn] = left;
+               py[nn] = top;
+               if (a == 0) cc[nn] = titleColor; else if (a < 0) cc[nn] = interpolatePC(borderColor, titleColor, -a); else {cc[nn] = borderColor; cc[nn].a = a;}
+               nn++;
+            }
+
+            // top right
+            a = windowBorderAlpha[thickness - 1][j][i];
+            if (pixelInside(g, right,top) && a != OUT_BORDER)
+            {
+               px[nn] = right;
+               py[nn] = top;
+               if (a == 0) cc[nn] = titleColor; else if (a < 0) cc[nn] = interpolatePC(borderColor, titleColor, -a); else { cc[nn] = borderColor; cc[nn].a = a; }
+               nn++;
+            }
+            // bottom left
+            a = windowBorderAlpha[thickness - 1][i][j];
+            if (pixelInside(g,left,bot) && a != OUT_BORDER)
+            {
+               px[nn] = left;
+               py[nn] = bot;
+               if (a == 0) cc[nn] = footerColor; else if (a < 0) cc[nn] = interpolatePC(borderColor, footerColor, -a); else { cc[nn] = borderColor; cc[nn].a = a; }
+               nn++;
+            }
+            // bottom right
+            a = windowBorderAlpha[thickness - 1][6 - i][j];
+            if (pixelInside(g,right,bot) && a != OUT_BORDER)
+            {
+               px[nn] = right;
+               py[nn] = bot;
+               if (a == 0) cc[nn] = footerColor; else if (a < 0) cc[nn] = interpolatePC(borderColor, footerColor, -a); else { cc[nn] = borderColor; cc[nn].a = a; }
+               nn++;
+            }
          }
-         // bottom left
-         a = windowBorderAlpha[thickness-1][i][j];
-         if (a != OUT_BORDER)
+      }
+      if (nn > 0)
+         glDrawPixelColors(currentContext, px, py, cc, nn);
+   }
+   else
+#endif
+   {
+      for (j = 0; j < 7; j++)
+      {
+         int32 top = yy + j, bot = y2r + j;
+         for (i = 0; i < 7; i++)
          {
-            if (a == 0)
-               setPixel(currentContext, g, left,bot,footerColor.pixel);
-            else
-            if (a < 0)
-               setPixel(currentContext, g, left,bot,interpolate(borderColor, footerColor, -a));
-            else
-               setPixelA(currentContext, g, left,bot,borderColor, a);
-         }
-         // bottom right
-         a = windowBorderAlpha[thickness-1][6-i][j];
-         if (a != OUT_BORDER)
-         {
-            if (a == 0)
-               setPixel(currentContext, g, right,bot,footerColor.pixel);
-            else
-            if (a < 0)
-               setPixel(currentContext, g, right,bot,interpolate(borderColor, footerColor, -a));
-            else
-               setPixelA(currentContext, g, right,bot,borderColor, a);
+            int left = xx + i, right = x2r + i;
+            // top left
+            a = windowBorderAlpha[thickness - 1][j][6 - i];
+            if (a != OUT_BORDER)
+            {
+               if (a == 0)
+                  setPixel(currentContext, g, left, top, titleColor.pixel);
+               else
+               if (a < 0)
+                  setPixel(currentContext, g, left, top, interpolate(borderColor, titleColor, -a));
+               else
+                  setPixelA(currentContext, g, left, top, borderColor, a);
+            }
+
+            // top right
+            a = windowBorderAlpha[thickness - 1][j][i];
+            if (a != OUT_BORDER)
+            {
+               if (a == 0)
+                  setPixel(currentContext, g, right, top, titleColor.pixel);
+               else
+               if (a < 0)
+                  setPixel(currentContext, g, right, top, interpolate(borderColor, titleColor, -a));
+               else
+                  setPixelA(currentContext, g, right, top, borderColor, a);
+            }
+            // bottom left
+            a = windowBorderAlpha[thickness - 1][i][j];
+            if (a != OUT_BORDER)
+            {
+               if (a == 0)
+                  setPixel(currentContext, g, left, bot, footerColor.pixel);
+               else
+               if (a < 0)
+                  setPixel(currentContext, g, left, bot, interpolate(borderColor, footerColor, -a));
+               else
+                  setPixelA(currentContext, g, left, bot, borderColor, a);
+            }
+            // bottom right
+            a = windowBorderAlpha[thickness - 1][6 - i][j];
+            if (a != OUT_BORDER)
+            {
+               if (a == 0)
+                  setPixel(currentContext, g, right, bot, footerColor.pixel);
+               else
+               if (a < 0)
+                  setPixel(currentContext, g, right, bot, interpolate(borderColor, footerColor, -a));
+               else
+                  setPixelA(currentContext, g, right, bot, borderColor, a);
+            }
          }
       }
    }

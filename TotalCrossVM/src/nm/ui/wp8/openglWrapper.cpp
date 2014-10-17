@@ -47,6 +47,8 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 	screen->extension = deviceCtx;
 	screen->pitch = screen->screenW * screen->bpp / 8;
 	screen->pixels = (uint8*)1;
+   screen->hRes = (int)getDpiX();
+   screen->vRes = (int)getDpiY();
 	return screen->pixels != null;
 }
 
@@ -133,6 +135,11 @@ DWORD32 getGlColor(int32 rgb, int32 a)
    PixelConv pc;
    pc.pixel = rgb;
    return (a << 24) | (pc.r << 16) | (pc.g << 8) | pc.b;
+}
+
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n)
+{
+   dxDrawPixelColors(x, y, colors, n);
 }
 
 void glDrawPixels(int32 n, int32 rgb)

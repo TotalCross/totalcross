@@ -143,6 +143,23 @@ static GLuint pointsXYA;
 static GLuint pointsColor;
 static GLuint pointsProjMat;
 
+//////////// point colors (each point with a different color)
+
+#define POINTCOLORS_VERTEX_CODE \
+      "attribute vec2 a_xy; attribute vec4 a_Color; varying vec4 v_Color;" \
+      "uniform mat4 projectionMatrix; " \
+      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = vec4(a_xy.xy,0,1.0) * projectionMatrix;}"
+
+#define POINTCOLORS_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec4 v_Color;" \
+      "void main() {gl_FragColor = v_Color;}"
+
+static GLuint pointcolorsProgram;
+static GLuint pointcolorsXY;
+static GLuint pointcolorsColors;
+static GLuint pointcolorsProjMat;
+
 ///////////// line, rect, point
 
 #define LRP_VERTEX_CODE \
@@ -161,7 +178,7 @@ static GLuint lrpColor;
 static GLuint lrpProjMat;
 static GLushort rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
-///////////// line, rect, point
+///////////// dotted line (horizontal/vertical only)
 
 #define DOT_VERTEX_CODE \
       "attribute vec4 a_Position;" \
@@ -314,6 +331,50 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
    lastWindow = window;
 }
 #endif
+
+static void initPointColors()
+{
+   pointcolorsProgram = createProgram(POINTCOLORS_VERTEX_CODE, POINTCOLORS_FRAGMENT_CODE);
+   pointcolorsColors = glGetAttribLocation(pointcolorsProgram, "a_Color"); GL_CHECK_ERROR
+   pointcolorsXY = glGetAttribLocation(pointcolorsProgram, "a_xy"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(pointcolorsXY); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glEnableVertexAttribArray(pointcolorsColors); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   pointcolorsProjMat = glGetUniformLocation(pointcolorsProgram, "projectionMatrix"); GL_CHECK_ERROR
+}
+
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n)
+{
+   setCurrentProgram(pointcolorsProgram);
+   if (checkGLfloatBuffer(currentContext, n*4)) // allocated n*4*3 = n*12, and we need 2 * (n*2 (coords) + n*4 (color components))
+   {
+      int32 i;
+      float *glV = glXYA, *glA;
+      for (i = 0; i < n; i++)
+      {
+         *glV++ = (float)*x++;
+         *glV++ = (float)*y++;
+         *glV++ = (float)x[-1]+1;
+         *glV++ = (float)y[-1]+1;
+      }
+      glA = glV;
+      for (i = 0; i < n; i++)
+      {                      
+         PixelConv pc = *colors++;
+         *glV++ = f255[pc.r];
+         *glV++ = f255[pc.g];
+         *glV++ = f255[pc.b];
+         *glV++ = f255[pc.a];
+         *glV++ = f255[pc.r];
+         *glV++ = f255[pc.g];
+         *glV++ = f255[pc.b];
+         *glV++ = f255[pc.a];
+      }
+      
+      glVertexAttribPointer(pointcolorsColors, 4, GL_FLOAT, GL_FALSE, 0, glA); GL_CHECK_ERROR
+      glVertexAttribPointer(pointcolorsXY, 2, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
+      glDrawArrays(GL_LINES, 0, n*2); GL_CHECK_ERROR
+   }
+}
 
 static void initPoints()
 {
@@ -709,12 +770,14 @@ static void setProjectionMatrix(float w, float h)
       0.0,      0.0,   0.0,  1.0
    };
 
-   setCurrentProgram(textProgram);    glUniformMatrix4fv(textProjMat   , 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(textureProgram); glUniformMatrix4fv(textureProjMat, 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(lrpProjMat    , 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(dotProgram);     glUniformMatrix4fv(dotProjMat    , 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(pointsProjMat , 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(shadeProjMat  , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(textProgram);         glUniformMatrix4fv(textProjMat        , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(textureProgram);      glUniformMatrix4fv(textureProjMat     , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(lrpProgram);          glUniformMatrix4fv(lrpProjMat         , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(dotProgram);          glUniformMatrix4fv(dotProjMat         , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);       glUniformMatrix4fv(pointsProjMat      , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointcolorsProgram);  glUniformMatrix4fv(pointcolorsProjMat , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);       glUniformMatrix4fv(pointsProjMat      , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(shadeProgram);        glUniformMatrix4fv(shadeProjMat       , 1, 0, mat); GL_CHECK_ERROR
 #ifdef darwin
     int fw,fh;
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &fw);
@@ -754,6 +817,7 @@ bool setupGL(int width, int height)
     initTexture();
     initLineRectPoint();
     initPoints();
+    initPointColors();
     initShade();
     setProjectionMatrix(appW,appH);
 

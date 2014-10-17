@@ -153,7 +153,7 @@ extern void *deviceCtx; // The device context points a structure containing plat
 // utils.c
 extern int32 firstTS;
 #ifdef ANDROID
-extern jmethodID jlistTCZs;
+extern jmethodID jlistTCZs,jgetFreeMemory;
 #endif
 
 // file.c

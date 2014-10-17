@@ -96,6 +96,9 @@ public class ListBox extends Container implements Scrollable
     */
    public int iconGap;
    
+   /** Set to false to disable border drawing. */
+   public boolean drawBorder = true;
+   
    /** Used to show an icon and a text. You can mix IconItem with other item types in the
     * ListBox. Example:
     * <pre>
@@ -947,19 +950,22 @@ public class ListBox extends Container implements Scrollable
       g.backColor = uiAndroid ? parent.backColor : back0;
       if (!transparentBackground) // guich@tc115_18
          g.fillRect(0,0,width,height); // guich@tc115_77: fill till end because the scrollbar may not being shown
-      if (uiAndroid)
+      if (drawBorder)
       {
-         if (npback == null)
-            try
-            {
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false);
-            }
-         catch (ImageException e) {}
-         g.drawImage(npback, 0,0);
+         if (uiAndroid)
+         {
+            if (npback == null)
+               try
+               {
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false);
+               }
+            catch (ImageException e) {}
+            g.drawImage(npback, 0,0);
+         }
+         g.foreColor = foreColor;
+         if (!uiAndroid)
+            g.draw3dRect(0,0,width,height,Graphics.R3D_CHECK,false,false,fourColors);
       }
-      g.foreColor = foreColor;
-      if (!uiAndroid)
-         g.draw3dRect(0,0,width,height,Graphics.R3D_CHECK,false,false,fourColors);
       g.foreColor = fColor;
 
       int dx = 2; // guich@580_41: changed from 3 to 2

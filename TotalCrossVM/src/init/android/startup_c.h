@@ -100,6 +100,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jfindTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "findTCZ", "(Ljava/lang/String;)I");
    jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    jlistTCZs         = (*env)->GetStaticMethodID(env, applicationClass, "listTCZs", "()Ljava/lang/String;");
+   jgetFreeMemory    = (*env)->GetStaticMethodID(env, applicationClass, "getFreeMemory", "()I");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");

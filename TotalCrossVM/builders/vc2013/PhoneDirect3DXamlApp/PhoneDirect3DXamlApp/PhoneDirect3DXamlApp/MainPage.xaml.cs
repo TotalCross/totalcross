@@ -26,6 +26,8 @@ using System.IO.IsolatedStorage;
 using System.Xml.Linq;
 using Microsoft.Phone.BackgroundAudio;
 using System.Windows.Resources;
+using Microsoft.Phone.Info;
+using System.Device.Location;
 
 namespace PhoneDirect3DXamlAppInterop
 {
@@ -92,6 +94,41 @@ namespace PhoneDirect3DXamlAppInterop
           tbox.Margin = isSipSet()
             ? new Thickness(0, 0, 0, MainPage.instance.ActualHeight * 10) // to top
             : new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0);  // to bottom
+      }
+
+      public long getFreeMemory()
+      {
+         return Microsoft.Phone.Info.DeviceStatus.ApplicationMemoryUsageLimit - Microsoft.Phone.Info.DeviceStatus.ApplicationCurrentMemoryUsage;
+      }
+      public String getDeviceId()
+      {
+         return Microsoft.Phone.Info.DeviceStatus.DeviceManufacturer + " " + Microsoft.Phone.Info.DeviceStatus.DeviceName;
+      }
+      public bool isVirtualKeyboard()
+      {
+         return !Microsoft.Phone.Info.DeviceStatus.IsKeyboardPresent;
+      }
+      // http://msdn.microsoft.com/en-us/library/windows/apps/microsoft.phone.info.deviceextendedproperties%28v=vs.105%29.aspx
+      public double getDpiX()
+      {
+         object o;
+         return Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("RawDpiX", out o) ? (double)o : 0;
+      }
+      public double getDpiY()
+      {
+         object o;
+         return Microsoft.Phone.Info.DeviceExtendedProperties.TryGetValue("RawDpiY", out o) ? (double)o : 0;
+      }
+      public String getSerialNumber()
+      {
+         return BitConverter.ToString((Byte[])Microsoft.Phone.Info.DeviceExtendedProperties.GetValue("DeviceUniqueId")).Replace("-", string.Empty);
+         // another possibility (longer value)       
+         // BitConverter.ToString(Convert.FromBase64String((String)Microsoft.Phone.Info.UserExtendedProperties.GetValue("ANID2"))).Replace("-", string.Empty);
+      }
+      public int getOSVersion()
+      {
+         return Environment.OSVersion.Version.Major * 100 + Environment.OSVersion.Version.Minor;
+         // note that Environment.OSVersion.ToString() returns "Microsoft Windows NT "+version
       }
 
       void cameraCaptureTask_Completed(object sender, PhotoResult e)
@@ -453,9 +490,33 @@ namespace PhoneDirect3DXamlAppInterop
          return MainPage.screenSize;
       }
 
-       public String getAppName()
+      public String getAppName()
       {
           return appName;
+      }
+
+      public bool showMap(String origin, String destination)
+      {
+         if (origin.StartsWith("@")) origin = origin.Substring(1);
+         if (destination.StartsWith("@")) destination = destination.Substring(1);
+         root.Dispatcher.BeginInvoke((Action)(() => // must run on ui thread
+         {
+            if (destination.Length == 0)
+            {
+               MapsTask maps = new MapsTask();
+               //maps.ZoomLevel = 0.1;
+               maps.SearchTerm = origin;
+               maps.Show();
+            }
+            else
+            {
+               BingMapsDirectionsTask direction = new BingMapsDirectionsTask();
+               direction.Start = new LabeledMapLocation(origin, null);
+               direction.End = new LabeledMapLocation(destination, null);//new GeoCoordinate(-3.758814, -38.484199));
+               direction.Show();
+            }
+         }));
+         return true;
       }
    }
 

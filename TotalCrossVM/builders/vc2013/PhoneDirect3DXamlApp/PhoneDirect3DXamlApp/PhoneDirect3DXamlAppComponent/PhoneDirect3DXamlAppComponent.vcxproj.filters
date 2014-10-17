@@ -618,6 +618,9 @@
     <ClCompile Include="..\..\..\..\..\src\ras\ras_Utils.c">
       <Filter>TCVM\ras</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\nm\map\GoogleMaps.c">
+      <Filter>TCVM\Native methods\map</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\src\zlib\crc32.h">
@@ -1160,6 +1163,9 @@
     </Filter>
     <Filter Include="TCVM\ras">
       <UniqueIdentifier>{b6477cc9-f710-4553-81a8-aaaee688378e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TCVM\Native methods\map">
+      <UniqueIdentifier>{d3023f43-c973-4512-bd0d-55e120295391}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

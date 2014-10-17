@@ -284,6 +284,21 @@ public class HttpStream extends Stream
        */
       public SocketFactory socketFactory = SocketFactory.getDefault();
 
+      /**
+       * Charset encoding ISO-8859-1
+       */
+      public static final String CHARSET_ISO88591 = "ISO-8859-1";
+
+      /**
+       * Charset encoding UTF-8
+       */
+      public static final String CHARSET_UTF8 = "UTF-8";
+
+      /**
+       * Charset encoding to be used by HttpStream. Defaults to CHARSET_ISO88591.
+       */
+      private String encoding = CHARSET_ISO88591;
+
       /** Constructs a new Options class, from where you change the behaviour of an Http connection.
        * Sets the <code>postHeaders</code> to:
        * <pre>
@@ -296,7 +311,33 @@ public class HttpStream extends Stream
       public Options()
       {
          requestHeaders.put("User-Agent",Settings.platform+" / "+Settings.deviceId); // flsobral@tc110_104: this is a request header, not a post header.
-         postHeaders.put("Content-Type","application/x-www-form-urlencoded");
+         postHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+      }
+
+      /**
+       * Sets the charset encoding to be used by HttpStream.
+       * 
+       * @param encoding
+       *           the cjarset encoding to be set. Must be either "ISO-8859-1" or "UTF-8".
+       */
+      public void setCharsetEncoding(String encoding)
+      {
+         if (encoding == CHARSET_ISO88591 || CHARSET_ISO88591.equals(encoding))
+            this.encoding = CHARSET_ISO88591;
+         else if (encoding == CHARSET_UTF8 || CHARSET_UTF8.equals(encoding))
+            this.encoding = CHARSET_UTF8;
+         else
+            throw new IllegalArgumentException();
+      }
+
+      /**
+       * Returns the currently set charset encoding.
+       * 
+       * @return the charset encoding
+       */
+      public String getCharsetEncoding()
+      {
+         return this.encoding;
       }
 
       /** Replaces the default Content-Type (<code>application/x-www-form-urlencoded</code>) by the given one. */
@@ -420,7 +461,10 @@ public class HttpStream extends Stream
 
    private int writeBytesSize;
 
-   private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
+   /** Returns true if the response code represents an error. */
+   public boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
+
+   private CharacterConverter cc;
 
    public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
@@ -554,6 +598,16 @@ public class HttpStream extends Stream
          if (header != null)
             options.partContent.addHeader("Cookie", header);
       }
+      else
+      {
+         String contentType = (String) options.postHeaders.get("Content-Type");
+         if (contentType != null && contentType.indexOf("charset") != -1)
+            options.postHeaders.put("Content-Type", contentType + ";charset=\"" + options.encoding + "\"");
+         if (options.encoding == Options.CHARSET_ISO88591)
+            cc = new CharacterConverter();
+         else if (options.encoding == Options.CHARSET_UTF8)
+            cc = new UTF8CharacterConverter();
+      }
       
       if (GET.equals(options.httpType))
          {options.doGet = true; options.doPost = false;}
@@ -609,11 +663,16 @@ public class HttpStream extends Stream
 
       if (options.partContent == null && (POST.equals(options.httpType) || options.doPost))
       {
-         int len1 = options.postPrefix == null ? 0 : options.postPrefix.length();
-         int len2 = options.postDataSB == null ? 0 : options.postDataSB.length();
-         int len3 = options.postData   == null ? 0 : options.postData.length();
-         int len4 = options.postSuffix == null ? 0 : options.postSuffix.length();
-         int len = len1+len2+len3+len4; // note: this can lead to problems if the Strings contains unicode characters, because in this case, string.length != string.getBytes.length
+         int len = 0;
+         if (options.postPrefix != null)
+            len += cc.chars2bytes(options.postPrefix.toCharArray(), 0, options.postPrefix.length()).length;
+         if (options.postDataSB != null)
+            len += cc.chars2bytes(options.postDataSB.toString().toCharArray(), 0, options.postDataSB.length()).length;
+         if (options.postData != null)
+            len += cc.chars2bytes(options.postData.toCharArray(), 0, options.postData.length()).length;
+         if (options.postSuffix != null)
+            len += cc.chars2bytes(options.postSuffix.toCharArray(), 0, options.postSuffix.length()).length;
+
          if (len > 0) //luciana@570_119: avoids null pointer exception if the post has no data
             options.postHeaders.put("Content-Length", Convert.toString(len));
       }
@@ -630,7 +689,7 @@ public class HttpStream extends Stream
          writeResponseRequest(sb, options); //flsobral@tc120_17: fixed bug with HttpStream connection over BIS transport on BlackBerry.
       else
       {
-         byte[] bytes = Convert.getBytes(sb);
+         byte[] bytes = cc.chars2bytes(sb.toString().toCharArray(), 0, sb.length());
          writeBytes(bytes, 0, bytes.length);
          try
          {
@@ -652,7 +711,7 @@ public class HttpStream extends Stream
 
    protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
    {
-      byte[] bytes = Convert.getBytes(sb);
+      byte[] bytes = cc.chars2bytes(sb.toString().toCharArray(), 0, sb.length());
       writeBytes(bytes, 0, bytes.length);
       bytes = null;
 
@@ -660,25 +719,25 @@ public class HttpStream extends Stream
       {
          if (options.postPrefix != null)
          {
-            bytes = options.postPrefix.getBytes();
+            bytes = cc.chars2bytes(options.postPrefix.toCharArray(), 0, options.postPrefix.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
          if (options.postDataSB != null)
          {
-            bytes = Convert.getBytes(options.postDataSB);
+            bytes = cc.chars2bytes(options.postDataSB.toString().toCharArray(), 0, options.postDataSB.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
          if (options.postData != null)
          {
-            bytes = options.postData.getBytes();
+            bytes = cc.chars2bytes(options.postData.toCharArray(), 0, options.postData.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
          if (options.postSuffix != null)
          {
-            bytes = options.postSuffix.getBytes();
+            bytes = cc.chars2bytes(options.postSuffix.toCharArray(), 0, options.postSuffix.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }

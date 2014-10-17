@@ -1007,6 +1007,7 @@ throwNoSuchMethodError:
    CharP paramsStr = null;
    for (i = 0; i < len; i++)
       slen += xstrlen(cp->cls[sym[i+2]]);
+   slen++;
    if (slen > 0 && (paramsStr = xmalloc(slen)) != null)
    {                 
       for (i = 0; i < len; i++)

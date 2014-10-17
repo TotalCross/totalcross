@@ -680,7 +680,7 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
                CharP msg;
                TCObject original = p->currentContext->thrownException, omsg = *Throwable_msg(original);
                p->currentContext->thrownException = null;
-               msg = omsg ? JCharP2CharP(String_charsStart(omsg),-1) : null;
+               msg = omsg ? JCharP2CharP(String_charsStart(omsg),String_charsLen(omsg)) : null;
                throwException(p->currentContext, InvocationTargetException, "Exception %s thrown: %s", OBJ_CLASS(original)->name, msg == null ? "" : msg);
                xfree(msg);
             }

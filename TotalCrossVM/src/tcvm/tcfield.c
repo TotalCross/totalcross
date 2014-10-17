@@ -64,13 +64,16 @@ TCObject* getStaticFieldObject(TCClass c, CharP fieldName)
 
 VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
 {
+   int32 i;
    uint32 fieldIndex = c->cp->sfieldField[sym];
    uint32 classIndex = c->cp->sfieldClass[sym], len;
    CharP className = c->cp->cls[classIndex];
    CharP fieldName = c->cp->mtdfld[fieldIndex];
    
    FieldArray fields=null, f;
-   TCClass ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false);
+   TCClass ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false), ext0 = ext;
+   if (strEq(fieldName,"SN"))
+      fieldName = "SN";
    while (ext)
    {
       for (f = fields = ext->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
@@ -84,12 +87,24 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
                default:   return c->cp->boundSField[sym] = &ext->v64StaticValues[idx];
             }
          }
-
-         ext = ext->superClass;
+      ext = ext->superClass;
+      if (ext)
          className = ext->name;
    }
-   //len = ARRAYLENV(fields); // pode retirar apos depurar!
-
+   if (ext == null)
+      for (ext = ext0; ext; ext = ext->superClass) // if didn't find in the classes, search in the interfaces
+         for (i = ARRAYLENV(ext->interfaces)-1; i >= 0; i--)
+            for (f = fields = ext->interfaces[i]->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
+               if (strEq(f->name, fieldName))
+               {
+                  int32 idx = (uint16)(f-fields);
+                  switch (t)
+                  {
+                     case RegI: return &ext->interfaces[i]->i32StaticValues[idx];
+                     case RegO: return &ext->interfaces[i]->objStaticValues[idx];
+                     default:   return &ext->interfaces[i]->v64StaticValues[idx];
+                  }
+               }
    return ext == null ? SF_CLASS_ERROR : SF_FIELD_ERROR;
 }
 
@@ -125,7 +140,6 @@ uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, 
          }
          else
             break;
-          
       ext = ext->superClass;
       if (ext)
          fieldClassName = ext->name;

@@ -31,15 +31,16 @@ TC_API void getRomSerialNumber(CharP outBuf)
    xstrcpy(outBuf, romSerialNumber);
 }
 
+TC_API void getDeviceId(CharP outBuf)
+{
+   xstrcpy(outBuf, deviceId);
+}
+
 TC_API void getImei(CharP outBuf)
 {
    xstrcpy(outBuf, imei);
 }
 
-TC_API void getDeviceId(CharP outBuf)
-{
-   xstrcpy(outBuf, deviceId);
-}
 
 static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
 {

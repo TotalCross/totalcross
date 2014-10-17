@@ -133,7 +133,7 @@ public class SQLiteUtil
    public String[][] getStrings(String sql) throws SQLException
    {
       ResultSet rs = executeQuery(sql);
-      String[][] ret = rs.next() ? getStrings(rs, new Vector(vectorInitialSize)) : null;
+      String[][] ret = getStrings(rs, new Vector(vectorInitialSize));
       rs.close();
       return ret;
    }

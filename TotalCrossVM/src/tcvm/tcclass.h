@@ -518,30 +518,30 @@ struct TMethod
 {
    // How many registers of each type are used in this method, including
    // the method parameters, but excluding the instance reference (if any)
-   uint8 iCount,oCount, v64Count, paramSkip;
+   uint8 iCount,oCount, v64Count, paramSkip; // 3
    // an array of instructions.
-   Code code;
+   Code code; // 4
    // The class to whom this method belongs to
-   TCClass class_;
+   TCClass class_; // 8
    // Signature of this method, containing indexes to the CP: name, number of parameters, and the parameters
-   CharP name;
+   CharP name; // 0xC
    uint16 paramCount;
-   UInt16Array cpParams; // indexes to the constant pool of the parameters
+   UInt16Array cpParams; // indexes to the constant pool of the parameters - 0x14
    UInt8Array paramRegs; // the RegType to where the parameters must go on - two bits would be enough, but we use more to improve speed
    int32 hashName, hashParams; // hash for the name and parameters
    // The return type, as an index to the constant pool. Zero for constructors and methods that return void.
    uint16 cpReturn;
-   RegType returnReg; // register used for return
+   RegType returnReg; // register used for return - 0x28
    // The method's access flags (public, static, private, etc)
    MethodFlags flags;
    // The exception handlers defining which parts of the code have a try/catch
-   ExceptionArray exceptionHandlers;
+   ExceptionArray exceptionHandlers; // 0x30
    // Used in debug info - the line numbers for each set of instructions
-   UInt16Array lineNumberLine; // The line number itself;
-   UInt16Array lineNumberStartPC; // The pc where this line number goes
+   UInt16Array lineNumberLine; // The line number itself; - 0x34
+   UInt16Array lineNumberStartPC; // The pc where this line number goes - 0x38
    // if this method is native, this holds the native signature
-   CharP nativeSignature;
-   NativeMethod boundNM;
+   CharP nativeSignature; // 0x3C
+   NativeMethod boundNM; // 0x40
    uint32 ref; // library reference
 };
 

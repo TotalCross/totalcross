@@ -245,7 +245,6 @@ TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
    int32 retc;
-   
    retc = checkActivation(currentContext);
    isDemo = retc == ISDEMO;
 
@@ -354,7 +353,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
          SetProcessAffinityMask(GetCurrentProcess(), 1L);
    }
 #endif
-   if (xstrstr(argsOriginal,"/scr"))
+   if (argsOriginalLen > 0 && xstrstr(argsOriginal, "/scr"))
    {
       argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);
       if (!argsOriginal)
@@ -425,6 +424,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
           return exitProgram(-1);
       }
       c = cmdline;
+      if (cmdline) 
       while (loop)
       {
          switch (*cmdline++)
@@ -463,7 +463,8 @@ jumpArgument:
       }
       while (*c == ' ' && *c != 0)
          c++;
-      xstrcpy(commandLine, c);
+      if (commandLine != null && c != null)
+         xstrcpy(commandLine, c);
    }
 
 #if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)

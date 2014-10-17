@@ -53,8 +53,10 @@ HRESULT Direct3DContentProvider::GetTexture(_In_ const DrawingSurfaceSizeF* size
    {
       m_controller->renderer->syncTex->BeginDraw();
       m_controller->renderer->d3dImedContext->ExecuteCommandList(m_controller->renderer->d3dCommandList, FALSE);
+      m_controller->renderer->d3dCommandList->Release();
       m_controller->renderer->updateScreenWaiting = false; // once the commandlist is used, we can continue
       m_controller->renderer->syncTex->EndDraw();
+      //{static int lastm, nzero;  int mm = getFreeMemory(0); if (mm == lastm) nzero++; else { debug("--->>> last refresh: %d (%d) - #0: %d", (lastm - mm) / 1024, mm / 1024, nzero); lastm = mm; nzero = 0; }}
    }
    // Set output parameters
    texSubRect->left = texSubRect->top = 0.0f; texSubRect->right = (float)size->width; texSubRect->bottom = (float)size->height;

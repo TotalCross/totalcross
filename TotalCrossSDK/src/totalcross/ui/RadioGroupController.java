@@ -83,6 +83,25 @@ public class RadioGroupController
       }
    }
    
+   /** Selects a radio whose text starts with the given caption */
+   public void setSelectedItemStartingWith(String text, boolean caseInsensitive)
+   {
+      if (caseInsensitive) text = text.toLowerCase();
+      if (last != null)
+         last.setChecked(false);
+      for (int i = 0, n = members.size(); i < n; i++)
+      {
+         Radio r = (Radio)members.items[i];
+         String s = r.getText();
+         if (caseInsensitive) s = s.toLowerCase();
+         if (s.startsWith(text))
+         {
+            (last = r).setChecked(true);
+            break;
+         }
+      }
+   }
+   
    protected void setSelectedItem(Radio who, boolean checked) // guich@402_21
    {
       if (checked) // selecting the radio?
