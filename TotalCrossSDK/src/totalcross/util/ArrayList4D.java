@@ -243,13 +243,12 @@ public class ArrayList4D<E> extends AbstractList<E>
     ArrayList4D<E> clone = null;
     try
       {
-       Object[] obj = new Object[0].clone();
         clone = (ArrayList4D<E>) super.clone();
-        clone.data = (E[]) data.clone();        
+        clone.data = (E[])new Object[data.length];
+        Vm.arrayCopy(data, 0, clone.data, 0, data.length);
       }
     catch (CloneNotSupportedException e)
       {
-        // Impossible to get here.
       }
     return clone;
   }

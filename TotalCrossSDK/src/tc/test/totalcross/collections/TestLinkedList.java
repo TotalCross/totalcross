@@ -343,7 +343,7 @@ public class TestLinkedList extends TestCase
    }
 }
 
-class Test24 extends LinkedList
+class Test24 extends LinkedList implements Cloneable
 {
    public Test24()
    {

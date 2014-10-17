@@ -244,7 +244,8 @@ public class BitSet4D implements Cloneable
     try
       {
         BitSet4D bs = (BitSet4D) super.clone();
-        bs.bits = (long[]) bits.clone();
+        bs.bits = new long[bits.length]; 
+        Vm.arrayCopy(bits, 0, bs.bits, 0, bits.length);
         return bs;
       }
     catch (CloneNotSupportedException e)

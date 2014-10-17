@@ -93,11 +93,16 @@ public class TestArrayList extends TestCase
          fail("4");
       }
       catch (IndexOutOfBoundsException exception) {}
+      
+      assertEquals(test1, test1.clone());
+      assertEquals(test2, test2.clone());
+      assertEquals(test3, ((ArrayList)test3).clone());
+      assertEquals(test4, ((ArrayList)test4).clone());
    }
    
 }
 
-class Test18 extends ArrayList 
+class Test18 extends ArrayList implements Cloneable
 {
    public Test18()
    {
