@@ -1,5 +1,7 @@
 package totalcross.lang;
 
+import totalcross.sys.*;
+
 /** A Float value in TotalCross is actually a Double value. */
 
 public class Float4D extends Double4D
@@ -33,7 +35,7 @@ public class Float4D extends Double4D
     * @return the bits of the <code>float</code>
     * @see #intBitsToFloat(int)
     */
-   public static int floatToIntBits(float value)
+   public static int floatToIntBits(double value)
    {
      if (isNaN(value))
        return 0x7fc00000;
@@ -54,7 +56,10 @@ public class Float4D extends Double4D
     * @return the bits of the <code>float</code>
     * @see #intBitsToFloat(int)
     */
-   public static native int floatToRawIntBits(float value);
+   public static int floatToRawIntBits(double value)
+   {
+      return Convert.doubleToIntBits(value);
+   }
    
    /**
     * Behaves like <code>new Float(x).compareTo(new Float(y))</code>; in
@@ -66,7 +71,7 @@ public class Float4D extends Double4D
     * @return the comparison
     * @since 1.4
     */
-   public static int compare(float x, float y)
+   public static int compare(double x, double y)
    {
        // handle the easy cases:
        if (x < y)

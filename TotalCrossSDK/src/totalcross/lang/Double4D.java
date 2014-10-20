@@ -117,7 +117,10 @@ public class Double4D
     * @return the bits of the <code>double</code>
     * @see #longBitsToDouble(long)
     */
-   public static native long doubleToRawLongBits(double value);
+   public static long doubleToRawLongBits(double value)
+   {
+      return Convert.doubleToLongBits(value);
+   }
 
    /**
     * Behaves like <code>new Double(x).compareTo(new Double(y))</code>; in
