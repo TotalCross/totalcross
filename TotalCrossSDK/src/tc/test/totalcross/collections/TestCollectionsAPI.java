@@ -14,10 +14,10 @@ package tc.test.totalcross.collections;
 import totalcross.sys.*;
 import totalcross.unit.TestSuite;
 
-public class TestCollections extends TestSuite
+public class TestCollectionsAPI extends TestSuite
 {
 
-   public TestCollections()
+   public TestCollectionsAPI()
    {
       super("Collections Test Suite");
       if (Settings.platform.equals(Settings.ANDROID))
@@ -54,6 +54,7 @@ public class TestCollections extends TestSuite
       addTestCase(TestDictionary.class);
       
       // Classes
+      addTestCase(TestArrays.class);
       addTestCase(TestArrayList.class);
       addTestCase(TestBitSet.class);
       addTestCase(TestHashMap.class);
