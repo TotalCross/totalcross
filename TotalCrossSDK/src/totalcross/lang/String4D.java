@@ -20,7 +20,6 @@
 package totalcross.lang;
 
 import java.text.*;
-
 import totalcross.sys.*;
 import totalcross.util.regex.*;
 
@@ -39,7 +38,7 @@ import totalcross.util.regex.*;
  * available.
  */
 
-public final class String4D
+public final class String4D implements Comparable<String4D>
 {
    char chars[];
 
