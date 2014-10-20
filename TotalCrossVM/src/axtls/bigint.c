@@ -1094,8 +1094,8 @@ static bigint *alloc(BI_CTX *ctx, int size)
     else
     {
         /* No free bigints available - create a new one. */
-        biR = (bigint *)malloc(sizeof(bigint));
-        biR->comps = (comp*)malloc(size * COMP_BYTE_SIZE);
+        biR = (bigint *)malloc(sizeof(bigint)+64);
+        biR->comps = (comp*)malloc(size * COMP_BYTE_SIZE+64);
         biR->max_comps = size;  /* give some space to spare */
     }
 
@@ -1376,7 +1376,7 @@ static void precompute_slide_window(BI_CTX *ctx, int window, bigint *g1)
         k <<= 1;
     }
 
-    ctx->g = (bigint **)malloc(k*sizeof(bigint *));
+    ctx->g = (bigint **)malloc(k*sizeof(bigint *)+64);
     ctx->g[0] = bi_clone(ctx, g1);
     bi_permanent(ctx->g[0]);
     g2 = bi_residue(ctx, bi_square(ctx, ctx->g[0]));   /* g^2 */
@@ -1429,7 +1429,7 @@ bigint *bi_mod_power(BI_CTX *ctx, bigint *bi, bigint *biexp)
     /* work out the slide constants */
     precompute_slide_window(ctx, window_size, bi);
 #else   /* just one constant */
-    ctx->g = (bigint **)malloc(sizeof(bigint *));
+    ctx->g = (bigint **)malloc(sizeof(bigint *)+64);
     ctx->g[0] = bi_clone(ctx, bi);
     ctx->window = 1;
     bi_permanent(ctx->g[0]);

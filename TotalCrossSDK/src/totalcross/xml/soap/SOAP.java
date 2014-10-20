@@ -697,7 +697,7 @@ public class SOAP // guich@570_34
          httpOptions.postPrefix =
                "<?xml version=\"1.0\" encoding=\"" + httpOptions.getCharsetEncoding() + "\"?>"
                      + prefix
-                     + namespaceId == null ? "<" + mtd + " xmlns=\"" + namespace + "\">" : "<" + namespaceId + ":" + mtd + " xmlns:" + namespaceId + "=\"" + namespace + "\">"; // guich@tc123_39: don't concatenate the args with the prefix and suffix
+                     + (namespaceId == null ? "<" + mtd + " xmlns=\"" + namespace + "\">" : "<" + namespaceId + ":" + mtd + " xmlns:" + namespaceId + "=\"" + namespace + "\">"); // guich@tc123_39: don't concatenate the args with the prefix and suffix
          httpOptions.postDataSB = sbuf;
          httpOptions.postSuffix = namespaceId == null ? "</" + mtd + ">" + suffix : "</" + namespaceId + ":" + mtd + ">" + suffix;
          if (debug)
