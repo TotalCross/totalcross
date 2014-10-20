@@ -1,5 +1,6 @@
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.anim.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -29,6 +30,9 @@ public class Toast
    public static Button btn;
    private static ControlAnimation animation;
    
+   public static final int INFINITE = Convert.MAX_INT_VALUE;
+   public static final int INFINITE_NOANIM = Convert.MIN_INT_VALUE;;
+   
    /** Shows a toast message using the given parameters.
     * Sample:
     * <pre>
@@ -37,6 +41,8 @@ public class Toast
     * </pre>
     * See the public static fields of this class to show how you can customize the appearance.
     * Calling with a nulled message will make the last toast disappear.
+    * If delay is INFINITE, it will wait forever until you call show(null,0).
+    * If delay is INFINITE_NOANIM, it will wait forever until you call show(null,0) and will not use animation.
     */
    public static void show(final String message, final int delay)
    {
@@ -56,24 +62,27 @@ public class Toast
                btn.setBorder(Button.BORDER_ROUND);
                btn.setBackForeColors(backColor, foreColor);
                btn.setFont(font);
-               FadeAnimation.maxFade = fade;
                parent.add(btn, posX, posY, width, height);
-               animation = FadeAnimation.create(btn, true, null, -1);
-               animation.delayAfterFinish = delay;
-               final Button thisBtn = btn;
-               animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
+               if (delay != INFINITE_NOANIM)
                {
-                  public void onAnimationFinished(ControlAnimation anim)
+                  FadeAnimation.maxFade = fade;
+                  animation = FadeAnimation.create(btn, true, null, -1);
+                  animation.delayAfterFinish = delay;
+                  final Button thisBtn = btn;
+                  animation.then(FadeAnimation.create(btn, false, new ControlAnimation.AnimationFinished()
                   {
-                     if (thisBtn == btn) // button may change if user tries to show several Toasts
+                     public void onAnimationFinished(ControlAnimation anim)
                      {
-                        if (btn != null)
-                           parent.remove(btn);
-                        btn = null;
+                        if (thisBtn == btn) // button may change if user tries to show several Toasts
+                        {
+                           if (btn != null)
+                              parent.remove(btn);
+                           btn = null;
+                        }
                      }
-                  }
-               }, -1)).start();
-               FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
+                  }, -1)).start();
+                  FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
+               }
             }
             catch (Exception e)
             {

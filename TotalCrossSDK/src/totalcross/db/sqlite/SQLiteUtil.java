@@ -220,4 +220,14 @@ public class SQLiteUtil
       int sp = sqldate.indexOf(' ');
       return new Date(sp == -1 ? sqldate : sqldate.substring(0,sp), Settings.DATE_YMD);
    }
+   
+   /** Rebuild and shrink the entire database, like the old Litebase's <code>purge</code> method,
+    * but in this case it applies to all tables. 
+    */
+   public void shrinkDB() throws SQLException 
+   {
+      Statement st = con().createStatement();
+      st.execute("VACUUM;");
+      st.close();
+   }
 }

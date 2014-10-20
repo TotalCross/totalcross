@@ -424,8 +424,16 @@ public class Bar extends Container
       spinner.start();
    }
    
+   /** Updates the spinner; sets it visible if not yet. */
+   public void updateSinner()
+   {
+      if (!spinner.visible)
+         spinner.setVisible(true);
+      spinner.update();
+   }
+   
    /** 
-    * Stops and hides the spinner (if one has been assigned to the <code>spinner</code> field)
+    * Stops and hides the spinner (if createSpinner was called before)
     * 
     * @see #spinner
     */
