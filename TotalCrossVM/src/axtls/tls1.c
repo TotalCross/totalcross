@@ -363,7 +363,7 @@ int add_cert(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
 
     ssl_cert = &ssl_ctx->certs[i];
     ssl_cert->size = len;
-    ssl_cert->buf = (uint8_t *)malloc(len);
+    ssl_cert->buf = (uint8_t *)malloc(len+64);
     memcpy(ssl_cert->buf, buf, len);
     ssl_ctx->chain_length++;
     len -= offset;
@@ -627,7 +627,7 @@ static void add_hmac_digest(SSL *ssl, int mode, uint8_t *hmac_header,
         const uint8_t *buf, int buf_len, uint8_t *hmac_buf)
 {
     int hmac_len = buf_len + 8 + SSL_RECORD_SIZE;
-    uint8_t *t_buf = (uint8_t *)malloc(hmac_len+10);
+    uint8_t *t_buf = (uint8_t *)malloc(hmac_len+10+64);
 
     memcpy(t_buf, (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_WRITE) ?
                     ssl->write_sequence : ssl->read_sequence, 8);
@@ -803,7 +803,7 @@ void generate_master_secret(SSL *ssl, const uint8_t *premaster_secret)
     strcpy((char *)buf, "master secret");
     memcpy(&buf[13], ssl->client_random, SSL_RANDOM_SIZE);
     memcpy(&buf[45], ssl->server_random, SSL_RANDOM_SIZE);
-    ssl->master_secret = (uint8_t *)malloc(SSL_SECRET_SIZE);
+    ssl->master_secret = (uint8_t *)malloc(SSL_SECRET_SIZE+64);
     prf(premaster_secret, SSL_SECRET_SIZE, buf, 77, ssl->master_secret,
             SSL_SECRET_SIZE);
 }
@@ -876,7 +876,7 @@ static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt)
 #ifndef CONFIG_SSL_SKELETON_MODE
         case TLS_RSA_WITH_AES_128_CBC_SHA:
             {
-                AES_CTX *aes_ctx = (AES_CTX *)malloc(sizeof(AES_CTX));
+                AES_CTX *aes_ctx = (AES_CTX *)malloc(sizeof(AES_CTX)+64);
                 AES_set_key(aes_ctx, key, iv, AES_MODE_128);
 
                 if (is_decrypt)
@@ -889,7 +889,7 @@ static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt)
 
         case TLS_RSA_WITH_AES_256_CBC_SHA:
             {
-                AES_CTX *aes_ctx = (AES_CTX *)malloc(sizeof(AES_CTX));
+                AES_CTX *aes_ctx = (AES_CTX *)malloc(sizeof(AES_CTX)+64);
                 AES_set_key(aes_ctx, key, iv, AES_MODE_256);
 
                 if (is_decrypt)
@@ -905,7 +905,7 @@ static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt)
 #endif
         case TLS_RSA_WITH_RC4_128_SHA:
             {
-                RC4_CTX *rc4_ctx = (RC4_CTX *)malloc(sizeof(RC4_CTX));
+                RC4_CTX *rc4_ctx = (RC4_CTX *)malloc(sizeof(RC4_CTX)+64);
                 RC4_setup(rc4_ctx, key, 16);
                 return (void *)rc4_ctx;
             }
@@ -1078,7 +1078,7 @@ static void set_key_block(SSL *ssl, int is_write)
     /* only do once in a handshake */
     if (ssl->key_block == NULL)
     {
-        ssl->key_block = (uint8_t *)malloc(ciph_info->key_block_size);
+        ssl->key_block = (uint8_t *)malloc(ciph_info->key_block_size+64);
 
 #if 0
         print_blob("client", ssl->client_random, 32);
@@ -1128,7 +1128,7 @@ static void set_key_block(SSL *ssl, int is_write)
 
     if (ssl->final_finish_mac == NULL)
     {
-        ssl->final_finish_mac = (uint8_t *)malloc(SSL_FINISHED_HASH_SIZE);
+        ssl->final_finish_mac = (uint8_t *)malloc(SSL_FINISHED_HASH_SIZE+64);
     }
 
     /* now initialise the ciphers */
@@ -1579,7 +1579,7 @@ SSL_SESS *ssl_session_update(int max_sessions,
                 if (memcmp(ssl_sessions[i]->session_id, session_id,
                                                 SSL_SESSION_ID_SIZE) == 0)
                 {
-                    ssl->master_secret = (uint8_t *)malloc(SSL_SECRET_SIZE);
+                    ssl->master_secret = (uint8_t *)malloc(SSL_SECRET_SIZE+64);
                     ssl->session_index = i;
                     memcpy(ssl->master_secret,
                             ssl_sessions[i]->master_secret, SSL_SECRET_SIZE);

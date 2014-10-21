@@ -196,7 +196,7 @@ int RSA_decrypt(const RSA_CTX *ctx, const uint8_t *in_data,
 #endif
 
     /* convert to a normal block */
-    block = (uint8_t *)malloc(byte_size);
+    block = (uint8_t *)malloc(byte_size+64);
     bi_export(ctx->bi_ctx, decrypted_bi, block, byte_size);
 
     i = 10; /* start at the first possible non-padded byte */
@@ -345,7 +345,7 @@ bigint *RSA_sign_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
     bigint *decrypted_bi, *dat_bi;
     bigint *bir = NULL;
 
-    block = (uint8_t *)malloc(sig_len);
+    block = (uint8_t *)malloc(sig_len+64);
 
     /* decrypt */
     dat_bi = bi_import(ctx, sig, sig_len);

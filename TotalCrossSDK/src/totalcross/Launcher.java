@@ -640,7 +640,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
       }
    }
 
