@@ -71,9 +71,8 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
    CharP fieldName = c->cp->mtdfld[fieldIndex];
    
    FieldArray fields=null, f;
-   TCClass ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false), ext0 = ext;
-   if (strEq(fieldName,"SN"))
-      fieldName = "SN";
+   // in tc 3.1, static methods using constants stores the class reference as java.lang.Object, so we use the correct class instead
+   TCClass ext = strEq(c->name, className) || strEq(className,"java.lang.Object") ? c : loadClass(currentContext, className, false), ext0 = ext;
    while (ext)
    {
       for (f = fields = ext->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
@@ -105,6 +104,8 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
                      default:   return &ext->interfaces[i]->v64StaticValues[idx];
                   }
                }
+   if (ext == null)
+      debug("@@@ class not found. %s at %s.%s",c->name, className,fieldName);
    return ext == null ? SF_CLASS_ERROR : SF_FIELD_ERROR;
 }
 
