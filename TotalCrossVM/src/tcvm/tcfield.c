@@ -62,9 +62,29 @@ TCObject* getStaticFieldObject(TCClass c, CharP fieldName)
 // functions used by the vm - these are called only once per field,
 // because the fields are bound after the first call
 
+static VoidP getSFieldFromInterfaces(TCClass ext0, CharP fieldName, RegType t)
+{
+   int32 i,len;
+   FieldArray fields=null, f;
+   TCClass ext;
+   for (ext = ext0; ext; ext = ext->superClass) // if didn't find in the classes, search in the interfaces
+      for (i = ARRAYLENV(ext->interfaces)-1; i >= 0; i--)
+         for (f = fields = ext->interfaces[i]->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
+            if (strEq(f->name, fieldName))
+            {
+               int32 idx = (uint16)(f-fields);
+               switch (t)
+               {
+                  case RegI: return &ext->interfaces[i]->i32StaticValues[idx];
+                  case RegO: return &ext->interfaces[i]->objStaticValues[idx];
+                  default:   return &ext->interfaces[i]->v64StaticValues[idx];
+               }
+            }
+   return null;
+}
+
 VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
 {
-   int32 i;
    uint32 fieldIndex = c->cp->sfieldField[sym];
    uint32 classIndex = c->cp->sfieldClass[sym], len;
    CharP className = c->cp->cls[classIndex];
@@ -72,8 +92,6 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
    
    FieldArray fields=null, f;
    TCClass ext = strEq(c->name, className) ? c : loadClass(currentContext, className, false), ext0 = ext;
-   if (strEq(fieldName,"SN"))
-      fieldName = "SN";
    while (ext)
    {
       for (f = fields = ext->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
@@ -91,20 +109,16 @@ VoidP getSField_Ref(Context currentContext, TCClass c, int32 sym, RegType t)
       if (ext)
          className = ext->name;
    }
+   if (ext == null) // guich@tc310
+   {
+      VoidP ret = getSFieldFromInterfaces(ext0, fieldName, t);
+      if (ret == null && ext0 != c)
+         ret = getSFieldFromInterfaces(c, fieldName, t);
+      if (ret != null)
+         return ret;
+   }
    if (ext == null)
-      for (ext = ext0; ext; ext = ext->superClass) // if didn't find in the classes, search in the interfaces
-         for (i = ARRAYLENV(ext->interfaces)-1; i >= 0; i--)
-            for (f = fields = ext->interfaces[i]->staticFields[(int32)t], len = ARRAYLENV(fields); len-- > 0; f++)
-               if (strEq(f->name, fieldName))
-               {
-                  int32 idx = (uint16)(f-fields);
-                  switch (t)
-                  {
-                     case RegI: return &ext->interfaces[i]->i32StaticValues[idx];
-                     case RegO: return &ext->interfaces[i]->objStaticValues[idx];
-                     default:   return &ext->interfaces[i]->v64StaticValues[idx];
-                  }
-               }
+      debug("@@@ class not found. %s at %s.%s",c->name, className,fieldName);
    return ext == null ? SF_CLASS_ERROR : SF_FIELD_ERROR;
 }
 
