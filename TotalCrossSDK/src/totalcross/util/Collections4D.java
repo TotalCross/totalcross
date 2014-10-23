@@ -40,6 +40,7 @@ exception statement from your version. */
 package totalcross.util;
 
 import java.util.*;
+import java.util.Random;
 import java.lang.Comparable;
 import totalcross.util.concurrent.Lock;
 
@@ -596,7 +597,7 @@ public class Collections4D
      */
     public String toString()
     {
-      return "[]";
+      return "{}";
     }
   } // class EmptyMap
 
@@ -1116,8 +1117,8 @@ public class Collections4D
     public String toString()
     {
       StringBuffer r = new StringBuffer("{");
-      for (int i = n - 1; --i > 0; )
-        r.append(element).append(", ");
+      for (int i = n; --i > 0; )
+         r.append(element).append(", ");
       r.append(element).append("}");
       return r.toString();
     }
