@@ -18,7 +18,6 @@
 
 package totalcross.sys;
 
-import totalcross.ui.font.*;
 
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
