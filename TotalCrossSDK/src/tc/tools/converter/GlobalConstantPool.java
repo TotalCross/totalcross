@@ -481,6 +481,8 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       else
       if (value.equals("java.util.Hashtable")) value = "totalcross.util.Hashtable";
       else
+      if (value.equals("java.util.Random")) value = "totalcross.util.Random";
+      else
       if (value.indexOf("StringBuilder") >= 0)
          value = value.replaceFirst("StringBuilder", "StringBuffer");
       else
