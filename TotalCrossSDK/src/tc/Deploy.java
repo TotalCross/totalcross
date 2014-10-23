@@ -235,9 +235,9 @@ public class Deploy
       iht.put("palmos" .hashCode(), 0);
       iht.put("blackberry".hashCode(), 0);
       iht.put("bb"     .hashCode(), 0);
-      iht.put("ce"     .hashCode(), 0);
-      iht.put("wince"  .hashCode(), 0);
-      iht.put("winmo"  .hashCode(), 0);
+      iht.put("ce"     .hashCode(), BUILD_WINCE);
+      iht.put("wince"  .hashCode(), BUILD_WINCE);
+      iht.put("winmo"  .hashCode(), BUILD_WINMO);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
       iht.put("applet" .hashCode(), BUILD_APPLET);
@@ -380,6 +380,8 @@ public class Deploy
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
+            "   -ce or -wince : create the cab files for Windows CE\n" +
+            "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
@@ -390,7 +392,7 @@ public class Deploy
             "\n"+
             "   -all : single parameter to deploy to all supported platforms\n"+
             "\n"+
-            "Optionally, pass -noPlatformToNOTDeploy, to disable the deployment for that platform. For example \"-all -nowince\" builds for all platforms except wince. Just make sure that all -no options comes after the platform selections (E.G.: \"-nowince -all\" will not work)\n" +
+            "Optionally, pass -noPlatformToNOTDeploy, to disable the deployment for that platform. For example \"+all -nowince\" builds for all platforms except wince. Just make sure that all -no options comes after the platform selections (E.G.: \"-nowince -all\" will not work)\n" +
             "\n"+
             "You can also use the options:\n" +
             "   /a ApId : Assigns the application id; can only be used for libraries or passing a tcz file\n"+

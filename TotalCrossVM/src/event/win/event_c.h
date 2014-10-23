@@ -141,7 +141,6 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
-//XXX
 #if !defined WINCE && !defined WP8
       case WM_GETMINMAXINFO:
          if (screen.pixels && *tcSettings.resizableWindow)
@@ -241,7 +240,6 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
 #endif
       case WM_PAINT:
       {
-		  // XXX how to do this in WP8?
 #if !defined WP8
          PAINTSTRUCT ps;
          HDC hDC;
@@ -435,7 +433,6 @@ def:
 #endif
 bool privateInitEvent()
 {
-	//XXX
 #if !defined WP8
 
    WNDCLASS wc;
