@@ -18,6 +18,8 @@
 
 package totalcross.sys;
 
+import totalcross.ui.font.*;
+
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
@@ -765,7 +767,6 @@ public final class Settings
     * @see #WINDOWSIZE_480X640
     * @see #WINDOWSIZE_600X800
     * @see #resizableWindow
-    * @see #windowFont
     */
    public static int windowSize;
    
@@ -776,6 +777,8 @@ public final class Settings
    
    /** Defines the window font size when running in a desktop computer.
     * Must be set in the static initializer.
+    * @deprecated Use at the application's constructor: if (Settings.platform.equals(Settings.WIN32)) setDefaultFont(Font.getFont(false,NN)); where NN is the desired font size
+
     * @since TotalCross 1.53
     * @see #WINDOWFONT_12
     * @see #WINDOWFONT_DEFAULT
