@@ -73,7 +73,7 @@ static bool privateDebug(char* str)
          fflush(fdebug);
       }
    }
-#if (defined(WP8) && defined(DEBUG)) || (defined(WIN32) && defined(_DEBUG))
+#if (defined(WP8) && defined(DEBUG)) || (defined(WIN32) && !defined(WINCE) && defined(_DEBUG))
    OutputDebugStringA(str);
    OutputDebugStringA("\n");
 #endif

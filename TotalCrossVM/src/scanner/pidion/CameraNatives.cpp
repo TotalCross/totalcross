@@ -72,7 +72,7 @@ void CameraLibClose()
 #define CAM_height(o)          FIELD_I32(o, 7)
 #define CAM_errorCode(o)       FIELD_I32(o, 8)
 
-static TCHAR* getString(TCHAR* buf, Object str)
+static TCHAR* getString(TCHAR* buf, TCObject str)
 {
    JCharP c;
    int32 len;
@@ -94,7 +94,7 @@ extern "C" {
 //////////////////////////////////////////////////////////////////////////
 SCAN_API void pC_click(NMParams p) // pidion/Camera native public boolean click();
 {
-   Object obj = p->obj[0];
+   TCObject obj = p->obj[0];
    int32 ok = 0;
    if (handle)
    {
@@ -113,7 +113,7 @@ SCAN_API void pC_click(NMParams p) // pidion/Camera native public boolean click(
 //////////////////////////////////////////////////////////////////////////
 SCAN_API void pC_setPreview_b(NMParams p) // pidion/Camera native public void setPreview(boolean on);
 {
-   Object obj = p->obj[0];
+   TCObject obj = p->obj[0];
    int32 on = p->i32[0];
    DWORD ret;
    if (on && handle == 0)

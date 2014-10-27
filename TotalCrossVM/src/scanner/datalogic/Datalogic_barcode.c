@@ -11,7 +11,7 @@
 
 
 
-#include "barcode.h"
+#include "..\barcode.h"
 // now Scanner specific includes
 //DATALOGIC SCANNER Interface
 #include "dl_sedapi.h"
@@ -31,7 +31,7 @@ Method onEventMethod;
 
 SCAN_API int32 LibOpen(OpenParams params)
 {
-   Class scannerClass;
+   TCClass scannerClass;
 
    scannerClass = loadClass(params->currentContext, "totalcross.io.device.scanner.Scanner", false);
    onEventMethod = getMethod(scannerClass, false, "_onEvent", 1, J_INT);

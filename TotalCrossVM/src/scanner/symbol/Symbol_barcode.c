@@ -36,7 +36,7 @@
 #define TC_privateXmalloc              privateXmalloc
 #define TC_privateXrealloc             privateXrealloc
 #define TC_createArrayObject           createArrayObject
-#include "barcode.h"
+#include "..\barcode.h"
 
 // now Scanner specific includes
 #include <Strucinf.h>

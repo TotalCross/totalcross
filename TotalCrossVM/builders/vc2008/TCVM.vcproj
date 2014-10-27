@@ -1411,6 +1411,7 @@
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
 				StructMemberAlignment="3"
+				FloatingPointModel="0"
 				PrecompiledHeaderFile="$(IntDir)\TCVM.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"

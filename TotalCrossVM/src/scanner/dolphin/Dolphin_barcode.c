@@ -11,7 +11,7 @@
 
 
 
-#include "barcode.h"
+#include "..\barcode.h"
 
 // FROM extlibs/D7600/Include/Armv4i/Decoder.h
 

@@ -14,7 +14,14 @@
 #ifndef BARCODE_H
 #define BARCODE_H
 
-#include "tcvm.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "..\tcvm\tcvm.h"
+#ifdef __cplusplus
+}
+#endif
+
 
 #if defined(WIN32) || defined(WINCE)
  #ifdef SCAN_EXPORTS

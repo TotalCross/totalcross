@@ -10,7 +10,7 @@
  *********************************************************************************/
 
 #if defined WINCE
-#include "barcode.h"
+#include "..\barcode.h"
 #include "itcscan.h"
 
 #define MAX_MESSAGE_LENGTH 4096
