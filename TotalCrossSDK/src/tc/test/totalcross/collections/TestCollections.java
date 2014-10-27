@@ -209,6 +209,184 @@ public class TestCollections extends TestCase
       assertEquals(97, set.hashCode());
       assertEquals("a", set.toArray()[0]);
       assertEquals("[a]", set.toString());
+      
+      assertEquals(1, (list = Collections.singletonList("b")).size());
+      assertEquals("b", list.get(0));
+      assertTrue(list.contains("b"));
+      assertTrue(list.containsAll(list));
+      assertEquals(129, list.hashCode());
+      assertEquals(0, list.indexOf("b"));
+      assertEquals(-1, list.lastIndexOf("a"));
+      assertTrue(Arrays.equals(new Object[]{"b"}, list.subList(0, 1).toArray()));
+      assertEquals("b", list.toArray()[0]);
+      assertEquals("[b]", list.toString());
+      
+      assertTrue((map = Collections.singletonMap("a", "b")).containsKey("a"));
+      assertTrue(map.containsValue("b"));
+      assertEquals("b", map.get("a"));
+      assertEquals(3, map.hashCode());
+      assertTrue(Arrays.equals(new Object[]{"a"}, map.keySet().toArray()));
+      assertEquals(1, map.size());
+      assertTrue(Arrays.equals(new Object[]{"b"}, map.values().toArray()));
+      assertEquals("{a=b}", map.toString());
+      
+      try
+      {
+         Collections.sort(list);
+         fail("8");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         Collections.sort(list, null);
+         fail("9");
+      }
+      catch (UnsupportedOperationException exception) {}
+      
+      try
+      {
+         Collections.swap(list, 0, 0);
+         fail("10");
+      }
+      catch (UnsupportedOperationException exception) {}
+      
+      Collection collection = Collections.synchronizedCollection(Arrays.asList("a", "b"));
+      try
+      {
+         collection.add("c");
+         fail("11");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.add(list);
+         fail("12");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.clear();
+         fail("13");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(collection.contains("a"));
+      assertTrue(collection.containsAll(collection));
+      assertFalse(collection.isEmpty());
+      iterator = collection.iterator();
+      try
+      {
+         collection.remove("a");
+         fail("14");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.removeAll(collection);
+         fail("15");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertFalse(collection.retainAll(collection));
+      assertEquals(2, collection.size());
+      assertTrue(Arrays.equals(new Object[]{"a", "b"}, collection.toArray()));
+      assertTrue(Arrays.equals(new Object[]{"a", "b"}, collection.toArray(new Object[2])));
+      assertEquals("[a, b]", collection.toString());
+      assertEquals("a", iterator.next());
+      assertTrue(iterator.hasNext());
+      try
+      {
+         iterator.remove();
+         fail("16");
+      }
+      catch (UnsupportedOperationException exception) {}
+      
+      list = Collections.synchronizedList(list);
+      try
+      {
+         list.add("c");
+         fail("17");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         list.add(list);
+         fail("18");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(list.equals(list));
+      assertEquals("b", list.get(0).toString());
+      assertEquals(129, list.hashCode());
+      assertEquals(0, list.indexOf("b"));
+      assertEquals(0, list.lastIndexOf("b"));
+      ListIterator listIt1 = list.listIterator();
+      ListIterator listIt2 = list.listIterator(0);
+      try
+      {
+         list.remove(0);
+         fail("19");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         list.set(0, "c");
+         fail("20");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(Arrays.equals(new Object[]{"b"}, list.toArray()));
+      try
+      {
+         listIt1.add("c");
+         fail("21");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         listIt2.add("c");
+         fail("22");
+      }
+      catch (UnsupportedOperationException exception) {}
+      if (Settings.onJavaSE)
+      {
+         assertFalse(listIt1.hasPrevious());
+         assertFalse(listIt2.hasPrevious());
+         assertEquals(0, listIt1.nextIndex());
+         assertEquals(0, listIt2.nextIndex());
+         try
+         {
+            listIt1.previous();
+            fail("23");
+         }
+         catch (NoSuchElementException exception) {}
+         try
+         {
+            listIt2.previous();
+            fail("24");
+         }
+         catch (NoSuchElementException exception) {}
+      }
+      else
+      {
+         assertTrue(listIt1.hasPrevious());
+         assertTrue(listIt2.hasPrevious());
+         assertEquals(1, listIt1.nextIndex());
+         assertEquals(1, listIt2.nextIndex());
+         assertEquals("b", listIt1.previous());
+         assertEquals("b", listIt2.previous());
+      }
+      
+      assertEquals(-1, listIt1.previousIndex());
+      assertEquals(-1, listIt2.previousIndex());
+      try
+      {
+         listIt1.set("c");
+         fail("25");
+      }
+      catch (RuntimeException exception) {}
+      try
+      {
+         listIt2.set("c");
+         fail("26");
+      }
+      catch (RuntimeException exception) {}
    }
 }
       

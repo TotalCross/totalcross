@@ -115,8 +115,8 @@ public class ListBox extends Container implements Scrollable
     */
    public static class IconItem
    {
-      String text;
-      Image icon;
+      public String text;
+      public Image icon;
 
       public IconItem(String text, Image icon)
       {
