@@ -64,13 +64,8 @@ static Context initAll(CharP* args)
    return ok ? c : null;
 }
 
-void dump_memory_map(char* fileSuffix);
-
 static void destroyAll() // must be in inverse order of initAll calls
 {
-#if defined(DEBUG) || defined(_DEBUG)
-   dump_memory_map("destroyAll");
-#endif
    threadDestroyAll(); // first all threads must be destroyed - NOTE: when debugging on win32, this may hang the Visual C++ ide.
    destroyingApplication = true; // now is safe to destroy all objects
    runFinalizers();
