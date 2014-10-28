@@ -414,7 +414,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          // Should never happen
       }
-      x0 = Math.max(imgOpenW,imgPlusSize)+ 3;
+      x0 = Math.max(imgOpenW,imgPlusSize) + (Settings.isWindowsDevice() ? 4 : 3);
    }
 
    /**

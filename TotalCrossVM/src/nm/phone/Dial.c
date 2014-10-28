@@ -78,10 +78,13 @@ TC_API void tpD_number_s(NMParams p) // totalcross/phone/Dial native public stat
 {
    TCObject numberObj = p->obj[0];
    if (numberObj == null)
+   {
       throwNullArgumentException(p->currentContext, "number");
+      return;
+   }
 #if defined (WINCE)
    currentContext = p->currentContext;
-   else if (RdGetState(PHONE) == RADIO_STATE_DISABLED)
+   if (RdGetState(PHONE) == RADIO_STATE_DISABLED)
       throwException(currentContext, IOException, "Phone is disabled");
 #endif
 #if defined(WINCE) || defined(ANDROID) || defined(darwin) || defined(WP8)

@@ -113,6 +113,7 @@ public final class Settings
     * @see #LINUX        
     * @see #IPHONE       
     * @see #ANDROID      
+    * @see #isWindowsDevice()
     * @see #isIOS()
     */
    public static String platform;

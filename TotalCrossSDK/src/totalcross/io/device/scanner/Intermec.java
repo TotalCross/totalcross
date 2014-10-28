@@ -4,7 +4,7 @@ package totalcross.io.device.scanner;
  * To be used with Intermec android scanners, in the <code>setBarcodeParam()</code> method.
  */
 
-public class Intermec
+public interface Intermec
 {
    /**
     * To be used in the <code>setBarcodeParam()</code> method, to enable or disable Australian Post barcode type.
@@ -220,10 +220,4 @@ public class Intermec
     * To be used in the <code>setBarcodeParam()</code> method, to enable or disable TLC 39 barcode type.
     */
    public final static int TLC_39 = 43;
-
-
-   private Intermec()
-   {
-   }
-
 }

@@ -19,6 +19,7 @@ package totalcross.io.device.gps;
 import totalcross.io.*;
 import totalcross.io.device.*;
 import totalcross.sys.*;
+import totalcross.util.*;
 
 /**
  * Class that retrieves GPS coordinates read from the COM (or Bluetooth, or IR) port.
@@ -105,7 +106,7 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
+   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
    private static boolean isOpen;
    boolean dontFinalize;
    
@@ -118,11 +119,49 @@ public class GPS
     *    sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
     * </pre>
     * 
-    * @deprecated
     * @return A string like "COM3", or null if no keys with GPS was found under HKLM\Drivers\BuildIn.
     */
    public static String getWinCEGPSCom() // guich@tc100b5_38
    {
+      try
+      {
+         try // guich@tc120_51
+         {
+            String key = "System\\CurrentControlSet\\GPS Intermediate Driver\\Multiplexer\\ActiveDevice";
+            String prefix = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "Prefix");
+            int index = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, key, "Index");
+            if (prefix.equals("COM"))
+               return "COM" + index;
+         }
+         catch (ElementNotFoundException enfe)
+         {
+            // ignore if a key was not found
+         }
+
+         String[] keys = Registry.list(Registry.HKEY_LOCAL_MACHINE, "Drivers\\BuiltIn");
+         for (int i = 0; i < keys.length; i++)
+         {
+            String k = keys[i].toLowerCase();
+            if (k.indexOf("serial") >= 0)
+            {
+               String key = "Drivers\\BuiltIn\\" + keys[i], prefix, name;
+               try
+               {
+                  prefix = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "Prefix");
+                  name = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "FriendlyName");
+                  if (prefix.equals("COM") && name.toLowerCase().indexOf("gps") >= 0)
+                     return "COM" + Registry.getInt(Registry.HKEY_LOCAL_MACHINE, key, "Index");
+               }
+               catch (ElementNotFoundException enfe)
+               {
+                  // ignore if a key was not found
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+      }
       return null;
    }
 
@@ -139,9 +178,12 @@ public class GPS
       checkOpen();
       if (!nativeAPI || !startGPS())
       {
+         String com;
          if ("PIDION".equals(Settings.deviceId)) // guich@586_7
             sp = new PortConnector(Convert.chars2int("COM4"), 9600, 7, PortConnector.PARITY_EVEN, 1);
-         else 
+         else if (Settings.isWindowsDevice() && (com = getWinCEGPSCom()) != null)
+            sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
+         else
             sp = new PortConnector(0, 9600);
       }
 

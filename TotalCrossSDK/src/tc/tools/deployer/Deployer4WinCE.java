@@ -24,18 +24,18 @@ public class Deployer4WinCE
    String []stubPaths = // guich@321_1 and guich@330_3: changed \\ to /
    {
       "POCKETPC/ARM",
-      "HPC211/ARM",
-      "POCKETPC/MIPS",
-      "POCKETPC/SH3",
-      "HPC2000/ARM",
+//      "HPC211/ARM",
+//      "POCKETPC/MIPS",
+//      "POCKETPC/SH3",
+//      "HPC2000/ARM",
    };
    static int []versionOffsets =   // 3.11 = 0x03 0x00 0x0B 0x00
    {
       0x114, // POCKETPC-ARM
-      0x11c, // HPC211-ARM      - guich@400_45
-      0x114, // POCKETPC-MIPS
-      0x114, // POCKETPC-SH3
-      0x10c, // HPC2000-ARM
+//      0x11c, // HPC211-ARM      - guich@400_45
+//      0x114, // POCKETPC-MIPS
+//      0x114, // POCKETPC-SH3
+//      0x10c, // HPC2000-ARM
    };
 
    // Offsets into the byte structure which defines the stub applcation
@@ -167,15 +167,15 @@ public class Deployer4WinCE
          if (f.exists())
             f.delete();
       }
-      f = new File(targetDir+"HPC211");
-      if (f.exists())
-         f.delete();
+//      f = new File(targetDir+"HPC211");
+//      if (f.exists())
+//         f.delete();
       f = new File(targetDir+"POCKETPC");
       if (f.exists())
          f.delete();
-      f = new File(targetDir+"HPC2000");
-      if (f.exists())
-         f.delete();
+//      f = new File(targetDir+"HPC2000");
+//      if (f.exists())
+//         f.delete();
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public void deleteTemp(boolean includingInf)
@@ -297,17 +297,17 @@ public class Deployer4WinCE
 
             //-----------------------------------------------
 
-            (pathsCount == 1 ? "" : "[CEDevice.HPC2000_ARM]\n" +
+//            (pathsCount == 1 ? "" : "[CEDevice.HPC2000_ARM]\n" +
             "ProcessorType   = 2577\n" +
             "VersionMin = 3.0\n" +
             "VersionMax = 4.0\n" +
             "UnsupportedPlatforms = \"Palm PC\"\n" +
 
-            "[CEDevice.HPC211_ARM]\n" +
-            "ProcessorType   = 2577\n" +
-            "VersionMin = 2.11\n" +
-            "VersionMax = 2.11\n" +
-            "UnsupportedPlatforms = \"Palm PC\"\n" +
+//            "[CEDevice.HPC211_ARM]\n" +
+//            "ProcessorType   = 2577\n" +
+//            "VersionMin = 2.11\n" +
+//            "VersionMax = 2.11\n" +
+//            "UnsupportedPlatforms = \"Palm PC\"\n" +
 
             "[CEDevice.PocketPC_ARM]\n" +
             ";ProcessorType   = 2577\n" +
@@ -316,19 +316,19 @@ public class Deployer4WinCE
             "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
             "BuildMax=0xE0000000\n"+
 
-            "[CEDevice.PocketPC_MIPS]\n" +
-            "ProcessorType   = 4000\n" +
-            "VersionMin = 3.0\n" +
-            "VersionMax = 6.99\n" +
-            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
-            "BuildMax=0xE0000000\n"+
-
-            "[CEDevice.PocketPC_SH3]\n" +
-            "ProcessorType   = 10003\n" +
-            "VersionMin = 3.0\n" +
-            "VersionMax = 5.99\n" +
-            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
-            "BuildMax=0xE0000000\n")+
+//            "[CEDevice.PocketPC_MIPS]\n" +
+//            "ProcessorType   = 4000\n" +
+//            "VersionMin = 3.0\n" +
+//            "VersionMax = 6.99\n" +
+//            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
+//            "BuildMax=0xE0000000\n"+
+//
+//            "[CEDevice.PocketPC_SH3]\n" +
+//            "ProcessorType   = 10003\n" +
+//            "VersionMin = 3.0\n" +
+//            "VersionMax = 5.99\n" +
+//            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
+//            "BuildMax=0xE0000000\n")+
 
             "[CEDevice.WMOBILE_ARM]\n" +
             ";ProcessorType   = 2577\n" +
@@ -352,19 +352,24 @@ public class Deployer4WinCE
             // any global files, ie, global libraries, fonts, etc
             // you must copy them to your app directory so they can be found
             "3 =, \"GlobalFiles\",,\n" +
+//            (hasExe ? ((pathsCount == 1 ? "" : ( 
+//            "[SourceDisksNames.HPC2000_ARM]\n" +
+//            "1 =, \"Binaries\",,HPC2000\\ARM\n" +
+//            "[SourceDisksNames.HPC211_ARM]\n" +
+//            "1 =, \"Binaries\",,HPC211\\ARM\n" +
+//            "[SourceDisksNames.PocketPC_ARM]\n" +
+//            "1 =, \"Binaries\",,POCKETPC\\ARM\n" +
+//            "[SourceDisksNames.PocketPC_MIPS]\n" +
+//            "1 =, \"Binaries\",,POCKETPC\\MIPS\n" +
+//            "[SourceDisksNames.PocketPC_SH3]\n" +
+//            "1 =, \"Binaries\",,POCKETPC\\SH3\n")) +
+//            "[SourceDisksNames.WMOBILE_ARM]\n" +
+//            "1 =, \"Binaries\",,POCKETPC\\ARM\n") : "") +
             (hasExe ? ((pathsCount == 1 ? "" : ( 
-            "[SourceDisksNames.HPC2000_ARM]\n" +
-            "1 =, \"Binaries\",,HPC2000\\ARM\n" +
-            "[SourceDisksNames.HPC211_ARM]\n" +
-            "1 =, \"Binaries\",,HPC211\\ARM\n" +
-            "[SourceDisksNames.PocketPC_ARM]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\ARM\n" +
-            "[SourceDisksNames.PocketPC_MIPS]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\MIPS\n" +
-            "[SourceDisksNames.PocketPC_SH3]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\SH3\n")) +
-            "[SourceDisksNames.WMOBILE_ARM]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\ARM\n") : "") +
+               "[SourceDisksNames.PocketPC_ARM]\n" +
+               "1 =, \"Binaries\",,POCKETPC\\ARM\n")) +
+               "[SourceDisksNames.WMOBILE_ARM]\n" +
+               "1 =, \"Binaries\",,POCKETPC\\ARM\n") : "") +
 
             //-----------------------------------------------
 
