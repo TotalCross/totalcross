@@ -506,7 +506,7 @@ public class MainWindow extends Window implements totalcross.MainClass
             }
          }
          else
-         if (Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
+         if (timeAvailable >= 0 && Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
          {
             new MessageBox("Fatal Error", "Failed to retrieve a unique device identification to activate the TotalCross VM. Please check your network settings and activate any disabled networks.").popup();
             exit(0);
