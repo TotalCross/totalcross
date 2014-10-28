@@ -117,7 +117,7 @@ static bool checkMemHeapLeaks();
 
 bool initMem()
 {
-   #if (defined(WIN32) && !defined(WINCE))
+   #if defined(WIN32) && !defined(WINCE) && defined(_DEBUG)
    leakCheckingEnabled = true;
    #endif
    return true;
