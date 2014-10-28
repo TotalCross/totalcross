@@ -5838,19 +5838,3 @@ void dump_memory_map_int(char* fileSuffix, char* blockName, msegmentptr mseg)
       fclose(f);
    }
 }
-
-// this #if defined HAS_MSPACE_1_AND_2 is TotalCross intervention
-#if defined HAS_MSPACE_1_AND_2
-#if defined(WIN32) || defined(WINCE)
-extern mspace mspace1,mspace2;
-#endif
-#endif
-
-void dump_memory_map(char* fileSuffix) 
-{
-   dump_memory_map_int(fileSuffix, "main", &gm->seg);
-#if defined HAS_MSPACE_1_AND_2
-   if (mspace1) dump_memory_map_int(fileSuffix, "mspace1", &((mstate)mspace1)->seg);
-   if (mspace2) dump_memory_map_int(fileSuffix, "mspace2", &((mstate)mspace2)->seg);
-#endif
-}
