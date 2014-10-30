@@ -573,11 +573,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       {
          Window.enableUpdateScreen = false; // we'll update the screen below
          for (int i = 0; i < runners.length; i++)
-         {
-            Vm.debug("running ini "+runners[i]);
             ((Runnable)runners[i]).run();
-            Vm.debug("running fim "+runners[i]);
-         }
          Window.enableUpdateScreen = true;
       }
       if (Window.needsPaint) // guich@200b4_1: corrected the infinit repaint on popup windows
