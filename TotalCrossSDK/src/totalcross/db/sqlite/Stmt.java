@@ -245,7 +245,7 @@ class Stmt extends Unused implements Statement, Codes
             rs.colsMeta = db.column_names(pointer);
         }
 
-        rs.cols = rs.colsMeta;
+        rs.setCols(rs.colsMeta);
         rs.open = resultsWaiting;
         resultsWaiting = false;
 
