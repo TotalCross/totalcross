@@ -116,6 +116,7 @@ extern DECLARE_MUTEX(metAndCls);
 extern DECLARE_MUTEX(screen);
 extern DECLARE_MUTEX(htSSL);
 extern DECLARE_MUTEX(createdHeaps);
+extern DECLARE_MUTEX(alloc);
 
 #if defined(WIN32)
 
