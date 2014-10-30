@@ -180,48 +180,51 @@ TC_API void tuzCS_writeBytes_Bii(NMParams p) // totalcross/util/zip/CompressedSt
 TC_API void tuzCS_close(NMParams p) // totalcross/util/zip/CompressedStream native public void close() throws IOException;
 {
    TCObject zstreamRefObj = CompressedStream_streamRef(p->obj[0]);
-   TCObject streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
-   ZLibStreamRef zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
-   TCObject stream = zstreamRef->stream;
-   int32 mode = CompressedStream_mode(p->obj[0]);
-   int32 streamBufferLen = ARRAYOBJ_LEN(streamBuffer);
-   Err err;
-
-   CompressedStream_mode(p->obj[0]) = 0;
-   switch (mode)
+   if (zstreamRefObj != null)
    {
-      case DEFLATE:
+      TCObject streamBuffer = CompressedStream_streamBuffer(p->obj[0]);
+      ZLibStreamRef zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
+      TCObject stream = zstreamRef->stream;
+      int32 mode = CompressedStream_mode(p->obj[0]);
+      int32 streamBufferLen = ARRAYOBJ_LEN(streamBuffer);
+      Err err;
+
+      CompressedStream_mode(p->obj[0]) = 0;
+      switch (mode)
       {
-         do
+         case DEFLATE:
          {
-            zstreamRef->c_stream.next_out = ARRAYOBJ_START(streamBuffer);
-            zstreamRef->c_stream.avail_out = streamBufferLen;
-            err = deflate(&zstreamRef->c_stream, Z_FINISH);
-            if (err != Z_OK && err != Z_STREAM_END)
+            do
             {
-               throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
-               break;
+               zstreamRef->c_stream.next_out = ARRAYOBJ_START(streamBuffer);
+               zstreamRef->c_stream.avail_out = streamBufferLen;
+               err = deflate(&zstreamRef->c_stream, Z_FINISH);
+               if (err != Z_OK && err != Z_STREAM_END)
+               {
+                  throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+                  break;
+               }
+               if ((int32) zstreamRef->c_stream.avail_out < streamBufferLen)
+                  executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, streamBufferLen - zstreamRef->c_stream.avail_out).asInt32;
             }
-            if ((int32) zstreamRef->c_stream.avail_out < streamBufferLen)
-               executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, streamBufferLen - zstreamRef->c_stream.avail_out).asInt32;
+            while (zstreamRef->c_stream.avail_out == 0);
+            if (err != Z_STREAM_END)
+               throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+            else
+            if ((err = deflateEnd(&zstreamRef->c_stream)) != Z_OK)
+               throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
          }
-         while (zstreamRef->c_stream.avail_out == 0);
-         if (err != Z_STREAM_END)
-            throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
-         else
-         if ((err = deflateEnd(&zstreamRef->c_stream)) != Z_OK)
-            throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
-      }
-      break;
-      case INFLATE:
-         if ((err = inflateEnd(&zstreamRef->c_stream)) != Z_OK)
-            throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
-      break;
-      default:
-         throwException(p->currentContext, IOException, "Invalid object.");
-      break;      
-   }   
-   setObjectLock(stream, UNLOCKED);
+         break;
+         case INFLATE:
+            if ((err = inflateEnd(&zstreamRef->c_stream)) != Z_OK)
+               throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+         break;
+         default:
+            throwException(p->currentContext, IOException, "Invalid object.");
+         break;      
+      }   
+      setObjectLock(stream, UNLOCKED);
+   }
 }
 
 #ifdef ENABLE_TEST_SUITE
