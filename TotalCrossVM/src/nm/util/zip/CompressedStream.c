@@ -53,6 +53,7 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
    {
       zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
       zstreamRef->stream = stream;       
+      setObjectLock(stream, LOCKED); // guich@tc310: must keep the stream locked
       zstreamRef->c_stream.zalloc = zalloc;
       zstreamRef->c_stream.zfree = zfree;
       zstreamRef->c_stream.opaque = (voidpf) 0;
@@ -80,7 +81,8 @@ TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/Compressed
    if ((zstreamRefObj = createByteArray(p->currentContext, sizeof(TZLibStreamRef))) != null)
    {
       zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
-      zstreamRef->stream = stream;       
+      zstreamRef->stream = stream;
+      setObjectLock(stream, LOCKED); // guich@tc310: must keep the stream locked
       zstreamRef->c_stream.zalloc = zalloc;
       zstreamRef->c_stream.zfree = zfree;
       zstreamRef->c_stream.opaque = (voidpf) 0;
@@ -126,7 +128,10 @@ TC_API void tuzCS_readBytes_Bii(NMParams p) // totalcross/util/zip/CompressedStr
          zstreamRef->c_stream.avail_out = toCopy;
          err = inflate(&zstreamRef->c_stream, Z_NO_FLUSH);
          if (err != Z_OK && err != Z_STREAM_END)
+         {
             throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+            break;
+         }
          start += toCopy - zstreamRef->c_stream.avail_out;
          result += toCopy - zstreamRef->c_stream.avail_out;
       }
@@ -160,7 +165,10 @@ TC_API void tuzCS_writeBytes_Bii(NMParams p) // totalcross/util/zip/CompressedSt
          zstreamRef->c_stream.next_out = ARRAYOBJ_START(streamBuffer);
          zstreamRef->c_stream.avail_out = streamBufferLen;
          if ((err = deflate(&zstreamRef->c_stream, Z_NO_FLUSH)) != Z_OK)
+         {
             throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+            break;
+         }
          result += executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, streamBufferLen - zstreamRef->c_stream.avail_out).asInt32;
       }
       while (zstreamRef->c_stream.avail_out == 0);
@@ -190,13 +198,17 @@ TC_API void tuzCS_close(NMParams p) // totalcross/util/zip/CompressedStream nati
             zstreamRef->c_stream.avail_out = streamBufferLen;
             err = deflate(&zstreamRef->c_stream, Z_FINISH);
             if (err != Z_OK && err != Z_STREAM_END)
+            {
                throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+               break;
+            }
             if ((int32) zstreamRef->c_stream.avail_out < streamBufferLen)
                executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, streamBufferLen - zstreamRef->c_stream.avail_out).asInt32;
          }
          while (zstreamRef->c_stream.avail_out == 0);
          if (err != Z_STREAM_END)
             throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
+         else
          if ((err = deflateEnd(&zstreamRef->c_stream)) != Z_OK)
             throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       }
@@ -209,6 +221,7 @@ TC_API void tuzCS_close(NMParams p) // totalcross/util/zip/CompressedStream nati
          throwException(p->currentContext, IOException, "Invalid object.");
       break;      
    }   
+   setObjectLock(stream, UNLOCKED);
 }
 
 #ifdef ENABLE_TEST_SUITE
