@@ -495,9 +495,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
  #define GetTickCount() 0
  #define GetSystemInfo(a) GetNativeSystemInfo(a)
 #else
- #define MSPACES 1
+ #define MSPACES 0
 #endif
-#define FOOTERS 1
+#define FOOTERS 0
 #define DEFAULT_GRANULARITY 2*1024*1024 // // guich@tc124_17: 2MB
 #define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // // guich@tc124_17: DISABLE
 #endif
