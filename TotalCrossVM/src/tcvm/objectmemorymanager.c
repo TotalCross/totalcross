@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-//#define ALTERNATIVE_GC // used for Prime Systems on Palm OS devices
-
 #include "tcvm.h"
 
 /**************************************************************************************
@@ -152,11 +150,7 @@ pointer to next):
 void soundTone(int32 frequency, int32 duration);
 
 #define MIN_SPACE_LEFT 16
-#ifdef ALTERNATIVE_GC
- #define DEFAULT_CHUNK_SIZE (65536-96) // dlmalloc requires a bit more than 36 bytes. doing this to prevent allocating more than a 64k segment
-#else
- #define DEFAULT_CHUNK_SIZE 65500
-#endif
+#define DEFAULT_CHUNK_SIZE 65500
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
 static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
@@ -524,7 +518,6 @@ TC_API TCObject createObject(Context currentContext, CharP className)
 {
    return privateCreateObject(currentContext, className, true);
 }
-
 TCObject createArrayObject(Context currentContext, CharP type, int32 len)
 {
    TCClass c;
@@ -926,17 +919,15 @@ void runFinalizers() // calls finalize of all objects in use
    mainContext->litebasePtr = gcContext->litebasePtr; // update the ptr
 }
 
-#ifndef ALTERNATIVE_GC
- #if defined(ANDROID) || defined(WINCE)
-  #define CRITICAL_SIZE 2*1024*1024
-  #define USE_MAX_BLOCK true
- #elif defined(WIN32)
-  #define CRITICAL_SIZE 512*1024
-  #define USE_MAX_BLOCK false
- #else
-  #define CRITICAL_SIZE 2*1024*1024
-  #define USE_MAX_BLOCK false
- #endif
+#if defined(ANDROID) || defined(WINCE)
+ #define CRITICAL_SIZE 2*1024*1024
+ #define USE_MAX_BLOCK true
+#elif defined(WIN32)
+ #define CRITICAL_SIZE 512*1024
+ #define USE_MAX_BLOCK false
+#else
+ #define CRITICAL_SIZE 2*1024*1024
+ #define USE_MAX_BLOCK false
 #endif
 
 void preallocateArray(Context currentContext, TCObject sample, int32 length)
@@ -948,7 +939,11 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
       while (totChunks-- > 0)
          createChunk(DEFAULT_CHUNK_SIZE);
 }
-
+#if defined(WIN32) && !defined(WINCE)
+#define MINTIME 50
+#else
+#define MINTIME 500
+#endif
 void gc(Context currentContext)
 {
    int32 i;
@@ -966,12 +961,8 @@ void gc(Context currentContext)
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
-#ifdef ALTERNATIVE_GC
-   if ( IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
-#else
    freemem = getFreeMemory(USE_MAX_BLOCK);
-   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
-#endif
+   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
@@ -1076,6 +1067,7 @@ end:
    //if (endT != iniT) debug("G GC elapsed: %d",endT-iniT);
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
+
 
    if (COMPUTETIME)
    {
