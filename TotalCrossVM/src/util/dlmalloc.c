@@ -513,6 +513,7 @@ void debug(char *s, ...);
 
 //////// TOTALCROSS CHANGES FINISH /////////
 
+#define ABORT_ON_ASSERT_FAILURE 0
 #ifndef WIN32
 #ifdef _WIN32
 #define WIN32 1
