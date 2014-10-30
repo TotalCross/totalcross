@@ -12,7 +12,7 @@
 package tc.test.totalcross.collections;
 
 import java.util.*;
-import totalcross.sys.Settings;
+import totalcross.sys.*;
 import totalcross.unit.TestCase;
 
 public class TestCollections extends TestCase
@@ -387,6 +387,539 @@ public class TestCollections extends TestCase
          fail("26");
       }
       catch (RuntimeException exception) {}
+      
+      try
+      {
+         (map = Collections.synchronizedMap(map)).clear();
+         fail("27");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(map.containsKey("a"));
+      assertTrue(map.containsValue("b"));
+      set = map.entrySet();
+      assertTrue(set.equals(set));
+      assertEquals(3, set.hashCode());
+      assertEquals("[a=b]", set.toString());
+      assertTrue(map.equals(map));
+      assertEquals("b", map.get("a"));
+      assertEquals(3, map.hashCode());
+      assertFalse(map.isEmpty());
+      assertTrue((set = map.keySet()) instanceof Set);
+      try
+      {
+         map.put("c", "d");
+         fail("28");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         map.putAll(map);
+         fail("29");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         map.remove("a");
+         fail("30");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(1, map.size());
+      assertEquals("{a=b}", map.toString());
+      assertEquals("[b]", map.values().toString());
+      
+      set = Collections.synchronizedSet(set);
+      assertTrue(set.equals(set));
+      assertEquals(97, set.hashCode());
+      
+      map = Collections.synchronizedSortedMap(new Test9());
+      assertEquals(null, ((SortedMap)map).comparator());
+      assertEquals(null, ((SortedMap)map).firstKey());
+      assertTrue(((SortedMap)map).headMap(null) instanceof SortedMap);
+      assertEquals(null, ((SortedMap)map).lastKey());
+      assertTrue(((SortedMap)map).subMap("a", "b") instanceof SortedMap);
+      assertTrue(((SortedMap)map).headMap("a") instanceof SortedMap);
+      
+      SortedSet sSet = Collections.synchronizedSortedSet(new Test10());
+      assertEquals(null, sSet.comparator());
+      assertEquals(null, sSet.first());
+      try
+      {
+         assertEquals("a", sSet.headSet("a").toString());
+         if (Settings.onJavaSE)
+            fail("31");
+      }
+      catch (NullPointerException exception) {}
+      assertEquals(null, sSet.last());
+      try
+      {
+         assertEquals("{a, b}", sSet.subSet("a", "b").toString());
+         if (Settings.onJavaSE)
+            fail("32");
+      }
+      catch (NullPointerException exception) {}
+      try
+      {
+         assertEquals("a", sSet.tailSet("a").toString());
+         if (Settings.onJavaSE)
+            fail("33");
+      }
+      catch (NullPointerException exception) {}
+      
+      try
+      {
+         (collection = Collections.unmodifiableCollection(collection)).add("c");
+         fail("34");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.addAll(collection);
+         fail("35");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.clear();
+         fail("36");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(collection.contains("a"));
+      assertTrue(collection.containsAll(collection));
+      assertFalse(collection.isEmpty());
+      assertTrue((iterator = collection.iterator()) instanceof Iterator); 
+      try
+      {
+         collection.remove("a");
+         fail("37");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.removeAll(collection);
+         fail("38");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.retainAll(collection);
+         fail("39");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(2, collection.size());
+      assertTrue(Arrays.equals(new Object[]{"a", "b"}, collection.toArray()));
+      assertTrue(Arrays.equals(new Object[]{"a", "b"}, collection.toArray(new Object[2])));
+      assertEquals("[a, b]", collection.toString());
+      assertEquals("a", iterator.next());
+      assertTrue(iterator.hasNext());
+      try
+      {
+         iterator.remove();
+         fail("40");
+      }
+      catch (UnsupportedOperationException exception) {}
+      
+      list = Collections.unmodifiableList(list);
+      try
+      {
+         list.add(2, "c");
+         fail("41");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         list.addAll(2, list);
+         fail("42");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertFalse(list.contains("a"));
+      assertEquals("b", list.get(0));
+      assertEquals(129, list.hashCode());
+      assertEquals(0, list.indexOf("b"));
+      assertEquals(0, list.lastIndexOf("b"));
+      ListIterator li = list.listIterator();
+      assertTrue(li instanceof ListIterator);
+      try
+      {
+         list.remove(0);
+         fail("43");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         list.set(0, "c");
+         fail("44");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals("[]", list.subList(1, 1).toString());
+      try
+      {
+         li.add("d");
+         fail("45");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertFalse(li.hasPrevious());
+      assertEquals(0, li.nextIndex());
+      try
+      {
+         li.previous();
+         fail("46");
+      }
+      catch (NoSuchElementException exception) {}
+      assertEquals(-1, li.previousIndex());
+      try
+      {
+         li.set("d");
+         fail("47");
+      }
+      catch (UnsupportedOperationException exception) {}
+      
+      try
+      {
+         (map = Collections.unmodifiableMap(Collections.singletonMap("a", "b"))).clear();
+         fail("48");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(map.containsKey("a"));
+      assertTrue(map.containsValue("b"));
+      assertTrue((set = map.entrySet()) instanceof Set);
+      assertTrue((iterator = set.iterator()) instanceof Iterator);
+      assertEquals(map.toString(), "{" + iterator.next() + "}");
+      assertEquals("a=b", set.toArray()[0].toString());
+      assertEquals("a=b", set.toArray(new Object[2])[0].toString());
+      assertTrue(map.equals(map));
+      assertEquals("b", map.get("a"));
+      try
+      {
+         map.put("c", "d");
+         fail("49");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(3, map.hashCode());
+      assertFalse(map.isEmpty());
+      assertEquals("[a]", map.keySet().toString());
+      try
+      {
+         map.putAll(map);
+         fail("50");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         map.remove("a");
+         fail("51");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(1, map.size());
+      assertEquals("{a=b}", map.toString());
+      assertEquals("[b]", map.values().toString());
+      
+      set = Collections.unmodifiableSet(set);
+      assertTrue(set.equals(set));
+      assertEquals(3, set.hashCode());
+      
+      SortedMap sMap = Collections.unmodifiableSortedMap(new Test9());
+      assertEquals(null, sMap.comparator());
+      assertEquals(null, sMap.firstKey());
+      try
+      {
+         sMap.headMap("a");
+         fail("52");
+      }
+      catch (NullPointerException exception) {} 
+      assertEquals(null, sMap.lastKey());
+      try
+      {
+         sMap.subMap("a", "c");
+         fail("53");
+      }
+      catch (NullPointerException exception) {}
+      try
+      {
+         sMap.tailMap("a");
+         fail("54");
+      }
+      catch (NullPointerException exception) {}
+      
+      assertEquals(null, (sSet = Collections.unmodifiableSortedSet(new Test10())).comparator());
+      assertEquals(null, sSet.first());
+      try
+      {
+         sSet.headSet("a");
+         fail("55");
+      }
+      catch (NullPointerException exception) {}
+      assertEquals(null, sSet.last());
+      try
+      {
+         sSet.subSet("a", "b");
+         fail("56");
+      }
+      catch (NullPointerException exception) {}
+      try
+      {
+         sSet.tailSet("a");
+         fail("57");
+      }
+      catch (NullPointerException exception) {}
+      
+      collection = Collections.checkedCollection(collection, String.class);
+      try
+      {
+         collection.add("c");
+         fail("58");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.addAll(collection);
+         fail("59");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.clear();
+         fail("60");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(collection.contains("a"));
+      assertTrue(collection.containsAll(collection));
+      assertFalse(collection.isEmpty());
+      assertTrue((iterator = collection.iterator()) instanceof Iterator);
+      try
+      {
+         collection.remove("a");
+         fail("61");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.removeAll(collection);
+         fail("62");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         collection.retainAll(collection);
+         fail("63");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(2, collection.size());
+      assertTrue(Arrays.equals(new Object[]{"a", "b"}, collection.toArray()));
+      assertTrue(Arrays.equals(new Object[]{"a", "b"}, collection.toArray(new Object[2])));
+      assertEquals("[a, b]", collection.toString());
+      assertEquals("a", iterator.next());
+      assertTrue(iterator.hasNext());
+      try
+      {
+         iterator.remove();
+         fail("64");
+      }
+      catch (UnsupportedOperationException exception) {}
+      
+      list = Collections.checkedList(list, String.class);
+      try
+      {
+         list.add(2, "c");
+         fail("65");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         list.addAll(2, list);
+         fail("66");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(list.equals(list));
+      assertEquals("b", list.get(0));
+      assertEquals(129, list.hashCode());
+      assertEquals(0, list.indexOf("b"));
+      assertEquals(0, list.lastIndexOf("b"));
+      ListIterator li1 = list.listIterator();
+      ListIterator li2 = list.listIterator(1);
+      assertTrue(li1 instanceof ListIterator);
+      assertTrue(li2 instanceof ListIterator);
+      try
+      {
+         list.remove(0);
+         fail("67");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         list.set(0, "a");
+         fail("68");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals("[]", list.subList(1, 1).toString());
+      try
+      {
+         li1.add("c");
+         fail("69");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         li2.add("c");
+         fail("70");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertFalse(li1.hasPrevious());
+      assertTrue(li2.hasPrevious());
+      assertEquals(0, li1.nextIndex());
+      assertEquals(1, li2.nextIndex());
+      try
+      {
+         li1.previous();
+         fail("71");
+      }
+      catch (NoSuchElementException exception) {}   
+      assertEquals("b", li2.previous());
+      assertEquals(-1, li1.previousIndex());
+      assertEquals(-1, li2.previousIndex());
+      try
+      {
+         li1.set("a");
+         fail("72");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         li2.set("a");
+         fail("73");
+      }
+      catch (UnsupportedOperationException exception) {}
+     
+      map = Collections.checkedMap(map, String.class, String.class);
+      try
+      {
+         map.clear();
+         fail("74");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertTrue(map.containsKey("a"));
+      assertTrue(map.containsValue("b"));
+      assertTrue((set = map.entrySet()) instanceof Set);
+      assertTrue((iterator = set.iterator()) instanceof Iterator);
+      Map.Entry entry = (Map.Entry)iterator.next();
+      assertTrue(entry instanceof Map.Entry);
+      assertEquals("a=b", entry.toString());
+      assertTrue(entry.equals(entry));
+      assertEquals("a", entry.getKey());
+      assertEquals("b", entry.getValue());
+      assertEquals(3, entry.hashCode());
+      try
+      {
+         entry.setValue("c");
+         fail("75");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals("a=b", entry.toString());
+      assertTrue(map.equals(map));
+      assertEquals("b", map.get("a"));
+      try
+      {
+         map.put("c", "d");
+         fail("76");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(3, map.hashCode());
+      assertFalse(map.isEmpty());
+      assertEquals("[a]", map.keySet().toString());
+      try
+      {
+         map.putAll(map);
+         fail("77");
+      }
+      catch (UnsupportedOperationException exception) {}
+      try
+      {
+         map.remove("a");
+         fail("78");
+      }
+      catch (UnsupportedOperationException exception) {}
+      assertEquals(1, map.size());
+      assertEquals("{a=b}", map.toString());
+      assertEquals("[b]", map.values().toString());
+      assertTrue(set.equals(set));
+      assertEquals(3, set.hashCode());
+      
+      sMap = Collections.checkedSortedMap(sMap, String.class, String.class);
+      assertEquals(null, sMap.comparator());
+      assertEquals(null, sMap.firstKey());
+      try
+      {
+         sMap.headMap("a");
+         fail("79");
+      }
+      catch (NullPointerException exception) {}
+      assertEquals(null, sMap.lastKey());
+      try
+      {
+         sMap.subMap("a", "a");
+         fail("80");
+      }
+      catch (NullPointerException exception) {}
+      try
+      {
+         sMap.tailMap("a");
+         fail("81");
+      }
+      catch (NullPointerException exception) {}
+      
+      sSet = Collections.checkedSortedSet(sSet, String.class);
+      assertEquals(null, sSet.comparator());
+      assertEquals(null, sSet.first());
+      try
+      {
+         sSet.headSet("a");
+         fail("82");
+      }
+      catch (NullPointerException exception) {}
+      assertEquals(null, sSet.last());
+      try
+      {
+         sSet.subSet("a", "a");
+         fail("83");
+      }
+      catch (NullPointerException exception) {}
+      try
+      {
+         sSet.tailSet("a");
+         fail("83");
+      }
+      catch (NullPointerException exception) {}
+      
+      Queue queue = Collections.asLifoQueue(new Test26());
+      assertTrue(queue instanceof Queue);
+      assertTrue(queue.add("a"));
+      assertTrue(queue.addAll(set));
+      queue.clear();
+      assertFalse(queue.isEmpty());
+      assertEquals(null, queue.iterator());
+      assertTrue(queue.offer("a"));
+      assertEquals(null, queue.peek());
+      assertEquals(null, queue.poll());
+      assertEquals(0, queue.size());
+      
+      assertTrue((set = Collections.newSetFromMap(new Test7())) instanceof Set);
+      assertTrue(set.add("a"));
+      try
+      {
+         set.addAll(set);
+         fail("84");
+      }
+      catch (NullPointerException exception) {}
+      set.clear();
+      assertFalse(set.contains("a"));
+      assertTrue(set.isEmpty());
+      try
+      {
+         set.iterator();
+         fail("85");
+      }
+      catch (NullPointerException exception) {}
+      assertFalse(set.remove("a"));
+      assertEquals(0, set.size());
    }
 }
       
