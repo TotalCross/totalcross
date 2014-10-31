@@ -38,7 +38,8 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
 
     boolean            open; // true means have results and can iterate them
     int                maxRows;         // max. number of rows as set by a Statement
-    String[]           cols; // if null, the RS is closed()
+    private String[]   cols; // if null, the RS is closed()
+    boolean[]          dotCols;
     String[]           colsMeta; // same as cols, but used by Meta interface
     boolean[][]        meta;
 
@@ -51,7 +52,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * Default constructor for a given statement.
      * @param stmt The statement.
-     * @param closeStmt TODO
+     * @param closeStmt 
      */
     RS(Stmt stmt) {
         this.stmt = stmt;
@@ -141,6 +142,18 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
             }
         }
     }
+    
+    void setCols(String[] cols)
+    {
+       this.cols = new String[cols.length];
+       this.dotCols = new boolean[cols.length];
+       
+       for (int i = cols.length; --i >= 0;)
+       {
+          this.cols[i] = cols[i].toUpperCase();
+          dotCols[i] = cols[i].indexOf('.') != -1;
+       }
+    }
 
     /**
      * returns col in [1,x] form
@@ -149,20 +162,22 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     public int findColumn(String col) throws SQLException {
         checkOpen();
         int c = -1;
+        String col0 = col;
+        col = col.toUpperCase();
+        int lcol = col.length();
         for (int i = 0; i < cols.length; i++) {
-            if (col.equalsIgnoreCase(cols[i])
-                    || (cols[i].toUpperCase().endsWith(col.toUpperCase()) && cols[i].charAt(cols[i].length()
-                            - col.length()) == '.')) {
+            if (col.equals(cols[i]) || (dotCols[i] && cols[i].endsWith(col) && cols[i].charAt(cols[i].length() - lcol) == '.')) 
+            {
                 if (c == -1) {
                     c = i;
                 }
                 else {
-                    throw new SQLException("ambiguous column: '" + col + "'");
+                    throw new SQLException("ambiguous column: '" + col0 + "'");
                 }
             }
         }
         if (c == -1) {
-            throw new SQLException("no such column: '" + col + "'");
+            throw new SQLException("no such column: '" + col0 + "'");
         }
         else {
             return c + 1;
@@ -272,7 +287,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
     /**
      * @see java.sql.ResultSet#isLast()
      */
-    public boolean isLast() throws SQLException { // FIXME
+    public boolean isLast() throws SQLException { 
         throw new SQLException("function not yet implemented for SQLite");
     }
 
