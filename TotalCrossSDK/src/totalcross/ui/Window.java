@@ -456,7 +456,7 @@ public class Window extends Container
          else
          {
             drawHighlight(null);
-            updateScreen();
+            safeUpdateScreen();
          }
       }
    }
@@ -1161,7 +1161,7 @@ public class Window extends Container
          paintChildren();
       }
       if (offscreen == null && Settings.onJavaSE)
-         updateScreen();
+         safeUpdateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, and make it child of this one. All events in the behind window are deactivated.
@@ -1484,7 +1484,7 @@ public class Window extends Container
             topMost.lastHighlighted = null;
             if (topMost.highlighted != null) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
                topMost.drawHighlight(topMost.highlighted);
-            updateScreen(); // tc100
+            safeUpdateScreen(); // tc100
          }
       }
       catch (Exception e) {e.printStackTrace(); callUS = false;}
@@ -1493,7 +1493,7 @@ public class Window extends Container
       
       enableUpdateScreen = eas;
       if (callUS)
-         updateScreen();
+         safeUpdateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Called by the main event handler to handle the focus change keys. Only
@@ -1564,7 +1564,7 @@ public class Window extends Container
          else
          {
             drawHighlight(highlighted);
-            updateScreen();
+            safeUpdateScreen();
          }
       }
    }

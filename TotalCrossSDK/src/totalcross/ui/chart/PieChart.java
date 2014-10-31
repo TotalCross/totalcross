@@ -177,7 +177,7 @@ public class PieChart extends Chart
             g.foreColor = is3d || sum == v ? color : 0; // fixed color when only 1 serie has value > 0
             g.backColor = color;
             g.fillPie(xx, yy, rr, last, current);
-            Window.updateScreen();
+            Window.safeUpdateScreen();
          }
          last = current;
       }

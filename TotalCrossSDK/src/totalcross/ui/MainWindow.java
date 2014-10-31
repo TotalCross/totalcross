@@ -580,7 +580,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          repaintActiveWindows(); // already calls updateScreen
       else
       if (canUpdate && Graphics.needsUpdate) // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
-         updateScreen();
+         safeUpdateScreen();
    }
 
    void setTimerInterval(int n)

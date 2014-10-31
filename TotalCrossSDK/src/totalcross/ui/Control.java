@@ -260,6 +260,7 @@ public class Control extends GfxSurface
    public static final int DARKER_BACKGROUND = -3;
 
    private Vector listeners;
+   private static boolean callingUpdScr;
 
    /** Set the background to be transparent, by not filling the control's area with the background color.
     * @since TotalCross 1.0
@@ -995,7 +996,7 @@ public class Control extends GfxSurface
                onPaint(g);
                if (asContainer != null) // else, if this is a Container, be sure to repaint all its children
                   asContainer.paintChildren();
-               updateScreen();
+               safeUpdateScreen();
             }
          }
       }
@@ -1385,6 +1386,8 @@ public class Control extends GfxSurface
     * is saved in a buffer and, when this method is called,
     * the buffer is transfered to the screen, using the 
     * nextTransitionEffect set.
+    * NOTE: for a thread-safe version, use safeUpdateScreen
+    * @see #safeUpdateScreen() 
     * @see Container#nextTransitionEffect
     * @since SuperWaba 5.0
     */
@@ -1396,6 +1399,33 @@ public class Control extends GfxSurface
          Graphics.needsUpdate = false;
       }
    }
+   
+   /** This method causes the screen's update. If called at the main thread,
+    * the screen is updated immediatly. If not, the updated is schedulled to occur as
+    * soon as possible.
+    * @see #updateScreen()
+    * @since TotalCross 3.1
+    */
+   public static void safeUpdateScreen()
+   {
+      if (MainWindow.isMainThread())
+         updateScreen();
+      else
+      if (!callingUpdScr)
+      {
+         callingUpdScr = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               updateScreen();
+               Vm.sleep(1);
+               callingUpdScr = false;
+            }
+         });
+      }
+   }
+
    
    native public static void updateScreen4D();
 
