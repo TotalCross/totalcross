@@ -329,6 +329,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
             // Acting on color components
             a += (int32)pval * iweight;
          }
+         if (wsum == 0) continue;
          a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
          tb[i + n*newWidth] = (alpha_t)a;
       }
@@ -405,6 +406,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
             // Acting on color components
             a += (int32)pval * iweight;
          }
+         if (wsum == 0) continue;
          a /= wsum;
          if (a > 255) a = 255; else if (a < 0) a = 0;
          *ob++ = a;

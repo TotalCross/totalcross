@@ -986,6 +986,8 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
    yMin = (y0 < clipY1) ? clipY1 : y0;
    if (yMax >= clipY2)
       yMax = clipY2;
+   if (getGraphicsPixels(g) == null)
+      return;
    row0 = getGraphicsPixels(g) + yMin * Graphics_pitch(g);
    yDif = yMin - y0;
    y = y0;
