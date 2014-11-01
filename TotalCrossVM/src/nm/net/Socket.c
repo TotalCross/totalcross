@@ -22,10 +22,7 @@
 static void invalidate(TCObject obj)
 {
    if (Socket_socketRef(obj) != null)
-   {
-      setObjectLock(Socket_socketRef(obj), UNLOCKED);
       Socket_socketRef(obj) = null;
-   }
    Socket_dontFinalize(obj) = true;
 }
 
@@ -60,6 +57,7 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
    if ((socketRef = createByteArray(p->currentContext, sizeof(SOCKET))) != null)
    {
       Socket_socketRef(socket) = socketRef;
+      setObjectLock(socketRef, UNLOCKED);
       socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
       if ((err = socketCreate(socketHandle, szHost, port, timeout, noLinger, &isUnknownHost, &timedOut)) != NO_ERROR)
       {
