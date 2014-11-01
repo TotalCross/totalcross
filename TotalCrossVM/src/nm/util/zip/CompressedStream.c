@@ -51,6 +51,7 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
 
    if ((zstreamRefObj = createByteArray(p->currentContext, sizeof(TZLibStreamRef))) != null)
    {
+
       zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
       zstreamRef->stream = stream;       
       setObjectLock(stream, LOCKED); // guich@tc310: must keep the stream locked
@@ -63,10 +64,8 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
       if ((err = inflateInit(&zstreamRef->c_stream)) != Z_OK)
          throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       else
-      {
          zstreamRef->rwMethod  = getMethod((TCClass) OBJ_CLASS(stream), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-         p->retO = zstreamRefObj;
-      }
+      setObjectLock(p->retO = zstreamRefObj, UNLOCKED);
    }   
 }
 //////////////////////////////////////////////////////////////////////////
@@ -90,10 +89,8 @@ TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/Compressed
       if ((err = deflateInit2(&zstreamRef->c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, compressionType + MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY)) != Z_OK) //flsobral@tc114_82: now supports GZip compression.
          throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       else
-      {
          zstreamRef->rwMethod  = getMethod((TCClass) OBJ_CLASS(stream), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
-         p->retO = zstreamRefObj;
-      }
+      setObjectLock(p->retO = zstreamRefObj, UNLOCKED);
    }
 }
 //////////////////////////////////////////////////////////////////////////
