@@ -49,6 +49,7 @@ typedef struct
 } Hashtable;
 
 typedef void (*VisitElementFunc)(int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
+typedef void (*VisitElementKeyFunc)(int32 key, int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 typedef bool (*VisitElementContextFunc)(Context context, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 
 TC_API  Hashtable   htNew     (int32 count, Heap heap); // heap is optional; if passed, the rehash function will not be called if the hashtable gets too big (in this case, remember to initialize the hashtable with a value big enough to hold all items)
@@ -74,7 +75,7 @@ typedef void  (*htFreeFunc)(Hashtable *iht, VisitElementFunc freeElement);
 TC_API  bool    htFreeContext     (Context context, Hashtable *iht, VisitElementContextFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
 typedef bool  (*htFreeContextFunc)(Context context, Hashtable *iht, VisitElementContextFunc freeElement);
 void htTraverse(Hashtable *iht, VisitElementFunc visitElement);
-
+void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement);
 ///////////////////////////////////////////////////////////////////////////
 // Linked list
 // Defines a template for a circular list that will be used for many types.

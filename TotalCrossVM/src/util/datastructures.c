@@ -259,6 +259,18 @@ void htTraverse(Hashtable *iht, VisitElementFunc visitElement)
          visitElement(e->i32, e->ptr);
 }
 
+void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement)
+{
+   HtEntry **tab = iht->items;
+   HtEntry *e;
+   int32 n = iht->hash;
+   if (tab == null || visitElement == null)
+      return;
+   while (n-- >= 0)
+      for (e = *tab++; e != null ;e = e->next)
+         visitElement(e->key, e->i32, e->ptr);
+}
+
 ///////////////////////////////////////////////////////////////////////////
 //                                Stack                                  //
 ///////////////////////////////////////////////////////////////////////////

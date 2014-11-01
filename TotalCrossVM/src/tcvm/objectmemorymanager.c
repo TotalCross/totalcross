@@ -122,6 +122,13 @@ pointer to next):
 ****************************************************************************************/
 
 // debugging conditionals
+
+#ifdef TRACE_LOCKED_BYTEARRAYS
+#define _TRACE_LOCKED_BYTEARRAYS 1
+#else
+#define _TRACE_LOCKED_BYTEARRAYS 0
+#endif
+
 #ifdef TRACE_OBJCREATION
 #define _TRACE_OBJCREATION 1
 #else
@@ -150,7 +157,7 @@ pointer to next):
 void soundTone(int32 frequency, int32 duration);
 
 #define MIN_SPACE_LEFT 16
-#define DEFAULT_CHUNK_SIZE 65500
+#define DEFAULT_CHUNK_SIZE (65536-64)
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
 static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
@@ -470,6 +477,7 @@ TCObject allocObject(Context currentContext, uint32 size)
       OBJ_SETLOCKED(o);
       insertNodeInDblList(lockList[0], o);
       objLocked++;
+
       if (_TRACE_OBJCREATION) debug("G Object %X locked",o);
       // erase the object.
       xmemzero(o, size);
@@ -518,6 +526,7 @@ TC_API TCObject createObject(Context currentContext, CharP className)
 {
    return privateCreateObject(currentContext, className, true);
 }
+
 TCObject createArrayObject(Context currentContext, CharP type, int32 len)
 {
    TCClass c;
@@ -533,7 +542,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    arraySize = len << c->flags.bits2shift;
    objectSize = 4 + arraySize; // there's a single instance field in the Array class: length
    o = allocObject(currentContext, objectSize);
-
    if (!o)
       goto end;
 
@@ -542,6 +550,15 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    ARRAYOBJ_LEN(o) = len;
    OBJ_CLASS(o) = c;
 end:
+   return o;
+}
+
+TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line)
+{
+   TCObject o = createArrayObject(currentContext, BYTE_ARRAY, len);
+#if _TRACE_LOCKED_BYTEARRAYS
+   debug("byteArray %X created at %s (%d)",o,file,line);
+#endif
    return o;
 }
 
@@ -944,6 +961,13 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
 #else
 #define MINTIME 500
 #endif
+
+static void dumpCount(int32 key, int32 i32, VoidP ptr)
+{
+   TCClass cc = (TCClass)key;
+   debug("%30s: %d",cc->name, i32);
+}
+
 void gc(Context currentContext)
 {
    int32 i;
@@ -1012,6 +1036,10 @@ heaperror:
          moveDblList(*usedL, *freeL);
    if (!destroyingApplication) // if this is the last gc, just collect all objects
    {
+#if _TRACE_LOCKED_BYTEARRAYS
+      Hashtable htCount = htNew(100,null);
+      int lockCount=0;
+#endif
       // 2. go through all the reachable objects and move them back to the used list
       // 2a. static fields of loaded classes
       if (CANTRAVERSE)
@@ -1020,14 +1048,26 @@ heaperror:
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");
       for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       {
+#if _TRACE_LOCKED_BYTEARRAYS
+         TCClass cc = OBJ_CLASS(o);
+         if (strEq(cc->name,BYTE_ARRAY))
+            debug("locked ba: %X",o);
+         htPut32(&htCount, (int32)cc, 1 + htGet32(&htCount, (int32)cc));
+         lockCount++;
+#endif
          //if (_TRACE_OBJCREATION) debug("G marking locked obj %X",o);
          if (OBJ_CLASS(o)->flags.isString) // 99% of the locked objects, due to the constant pool
          {
             OBJ_MARK(o) = markedAsUsed;
             if (String_chars(o)) markSingleObject(String_chars(o));
          }
-         else markObjects(o);
+         else 
+            markObjects(o);
       }
+#if _TRACE_LOCKED_BYTEARRAYS
+      htTraverseWithKey(&htCount, dumpCount);
+      debug("locked: %d",lockCount);
+#endif
       if (_TRACE_OBJCREATION) debug("G marking locked objs end");
       // 2c. used objects in the object registers of all available contexts
       markContexts();
@@ -1068,7 +1108,7 @@ end:
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
 
-
+   //debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
    if (COMPUTETIME)
    {
       debug("G checking free at end"); nfree = countObjectsIn(freeList,true,false,-1);
