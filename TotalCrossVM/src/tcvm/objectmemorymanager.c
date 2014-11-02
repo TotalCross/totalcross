@@ -123,10 +123,14 @@ pointer to next):
 
 // debugging conditionals
 
-#ifdef TRACE_LOCKED_BYTEARRAYS
-#define _TRACE_LOCKED_BYTEARRAYS 1
+//#define TRACE_CREATED_CLASSOBJS
+//#define TRACE_LOCKED_BYTEARRAYS
+
+
+#ifdef TRACE_CREATED_CLASSOBJS
+#define _TRACE_CREATED_CLASSOBJS 1
 #else
-#define _TRACE_LOCKED_BYTEARRAYS 0
+#define _TRACE_CREATED_CLASSOBJS 0
 #endif
 
 #ifdef TRACE_OBJCREATION
@@ -156,8 +160,13 @@ pointer to next):
 
 void soundTone(int32 frequency, int32 duration);
 
+#if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID)
+#define DEFAULT_CHUNK_SIZE (512*1024-64)
+#else
+#define DEFAULT_CHUNK_SIZE (64*1024-64) 
+#endif
+
 #define MIN_SPACE_LEFT 16
-#define DEFAULT_CHUNK_SIZE (65536-64)
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
 static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
@@ -317,12 +326,15 @@ static bool createChunk(uint32 size)
    return true;
 }
 
+static Hashtable htCreatedObjs;
+
 bool initObjectMemoryManager()
 {
    int32 i,skip = sizeof(TObjectProperties), size = skip+4, n = OBJARRAY_MAX_INDEX+1;
    uint8 *f, *u, *l;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
+   if (_TRACE_CREATED_CLASSOBJS) htCreatedObjs = htNew(100, null);
    if (chunksHeap == null) return false;
    IF_HEAP_ERROR(ommHeap)
    {
@@ -501,6 +513,7 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
+   if (_TRACE_CREATED_CLASSOBJS) htInc(&htCreatedObjs, (int32)c, 1);
 
    OBJ_CLASS(o) = c;
 
@@ -544,6 +557,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
+   if (_TRACE_CREATED_CLASSOBJS) htInc(&htCreatedObjs, (int32)c, 1);
 
    if (_TRACE_OBJCREATION) debug("G %X array obj created %s len %d, size = %d at %d. lock: %d", o, c->name,len, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o));
 
@@ -556,7 +570,7 @@ end:
 TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line)
 {
    TCObject o = createArrayObject(currentContext, BYTE_ARRAY, len);
-#if _TRACE_LOCKED_BYTEARRAYS
+#ifdef TRACE_LOCKED_BYTEARRAYS
    debug("byteArray %X created at %s (%d)",o,file,line);
 #endif
    return o;
@@ -852,7 +866,8 @@ bool joinAdjacentObjects(uint8* block, uint32 size)
       if (tcSettings.chunksCreated) (*tcSettings.chunksCreated)--;
       return true;
    }
-   if (COMPUTETIME) debug("G Chunk %X size %d has %d used objects with %d bytes",block0, size-sizeof(TObjectProperties), usedCount, usedSize > 0 ? (usedSize-sizeof(TObjectProperties)) : 0);
+
+   if (COMPUTETIME) {int32 tt = size-sizeof(TObjectProperties), uu = usedSize > 0 ? (usedSize-sizeof(TObjectProperties)) : 0; debug("G Chunk %X size %d has %d used objects with %d bytes (%d%%)",block0, tt, usedCount, uu, uu * 100 / tt);}
    return false;
 }
 
@@ -965,7 +980,8 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
 static void dumpCount(int32 key, int32 i32, VoidP ptr)
 {
    TCClass cc = (TCClass)key;
-   debug("%30s: %d",cc->name, i32);
+   if (i32 > 0)
+      debug("%30s: %d (%d)",cc->name, i32, cc->objSize);
 }
 
 void gc(Context currentContext)
@@ -1036,7 +1052,7 @@ heaperror:
          moveDblList(*usedL, *freeL);
    if (!destroyingApplication) // if this is the last gc, just collect all objects
    {
-#if _TRACE_LOCKED_BYTEARRAYS
+#ifdef TRACE_LOCKED_BYTEARRAYS
       Hashtable htCount = htNew(100,null);
       int lockCount=0;
 #endif
@@ -1048,11 +1064,10 @@ heaperror:
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");
       for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       {
-#if _TRACE_LOCKED_BYTEARRAYS
-         TCClass cc = OBJ_CLASS(o);
-         if (strEq(cc->name,BYTE_ARRAY))
+#ifdef TRACE_LOCKED_BYTEARRAYS
+         if (strEq(OBJ_CLASS(o)->name,BYTE_ARRAY))
             debug("locked ba: %X",o);
-         htPut32(&htCount, (int32)cc, 1 + htGet32(&htCount, (int32)cc));
+         htInc(&htCount, (int32)OBJ_CLASS(o), 1);
          lockCount++;
 #endif
          //if (_TRACE_OBJCREATION) debug("G marking locked obj %X",o);
@@ -1064,7 +1079,7 @@ heaperror:
          else 
             markObjects(o);
       }
-#if _TRACE_LOCKED_BYTEARRAYS
+#ifdef TRACE_LOCKED_BYTEARRAYS
       htTraverseWithKey(&htCount, dumpCount);
       debug("locked: %d",lockCount);
 #endif
@@ -1090,10 +1105,17 @@ heaperror:
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
+               if (_TRACE_CREATED_CLASSOBJS) htInc(&htCreatedObjs, (int32)OBJ_CLASS(o),-1);
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
    if (COMPUTETIME) debug("G finished finalizers");
+#ifdef TRACE_CREATED_CLASSOBJS
+   debug("objects that were not destroyed");
+   htTraverseWithKey(&htCreatedObjs, dumpCount);
+   htFree(&htCreatedObjs, null);
+   htCreatedObjs = htNew(100,null);
+#endif
 
    runningFinalizer = false;
    markedAsUsed = !markedAsUsed;
@@ -1108,7 +1130,7 @@ end:
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
 
-   //debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
+   debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
    if (COMPUTETIME)
    {
       debug("G checking free at end"); nfree = countObjectsIn(freeList,true,false,-1);

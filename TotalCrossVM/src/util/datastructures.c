@@ -166,6 +166,11 @@ TC_API bool htPutPtr(Hashtable *iht, int32 key, void* value)
    return htPut(iht, key, 0, value, false, false);
 }
 
+TC_API bool htInc(Hashtable *iht, int32 key, int32 incValue)
+{
+   return htPut32(iht, key, incValue + htGet32(iht, key));
+}
+
 TC_API bool htPut32IfNew(Hashtable *iht, int32 key, int32 value)
 {
    return htPut(iht, key, value, null, true, true);
