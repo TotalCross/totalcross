@@ -123,7 +123,7 @@ pointer to next):
 
 // debugging conditionals
 
-//#define TRACE_CREATED_CLASSOBJS
+#define TRACE_CREATED_CLASSOBJS
 //#define TRACE_LOCKED_BYTEARRAYS
 
 
@@ -160,7 +160,7 @@ pointer to next):
 
 void soundTone(int32 frequency, int32 duration);
 
-#if !defined(TRACE_CREATED_CLASSOBJS) && ((defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID))
+#if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID)
 #define DEFAULT_CHUNK_SIZE (1024*1024-48)
 #else
 #define DEFAULT_CHUNK_SIZE (64*1024-64) 
@@ -326,7 +326,7 @@ static bool createChunk(uint32 size)
    return true;
 }
 
-static Hashtable htCreatedObjs;
+static Hashtable htObjsPerClass;
 
 bool initObjectMemoryManager()
 {
@@ -334,7 +334,7 @@ bool initObjectMemoryManager()
    uint8 *f, *u, *l;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
-   if (_TRACE_CREATED_CLASSOBJS) htCreatedObjs = htNew(100, null);
+   if (_TRACE_CREATED_CLASSOBJS) htObjsPerClass = htNew(100, null);
    if (chunksHeap == null) return false;
    IF_HEAP_ERROR(ommHeap)
    {
@@ -513,7 +513,7 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
-   if (_TRACE_CREATED_CLASSOBJS) htInc(&htCreatedObjs, (int32)c, 1);
+   if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)c, 1);
 
    OBJ_CLASS(o) = c;
 
@@ -557,7 +557,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
-   if (_TRACE_CREATED_CLASSOBJS) htInc(&htCreatedObjs, (int32)c, 1);
+   if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)c, 1);
 
    if (_TRACE_OBJCREATION) debug("G %X array obj created %s len %d, size = %d at %d. lock: %d", o, c->name,len, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o));
 
@@ -882,6 +882,7 @@ static void markContexts()
       if ((c=copy[i]) != null)
       {
          TCObjectArray oa = c->regOStart;
+         debug("context: %X, regO: %X to %X (%d), retO: %X",c,c->regOStart,c->regO,(c->regO-c->regOStart),c->nmp.retO);
          if (c->threadObj)
             markObjects(c->threadObj);
          if (c->nmp.retO)
@@ -1088,7 +1089,7 @@ heaperror:
       markContexts();
    }
    // now all reachable objects are moved to the still-alive list.
-   if (COMPUTETIME) compIni = getTimeStamp();
+   /*if (COMPUTETIME) */compIni = getTimeStamp();
    // 3. mark the free chunks as empty, so the compact can work correctly, and run the finalize methods if any
    markedAsUsed = !markedAsUsed; // otherwise, objects allocated in this executeMethod will have problems when being collected
    runningFinalizer = true;
@@ -1105,16 +1106,16 @@ heaperror:
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
-               if (_TRACE_CREATED_CLASSOBJS) htInc(&htCreatedObjs, (int32)OBJ_CLASS(o),-1);
+               if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
    if (COMPUTETIME) debug("G finished finalizers");
 #ifdef TRACE_CREATED_CLASSOBJS
    debug("objects that were not destroyed");
-   htTraverseWithKey(&htCreatedObjs, dumpCount);
-   htFree(&htCreatedObjs, null);
-   htCreatedObjs = htNew(100,null);
+   htTraverseWithKey(&htObjsPerClass, dumpCount);
+   htFree(&htObjsPerClass, null);
+   htObjsPerClass = htNew(100,null);
 #endif
 
    runningFinalizer = false;
@@ -1130,12 +1131,12 @@ end:
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
 
-   debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
-   if (COMPUTETIME)
+   //debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
+   //if (COMPUTETIME)
    {
-      debug("G checking free at end"); nfree = countObjectsIn(freeList,true,false,-1);
+      /*debug("G checking free at end"); */nfree = countObjectsIn(freeList,false,false,-1);
       nused = countObjectsIn(usedList,false,false,markedAsUsed);
-      debug("G checking used at end"); debug("G ====  GC END : free: %d, used: %d, chunks: %d, elapsed: %4d (compact: %3d)", nfree, nused, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
+      /*debug("G checking used at end"); */debug("GC %d : free: %d, used: %d, chunks: %d, elapsed: %4d (compact: %3d)", tcSettings.gcCount ? *tcSettings.gcCount : 0,nfree, nused, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
    }
    // and now INVERT THE MARK BIT
    markedAsUsed = !markedAsUsed;
