@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-//#define ALTERNATIVE_GC // used for Prime Systems on Palm OS devices
-
 #include "tcvm.h"
 
 /**************************************************************************************
@@ -124,6 +122,13 @@ pointer to next):
 ****************************************************************************************/
 
 // debugging conditionals
+
+#ifdef TRACE_LOCKED_BYTEARRAYS
+#define _TRACE_LOCKED_BYTEARRAYS 1
+#else
+#define _TRACE_LOCKED_BYTEARRAYS 0
+#endif
+
 #ifdef TRACE_OBJCREATION
 #define _TRACE_OBJCREATION 1
 #else
@@ -152,11 +157,7 @@ pointer to next):
 void soundTone(int32 frequency, int32 duration);
 
 #define MIN_SPACE_LEFT 16
-#ifdef ALTERNATIVE_GC
- #define DEFAULT_CHUNK_SIZE (65536-96) // dlmalloc requires a bit more than 36 bytes. doing this to prevent allocating more than a 64k segment
-#else
- #define DEFAULT_CHUNK_SIZE 65500
-#endif
+#define DEFAULT_CHUNK_SIZE (65536-64)
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
 static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
@@ -476,6 +477,7 @@ TCObject allocObject(Context currentContext, uint32 size)
       OBJ_SETLOCKED(o);
       insertNodeInDblList(lockList[0], o);
       objLocked++;
+
       if (_TRACE_OBJCREATION) debug("G Object %X locked",o);
       // erase the object.
       xmemzero(o, size);
@@ -540,7 +542,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    arraySize = len << c->flags.bits2shift;
    objectSize = 4 + arraySize; // there's a single instance field in the Array class: length
    o = allocObject(currentContext, objectSize);
-
    if (!o)
       goto end;
 
@@ -549,6 +550,15 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    ARRAYOBJ_LEN(o) = len;
    OBJ_CLASS(o) = c;
 end:
+   return o;
+}
+
+TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line)
+{
+   TCObject o = createArrayObject(currentContext, BYTE_ARRAY, len);
+#if _TRACE_LOCKED_BYTEARRAYS
+   debug("byteArray %X created at %s (%d)",o,file,line);
+#endif
    return o;
 }
 
@@ -926,17 +936,15 @@ void runFinalizers() // calls finalize of all objects in use
    mainContext->litebasePtr = gcContext->litebasePtr; // update the ptr
 }
 
-#ifndef ALTERNATIVE_GC
- #if defined(ANDROID) || defined(WINCE)
-  #define CRITICAL_SIZE 2*1024*1024
-  #define USE_MAX_BLOCK true
- #elif defined(WIN32)
-  #define CRITICAL_SIZE 512*1024
-  #define USE_MAX_BLOCK false
- #else
-  #define CRITICAL_SIZE 2*1024*1024
-  #define USE_MAX_BLOCK false
- #endif
+#if defined(ANDROID) || defined(WINCE)
+ #define CRITICAL_SIZE 2*1024*1024
+ #define USE_MAX_BLOCK true
+#elif defined(WIN32)
+ #define CRITICAL_SIZE 512*1024
+ #define USE_MAX_BLOCK false
+#else
+ #define CRITICAL_SIZE 2*1024*1024
+ #define USE_MAX_BLOCK false
 #endif
 
 void preallocateArray(Context currentContext, TCObject sample, int32 length)
@@ -947,6 +955,17 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
    if (totSize >= DEFAULT_CHUNK_SIZE)
       while (totChunks-- > 0)
          createChunk(DEFAULT_CHUNK_SIZE);
+}
+#if defined(WIN32) && !defined(WINCE)
+#define MINTIME 50
+#else
+#define MINTIME 500
+#endif
+
+static void dumpCount(int32 key, int32 i32, VoidP ptr)
+{
+   TCClass cc = (TCClass)key;
+   debug("%30s: %d",cc->name, i32);
 }
 
 void gc(Context currentContext)
@@ -966,12 +985,8 @@ void gc(Context currentContext)
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
-#ifdef ALTERNATIVE_GC
-   if ( IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
-#else
    freemem = getFreeMemory(USE_MAX_BLOCK);
-   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
-#endif
+   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
@@ -1021,6 +1036,10 @@ heaperror:
          moveDblList(*usedL, *freeL);
    if (!destroyingApplication) // if this is the last gc, just collect all objects
    {
+#if _TRACE_LOCKED_BYTEARRAYS
+      Hashtable htCount = htNew(100,null);
+      int lockCount=0;
+#endif
       // 2. go through all the reachable objects and move them back to the used list
       // 2a. static fields of loaded classes
       if (CANTRAVERSE)
@@ -1029,14 +1048,26 @@ heaperror:
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");
       for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       {
+#if _TRACE_LOCKED_BYTEARRAYS
+         TCClass cc = OBJ_CLASS(o);
+         if (strEq(cc->name,BYTE_ARRAY))
+            debug("locked ba: %X",o);
+         htPut32(&htCount, (int32)cc, 1 + htGet32(&htCount, (int32)cc));
+         lockCount++;
+#endif
          //if (_TRACE_OBJCREATION) debug("G marking locked obj %X",o);
          if (OBJ_CLASS(o)->flags.isString) // 99% of the locked objects, due to the constant pool
          {
             OBJ_MARK(o) = markedAsUsed;
             if (String_chars(o)) markSingleObject(String_chars(o));
          }
-         else markObjects(o);
+         else 
+            markObjects(o);
       }
+#if _TRACE_LOCKED_BYTEARRAYS
+      htTraverseWithKey(&htCount, dumpCount);
+      debug("locked: %d",lockCount);
+#endif
       if (_TRACE_OBJCREATION) debug("G marking locked objs end");
       // 2c. used objects in the object registers of all available contexts
       markContexts();
@@ -1077,6 +1108,7 @@ end:
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
 
+   //debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
    if (COMPUTETIME)
    {
       debug("G checking free at end"); nfree = countObjectsIn(freeList,true,false,-1);

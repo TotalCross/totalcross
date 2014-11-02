@@ -41,19 +41,10 @@ TC_API int32 getCountToReturnNull()
 }
 
 //// Primitive allocation ////
-#if defined HAS_MSPACE_1_AND_2
-//XXX couldn't find anything about WP8 and mspace type
-mspace mspace1,mspace2;
-static inline VoidP realMalloc(uint32 size) // we can't use DbgMalloc on the leaks hashtable, otherwise memory will blow up too quickly.
-{
-   return size <= 32 ? mspace_malloc(mspace1,size) : size <= 400 ? mspace_malloc(mspace2,size) : dlmalloc(size);
-} 
-#else
 static VoidP realMalloc(uint32 size)
 {
    return dlmalloc(size);
 }
-#endif
 static void realFree(VoidP p) 
 {
    dlfree(p);
@@ -126,16 +117,10 @@ static bool checkMemHeapLeaks();
 
 bool initMem()
 {
-   #if (defined(WIN32) && !defined(WINCE))
-   leakCheckingEnabled = true;
+   #if defined(WIN32) && !defined(WINCE) && defined(_DEBUG)
+   //leakCheckingEnabled = true;
    #endif
-#if defined HAS_MSPACE_1_AND_2
-   mspace1 = create_mspace(0,0);
-   mspace2 = create_mspace(0,0);
-   return mspace1 != null && mspace2 != null;
-#else
    return true;
-#endif
 }
 
 static bool checkMemHeapLeaks()
@@ -163,13 +148,6 @@ void destroyMem()
    if (showMemoryMessagesAtExit && (b1 || b2 || warnOnExit)) // guich@tc114_44
       alert("Memory %s found. Check the\ndebug console for more information.", warnOnExit ? "problems" : "leaks");
 #endif        
-#if defined HAS_MSPACE_1_AND_2 && (!defined(ENABLE_WIN32_POINTER_VERIFICATION) && defined(WIN32))
-   if (mspace1)
-      destroy_mspace(mspace1);
-   if (mspace2)
-      destroy_mspace(mspace2);
-   mspace1 = mspace2 = 0;
-#endif
 }
 
 static int32 hpcount;
@@ -583,6 +561,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
    if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
       return null;
 
+   LOCKVAR(alloc);
    ptr = malloc(size);
    allocCount++;
 	if (ptr != null)
@@ -593,6 +572,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
    }
    else
       memError("XMALLOC",size, file, line);
+   UNLOCKVAR(alloc);
    return ptr;
 #else
    void *p=null;
@@ -601,13 +581,17 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
    //size = ((size >> 2) << 2) + 4; dlmalloc already aligns
    if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
       return null;
+   LOCKVAR(alloc);
 #ifdef INITIAL_MEM
    if (size <= maxAvail)
 #endif
       p = realMalloc(size);
 
    if (!p)
+   {
+      UNLOCKVAR(alloc);
       return memError("XMALLOC",origSize, file, line);
+   }
 #ifdef INITIAL_MEM
    maxAvail -= size;
 #ifdef TRACE_OBJCREATION
@@ -637,6 +621,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
 #ifdef ENABLE_TRACE
    //debug("alloc(%d) in %s line %d. Free: %d, used: %d (%lX)",(int)size, file, line, (int)getFreeMemory(false),totalAllocated,(long)p);
 #endif
+   UNLOCKVAR(alloc);
    return p;
 #endif
 }
@@ -646,10 +631,12 @@ TC_API void privateXfree(void *p, const char *file, int line)
 #if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
    if (leakCheckingEnabled && !htmRemove((uint32)p))
       debug("free: %lX NOT REMOVED. xfree called from %s (%d)",(long)p, file, line);
+   LOCKVAR(alloc);
    freeCount++;
    free(p);
 #else
    uint32 size=0;
+   LOCKVAR(alloc);
 
    if (p)
    {
@@ -682,6 +669,7 @@ TC_API void privateXfree(void *p, const char *file, int line)
       }
    }
 #endif
+   UNLOCKVAR(alloc);
 }
 
 TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line)
@@ -690,6 +678,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
    uint8* p=null;
    if (ptr == null) // first allocation?
       return privateXmalloc(size, file, line);
+   LOCKVAR(alloc);
    if (leakCheckingEnabled)
       htmRemove((uint32)ptr);
 #if defined(FORCE_LIBC_ALLOC)
@@ -703,6 +692,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
       htmPut((uint32)p, line, file);
    if (!p)
       memError("XREALLOC",origSize, file, line);
+   UNLOCKVAR(alloc);
    return p;
 #elif defined(ENABLE_WIN32_POINTER_VERIFICATION)
    UNUSED(origSize);
@@ -716,6 +706,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
       if (leakCheckingEnabled)
          htmPut((uint32)p, line, file);
    }
+   UNLOCKVAR(alloc);
    return p;
 #else
    size += XMALLOC_EXTRASIZE;
@@ -729,7 +720,10 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
          p = dlrealloc(p, size);
    }
    if (!p)
+   {
+      UNLOCKVAR(alloc);
       return memError("XREALLOC",origSize, file, line);
+   }
 #ifdef INITIAL_MEM
    maxAvail -= (int32)size - (int32)oldSize;
 #endif
@@ -756,6 +750,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
 #ifdef ENABLE_TRACE
    //debug("realloc(%d->%d) in %s line %d. Free: %d, used: %d (%lX)",(int)oldSize, (int)size, file, line, (int)getFreeMemory(false),totalAllocated,(long)p);
 #endif
+   UNLOCKVAR(alloc);
    return p;
 #endif
 }

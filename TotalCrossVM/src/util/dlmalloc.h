@@ -29,11 +29,6 @@
 #define FOOTERS 1
 #endif
 
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE)) && !defined WP8
-// jeffque: couldn't find anything about WP8 and mspace type
-#define HAS_MSPACE_1_AND_2
-#endif
-
 #if defined WP8
 #undef MSPACES
 #undef FOOTERS

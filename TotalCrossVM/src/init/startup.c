@@ -64,13 +64,8 @@ static Context initAll(CharP* args)
    return ok ? c : null;
 }
 
-void dump_memory_map(char* fileSuffix);
-
 static void destroyAll() // must be in inverse order of initAll calls
 {
-#if defined(DEBUG) || defined(_DEBUG)
-   dump_memory_map("destroyAll");
-#endif
    threadDestroyAll(); // first all threads must be destroyed - NOTE: when debugging on win32, this may hang the Visual C++ ide.
    destroyingApplication = true; // now is safe to destroy all objects
    runFinalizers();
@@ -345,14 +340,6 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif defined WIN32
-#if !defined(WP8)
-   {
-      SYSTEM_INFO systemInfo;
-      GetSystemInfo(&systemInfo);
-      if (systemInfo.dwNumberOfProcessors > 1)  // flsobral@tc110_91: On Win32, TotalCross applications will run only in one processor. This should fix our problems with multi-core processors while thread synchronization is not supported.
-         SetProcessAffinityMask(GetCurrentProcess(), 1L);
-   }
-#endif
    if (argsOriginalLen > 0 && xstrstr(argsOriginal, "/scr"))
    {
       argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);

@@ -190,7 +190,8 @@ public class Spinner extends Control implements Runnable
       if ((now - last) > 120) // prevents calling pumpEvents too fast
       {
          step();
-         Window.pumpEvents();
+         if (!MainWindow.isMainThread())
+            Vm.sleep(1);
          last = now;
       }
    }
