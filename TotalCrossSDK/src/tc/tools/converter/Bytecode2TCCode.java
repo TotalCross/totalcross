@@ -2005,7 +2005,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       if (name.startsWith("totalcross/util/AbstractList") || name.startsWith("totalcross/util/AbstractMap") 
        || name.startsWith("totalcross/util/Arrays") || name.startsWith("totalcross/util/Collections")
        || name.startsWith("totalcross/util/HashMap") || name.startsWith("totalcross/util/LinkedHashMap") 
-       || name.startsWith("totalcross/util/LinkedList") || name.startsWith("totalcross/util/Map")) 
+       || name.startsWith("totalcross/util/LinkedList") || name.startsWith("totalcross/util/Map")
+       || name.startsWith("totalcross/util/PriorityQueue")) 
          return name.replace("totalcross", "java");
       if (name.equals("totalcross/util/AbstractCollection4D")) 
          return "java/util/AbstractCollection4D";
