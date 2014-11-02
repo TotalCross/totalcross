@@ -2006,7 +2006,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
        || name.startsWith("totalcross/util/Arrays") || name.startsWith("totalcross/util/Collections")
        || name.startsWith("totalcross/util/HashMap") || name.startsWith("totalcross/util/LinkedHashMap") 
        || name.startsWith("totalcross/util/LinkedList") || name.startsWith("totalcross/util/Map")
-       || name.startsWith("totalcross/util/PriorityQueue")) 
+       || name.startsWith("totalcross/util/PriorityQueue") || name.startsWith("totalcross/util/TreeMap")) 
          return name.replace("totalcross", "java");
       if (name.equals("totalcross/util/AbstractCollection4D")) 
          return "java/util/AbstractCollection4D";
@@ -2058,6 +2058,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          return "java/util/SortedMap4D";
       if (name.equals("totalcross/util/SortedSet4D")) 
          return "java/util/SortedSet4D";
+      if (name.equals("totalcross/util/TreeSet4D")) 
+         return "java/util/TreeSet4D";
       return name;
    }
 
