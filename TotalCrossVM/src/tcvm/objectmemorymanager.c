@@ -161,7 +161,7 @@ pointer to next):
 void soundTone(int32 frequency, int32 duration);
 
 #if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID)
-#define DEFAULT_CHUNK_SIZE (512*1024-64)
+#define DEFAULT_CHUNK_SIZE (1024*1024-48)
 #else
 #define DEFAULT_CHUNK_SIZE (64*1024-64) 
 #endif
