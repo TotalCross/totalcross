@@ -24,8 +24,8 @@ public class TestMap extends TestCase
       assertEquals(0, test1.size());
       assertEquals(0, test2.size());
       
-      assertFalse(test1.isEmpty());
-      assertFalse(test2.isEmpty());
+      assertTrue(test1.isEmpty());
+      assertTrue(test2.isEmpty());
       
       assertFalse(test1.containsKey(null));
       assertFalse(test2.containsKey(null));
@@ -96,7 +96,7 @@ class Test7 implements Map
 
    public boolean isEmpty()
    {
-      return false;
+      return true;
    }
 
    public boolean containsKey(Object key)

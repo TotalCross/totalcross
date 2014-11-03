@@ -63,6 +63,7 @@ public class TestCollectionsAPI extends TestSuite
       addTestCase(TestLinkedHashMap.class);
       addTestCase(TestLinkedHashSet.class);
       addTestCase(TestLinkedList.class);
+      addTestCase(TestPriorityQueue.class); 
       
       addTestCase(TestGenerics.class);
    }
