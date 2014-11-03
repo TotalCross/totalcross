@@ -41,7 +41,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
       if (a == af || speed == 0)
       {
          a = af;
-         stop();
+         stop(false);
       }
    }
 
