@@ -40,6 +40,7 @@ exception statement from your version. */
 package totalcross.util;
 
 import java.util.*;
+import java.lang.Comparable;
 
 
 /**
@@ -98,11 +99,6 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
   // and no red node has red children. To avoid some null-pointer checks,
   // we use the special node nil which is always black, has no relatives,
   // and has key and value of null (but is not equal to a mapping of null).
-
-  /**
-   * Compatible with JDK 1.2.
-   */
-  private static final long serialVersionUID = 919286545866124006L;
 
   /**
    * Color status of a node. Package visible for use by nested classes.
