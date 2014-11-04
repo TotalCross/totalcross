@@ -62,9 +62,9 @@ public class TestDeque extends TestCase
       test2.addLast(null);
       ((Deque)test3).addLast(null);
       
-      assertFalse(test1.offerFirst(null));
-      assertFalse(test2.offerFirst(null));
-      assertFalse(((Deque)test3).offerFirst(null));
+      assertTrue(test1.offerFirst(null));
+      assertTrue(test2.offerFirst(null));
+      assertTrue(((Deque)test3).offerFirst(null));
       
       assertFalse(test1.offerLast(null));
       assertFalse(test2.offerLast(null));
@@ -110,9 +110,9 @@ public class TestDeque extends TestCase
       assertFalse(test2.removeLastOccurrence(null));
       assertFalse(((Deque)test3).removeLastOccurrence(null));
       
-      assertFalse(test1.add(null));
-      assertFalse(test2.add(null));
-      assertFalse(test3.add(null));
+      assertTrue(test1.add(null));
+      assertTrue(test2.add(null));
+      assertTrue(test3.add(null));
       
       assertFalse(test1.offer(null));
       assertFalse(test2.offer(null));
@@ -215,7 +215,7 @@ class Test26 implements Deque
 
    public boolean offerFirst(Object e)
    {
-      return false;
+      return true;
    }
 
    public boolean offerLast(Object e)
@@ -275,7 +275,7 @@ class Test26 implements Deque
 
    public boolean add(Object e)
    {
-      return false;
+      return true;
    }
 
    public boolean offer(Object e)

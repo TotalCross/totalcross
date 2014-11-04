@@ -102,6 +102,7 @@ static Type checkPrimitiveType(NMParams p, TCClass cto, Type from, bool isGet) /
       return to;
    return Type_Null;
 }
+void jlC_forName_s(NMParams p);
 static Type checkPrimitiveField(NMParams p, Type from, bool isGet) // check if the field's type can be wide converted to the given src type
 {
    TCObject o = p->obj[0];
@@ -686,9 +687,10 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
             }
             else
             {
+               bool unlockIt = true;
                switch (target->cpReturn)
                {
-                  case Type_Null:    o = null;
+                  case Type_Null:    o = null; unlockIt = false; break;
                   case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) Byte_v     (o) = ret.asInt32; break;
                   case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) Boolean_v  (o) = ret.asInt32; break;
                   case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) Short_v    (o) = ret.asInt32; break;
@@ -697,9 +699,10 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
                   case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) Long_v     (o) = ret.asInt64; break;
                   case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) Float_v    (o) = ret.asDouble; break;
                   case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) Double_v   (o) = ret.asDouble; break;
-                  default:           o = ret.asObj; break;
+                  default:           o = ret.asObj; unlockIt = false; break;
                }
-               p->retO = o;
+               if (unlockIt)
+                  setObjectLock(p->retO = o, UNLOCKED);
             }
          }
          freeArray(aargs);

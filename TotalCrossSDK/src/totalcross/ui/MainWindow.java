@@ -288,7 +288,7 @@ public class MainWindow extends Window implements totalcross.MainClass
           TimerEvent last = null;
           for (TimerEvent t = firstTimer; t != null; t = t.next)
           {
-             if (t == te) // already interted? get out!
+             if (t == te) // already inserted? get out!
                 return;
              last = t;
           }
@@ -667,7 +667,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          if (n != 0) 
          {
             o = runners.toObjectArray();
-            runners.removeAllElements();
+            runners = new Vector(1);
          }
       }
       return o;
@@ -704,5 +704,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          runners.addElement(r);
          setTimerInterval(1);
       }
+      Vm.sleep(1);
    }
 }

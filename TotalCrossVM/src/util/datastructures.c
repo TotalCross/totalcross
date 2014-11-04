@@ -166,6 +166,11 @@ TC_API bool htPutPtr(Hashtable *iht, int32 key, void* value)
    return htPut(iht, key, 0, value, false, false);
 }
 
+TC_API bool htInc(Hashtable *iht, int32 key, int32 incValue)
+{
+   return htPut32(iht, key, incValue + htGet32(iht, key));
+}
+
 TC_API bool htPut32IfNew(Hashtable *iht, int32 key, int32 value)
 {
    return htPut(iht, key, value, null, true, true);
@@ -257,6 +262,18 @@ void htTraverse(Hashtable *iht, VisitElementFunc visitElement)
    while (n-- >= 0)
       for (e = *tab++; e != null ;e = e->next)
          visitElement(e->i32, e->ptr);
+}
+
+void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement)
+{
+   HtEntry **tab = iht->items;
+   HtEntry *e;
+   int32 n = iht->hash;
+   if (tab == null || visitElement == null)
+      return;
+   while (n-- >= 0)
+      for (e = *tab++; e != null ;e = e->next)
+         visitElement(e->key, e->i32, e->ptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////

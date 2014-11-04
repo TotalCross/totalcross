@@ -58,7 +58,7 @@ GLOBAL(void FAR *)
 jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
 {
    UNUSED(cinfo)
-  return (void FAR *) malloc(sizeofobject);
+  return jpeg_get_small(cinfo, sizeofobject);//(void FAR *) xmalloc(sizeofobject);
 }
 
 GLOBAL(void)
@@ -66,7 +66,7 @@ jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 {
    UNUSED(cinfo)
    UNUSED(sizeofobject)
-  free(object);
+ //  xfree(object);
 }
 
 

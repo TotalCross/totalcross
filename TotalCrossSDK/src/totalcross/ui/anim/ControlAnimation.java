@@ -65,7 +65,7 @@ public abstract class ControlAnimation implements TimerListener
       initialTime = Vm.getTimeStamp();
    }
 
-   public void stop()
+   public void stop(boolean abort)
    {
       if (teFrame != null)
       {
@@ -76,6 +76,9 @@ public abstract class ControlAnimation implements TimerListener
       }
       if (animFinish != null)
          animFinish.onAnimationFinished(this);
+      if (abort)
+         ;
+      else
       if (delayAfterFinish > 0) 
          teDelay = c.addTimer(delayAfterFinish);
       else
