@@ -39,6 +39,7 @@
  #define XSELECT(addr, idx) switch (idx)
 #endif
 
+TC_API void jlC_forName_s(NMParams p);
 //////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_TRACE
 static CharP getSpaces(Context currentContext, int32 n)

@@ -74,6 +74,8 @@ TC_API  void    htFree     (Hashtable *iht, VisitElementFunc freeElement); // if
 typedef void  (*htFreeFunc)(Hashtable *iht, VisitElementFunc freeElement);
 TC_API  bool    htFreeContext     (Context context, Hashtable *iht, VisitElementContextFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
 typedef bool  (*htFreeContextFunc)(Context context, Hashtable *iht, VisitElementContextFunc freeElement);
+TC_API  bool    htInc             (Hashtable *iht, int32 key, int32 incValue);  // holds a count of something
+typedef bool  (*htIncFunc)        (Hashtable *iht, int32 key, int32 incValue);
 void htTraverse(Hashtable *iht, VisitElementFunc visitElement);
 void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement);
 ///////////////////////////////////////////////////////////////////////////

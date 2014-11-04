@@ -32,9 +32,9 @@ public class PathAnimation extends ControlAnimation
       Window.needsPaint = true;
    }
    
-   public void stop()
+   public void stop(boolean abort)
    {
-      super.stop();
+      super.stop(abort);
       switch (dir)
       {
          case Control.LEFT:   c.setSet(Control.LEFT,Control.TOP); break;
@@ -52,7 +52,7 @@ public class PathAnimation extends ControlAnimation
       if ((x == xf && y == yf) || speed == 0)
       {
          x = xf; y = yf;
-         stop();
+         stop(false);
          return;
       }
       int dx = xf - this.x;

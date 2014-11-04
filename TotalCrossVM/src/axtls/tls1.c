@@ -997,9 +997,9 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
     if (IS_SET_SSL_FLAG(SSL_TX_ENCRYPTED))
     {
-        volatile int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
+        int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
                             SSL_CLIENT_WRITE : SSL_SERVER_WRITE;
-        volatile uint8_t hmac_header[SSL_RECORD_SIZE];
+        uint8_t hmac_header[SSL_RECORD_SIZE];
 
         hmac_header[0] = protocol;
         hmac_header[1] = 0x03;

@@ -51,8 +51,13 @@ public class Toast
          public void run()
          {
             final Window parent = Window.getTopMost();
-            if (btn != null)
-               parent.remove(btn);
+            if (btn != null && btn.parent != null)
+            {
+               btn.parent.remove(btn);
+               btn = null;
+               if (animation != null) animation.stop(true);
+               animation = null;
+            }
             if (message != null)
             try
             {
@@ -73,11 +78,12 @@ public class Toast
                   {
                      public void onAnimationFinished(ControlAnimation anim)
                      {
+                        if (btn != null && btn.parent != null)
+                           btn.parent.remove(btn);
                         if (thisBtn == btn) // button may change if user tries to show several Toasts
                         {
-                           if (btn != null)
-                              parent.remove(btn);
                            btn = null;
+                           animation = null;
                         }
                      }
                   }, -1)).start();

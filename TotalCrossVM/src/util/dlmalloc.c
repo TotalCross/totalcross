@@ -495,11 +495,13 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
  #define GetTickCount() 0
  #define GetSystemInfo(a) GetNativeSystemInfo(a)
 #else
- #define MSPACES 0
+ #define MSPACES 1
 #endif
-#define FOOTERS 0
+#define FOOTERS 1
 #define DEFAULT_GRANULARITY 2*1024*1024 // // guich@tc124_17: 2MB
 #define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // // guich@tc124_17: DISABLE
+#define ABORT_ON_ASSERT_FAILURE 0 // prevent program
+#define PROCEED_ON_ERROR 0        //  crash
 #endif
 
 void debug(char *s, ...);
@@ -513,7 +515,6 @@ void debug(char *s, ...);
 
 //////// TOTALCROSS CHANGES FINISH /////////
 
-#define ABORT_ON_ASSERT_FAILURE 0
 #ifndef WIN32
 #ifdef _WIN32
 #define WIN32 1
