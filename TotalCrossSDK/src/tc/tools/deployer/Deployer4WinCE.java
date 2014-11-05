@@ -250,6 +250,7 @@ public class Deployer4WinCE
                // tc is always included
                // include non-binary files
                vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
+               vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
                vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
                vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
                lbFolder = DeploySettings.folderTotalCross3DistVM+"wince/";
@@ -416,7 +417,7 @@ public class Deployer4WinCE
 	      // ok, the .inf file is created, now we call the cabwiz program
 	      path2Cabwiz = Utils.findPath(DeploySettings.etcDir+"tools/makecab/Cabwiz.exe",false);
 	      if (path2Cabwiz == null)
-	         throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
+	         throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/dist/tc.jar to the classpath");
 	      // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
 	      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","HPC2000_ARM","HPC211_ARM","PocketPC_ARM","PocketPC_MIPS","PocketPC_SH3"};
 	      out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
