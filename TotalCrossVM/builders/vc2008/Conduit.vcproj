@@ -498,6 +498,7 @@
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
 				StructMemberAlignment="3"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				BrowseInformation="0"
