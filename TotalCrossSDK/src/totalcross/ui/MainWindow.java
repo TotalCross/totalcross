@@ -661,18 +661,33 @@ public class MainWindow extends Window implements totalcross.MainClass
       Object[] o = null;
       synchronized (runnersLock)
       {
-         int n = runners.size();
-         if (n != 0) 
+         try
          {
-            o = runners.toObjectArray();
-            runners = new Vector(1);
+            int n = runners.size();
+            if (n != 0) 
+            {
+               o = runners.toObjectArray();
+               runners = new Vector(1);
+            }
          }
+         catch (Exception e) {}
       }
       return o;
    }
+   /** The same of <code>runOnMainThread(r, true)</code>. 
+    * @see #runOnMainThread(Runnable, boolean) 
+    * Note that this
+    * */
+   public void runOnMainThread(Runnable r)
+   {
+      runOnMainThread(r, true);
+   }
+
    /** Runs the given code in the main thread. As of TotalCross 2.0, a thread cannot update the screen.
     * So, asking the code to be called in the main thread solves the problem. Of course, this call is asynchronous, ie,
     * the thread may run again before the screen is updated. This method is thread-safe.
+    * If singleInstance is true and the array contains an element of this class, it is replaced by the given one.
+    * Note that passing as false may result in memory leak.
     * Sample:
     * <pre>
     *  new Thread()
@@ -695,12 +710,26 @@ public class MainWindow extends Window implements totalcross.MainClass
     * </pre>
     * @since TotalCross 2.1
     */
-   public void runOnMainThread(Runnable r)
+   public void runOnMainThread(Runnable r, boolean singleInstance)
    {
       synchronized (runnersLock)
       {
-         runners.addElement(r);
-         setTimerInterval(1);
+         try
+         {
+            if (singleInstance && runners.size() > 0)
+            {
+               String origname = r.getClass().getName()+"@";
+               for (int i = 0, n = runners.size(); i < n; i++)
+                  if (runners.items[i].toString().startsWith(origname))
+                  {
+                     runners.removeElementAt(i);
+                     break;
+                  }
+            }
+            runners.addElement(r);
+            setTimerInterval(1);
+         }
+         catch (Exception e) {}
       }
       Vm.sleep(1);
    }
