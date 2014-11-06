@@ -18,6 +18,7 @@ package tc.samples.api.ui;
 
 import tc.samples.api.*;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
@@ -104,7 +105,7 @@ public class FontSample extends BaseContainer
       public void initUI()
       {
          Label l;
-         int max = Font.MAX_FONT_SIZE*3;
+         int max = Font.MAX_FONT_SIZE*(Settings.isWindowsDevice() ? 2 : 3);
          add(new Label("Typeface: "),LEFT,TOP);
          add(new Radio("Normal",rg),AFTER+fmH,SAME);
          add(new Radio("Monospace",rg), AFTER+fmH,SAME);
@@ -112,7 +113,7 @@ public class FontSample extends BaseContainer
          add(l = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER);
          add(new Label(""+max), RIGHT, SAME);
          add(slSize = new Slider(), AFTER+2, SAME, FIT-2, SAME+fmH/2,l);
-         slSize.setLiveScrolling(true);
+         slSize.setLiveScrolling(!Settings.isWindowsDevice());
          slSize.setMinimum(Font.MIN_FONT_SIZE);
          slSize.setMaximum(max+1); // +1: visible items
          slSize.drawFilledArea = slSize.drawTicks = false;

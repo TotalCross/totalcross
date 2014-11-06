@@ -51,7 +51,7 @@ public class ImageControlSample extends BaseContainer
          ic.centerImage = true;
          add(ic,LEFT,AFTER,FILL,FILL);
          timer = addTimer(25);
-         maxScale = Settings.isWindowsDevice() ? 3 : 5;
+         maxScale = Settings.isWindowsDevice() ? 2 : 5;
       }
       catch (Exception ee)
       {
@@ -60,25 +60,33 @@ public class ImageControlSample extends BaseContainer
    }
    public void onEvent(Event e)
    {
-      if (e.type == TimerEvent.TRIGGERED && timer != null && timer.triggered && !stopped)
+      try
       {
-         if (img.hwScaleH > maxScale)
-            grow = false;
-         img.hwScaleH = img.hwScaleW = img.hwScaleH * (grow ? 1.05 : 0.95);
-         if (!grow && img.hwScaleH <= 0.5)
-            grow = true;
-         ic.setImage(img); // this actually just computes the center position
+         if (e.type == TimerEvent.TRIGGERED && timer != null && timer.triggered && !stopped)
+         {
+            if (img.hwScaleH > maxScale)
+               grow = false;
+            img.hwScaleH = img.hwScaleW = img.hwScaleH * (grow ? 1.05 : 0.95);
+            if (!grow && img.hwScaleH <= 0.5)
+               grow = true;
+            ic.setImage(img); // this actually just computes the center position
+         }
+         else
+         if (e.type == PenEvent.PEN_UP && e.target == ic)
+         {
+            stopped = true;
+            InputBox ib = new InputBox("Change name","(don't type \"To\")","");
+            ib.popup();
+            String s = ib.getValue();
+            if (s != null)
+               lab.setText("To "+s);
+            stopped = false;
+         }
       }
-      else
-      if (e.type == PenEvent.PEN_UP && e.target == ic)
+      catch (Exception ee)
       {
-         stopped = true;
-         InputBox ib = new InputBox("Change name","(don't type \"To\")","");
-         ib.popup();
-         String s = ib.getValue();
-         if (s != null)
-            lab.setText("To "+s);
-         stopped = false;
+         ee.printStackTrace();
+         Toast.show("Exception: "+ee.getClass().getName(),2000);
       }
    }
    public void onRemove()
