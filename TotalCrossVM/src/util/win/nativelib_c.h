@@ -27,6 +27,9 @@ VoidP privateLoadLibrary(CharP libName)
 
 #if !defined (WINCE)
    CharPToLower(libName); // are we loading ourselves?
+   if (strEq(libName, "tcsync"))
+      if ((library = GetModuleHandle("tcsync.dll")) != null)
+         return library;
 #endif
 
    library = tryAt("","",libName,".dll");
@@ -61,11 +64,23 @@ void privateUnloadLibrary(VoidP libPtr)
    GetModuleFileName(libPtr, libPath, MAX_PATH);
    TCHARP2CharPBuf(tcsrchr(libPath, '\\')+1, libName);
    CharPToLower(libName);
+
+   if (strEq(libName, "tcsync.dll"))
+      return;
 #endif
    FreeLibrary(libPtr);
 }
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
+#ifdef WINCE
+   TCHAR szFuncName[128];
+   FARPROC procAddress;
+
+   CharP2TCHARPBuf(funcName, szFuncName);
+   procAddress = GetProcAddress(!module ? hModuleTCVM : module, szFuncName);
+   return procAddress;
+#else   
    return GetProcAddress(!module ? hModuleTCVM : module, (CharP) funcName);
+#endif      
 }
