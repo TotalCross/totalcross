@@ -32,7 +32,7 @@ public class ImageControlSample extends BaseContainer
    ImageControl ic;
    Label lab;
    boolean stopped;
-   int maxScale;
+   double minScale, maxScale;
    
    public void initUI()
    {
@@ -52,6 +52,7 @@ public class ImageControlSample extends BaseContainer
          add(ic,LEFT,AFTER,FILL,FILL);
          timer = addTimer(25);
          maxScale = Settings.isWindowsDevice() ? 2 : 5;
+         minScale = Settings.isWindowsDevice() ? 1 : 0.5;
       }
       catch (Exception ee)
       {
@@ -67,7 +68,7 @@ public class ImageControlSample extends BaseContainer
             if (img.hwScaleH > maxScale)
                grow = false;
             img.hwScaleH = img.hwScaleW = img.hwScaleH * (grow ? 1.05 : 0.95);
-            if (!grow && img.hwScaleH <= 0.5)
+            if (!grow && img.hwScaleH <= minScale)
                grow = true;
             ic.setImage(img); // this actually just computes the center position
          }
@@ -83,7 +84,7 @@ public class ImageControlSample extends BaseContainer
             stopped = false;
          }
       }
-      catch (Exception ee)
+      catch (Throwable ee)
       {
          ee.printStackTrace();
          Toast.show("Exception: "+ee.getClass().getName(),2000);
