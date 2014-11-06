@@ -1443,6 +1443,7 @@
 				Version="1.27"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(IntDir)\TCVM.pdb"
 				SubSystem="8"
@@ -1477,7 +1478,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCUI.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
