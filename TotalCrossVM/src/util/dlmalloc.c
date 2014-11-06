@@ -500,8 +500,11 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define FOOTERS 1
 #define DEFAULT_GRANULARITY 2*1024*1024 // // guich@tc124_17: 2MB
 #define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // // guich@tc124_17: DISABLE
+
+#if !defined(WINCE) || !defined(DEBUG)
 #define ABORT_ON_ASSERT_FAILURE 0 // prevent program
 #define PROCEED_ON_ERROR 0        //  crash
+#endif
 #endif
 
 void debug(char *s, ...);
