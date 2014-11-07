@@ -48,6 +48,7 @@ public class ButtonSample extends BaseContainer
             public void controlPressed(ControlEvent e)
             {
                if (--ccount == 0) MainWindow.exit(0);               
+               else setInfo(ccount == 1 ? "1 more click will exit" : ccount+" more clicks to exit");
             }
          });
    
