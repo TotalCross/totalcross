@@ -91,6 +91,11 @@ static void sethandle(Context currentContext, TCObject this_, sqlite3 * ref)
    NativeDB_pointer(this_) = (int64)ref;
 }
 
+/**
+
+IMPORTANT! TO AVOID DEADLOCK, UNLOCKDB MUST BE CALLED BEFORE ANY TCOBJECT ALLOCATIONS!
+
+**/
 #define LOCKDB int32 dumbmutex = lockdb(p->obj[0]);
 #define UNLOCKDB unlockdb(p->obj[0],dumbmutex);
 
@@ -116,10 +121,10 @@ TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native stat
    TRACE("tdsNDB_load")
    if (dbclass == null)
    {
-    dbclass = loadClass(p->currentContext, "totalcross.db.sqlite.NativeDB", false);
-    fclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function", false);
-    aclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function$Aggregate", false);
-	 pclass  = loadClass(p->currentContext, "totalcross.db.sqlite.DB$ProgressObserver", false);
+      dbclass = loadClass(p->currentContext, "totalcross.db.sqlite.NativeDB", false);
+      fclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function", false);
+      aclass  = loadClass(p->currentContext, "totalcross.db.sqlite.Function$Aggregate", false);
+      pclass  = loadClass(p->currentContext, "totalcross.db.sqlite.DB$ProgressObserver", false);
    }
 }
 
@@ -193,7 +198,7 @@ TC_API void tdsNDB_interrupt(NMParams p) // totalcross/db/sqlite/NativeDB native
    // NOT SYNCHRONIZED!
    TRACE("tdsNDB_interrupt")
    TCObject this_ = p->obj[0];
-    sqlite3_interrupt(gethandle(p->currentContext, this_));
+   sqlite3_interrupt(gethandle(p->currentContext, this_));
 }
 
 TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB native void busy_timeout(int ms);
@@ -202,7 +207,7 @@ TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB n
    TCObject this_ = p->obj[0];
    int32 ms = p->i32[0];
    LOCKDB
-    sqlite3_busy_timeout(gethandle(p->currentContext, this_), ms);
+   sqlite3_busy_timeout(gethandle(p->currentContext, this_), ms);
    UNLOCKDB
 }
 
@@ -233,11 +238,8 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
    TRACE("tdsNDB__exec_s")
    TCObject this_ = p->obj[0];
    TCObject sql = p->obj[1];
-    sqlite3* db = gethandle(p->currentContext, this_);
-    char *strsql;
-    char* errorMsg;
-    int status;
-   LOCKDB
+   sqlite3* db = gethandle(p->currentContext, this_);
+   char* errorMsg;
 
 	if(!db)
 	{
@@ -246,9 +248,10 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
 	}
    else
    {
-
-    strsql = String2CharP(sql);
-    status = sqlite3_exec(db, strsql, 0, 0, &errorMsg);
+    char *strsql = String2CharP(sql);
+    LOCKDB
+    int status = sqlite3_exec(db, strsql, 0, 0, &errorMsg);
+    UNLOCKDB
     xfree(strsql);
 
     if (status != SQLITE_OK) 
@@ -258,24 +261,27 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
     }
     p->retI = status;
    }
-   UNLOCKDB
 }
 
 TC_API void tdsNDB_errmsg(NMParams p) // totalcross/db/sqlite/NativeDB native String errmsg();
 {
    TRACE("tdsNDB_errmsg")
    TCObject this_ = p->obj[0];
+   CharP msg;
    LOCKDB
-    setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, (char*)sqlite3_errmsg(gethandle(p->currentContext, this_)),-1), UNLOCKED);
+   msg = (char*)sqlite3_errmsg(gethandle(p->currentContext, this_));
    UNLOCKDB
+   setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, msg,-1), UNLOCKED);
 }
 
 TC_API void tdsNDB_libversion(NMParams p) // totalcross/db/sqlite/NativeDB native String libversion();
 {
    TRACE("tdsNDB_libversion")
+   CharP msg;
    LOCKDB
-    setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, (char*)sqlite3_libversion(), -1), UNLOCKED);
+   msg = (char*)sqlite3_libversion();
    UNLOCKDB
+   setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, msg, -1), UNLOCKED);
 }
 
 TC_API void tdsNDB_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int changes();
@@ -367,8 +373,8 @@ TC_API void tdsNDB_column_decltype_li(NMParams p) // totalcross/db/sqlite/Native
    int32 col = p->i32[0];
    LOCKDB
    char *str = (char*)sqlite3_column_decltype(toref(stmt), col);
-   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
    UNLOCKDB
+   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
 }
 
 TC_API void tdsNDB_column_table_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_table_name(long stmt, int col);
@@ -378,8 +384,8 @@ TC_API void tdsNDB_column_table_name_li(NMParams p) // totalcross/db/sqlite/Nati
    int32 col = p->i32[0];
    LOCKDB
    JChar *str = (JChar*)sqlite3_column_table_name16(toref(stmt), col);
-   setObjectLock(p->retO = str ? createStringObjectFromJCharP(p->currentContext, str,-1) : null, UNLOCKED);
    UNLOCKDB
+   setObjectLock(p->retO = str ? createStringObjectFromJCharP(p->currentContext, str,-1) : null, UNLOCKED);
 }
 
 TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_name(long stmt, int col);
@@ -389,8 +395,8 @@ TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB n
    int32 col = p->i32[0];
    LOCKDB
    JChar *str = (JChar*)sqlite3_column_name16(toref(stmt), col);
-   setObjectLock(p->retO = str ? createStringObjectFromJCharP(p->currentContext, str,-1) : null, UNLOCKED);
    UNLOCKDB
+   setObjectLock(p->retO = str ? createStringObjectFromJCharP(p->currentContext, str,-1) : null, UNLOCKED);
 }
 
 TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_text(long stmt, int col);
@@ -400,8 +406,8 @@ TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB n
    int32 col = p->i32[0];
    LOCKDB
    char* str = (char*)sqlite3_column_text(toref(stmt), col);
-   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
    UNLOCKDB
+   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
 }
 
 TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);
@@ -409,22 +415,19 @@ TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB n
    TRACE("tdsNDB_column_blob_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
-    int32 length;
-    TCObject jBlob;
-    int8 *a;
    LOCKDB
-    void *blob = (void*)sqlite3_column_blob(toref(stmt), col);
-    if (blob) 
-    {
-    length = sqlite3_column_bytes(toref(stmt), col);
-    jBlob = createByteArray(p->currentContext, length);
-
-    a = ARRAYOBJ_START(jBlob);
-    memcpy(a, blob, length);
-    
-    setObjectLock(p-> retO = jBlob, UNLOCKED);
-    }
+   int32 length = sqlite3_column_bytes(toref(stmt), col);
    UNLOCKDB
+   if (length > 0) 
+   {
+      TCObject jBlob = createByteArray(p->currentContext, length);
+      int8 *a = ARRAYOBJ_START(jBlob);
+      LOCKDB
+      void *blob = (void*)sqlite3_column_blob(toref(stmt), col);
+      memcpy(a, blob, length);
+      UNLOCKDB
+      setObjectLock(p->retO = jBlob, UNLOCKED);
+   }
 }
 
 TC_API void tdsNDB_column_double_li(NMParams p) // totalcross/db/sqlite/NativeDB native double column_double(long stmt, int col);
@@ -621,27 +624,26 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
     sqlite3 *db;
     sqlite3_stmt *dbstmt;
     int8* ab;
-   LOCKDB
-
+    LOCKDB
     db = gethandle(p->currentContext, this_);
     dbstmt = toref(stmt);
-
     colCount = sqlite3_column_count(dbstmt);
+    UNLOCKDB
+
     boolArray = createArrayObject(p->currentContext, BOOLEAN_MATRIX, colCount) ;
     oa = (TCObject*)ARRAYOBJ_START(boolArray);
 
-    for (i = 0; i < colCount; i++) {
+    for (i = 0; i < colCount; i++) 
+    {
+        LOCKDB
+        pNotNull = pPrimaryKey = pAutoinc = 0;
         // load passed column name and table name
         zColumnName = (char*)sqlite3_column_name(dbstmt, i);
         zTableName  = (char*)sqlite3_column_table_name(dbstmt, i);
-
-        pNotNull = 0;
-        pPrimaryKey = 0;
-        pAutoinc = 0;
-
         // request metadata for column and load into output variables
         if (zTableName && zColumnName) 
             sqlite3_table_column_metadata(db, 0, zTableName, zColumnName,0, 0, &pNotNull, &pPrimaryKey, &pAutoinc);
+        UNLOCKDB
 
         colData = createArrayObject(p->currentContext, BOOLEAN_ARRAY, 3);
         ab = (int8*)ARRAYOBJ_START(colData);
@@ -656,7 +658,6 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
     }
 
     setObjectLock(p->retO = boolArray, UNLOCKED);
-   UNLOCKDB
 }
 
 // backup function

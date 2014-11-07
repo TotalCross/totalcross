@@ -96,7 +96,7 @@ public class Toast
                btn = null;
             }
          }
-      });
+      },true);
 
    }
 }
