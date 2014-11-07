@@ -15,16 +15,6 @@
  #include <stddef.h>
 #endif
 
-// Must use SetFilePointer is not defined on the ARM headers
-#if defined WP8 && defined ARM
-DWORD WINAPI SetFilePointer(
-   HANDLE hFile,
-   LONG lDistanceToMove,
-   PLONG lpDistanceToMoveHigh,
-   DWORD dwMoveMethod
-   );
-#endif
-
 // wince is 4.5x faster when using the system io, due to the FILE_FLAG_RANDOM_ACCESS flag
 // this is why we have a special version not using POSIX
 
@@ -73,10 +63,10 @@ bool PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 bool PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
-#if defined WP8 && !defined ARM
-   LARGE_INTEGER off = { 0 };
+#if defined WP8
+   LARGE_INTEGER off = { 0 }, cur;
    off.LowPart = offset;
-   return (SetFilePointerEx(fileRef, off, null, FILE_BEGIN) != 0) ? PDBRead(fileRef, buf, size, read) : false;
+   return (SetFilePointerEx(fileRef, off, &cur, FILE_BEGIN) != 0) ? PDBRead(fileRef, buf, size, read) : false;
 #else
    return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
 #endif
@@ -90,10 +80,10 @@ bool PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 bool PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
-#if defined WP8 && !defined ARM
-   LARGE_INTEGER off = { 0 };
+#if defined WP8
+   LARGE_INTEGER off = { 0 }, cur;
    off.LowPart = offset;
-   return (SetFilePointerEx(fileRef, off, null, FILE_BEGIN) != 0) ? PDBWrite(fileRef, buf, size, written) : false;
+   return (SetFilePointerEx(fileRef, off, &cur, FILE_BEGIN) != 0) ? PDBWrite(fileRef, buf, size, written) : false;
 #else
    return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
 #endif
@@ -120,10 +110,10 @@ bool PDBGetFileSize (PDBFileRef fileRef, int32* size)
 bool PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
    // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
-#if defined WP8 && !defined ARM
-   LARGE_INTEGER off = { 0 };
+#if defined WP8
+   LARGE_INTEGER off = { 0 }, cur;
    off.LowPart = oldSize + growSize;
-   return (SetFilePointerEx(fileRef, off, null, FILE_BEGIN)) ? SetEndOfFile(fileRef) : false;
+   return (SetFilePointerEx(fileRef, off, &cur, FILE_BEGIN)) ? SetEndOfFile(fileRef) : false;
 #else
    return (SetFilePointer(fileRef, oldSize + growSize, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
 #endif
