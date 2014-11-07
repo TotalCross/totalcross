@@ -343,7 +343,6 @@ target: Android builds
   <antcall target="build_android_native" >
    <param name="type" value="demo" />
    </antcall>
-  <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />
 </target>
 
 <target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
