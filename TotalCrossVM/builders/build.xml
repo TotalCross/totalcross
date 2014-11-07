@@ -70,11 +70,6 @@
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
 
-<property name="source.lb.path.local"  value="${basedir}/../../../../../../Litebase/LitebaseSDK"/>
-<property name="source.lb.path.server" value="${basedir}/../../../../../LitebaseSDK"/>
-<available file="${source.lb.path.local}/dist/lib/LitebaseLib.tcz" property="source.lb.path" value="${source.lb.path.local}" />
-<available file="${source.lb.path.server}/dist/lib/LitebaseLib.tcz" property="source.lb.path" value="${source.lb.path.server}" />
-
 <!-- installshield paths -->
 <property file="${rootpath}/ishield.properties"/>
 
@@ -537,10 +532,10 @@ target: Android builds
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
    <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
-      <fileset dir="${source.vm.path}/src/jni/libs" >
+      <fileset dir="${base.temp.path}/android/TotalCross/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
-      <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs" >
+      <fileset dir="${base.temp.path}/android/Litebase/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
    </copy>
