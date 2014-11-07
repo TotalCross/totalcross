@@ -315,12 +315,11 @@ target: Linux builds
 target: Android builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="clean_android_native" description="Cleans the native files for Android" >
-  <delete dir="${base.temp.path}/android/litebase" failonerror="false" />
-</target>
+<target name="clean_android_native" />
 
 <target name="build_android_native" description="Compiles liblitebase.so for Android">
    <property name="type" value="demo" />
+   <delete dir="${base.temp.path}/android/Litebase/${type}" failonerror="false" />
    <exec dir="${source.lb.path}/src/native" executable="cmd.exe" failonerror="true">
       <env key="TYPE" value="${type}" />
       <env key="NDK_OUT" value="${base.temp.path}/android/Litebase/${TYPE}" />
