@@ -329,40 +329,6 @@ target: Android builds
   <sleep seconds="3"/>
 </target>
 
-<target name="build_android_java" description="Builds the Litebase.apk for Android">
-
-  <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
-  <!-- create the temp folder -->
-  <delete dir="${android.temp}" failonerror="false" />
-  <mkdir dir="${android.temp}" />
-
-	<ant antfile="build.xml" dir="${android.project.path}/apps/litebase" target="clean" inheritAll="false"/>
-	<ant antfile="build.xml" dir="${android.project.path}/apps/litebase" target="release" inheritAll="false"/>
-  
-  <!-- test if the apk contains the needed files -->
-  <delete dir="${android.temp}/apk" />
-  <unjar src="${apk}" dest="${android.temp}/apk" overwrite="yes"/>
-  <available file="${android.temp}/apk/META-INF/TCANDROI.SF" property="apk.is.signed"/>
-  <fail unless="apk.is.signed" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: NOT SIGNED. TRY TO RUN THIS TASK AGAIN."/>
-  <available file="${android.temp}/apk/AndroidManifest.xml" property="apk.has.xml"/>
-  <fail unless="apk.has.xml" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: XML NOT FOUND. TRY TO RUN THIS TASK AGAIN."/>
-  <available file="${android.temp}/apk/classes.dex" property="apk.has.dex"/>
-  <fail unless="apk.has.dex" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: DEX NOT FOUND. TRY TO RUN THIS TASK AGAIN."/>
-  <delete dir="${android.temp}/apk" />
-
-</target>
-
-<target name="build_android"  depends="build_android_native" description="Compiles liblitebase.so and builds the Litebase.apk for Android" >
-   <copy todir="${android.project.path}/apps/litebase/libs" overwrite="true" >
-      <fileset dir="${source.lb.path}/src/native/jni/libs" >
-         <include name="**/*.so" />
-      </fileset>
-   </copy>
-  <retry retrycount="3">
-    <antcall target="build_android_java" />
-  </retry>
-</target>
-
 <target name="adb" description="Just installs Litebase on Android (no build is performed)." >
   <property name="apk" value="${apk}" />
   <exec executable="adb${exe}" >
@@ -374,7 +340,7 @@ target: Android builds
 
 <target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
-  <antcall target="build_android" >
+  <antcall target="build_android_native" >
    <param name="type" value="demo" />
    </antcall>
   <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />
