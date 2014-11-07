@@ -694,7 +694,6 @@ TC_API void setObjectLock(TCObject o, LockState lock)
    UNLOCKVAR(omm);
 }
 
-bool startDump;
 CharP getSpaces(Context currentContext, int32 n);
 static void markSingleObject(TCObject o, bool dump)
 {
@@ -1009,7 +1008,7 @@ static void dumpDif(int32 key, int32 i32, VoidP ptr)
    int conta2 = i32;
    int conta1 = htGet32(&htP1, (int)cc);
    if (conta1 == 0 || conta1 != conta2)
-      debug("% 3d %30s: 1: %d, 2:%d",++indp,cc->name, conta1, conta2);
+      debug("% 3d %30s: %d -> %d (%d)",++indp,cc->name, conta1, conta2, conta2-conta1);
 }
 
 
@@ -1137,7 +1136,6 @@ heaperror:
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
                if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
-               //htRemove(&htP1, o);
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
@@ -1173,19 +1171,19 @@ end:
       if (_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS && htP1.size > 0 && htP2.size > 0)
       {
          indp = 0;
-         if (rdif > 30 && rdif < 1000) {startDump = true; htTraverseWithKey(&htP2, dumpDif);}
+         htTraverseWithKey(&htP2, dumpDif);
          htFree(&htP1, null);
          htP1 = htP2;
          htP2 = htNew(1013,null);
       }
-      debug("GC %d : free: %d, used: %d (dif: %d), chunks: %d, elapsed: %4d (compact: %3d)", tcSettings.gcCount ? *tcSettings.gcCount : 0,nfree, nused, nused-lastUsed, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
+      debug("GC %d : free: %d, used: %d (dif: %d), chunks: %d, elapsed: %4d (compact: %3d)", tcSettings.gcCount ? *tcSettings.gcCount : 0,nfree, nused, rdif, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
       lastUsed = nused;
    }
    // and now INVERT THE MARK BIT
    markedAsUsed = !markedAsUsed;
 
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
-      soundTone(1100,10);
+      sound(1100,10);
 
    //debug("G Freed objects (including allocated chunks)"); countObjectsIn(freeList,false);
    runningGC = false;
