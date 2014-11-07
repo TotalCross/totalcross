@@ -79,12 +79,10 @@ public class Scanner
    {
       if (Settings.isWindowsDevice())
       {
-         driverLoaded = Vm.attachNativeLibrary("SocketScan") || 
-                        Vm.attachNativeLibrary("Motorola") || 
-                        Vm.attachNativeLibrary("Symbol") || 
+         driverLoaded = Vm.attachNativeLibrary("Motorola") || 
                         Vm.attachNativeLibrary("Dolphin") || 
                         Vm.attachNativeLibrary("Intermec") || 
-                        Vm.attachNativeLibrary("Bematech");
+                        Vm.attachNativeLibrary("Pidion");
          if (!driverLoaded && tries++ == 0)
             throw new RuntimeException("Cannot find the native implementation for the scanner library.");
       }
