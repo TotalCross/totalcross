@@ -537,10 +537,10 @@ target: Android builds
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
    <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
-      <fileset dir="${source.vm.path}/src/jni/libs" >
+      <fileset dir="${base.temp.path}/android/TotalCross/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
-      <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs" >
+      <fileset dir="${base.temp.path}/android/Litebase/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
    </copy>
