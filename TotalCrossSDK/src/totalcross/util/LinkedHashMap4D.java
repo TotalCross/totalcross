@@ -71,7 +71,7 @@ import java.util.*;
  * without needing the overhead of <code>TreeMap</code>.
  * <p>
  *
- * When using this {@link #LinkedHashMap(int, float, boolean) constructor},
+ * When using this {@link #LinkedHashMap(int, double, boolean) constructor},
  * you can build an access-order mapping.  This can be used to implement LRU
  * caches, for example.  By overriding {@link #removeEldestEntry(Map.Entry)},
  * you can also control the removal of the oldest entry, and thereby do
@@ -270,7 +270,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public LinkedHashMap4D(int initialCapacity, float loadFactor)
+  public LinkedHashMap4D(int initialCapacity, double loadFactor)
   {
     super(initialCapacity, loadFactor);
     accessOrder = false;
@@ -286,7 +286,7 @@ public class LinkedHashMap4D<K,V> extends HashMap4D<K,V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public LinkedHashMap4D(int initialCapacity, float loadFactor,
+  public LinkedHashMap4D(int initialCapacity, double loadFactor,
                        boolean accessOrder)
   {
     super(initialCapacity, loadFactor);

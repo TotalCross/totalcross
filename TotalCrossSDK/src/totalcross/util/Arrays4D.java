@@ -398,71 +398,6 @@ public class Arrays4D
   }
 
   /**
-   * Perform a binary search of a float array for a key. The array must be
-   * sorted (as by the sort() method) - if it is not, the behaviour of this
-   * method is undefined, and may be an infinite loop. If the array contains
-   * the key more than once, any one of them may be found. Note: although the
-   * specification allows for an infinite loop if the array is unsorted, it
-   * will not happen in this implementation.
-   *
-   * @param a the array to search (must be sorted)
-   * @param key the value to search for
-   * @return the index at which the key was found, or -n-1 if it was not
-   *         found, where n is the index of the first value higher than key or
-   *         a.length if there is no such value.
-   */
-  public static int binarySearch(float[] a, float key)
-  {
-    if (a.length == 0)
-      return -1;
-    return binarySearch(a, 0, a.length - 1, key);
-  }
-
-  /**
-   * Perform a binary search of a range of a float array for a key. The range
-   * must be sorted (as by the <code>sort(float[], int, int)</code> method) -
-   * if it is not, the behaviour of this method is undefined, and may be an
-   * infinite loop. If the array contains the key more than once, any one of
-   * them may be found. Note: although the specification allows for an infinite
-   * loop if the array is unsorted, it will not happen in this implementation.
-   *
-   * @param a the array to search (must be sorted)
-   * @param low the lowest index to search from.
-   * @param hi the highest index to search to.
-   * @param key the value to search for
-   * @return the index at which the key was found, or -n-1 if it was not
-   *         found, where n is the index of the first value higher than key or
-   *         a.length if there is no such value.
-   * @throws IllegalArgumentException if <code>low > hi</code>
-   * @throws ArrayIndexOutOfBoundsException if <code>low < 0</code> or
-   *                                        <code>hi > a.length</code>.
-   */
-  public static int binarySearch(float[] a, int low, int hi, float key)
-  {
-    if (low > hi)
-      throw new IllegalArgumentException("The start index is higher than " +
-                                         "the finish index.");
-    if (low < 0 || hi > a.length)
-      throw new ArrayIndexOutOfBoundsException("One of the indices is out " +
-                                               "of bounds.");
-    // Must use Float.compare to take into account NaN, +-0.
-    int mid = 0;
-    while (low <= hi)
-      {
-        mid = (low + hi) >>> 1;
-        final int r = Float.compare(a[mid], key);
-        if (r == 0)
-          return mid;
-        else if (r > 0)
-          hi = mid - 1;
-        else
-          // This gets the insertion point right on the last loop
-          low = ++mid;
-      }
-    return -mid - 1;
-  }
-
-  /**
    * Perform a binary search of a double array for a key. The array must be
    * sorted (as by the sort() method) - if it is not, the behaviour of this
    * method is undefined, and may be an infinite loop. If the array contains
@@ -838,37 +773,6 @@ public class Arrays4D
   }
 
   /**
-   * Compare two float arrays for equality.
-   *
-   * @param a1 the first array to compare
-   * @param a2 the second array to compare
-   * @return true if a1 and a2 are both null, or if a2 is of the same length
-   *         as a1, and for each 0 <= i < a1.length, a1[i] == a2[i]
-   */
-  public static boolean equals(float[] a1, float[] a2)
-  {
-    // Quick test which saves comparing elements of the same array, and also
-    // catches the case that both are null.
-    if (a1 == a2)
-      return true;
-
-    if (null == a1 || null == a2)
-      return false;
-
-    // Must use Float.compare to take into account NaN, +-0.
-    // If they're the same length, test each element
-    if (a1.length == a2.length)
-      {
-        int i = a1.length;
-        while (--i >= 0)
-          if (Float.compare(a1[i], a2[i]) != 0)
-            return false;
-        return true;
-      }
-    return false;
-  }
-
-  /**
    * Compare two double arrays for equality.
    *
    * @param a1 the first array to compare
@@ -1105,36 +1009,6 @@ public class Arrays4D
    *         || toIndex &gt; a.length
    */
   public static void fill(long[] a, int fromIndex, int toIndex, long val)
-  {
-    if (fromIndex > toIndex)
-      throw new IllegalArgumentException();
-    for (int i = fromIndex; i < toIndex; i++)
-      a[i] = val;
-  }
-
-  /**
-   * Fill an array with a float value.
-   *
-   * @param a the array to fill
-   * @param val the value to fill it with
-   */
-  public static void fill(float[] a, float val)
-  {
-    fill(a, 0, a.length, val);
-  }
-
-  /**
-   * Fill a range of an array with a float value.
-   *
-   * @param a the array to fill
-   * @param fromIndex the index to fill from, inclusive
-   * @param toIndex the index to fill to, exclusive
-   * @param val the value to fill with
-   * @throws IllegalArgumentException if fromIndex &gt; toIndex
-   * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
-   *         || toIndex &gt; a.length
-   */
-  public static void fill(float[] a, int fromIndex, int toIndex, float val)
   {
     if (fromIndex > toIndex)
       throw new IllegalArgumentException();
@@ -2064,176 +1938,6 @@ public class Arrays4D
    * Performs a stable sort on the elements, arranging them according to their
    * natural order.
    *
-   * @param a the float array to sort
-   */
-  public static void sort(float[] a)
-  {
-    qsort(a, 0, a.length);
-  }
-
-  /**
-   * Performs a stable sort on the elements, arranging them according to their
-   * natural order.
-   *
-   * @param a the float array to sort
-   * @param fromIndex the first index to sort (inclusive)
-   * @param toIndex the last index to sort (exclusive)
-   * @throws IllegalArgumentException if fromIndex &gt; toIndex
-   * @throws ArrayIndexOutOfBoundsException if fromIndex &lt; 0
-   *         || toIndex &gt; a.length
-   */
-  public static void sort(float[] a, int fromIndex, int toIndex)
-  {
-    if (fromIndex > toIndex)
-      throw new IllegalArgumentException();
-    if (fromIndex < 0)
-      throw new ArrayIndexOutOfBoundsException();
-    qsort(a, fromIndex, toIndex - fromIndex);
-  }
-
-  /**
-   * Finds the index of the median of three array elements.
-   *
-   * @param a the first index
-   * @param b the second index
-   * @param c the third index
-   * @param d the array
-   * @return the index (a, b, or c) which has the middle value of the three
-   */
-  private static int med3(int a, int b, int c, float[] d)
-  {
-    return (Float.compare(d[a], d[b]) < 0
-            ? (Float.compare(d[b], d[c]) < 0 ? b
-               : Float.compare(d[a], d[c]) < 0 ? c : a)
-            : (Float.compare(d[b], d[c]) > 0 ? b
-               : Float.compare(d[a], d[c]) > 0 ? c : a));
-  }
-
-  /**
-   * Swaps the elements at two locations of an array
-   *
-   * @param i the first index
-   * @param j the second index
-   * @param a the array
-   */
-  private static void swap(int i, int j, float[] a)
-  {
-    float c = a[i];
-    a[i] = a[j];
-    a[j] = c;
-  }
-
-  /**
-   * Swaps two ranges of an array.
-   *
-   * @param i the first range start
-   * @param j the second range start
-   * @param n the element count
-   * @param a the array
-   */
-  private static void vecswap(int i, int j, int n, float[] a)
-  {
-    for ( ; n > 0; i++, j++, n--)
-      swap(i, j, a);
-  }
-
-  /**
-   * Performs a recursive modified quicksort.
-   *
-   * @param array the array to sort
-   * @param from the start index (inclusive)
-   * @param count the number of elements to sort
-   */
-  private static void qsort(float[] array, int from, int count)
-  {
-    // Use an insertion sort on small arrays.
-    if (count <= 7)
-      {
-        for (int i = from + 1; i < from + count; i++)
-          for (int j = i;
-               j > from && Float.compare(array[j - 1], array[j]) > 0;
-               j--)
-            {
-              swap(j, j - 1, array);
-            }
-        return;
-      }
-
-    // Determine a good median element.
-    int mid = from + count / 2;
-    int lo = from;
-    int hi = from + count - 1;
-
-    if (count > 40)
-      { // big arrays, pseudomedian of 9
-        int s = count / 8;
-        lo = med3(lo, lo + s, lo + 2 * s, array);
-        mid = med3(mid - s, mid, mid + s, array);
-        hi = med3(hi - 2 * s, hi - s, hi, array);
-      }
-    mid = med3(lo, mid, hi, array);
-
-    int a, b, c, d;
-    int comp;
-
-    // Pull the median element out of the fray, and use it as a pivot.
-    swap(from, mid, array);
-    a = b = from;
-    c = d = from + count - 1;
-
-    // Repeatedly move b and c to each other, swapping elements so
-    // that all elements before index b are less than the pivot, and all
-    // elements after index c are greater than the pivot. a and b track
-    // the elements equal to the pivot.
-    while (true)
-      {
-        while (b <= c && (comp = Float.compare(array[b], array[from])) <= 0)
-          {
-            if (comp == 0)
-              {
-                swap(a, b, array);
-                a++;
-              }
-            b++;
-          }
-        while (c >= b && (comp = Float.compare(array[c], array[from])) >= 0)
-          {
-            if (comp == 0)
-              {
-                swap(c, d, array);
-                d--;
-              }
-            c--;
-          }
-        if (b > c)
-          break;
-        swap(b, c, array);
-        b++;
-        c--;
-      }
-
-    // Swap pivot(s) back in place, the recurse on left and right sections.
-    hi = from + count;
-    int span;
-    span = Math.min(a - from, b - a);
-    vecswap(from, b - span, span, array);
-
-    span = Math.min(d - c, hi - d - 1);
-    vecswap(b, hi - span, span, array);
-
-    span = b - a;
-    if (span > 1)
-      qsort(array, from, span);
-
-    span = d - c;
-    if (span > 1)
-      qsort(array, hi - span, span);
-  }
-
-  /**
-   * Performs a stable sort on the elements, arranging them according to their
-   * natural order.
-   *
    * @param a the double array to sort
    */
   public static void sort(double[] a)
@@ -2770,29 +2474,6 @@ public class Arrays4D
   }
 
   /**
-   * Returns the hashcode of an array of floats.  If two arrays
-   * are equal, according to <code>equals()</code>, they should have the
-   * same hashcode.  The hashcode returned by the method is equal to that
-   * obtained by the corresponding <code>List</code> object.  This has the same
-   * data, but represents floats in their wrapper class, <code>Float</code>.
-   * For <code>null</code>, 0 is returned.
-   *
-   * @param v an array of floats for which the hash code should be
-   *          computed.
-   * @return the hash code of the array, or 0 if null was given.
-   * @since 1.5
-   */
-  public static int hashCode(float[] v)
-  {
-    if (v == null)
-      return 0;
-    int result = 1;
-    for (int i = 0; i < v.length; ++i)
-      result = 31 * result + Float.floatToIntBits(v[i]);
-    return result;
-  }
-
-  /**
    * Returns the hashcode of an array of doubles.  If two arrays
    * are equal, according to <code>equals()</code>, they should have the
    * same hashcode.  The hashcode returned by the method is equal to that
@@ -2866,8 +2547,6 @@ public class Arrays4D
           elt = hashCode((int[]) v[i]);
         else if (v[i] instanceof long[])
           elt = hashCode((long[]) v[i]);
-        else if (v[i] instanceof float[])
-          elt = hashCode((float[]) v[i]);
         else if (v[i] instanceof double[])
           elt = hashCode((double[]) v[i]);
         else if (v[i] instanceof Object[])
@@ -2910,8 +2589,6 @@ public class Arrays4D
           check = equals((int[]) e1, (int[]) e2);
         else if (e1 instanceof long[] && e2 instanceof long[])
           check = equals((long[]) e1, (long[]) e2);
-        else if (e1 instanceof float[] && e2 instanceof float[])
-          check = equals((float[]) e1, (float[]) e2);
         else if (e1 instanceof double[] && e2 instanceof double[])
           check = equals((double[]) e1, (double[]) e2);
         else if (e1 instanceof Object[] && e2 instanceof Object[])
@@ -3064,28 +2741,6 @@ public class Arrays4D
    * @return a String representing this array
    * @since 1.5
    */
-  public static String toString(float[] v)
-  {
-    if (v == null)
-      return "null";
-    StringBuffer b = new StringBuffer("[");
-    for (int i = 0; i < v.length; ++i)
-      {
-        if (i > 0)
-          b.append(", ");
-        b.append(v[i]);
-      }
-    b.append("]");
-    return b.toString();
-  }
-
-  /**
-   * Returns a String representation of the argument array.  Returns "null"
-   * if <code>a</code> is null.
-   * @param v the array to represent
-   * @return a String representing this array
-   * @since 1.5
-   */
   public static String toString(double[] v)
   {
     if (v == null)
@@ -3145,8 +2800,6 @@ public class Arrays4D
           b.append(toString((int[]) elt));
         else if (elt instanceof long[])
           b.append(toString((long[]) elt));
-        else if (elt instanceof float[])
-          b.append(toString((float[]) elt));
         else if (elt instanceof double[])
           b.append(toString((double[]) elt));
         else if (elt instanceof Object[])
@@ -3600,75 +3253,6 @@ public class Arrays4D
        Vm.arrayCopy(original, from, newArray, 0,
                          original.length - from);
         fill(newArray, original.length, newArray.length, 0d);
-      }
-    else
-       Vm.arrayCopy(original, from, newArray, 0, to - from);
-    return newArray;
-  }
-
-  /**
-   * Returns a copy of the supplied array, truncating or padding as
-   * necessary with <code>0f</code> to obtain the specified length.
-   * Indices that are valid for both arrays will return the same value.
-   * Indices that only exist in the returned array (due to the new length
-   * being greater than the original length) will return <code>0f</code>.
-   * This is equivalent to calling
-   * <code>copyOfRange(original, 0, newLength)</code>.
-   *
-   * @param original the original array to be copied.
-   * @param newLength the length of the returned array.
-   * @return a copy of the original array, truncated or padded with
-   *         <code>0f</code> to obtain the required length.
-   * @throws NegativeArraySizeException if <code>newLength</code> is negative.
-   * @throws NullPointerException if <code>original</code> is <code>null</code>.
-   * @since 1.6
-   * @see #copyOfRange(float[],int,int)
-   */
-  public static float[] copyOf(float[] original, int newLength)
-  {
-    if (newLength < 0)
-      throw new NegativeArraySizeException("The array size is negative.");
-    return copyOfRange(original, 0, newLength);
-  }
-
-  /**
-   * Copies the specified range of the supplied array to a new
-   * array, padding as necessary with <code>0f</code>
-   * if <code>to</code> is greater than the length of the original
-   * array.  <code>from</code> must be in the range zero to
-   * <code>original.length</code> and can not be greater than
-   * <code>to</code>.  The initial element of the
-   * returned array will be equal to <code>original[from]</code>,
-   * except where <code>from</code> is equal to <code>to</code>
-   * (where a zero-length array will be returned) or <code>
-   * <code>from</code> is equal to <code>original.length</code>
-   * (where an array padded with <code>0f</code> will be
-   * returned).  The returned array is always of length
-   * <code>to - from</code>.
-   *
-   * @param original the array from which to copy.
-   * @param from the initial index of the range, inclusive.
-   * @param to the final index of the range, exclusive.
-   * @return a copy of the specified range, with padding to
-   *         obtain the required length.
-   * @throws ArrayIndexOutOfBoundsException if <code>from < 0</code>
-   *                                        or <code>from > original.length</code>
-   * @throws IllegalArgumentException if <code>from > to</code>
-   * @throws NullPointerException if <code>original</code> is <code>null</code>.
-   * @since 1.6
-   * @see #copyOf(float[],int)
-   */
-  public static float[] copyOfRange(float[] original, int from, int to)
-  {
-    if (from > to)
-      throw new IllegalArgumentException("The initial index is after " +
-                                         "the final index.");
-    float[] newArray = new float[to - from];
-    if (to > original.length)
-      {
-       Vm.arrayCopy(original, from, newArray, 0,
-                         original.length - from);
-        fill(newArray, original.length, newArray.length, 0f);
       }
     else
        Vm.arrayCopy(original, from, newArray, 0, to - from);

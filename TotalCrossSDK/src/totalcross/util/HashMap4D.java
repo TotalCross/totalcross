@@ -107,7 +107,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * The default load factor; this is explicitly specified by the spec.
    * Package visible for use by HashSet.
    */
-  static final float DEFAULT_LOAD_FACTOR = 0.75f;
+  static final double DEFAULT_LOAD_FACTOR = 0.75f;
 
   /**
    * The rounded product of the capacity and the load factor; when the number
@@ -238,7 +238,7 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
    * @throws IllegalArgumentException if (initialCapacity &lt; 0) ||
    *                                     ! (loadFactor &gt; 0.0)
    */
-  public HashMap4D(int initialCapacity, float loadFactor)
+  public HashMap4D(int initialCapacity, double loadFactor)
   {
     if (initialCapacity < 0)
       throw new IllegalArgumentException("Illegal Capacity: "

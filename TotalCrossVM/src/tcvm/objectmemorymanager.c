@@ -1183,7 +1183,7 @@ end:
    markedAsUsed = !markedAsUsed;
 
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
-      sound(1100,10);
+      soundTone(1100,10);
 
    //debug("G Freed objects (including allocated chunks)"); countObjectsIn(freeList,false);
    runningGC = false;
