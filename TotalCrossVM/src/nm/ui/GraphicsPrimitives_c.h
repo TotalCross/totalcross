@@ -236,7 +236,7 @@ static void drawSurface(Context currentContext, TCObject dstSurf, TCObject srcSu
          }
          disableGC = true; // the gc may collect the image before we lock it here (*)
          newSurf = executeMethod(currentContext, Image_hwScaleW(srcSurf) < 1 && Image_hwScaleH(srcSurf) < 1 ? mGetSmoothScaledInstance : mGetScaledInstance, srcSurf, srcWidth, srcHeight).asObj;
-         if (newSurf == null || newSurf == 0xFFFFFFFF)
+         if (newSurf == null || newSurf == (TCObject)0xFFFFFFFF)
          {
             currentContext->thrownException = null;
             return;

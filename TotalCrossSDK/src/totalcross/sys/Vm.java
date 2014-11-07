@@ -639,6 +639,28 @@ public final class Vm
     * @since TotalCross 1.14
     */
    public static final int TWEAK_DISABLE_GC = 4;
+   
+   /** This flag turns on the trace of created class objects. This helps you track objects that are not
+    * being freed because are held in some way into memory.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_CREATED_CLASSOBJS = 5;
+   /** This flag turns on the trace of locked objects, which are objects that are locked by the vm and will
+    * never be released.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_LOCKED_OBJS = 6;
+   /** This flag turns on the trace objects that are left behind between two garbage collector calls.
+    * This helps you to find objects that are being held into memory by your program and that are thus never collected.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
 
    /**
     * Tweak some parameters of the virtual machine. Note that these
