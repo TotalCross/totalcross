@@ -280,7 +280,7 @@ public class ImageBookSample extends BaseContainer
          super.initUI();
          setTitle("Image Book");
          
-         if (Settings.isIOS()) // hack for ios: extract the files and write into the folder
+         if (Settings.isIOS() || Settings.isWindowsDevice()) // hack for ios: extract the files and write into the folder
          {
             File dir = new File("device/books");
             if (!dir.exists())
@@ -292,9 +292,7 @@ public class ImageBookSample extends BaseContainer
                   if (b != null)
                      try
                      {
-                        File f = new File("device/books/"+Convert.getFileName(images[i]), File.CREATE_EMPTY);
-                        f.writeBytes(b);
-                        f.close();
+                        new File("device/books/"+Convert.getFileName(images[i]), File.CREATE_EMPTY).writeAndClose(b);
                      }
                      catch (Exception e) {e.printStackTrace();}
                   else
