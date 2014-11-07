@@ -16,14 +16,16 @@
 
 /// All settings stored in the totalcross.sys.Settings class
 
-/// Enable a sound when the garbage collector runs
-#define VMTWEAK_AUDIBLE_GC        1
-/// Collects memory usage statistics during all program run
-#define VMTWEAK_DUMP_MEMORY_STATS 2
-/// Collects memory usage statistics during a piece of code
-#define VMTWEAK_MEM_PROFILER      3
-/// Disables gc
-#define VMTWEAK_DISABLE_GC        4
+typedef enum
+{
+   VMTWEAK_AUDIBLE_GC = 1,    /// Enable a sound when the garbage collector runs
+   VMTWEAK_DUMP_MEMORY_STATS, /// Collects memory usage statistics during all program run
+   VMTWEAK_MEM_PROFILER,      /// Collects memory usage statistics during a piece of code
+   VMTWEAK_DISABLE_GC,        /// Disables gc
+   VMTWEAK_TRACE_CREATED_CLASSOBJS,
+   VMTWEAK_TRACE_LOCKED_OBJS,
+   VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS,
+};
 
 #define IS_VMTWEAK_ON(x) (vmTweaks & (1 << (x-1))) // guich@tc114_19: better use this macro
 

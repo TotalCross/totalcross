@@ -123,22 +123,6 @@ pointer to next):
 
 // debugging conditionals
 
-//#define TRACE_CREATED_CLASSOBJS
-//#define TRACE_LOCKED_BYTEARRAYS
-//#define TRACE_OBJECTS_LEFT_BETWEEN_2_GCS
-
-#ifdef TRACE_OBJECTS_LEFT_BETWEEN_2_GCS
-#define _TRACE_OBJECTS_LEFT_BETWEEN_2_GCS 1
-#else
-#define _TRACE_OBJECTS_LEFT_BETWEEN_2_GCS 0
-#endif
-
-#ifdef TRACE_CREATED_CLASSOBJS
-#define _TRACE_CREATED_CLASSOBJS 1
-#else
-#define _TRACE_CREATED_CLASSOBJS 0
-#endif
-
 #ifdef TRACE_OBJCREATION
 #define _TRACE_OBJCREATION 1
 #else
@@ -342,8 +326,6 @@ bool initObjectMemoryManager()
    uint8 *f, *u, *l;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
-   if (_TRACE_CREATED_CLASSOBJS) htObjsPerClass = htNew(100, null);
-   if (_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS) {htP1 = htNew(50000, null); htP2 = htNew(50000, null);}
    if (chunksHeap == null) return false;
    IF_HEAP_ERROR(ommHeap)
    {
@@ -522,7 +504,11 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
-   if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)c, 1);
+   if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
+   {
+      if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
+      htInc(&htObjsPerClass, (int32)c, 1);
+   }
 
    OBJ_CLASS(o) = c;
 
@@ -566,7 +552,11 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
-   if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)c, 1);
+   if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
+   {
+      if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
+      htInc(&htObjsPerClass, (int32)c, 1);
+   }
 
    if (_TRACE_OBJCREATION) debug("G %X array obj created %s len %d, size = %d at %d. lock: %d", o, c->name,len, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o));
 
@@ -579,9 +569,8 @@ end:
 TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line)
 {
    TCObject o = createArrayObject(currentContext, BYTE_ARRAY, len);
-#ifdef TRACE_LOCKED_BYTEARRAYS
-   debug("byteArray %X created at %s (%d)",o,file,line);
-#endif
+   if (IS_VMTWEAK_ON(VMTWEAK_TRACE_LOCKED_OBJS))
+      debug("byteArray %X created at %s (%d)",o,file,line);
    return o;
 }
 
@@ -1020,6 +1009,8 @@ void gc(Context currentContext)
    TCObject o;
    int32 iniT,endT, elapsed;
    int32 nfree,nused,compIni,freemem;
+   bool traceCreatedClassObjs;
+   bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
    LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
 
    iniT = getTimeStamp();
@@ -1046,11 +1037,9 @@ void gc(Context currentContext)
    }
    lastGC = getTimeStamp(); // guich@tc210: moving to here will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads
 
-//   while (runningGC) Sleep(1);
    runningGC = true;
-//   debug("==== gc stack trace");
-//   printStackTrace(currentContext);
 
+   traceCreatedClassObjs = IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS) && htObjsPerClass.items;
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
       soundTone(1000,10);
 
@@ -1082,10 +1071,10 @@ heaperror:
          moveDblList(*usedL, *freeL);
    if (!destroyingApplication) // if this is the last gc, just collect all objects
    {
-#ifdef TRACE_LOCKED_BYTEARRAYS
-      Hashtable htCount = htNew(100,null);
+      Hashtable htCount;
+      bool traceLockedObjs = IS_VMTWEAK_ON(VMTWEAK_TRACE_LOCKED_OBJS);
       int lockCount=0;
-#endif
+      if (traceLockedObjs) htCount = htNew(511,null); else htCount.items = 0;
       // 2. go through all the reachable objects and move them back to the used list
       // 2a. static fields of loaded classes
       if (CANTRAVERSE)
@@ -1094,12 +1083,13 @@ heaperror:
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");
       for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       {
-#ifdef TRACE_LOCKED_BYTEARRAYS
-         if (strEq(OBJ_CLASS(o)->name,BYTE_ARRAY))
-            debug("locked ba: %X",o);
-         htInc(&htCount, (int32)OBJ_CLASS(o), 1);
-         lockCount++;
-#endif
+         if (traceLockedObjs)
+         {
+            if (strEq(OBJ_CLASS(o)->name,BYTE_ARRAY))
+               debug("locked ba: %X",o);
+            htInc(&htCount, (int32)OBJ_CLASS(o), 1);
+            lockCount++;
+         }
          //if (_TRACE_OBJCREATION) debug("G marking locked obj %X",o);
          if (OBJ_CLASS(o)->flags.isString) // 99% of the locked objects, due to the constant pool
          {
@@ -1109,10 +1099,11 @@ heaperror:
          else 
             markObjects(o,false);
       }
-#ifdef TRACE_LOCKED_BYTEARRAYS
-      htTraverseWithKey(&htCount, dumpCount);
-      debug("locked: %d",lockCount);
-#endif
+      if (traceLockedObjs) 
+      {
+         htTraverseWithKey(&htCount, dumpCount);
+         debug("locked: %d",lockCount);
+      }
       if (_TRACE_OBJCREATION) debug("G marking locked objs end");
       // 2c. used objects in the object registers of all available contexts
       markContexts();
@@ -1135,17 +1126,19 @@ heaperror:
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
-               if (_TRACE_CREATED_CLASSOBJS) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
+               if (traceCreatedClassObjs) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
    if (COMPUTETIME) debug("G finished finalizers");
-#ifdef TRACE_CREATED_CLASSOBJS
-   debug("objects that were not destroyed");
-   htTraverseWithKey(&htObjsPerClass, dumpCount);
-   htFree(&htObjsPerClass, null);
-   htObjsPerClass = htNew(100,null);
-#endif
+   
+   if (traceCreatedClassObjs)
+   {
+      debug("objects that were not destroyed");
+      htTraverseWithKey(&htObjsPerClass, dumpCount);
+      htFree(&htObjsPerClass, null);
+      htObjsPerClass = htNew(511,null);
+   }
 
    runningFinalizer = false;
    markedAsUsed = !markedAsUsed;
@@ -1161,20 +1154,26 @@ end:
       *tcSettings.gcTime += endT - iniT;
 
    //debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
-   if (COMPUTETIME || _TRACE_OBJECTS_LEFT_BETWEEN_2_GCS)
+
+   if (COMPUTETIME || traceObjsCreatedBetween2GCs)
    {
       int rdif;
+      if (traceObjsCreatedBetween2GCs && !htP1.items)
+      {
+         htP1 = htNew(511, null); 
+         htP2 = htNew(511, null);
+      }
       nfree = countObjectsIn(freeList,false,false,-1,0);
       countp++;
-      nused = countObjectsIn(usedList,false,false,markedAsUsed, !_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS ? null : countp == 1 ? &htP1 : &htP2);
+      nused = countObjectsIn(usedList,false,false,markedAsUsed, !traceObjsCreatedBetween2GCs ? null : countp == 1 ? &htP1 : &htP2);
       rdif = nused-lastUsed;
-      if (_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS && htP1.size > 0 && htP2.size > 0)
+      if (traceObjsCreatedBetween2GCs && htP1.size > 0 && htP2.size > 0)
       {
          indp = 0;
          htTraverseWithKey(&htP2, dumpDif);
          htFree(&htP1, null);
          htP1 = htP2;
-         htP2 = htNew(1013,null);
+         htP2 = htNew(511,null);
       }
       debug("GC %d : free: %d, used: %d (dif: %d), chunks: %d, elapsed: %4d (compact: %3d)", tcSettings.gcCount ? *tcSettings.gcCount : 0,nfree, nused, rdif, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
       lastUsed = nused;
