@@ -70,11 +70,6 @@
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
 
-<property name="source.lb.path.local"  value="${basedir}/../../../../../../Litebase/LitebaseSDK"/>
-<property name="source.lb.path.server" value="${basedir}/../../../../../LitebaseSDK"/>
-<available file="${source.lb.path.local}/dist/lib/LitebaseLib.tcz" property="source.lb.path" value="${source.lb.path.local}" />
-<available file="${source.lb.path.server}/dist/lib/LitebaseLib.tcz" property="source.lb.path" value="${source.lb.path.server}" />
-
 <!-- installshield paths -->
 <property file="${rootpath}/ishield.properties"/>
 
