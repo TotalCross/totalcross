@@ -25,7 +25,7 @@ typedef enum
    VMTWEAK_TRACE_CREATED_CLASSOBJS,
    VMTWEAK_TRACE_LOCKED_OBJS,
    VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS,
-};
+} VmTweak;
 
 #define IS_VMTWEAK_ON(x) (vmTweaks & (1 << (x-1))) // guich@tc114_19: better use this macro
 
