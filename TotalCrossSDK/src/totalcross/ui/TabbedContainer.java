@@ -512,8 +512,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          Vm.arrayCopy(strCaptions0, 0, strCaptions = new String[strCaptions0.length], 0, strCaptions.length);
          onFontChanged();
          int idx = 0;
-         int med = 0; for (i = 0; i < strCaptions.length; i++) med += strCaptions[i].length(); 
-         int tries = med; med /= strCaptions.length;
+         double med = 0; for (i = 0; i < strCaptions.length; i++) med += strCaptions[i].length(); 
+         int tries = (int)med; med /= strCaptions.length;
          while (mustScroll() && tries-- > 0)
          {
             String s = strCaptions[idx];
