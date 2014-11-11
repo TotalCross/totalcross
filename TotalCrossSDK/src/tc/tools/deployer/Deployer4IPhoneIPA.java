@@ -93,14 +93,15 @@ public class Deployer4IPhoneIPA
       appFolder = newAppFolder;
       
       // Add tcz
-      new TFile(DeploySettings.tczFileName).cp(new TFile(appFolder, new File(DeploySettings.tczFileName).getName()));
+      for (int i = 0; i < DeploySettings.tczs.length; i++)
+         new TFile(DeploySettings.tczs[i]).cp(new TFile(appFolder, new File(DeploySettings.tczs[i]).getName()));
       // TCBase & TCUI
-      new TFile(DeploySettings.distDir, "vm/TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
-      new TFile(DeploySettings.distDir, "vm/TCUI.tcz").cp(new TFile(appFolder, "TCUI.tcz"));
+      new TFile(DeploySettings.folderTotalCross3DistVM, "TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
+      new TFile(DeploySettings.folderTotalCross3DistVM, "TCUI.tcz").cp(new TFile(appFolder, "TCUI.tcz"));
       // TCFont
-      new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
+      new TFile(DeploySettings.folderTotalCross3DistVM, DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
       // Litebase
-      new TFile(DeploySettings.distDir, "vm/LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
+      new TFile(DeploySettings.folderTotalCross3DistVM, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
       
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22

@@ -685,7 +685,8 @@ public class Utils
    /////////////////////////////////////////////////////////////////////////////////////
    public static void copyTCZFile(String targetDir) throws Exception
    {
-      copyFile(DeploySettings.tczFileName, targetDir+"/"+Utils.getFileName(DeploySettings.tczFileName), false);
+      for (int i = 0; i < DeploySettings.tczs.length; i++)
+         copyFile(DeploySettings.tczs[i], targetDir+"/"+Utils.getFileName(DeploySettings.tczs[i]), false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    // currentDir: "w:/TotalCross3/classes/tc"

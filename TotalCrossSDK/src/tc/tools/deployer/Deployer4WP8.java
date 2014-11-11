@@ -54,14 +54,15 @@ public class Deployer4WP8
       sz.putEntry("TotalCrossManifest.xml", manifestContent.getBytes("UTF-8"));
 
       // tcz
-      sz.putEntry(new File(DeploySettings.tczFileName).getName(), new File(DeploySettings.tczFileName));
+      for (int i = 0; i < DeploySettings.tczs.length; i++)
+         sz.putEntry(new File(DeploySettings.tczs[i]).getName(), new File(DeploySettings.tczs[i]));
       // TCBase & TCUI
-      sz.putEntry("TCBase.tcz", new File(DeploySettings.distDir, "vm/TCBase.tcz"));
-      sz.putEntry("TCUI.tcz",   new File(DeploySettings.distDir, "vm/TCUI.tcz"));
+      sz.putEntry("TCBase.tcz", new File(DeploySettings.folderTotalCross3DistVM, "TCBase.tcz"));
+      sz.putEntry("TCUI.tcz",   new File(DeploySettings.folderTotalCross3DistVM, "TCUI.tcz"));
       // TCFont
-      sz.putEntry(new File(DeploySettings.fontTCZ).getName(), new File(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ));
+      sz.putEntry(new File(DeploySettings.fontTCZ).getName(), new File(DeploySettings.folderTotalCross3DistVM, DeploySettings.fontTCZ));
       // Litebase
-      sz.putEntry("LitebaseLib.tcz", new File(DeploySettings.distDir, "vm/LitebaseLib.tcz"));
+      sz.putEntry("LitebaseLib.tcz", new File(DeploySettings.folderTotalCross3DistVM, "LitebaseLib.tcz"));
 
       // add pkg files
       Hashtable ht = new Hashtable(13);

@@ -48,13 +48,7 @@ public class Deploy
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
-   private static int platform;
    
-   public static boolean isOnlyBB()
-   {
-      return platform == BUILD_BB;
-   }
-
    public Deploy(String[] args)
    {
       try
@@ -70,7 +64,7 @@ public class Deploy
 
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
-         int options = platform = parseOptions(args);
+         int options = parseOptions(args);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
@@ -123,8 +117,13 @@ public class Deploy
                   new Deployer4IPhoneIPA();
                }
             }
-            if ((options & BUILD_WP8)     != 0) new Deployer4WP8();
-            if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
+            if ((options & BUILD_WP8) != 0) new Deployer4WP8();
+            if (!DeploySettings.inputFileWasTCZ) 
+               try 
+               {
+                  for (int i = 0; i < DeploySettings.tczs.length; i++)
+                     new totalcross.io.File((String)DeploySettings.tczs[i]).delete();
+               } catch (Exception e) {} // delete the file
             
             if (!DeploySettings.testClass && (options & BUILD_APPLET)  != 0 && DeploySettings.isJarOrZip)
                System.out.println("\nAttention: Deployer for Applet was not able to process the dependencies to create a single jar file because you passed a jar or zip as input file. In this situation, the applet will require the tc.jar file to run.");

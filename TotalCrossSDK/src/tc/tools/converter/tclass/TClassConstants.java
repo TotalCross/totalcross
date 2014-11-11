@@ -62,4 +62,32 @@ public interface TClassConstants
 
    public static final String CONSTRUCTOR_NAME = "<C>"; // name of the constructor
    public static final String STATIC_INIT_NAME = "<S>"; // name of the static initializer
+
+   public static final String DefaultConstants[]  =
+   {
+      "&V",
+      "&b", // boolean
+      "&B", // byte
+      "&C",
+      "&S",
+      "&I",
+      "&L",
+      "&F",
+      "&D",
+      "java.lang.String",
+      "java.lang.Object",
+      "[&b",
+      "[&B",
+      "[&C",
+      "[&S",
+      "[&I",
+      "[&L",
+      "[&F",
+      "[&D",
+      "[java.lang.String",
+      "[java.lang.Object",
+      "java.lang.Array",
+      CONSTRUCTOR_NAME,
+      STATIC_INIT_NAME,
+   };
 }

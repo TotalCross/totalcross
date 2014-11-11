@@ -13,7 +13,6 @@
 
 package tc.tools.converter;
 
-import tc.*;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
@@ -59,55 +58,48 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
    private static Vector vIF     = new Vector(2000);
    private static Vector vCls     = new Vector(2000);
    private static Vector vMtdFld  = new Vector(6000);
-   static Hashtable obfuscatedClasses = new Hashtable(100);
    public static boolean checkLimit;
-   private static final String limitReached1 =
-      "\nThe maximum number of ";
-   private static final String limitReached2 =
-      " for a TCZ file has been reached. Now you have two options to bypass this limitation:\n\n" +
-      "1) You will have to split your TCZ into two files, one is the main file, and the other is a library file. If you name the library file with 'Lib' suffix, it will be automatically loaded when your application starts. Otherwise, you can name it with any name and call Vm.attachLibrary to dynamically bind it.\n\n" +
-      "2) Another option is to obfuscate your code using Proguard. Why obfuscation will work? Because it will rename all private and package access fields, methods and classes with the same name, thus, will decrease the number of identifiers.\n" +
-      "First, download Proguard 3.9 from here:\n" +
-      "www.totalcross.com/proguard3.9.zip\n" +
-      "Inside that zip you have proguard.jar, its license, and a build.xml ANT script.\n" +
-      "To use the script, you must create a jar file named in.jar, with all classes and files that your application uses, which will be used by the script as the input file. Once the obfuscation finishes, an out.jar file will be written. Also a desktop_map.txt file is also written; this file has the mapping between the original name and the obfuscated one.\n" +
-      "To run the script, just type \"ant\" from the command line. Then, rename the out.jar file to your application's main window name and call tc.Deploy passing it. Here's an example, assuming that the class that extends MainWindow is SalesForce:\n\n" +
-      "jar cvf in.jar bin\\*.class\n" +
-      "ant\n" +
-      "ren out.jar SalesForce.jar\n" +
-      "java tc.Deploy SalesForce.jar -all\n\n" +
-      "Note that all this can be do from a single ANT script, if you are proficient in ANT.\n\n" +
-      "Note also that this limitation will not be applied if you run tc.Deploy only for BlackBerry, using -bb option.\n";
-
    private static TCValue temp = new TCValue();
-   private static final String DefaultConstants[]  =
-   {
-      "&V",
-      "&b", // boolean
-      "&B", // byte
-      "&C",
-      "&S",
-      "&I",
-      "&L",
-      "&F",
-      "&D",
-      "java.lang.String",
-      "java.lang.Object",
-      "[&b",
-      "[&B",
-      "[&C",
-      "[&S",
-      "[&I",
-      "[&L",
-      "[&F",
-      "[&D",
-      "[java.lang.String",
-      "[java.lang.Object",
-      "java.lang.Array",
-      CONSTRUCTOR_NAME,
-      STATIC_INIT_NAME,
-   };
 
+   private static int idxI32,idxI64,idxDbl,idxStr,idxMtdFld,idxMtd,idxSF,idxIF,idxCls,svdCount,svlCount;
+   
+   public static void saveState()
+   {
+      idxI32 = vI32.size();
+      idxI64 = vI64.size();
+      idxDbl = vDbl.size();
+      idxStr = vStr.size();
+      idxMtdFld = vMtdFld.size();
+      idxMtd = vMtd.size();
+      idxSF  = vSF.size();
+      idxIF  = vIF.size();
+      idxCls = vCls.size();
+      svdCount = dCount;
+      svlCount = lCount;      
+   }
+   
+   private static void restore(Vector v, Hashtable ht, int len)
+   {
+      for (int i = len, n = v.size(); i < n; i++)
+         ht.remove(v.items[i]);
+      v.setSize(len);
+   }   
+   
+   public static void restoreState()
+   {
+      restore(vI32, htI32, idxI32);
+      restore(vI64, htI64, idxI64);
+      restore(vDbl, htDbl, idxDbl);
+      restore(vStr, htStr, idxStr);
+      restore(vMtdFld, htMtdFld, idxMtdFld);
+      restore(vMtd, htMtd, idxMtd);
+      restore(vSF, htSF, idxSF);
+      restore(vIF, htIF, idxIF);
+      restore(vCls, htCls, idxCls);
+      dCount = svdCount;
+      lCount = svlCount;
+   }
+   
    public static void init()
    {
       htI32.clear();
@@ -142,65 +134,6 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          put(DefaultConstants[i], POOL_CLS, htCls, vCls);
    }
 
-/*   public static void mark(TCMethod m)
-   {
-      m.vI32Start = vI32.size();
-      m.vI64Start = vI64.size();
-      m.vDblStart = vDbl.size();
-      m.vStrStart = vStr.size();
-      m.vCstStart = vConst.size();
-   }
-*/
-/*   public static boolean canRemoveSymbol(TCMethod m, int idx, int type)
-   {
-      switch (type)
-      {
-         case POOL_I32:
-            return idx >= m.vI32Start;
-         case POOL_I64:
-            return idx >= m.vI64Start;
-         case POOL_DBL:
-            return idx >= m.vDblStart;
-         case POOL_STR:
-            return idx >= m.vStrStart;
-         case POOL_SYM:
-            return idx >= m.vCstStart;
-      }
-      return false;
-   }
-
-   public static void removeSymbol(int idx, int type)
-   {
-      switch (type)
-      {
-         case POOL_I32:
-            temp.set(((TCValue)vI32.items[idx]).asInt);
-            htI32.remove(temp);
-            vI32.removeElementAt(idx);
-            break;
-         case POOL_I64:
-            temp.set(((TCValue)vI64.items[idx]).asLong);
-            htI64.remove(temp);
-            vI64.removeElementAt(idx);
-            break;
-         case POOL_DBL:
-            temp.set(((TCValue)vDbl.items[idx]).asDouble);
-            htDbl.remove(temp);
-            vDbl.removeElementAt(idx);
-            break;
-         case POOL_STR:
-            String v = ((TCValue)vStr.items[idx]).asStr;
-            htStr.remove(v);
-            vStr.removeElementAt(idx);
-            break;
-         case POOL_SYM:
-            v = ((TCValue)vConst.items[idx]).asStr;
-            htConst.remove(v);
-            vConst.removeElementAt(idx);
-            break;
-      }
-   }
-*/
    public static int put(int value)
    {
       temp.set(value); // set a temp value
@@ -212,12 +145,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          vI32.addElement(v);       // add it to the vector (used in get)
          v.index = htI32.size(); // set the index and return it
          if (v.index >= 65530)
-         {
-            if (Deploy.isOnlyBB())
-               v.index = 65529;
-            else
-               throw new ConverterException(limitReached1+"int constants"+limitReached2);
-         }
+            throw new ConstantPoolLimitReachedException("int constants");
       }
       return v.index; // return the current index if it was already put
    }
@@ -234,12 +162,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          v.index = htI64.size(); // set the index and return it
          lCount++;
          if (v.index >= 65530)
-         {
-            if (Deploy.isOnlyBB())
-               v.index = 65529;
-            else
-               throw new ConverterException(limitReached1+"long constants"+limitReached2);
-         }
+            throw new ConstantPoolLimitReachedException("long constants");
       }
       return v.index; // return the current index if it was already put
    }
@@ -256,12 +179,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
          v.index = htDbl.size(); // set the index and return it
          dCount++;
          if (v.index >= 65530)
-         {
-            if (Deploy.isOnlyBB())
-               v.index = 65529;
-            else
-               throw new ConverterException(limitReached1+"double constants"+limitReached2);
-         }
+            throw new ConstantPoolLimitReachedException("double constants");
       }
       return v.index; // return the current index if it was already put
    }
@@ -384,12 +302,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       htMtd.put(i,i);
       i.index = vMtd.size(); // before adding - index 0 was already added
       if (i.index >= 4095)
-      {
-         if (Deploy.isOnlyBB())
-            i.index = 4094;
-         else
-            throw new ConverterException(limitReached1+"methods"+limitReached2);
-      }
+         throw new ConstantPoolLimitReachedException("methods");
       vMtd.addElement(i);
       // store the array with all parameters in the unused asObj
       int[] all = new int[plen+2];
@@ -436,19 +349,9 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       ht.put(i,i);
       i.index = v.size(); // before adding - index 0 was already added
       if (type == POOL_SF && i.index >= 32700)
-      {
-         if (Deploy.isOnlyBB())
-            i.index = 32699;
-         else
-            throw new ConverterException(limitReached1+"static fields"+limitReached2);
-      }
+         throw new ConstantPoolLimitReachedException("static fields");
       if (type == POOL_IF && i.index >= 4095)
-      {
-         if (Deploy.isOnlyBB())
-            i.index = 4094;
-         else
-            throw new ConverterException(limitReached1+"instance fields"+limitReached2);
-      }
+         throw new ConstantPoolLimitReachedException("instance fields");
          
       v.addElement(i);
       // store the class and field index as a single int32
@@ -496,12 +399,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
      
       int idx = put(value, POOL_CLS, htCls, vCls);
       if (idx >= 4095 && checkLimit) // guich@tc110_23: corrected limit
-      {
-         if (Deploy.isOnlyBB())
-            idx = 4094;
-         else
-            throw new ConverterException(limitReached1+"class references"+limitReached2);
-      }
+         throw new ConstantPoolLimitReachedException("class references");
       return idx;
    }
 
@@ -515,12 +413,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
 
       int idx = put(value, POOL_CLS, htCls, vCls);
       if (idx >= 4095 && checkLimit) // guich@tc110_23: corrected limit
-      {
-         if (Deploy.isOnlyBB())
-            idx = 4094;
-         else
-            throw new ConverterException(limitReached1+"identifiers"+limitReached2);
-      }
+         throw new ConstantPoolLimitReachedException("identifiers");
       return idx;
    }
 
@@ -534,12 +427,7 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
 
       int idx = put(value, POOL_SYM, htMtdFld, vMtdFld);
       if (idx > 32700 && checkLimit) // guich@tc110_23: corrected limit
-      {
-         if (Deploy.isOnlyBB())
-            idx = 32699;
-         else
-            throw new ConverterException(limitReached1+"identifiers"+limitReached2);
-      }
+         throw new ConstantPoolLimitReachedException("identifiers");
       return idx;
    }
 

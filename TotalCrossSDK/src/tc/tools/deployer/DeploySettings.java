@@ -21,6 +21,7 @@ public class DeploySettings
 {
    public static final String UnknownVendor = "Unknown Vendor"; // fdie@570_96
 
+   public static String[] tczs;
    // constants for including the vm and/or litebase in a package 
    public static boolean packageVM;
    public static String folderTotalCross3DistVM;

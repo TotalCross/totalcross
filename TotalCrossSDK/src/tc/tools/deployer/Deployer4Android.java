@@ -573,7 +573,7 @@ public class Deployer4Android
 
       Vector vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
       Vector vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
-      vLocals.addElement(DeploySettings.tczFileName);
+      vLocals.addElements(DeploySettings.tczs);
       if (vGlobals.size() > 0)
          vLocals.addElements(vGlobals.toObjectArray());
       if (singleApk) // include the vm?
