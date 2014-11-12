@@ -146,7 +146,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    
    <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
    <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
+      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "NO RAS Release|Win32"'/>
    </exec>
 </target>
 
