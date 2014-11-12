@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
