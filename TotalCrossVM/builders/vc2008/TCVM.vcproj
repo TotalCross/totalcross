@@ -1477,7 +1477,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCUI.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
