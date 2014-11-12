@@ -1305,7 +1305,7 @@ public final class J2TC implements JConstants, TCConstants
                throw new DeployerException("ERROR: no files added to the TCZ!");
             if (!DeploySettings.testClass)
             {
-               String filename = part == 0 ? DeploySettings.tczFileName : DeploySettings.tczFileName.replace(".tcz", "_"+part+".tcz");
+               String filename = part == 0 ? DeploySettings.tczFileName : DeploySettings.tczFileName.replace(".tcz", "_"+part+"lib.tcz");
                tczs.addElement(filename);
                TCZ out = new TCZ(vout, filename, attr);
                int ratio = inSize == 0 ? 0 : out.size * 100 / inSize;
