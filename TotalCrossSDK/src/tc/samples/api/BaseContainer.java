@@ -63,6 +63,11 @@ public class BaseContainer extends Container
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
+         if (false) // you can uncomment this to test other possibilities
+         {
+            headerBar.titleAlign = CENTER;
+            headerBar.buttonAlign = LEFT;
+         }
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
          headerBar.addButton(timerImg);

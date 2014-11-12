@@ -65,6 +65,11 @@ public class Bar extends Container
     */
    public int titleAlign = LEFT;
    
+   /** 
+    * The buttons horizontal alignment (<code>LEFT</code> or <code>RIGHT</code>). Defaults to <code>RIGHT</code>. 
+    */
+   public int buttonAlign = RIGHT;
+   
    private class BarButton extends Control
    {
       String title;
@@ -364,8 +369,11 @@ public class Bar extends Container
       else
       {
          for (int i = n; --i >= 0;)
-            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, height, FILL);
-         add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL);
+            add((Control)icons.items[i], i==n-1 ? buttonAlign : (buttonAlign == RIGHT ? BEFORE : AFTER), TOP, height, FILL);
+         if (titleAlign == LEFT)
+            add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL); 
+         else
+            add(title, AFTER, TOP, FILL, FILL); 
          if (spinner != null)
          {
             add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,fmH,fmH,this.title);
