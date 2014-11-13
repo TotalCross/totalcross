@@ -2542,7 +2542,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     public NavigableMap<DK,DV> headMap(DK toKey, boolean inclusive)
     {
-      return new DescendingMap(map.tailMap(toKey, inclusive));
+      return new DescendingMap(map.tailMap(toKey, !inclusive));
     }
 
     public Entry<DK,DV> higherEntry(DK key)
@@ -2596,12 +2596,12 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     public Entry<DK,DV> pollFirstEntry()
     {
-      return pollLastEntry();
+      return map.pollLastEntry();
     }
 
     public Entry<DK,DV> pollLastEntry()
     {
-      return pollFirstEntry();
+      return map.pollFirstEntry();
     }
 
     public DV put(DK key, DV value)
@@ -2632,8 +2632,8 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     public NavigableMap<DK,DV> subMap(DK fromKey, boolean fromInclusive,
                                       DK toKey, boolean toInclusive)
     {
-      return new DescendingMap(map.subMap(fromKey, fromInclusive,
-                                          toKey, toInclusive));
+      return new DescendingMap(map.subMap(toKey, fromInclusive,
+                                          fromKey, toInclusive));
     }
 
     public SortedMap<DK,DV> tailMap(DK fromKey)
@@ -2643,7 +2643,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     public NavigableMap<DK,DV> tailMap(DK fromKey, boolean inclusive)
     {
-      return new DescendingMap(map.headMap(fromKey, inclusive));
+      return new DescendingMap(map.headMap(fromKey, !inclusive));
     }
 
     public String toString()
@@ -2658,7 +2658,10 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
         r.append(e.getValue());
         r.append(", ");
       }
-      r.replace(r.length() - 2, r.length(), "}");
+      if (r.length() > 1)
+         r.replace(r.length() - 2, r.length(), "}");
+      else
+         r.append('}');
       return r.toString();
     }
 
@@ -2958,7 +2961,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     public NavigableSet<D> headSet(D to, boolean inclusive)
     {
-      return new DescendingSet(set.tailSet(to, inclusive));
+      return new DescendingSet(set.tailSet(to, !inclusive));
     }
 
     public D higher(D e)
@@ -3056,8 +3059,8 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
     public NavigableSet<D> subSet(D from, boolean fromInclusive,
                                   D to, boolean toInclusive)
     {
-      return new DescendingSet(set.subSet(from, fromInclusive,
-                                          to, toInclusive));
+      return new DescendingSet(set.subSet(to, fromInclusive,
+                                          from, toInclusive));
     }
 
     public SortedSet<D> tailSet(D from)
@@ -3067,7 +3070,7 @@ public class TreeMap4D<K, V> extends AbstractMap4D<K, V>
 
     public NavigableSet<D> tailSet(D from, boolean inclusive)
     {
-      return new DescendingSet(set.headSet(from, inclusive));
+      return new DescendingSet(set.headSet(from, !inclusive));
     }
 
     public Object[] toArray()
