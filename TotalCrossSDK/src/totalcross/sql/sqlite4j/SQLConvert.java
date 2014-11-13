@@ -14,7 +14,7 @@ class SQLConvert
    {
       try
       {
-         return new java.sql.Time(x.getTime());
+         return x == null ? null : new java.sql.Time(x.getTime());
       }
       catch (InvalidDateException e)
       {
