@@ -2024,7 +2024,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          + "Set4D,"
          + "SortedMap4D,"
          + "SortedSet4D,"
-         + "TreeSet4D";
+         + "TreeSet4D,";
    public static String replaceTotalCrossLangToJavaLang(String name)
    {
       if (name.startsWith("java/lang/")) // shortcut if name already in correct format
