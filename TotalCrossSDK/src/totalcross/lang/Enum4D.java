@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package totalcross.lang;
 
+import java.lang.reflect.*;
+
 /**
  * This class represents a Java enumeration.  All enumerations are
  * subclasses of this class.
@@ -190,4 +192,19 @@ public abstract class Enum4D<T extends Enum4D<T>>
   {
   }
 
+  public static <T extends Enum4D<T>> T valueOf(Class<T> enumType, String name)
+  {
+     Field[] declaredFields = enumType.getDeclaredFields();
+     try
+     {
+        for (Field field : declaredFields) 
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) && field.getName().equals(name))
+               return (T) field.get(null);
+     }
+     catch (IllegalAccessException iae)
+     {
+        throw new Error("Unable to access Enum class");
+     }
+     return null;
+  }
 }

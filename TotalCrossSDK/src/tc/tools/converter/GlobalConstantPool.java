@@ -285,6 +285,11 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
    // method's parameters must be in Java's format (L...; for class)
    public static int putMethod(String className, String name, String[] params, String signature) // puts an reference for a method
    {
+      if (className.equals("java/lang/System") && name.equals("arraycopy")) // special case for enum
+      {
+         className = "totalcross/sys/Vm";
+         name = "arrayCopy";
+      }
       // normalize everything
       if (name.equals("<init>")) name = CONSTRUCTOR_NAME; else
       if (name.equals("<clinit>")) name = STATIC_INIT_NAME;
