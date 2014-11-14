@@ -68,6 +68,8 @@ CopyFiles	= VMfiles
 [SourceDisksNames]
 2 =, "Libraries",,..\..\..\dist\vm
 3 =, "Fonts",,..\..\fonts
+4 =, "LitebaseLib",,..\..\..\..\..\Litebase\LitebaseSDK\dist\lib
+5 =, "LitebaseBinary",,..\..\..\..\..\output\vc2008\Pocket PC 2003 (ARMV4)\NO RAS Release
 
 [SourceDisksNames.HPC2000_ARM]
 1 =, "Binaries",,..\..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\HPC2000\ARM
@@ -88,8 +90,8 @@ tcvm.dll   = 1
 TCBase.tcz = 2
 TCUI.tcz   = 2
 TCFont.tcz = 3
-Litebase.tcz = 2
-Litebase.dll = 3
+LitebaseLib.tcz = 4
+Litebase.dll = 5
 
 ;==================================================
 
@@ -103,5 +105,5 @@ tcvm.dll
 TCBase.tcz
 TCUI.tcz
 TCFont.tcz
-Litebase.tcz
+LitebaseLib.tcz
 Litebase.dll
