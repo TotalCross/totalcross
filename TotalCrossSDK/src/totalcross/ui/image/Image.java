@@ -1841,7 +1841,7 @@ public class Image extends GfxSurface
             loaded.frameCount = 1; // guich@tc100b5: cannot be 0
             image.copyFrom(loaded);
             if (fc > 0)
-               image.comment = "FC="+fc;
+               image.comment = loaded.comment == null ? "FC="+fc : loaded.comment;
             if (!useAlpha && transparentColor != -3)
                image.setTransparentColor(transparentColor);
          }
