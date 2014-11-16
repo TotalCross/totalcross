@@ -784,4 +784,17 @@ public final class Vm
    public static void preallocateArray(Object sample, int length)
    {
    }
+   
+   /**
+    * Returns the same hash code for the given object as would be returned by the default method hashCode(), whether or not the given object's class 
+    * overrides <code>hashCode()</code>.
+    * The hash code for the <code>null</code> reference is zero.
+    *
+    * @param object Object for which the hash code is to be calculated.
+    * @return The desired hash code.
+    */
+   public static int identityHashCode(Object object)
+   {
+      return System.identityHashCode(object);
+   }
 }
