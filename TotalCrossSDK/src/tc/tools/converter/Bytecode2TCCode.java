@@ -2002,64 +2002,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
    {
       if (name.startsWith("totalcross/lang/"))
          return "java/lang/" + name.substring(16);
-      if (name.startsWith("totalcross/util/AbstractList") || name.startsWith("totalcross/util/AbstractMap") 
-       || name.startsWith("totalcross/util/Arrays") || name.startsWith("totalcross/util/Collections")
-       || name.startsWith("totalcross/util/HashMap") || name.startsWith("totalcross/util/LinkedHashMap") 
-       || name.startsWith("totalcross/util/LinkedList") || name.startsWith("totalcross/util/Map")
-       || name.startsWith("totalcross/util/PriorityQueue") || name.startsWith("totalcross/util/TreeMap")) 
-         return name.replace("totalcross", "java");
-      if (name.equals("totalcross/util/AbstractCollection4D")) 
-         return "java/util/AbstractCollection4D";
-      if (name.equals("totalcross/util/AbstractQueue4D")) 
-         return "java/util/AbstractQueue4D";
-      if (name.equals("totalcross/util/AbstractSequentialList4D")) 
-         return "java/util/AbstractSequentialList4D";
-      if (name.equals("totalcross/util/AbstractSet4D")) 
-         return "java/util/AbstractSet4D";
-      if (name.equals("totalcross/util/ArrayList4D")) 
-         return "java/util/ArrayList4D";
-      if (name.equals("totalcross/util/BitSet4D")) 
-         return "java/util/BitSet4D";
-      if (name.equals("totalcross/util/Collection4D")) 
-         return "java/util/Collection4D";
-      if (name.equals("totalcross/util/Comparator4D")) 
-         return "java/util/Comparator4D";
-      if (name.equals("totalcross/util/ConcurrentModificationException4D")) 
-         return "java/util/ConcurrentModificationException4D";     
-      if (name.equals("totalcross/util/Deque4D")) 
-         return "java/util/Deque4D";
-      if (name.equals("totalcross/util/Dictionary4D")) 
-         return "java/util/Dictionary4D";
-      if (name.equals("totalcross/util/Enumeration4D")) 
-         return "java/util/Enumeration4D";
-      if (name.equals("totalcross/util/HashSet4D")) 
-         return "java/util/HashSet4D"; 
-      if (name.equals("totalcross/util/Iterator4D")) 
-         return "java/util/Iterator4D";
-      if (name.equals("totalcross/util/LinkedHashSet4D")) 
-         return "java/util/LinkedHashSet4D";
-      if (name.equals("totalcross/util/List4D")) 
-         return "java/util/List4D";
-      if (name.equals("totalcross/util/ListIterator4D")) 
-         return "java/util/ListIterator4D";
-      if (name.equals("totalcross/util/NavigableMap4D")) 
-         return "java/util/NavigableMap4D";
-      if (name.equals("totalcross/util/NavigableSet4D")) 
-         return "java/util/NavigableSet4D";
-      if (name.equals("totalcross/util/NoSuchElementException4D")) 
-         return "java/util/NoSuchElementException4D";
-      if (name.equals("totalcross/util/Queue4D")) 
-         return "java/util/Queue4D";
-      if (name.equals("totalcross/util/RandomAccess4D")) 
-         return "java/util/RandomAccess4D";
-      if (name.equals("totalcross/util/Set4D")) 
-         return "java/util/Set4D";
-      if (name.equals("totalcross/util/SortedMap4D")) 
-         return "java/util/SortedMap4D";
-      if (name.equals("totalcross/util/SortedSet4D")) 
-         return "java/util/SortedSet4D";
-      if (name.equals("totalcross/util/TreeSet4D")) 
-         return "java/util/TreeSet4D";
+      if (name.startsWith("totalcross/util/") && name.contains("4D")) 
+         return name.replace("totalcross", "java");     
       return name;
    }
 
