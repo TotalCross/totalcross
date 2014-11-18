@@ -348,6 +348,15 @@ target: desktop
 
 </target>
 
+<target name="desktoplb" depends="desktop" description="builds tc.jar joined with litebase.jar">
+   <zip destfile="${dist}/tc_.jar">
+       <zipgroupfileset file="${dist}/tc.jar"/>
+       <zipgroupfileset file="${sdk.root}/../../Litebase/LitebaseSDK/dist/litebase.jar"/>
+   </zip>
+   <delete file="${dist}/tc.jar" />
+   <move file="${dist}/tc_.jar" tofile="${dist}/tc.jar" />
+
+</target>
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: desktop
 
