@@ -48,7 +48,7 @@ CopyFiles	= VMfiles
 [SourceDisksNames.PocketPC_ARM]
 1 =, "Binaries",,..\..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\ARM
 [SourceDisksNames.WMOBILE_ARM]
-1 =, "Binaries",,..\..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\ARM
+1 =, "Binaries",,..\..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\ARM
 
 [SourceDisksFiles]
 
