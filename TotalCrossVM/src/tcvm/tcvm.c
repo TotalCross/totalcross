@@ -524,6 +524,9 @@ contCall:
 #ifdef ENABLE_TRACE
             TRACE("T %08d %X %X %05d - %04d #%4d %X-%X %X %s calling %s.%s - %s (%X)", getTimeStamp(), thread, context, ++context->ccon, (int)(code-method->code), locateLine(method, (int32)(code-method->code)), (int)regO, context->regO, context->callStack-2, getSpaces(context,context->depth), newMethod->class_->name, newMethod->name, regO[(int32)code->mtd.this_ - (int32)method->oCount] == null ? "" : OBJ_CLASS(regO[(int32)code->mtd.this_ - (int32)method->oCount])->name, (int)(regO[(int32)code->mtd.this_ - (int32)method->oCount]));
             context->depth++;
+#else
+            if (traceOn) 
+               debug("T %08d %X %s.%s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
 #endif
             if (!newMethod->flags.isStatic)
             {

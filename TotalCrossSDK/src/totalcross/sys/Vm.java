@@ -661,6 +661,11 @@ public final class Vm
     * @since TotalCross 3.1
     */
    public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
+   
+   /** Enables dump of executed methods to the console. CAUTION: this makes the vm much slower, use with caution.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_METHODS = 8;
 
    /**
     * Tweak some parameters of the virtual machine. Note that these
