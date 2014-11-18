@@ -323,7 +323,8 @@ target: desktop
   <jar destfile="${dist}/tc_desktop.jar" compress="yes" update="yes" includes="totalcross/**">
     <fileset dir="${output}/classes_desktop"
     excludes="tc/**,*.tcz"
-    />
+    />  
+    <fileset dir="${fonts}" includes="TCFont.tcz"/>      
   	<manifest>
       <attribute name="Built-By" value="${user.name}"/>
       <attribute name="Implementation-Vendor" value="SuperWaba Ltda"/>
