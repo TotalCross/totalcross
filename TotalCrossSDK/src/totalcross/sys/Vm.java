@@ -662,7 +662,9 @@ public final class Vm
     */
    public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
    
-   /** Enables dump of executed methods to the console. CAUTION: this makes the vm much slower, use with caution.
+   /** Enables dump of executed methods to the console. CAUTION: this makes the program slower since hundreds of
+    * method calls are sent to the console, use with caution.
+    * The output format is: T timestamp thread class - method
     * @since TotalCross 3.1
     */
    public static final int TWEAK_TRACE_METHODS = 8;

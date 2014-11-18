@@ -526,7 +526,7 @@ contCall:
             context->depth++;
 #else
             if (traceOn) 
-               debug("T %08d %X %s.%s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
+               debug("T %08d %X %s - %s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
 #endif
             if (!newMethod->flags.isStatic)
             {
