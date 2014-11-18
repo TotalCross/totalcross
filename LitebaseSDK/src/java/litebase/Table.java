@@ -1292,7 +1292,7 @@ class Table
          }
          else 
          {
-            int rows = plainDb.rowCount - deletedRowsCount;
+            int rows = plainDb.rowCount;
             SQLValue[][] vals = new SQLValue[rows][];
             int k = 0;
             boolean isNull;
