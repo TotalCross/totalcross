@@ -226,7 +226,7 @@ int32 locateLine(Method m, int32 pc)
 void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidPArray callStack)
 {
    Method m=null;
-   int32 line;                  
+   int32 line,im;
    char *c0 =currentContext->exmsg; 
    char *c=c0;
    bool first = true;
@@ -237,7 +237,8 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
       callStack -= 2;
       //int2hex((int32)callStack, 6, c); c += 6; *c++ = ' '; - used when debugging
       m = (Method)callStack[0];  
-      if (!m || (int)m < 1000) break; // trying to handle crash on addresses 0x33 and 0x36
+      im = (int)m;
+      if (im < 1000 || (im & 3) != 0) break; // trying to handle crash on addresses 0x33 and 0x36 and odd addresses
       oldpc = (Code)callStack[1];
       line = (m->lineNumberLine != null) ? locateLine(m, first ? pc0 : ((int32)(oldpc - m->code))) : -1;
       c = dumpMethodInfo(c, m, line, c0 + sizeof(currentContext->exmsg) - 2);
