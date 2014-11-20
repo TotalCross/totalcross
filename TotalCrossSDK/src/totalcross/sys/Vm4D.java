@@ -69,6 +69,10 @@ public final class Vm4D
    public static final int TWEAK_DUMP_MEM_STATS = 2;
    public static final int TWEAK_MEM_PROFILER = 3;
    public static final int TWEAK_DISABLE_GC = 4;
+   public static final int TWEAK_TRACE_CREATED_CLASSOBJS = 5;
+   public static final int TWEAK_TRACE_LOCKED_OBJS = 6;
+   public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
+   public static final int TWEAK_TRACE_METHODS = 8;
 
    public static boolean attachNativeLibrary(String name)
    {
@@ -107,4 +111,14 @@ public final class Vm4D
          cur = getTimeStamp();
       }
    }
+   
+   /**
+    * Returns the same hash code for the given object as would be returned by the default method hashCode(), whether or not the given object's class 
+    * overrides <code>hashCode()</code>.
+    * The hash code for the <code>null</code> reference is zero.
+    *
+    * @param object Object for which the hash code is to be calculated.
+    * @return The desired hash code.
+    */
+   public static native int identityHashCode(Object object);
 }

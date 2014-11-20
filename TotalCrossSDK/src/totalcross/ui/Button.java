@@ -103,6 +103,9 @@ public class Button extends Control
     */
    public boolean drawBordersIfTransparentBackground; // guich@tc115_74
 
+   /** The current frame in a multi-frame image. */
+   public int currentFrame; // defaults to 0
+
    // guich@tc122_46: added auto-repeat for button
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
     * @see #INITIAL_DELAY
@@ -573,7 +576,11 @@ public class Button extends Control
    protected void onBoundsChanged(boolean screenChanged)
    {
       if (imageHeightFactor != 0 && img0 != null)
-         try {img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);} catch (Throwable t) {img = img0;}
+         try 
+         {
+            img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);
+            img.setCurrentFrame(currentFrame); 
+         } catch (Throwable t) {img = img0;}
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (isAndroidStyle && clip == null)
          clip = new Rect();

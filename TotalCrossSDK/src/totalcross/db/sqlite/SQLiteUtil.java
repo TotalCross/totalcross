@@ -109,15 +109,37 @@ public class SQLiteUtil
          return null;
       }
    }
+   
+   /** SQLite has a problem (not sure if its a bug) where it returns DATE for both 
+    * DATE and DATETIME types, so this method returns the correct correspondence:
+    * DATE for date and TIME for DATETIME (remember that in TotalCross, a Time object also
+    * contains the date).
+    * @param md The ResultSetMetaData obtained with ResultSet.getMetaData.
+    * @param col The column, starting from 1.
+    */
+   public int getColumnType(ResultSetMetaData md, int col) throws SQLException
+   {
+      String s = md.getColumnTypeName(col);
+      return s.equals("DATE") ? Types.DATE : s.equals("DATETIME") ? Types.TIME : md.getColumnType(col);
+   }
 
    public String[][] getStrings(ResultSet rs, Vector v) throws SQLException
    {
       int cols = getColCount(rs);
+      int[] types = new int[cols];
+      ResultSetMetaData md = rs.getMetaData();
+      for (int i = types.length; --i >= 0;)
+         types[i] = getColumnType(md, i+1);
       while (rs.next())
       {
          String[] linha = new String[cols];
          for (int i = 0; i < cols; i++)
-            linha[i] = rs.getString(i+1);
+            switch (types[i])
+            {
+               case Types.DATE: linha[i] = rs.getDate(i+1).toString(); break;
+               case Types.TIME: linha[i] = rs.getTime(i+1).toString(); break;
+               default: linha[i] = rs.getString(i+1);
+            }
          v.addElement(linha);
       }
       String[][] ss = new String[v.size()][];

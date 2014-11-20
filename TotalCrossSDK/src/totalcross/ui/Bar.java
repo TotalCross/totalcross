@@ -267,6 +267,12 @@ public class Bar extends Container
          if (initialized) initUI();
       }
    }
+   
+   /** Returns the icon set (and possibly resized) with setIcon, or null if none was set */
+   public Image getIcon()
+   {
+      return title != null ? title.leftIcon : null;
+   }
 
    /** 
     * Changes the title to the given one. 

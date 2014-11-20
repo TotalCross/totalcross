@@ -28,16 +28,30 @@ import totalcross.util.zip.*;
 
 public class FontGenerator
 {
-   class Range {int s, e; String name; Range(int ss, int ee, String nn) {s = ss; e = ee; name=nn;}}
    public static byte detailed=0; // 1 show messages, 2 show msgs + chars
+
+   class Range 
+   {
+      int s, e; 
+      String name; 
+      
+      Range(int ss, int ee, String nn) 
+      {
+         s = ss; 
+         e = ee; 
+         name=nn;
+      }
+   }
 
    String fontName;
    PalmFont pf;
-   boolean antialiased;
+   int antialiased;
    Vector newRanges;
    java.awt.Component comp;
    static IntVector sizes = new IntVector(30);
    boolean skipBigChars;
+   int[] fontsizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
+
 
    public FontGenerator(String fontName, String []extraArgs) throws Exception
    {
@@ -51,7 +65,6 @@ public class FontGenerator
       if (jdkversion.startsWith("1.1.") || jdkversion.startsWith("1.2."))
          throw new Exception("This program requires JDK version greater or equal than 1.3!");
       String outName = fontName; // guich@401_11
-      boolean allSizes = true;
       boolean noBold = false;
       boolean isMono = false;
       for (i=1; i < extraArgs.length; i++) // 0 if font name
@@ -68,14 +81,11 @@ public class FontGenerator
             if (argLow.equals("/nobold"))
                noBold = true;
             else
-            if (argLow.equals("/defaultsizes"))
-               allSizes = false;
-            else
             if (argLow.startsWith("/sizes"))
                sizesArg = argLow.substring(argLow.indexOf(':')+1);
             else
             if (argLow.equals("/aa"))
-               antialiased = true;
+               antialiased = AA_8BPP;
             else
             if (argLow.startsWith("/rename:"))
             {
@@ -127,19 +137,8 @@ public class FontGenerator
          sizes.qsort();
       }
       else
-      if (allSizes) // has unicode? - create only the main sizes: 9, 11, 12, 15, 18
-         for (i = totalcross.ui.font.Font.MIN_FONT_SIZE; i <= totalcross.ui.font.Font.MAX_FONT_SIZE; i++)
-            sizes.addElement(i);
-      else
-      {
-         sizes.addElement(9);
-         sizes.addElement(11);
-         sizes.addElement(12);
-         sizes.addElement(13);
-         sizes.addElement(14);
-         sizes.addElement(18);
-         sizes.addElement(20);
-      }
+         for (i = 0; i < fontsizes.length; i++)
+            sizes.addElement(fontsizes[i]);
       Vector v = new Vector(30);
 
       for (i = 0; i < sizes.size(); i++)
@@ -165,7 +164,7 @@ public class FontGenerator
 
       java.awt.Image img = comp.createImage(width,height);
       java.awt.Graphics2D g = (java.awt.Graphics2D)img.getGraphics();
-      try {g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, antialiased ? java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON:java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);} catch (Throwable t) {println("Antialiased font not supported!"); System.exit(2);}
+      try {g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, antialiased != AA_NO ? java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON:java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);} catch (Throwable t) {println("Antialiased font not supported!"); System.exit(2);}
       g.setFont(f);
 
       // Note: Sun's JDK does not return a optimal width value for the
@@ -344,13 +343,20 @@ public class FontGenerator
       if (detailed==2) System.out.print((char)('@'));
    }
 
-   private void setNibble(int pixel, int x, int y)
+   private void setNibble4(int pixel, int x, int y)
    {
       int nibble = 0xF0 - (pixel & 0xF0);  // 4 bits of transparency
       if (detailed==2) System.out.print((char)('a'+nibble)/*'@'*/);
       if ((x & 1) != 0)
          nibble >>= 4;
       pf.bitmapTable[(x>>1) + (y * pf.rowWidthInBytes)] |= nibble;  // set
+   }
+   
+   private void setNibble8(int pixel, int x, int y)
+   {
+      int nibble = 0xFF - (pixel & 0xFF); // FFF5F5F5
+      if (detailed==2) System.out.print((char)('a'+nibble)/*'@'*/);
+      pf.bitmapTable[x + (y * pf.rowWidthInBytes)] = (byte)nibble;  // set
    }
 
    private void computeBits(int pixels[], int xx, int w)
@@ -361,10 +367,15 @@ public class FontGenerator
       {
          if (pixels[i] != white)
          {
-            if (antialiased)
-               setNibble(pixels[i], xx+x, y);
-            else
-               setBit(xx+x,y);
+            switch (antialiased)
+            {
+               case AA_NO: setBit(xx+x,y); break;
+               case AA_4BPP: setNibble4(pixels[i], xx+x, y); break;
+               case AA_8BPP: 
+                  setNibble8(pixels[i], xx+x, y); 
+                     //AndroidUtils.debug("@"+(xx+x)+","+y+": "+Integer.toHexString(pixels[i]).toUpperCase()+" -> "+Integer.toHexString(pf.bitmapTable[xx+x + (y * pf.rowWidthInBytes)] & 0xFF).toUpperCase());
+                  break;
+            }               
          }
          else
          if (detailed==2) System.out.print(' ');
@@ -463,15 +474,13 @@ public class FontGenerator
          if (args.length < 1)
          {
             println("Format: java FontGenerator <font name> /rename:newName /detailed:1_or_2 /aa");
-            println("  /DefaultSizes /NoBold /sizes:<comma-separeted list of sizes> /u <list of ranges>");
+            println("  /NoBold /sizes:<comma-separeted list of sizes> /u <list of ranges>");
             println("");
             println("Parameters are case insensitive, meaning:");
             println(". /monospace To create a monospaced font.");
             println(". /rename:newName to rename the output font name.");
             println(". /detailed:1_or_2 to show detailed information.");
             println(". /aa to create an antialiased font.");
-            println(". /DefaultSizes to create fonts only for the default sizes of each platform: ");
-            println("9, 11, 12, 13, 14, 18, 20. Otherwise, font sizes will range from "+Font.MIN_FONT_SIZE+" to "+Font.MAX_FONT_SIZE);
             println("  /sizes:<comma-separeted list of sizes> to create a font with the given sizes");
             println(". /NoBold to don't create the bold font.");
             println(". /skipBigChars: useful when creating monospaced fonts; the glyphs that have a width above the W char are skipped.");
@@ -482,7 +491,7 @@ public class FontGenerator
             println("\"/u 32-255 256-383 402-402 20284-40869\". The ranges must be in increased order.");
             println("The /u option must be the LAST option used.");
             println("");
-            println("When creating unicode fonts of a wide range, using options /nobold /defaultsizes");
+            println("When creating unicode fonts of a wide range, using options /nobold");
             println("will create a file 1/4 of the original size.");
             println("");
             println("Alternative format: java FontGenerator test <font name>");
@@ -510,9 +519,12 @@ public class FontGenerator
       }
    }
 
+   static final int AA_NO = 0;
+   static final int AA_4BPP = 1;
+   static final int AA_8BPP = 2;
    static class PalmFont
    {
-      public boolean antialiased;  // true if its antialiased
+      public int antialiased;      // true if its antialiased
       public int firstChar;        // ASCII code of first character
       public int lastChar;         // ASCII code of last character
       public int spaceWidth;       // width of the space char
@@ -537,7 +549,7 @@ public class FontGenerator
             ByteArrayStream from = new ByteArrayStream(4096);
             ByteArrayStream to = new ByteArrayStream(2048);
             DataStreamLE ds = new DataStreamLE(from);
-            ds.writeShort(antialiased?1:0); // note that writeShort already writes an unsigned short (its the same method)
+            ds.writeShort(antialiased); // note that writeShort already writes an unsigned short (its the same method)
             ds.writeShort(firstChar  );
             ds.writeShort(lastChar   );
             ds.writeShort(spaceWidth );
@@ -581,7 +593,7 @@ public class FontGenerator
 
       public void initTables()
       {
-         rowWidthInBytes = rowWords << (antialiased ? 3 : 1); // 4 bits of transparency or 1 bit (B/W)
+         rowWidthInBytes = 2 * rowWords * (antialiased == AA_NO ? 1 : antialiased == AA_4BPP ? 4 : 8); // 4 bits of transparency or 1 bit (B/W)
          bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
 
          bitmapTable     = new byte[bitmapTableSize];

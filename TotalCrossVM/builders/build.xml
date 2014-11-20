@@ -205,7 +205,6 @@ target: buildSkeleton - Build the folders
 </target>
 
 <target name="buildSamples_sdk" >
-	<copy todir="${source.sdk.path}/dist/vm" file="${source.lb.path}/dist/lib/LitebaseLib.tcz" />
 	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
 	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>

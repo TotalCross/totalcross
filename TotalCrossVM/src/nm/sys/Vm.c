@@ -327,6 +327,9 @@ TC_API void tsV_tweak_ib(NMParams p) // totalcross/sys/Vm native public static v
       vmTweaks |=  (1<<bit);
    else
       vmTweaks &= ~(1<<bit);
+   if (param == VMTWEAK_TRACE_METHODS)
+      traceOn = on;
+   else
    if (param == VMTWEAK_DISABLE_GC && !on) // guich@tc114_18
       gc(p->currentContext);
    else

@@ -44,11 +44,7 @@ public class TestArrays extends TestCase
       long[] longs = new long[]{1, 2, 3, 4, 5};
       assertEquals(3, Arrays.binarySearch(longs, 4));
       assertGreater(0, Arrays.binarySearch(longs, 0, 0, 6));
-      
-      float[] floats = new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f};
-      assertEquals(4, Arrays.binarySearch(floats, 0.5f));
-      assertGreater(0, Arrays.binarySearch(floats, 0, 0, 0.6f));
-      
+
       double[] doubles = new double[]{1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7};
       assertEquals(5, Arrays.binarySearch(doubles, 6.6));
       assertGreater(0, Arrays.binarySearch(doubles, 0, 0, 8.8));
@@ -81,10 +77,6 @@ public class TestArrays extends TestCase
       assertTrue(Arrays.equals(longs, longs));
       assertTrue(Arrays.equals(longs, new long[]{1, 2, 3, 4, 5}));
       assertFalse(Arrays.equals(longs, new long[]{1, 2, 3, 4, 5, 6}));
-      
-      assertTrue(Arrays.equals(floats, floats)); 
-      assertTrue(Arrays.equals(floats, new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f}));
-      assertFalse(Arrays.equals(floats, new float[]{0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.7f}));
       
       assertTrue(Arrays.equals(doubles, doubles));
       assertTrue(Arrays.equals(doubles, new double[]{1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7}));
@@ -130,12 +122,6 @@ public class TestArrays extends TestCase
       Arrays.fill(longs, 0, 5, 1);
       assertTrue(Arrays.equals(longs, new long[]{1, 1, 1, 1, 1}));
       
-      Arrays.fill(floats, 0.1f);
-      assertTrue(Arrays.equals(floats, new float[]{0.1f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f}));
-      
-      Arrays.fill(floats, 0, 6, 0.2f);
-      assertTrue(Arrays.equals(floats, new float[]{0.2f, 0.2f, 0.2f, 0.2f, 0.2f, 0.2f}));
-      
       Arrays.fill(doubles, 0.3);
       assertTrue(Arrays.equals(doubles, new double[]{0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3}));
       
@@ -178,12 +164,6 @@ public class TestArrays extends TestCase
       Arrays.sort(longs = new long[]{4, 3, 2, 1, 0}, 0, 5);
       assertTrue(Arrays.equals(longs, new long[]{0, 1, 2, 3, 4}));
       
-      Arrays.sort(floats = new float[]{0.5f, 0.4f, 0.3f, 0.2f, 0.1f, 0.0f});
-      assertTrue(Arrays.equals(floats, new float[]{0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f}));
-      
-      Arrays.sort(floats = new float[]{0.5f, 0.4f, 0.3f, 0.2f, 0.1f, 0.0f}, 0, 6);
-      assertTrue(Arrays.equals(floats, new float[]{0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f}));
-      
       Arrays.sort(doubles = new double[]{0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0});
       assertTrue(Arrays.equals(doubles, new double[]{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6}));
       
@@ -219,7 +199,6 @@ public class TestArrays extends TestCase
       assertEquals(4066, Arrays.hashCode(chars));
       assertEquals(1, Arrays.hashCode(bytes));
       assertEquals(1268, Arrays.hashCode(booleans));
-      assertEquals(-1234623090, Arrays.hashCode(floats));
       assertEquals(-1079375742, Arrays.hashCode(doubles));
       assertEquals(-547780730, Arrays.hashCode(objects));
       
@@ -233,13 +212,6 @@ public class TestArrays extends TestCase
       assertEquals("[0, 1, 2]", Arrays.toString(shorts));
       assertEquals("[0, 1, 2, 3]", Arrays.toString(ints));
       assertEquals("[0, 1, 2, 3, 4]", Arrays.toString(longs));
-      String[] strings = Convert.tokenizeString(Arrays.toString(floats).substring(1), ',');
-      assertEquals("0.0", strings[0]);
-      assertTrue(strings[1].contains("0.1"));
-      assertTrue(strings[2].contains("0.2"));
-      assertTrue(strings[3].contains("0.3"));
-      assertTrue(strings[4].contains("0.4"));
-      assertTrue(strings[5].contains("0.5"));
       assertEquals("[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]", Arrays.toString(doubles));
       assertEquals("[a, b, c, d, e, f, g, i]", Arrays.toString(objects));
       
@@ -262,9 +234,6 @@ public class TestArrays extends TestCase
       
       assertTrue(Arrays.equals(new long[] {0, 1, 2, 3}, Arrays.copyOf(longs, 4)));
       assertTrue(Arrays.equals(new long[] {0, 1, 2, 3}, Arrays.copyOfRange(longs, 0, 4)));
-      
-      assertTrue(Arrays.equals(new float[] {0.0f, 0.1f, 0.2f, 0.3f, 0.4f}, Arrays.copyOf(floats, 5)));
-      assertTrue(Arrays.equals(new float[] {0.0f, 0.1f, 0.2f, 0.3f, 0.4f}, Arrays.copyOfRange(floats, 0, 5)));
       
       assertTrue(Arrays.equals(new double[] {0.0, 0.1, 0.2, 0.3, 0.4, 0.5}, Arrays.copyOf(doubles, 6)));
       assertTrue(Arrays.equals(new double[] {0.0, 0.1, 0.2, 0.3, 0.4, 0.5}, Arrays.copyOfRange(doubles, 0, 6)));
