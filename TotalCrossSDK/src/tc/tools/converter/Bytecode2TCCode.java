@@ -577,7 +577,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case POP: //87
          {
-            stack.pop();
+            if (!stack.empty())
+               stack.pop();
             break;
          }
          case POP2: //88

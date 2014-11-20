@@ -804,4 +804,10 @@ public final class Vm
    {
       return System.identityHashCode(object);
    }
+   
+   /** used internally for enum */
+   static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
+   {
+      arrayCopy(src,srcPos,dest,destPos,length);
+   }
 }

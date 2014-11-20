@@ -112,13 +112,11 @@ public final class Vm4D
       }
    }
    
-   /**
-    * Returns the same hash code for the given object as would be returned by the default method hashCode(), whether or not the given object's class 
-    * overrides <code>hashCode()</code>.
-    * The hash code for the <code>null</code> reference is zero.
-    *
-    * @param object Object for which the hash code is to be calculated.
-    * @return The desired hash code.
-    */
    public static native int identityHashCode(Object object);
+
+   /** used internally for enum */
+   static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
+   {
+      arrayCopy(src,srcPos,dest,destPos,length);
+   }
 }
