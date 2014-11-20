@@ -178,7 +178,7 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:TCVM"
+        "ProductName" = "8:TotalCross"
         "Manufacturer" = "8:TotalCross"
         "OSVersionMin" = "8:3.0"
         "OSVersionMax" = "8:6.99"
@@ -190,7 +190,7 @@
         {
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_21A1A9411F234F248ED3EED8B51565A3"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\output\\vc2008\\Pocket PC 2003 (ARMV4)\\NO RAS Release\\Litebase.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\output\\release\\LitebaseSDK\\dist\\lib\\wince\\Litebase.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
@@ -216,7 +216,7 @@
             }
             "{605BE39E-5046-48BD-AEC0-63C3A46626D5}:_BFA146B52640409DA38BD571171AD87E"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\output\\vc2008\\Pocket PC 2003 (ARMV4)\\Release\\TCVM.dll"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\output\\release\\TotalCrossSDK\\dist\\vm\\wince\\TCVM.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"
