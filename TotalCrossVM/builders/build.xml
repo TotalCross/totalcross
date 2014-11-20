@@ -620,40 +620,6 @@ target: buildWinCE
         </antcall>
     </target>
 
-    <target name="buildWinCECabsSingle">
-      <exec dir="${source.sdk.path}/etc/tools/makecab"
-            executable="${source.sdk.path}/etc/tools/makecab/Cabwiz.exe"
-            failonerror="no">
-      	<arg line="totalcross.inf /cpu PocketPC_ARM" />
-      </exec>
-
-      <!-- copy the cab files -->
-      <move todir="${path.param}/dist/vm/wince">
-        <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.cab" casesensitive="no" />
-      </move>
-
-      <!-- copy bat and ini files -->
-      <copy todir="${path.param}/dist/vm/wince" overwrite="yes">
-        <fileset dir="${source.sdk.path}/etc/tools/makecab"
-                 includes="CEinstall.ini,_CEinstall-RunMe.bat,CEinstall_WMOBILE.ini,_CEinstall-RunMe_WMOBILE.bat,ceinstall*.*"
-                 casesensitive="no" />
-      </copy>
-
-      <exec dir="${source.sdk.path}/etc/tools/makecab"
-            executable="${source.sdk.path}/etc/tools/makecab/Cabwizsp.exe"
-            failonerror="no">
-      	<arg line="totalcross.inf /cpu PocketPC_ARM" />
-      </exec>
-
-      <!-- copy the cab files -->
-      <move file="${source.sdk.path}/etc/tools/makecab/totalcross.PocketPC_ARM.CAB"
-            tofile="${path.param}/dist/vm/wince/totalcross.WMobile_ARM.CAB" />
-
-      <delete>
-        <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.dat" casesensitive="no" />
-      </delete>
-    </target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -690,5 +656,6 @@ target: build targets
 <target name="buildAndroid_vms_noras" />
 <target name="buildWinCE_vms" />
 <target name="buildWinCE_vms_noras" />
-
+<target name="buildWinCECabsSingle" />
+    
 </project>
