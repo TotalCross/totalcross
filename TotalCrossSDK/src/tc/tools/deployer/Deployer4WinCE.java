@@ -45,7 +45,7 @@ public class Deployer4WinCE
       String ceArguments = DeploySettings.commandLine.trim(); // the name of the tcz will be the same of the .exe
       if (ceArguments.length() > DeploySettings.defaultArgument.length/2)
          throw new IllegalArgumentException("ERROR - launch string too long: "+ceArguments);
-      targetDir = DeploySettings.targetDir+"wince/";
+      targetDir = DeploySettings.targetDir+"wince";
       File f = new File(targetDir);
       if (!f.exists())
          f.createDir();
@@ -245,7 +245,7 @@ public class Deployer4WinCE
                vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
                vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
                vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
-               lbFolder = DeploySettings.folderTotalCross3DistVM+"wince/";
+               lbFolder = DeploySettings.folderTotalCross3DistVM+"wince";
                // copy binary files
                String name = "/tcvm.dll";
                try
