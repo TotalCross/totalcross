@@ -85,6 +85,9 @@ public class FontGenerator
                sizesArg = argLow.substring(argLow.indexOf(':')+1);
             else
             if (argLow.equals("/aa"))
+               antialiased = AA_4BPP;
+            else
+            if (argLow.equals("/aa8"))
                antialiased = AA_8BPP;
             else
             if (argLow.startsWith("/rename:"))
@@ -480,7 +483,8 @@ public class FontGenerator
             println(". /monospace To create a monospaced font.");
             println(". /rename:newName to rename the output font name.");
             println(". /detailed:1_or_2 to show detailed information.");
-            println(". /aa to create an antialiased font.");
+            println(". /aa to create a 4-bpp antialiased font.");
+            println(". /aa8 to create a 8-bpp antialiased font.");
             println("  /sizes:<comma-separeted list of sizes> to create a font with the given sizes");
             println(". /NoBold to don't create the bold font.");
             println(". /skipBigChars: useful when creating monospaced fonts; the glyphs that have a width above the W char are skipped.");
