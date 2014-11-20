@@ -70,7 +70,7 @@ public class Deployer4WP8
       Vector v = new Vector(Utils.joinGlobalWithLocals(ht, null, true));
       Utils.preprocessPKG(v,true);
       String[] extras = (String[])v.toObjectArray();
-      if (extras.length > 0)
+      if (extras != null && extras.length > 0)
          for (int i = 0; i < extras.length; i++)
          {
             String pathname = extras[i];
