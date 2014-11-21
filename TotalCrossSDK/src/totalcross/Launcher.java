@@ -1737,11 +1737,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    static final int AA_8BPP = 2;
    static int []realSizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
-   private static boolean useRealFont;
    static Hashtable htBaseFonts = new Hashtable(5); // 
-   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size)
+   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size, String suffix)
    {
-      String key = name+"|"+bold+"|"+size;
+      String key = name+"|"+bold+"|"+size+"|"+suffix;
       totalcross.ui.font.Font f = (totalcross.ui.font.Font)htBaseFonts.get(key);
       if (f == null)
       {
@@ -1750,14 +1749,15 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (size <= realSizes[i])
                break;
       
-         useRealFont = true;
-         f = totalcross.ui.font.Font.getFont(name,bold,realSizes[i]); 
+         int idx = Integer.parseInt(suffix.substring(suffix.indexOf('u') + 1));
+         totalcross.ui.font.Font.baseChar = (char)idx;
+         f = totalcross.ui.font.Font.getFont(name,bold,realSizes[i]);
+         totalcross.ui.font.Font.baseChar = ' ';
          if (f != null) 
          {
             f.removeFromCache();
             htBaseFonts.put(key,f); 
          }         
-         useRealFont = false;
       }
       
       return f;
@@ -1767,11 +1767,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       try
       {
-         if (!useRealFont && suffix.endsWith("u0")) // test if there's another 8bpp native font.
+         if (totalcross.ui.font.Font.baseChar == ' ') // test if there's another 8bpp native font.
          {
             boolean bold = suffix.charAt(1) == 'b';
             int size = Integer.parseInt(suffix.substring(2,suffix.indexOf('u')));
-            totalcross.ui.font.Font base = getBaseFont(fontName, bold, size);
+            totalcross.ui.font.Font base = getBaseFont(fontName, bold, size, suffix);
             if (base != null)
                return new UserFont(fontName, suffix, size, base);
          }
@@ -1836,7 +1836,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          
          if (uf != null)
          {
-            if (!useRealFont)
+            if (totalcross.ui.font.Font.baseChar == ' ')
                htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
             f.name = uf.fontName; // update the name, the font may have been replaced.
          }
@@ -1968,7 +1968,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
          //
-         minusW = antialiased == AA_8BPP ? 1 : 0;
+         minusW = antialiased == AA_8BPP && fontName.equals("TCFont") ? 1 : 0;
          if (firstChar <= '0' && '0' <= lastChar)
          {
             index = (int)'0' - (int)firstChar;
@@ -2001,6 +2001,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             bits.charBitmapTable = bitmapTable;
             bits.offset = bitIndexTable[index];
             bits.width = bitIndexTable[index+1] - bits.offset - minusW;
+            if (bits.width == 0) bits.width += minusW;
             if (ubase != null)
                try
                {
