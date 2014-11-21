@@ -14,6 +14,7 @@ package tc.tools.deployer;
 import totalcross.io.DataStream;
 import totalcross.io.File;
 import totalcross.io.FileNotFoundException;
+import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
@@ -45,7 +46,7 @@ public class Deployer4WinCE
       String ceArguments = DeploySettings.commandLine.trim(); // the name of the tcz will be the same of the .exe
       if (ceArguments.length() > DeploySettings.defaultArgument.length/2)
          throw new IllegalArgumentException("ERROR - launch string too long: "+ceArguments);
-      targetDir = DeploySettings.targetDir+"wince";
+      targetDir = Convert.appendPath(DeploySettings.targetDir,"wince");
       File f = new File(targetDir);
       if (!f.exists())
          f.createDir();
@@ -53,7 +54,7 @@ public class Deployer4WinCE
       {
          try
          {
-            String fileName = DeploySettings.etcDir + "launchers/wince/Launcher.exe";
+            String fileName = Convert.appendPath(DeploySettings.etcDir, "launchers/wince/Launcher.exe");
             bytes = Utils.findAndLoadFile(fileName, false);
             if (bytes == null)
                throw new DeployerException("Could not find " + fileName + ". Please add tc.jar to the classpath!");
@@ -84,7 +85,17 @@ public class Deployer4WinCE
          Utils.copyTCZFile(targetDir);
       if (!keepExeAndDontCreateCabFiles) // guich@tc126_29: don't create the cab file
          createInstallFiles();
-      if (!keepExe) deleteAll();
+      if (!keepExe)
+      {
+         try
+         {
+            new File(Convert.appendPath(targetDir,DeploySettings.filePrefix+".exe"), File.DONT_OPEN).delete();
+         }
+         catch (FileNotFoundException e)
+         {
+            // ignore if file wasn't found for deletion
+         }
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +112,7 @@ public class Deployer4WinCE
    {
       String fileName = DeploySettings.filePrefix+".exe";
       // write the file
-      String fullPath = userPath+"/"+fileName;
+      String fullPath = Convert.appendPath(userPath,fileName);
       if (show) Utils.println("...writing "+fullPath);
 
       try {new File(userPath).createDir();} catch (totalcross.io.IOException e) {}
@@ -130,7 +141,7 @@ public class Deployer4WinCE
    /////////////////////////////////////////////////////////////////////////////////////
    private String getCabName()
    {
-      return targetDir+cabName+"."+".cab";
+      return Convert.appendPath(targetDir,cabName+".cab");
    }
 
    /////////////////////////////////////////////////////////////////////////////////////
@@ -146,21 +157,11 @@ public class Deployer4WinCE
    }
 
    /////////////////////////////////////////////////////////////////////////////////////
-   public void deleteAll() throws totalcross.io.IOException
-   {
-      File f;
-      File.deleteDir(targetDir);
-      f = new File(targetDir);
-      if (f.exists())
-         f.delete();
-   }
-
-   /////////////////////////////////////////////////////////////////////////////////////
    public void deleteTemp(boolean includingInf)
    {
       try
       {
-         new File(targetDir + cabName + "." + ".dat").delete();
+         new File(Convert.appendPath(targetDir,cabName + ".dat")).delete();
       }
       catch (totalcross.io.IOException e)
       {
@@ -169,7 +170,7 @@ public class Deployer4WinCE
       {
          try
          {
-            new File(targetDir + cabName + ".inf").delete();
+            new File(Convert.appendPath(targetDir, cabName + ".inf")).delete();
          }
          catch (totalcross.io.IOException e)
          {
@@ -185,7 +186,7 @@ public class Deployer4WinCE
       {
          String fullName = (String)v.items[i];
          String onlyName = Utils.getFileName(fullName);
-         String targetName = targetDir+onlyName;
+         String targetName = Convert.appendPath(targetDir,onlyName);
          // copy the file to the current folder if it does not exists.
          // (cabwiz don't allow pathnames on the input file list)
          if (copyFile && !new File(targetName).exists())
@@ -215,7 +216,7 @@ public class Deployer4WinCE
          infFileName = "wince.inf";
          cabName = infFileName.substring(0,Math.min(8,infFileName.length()-4)); // strip the .inf - guich@421_75
          deleteCabs();
-         File oFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
+         File oFile = new File(Convert.appendPath(targetDir,infFileName),File.CREATE_EMPTY);
          File iFile = new File("wince.inf",File.READ_ONLY);
          iFile.copyTo(oFile);
          oFile.close();
@@ -241,11 +242,11 @@ public class Deployer4WinCE
             {
                // tc is always included
                // include non-binary files
-               vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
-               vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
-               vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
-               vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
-               lbFolder = DeploySettings.folderTotalCross3DistVM+"wince";
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"TCBase.tcz"));
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"TCUI.tcz"));
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,DeploySettings.fontTCZ));
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"LitebaseLib.tcz"));
+               lbFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"wince");
                // copy binary files
                String name = "/tcvm.dll";
                try
@@ -255,21 +256,21 @@ public class Deployer4WinCE
                catch (Exception e)
                {
                }
-               File.copy(tcFolder + name, targetDir + name);
+               File.copy(Convert.appendPath(tcFolder, name), Convert.appendPath(targetDir, name));
                if (lbFolder != null)
                {
                   name = "/Litebase.dll";
-                  File.copy(lbFolder + name, targetDir + name);
+                  File.copy(Convert.appendPath(lbFolder, name), Convert.appendPath(targetDir, name));
                }
             }
          }         
 
          cabName = DeploySettings.filePrefix.trim().replace(' ','_');
-         if (cabName.length() > 8) cabName = cabName.substring(0,8); // guich@421_75
+         if (cabName.length() > 20) cabName = cabName.substring(0,20); // guich@421_75
          deleteCabs();
 
          infFileName = cabName+".inf";
-         File infFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
+         File infFile = new File(Convert.appendPath(targetDir,infFileName),File.CREATE_EMPTY);
          String installDir = "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
          String inf =
             "[Version]\n" +
@@ -359,22 +360,22 @@ public class Deployer4WinCE
       String path2Cabwiz, out;
 
       // create the cab
-      path2Cabwiz = Utils.findPath(DeploySettings.etcDir+"tools/makecab/Cabwiz.exe",false);
+      path2Cabwiz = Utils.findPath(Convert.appendPath(DeploySettings.etcDir,"tools/makecab/Cabwiz.exe"),false);
       if (path2Cabwiz == null)
          throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
       // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
-      try {new File(targetDir+cabName+".CAB").delete();} catch (Exception e) {}
+      try {new File(Convert.appendPath(targetDir,cabName+".CAB")).delete();} catch (Exception e) {}
       String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName};
       out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 
       // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
       for (int i =0; i < 100; i++)
       {
-         if (new File(targetDir+cabName+".CAB").exists())
+         if (new File(Convert.appendPath(targetDir,cabName+".CAB")).exists())
             break;
          Vm.sleep(100);
       }
-      if (!new File(targetDir+cabName+".CAB").exists())
+      if (!new File(Convert.appendPath(targetDir,cabName+".CAB")).exists())
       {
          System.err.println("\n\nFailed calling execCabWiz for WM5!\n\nExecution output:\n\n"+out);
       }
@@ -388,7 +389,7 @@ public class Deployer4WinCE
      String bat, ini;
       
       // the cab files were created, now we need to create the bat file to start the instalation
-      batFile = new File(targetDir+DeploySettings.filePrefix+"_Install.bat",File.CREATE_EMPTY);
+      batFile = new File(Convert.appendPath(targetDir,DeploySettings.filePrefix+"_Install.bat"),File.CREATE_EMPTY);
       bat =
          "@echo off\r\n" +
          "\r\n" +
@@ -416,7 +417,7 @@ public class Deployer4WinCE
       new DataStream(batFile).writeBytes(bat.getBytes());
       batFile.close();
       // and now create the .ini file for installation
-      iniFile = new File(targetDir+DeploySettings.filePrefix+"_Install.ini", File.CREATE_EMPTY);
+      iniFile = new File(Convert.appendPath(targetDir,DeploySettings.filePrefix+"_Install.ini"), File.CREATE_EMPTY);
       ini =
          "[CEAppManager]\r\n" +
          "Version        = 1.0\r\n" +
@@ -432,7 +433,7 @@ public class Deployer4WinCE
          for (int i = 0; i < DeploySettings.tczs.length; i++)
             try 
             {
-               new File(targetDir+Utils.getFileName(DeploySettings.tczs[i])).delete();
+               new File(Convert.appendPath(targetDir,Utils.getFileName(DeploySettings.tczs[i]))).delete();
             } catch (FileNotFoundException e) {}
       // everything done!
       System.out.println("... Files written to folder "+targetDir);
