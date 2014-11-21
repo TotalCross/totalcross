@@ -323,7 +323,7 @@ namespace PhoneDirect3DXamlAppInterop
          }
          catch (Exception)
          {
-            nativeStopGPSCS();
+            try { nativeStopGPSCS(); } catch (Exception) { }
             return false;
          }
       }
@@ -375,9 +375,12 @@ namespace PhoneDirect3DXamlAppInterop
 
       public void nativeStopGPSCS() // GPS
       {
-         geolocator.PositionChanged -= geolocator_PositionChanged;
-         geolocator.StatusChanged -= geolocator_StatusChanged;
-         geolocator = null;
+         if (geolocator != null)
+         {
+            geolocator.PositionChanged -= geolocator_PositionChanged;
+            geolocator.StatusChanged -= geolocator_StatusChanged;
+            geolocator = null;
+         }
       }
 
       public double getLatitude()   {return latitude;}

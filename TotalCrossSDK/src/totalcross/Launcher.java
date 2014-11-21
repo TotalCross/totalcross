@@ -1770,7 +1770,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          if (!useRealFont && suffix.endsWith("u0")) // test if there's another 8bpp native font.
          {
             boolean bold = suffix.charAt(1) == 'b';
-            int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
+            int size = Integer.parseInt(suffix.substring(2,suffix.indexOf('u')));
             totalcross.ui.font.Font base = getBaseFont(fontName, bold, size);
             if (base != null)
                return new UserFont(fontName, suffix, size, base);

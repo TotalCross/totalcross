@@ -205,7 +205,6 @@ target: buildSkeleton - Build the folders
 </target>
 
 <target name="buildSamples_sdk" >
-	<copy todir="${source.sdk.path}/dist/vm" file="${source.lb.path}/dist/lib/LitebaseLib.tcz" />
 	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
 	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>
@@ -615,43 +614,12 @@ target: buildWinCE
         <exec executable="${msvc.path}" failonerror="yes">
             <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
         </exec>
-        <antcall target="buildWinCECabsSingle">
-            <param name="path.param" value="${target.sdk.path}" />
-        </antcall>
-    </target>
-
-    <target name="buildWinCECabsSingle">
-      <exec dir="${source.sdk.path}/etc/tools/makecab"
-            executable="${source.sdk.path}/etc/tools/makecab/Cabwiz.exe"
-            failonerror="no">
-      	<arg line="totalcross.inf /cpu PocketPC_ARM" />
-      </exec>
-
-      <!-- copy the cab files -->
-      <move todir="${path.param}/dist/vm/wince">
-        <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.cab" casesensitive="no" />
-      </move>
-
-      <!-- copy bat and ini files -->
-      <copy todir="${path.param}/dist/vm/wince" overwrite="yes">
-        <fileset dir="${source.sdk.path}/etc/tools/makecab"
-                 includes="CEinstall.ini,_CEinstall-RunMe.bat,CEinstall_WMOBILE.ini,_CEinstall-RunMe_WMOBILE.bat,ceinstall*.*"
-                 casesensitive="no" />
-      </copy>
-
-      <exec dir="${source.sdk.path}/etc/tools/makecab"
-            executable="${source.sdk.path}/etc/tools/makecab/Cabwizsp.exe"
-            failonerror="no">
-      	<arg line="totalcross.inf /cpu PocketPC_ARM" />
-      </exec>
-
-      <!-- copy the cab files -->
-      <move file="${source.sdk.path}/etc/tools/makecab/totalcross.PocketPC_ARM.CAB"
-            tofile="${path.param}/dist/vm/wince/totalcross.WMobile_ARM.CAB" />
-
-      <delete>
-        <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.dat" casesensitive="no" />
-      </delete>
+        <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+          <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+        </copy>
+        <delete failonerror="no">
+            <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+        </delete>
     </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -690,5 +658,6 @@ target: build targets
 <target name="buildAndroid_vms_noras" />
 <target name="buildWinCE_vms" />
 <target name="buildWinCE_vms_noras" />
-
+<target name="buildWinCECabsSingle" />
+    
 </project>
