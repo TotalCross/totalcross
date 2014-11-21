@@ -17,15 +17,8 @@ InstallDir = "\TotalCross"
 
 ;==================================================
 
-[CEDevice.PocketPC_ARM]
-;ProcessorType   = 2577
-VersionMin = 3.0
-VersionMax = 6.99
-UnsupportedPlatforms = "HPC","Jupiter"
-BuildMax=0xE000000
-
-[CEDevice.WMOBILE_ARM]
-;ProcessorType   = 2577
+[CEDevice]
+ProcessorType   = 2577
 VersionMin = 3.0
 VersionMax = 6.99
 UnsupportedPlatforms = "HPC","Jupiter"
