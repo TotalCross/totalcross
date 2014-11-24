@@ -985,7 +985,7 @@ public class HttpStream extends Stream
       switch (type)
       {
          case -1:
-            headers.put(new String(buffer,start1,end1-start1), new String(buffer,start, end-start));
+            headers.put(new String(cc.bytes2chars(buffer,start1,end1-start1)), new String(cc.bytes2chars(buffer,start, end-start)));
             break;
          case 0:
             contentType = getContentType(start, end-start);

@@ -125,6 +125,11 @@ public class SQLiteUtil
 
    public String[][] getStrings(ResultSet rs, Vector v) throws SQLException
    {
+      return getStrings(rs, v, null);
+   }
+   
+   public String[][] getStrings(ResultSet rs, Vector v, int[] decimalPlaces) throws SQLException
+   {
       int cols = getColCount(rs);
       int[] types = new int[cols];
       ResultSetMetaData md = rs.getMetaData();
@@ -138,6 +143,7 @@ public class SQLiteUtil
             {
                case Types.DATE: linha[i] = rs.getDate(i+1).toString(); break;
                case Types.TIME: linha[i] = rs.getTime(i+1).toString(); break;
+               case Types.DOUBLE: linha[i] = Convert.toString(rs.getDouble(i+1), decimalPlaces == null ? -1 : decimalPlaces[i]); break;
                default: linha[i] = rs.getString(i+1);
             }
          v.addElement(linha);

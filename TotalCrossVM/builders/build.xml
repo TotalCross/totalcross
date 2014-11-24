@@ -614,9 +614,12 @@ target: buildWinCE
         <exec executable="${msvc.path}" failonerror="yes">
             <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
         </exec>
-        <antcall target="buildWinCECabsSingle">
-            <param name="path.param" value="${target.sdk.path}" />
-        </antcall>
+        <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+          <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+        </copy>
+        <delete failonerror="no">
+            <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+        </delete>
     </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
