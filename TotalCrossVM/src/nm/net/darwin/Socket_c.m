@@ -43,7 +43,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
    addresses = CFHostGetAddressing(host, &success);
    if (!success)
       return -5;
-   [(id)addresses autorelease];
+   //[(id)addresses autorelease]; - this causes SAV to abort the thread after synchronizing the photos
    
    if (addresses != NULL)
    {
@@ -54,7 +54,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
          if (addr != NULL)
          {
             memcpy(in_addr, addr, sizeof(struct sockaddr));
-            /* getnameinfo coverts an IPv4 or IPv6 address into a text string. */
+            /* getnameinfo converts an IPv4 or IPv6 address into a text string. */
             err = getnameinfo(addr, addr->sa_len, ipAddress, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST);
             if (err != 0) 
                debug("getnameinfo returned %d\n", err);
