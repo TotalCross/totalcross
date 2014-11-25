@@ -398,7 +398,7 @@ public class ComboBox extends Container
       boolean inside;
       if (opened && event.type != ControlEvent.WINDOW_CLOSED)
          return;
-      if (enabled)
+      if (isEnabled())
       switch (event.type)
       {
          case PenEvent.PEN_DRAG:
@@ -570,12 +570,13 @@ public class ComboBox extends Container
          }
          pop.lb.setBackForeColors(backColor, foreColor);
       }
-      if (!uiAndroid) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
    /** paint the combo's border and the current selected item */
    public void onPaint(Graphics g)
    {
+      boolean enabled = isEnabled();
       // guich@200b4_126: repaint the background.
       if (!transparentBackground) // guich@tc115_18
          if (!uiAndroid && uiVista && enabled) // guich@573_6
@@ -668,7 +669,7 @@ public class ComboBox extends Container
 
    public void getFocusableControls(Vector v) // kmeehl@tc100
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100

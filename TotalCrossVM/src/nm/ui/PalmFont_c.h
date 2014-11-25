@@ -217,6 +217,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    CharSizeCache csc;
    VoidPs *csclist, *csclist0;
 
+   LOCKVAR(fonts);
    IF_HEAP_ERROR(fontsHeap)
    {
       goto Cleanup;
@@ -229,7 +230,10 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
    {
       CharSizeCache csc = (CharSizeCache)csclist->value;
       if (csc->ch == ch && csc->size == newHeight)
+      {
+         UNLOCKVAR(fonts);
          return csc->alpha;
+      }
       csclist = csclist->next;
    } while (csclist != csclist0);
 
@@ -423,6 +427,7 @@ uint8* getResizedCharPixels(Context currentContext, UserFont uf, JChar ch, int32
 
 Cleanup: /* CLEANUP */
    if (!fSuccess) throwException(currentContext, OutOfMemoryError, "Cannot create font buffers");
+   UNLOCKVAR(fonts);
    return fSuccess ? ob0 : null;
 }
 
@@ -540,19 +545,20 @@ static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int3
 UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size, JChar c)
 {
    char fullname[100];
-   UserFont uf;
+   UserFont uf=null;
    UserFont ubase;
    uint32 bitmapTableSize, bitIndexTableSize, numberOfChars, uIndex, hash;
    int32 nlen, vsize, i;
    TCZFile uftcz;
    char faceType;
 
+   LOCKVAR(fonts);
    IF_HEAP_ERROR(fontsHeap)
    {
-      //heapDestroy(fontsHeap); - guich@tc114_63 - not a good idea; just return null
-      return null;
+      goto end;
    }
-
+   
+tryAgain:
    nlen = 0;
    vsize = (size == -1) ? normalFontSize : max32(size, minFontSize); // guich@tc122_15: don't check for the maximum font size here
 
@@ -564,7 +570,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    hash = hashCode(fullname);
    uf = htGetPtr(&htUF, hash);
    if (uf != null)
-      return uf;
+      goto end;
 
    // in opengl, if using the default system font, create an alias of the default font size that will be resized in realtime
    if (!useRealFont && c <= 255 && (ubase = getBaseFont(currentContext, ff, bold, size)) != null)
@@ -582,7 +588,7 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
       uf->fontP.spaceWidth = ubase->fontP.spaceWidth * size / ubaseH;
       // uf->rowWidthInBytes  = 0; - dont change this field since it will use the base texture
       htPutPtr(&htUF, hash, uf);
-      return uf;
+      goto end;
    }
 
    // first, try to load it
@@ -637,7 +643,12 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    }
 
    if (uftcz == null) // probably the index was outside the available ranges at this font
-      return c == ' ' ? null : loadUserFont(currentContext, ff, bold, size, ' '); // guich@tc110_28: if space, just return null
+   {
+      if (c == ' ') // guich@tc110_28: if space, just return null
+         goto end;
+      c = ' ';
+      goto tryAgain; // otherwise, try again with the default range
+   }
 
    uf = newXH(UserFont, fontsHeap);
    uftcz->tempHeap = fontsHeap; // guich@tc114_63: use the fontsHeap
@@ -658,6 +669,8 @@ UserFont loadUserFont(Context currentContext, FontFile ff, bool bold, int32 size
    tczClose(uftcz);
    if (!useRealFont)
       htPutPtr(&htUF, hash, uf);
+end:
+   UNLOCKVAR(fonts);
    return uf;
 }
 

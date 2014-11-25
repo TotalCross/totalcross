@@ -443,7 +443,7 @@ public class Button extends Control
    public void onEvent(Event event)
    {
       PenEvent pe;
-      if (enabled)
+      if (isEnabled())
       switch (event.type)
       {
          case TimerEvent.TRIGGERED:
@@ -648,6 +648,7 @@ public class Button extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      boolean enabled = isEnabled();
       npback = null;
       if (!enabled && autoRepeatTimer != null)
          disableAutoRepeat();
@@ -671,6 +672,7 @@ public class Button extends Control
    /** Paint button's background. */
    protected void paintBackground(Graphics g)
    {
+      boolean enabled = isEnabled();
       if (!transparentBackground)
       {
          if (border == BORDER_GRAY_IMAGE)
@@ -724,7 +726,7 @@ public class Button extends Control
    /** Paint button's text. */
    protected void paintText(Graphics g, int tx, int ty)
    {
-      int shade = !enabled ? -1 : textShadowColor != -1 ? textShadowColor : hightlightColor;
+      int shade = !isEnabled() ? -1 : textShadowColor != -1 ? textShadowColor : hightlightColor;
       if (underlinedText) g.backColor = foreColor;
       for (int i = 0; i < lines.length; i++, ty += fmH)
       {
@@ -737,6 +739,7 @@ public class Button extends Control
 
    protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
    {
+      boolean enabled = isEnabled();
       if (bkg) // only in uiAndroid
          try
          {

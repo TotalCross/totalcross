@@ -152,7 +152,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
          g.backColor = UIColors.positionbarBackgroundColor; 
          g.fillRect(0,0,width,height);
       }
-      if (enabled || !autoHide)
+      if (isEnabled() || !autoHide)
       {
          g.backColor = barColor;
          if (uiAndroid)

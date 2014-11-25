@@ -298,6 +298,7 @@ DECLARE_MUTEX(omm);
 DECLARE_MUTEX(screen);
 DECLARE_MUTEX(opengl);
 DECLARE_MUTEX(alloc);
+DECLARE_MUTEX(fonts);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -316,6 +317,7 @@ bool initGlobals()
    INIT_MUTEX(screen);
    INIT_MUTEX(htSSL); 
    INIT_MUTEX(createdHeaps);
+   INIT_MUTEX(fonts);
 #if defined (WIN32) || defined (WINCE)
    initWinsock();
 #endif
@@ -335,6 +337,7 @@ void destroyGlobals()
    DESTROY_MUTEX(htSSL);
    DESTROY_MUTEX(createdHeaps);
    DESTROY_MUTEX(alloc);
+   DESTROY_MUTEX(fonts);
 #if defined (WIN32) || defined (WINCE)
    closeWinsock();
 #endif

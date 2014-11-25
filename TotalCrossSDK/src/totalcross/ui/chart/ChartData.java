@@ -223,7 +223,7 @@ public class ChartData extends Container
       switch (e.type)
       {
          case PenEvent.PEN_UP:
-            if (enabled && !hadParentScrolled())
+            if (isEnabled() && !hadParentScrolled())
             {
                selectedRow = selectedCol = -1;
                PenEvent pe = (PenEvent) e;

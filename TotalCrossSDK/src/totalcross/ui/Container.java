@@ -534,15 +534,11 @@ public class Container extends Control
    /** Sets if this container and all childrens can or not accept events */
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled, false))
       {
-         this.enabled = enabled;
-         onColorsChanged(false);
          for (Control child = children; child != null; child = child.next)
             child.setEnabled(enabled);
-         esce.update(this);
-         postEvent(esce);
-         Window.needsPaint = true; // now the controls have different l&f for disabled states
+         post();
       }
    }
 
@@ -619,7 +615,7 @@ public class Container extends Control
    protected void onColorsChanged(boolean colorsChanged)
    {
       if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP && borderStyle != BORDER_ROUNDED)
-         Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+         Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
    /** Draws the border (if any). If you override this method, be sure to call
@@ -753,7 +749,7 @@ public class Container extends Control
     */
    public void getFocusableControls(Vector v) //kmeehl@tc100
    {
-      if (!visible || !enabled)
+      if (!visible || !isEnabled())
          return;
       Control child = children;
       for (int i = 0; i < numChildren; i++, child = child.next)
@@ -1015,7 +1011,7 @@ public class Container extends Control
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.enabled && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
+            if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
             {
                c.requestFocus();
                if (Settings.virtualKeyboard)
@@ -1049,7 +1045,7 @@ public class Container extends Control
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.enabled && c.visible)
+            if (c != this && c.isEnabled() && c.visible)
             {
                c.requestFocus();
                return c;

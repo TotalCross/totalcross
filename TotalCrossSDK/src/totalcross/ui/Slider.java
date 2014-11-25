@@ -142,19 +142,19 @@ public class Slider extends ScrollBar
             if (verticalBar)
             {
                g.fillVistaRect(p, 0, s, height, bc,drawFilledArea, true); // shaded = filled
-               g.backColor = enabled ? fourColors[1] : bc;
+               g.backColor = isEnabled() ? fourColors[1] : bc;
                if (drawFilledArea) g.fillRect(p+1, dragBarPos, s-2, height-dragBarPos);
                g.translate(0,dragBarPos);
             }
             else
             {
                g.fillVistaRect(0,p, width, s, bc,false, false); // shaded = filled
-               g.backColor = enabled ? fourColors[1] : bc;
+               g.backColor = isEnabled() ? fourColors[1] : bc;
                if (drawFilledArea) g.fillRect(dragBarPos,p+1, width-1-dragBarPos, s-2); // solid = remains
                g.translate(dragBarPos,0);
             }
-            g.backColor = enabled ? sliderColor != -1 ? sliderColor: fourColors[0] : bc;
-            g.foreColor = enabled ? fourColors[1] : getForeColor();
+            g.backColor = isEnabled() ? sliderColor != -1 ? sliderColor: fourColors[0] : bc;
+            g.foreColor = isEnabled() ? fourColors[1] : getForeColor();
             g.fillPolygon(barX, barY, 5);
             g.drawPolygon(barX, barY, 5);
             break;
@@ -165,19 +165,19 @@ public class Slider extends ScrollBar
             if (verticalBar)
             {
                g.draw3dRect(p,0,s,height, Graphics.R3D_RAISED, false, false, fourColors);
-               g.backColor = enabled ? fourColors[0] : bc;
+               g.backColor = isEnabled() ? fourColors[0] : bc;
                if (dragBarPos > 0 && drawFilledArea) g.fillRect(p+k,k, s-k-k, drawFilledArea ? dragBarPos : size);
                g.translate(0,dragBarPos);
             }
             else
             {
                g.draw3dRect(0,p,width, s, Graphics.R3D_RAISED, false, false, fourColors);
-               g.backColor = enabled ? fourColors[0] : bc;
+               g.backColor = isEnabled() ? fourColors[0] : bc;
                if (dragBarPos > 0 && drawFilledArea) g.fillRect(k,p+k, drawFilledArea ? dragBarPos : size, s-k-k);
                g.translate(dragBarPos,0);
             }
-            g.backColor = enabled ? fourColors[0] : bc;
-            g.foreColor = enabled ? fourColors[1] : getForeColor();
+            g.backColor = isEnabled() ? fourColors[0] : bc;
+            g.foreColor = isEnabled() ? fourColors[1] : getForeColor();
             g.fillPolygon(barX, barY, 5);
             g.drawPolygon(barX, barY, 5);
             break;

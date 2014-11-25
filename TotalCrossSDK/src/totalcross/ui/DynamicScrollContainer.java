@@ -98,7 +98,7 @@ public class DynamicScrollContainer extends ScrollContainer
 				bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
 			}
 		}
-		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnDec && sbV.btnDec.enabled == false)
+		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnDec && sbV.btnDec.isEnabled() == false)
 		{
 			/*
 			 * fixes issue where if you drag scroll handle all the way to the top the bag is never resized to start from the top
@@ -109,7 +109,7 @@ public class DynamicScrollContainer extends ScrollContainer
 			bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
 			updateVisibleViews(SCROLL_UNKNOWN);
 		}
-		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnInc && sbV.btnInc.enabled == false)
+		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnInc && sbV.btnInc.isEnabled() == false)
 		{
 			/*
 			 * fixes issue where if you drag scroll handle all the way to the bottom, we never get the bag resized to the 
