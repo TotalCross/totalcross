@@ -478,7 +478,7 @@ target: javadoc
     <arg line="-windowtitle 'TotalCross SDK ${versionStr}'"/>
     <arg line="-d ${docs}/html"/>
     <arg line="-doctitle 'Please read the changelogs &lt;a href=changelogs.html _target=blank &gt;here&lt;/a&gt;.'"/>
-    <arg line="-source 1.2"/>
+    <arg line="-source 1.7"/>
     <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>
 
