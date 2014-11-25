@@ -242,7 +242,7 @@ public class SpinList extends Control
    {
       g.backColor = backColor; // guich@341_3
       g.fillRect(0,0,width,height);
-      int fore = enabled ? foreColor : Color.getCursorColor(foreColor);
+      int fore = isEnabled() ? foreColor : Color.getCursorColor(foreColor);
       g.foreColor = fore;
       int yoff = (height - fmH) / 2 + 1;
       int wArrow = getArrowHeight();

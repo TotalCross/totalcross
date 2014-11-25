@@ -608,8 +608,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       {
          boolean canGoLeft = activeIndex > 0;
          boolean canGoRight = activeIndex < count-1;
-         btnLeft.setEnabled(enabled && canGoLeft);
-         btnRight.setEnabled(enabled && canGoRight);
+         btnLeft.setEnabled(isEnabled() && canGoLeft);
+         btnRight.setEnabled(isEnabled() && canGoRight);
       }
    }
 
@@ -742,8 +742,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       }
       if (colorsChanged)
          brightBack = Color.getAlpha(foreColor) > 128;
-      fColor = (enabled || !brightBack) ? getForeColor()    : Color.darker(foreColor);
-      cColor = (enabled || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
+      fColor = (isEnabled() || !brightBack) ? getForeColor()    : Color.darker(foreColor);
+      cColor = (isEnabled() || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
       if (colorsChanged && btnLeft != null)
       {
          btnRight.arrowColor = btnLeft.arrowColor = arrowsColor;
@@ -814,7 +814,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (uiFlat) // the flat style has rect borders instead of hatched ones.
                g.fillRect(r.x,r.y,r.width,r.height);
             else
-            if (uiVista && enabled)
+            if (uiVista && isEnabled())
                g.fillVistaRect(r.x+1,r.y+1,r.width-2,r.height-2, back, atTop,false);
             else
                g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
@@ -917,7 +917,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    /** Gets the text color of the captions. return a grayed value if this control is not enabled. */
    public int getCaptionColor()
    {
-      return enabled?captionColor:Color.brighter(captionColor);
+      return isEnabled()?captionColor:Color.brighter(captionColor);
    }
    /** Returns the area excluding the tabs and borders for this TabbedContainer.
      * Note: do not change the returning rect object ! */
@@ -1131,7 +1131,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
       super.getFocusableControls(v);
    }
 
