@@ -52,11 +52,6 @@ static Err socketClose(SOCKET* socketHandle);
  *
  *************************************/
 
-#if defined(darwin) // fdie@iphone_DNS_issue fix, see http://www.saurik.com/id/3
-#include <mach-o/nlist.h>
-#include <stdbool.h>
-#endif
-
 #if defined(darwin)
 #ifdef __cplusplus
 extern "C" {
@@ -80,19 +75,6 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    fd_set fdWriteSet;
    struct timeval timeout_val;
    socklen_t lon;
-
-#if defined(darwin) // fdie@iphone_DNS_issue
-   static bool fix_installed = false;
-   if (!fix_installed)
-   {
-      struct nlist nl[2];
-      memset(nl, 0, sizeof(nl));
-      nl[0].n_un.n_name = (char *) "_useMDNSResponder";
-      nlist("/usr/lib/libc.dylib", nl);
-      if (nl[0].n_type != N_UNDF) * (bool *) nl[0].n_value = false;
-      fix_installed = true;
-   }
-#endif
 
    // Create socket
    if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
