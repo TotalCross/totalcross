@@ -106,7 +106,7 @@ public class DBListBox extends ListBox
       {
          sitems = (String[][])items;
          itemCount = sitems.length;
-         sbar.setEnabled(enabled && visibleItems < itemCount);
+         sbar.setEnabled(isEnabled() && visibleItems < itemCount);
          sbar.setMaximum(itemCount); // guich@210_12: forgot this line!
       }
    }

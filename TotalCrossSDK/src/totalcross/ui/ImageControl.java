@@ -247,7 +247,7 @@ public class ImageControl extends Control
 
    private void paint(Graphics g, boolean drawBack)
    {
-      g.backColor = enabled ? backColor : Color.interpolate(backColor,parent.backColor);
+      g.backColor = isEnabled() ? backColor : Color.interpolate(backColor,parent.backColor);
       if (!transparentBackground) // guich@tc115_41
          g.fillRect(0,0,width,height);
       if (img != null) // images found?
