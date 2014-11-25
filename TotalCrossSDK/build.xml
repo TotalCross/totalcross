@@ -225,8 +225,9 @@ target: compile
     <fileset dir="${output}/desktopsrc" includes="**/*.java" excludes="tc/**/*" />
   </removemethod>
     
-  <!-- copy the totalcross.lang classes. They are needed by the converter. -->
+  <!-- copy the totalcross.lang and util classes. They are needed by the converter. -->
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true" >
+     <fileset dir="${src}" includes="totalcross/util/*4D.java" />
      <fileset dir="${src}" includes="totalcross/lang/**" excludes="**/*4B.*" />
   </copy>
   <replaceregexp file="${output}/desktopsrc/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
