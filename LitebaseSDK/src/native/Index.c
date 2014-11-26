@@ -402,25 +402,24 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
          keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
          children = curr->children;
                   
+         // juliana@284_2: solved a possible insertion of a duplicate value in a PK.
          if (pos < (size = curr->size) && keyEquals(context, key, keyFound, numberColumns, plainDB)) 
          {
             if (!markBits)
-            {
                if (keyFound->record != NO_VALUE)
                {
                   TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), 
                                                    index->table->name);
                   return false;
                }
-               break;
-            }
             do
                pos--;
             while (pos >= 0 && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB));  
             while (++pos < size && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB))
             {
-               if (onKey(context, &currKeys[pos], markBits) == -1)
-                  return false;
+               if (markBits)
+                  if (onKey(context, &currKeys[pos], markBits) == -1)
+                     return false;
                if (!nodeIsLeaf(curr))
                   vector[count++] = children[pos]; 
             }
@@ -974,6 +973,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          if ((record = currKeys[i].record) != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, record)))
          {               
             xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
+            count = 0; // juliana@284_3: solved a possible wrong result in MAX() and MIN() if the column searched had an index.
             break;               
          }
    
@@ -1032,6 +1032,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          if ((record = currKeys[i].record) != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, record)))
          {               
             xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
+            count = 0; // juliana@284_3: solved a possible wrong result in MAX() and MIN() if the column searched had an index.
             break;               
          }
       

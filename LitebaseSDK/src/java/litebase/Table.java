@@ -1292,7 +1292,7 @@ class Table
          }
          else 
          {
-            int rows = plainDb.rowCount;
+            int rows = plainDb.rowCount; // juliana@284_1: Solved a possible application crash when recreating indices.
             SQLValue[][] vals = new SQLValue[rows][];
             int k = 0;
             boolean isNull;

@@ -355,21 +355,20 @@ class Index
             keyFound = (currKeys = curr.keys)[pos = curr.findIn(key, false)]; // juliana@201_3
             firstChild = (children = curr.children)[0];
             
+            // juliana@284_2: solved a possible insertion of a duplicate value in a PK.
             if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
                if (markBits == null) // Only checks primary key violation.
-               {
                   if (keyFound.record != Key.NO_VALUE)
                      throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
                                                           + table.name);
-                  break;
-               }
                do
                   pos--;
                while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0);                  
                while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
                {
-                  markBits.onKey(currKeys[pos]);
+                  if (markBits != null)
+                     markBits.onKey(currKeys[pos]);
                   if (firstChild != Node.LEAF)
                      vector[count++] = children[pos];
                }               
@@ -763,6 +762,7 @@ class Index
             if ((currKey = currKeys[i]).record != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(currKey.record)))
             {                  
                currKey.keys[0].cloneSQLValue(sqlValue);
+               count = 0; // juliana@284_3: solved a possible wrong result in MAX() and MIN() if the column searched had an index.
                break;                  
             }
          
@@ -818,6 +818,7 @@ class Index
             if ((currKey = currKeys[i]).record != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(currKey.record)))
             {                  
                currKey.keys[0].cloneSQLValue(sqlValue);
+               count = 0; // juliana@284_3: solved a possible wrong result in MAX() and MIN() if the column searched had an index.
                break;                  
             }
          
