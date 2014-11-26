@@ -1,14 +1,14 @@
-<h2>TotalCross 3.1 build </h2>
-. now in tc.Deploy the tcz is automatically splitted when it reaches the methods and fields limits. You can pass a huge jar file and tc.Deploy will split it automatically into some tczs.<br>
-. upgraded compiler and source level support to Java 1.7, including enum, switch with String, for each, and generics.<br>
-. added support for the following classes in TotalCross: AbstractCollection,AbstractList,AbstractMap,AbstractQueue,AbstractSequentialList,AbstractSet,ArrayList,Arrays,BitSet,Collection,Collections,Comparator,ConcurrentModificationException,Deque,Dictionary,Enum,Enumeration,HashMap,HashSet,IdentityHashMap,InvalidDateException,Iterator,LinkedHashMap,LinkedHashSet,LinkedList,List,ListIterator,Map,NavigableMap,NavigableSet,NoSuchElementException,PriorityQueue,Properties,Queue,RandomAccess,Set,SortedMap,SortedSet,TreeMap,TreeSet.<br>
-. Note that Vector and Hashtable does not support generics; use ArrayList and HashMap instead.<br>
-. added many more methods from String and StringBuffer. Didnt add methods that uses CharSequence. Also, methods that use Regex will be fixed later.<br>
-. added clone support (except for arrays).<br>
-. added json support<br>
-. added back Windows CE/Mobile support (only ARM processors).<br>
-. fixed many crashes when using sockets, sqlite and zlib on concurrent threads. fixed some java memory leaks<br>
-. added some new traces to Vm.tweak to help finding memory leaks and also to print methods being called; see comments below.<br>
+<h2>TotalCross 3.1 build 2444</h2>
+* now in tc.Deploy the tcz is automatically splitted when it reaches the methods and fields limits. You can pass a huge jar file and tc.Deploy will split it automatically into some tczs.<br>
+* upgraded compiler and source level support to Java 1.7, including enum, switch with String, for each, and generics.<br>
+* added support for the following classes in TotalCross: AbstractCollection,AbstractList,AbstractMap,AbstractQueue,AbstractSequentialList,AbstractSet,ArrayList,Arrays,BitSet,Collection,Collections,Comparator,ConcurrentModificationException,Deque,Dictionary,Enum,Enumeration,HashMap,HashSet,IdentityHashMap,InvalidDateException,Iterator,LinkedHashMap,LinkedHashSet,LinkedList,List,ListIterator,Map,NavigableMap,NavigableSet,NoSuchElementException,PriorityQueue,Properties,Queue,RandomAccess,Set,SortedMap,SortedSet,TreeMap,TreeSet.<br>
+* Note that Vector and Hashtable does not support generics; use ArrayList and HashMap instead.<br>
+* added many more methods from String and StringBuffer. Didnt add methods that uses CharSequence. Also, methods that use Regex will be fixed later.<br>
+* added clone support (except for arrays).<br>
+* added json support<br>
+* added back Windows CE/Mobile support (only ARM processors).<br>
+* fixed many crashes when using sockets, sqlite and zlib on concurrent threads. fixed some java memory leaks<br>
+* added some new traces to Vm.tweak to help finding memory leaks and also to print methods being called; see comments below.<br>
 
 . Avoid using the awt toolkit when running on headless environment (without graphical interface).<br>
 . fixed dirty values being returned when running into a native method. this was resulting in NoSuchMethodError being thrown when referencing "xxx.class"<br>
@@ -83,6 +83,23 @@
 . fixed npe; geolocator may be null at gpsclose.<br>
 . fixed SQLiteUtil not correctly returning the date or datetime values on getStrings. SQLite has a problem (not sure if its a bug) where it returns DATE for both DATE and DATETIME types, so this method returns the correct correspondence: DATE for date and TIME for DATETIME (remember that in TotalCross, a Time object also contains the date).<br>
 . updated desktop's FontGenerator to use the new 8bpp antialiase and also the correct default sizes.<br>
+<h1>build 2446</h1>
+. preventing crash on fillStackTrace when address is not a multiple of 4<br>
+. fixed npe when there's no extras in tc.Deploy<br>
+. added a way to generate 4-bpp fonts in FontGenerator<br>
+. fixed support for unicode 8bpp unicode fonts on Java. Still have to fix on device<br>
+. fixed encoding not being used to retrieve data from HttpStream<br>
+. added SQLiteUtils.getString with an optional argument for the decimal places<br>
+. fixed a black screen that appears when MainWindow.exit is called and you try to run the program again<br>
+. fixed crash when multiple threads were trying to resize and load fonts<br>
+* now Control.enabled is private. Use isEnabled to query the value. Added keepDisabled to override the enabled state. This is useful if you want to keep a control disabled in a TabbedContainer while enabling/disabling the rest of the controls<br>
+. fixed /p not working for wince<br>
+. fixed crash in ios that causes SAV to abort the thread after synchronizing the photos<br>
+. fixed problem in tc.Deploy when the path comes with spaces<br>
+. keep all tczs at the same parent folder in the ipa<br>
+. now using target 1.7 to build the javadocs<br>
+. fixed NPE in SQLiteUtil when date or time is null<br>
+<h1>build 2450</h1>
 
 <h2>TotalCross 3.07 build 2372</h2>
 . fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>
