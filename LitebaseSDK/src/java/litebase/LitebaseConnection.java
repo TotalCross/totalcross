@@ -34,17 +34,17 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.7.3";
+   public static String versionStr = "2.7.4";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 273;
+   public static int version = 274;
 
    /** 
     * Current build number.
     */
-   public static int buildNumber = 1;
+   public static int buildNumber = 000;
    
    /**
     * The key which identifies one Litebase connection instance.
