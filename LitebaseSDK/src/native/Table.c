@@ -1845,7 +1845,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 	else
 	{
 		int32 k = 0,
-            rows = plainDB->rowCount - table->deletedRowsCount,
+            rows = plainDB->rowCount, // juliana@284_1: Solved a possible application crash when recreating indices.
             j = rows,
             columnCount = table->columnCount,
             indexCount = index->numberColumns,
