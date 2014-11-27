@@ -181,7 +181,7 @@ public final class Font
    {
       sb.setLength(0);
       String key = sb.append(name).append('$').append(boldStyle?'B':'P').append(size).toString();
-      Font f = (Font)htFonts.get(key);
+      Font f = baseChar == ' ' ? (Font)htFonts.get(key) : null;
       if (f == null)
          htFonts.put(key, f = new Font(name, boldStyle, size));
       return f;
@@ -225,7 +225,7 @@ public final class Font
    native void fontCreate4D();
    void fontCreate()
    {
-      hv_UserFont = Launcher.instance.getFont(this, ' ');
+      hv_UserFont = Launcher.instance.getFont(this, (char)baseChar);
    }
    
    /** Used internally. */
@@ -238,4 +238,6 @@ public final class Font
    public void removeFromCache4D()
    {
    }
+   /** For internal use only. */
+   public static int baseChar = ' ';
 }

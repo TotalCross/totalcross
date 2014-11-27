@@ -1096,7 +1096,7 @@ public class Grid extends Container implements Scrollable
             // draw the caption borders
             if (!uiAndroid)
             {
-               if (uiVista && enabled) // guich@573_6
+               if (uiVista && isEnabled()) // guich@573_6
                   g.fillVistaRect(kx, 0, w + 1, lineH,captionsBackColor,true,false);
                else
                   g.fillRect(kx, 0, w + 1, lineH);
@@ -1161,7 +1161,7 @@ public class Grid extends Container implements Scrollable
             {
                int hh = drawCheckBox ? rBox.height : lineH;
                if (npCheck == null)
-                  npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+                  npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled());
                g.drawImage(npCheck, xOffset + (drawCheckBox ? rBox.x : 1), y + (drawCheckBox ? rBox.y : 0));
             }
          }
@@ -1206,7 +1206,7 @@ public class Grid extends Container implements Scrollable
    protected void onColorsChanged(boolean colorsChanged)
    {
       npCheck = npCheckBack = null;
-      if (!uiAndroid) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
       if (colorsChanged) // guich@tc100
       {
          if (sbVert != null)   sbVert  .setBackForeColors(backColor, foreColor);
@@ -1334,7 +1334,7 @@ public class Grid extends Container implements Scrollable
                            g.fillRect(cx-1+borderGap,ty+borderGap,w-1-borderGap-borderGap,lineH-borderGap-borderGap);
                         }
                         if (cc != null && (cf = cc.getForeColor(currentRow,j)) != -1)
-                           g.foreColor = enabled ? cf : Color.interpolate(cf, g.backColor); // guich@tc139: shade color if not enabled
+                           g.foreColor = isEnabled() ? cf : Color.interpolate(cf, g.backColor); // guich@tc139: shade color if not enabled
                      }
                      if (columnImg != null)
                         g.drawImage(columnImg,tx, ty+(lineH-fmH)/2);
@@ -1486,8 +1486,8 @@ public class Grid extends Container implements Scrollable
       }
       else
       {
-         btnLeft.setEnabled(enabled && xOffset < 0);
-         btnRight.setEnabled(enabled && xOffset > maxOffset);
+         btnLeft.setEnabled(isEnabled() && xOffset < 0);
+         btnRight.setEnabled(isEnabled() && xOffset > maxOffset);
       }
    }
 
@@ -1835,7 +1835,7 @@ public class Grid extends Container implements Scrollable
    {
       if (e.target == bag) // guich@tc100: redirect events from our bag to ourselves
          e.target = this;
-      if (enabled)
+      if (isEnabled())
       switch (e.type)
       {
          case ControlEvent.FOCUS_IN:
@@ -2564,7 +2564,7 @@ public class Grid extends Container implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke)

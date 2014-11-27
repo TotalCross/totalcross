@@ -247,8 +247,8 @@ public class Deployer4WinCE
                vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,DeploySettings.fontTCZ));
                vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"LitebaseLib.tcz"));
                lbFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"wince");
+               tcFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"wince");
                // copy binary files
-               String name = "/tcvm.dll";
                try
                {
                   new File(targetDir).createDir();
@@ -256,6 +256,7 @@ public class Deployer4WinCE
                catch (Exception e)
                {
                }
+               String name = "/tcvm.dll";
                File.copy(Convert.appendPath(tcFolder, name), Convert.appendPath(targetDir, name));
                if (lbFolder != null)
                {

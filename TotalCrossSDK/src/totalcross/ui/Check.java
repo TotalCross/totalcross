@@ -92,7 +92,7 @@ public class Check extends Control
    /** Called by the system to pass events to the check control. */
    public void onEvent(Event event)
    {
-      if (event.target != this || !enabled) return;
+      if (event.target != this || !isEnabled()) return;
       switch (event.type)
       {
          case KeyEvent.ACTION_KEY_PRESS:
@@ -178,12 +178,13 @@ public class Check extends Control
    {
       cbColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       cfColor = getForeColor();
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
+      boolean enabled = isEnabled();
       int wh = lines.length == 1 ? height : fmH+Edit.prefH;
       int xx,yy;
 

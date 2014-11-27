@@ -253,7 +253,7 @@ public class ProgressBar extends Control
                g.backColor = bc;
                g.fillRect(0,0,width,height);
             }
-            if (uiVista && enabled) // guich@573_6
+            if (uiVista && isEnabled()) // guich@573_6
             {
                if (vertical)
                   g.fillVistaRect(0, height - s, width, s, fc, false, false);

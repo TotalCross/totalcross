@@ -167,7 +167,7 @@ public class ArrowButton extends Button
    public void onPaint(Graphics g)
    {
       super.onPaint(g);
-      g.drawArrow(xx,yy,kk,direction,!uiAndroid && armed,enabled ? arrowColor : Color.brighter(arrowColor,128)); // here is h regardless the case
+      g.drawArrow(xx,yy,kk,direction,!uiAndroid && armed,isEnabled() ? arrowColor : Color.brighter(arrowColor,128)); // here is h regardless the case
    }
    
    /**

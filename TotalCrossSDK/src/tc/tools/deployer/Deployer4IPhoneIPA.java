@@ -114,10 +114,11 @@ public class Deployer4IPhoneIPA
          pkgFolder.mkdir();
          for (int i = 0; i < extras.length; i++)
          {
-            File ff = new File(extras[i]);
+            String fname = extras[i];
+            File ff = new File(fname);
             if (!ff.exists())
-               ff = new File(Utils.findPath(extras[i],true));            
-            new TFile(ff.getPath()).cp(new TFile(pkgFolder, Utils.getFileName(extras[i])));
+               ff = new File(Utils.findPath(fname,true));            
+            new TFile(ff.getPath()).cp(new TFile(fname.endsWith(".tcz") ? appFolder : pkgFolder, Utils.getFileName(fname))); // guich@tc310: keep all tczs at the same parent folder
          }
       }
       

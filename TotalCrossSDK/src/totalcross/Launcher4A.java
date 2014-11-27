@@ -535,7 +535,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          if (eventThread != null) eventThread.running = false;
          loader.finish();
-         if (!loader.isSingleApk())
+         //if (!loader.isSingleApk())
             System.exit(3);
       }
       canQuit = true;
