@@ -62,6 +62,9 @@ public final class Font
     * upscaling, which usually results in a smooth font). */
    public static int MAX_FONT_SIZE = Settings.WIN32.equals(Settings.platform) ? 48 : 80;
 
+   /** For internal use only. */
+   public static int baseChar = ' ';
+
    /** Returns the default font size, based on the screen's size.
     */
    public static int getDefaultFontSize()
@@ -138,7 +141,6 @@ public final class Font
    public static int TAB_SIZE = 3;
 
    private static Hashtable htFonts = new Hashtable(13);
-   private static StringBuffer sb = new StringBuffer(30);
 
    private Font(String name, boolean boldStyle, int size) // guich@580_10
    {
@@ -179,8 +181,8 @@ public final class Font
     */
    public static Font getFont(String name, boolean boldStyle, int size) // guich@580_10
    {
-      sb.setLength(0);
-      String key = sb.append(name).append('$').append(boldStyle?'B':'P').append(size).toString();
+      char st = boldStyle ? 'B' : 'P';
+      String key = name+'$'+st+size;
       Font f = baseChar == ' ' ? (Font)htFonts.get(key) : null;
       if (f == null)
          htFonts.put(key, f = new Font(name, boldStyle, size));
@@ -231,13 +233,11 @@ public final class Font
    /** Used internally. */
    public void removeFromCache()
    {
-      sb.setLength(0);
-      String key = sb.append(name).append('$').append(style==1?'B':'P').append(size).toString();
+      char st = style==1 ? 'B' : 'P';
+      String key = name+'$'+st+size;
       htFonts.remove(key);
    }
    public void removeFromCache4D()
    {
    }
-   /** For internal use only. */
-   public static int baseChar = ' ';
 }

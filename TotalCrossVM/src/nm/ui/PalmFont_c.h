@@ -516,13 +516,13 @@ void resetFontTexture()
    #endif
 }
 
-static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int32 size)
+static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int32 size, int32 uIndex)
 {
    char keyStr[64];
    int32 key;
    UserFont f = null;
    
-   xstrprintf(keyStr, "%d|%d|%s",(int)bold, size, ff->name);
+   xstrprintf(keyStr, "%d|%d|%s|%d",(int)bold, size, ff->name, uIndex);
    key = hashCode(keyStr);
    
    f = htGetPtr(&htBaseFonts, key);
@@ -534,7 +534,7 @@ static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int3
             break;
    
       useRealFont = true;
-      f = loadUserFont(currentContext, ff, bold, realSizes[i], ' ');
+      f = loadUserFont(currentContext, ff, bold, realSizes[i], (JChar)uIndex);
       useRealFont = false;
       if (f != null) 
          htPutPtr(&htBaseFonts, key, f); 
@@ -573,7 +573,7 @@ tryAgain:
       goto end;
 
    // in opengl, if using the default system font, create an alias of the default font size that will be resized in realtime
-   if (!useRealFont && c <= 255 && (ubase = getBaseFont(currentContext, ff, bold, size)) != null)
+   if (!useRealFont && (ubase = getBaseFont(currentContext, ff, bold, size, uIndex)) != null)
    {
       int32 ubaseH = ubase->fontP.maxHeight;
       uf = newXH(UserFont, fontsHeap);
