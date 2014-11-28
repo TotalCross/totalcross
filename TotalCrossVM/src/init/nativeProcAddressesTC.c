@@ -252,6 +252,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_showKeyCodes_b"), &tsV_showKeyCodes_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_turnScreenOn_b"), &tsV_turnScreenOn_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tsV_vibrate_i"), &tsV_vibrate_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsV_identityHashCode_o"), &tsV_identityHashCode_o);
    htPutPtr(&htNativeProcAddresses, hashCode("tsR_getInt_iss"), &tsR_getInt_iss);
    htPutPtr(&htNativeProcAddresses, hashCode("tsR_getString_iss"), &tsR_getString_iss);
    htPutPtr(&htNativeProcAddresses, hashCode("tsR_getBlob_iss"), &tsR_getBlob_iss);
