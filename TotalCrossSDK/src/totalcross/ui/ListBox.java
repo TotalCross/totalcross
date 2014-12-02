@@ -1039,7 +1039,7 @@ public class ListBox extends Container implements Scrollable
    protected int getItemWidth(int index)
    {
       Object obj = items.items[index];
-      return fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
+      return obj == null ? 0 : fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
    }
 
    int getIndexY(int sel)
