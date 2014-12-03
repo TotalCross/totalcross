@@ -90,6 +90,12 @@ public final class Class4D
       return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
    }
    
+   public String getSimpleName()
+   {
+      String s = getName();
+      return s.substring(s.lastIndexOf('.')+1);
+   }
+   
    public native boolean isAssignableFrom(Class<?> cls);
    public native boolean isInterface();
    public native boolean isArray();
