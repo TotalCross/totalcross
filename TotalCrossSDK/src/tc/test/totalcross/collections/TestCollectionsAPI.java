@@ -16,7 +16,6 @@ import totalcross.unit.TestSuite;
 
 public class TestCollectionsAPI extends TestSuite
 {
-
    public TestCollectionsAPI()
    {
       super("Collections Test Suite");
@@ -58,15 +57,16 @@ public class TestCollectionsAPI extends TestSuite
       addTestCase(TestArrayList.class);
       addTestCase(TestBitSet.class);
       addTestCase(TestCollections.class);
+      addTestCase(TestEnumMap.class);
       addTestCase(TestHashMap.class);
       addTestCase(TestHashSet.class);
+      addTestCase(TestIdentityHashMap.class);
       addTestCase(TestLinkedHashMap.class);
       addTestCase(TestLinkedHashSet.class);
       addTestCase(TestLinkedList.class);
       addTestCase(TestPriorityQueue.class); 
       addTestCase(TestTreeSet.class); 
       addTestCase(TestTreeMap.class);
-      addTestCase(TestIdentityHashMap.class);
       
       addTestCase(TestGenerics.class);
    }
