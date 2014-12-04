@@ -89,7 +89,7 @@ public final class Class4D<T>
    {
       return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
    }
-   
+
    /**
     * Returns the enumeration constants of this class, or
     * null if this class is not an <code>Enum</code>.
@@ -120,6 +120,12 @@ public final class Class4D<T>
             RuntimeException("The values method threw an exception",
                              exception);
         }
+   }
+
+   public String getSimpleName()
+   {
+      String s = getName();
+      return s.substring(s.lastIndexOf('.')+1);
    }
    
    public native boolean isAssignableFrom(Class<?> cls);

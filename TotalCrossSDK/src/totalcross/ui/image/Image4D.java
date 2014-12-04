@@ -510,10 +510,12 @@ public class Image4D extends GfxSurface
    public Image4D getFrameInstance(int frame) throws ImageException
    {
       Image4D img = getCopy(width,height);
+      int old = currentFrame;
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;
       Vm.arrayCopy(from, 0, to, 0, from.length);
+      setCurrentFrame(old);
       return img;
    }
    
