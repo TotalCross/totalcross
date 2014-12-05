@@ -537,8 +537,9 @@ void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTre
       else
          column = (tree = right)->colIndex;
 
+      // juliana@285_1: solved a possible wrong result if the query had join and a filter with function in a column with an index.
       // Checks if the column is indexed.
-      if ((table = (field = fieldList[fieldIndex = getFieldIndex(tree)])->table)->columnIndexes[column] != null)
+      if ((table = (field = fieldList[fieldIndex = getFieldIndex(tree)])->table)->columnIndexes[column] && !field->isDataTypeFunction)
       {
          // Adds the index to the list of applied indexes.
          int32 n = booleanClause->appliedIndexesCount++;
