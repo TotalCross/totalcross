@@ -139,8 +139,11 @@ public class Spinner extends Control implements Runnable
       {
          if (gif != null)
          {
-            g.backColor = backColor;
-            g.fillRect(0,0,width,height);
+            if (!Settings.isOpenGL)
+            {
+               g.backColor = backColor;
+               g.fillRect(0,0,width,height);
+            }
             g.drawImage(gif, (width-gif.getWidth())/2,(height-gif.getHeight())/2);
          }
          else
