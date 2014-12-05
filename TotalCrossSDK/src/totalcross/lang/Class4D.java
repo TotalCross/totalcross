@@ -37,7 +37,7 @@ import java.lang.reflect.*;
  * available.
  */
 
-public final class Class4D
+public final class Class4D<T>
 {
    // place holders for the VM
    Object nativeStruct; // TClass
@@ -89,7 +89,39 @@ public final class Class4D
    {
       return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
    }
-   
+
+   /**
+    * Returns the enumeration constants of this class, or
+    * null if this class is not an <code>Enum</code>.
+    *
+    * @return an array of <code>Enum</code> constants
+    *         associated with this class, or null if this
+    *         class is not an <code>enum</code>.
+    * @since 1.5
+    */
+   public T[] getEnumConstants()
+   {
+      try
+        {
+          Method m = getMethod("values", new Class[0]);
+          return (T[]) m.invoke(null, new Object[0]);
+        }
+      catch (NoSuchMethodException exception)
+        {
+          throw new Error("Enum lacks values() method");
+        }
+      catch (IllegalAccessException exception)
+        {
+          throw new Error("Unable to access Enum class");
+        }
+      catch (InvocationTargetException exception)
+        {
+          throw new
+            RuntimeException("The values method threw an exception",
+                             exception);
+        }
+   }
+
    public String getSimpleName()
    {
       String s = getName();
