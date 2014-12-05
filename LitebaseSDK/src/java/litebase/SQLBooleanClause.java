@@ -613,9 +613,10 @@ class SQLBooleanClause
          }
          SQLResultSetField field = fieldList[fieldName2Index.get(tree.nameSqlFunctionHashCode != 0 ? 
                                                                                               tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
-
+         
+         // juliana@285_1: solved a possible wrong result if the query had join and a filter with function in a column with an index.
          // Checks if the column is indexed.
-         if (field.table.columnIndices[column] != null)
+         if (field.table.columnIndices[column] != null && field.isDataTypeFunction == false)
          {
             // Adds the index to the list of applied indexes.
             int n = appliedIndexesCount++;
