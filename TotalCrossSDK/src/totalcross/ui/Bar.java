@@ -505,4 +505,14 @@ public class Bar extends Container
       spinner = new Spinner();
       spinner.setForeColor(color);
    }
+
+   /** 
+    * Creates a spinner with the following GIF animation. The spinner will be placed at the right of the title (it only works if there's a title).
+    * 
+    * You can download additional animations from: <a href='http://preloaders.net/en'>here</a>. Select image type as GIF and transparent background as Yes.
+    */
+   public void createSpinner(Image gif)
+   {
+      spinner = new Spinner(gif);
+   }
 }
