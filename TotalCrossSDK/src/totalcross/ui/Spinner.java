@@ -206,7 +206,7 @@ public class Spinner extends Control implements Runnable
             gif.nextFrame();
          else
             slot0++;
-         repaintNow();
+         threadsafeUpdateScreen();
       }
    }
    

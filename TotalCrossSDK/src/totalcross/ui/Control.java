@@ -1941,4 +1941,23 @@ public class Control extends GfxSurface
       return x1 >= cx1 && x2 < cx2 && y1 >= cy1 && y2 < cy2; 
    }
 
+   /** Called by code that runs on threads to safely update the screen as soon as possible.
+    * @since TotalCross 3.1
+    */
+   protected void threadsafeUpdateScreen()
+   {
+      if (Settings.isOpenGL || MainWindow.isMainThread())
+         repaintNow();
+      else
+      {
+         Window.needsPaint = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               repaintNow();
+            }
+         });
+      }
+   }
 }
