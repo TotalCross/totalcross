@@ -48,7 +48,7 @@ public class Spinner extends Control implements Runnable
    private int slots, slot0, size, type;
    private boolean running;
    private Lock lock;
-   private Image gif,gif0;
+   private Image anim,anim0;
    
    public Spinner()
    {
@@ -64,10 +64,17 @@ public class Spinner extends Control implements Runnable
     * Select image type as GIF and transparent background as Yes.
     */
 
-   public Spinner(Image gif)
+   public Spinner(Image anim)
    {
       lock = new Lock();
-      this.gif0 = gif;
+      this.anim0 = anim;
+   }
+   
+   /** Changes the gif image of this Spinner */
+   public void setImage(Image anim)
+   {
+      this.anim0 = anim;
+      this.anim = null;
    }
 
    public void onBoundsChanged(boolean screenChanged)
@@ -75,16 +82,16 @@ public class Spinner extends Control implements Runnable
       size = width < height ? width : height;
       if ((size % 2) == 0) size--;
       
-      if (gif0 != null)
+      if (anim0 != null)
          try
          {
-            gif = gif0.smoothScaledFixedAspectRatio(size,true);
+            anim = anim0.smoothScaledFixedAspectRatio(size,true);
          }
          catch (ImageException e)
          {
-            gif = null;
+            anim = null;
          }
-      if (gif == null && (!screenChanged || coords == null))
+      if (anim == null && (!screenChanged || coords == null))
       {
          int xyc = size/2;
          // find the number of slots
@@ -124,7 +131,7 @@ public class Spinner extends Control implements Runnable
    
    public void onColorsChanged(boolean changed)
    {
-      if (gif == null && (changed || colors == null))
+      if (anim == null && (changed || colors == null))
       {
          if (colors == null || colors.length != slots)
             colors = new int[slots];
@@ -137,14 +144,14 @@ public class Spinner extends Control implements Runnable
    {
       synchronized (lock)
       {
-         if (gif != null)
+         if (anim != null)
          {
             if (!Settings.isOpenGL)
             {
                g.backColor = backColor;
                g.fillRect(0,0,width,height);
             }
-            g.drawImage(gif, (width-gif.getWidth())/2,(height-gif.getHeight())/2);
+            g.drawImage(anim, (width-anim.getWidth())/2,(height-anim.getHeight())/2);
          }
          else
          {
@@ -202,8 +209,8 @@ public class Spinner extends Control implements Runnable
    {
       if (getParentWindow() == Window.topMost) // don't update if we loose focus
       {
-         if (gif != null)
-            gif.nextFrame();
+         if (anim != null)
+            anim.nextFrame();
          else
             slot0++;
          safeRepaintNow();
@@ -215,7 +222,7 @@ public class Spinner extends Control implements Runnable
       while (running)
       {
          step();
-         Vm.sleep(gif != null ? 80 : 120); // with safeSleep, the vm starts to behave slowly and strangely
+         Vm.sleep(anim != null ? 80 : 120); // with safeSleep, the vm starts to behave slowly and strangely
       }      
    }
    
@@ -224,7 +231,7 @@ public class Spinner extends Control implements Runnable
    public void update()
    {
       int now = Vm.getTimeStamp();
-      if ((now - last) > (gif != null ? 80 : 120)) // prevents calling pumpEvents too fast
+      if ((now - last) > (anim != null ? 80 : 120)) // prevents calling pumpEvents too fast
       {
          step();
          if (!MainWindow.isMainThread())
