@@ -260,7 +260,7 @@ public class Control extends GfxSurface
    public static final int DARKER_BACKGROUND = -3;
 
    private Vector listeners;
-   private static boolean callingUpdScr;
+   private static boolean callingUpdScr,callingRepNow;
 
    /** Set the background to be transparent, by not filling the control's area with the background color.
     * @since TotalCross 1.0
@@ -1949,13 +1949,16 @@ public class Control extends GfxSurface
       if (Settings.isOpenGL || MainWindow.isMainThread())
          repaintNow();
       else
+      if (!callingRepNow)
       {
          Window.needsPaint = true;
+         callingRepNow = true;
          MainWindow.getMainWindow().runOnMainThread(new Runnable()
          {
             public void run()
             {
                repaintNow();
+               callingRepNow = false;
             }
          });
       }
