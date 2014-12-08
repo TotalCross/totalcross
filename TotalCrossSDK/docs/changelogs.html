@@ -92,7 +92,7 @@
 . added SQLiteUtils.getString with an optional argument for the decimal places<br>
 . fixed a black screen that appears when MainWindow.exit is called and you try to run the program again<br>
 . fixed crash when multiple threads were trying to resize and load fonts<br>
-* now Control.enabled is private. Use isEnabled to query the value. Added keepDisabled to override the enabled state. This is useful if you want to keep a control disabled in a TabbedContainer while enabling/disabling the rest of the controls<br>
+* now Control.enabled is private. Use isEnabled to query the value; for extension Controls that access the enabled field, use Control.internalSetEnabled. Added keepDisabled to override the enabled state. This is useful if you want to keep a control disabled in a TabbedContainer while enabling/disabling the rest of the controls<br>
 . fixed /p not working for wince<br>
 . fixed crash in ios that causes SAV to abort the thread after synchronizing the photos<br>
 . fixed problem in tc.Deploy when the path comes with spaces<br>
@@ -104,6 +104,14 @@
 <h1>build 2456</h1>
 . fixed support for unicode 8bpp unicode fonts on native code.<br>
 . now Camera.getSupportedResolutions returns a sorted array.<br>
+<h1>build 2466 *</h1>
+. fixed native 8bpp font support for unicode chars<br>
+. added Class.getSimpleName<br>
+. now Image.getFrameInstance restores the previous selected frame.<br>
+. added Spinner(Image) and Spinner.setImage, so you can create spinners like those from http://preloaders.net/en. Added Bar.createSpinner(Image). Added a triplex.gif to SpinnerSample<br>
+. added ListBox.CustomDrawingItem, so you can delegate the painting to another class<br>
+. added Control.safeRepaintNow to make sure that the Spinner will update the screen even when running in a thread<br>
+. now Vm.sleep tells Windows that we are not dead for any value for millis, and not just when millis = 1<br>
 
 <h2>TotalCross 3.07 build 2372</h2>
 . fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>
