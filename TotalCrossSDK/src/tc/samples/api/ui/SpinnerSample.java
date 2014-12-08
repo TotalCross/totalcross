@@ -6,10 +6,11 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.image.*;
 
 public class SpinnerSample extends BaseContainer
 {
-   private Spinner sp1,sp2;
+   private Spinner sp0,sp1,sp2;
    private Button bt;
    private Label l;
    
@@ -19,12 +20,11 @@ public class SpinnerSample extends BaseContainer
       {
          super.initUI();
          
-         Spacer s;
-         add(s = new Spacer(1,1),CENTER,CENTER);
+         add(sp0 = new Spinner(new Image("ui/images/triplex.gif")),CENTER,CENTER,fmH*2,fmH*2);
          Spinner.spinnerType = Spinner.ANDROID;
-         add(sp1 = new Spinner(),CENTER,BEFORE-gap,fmH*2,fmH*2, s);
+         add(sp1 = new Spinner(),CENTER,BEFORE-gap,fmH*2,fmH*2, sp0);
          Spinner.spinnerType = Spinner.IPHONE;
-         add(sp2 = new Spinner(),CENTER,AFTER+gap,fmH*2,fmH*2, s);
+         add(sp2 = new Spinner(),CENTER,AFTER+gap,fmH*2,fmH*2, sp0);
          add(bt = new Button("Start"),CENTER,TOP+gap,PARENTSIZE+50,PREFERRED);
          l = new Label("Note that we are blocked in a loop, like if we're downloading something from internet or other kind of processing.");
          l.autoSplit = true;
@@ -48,6 +48,7 @@ public class SpinnerSample extends BaseContainer
             int end = Vm.getTimeStamp()+5000;
             while (Vm.getTimeStamp() < end)
             {
+               sp0.update();
                sp1.update(); // this makes the magic that updates the spinner
                sp2.update();
                // you may do other processing here...

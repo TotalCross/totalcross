@@ -130,6 +130,38 @@ public class ListBox extends Container implements Scrollable
       }
    }
 
+   /** An interface that makes easier to draw custom items.
+    * Example:
+    * <pre>
+      class ItemSeek implements ListBox.CustomDrawingItem
+      {
+         int tpsinc;
+         boolean admin;
+         String plat,date;
+         
+         ItemSeek(String s)
+         {
+            // 21Wi2014/12/05
+            tpsinc = s.charAt(0)-'0';
+            admin = s.charAt(1) == '1';
+            plat = s.substring(2,4);
+            date = s.substring(4);
+         }
+   
+         public void onItemPaint(Graphics g, int dx, int dy, int w, int h)
+         {
+            g.drawText(data,dx,dy);
+            // and also other items
+         }
+      }
+    * </pre>
+    * @since TotalCross 3.1 
+    */
+   public static interface CustomDrawingItem
+   {
+      public void onItemPaint(Graphics g, int dx, int dy, int w, int h);
+   }
+
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
     * @see #extraHorizScrollButtonHeight 
@@ -1010,6 +1042,11 @@ public class ListBox extends Container implements Scrollable
    protected void drawItem(Graphics g, int index, int dx, int dy)
    {
       Object obj = items.items[index];
+      if (obj instanceof CustomDrawingItem)
+      {
+         ((CustomDrawingItem)obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
+         return;
+      }
       if (obj instanceof IconItem)
       {
          g.drawImage(((IconItem)obj).icon,dx,dy);

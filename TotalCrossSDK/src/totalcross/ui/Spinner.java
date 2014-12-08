@@ -18,6 +18,7 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.concurrent.*;
 
 /** Spinner is a control that shows an image indicating that something is running in
@@ -47,6 +48,7 @@ public class Spinner extends Control implements Runnable
    private int slots, slot0, size, type;
    private boolean running;
    private Lock lock;
+   private Image anim,anim0;
    
    public Spinner()
    {
@@ -57,12 +59,39 @@ public class Spinner extends Control implements Runnable
       lock = new Lock();
    }
    
+   /** Creates a spinner from an animated GIF.
+    * You can download additional animations from: <a href='http://preloaders.net/en'>here</a>. 
+    * Select image type as GIF and transparent background as Yes.
+    */
+
+   public Spinner(Image anim)
+   {
+      lock = new Lock();
+      this.anim0 = anim;
+   }
+   
+   /** Changes the gif image of this Spinner */
+   public void setImage(Image anim)
+   {
+      this.anim0 = anim;
+      this.anim = null;
+   }
+
    public void onBoundsChanged(boolean screenChanged)
    {
       size = width < height ? width : height;
       if ((size % 2) == 0) size--;
       
-      if (!screenChanged || coords == null)
+      if (anim0 != null)
+         try
+         {
+            anim = anim0.smoothScaledFixedAspectRatio(size,true);
+         }
+         catch (ImageException e)
+         {
+            anim = null;
+         }
+      if (anim == null && (!screenChanged || coords == null))
       {
          int xyc = size/2;
          // find the number of slots
@@ -102,7 +131,7 @@ public class Spinner extends Control implements Runnable
    
    public void onColorsChanged(boolean changed)
    {
-      if (changed || colors == null)
+      if (anim == null && (changed || colors == null))
       {
          if (colors == null || colors.length != slots)
             colors = new int[slots];
@@ -115,30 +144,42 @@ public class Spinner extends Control implements Runnable
    {
       synchronized (lock)
       {
-         int astep = 360/slots;
-         int a = 360;
-         
-         int div = type == IPHONE ? 3 : 1;
-         int xyc = size/2;
-         for (int i = slots * div; --i >= 0;)
+         if (anim != null)
          {
-            int idx = (i/div+slot0)%slots;
-            switch (type)
+            if (!Settings.isOpenGL)
             {
-               case ANDROID:
-                  g.backColor = colors[idx];
-                  g.foreColor = backColor;
-                  g.fillPie(xyc,xyc,xyc,a-astep,a);
-                  //g.drawPie(xyc,xyc,xyc,a-astep,a);
-                  a -= astep;
-                  break;
-               case IPHONE:
-                  g.backColor = g.foreColor = colors[idx];
-                  g.drawLine(coords[i].x,coords[i].y,xyc,xyc);
-                  break;
+               g.backColor = backColor;
+               g.fillRect(0,0,width,height);
             }
-            g.backColor = backColor;
-            g.fillCircle(xyc,xyc,xyc/2);
+            g.drawImage(anim, (width-anim.getWidth())/2,(height-anim.getHeight())/2);
+         }
+         else
+         {
+            int astep = 360/slots;
+            int a = 360;
+            
+            int div = type == IPHONE ? 3 : 1;
+            int xyc = size/2;
+            for (int i = slots * div; --i >= 0;)
+            {
+               int idx = (i/div+slot0)%slots;
+               switch (type)
+               {
+                  case ANDROID:
+                     g.backColor = colors[idx];
+                     g.foreColor = backColor;
+                     g.fillPie(xyc,xyc,xyc,a-astep,a);
+                     //g.drawPie(xyc,xyc,xyc,a-astep,a);
+                     a -= astep;
+                     break;
+                  case IPHONE:
+                     g.backColor = g.foreColor = colors[idx];
+                     g.drawLine(coords[i].x,coords[i].y,xyc,xyc);
+                     break;
+               }
+               g.backColor = backColor;
+               g.fillCircle(xyc,xyc,xyc/2);
+            }
          }
       }
    }
@@ -168,8 +209,11 @@ public class Spinner extends Control implements Runnable
    {
       if (getParentWindow() == Window.topMost) // don't update if we loose focus
       {
-         slot0++;
-         repaintNow();
+         if (anim != null)
+            anim.nextFrame();
+         else
+            slot0++;
+         safeRepaintNow();
       }
    }
    
@@ -178,7 +222,7 @@ public class Spinner extends Control implements Runnable
       while (running)
       {
          step();
-         Vm.sleep(120); // with safeSleep, the vm starts to behave slowly and strangely
+         Vm.sleep(anim != null ? 80 : 120); // with safeSleep, the vm starts to behave slowly and strangely
       }      
    }
    
@@ -187,7 +231,7 @@ public class Spinner extends Control implements Runnable
    public void update()
    {
       int now = Vm.getTimeStamp();
-      if ((now - last) > 120) // prevents calling pumpEvents too fast
+      if ((now - last) > (anim != null ? 80 : 120)) // prevents calling pumpEvents too fast
       {
          step();
          if (!MainWindow.isMainThread())
