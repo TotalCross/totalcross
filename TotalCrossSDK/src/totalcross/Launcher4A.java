@@ -19,6 +19,7 @@
 package totalcross;
 
 import android.app.*;
+import android.app.ActivityManager.MemoryInfo;
 import android.content.*;
 import android.content.res.*;
 import android.graphics.*;
@@ -45,6 +46,7 @@ import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
+   public static final boolean GENERATE_FONT = false;
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
@@ -62,6 +64,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static int appHeightOnSipOpen;
    static int appTitleH;
    static boolean lastWasPenDown;
+   static ActivityManager activityManager;
+   static MemoryInfo mi = new MemoryInfo();
    
    private static String appPath;
    private static android.text.ClipboardManager clip;
@@ -133,6 +137,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       super(context);
       // read all apk names, before loading the vm
+      activityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
       if (!isSingleAPK)
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
       loadAPK(appPath+"/apkname.txt",true);
@@ -156,6 +161,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          bugreport();
       createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
+      if (GENERATE_FONT)
+      {
+         new totalcross.android.fontgen.FontGenerator("tahoma", new String[]{"","/aa","/rename:TCFont"});
+         AndroidUtils.debug("FINISHED");
+         exit(0);
+      }
    }
 
    public static Context getAppContext()
@@ -522,8 +533,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         eventThread.running = false;
+         if (eventThread != null) eventThread.running = false;
          loader.finish();
+         //if (!loader.isSingleApk())
+            System.exit(3);
       }
       canQuit = true;
    }
@@ -1053,9 +1066,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
             double[] llF = getLatLon(addressF);
-            AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
             if (llI != null && llF != null)
             {
+               AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
@@ -1100,6 +1113,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
+            if (address.startsWith("***")) // MapItems?
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAPITEMS);
+               b.putString("items", address.substring(3));
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+               
             double [] ll = getLatLon(address);
             if (ll != null)
             {
@@ -1457,6 +1486,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return text;
    }
 
+   public static int getFreeMemory()
+   {
+      activityManager.getMemoryInfo(mi);
+      return mi.availMem > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) mi.availMem;
+   }
    ///////////////// crash controller //////////////////////
    private static void createCrash()
    {
@@ -1488,9 +1522,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
                String[] commands =
                   {
-                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
-                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
-                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
+                     "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/bugreport.txt \n",
+//                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
+//                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
+//                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
                   };
       /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
                    "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
@@ -1520,25 +1555,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                FileInputStream fin = new FileInputStream(ff);
                // check if there's a SIGSEGV, which indicates an vm abort
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
-               byte[] buf = new byte[4096];
-               boolean hasSIGSEGV = false;
+               byte[] buf = new byte[8192];
                for (int n; (n = fin.read(buf)) > 0;)
-               {
-                  if (!hasSIGSEGV && new String(buf,0,n).contains("SIGSEGV"))
-                     hasSIGSEGV = true;
                   zout.write(buf,0,n);
-               }
                zout.closeEntry();
                zout.close();
                fin.close();
                end = System.currentTimeMillis();
                ff.delete();
                AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
-               if (!hasSIGSEGV)
-               {
-                  AndroidUtils.debug("SIGSEGV NOT FOUND; Aborting email.");
-                  return;
-               }
                WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
                Display display = wm.getDefaultDisplay();
                
@@ -1568,4 +1593,30 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          }
       }.start();
    }
+   
+   private static SoundPool player;
+   private static String lastSound;
+   private static int lastSoundID;
+   
+   public static void soundPlay(String filename)
+   {
+      if (player == null)
+         player = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+      if (!filename.equals(lastSound))
+      {
+         if (lastSound != null) player.unload(lastSoundID);
+         lastSound = filename;
+         lastSoundID =  player.load(filename, 1);
+      }
+      AudioManager audio = (AudioManager) loader.getSystemService(Context.AUDIO_SERVICE);
+      int ring = audio.getRingerMode();
+      if (ring == AudioManager.RINGER_MODE_NORMAL) // 4.4 does not returns correct values for volume methods
+      {
+         int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_SYSTEM);
+         int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_SYSTEM);
+         float volume    = (float)volumeLevel/maxVolume;
+         for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, volume, volume, 0, 0, 1.0f) == 0 && i++ < 10;)
+            try {Thread.sleep(100);} catch (Exception e) {}
+      }
+  }
 }

@@ -64,7 +64,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#finalize()
+     * @see totalcross.db.sqlite.Stmt#finalize()
      */
     
     protected void finalize() throws SQLException {
@@ -129,7 +129,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#executeBatch()
+     * @see totalcross.db.sqlite.Stmt#executeBatch()
      */
     
     public int[] executeBatch() throws SQLException {
@@ -148,7 +148,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#getUpdateCount()
+     * @see totalcross.db.sqlite.Stmt#getUpdateCount()
      */
     
     public int getUpdateCount() throws SQLException {
@@ -396,11 +396,10 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
             batch(pos, null);
         }
         else if (value instanceof Date) {
-            setDate(pos, new Time(((Date)value)));
+           batch(pos, ((Date)value).getSQLString());
         }
         else if (value instanceof Time) {
-           Time t = (Time)value;
-           setDate(pos, t);
+           batch(pos, ((Time)value).getSQLString());
         }
         else if (value instanceof Timestamp) {
            long l = ((Timestamp) value).getTime();
@@ -492,23 +491,6 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
         setObject(pos, x);
     }
 
-    /**
-    * Store the date in the user's preferred format (text, int, or real)
-    */
-   private void setDate(int pos, Time t) throws SQLException {
-      long l = t.getTimeLong();
-      //if (conn.datePrecision == DatePrecision.MILLISECONDS)
-         l = l * 1000 + t.millis;
-      batch(pos, new Long(l));
-/*       if (conn.dateClass == SQLiteConfig.DateClass.TEXT)
-          batch(pos, conn.dateFormat.format(new Date(value)));
-       else
-       if (conn.dateClass == SQLiteConfig.DateClass.REAL) // long to Julian date
-          batch(pos, new Double((value/86400000.0) + 2440587.5));
-       else //INTEGER:
-          batch(pos, new Long(value / conn.dateMultiplier));*/
-   }
-
    /**
      * @see java.sql.PreparedStatement#setTime(int, java.sql.Time)
      */
@@ -534,7 +516,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     // UNUSED ///////////////////////////////////////////////////////
 
     /**
-     * @see org.sqlite.Stmt#execute(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#execute(java.lang.String)
      */
     
     public boolean execute(String sql) throws SQLException {
@@ -542,7 +524,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#executeUpdate(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#executeUpdate(java.lang.String)
      */
     
     public int executeUpdate(String sql) throws SQLException {
@@ -550,7 +532,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#executeQuery(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#executeQuery(java.lang.String)
      */
     
     public ResultSet executeQuery(String sql) throws SQLException {
@@ -558,7 +540,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     }
 
     /**
-     * @see org.sqlite.Stmt#addBatch(java.lang.String)
+     * @see totalcross.db.sqlite.Stmt#addBatch(java.lang.String)
      */
     
     public void addBatch(String sql) throws SQLException {

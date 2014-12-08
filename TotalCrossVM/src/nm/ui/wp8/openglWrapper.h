@@ -49,36 +49,32 @@ extern int32 /*realAppH,*/ appW, appH, glShiftY;
 extern int32 *needsPaint;
 
 extern TCGfloat ftransp[16];
-extern TCGfloat* glcoords;//[flen*2]; x,y
-extern TCGfloat* glcolors;//[flen];   alpha
-extern int32 desiredScreenShiftY;
+extern TCGfloat* glXYA;//[flen*3]; x,y
 extern int32 setShiftYonNextUpdateScreen;
 
-extern VoidPs* imgTextures;
-
-void setShiftYgl();
+void setShiftYgl(int32 shiftY);
 
 extern void setTimerInterval(int32 t);
 
 int32 abs32(int32 a);
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr);
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n);
 void glDrawPixels(int32 n, int32 rgb);
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 bool graphicsCreateScreenSurface(ScreenSurface screen);
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen);
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill);
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList);
+void glDeleteTexture(TCObject img, int32* textureId);
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 int32 glGetPixel(int32 x, int32 y);
-//void applyChanges(Context currentContext, TCObject obj, bool updateList);
 void flushPixels();
 bool checkGLfloatBuffer(Context c, int32 n);
 
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask);
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange);
 void privateScreenChange(int32 w, int32 h);

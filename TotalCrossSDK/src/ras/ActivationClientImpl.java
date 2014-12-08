@@ -355,7 +355,7 @@ final class ActivationClientImpl extends ActivationClient
          {
             if (connection != null)
                connection.close();
-            ConnectionManager.close();
+            //ConnectionManager.close();
          }
          catch (IOException e2)
          {

@@ -148,6 +148,8 @@ public class ProgressBar extends Control
     * <p>
     * If this is an endless ProgressBar, the given number is used as 
     * an increment to the current value. Note that n must be greater than 0.
+    * 
+    * If you call this method and the bar isnt updated, you can try to call <code>MainWindow.pumpEvents()</code>.
     *
     * @param   n The new value
     * @see     #getValue
@@ -214,8 +216,8 @@ public class ProgressBar extends Control
             if (npback == null)
             {
                int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
-               npback = NinePatch.getInstance().getNormalInstance(type,width,height,bc,false,true);
-               npfore = NinePatch.getInstance().getNormalInstance(type,width,height,fc,false,true);
+               npback = NinePatch.getInstance().getNormalInstance(type,width,height,bc,false);
+               npfore = NinePatch.getInstance().getNormalInstance(type,width,height,fc,false);
             }
             
             if (endless) // only horizontal
@@ -251,7 +253,7 @@ public class ProgressBar extends Control
                g.backColor = bc;
                g.fillRect(0,0,width,height);
             }
-            if (uiVista && enabled) // guich@573_6
+            if (uiVista && isEnabled()) // guich@573_6
             {
                if (vertical)
                   g.fillVistaRect(0, height - s, width, s, fc, false, false);

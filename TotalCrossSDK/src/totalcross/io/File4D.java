@@ -52,12 +52,14 @@ public class File4D extends RandomAccessStream
    public static String[] winceVols = {"\\Storage Card2\\", "\\Storage Card1\\", "\\SD Card\\", "\\Storage Card\\",
          "\\SD-MMCard\\", "\\CF Card\\"}; // guich@572_3
 
-   private static final String deviceAlias = getDeviceAlias();
+   private static String deviceAlias;
 
    native private static String getDeviceAlias();
 
    public File4D(String path, int mode, int slot) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
    {
+      if (deviceAlias == null)
+         deviceAlias = getDeviceAlias();
       if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
       if (path == null)
          throw new java.lang.NullPointerException("Argument 'path' cannot have a null value.");
@@ -193,11 +195,43 @@ public class File4D extends RandomAccessStream
       if (path.equals("/"))
          return null;
 
-      return new File(path.substring(0, path.lastIndexOf('/')), DONT_OPEN, slot);      
+      return new File(path.substring(0, path.lastIndexOf('/')), DONT_OPEN);      
    }
 
    public static File getCardVolume() throws totalcross.io.IOException
    {
+      if (Settings.isWindowsDevice()) //flsobral@tc112_10: Fixed to also work on devices recognized as WindowsMobile.
+      {
+         String cardName = null;
+         try
+         {
+            cardName = Registry.getString(Registry.HKEY_LOCAL_MACHINE, "System\\StorageManager\\Profiles\\SDMemory", "Folder"); //flsobral@tc112_15: Attempt to retrieve the name from the registry.
+         }
+         catch (Exception e)
+         {
+            File f;
+            for (int i = winceVols.length - 1; i >= 0; i--)
+               try
+               {
+                  if ((f = new File(winceVols[i])).isDir())
+                     return f;
+               }
+               catch (FileNotFoundException fnfe)
+               {
+               }
+         }
+         if (cardName != null)
+         {
+            cardName = cardName.replace('\\', '/'); //flsobral@tc113_15: Always wrap the path with slashes.
+            if (cardName.charAt(0) != '/')
+               cardName = "/" + cardName;
+            if (!cardName.endsWith("/"))
+               cardName = cardName + "/";
+            File cardFile = new File(cardName);
+            if (cardFile.isDir())
+               return cardFile;
+         }
+      }
       return null;
    }
 
@@ -316,5 +350,11 @@ public class File4D extends RandomAccessStream
       readBytes(ret,0,len);
       close();
       return ret;
+   }
+   
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      writeBytes(bytes, 0, bytes.length);
+      close();
    }
 }

@@ -63,7 +63,7 @@ public final class Convert
       newLauncherInstance();
    }
 
-   private static char []b2h = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+   public static char []b2h = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
    private static byte []h2b = new byte['f' + 1];
    private static byte h2bInvalid = (byte)0xFF;
    static
@@ -1686,6 +1686,26 @@ public final class Convert
       return hash;
    }
 
+   /** Removes the given set of chars from the String.
+    * Example:
+    * <pre>
+    * String s = Convert.remove("abcdef","df"); // returns "abce";
+    * </pre>
+    * @since TotalCross 3.05
+    */
+   public static String remove(String source, String chars)
+   {
+      if (chars.length() == 1) // use a faster method
+         return replace(source, chars, "");
+      int len = source.length();
+      StringBuffer sb = new StringBuffer(len);
+      char ch;
+      for (int i = 0; i < len; i++)
+         if (chars.indexOf(ch=source.charAt(i)) == -1)
+            sb.append(ch);
+      return sb.length() == len ? source : sb.toString();
+   }
+   
    /** Replace all occurences of the <code>from</code> String by the <code>to</code> String in the given <code>source</code> String.
     * @since TotalCross 1.0
     */
@@ -2270,6 +2290,7 @@ public final class Convert
    public static final long DOUBLE_NAN_BITS = 0x7ff8000000000000L;
    public static final double DOUBLE_POSITIVE_INFINITY_VALUE = longBitsToDouble(DOUBLE_POSITIVE_INFINITY_BITS);
    public static final double DOUBLE_NEGATIVE_INFINITY_VALUE = longBitsToDouble(DOUBLE_NEGATIVE_INFINITY_BITS);
+   public static final double DOUBLE_NAN_VALUE = longBitsToDouble(DOUBLE_NAN_BITS);
    static class Constants // get rid of symbols not used in device.
    {
       private static String spaces = "";

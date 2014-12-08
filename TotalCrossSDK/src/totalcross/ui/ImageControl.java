@@ -31,7 +31,7 @@ public class ImageControl extends Control
 {
    /** The amount to scroll when in penless mode. Defaults to 10. */
    public static int scrollValue = 10;
-   private Image img,imgBack;
+   private Image img,img0,imgBack;
    private int startX,startY;
    private Coord c = new Coord();
    private boolean isEventEnabled, canDrag;
@@ -87,7 +87,7 @@ public class ImageControl extends Control
     */
    public void setImage(Image img)
    {
-      this.img = img;
+      this.img = this.img0 = img;
       c.x = c.y = lastX = lastY = 0;
       tempHwScale=NOTEMP;
       // test if it is really loaded.
@@ -100,6 +100,18 @@ public class ImageControl extends Control
             g.foreColor = borderColor;
             g.drawRect(0,0,getImageWidth(),getImageHeight());
          }
+         if (scaleToFit)
+            try
+            {
+               if (width < height)
+                  this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
+               else
+                  this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
+            }
+            catch (ImageException e)
+            {
+               // keep original image
+            }
          if (centerImage)
          {
             lastX = (width-getImageWidth())/2;
@@ -205,7 +217,10 @@ public class ImageControl extends Control
       if (scaleToFit)
          try
          {
-            img = img.hwScaledFixedAspectRatio(this.width,false);
+            if (width < height)
+               this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
+            else
+               this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
          }
          catch (ImageException e)
          {
@@ -232,7 +247,7 @@ public class ImageControl extends Control
 
    private void paint(Graphics g, boolean drawBack)
    {
-      g.backColor = enabled ? backColor : Color.interpolate(backColor,parent.backColor);
+      g.backColor = isEnabled() ? backColor : Color.interpolate(backColor,parent.backColor);
       if (!transparentBackground) // guich@tc115_41
          g.fillRect(0,0,width,height);
       if (img != null) // images found?

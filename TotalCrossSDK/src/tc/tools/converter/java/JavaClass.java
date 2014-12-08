@@ -13,9 +13,7 @@
 
 package tc.tools.converter.java;
 
-import tc.tools.deployer.*;
-import totalcross.io.ByteArrayStream;
-import totalcross.io.DataStream;
+import totalcross.io.*;
 
 public final class JavaClass
 {

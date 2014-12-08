@@ -21,6 +21,7 @@ public class DeploySettings
 {
    public static final String UnknownVendor = "Unknown Vendor"; // fdie@570_96
 
+   public static String[] tczs;
    // constants for including the vm and/or litebase in a package 
    public static boolean packageVM;
    public static String folderTotalCross3DistVM;
@@ -167,6 +168,7 @@ public class DeploySettings
          distDir = Convert.replace(etcDir, "/etc/", "/dist/");
       }
       System.out.println("TotalCross SDK version "+Settings.versionStr+"."+Settings.buildNumber+" running on "+osName+" with JDK "+javaVersion);
+      System.out.println("Current folder: "+currentDir);
       System.out.println("Etc directory: "+ (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
       System.out.println("Classpath: "+cp0);
 

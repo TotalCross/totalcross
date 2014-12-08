@@ -162,6 +162,7 @@ public final class J2TC implements JConstants, TCConstants
       return tc;
    }
 
+   private static final String APPVER_VALID = "0123456789.";
    private static void searchForProperties(ByteCode bcs[], String superClass)
    {
       // Settings.appCreatorId = "Flor";
@@ -189,20 +190,21 @@ public final class J2TC implements JConstants, TCConstants
                      {
                         BC018_ldc ldc = (BC018_ldc)bcs[j];
                         DeploySettings.appTitle = Utils.stripNonLetters((String)ldc.val.asObj); // if the user wrote "Agenda 1.0", break at the "Agenda"
+                        continue;
                      }
                   }
-                  else
+                  // else - commented out for classes that don't extend MainWindow directly
                   // super("Agenda",TAB_ONLY_BORDER)
                   //    0    0:aload_0
                   //    1    1:ldc1            #1   <String "Agenda">
                   //    2    3:iconst_4
                   //    3    4:invokespecial   #13  <Method void MainWindow(String, byte)>
-                  if ((j+2) < bcs.length && bcs[j+2].bc == 183)
+                  if ((j+2) < bcs.length && (bcs[j+1].bc == 183 || bcs[j+2].bc == 183))
                   {
-                     BC183_invokespecial invoke = (BC183_invokespecial)bcs[j+2];
+                     BC183_invokespecial invoke = (BC183_invokespecial)bcs[bcs[j+2].bc == 183 ? j+2 : j+1];
                      String className = invoke.className;
                      String signature = invoke.signature;
-                     if ((className.equals(totalcrossUiMainWindow) || className.equals(superClass)) && signature.equals("<init>(Ljava/lang/String;B)"))
+                     if ((className.equals(totalcrossUiMainWindow) || className.equals(superClass)) && signature.startsWith("<init>(Ljava/lang/String;"))
                      {
                         BC018_ldc ldc = (BC018_ldc)bcs[j];
                         DeploySettings.appTitle = Utils.stripNonLetters((String)ldc.val.asObj); // if the user wrote "Agenda 1.0", break at the "Agenda"
@@ -258,7 +260,12 @@ public final class J2TC implements JConstants, TCConstants
                         DeploySettings.applicationId = totalcross.sys.Settings.applicationId = value;
                      else
                      if (field.equals("appVersion"))
+                     {
                         DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
+                        for (int i = 0, n = value.length(); i < n; i++)
+                           if (APPVER_VALID.indexOf(value.charAt(i)) == -1)
+                              throw new IllegalArgumentException("Settings.versionStr '"+value+"' can only have digits and a dot.");
+                     }
                      else
                      if (field.equals("companyInfo"))
                         DeploySettings.companyInfo = value;
@@ -875,56 +882,65 @@ public final class J2TC implements JConstants, TCConstants
 
    private static int processFiles(Vector vin, Vector vout) throws Exception
    {
-      int n = vin.size();
       int s=0;
-      for (int i=0; i < n; i++)
-      {
-         TCZ.Entry fe = (TCZ.Entry)vin.items[i];
-         String name = fe.name;
-         String nameLow = name.toLowerCase();
-         byte[] bytes = fe.bytes;
-         int len = bytes.length;
-         boolean print = true;
-         s += len;
-         if (nameLow.endsWith(".class")) // is this a class file?
+      for (int i=0; i < vin.size();)
+         try
          {
-            // start the job
-            J2TC j2 = new J2TC((JavaClass)fe.extra);
-            if (j2.converted == null || DeploySettings.testClass)
-               print = false;
+            TCZ.Entry fe = (TCZ.Entry)vin.items[i];
+            String name = fe.name;
+            String nameLow = name.toLowerCase();
+            byte[] bytes = fe.bytes;
+            int len = bytes.length;
+            boolean print = true;
+            s += len;
+            if (nameLow.endsWith(".class")) // is this a class file?
+            {
+               GlobalConstantPool.saveState();
+               // start the job
+               J2TC j2 = new J2TC((JavaClass)fe.extra);
+               if (j2.converted == null || DeploySettings.testClass)
+                  print = false;
+               else
+               {
+                  bytes = j2.bytes; // replace the bytes by the tclass ones
+                  System.out.print("Adding "+j2.converted.className);
+                  if (!DeploySettings.testClass)
+                     vout.addElement(new TCZ.Entry(bytes, j2.converted.className, len)); // note that all files must be added - use the real package name
+               }
+            }
             else
+            if (!DeploySettings.testClass)
             {
-               bytes = j2.bytes; // replace the bytes by the tclass ones
-               System.out.print("Adding "+j2.converted.className);
-               if (!DeploySettings.testClass)
-                  vout.addElement(new TCZ.Entry(bytes, j2.converted.className, len)); // note that all files must be added - use the real package name
+               ByteArrayStream basz = new ByteArrayStream(bytes);
+               print = !(name.equals("tckey.bin") || name.equals("tcparms.bin"));
+   
+               if (print)
+                  System.out.print("Adding "+name);
+               tcbasz.reset();
+               if (nameLow.endsWith(".bmp") || nameLow.endsWith(".gif")) // convert gif and bmp to png
+               {
+                  new Image(bytes).createPng(basz = new ByteArrayStream(8192));
+                  System.out.print(" (converted to PNG)");
+               }
+   
+               tc.tools.converter.Storage.compressAndWrite(basz, new DataStream(tcbasz));
+               bytes = tcbasz.toByteArray();
+               vout.addElement(new TCZ.Entry(bytes, name, len)); // note that all files must be added
             }
+            if (print && len != 0) System.out.println("... "+(bytes.length*100/len)+"%");
+            
+            vin.removeElementAt(0); // no error, remove element.
          }
-         else
-         if (!DeploySettings.testClass)
-         {
-            ByteArrayStream basz = new ByteArrayStream(bytes);
-            print = !(name.equals("tckey.bin") || name.equals("tcparms.bin"));
-
-            if (print)
-               System.out.print("Adding "+name);
-            tcbasz.reset();
-            if (nameLow.endsWith(".bmp") || nameLow.endsWith(".gif")) // convert gif and bmp to png
-            {
-               new Image(bytes).createPng(basz = new ByteArrayStream(8192));
-               System.out.print(" (converted to PNG)");
-            }
-
-            tc.tools.converter.Storage.compressAndWrite(basz, new DataStream(tcbasz));
-            bytes = tcbasz.toByteArray();
-            vout.addElement(new TCZ.Entry(bytes, name, len)); // note that all files must be added
+         catch (ConstantPoolLimitReachedException cplre)
+         {            
+            System.out.println("Limit reached for "+cplre.getMessage()+". Splitting tcz...");
+            GlobalConstantPool.restoreState();
+            return s;
          }
-         if (print && len != 0) System.out.println("... "+(bytes.length*100/len)+"%");
-      }
       // now adds the list of classes used in forName
       if (!DeploySettings.isJarOrZip)
       {
-         n = callForName.size();
+         int n = callForName.size();
          for (int i = n-1; i >= 0; i--) // first, remove the ones that were already processed
          {
             String c = (String)callForName.items[i];
@@ -1069,6 +1085,7 @@ public final class J2TC implements JConstants, TCConstants
       htValidExtensions.put(".jpeg","");
       htValidExtensions.put(".png","");
       htValidExtensions.put(".wav","");
+      htValidExtensions.put(".mp3","");
       htValidExtensions.put(".pdf","");
       htValidExtensions.put(".class","");
    }
@@ -1077,10 +1094,9 @@ public final class J2TC implements JConstants, TCConstants
     *  Outputs a tcz file. */
    public static void process(String fName, int options) throws Exception
    {
-      String cn;
+      String cn=null;
       fName = fName.replace('\\','/');
       ByteCode.initClasses();
-      Vector vout = new Vector(200);
       Vector vin = new Vector(200);
       DeploySettings.entriesList = vin; // keep track of input files
       setupHt();
@@ -1224,68 +1240,82 @@ public final class J2TC implements JConstants, TCConstants
 
          TCMethod.checkJavaCalls = true;
          GlobalConstantPool.checkLimit = true;
+         Vector tczs = new Vector(5);
+         Vector tczMsg = new Vector(5);
 
-         inSize = processFiles(vin, vout);
-         if (notResolvedForNameFound && !DeploySettings.isJarOrZip)
-            System.out.println("ATTENTION: An unhandled Class.forName was detected. The deployer can handle Class.forName(x), when x is a String with " +
-                  "the class name, but cannot handle when x is a variable. Thus, the referenced classes will not be added to the deploy. " +
-                  "Consider to use a jar file with all the project classes and pass it as parameter to tc.Deploy.");
-
-         if (!GlobalConstantPool.isEmpty()) // guich@tc111_2: only store if there's at least one user class
+         for (int part = 0; vin.size() > 0; part++)
          {
-            // convert the global constant pool
-            tcbas.reset();
-            tcbasz.reset();
-            GlobalConstantPool.write(new DataStreamLE(tcbas));
-            int orig = tcbas.getPos();
-            Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
-            vout.addElement(new TCZ.Entry(tcbasz.toByteArray(), "ConstantPool", orig));
+            Vector vout = new Vector(200);
+            inSize = processFiles(vin, vout);
+            if (notResolvedForNameFound && !DeploySettings.isJarOrZip)
+               System.out.println("ATTENTION: An unhandled Class.forName was detected. The deployer can handle Class.forName(x), when x is a String with " +
+                     "the class name, but cannot handle when x is a variable. Thus, the referenced classes will not be added to the deploy. " +
+                     "Consider to use a jar file with all the project classes and pass it as parameter to tc.Deploy.");
+   
+            if (!GlobalConstantPool.isEmpty()) // guich@tc111_2: only store if there's at least one user class
+            {
+               // convert the global constant pool
+               tcbas.reset();
+               tcbasz.reset();
+               GlobalConstantPool.write(new DataStreamLE(tcbas));
+               int orig = tcbas.getPos();
+               Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
+               vout.addElement(new TCZ.Entry(tcbasz.toByteArray(), "ConstantPool", orig));
+            }
+            // now that all files were processed, put everything in a single tcz file.
+            // set the TCZ attributes
+            short attr = 0;
+            cn = DeploySettings.mainClassName;
+            if (cn != null)
+            {
+               if (DeploySettings.appIdSpecifiedAsArgument)
+                  throw new IllegalArgumentException("The application Id can only be specified in the command line during the creation of libraries. For applications, you must create a static initializer in the main class, assigning the desired id. For example:\n\npublic class "+Utils.getFileName(cn)+" extends MainWindow // or implements MainClass\n{\n   static\n   {\n      totalcross.sys.Settings.applicationId = \"Crtr\";\n   }\n   ...");
+               if (part == 0) attr |= (DeploySettings.isMainWindow ? TCZ.ATTR_HAS_MAINWINDOW : TCZ.ATTR_HAS_MAINCLASS);
+            }
+            else
+               cn = fName;
+            if (DeploySettings.resizableWindow)
+               attr |= TCZ.ATTR_RESIZABLE_WINDOW;
+            if (DeploySettings.windowFont == Settings.WINDOWFONT_DEFAULT)
+               attr |= TCZ.ATTR_WINDOWFONT_DEFAULT;
+            switch (DeploySettings.windowSize)
+            {
+               case Settings.WINDOWSIZE_320X480: attr |= TCZ.ATTR_WINDOWSIZE_320X480; break;
+               case Settings.WINDOWSIZE_480X640: attr |= TCZ.ATTR_WINDOWSIZE_480X640; break;
+               case Settings.WINDOWSIZE_600X800: attr |= TCZ.ATTR_WINDOWSIZE_600X800; break;
+            }
+            if (cn.indexOf('/') >= 0) cn = cn.substring(cn.lastIndexOf('/')+1); // strip the package name;
+            if (DeploySettings.isJarOrZip && (cn.toLowerCase().endsWith(".zip") || cn.toLowerCase().endsWith(".jar")))
+               cn = cn.substring(0,cn.length()-4);
+            if (DeploySettings.filePrefix == null) DeploySettings.filePrefix = cn;
+            DeploySettings.tczFileName = ((DeploySettings.targetDir != null ? DeploySettings.targetDir : DeploySettings.currentDir)+"/"+DeploySettings.filePrefix+".tcz").replace('\\','/');
+            
+            if (vin.size() == 0)
+            {
+               if (DeploySettings.targetDir != null && DeploySettings.targetDir.length() > 0)
+               {
+                  File outFolder = new File(DeploySettings.targetDir);
+                  if (!outFolder.exists())
+                     outFolder.createDir();
+               }
+               DeploySettings.targetDir = Convert.appendPath(DeploySettings.targetDir!=null ? DeploySettings.targetDir : DeploySettings.currentDir, "/install/"); // don't move from here!
+            }
+            // create the TCZ file
+            if (isEmpty(vout))
+               throw new DeployerException("ERROR: no files added to the TCZ!");
+            if (!DeploySettings.testClass)
+            {
+               String filename = part == 0 ? DeploySettings.tczFileName : DeploySettings.tczFileName.replace(".tcz", "_"+part+"lib.tcz");
+               tczs.addElement(filename);
+               TCZ out = new TCZ(vout, filename, attr);
+               int ratio = inSize == 0 ? 0 : out.size * 100 / inSize;
+               tczMsg.addElement("File "+filename+" written ("+ratio+"% - "+out.size+" bytes)");
+            }
+            GlobalConstantPool.init();
          }
-         // now that all files were processed, put everything in a single tcz file.
-         // set the TCZ attributes
-         short attr = 0;
-         cn = DeploySettings.mainClassName;
-         if (cn != null)
-         {
-            if (DeploySettings.appIdSpecifiedAsArgument)
-               throw new IllegalArgumentException("The application Id can only be specified in the command line during the creation of libraries. For applications, you must create a static initializer in the main class, assigning the desired id. For example:\n\npublic class "+Utils.getFileName(cn)+" extends MainWindow // or implements MainClass\n{\n   static\n   {\n      totalcross.sys.Settings.applicationId = \"Crtr\";\n   }\n   ...");
-            attr |= (DeploySettings.isMainWindow ? TCZ.ATTR_HAS_MAINWINDOW : TCZ.ATTR_HAS_MAINCLASS);
-         }
-         else
-            cn = fName;
-         if (DeploySettings.resizableWindow)
-            attr |= TCZ.ATTR_RESIZABLE_WINDOW;
-         if (DeploySettings.windowFont == Settings.WINDOWFONT_DEFAULT)
-            attr |= TCZ.ATTR_WINDOWFONT_DEFAULT;
-         switch (DeploySettings.windowSize)
-         {
-            case Settings.WINDOWSIZE_320X480: attr |= TCZ.ATTR_WINDOWSIZE_320X480; break;
-            case Settings.WINDOWSIZE_480X640: attr |= TCZ.ATTR_WINDOWSIZE_480X640; break;
-            case Settings.WINDOWSIZE_600X800: attr |= TCZ.ATTR_WINDOWSIZE_600X800; break;
-         }
-         if (cn.indexOf('/') >= 0) cn = cn.substring(cn.lastIndexOf('/')+1); // strip the package name;
-         if (DeploySettings.isJarOrZip && (cn.toLowerCase().endsWith(".zip") || cn.toLowerCase().endsWith(".jar")))
-            cn = cn.substring(0,cn.length()-4);
-         if (DeploySettings.filePrefix == null) DeploySettings.filePrefix = cn;
-         DeploySettings.tczFileName = ((DeploySettings.targetDir != null ? DeploySettings.targetDir : DeploySettings.currentDir)+"/"+DeploySettings.filePrefix+".tcz").replace('\\','/');
-         
-         if (DeploySettings.targetDir != null && DeploySettings.targetDir.length() > 0)
-         {
-            File outFolder = new File(DeploySettings.targetDir);
-            if (!outFolder.exists())
-               outFolder.createDir();
-         }
-         
-         DeploySettings.targetDir = Convert.appendPath(DeploySettings.targetDir!=null ? DeploySettings.targetDir : DeploySettings.currentDir, "/install/"); // don't move from here!
-         // create the TCZ file
-         if (isEmpty(vout))
-            throw new DeployerException("ERROR: no files added to the TCZ!");
-         if (!DeploySettings.testClass)
-         {
-            TCZ out = new TCZ(vout, DeploySettings.tczFileName, attr);
-            int ratio = inSize == 0 ? 0 : out.size * 100 / inSize;
-            System.out.println("File "+DeploySettings.tczFileName+" written ("+ratio+"% - "+out.size+" bytes)");
-         }
+         DeploySettings.tczs = (String[])tczs.toObjectArray();
+         for (int i = 0; i < tczMsg.size(); i++)
+            System.out.println(tczMsg.items[i]);
       }
       if (!DeploySettings.testClass)
       {

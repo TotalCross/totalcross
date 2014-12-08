@@ -18,6 +18,7 @@ package tc.samples.api.ui;
 
 import tc.samples.api.*;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
@@ -98,15 +99,21 @@ public class FontSample extends BaseContainer
       Slider slSize;
       Label lSize;
       Font selFont;
+      String [] fonts = {Font.DEFAULT,"monospace"};
+      RadioGroupController rg = new RadioGroupController();
 
       public void initUI()
       {
          Label l;
-         int max = Font.MAX_FONT_SIZE*3;
-         add(l = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, TOP);
+         int max = Font.MAX_FONT_SIZE*(Settings.isWindowsDevice() ? 2 : 3);
+         add(new Label("Typeface: "),LEFT,TOP);
+         add(new Radio("Normal",rg),AFTER+fmH,SAME);
+         add(new Radio("Monospace",rg), AFTER+fmH,SAME);
+         rg.setSelectedIndex(0);
+         add(l = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER);
          add(new Label(""+max), RIGHT, SAME);
          add(slSize = new Slider(), AFTER+2, SAME, FIT-2, SAME+fmH/2,l);
-         slSize.setLiveScrolling(true);
+         slSize.setLiveScrolling(!Settings.isWindowsDevice());
          slSize.setMinimum(Font.MIN_FONT_SIZE);
          slSize.setMaximum(max+1); // +1: visible items
          slSize.drawFilledArea = slSize.drawTicks = false;
@@ -125,14 +132,16 @@ public class FontSample extends BaseContainer
 
       public Font getSelectedFont()
       {
-         selFont = Font.getFont(ckBold.isChecked(), slSize.getValue());
+         int fontIdx = rg.getSelectedIndex();
+         ckBold.setEnabled(fontIdx == 0);
+         selFont = Font.getFont(fonts[fontIdx],fontIdx == 0 && ckBold.isChecked(), slSize.getValue());
          updateSize();
          return selFont;
       }
 
       public int getPreferredHeight()
       {
-         return fmH * 3 + insets.top+insets.bottom;
+         return fmH * 5 + insets.top+insets.bottom;
       }
    }
 
@@ -150,7 +159,7 @@ public class FontSample extends BaseContainer
 
    public void onEvent(Event e)
    {
-     if (e.type == ControlEvent.PRESSED && (e.target == selector.ckBold || e.target == selector.slSize))
+     if (e.type == ControlEvent.PRESSED && (e.target == selector.ckBold || e.target == selector.slSize || e.target instanceof Radio))
         samples.setFonts(selector.getSelectedFont());
    }
 }

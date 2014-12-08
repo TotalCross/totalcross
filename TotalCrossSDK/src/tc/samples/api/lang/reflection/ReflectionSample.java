@@ -14,7 +14,7 @@ public class ReflectionSample extends BaseContainer
    Edit edName,edAddr,edNumber,edAge;
    
    // reflection
-   Constructor c;
+   Constructor<?> c;
    Field fname,faddr,fnumb;
    Method mage;
    
@@ -34,7 +34,7 @@ public class ReflectionSample extends BaseContainer
          add(new Label("Constructed and retrieved using reflection:"),LEFT,AFTER+g);
          addLog(LEFT,AFTER,FILL,FILL,null);
          // get access to Data's fields
-         Class data = Class.forName("tc.samples.api.lang.reflection.Data");
+         Class<?> data = Class.forName("tc.samples.api.lang.reflection.Data");
          c = data.getConstructor(new Class[]{String.class,String.class,int.class,byte.class});
          fname = data.getField("name");
          faddr = data.getField("address");
@@ -66,7 +66,7 @@ public class ReflectionSample extends BaseContainer
                // in = d.number;
                int in = fnumb.getInt(o);
                // ba = d.getAge();
-               byte ba = ((Byte)mage.invoke(o, null)).byteValue();
+               byte ba = ((Byte)mage.invoke(o, (Object[])null)).byteValue();
                // show in list
                log("name: "+sn);
                log("address: "+sa);

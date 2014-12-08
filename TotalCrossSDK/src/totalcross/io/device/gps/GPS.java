@@ -19,6 +19,7 @@ package totalcross.io.device.gps;
 import totalcross.io.*;
 import totalcross.io.device.*;
 import totalcross.sys.*;
+import totalcross.util.*;
 
 /**
  * Class that retrieves GPS coordinates read from the COM (or Bluetooth, or IR) port.
@@ -105,7 +106,9 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
+   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
+   private static boolean isOpen;
+   boolean dontFinalize;
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:
@@ -116,11 +119,49 @@ public class GPS
     *    sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
     * </pre>
     * 
-    * @deprecated
     * @return A string like "COM3", or null if no keys with GPS was found under HKLM\Drivers\BuildIn.
     */
    public static String getWinCEGPSCom() // guich@tc100b5_38
    {
+      try
+      {
+         try // guich@tc120_51
+         {
+            String key = "System\\CurrentControlSet\\GPS Intermediate Driver\\Multiplexer\\ActiveDevice";
+            String prefix = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "Prefix");
+            int index = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, key, "Index");
+            if (prefix.equals("COM"))
+               return "COM" + index;
+         }
+         catch (ElementNotFoundException enfe)
+         {
+            // ignore if a key was not found
+         }
+
+         String[] keys = Registry.list(Registry.HKEY_LOCAL_MACHINE, "Drivers\\BuiltIn");
+         for (int i = 0; i < keys.length; i++)
+         {
+            String k = keys[i].toLowerCase();
+            if (k.indexOf("serial") >= 0)
+            {
+               String key = "Drivers\\BuiltIn\\" + keys[i], prefix, name;
+               try
+               {
+                  prefix = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "Prefix");
+                  name = Registry.getString(Registry.HKEY_LOCAL_MACHINE, key, "FriendlyName");
+                  if (prefix.equals("COM") && name.toLowerCase().indexOf("gps") >= 0)
+                     return "COM" + Registry.getInt(Registry.HKEY_LOCAL_MACHINE, key, "Index");
+               }
+               catch (ElementNotFoundException enfe)
+               {
+                  // ignore if a key was not found
+               }
+            }
+         }
+      }
+      catch (Exception e)
+      {
+      }
       return null;
    }
 
@@ -130,15 +171,19 @@ public class GPS
     * 
     * Under Windows Mobile and Android, uses the internal GPS api.
     * 
-    * @throws IOException
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS() throws IOException
    {
+      checkOpen();
       if (!nativeAPI || !startGPS())
       {
+         String com;
          if ("PIDION".equals(Settings.deviceId)) // guich@586_7
             sp = new PortConnector(Convert.chars2int("COM4"), 9600, 7, PortConnector.PARITY_EVEN, 1);
-         else 
+         else if (Settings.isWindowsDevice() && (com = getWinCEGPSCom()) != null)
+            sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
+         else
             sp = new PortConnector(0, 9600);
       }
 
@@ -148,7 +193,7 @@ public class GPS
          sp.setFlowControl(false);
       }
    }
-
+   
    /**
     * Constructs a GPS control with the given serial port. For example:
     * 
@@ -159,9 +204,11 @@ public class GPS
     * </pre>
     * Don't use this constructor under Android nor Windows Mobile.
     * @see #GPS()
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS(PortConnector sp) throws IOException
    {
+      checkOpen();
       if (sp != null)
          this.sp = sp;
       else 
@@ -172,11 +219,19 @@ public class GPS
    private boolean startGPS() throws IOException {return false;}
    native boolean startGPS4D() throws IOException;
 
+   private void checkOpen() throws IOException
+   {
+      if (isOpen) throw new IOException("There's already an open instance of the GPS class");
+      isOpen = true;
+   }
+
    /**
     * Closes the underlying PortConnector or native api.
     */
    public void stop()
    {
+      dontFinalize = true;
+      isOpen = false;
       if (sp == null)
          stopGPS();
       else

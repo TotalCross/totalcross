@@ -2,8 +2,8 @@ package totalcross.lang.reflect;
 
 public class Array4D
 {
-   public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
-   public static native Object newInstance(Class componentType, int dimensions[]) throws IllegalArgumentException, NegativeArraySizeException;
+   public static native Object newInstance(Class<?> componentType, int length) throws NegativeArraySizeException;
+   public static native Object newInstance(Class<?> componentType, int dimensions[]) throws IllegalArgumentException, NegativeArraySizeException;
    public static native int getLength(Object array) throws IllegalArgumentException;
    public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
    public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;

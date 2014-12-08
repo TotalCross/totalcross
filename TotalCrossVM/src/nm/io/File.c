@@ -83,11 +83,7 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
 TC_API void tiF_getDeviceAlias(NMParams p) // totalcross/io/File native private static String getDeviceAlias();
 {
 #if defined (darwin)
-   #if defined (THEOS)
-      p->retO = createStringObjectFromCharP(p->currentContext, "/private/var/mobile", -1);
-   #else
-      p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
-   #endif
+   p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
    setObjectLock(p->retO, UNLOCKED);
 #else
    p->retO = null;
@@ -166,6 +162,11 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
    }
 }
 //////////////////////////////////////////////////////////////////////////
+#ifdef WIN32
+#define FILE_EXISTS 183
+#else
+#define FILE_EXISTS 17
+#endif
 int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
 {
    TCHARP c;
@@ -182,7 +183,7 @@ int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
           if (!createDirRec(p, szPath, nStringSize, slot))
           {
              *c = '/';
-             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != FILE_EXISTS) // ignore if EEXIST
              {
                 throwExceptionWithCode(p->currentContext, IOException, err);
                 return 1;
@@ -193,7 +194,7 @@ int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
           return 1;
       }
   
-   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
+   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != FILE_EXISTS)
    {
       throwExceptionWithCode(p->currentContext, IOException, err);
       return 1;

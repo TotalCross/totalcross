@@ -19,7 +19,6 @@
 package tc.samples.game.scape;
 
 import totalcross.game.*;
-import totalcross.sys.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 

@@ -226,7 +226,7 @@ EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
 
  #define free(A)         xfree(A)
  #define malloc(A)       xmalloc(A)
- #define calloc(A,B)     xmalloc(A*B)
+// #define calloc(A,B)     xmalloc(A*B)  guich@tc307: now all platforms supports calloc
  #define realloc(A, B)   xrealloc(A, B)
 
 #else // previous code

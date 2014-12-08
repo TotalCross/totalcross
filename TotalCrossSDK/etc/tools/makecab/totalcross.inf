@@ -1,0 +1,68 @@
+;==================================================
+; totalcross.inf
+;==================================================
+
+[Version]
+
+Signature	= "$Windows NT$"
+Provider	   = "TotalCross"
+CESignature	= "$Windows CE$"
+
+[CEStrings]
+
+AppName = "VM"
+InstallDir = "\TotalCross"
+
+[Strings]
+
+;==================================================
+
+[CEDevice]
+ProcessorType   = 2577
+VersionMin = 3.0
+VersionMax = 6.99
+UnsupportedPlatforms = "HPC","Jupiter"
+BuildMax=0xE000000
+
+;==================================================
+
+[DefaultInstall]
+
+CopyFiles	= VMfiles
+
+;==================================================
+
+[SourceDisksNames]
+2 =, "Libraries",,..\..\..\dist\vm
+3 =, "Fonts",,..\..\fonts
+4 =, "LitebaseLib",,..\..\..\..\..\Litebase\LitebaseSDK\dist\lib
+5 =, "LitebaseBinary",,..\..\..\..\..\output\vc2008\Pocket PC 2003 (ARMV4)\NO RAS Release
+
+[SourceDisksNames.PocketPC_ARM]
+1 =, "Binaries",,..\..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\ARM
+[SourceDisksNames.WMOBILE_ARM]
+1 =, "Binaries",,..\..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\ARM
+
+[SourceDisksFiles]
+
+tcvm.dll   = 1
+TCBase.tcz = 2
+TCUI.tcz   = 2
+TCFont.tcz = 3
+LitebaseLib.tcz = 4
+Litebase.dll = 5
+
+;==================================================
+
+[DestinationDirs]
+
+DefaultDestDir = 0, %InstallDir%
+
+[VMfiles]
+
+tcvm.dll
+TCBase.tcz
+TCUI.tcz
+TCFont.tcz
+LitebaseLib.tcz
+Litebase.dll

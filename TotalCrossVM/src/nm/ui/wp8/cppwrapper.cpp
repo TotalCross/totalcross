@@ -97,7 +97,7 @@ char *GetVmPathWP8()
 	return vmPathWP8;
 }
 
-char *GetDisplayNameWP8()
+char *GetDisplayNameWP8() // no longer used
 {
 	if (devId[0] == '\0') {
 	   Platform::String ^displayName = Windows::Networking::Proximity::PeerFinder::DisplayName;
@@ -133,7 +133,9 @@ void vibrate(DWORD32 milliseconds)
 
 DWORD32 getFreeMemoryWP8()
 {
-   return (DWORD32)MemoryManager::ProcessCommittedLimit;
+   //long ret = (DWORD32)MemoryManager::ProcessCommittedLimit;
+   long long ret2 = Direct3DBase::getLastInstance()->csharp->getFreeMemory();
+   return (DWORD32)ret2;
 }
 
 void alertCPP(JCharP jCharStr)
@@ -239,19 +241,19 @@ int32 dxGetScreenSize()
    return Direct3DBase::getLastInstance()->csharp->getScreenSize();
 }
 
-void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
-   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, updateList);
+   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
 }
 
-void dxDeleteTexture(TCObject img, int32* textureId, bool updateList)
+void dxDeleteTexture(TCObject img, int32* textureId)
 {
-   Direct3DBase::getLastInstance()->deleteTexture(img, textureId, updateList);
+   Direct3DBase::getLastInstance()->deleteTexture(img, textureId);
 }
 
-void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
 {
-   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip, alphaMask);
+   Direct3DBase::getLastInstance()->drawTexture(textureId, x, y, w, h, dstX, dstY, dstW, dstH, imgW, imgH, color, alphaMask);
 }
 
 void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int color, bool fill)
@@ -274,9 +276,14 @@ void dxFillRect(int32 x, int32 y, int32 w, int32 h, int color)
    Direct3DBase::getLastInstance()->fillRect(x, y, w, h, color);
 }
 
-void dxDrawPixels(float *glcoords, float *glcolors, int count, int color)
+void dxDrawPixelColors(int32* x, int32* y, PixelConv* colors, int32 n)
 {
-	Direct3DBase::getLastInstance()->drawPixels(glcoords, glcolors, count, color);
+   Direct3DBase::getLastInstance()->drawPixelColors(x, y, colors, n);
+}
+
+void dxDrawPixels(float *glXYA, int count, int color)
+{
+	Direct3DBase::getLastInstance()->drawPixels(glXYA, count, color);
 }
 
 double getFontHeightCPP()
@@ -321,3 +328,45 @@ void appSetFullScreen()
 {
    Direct3DBase::getLastInstance()->csharp->appSetFullScreen();
 }
+
+void nativeSoundPlayCPP(char* filename)
+{
+   std::string s_str = std::string(filename);
+   std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
+   const wchar_t* w_char = wid_str.c_str();
+   Platform::String^ p_string = ref new Platform::String(w_char);
+   Direct3DBase::getLastInstance()->csharp->nativeSoundPlayCS(p_string);
+}
+
+bool isVirtualKeyboard()
+{
+   return Direct3DBase::getLastInstance()->csharp->isVirtualKeyboard();
+}
+double getDpiX()
+{
+   return Direct3DBase::getLastInstance()->csharp->getDpiX();
+}
+double getDpiY()
+{
+   return Direct3DBase::getLastInstance()->csharp->getDpiY();
+}
+int getOSVersion()
+{
+   return Direct3DBase::getLastInstance()->csharp->getOSVersion();
+}
+void getDeviceIdCPP(CharP ret)
+{
+   Platform::String ^name = Direct3DBase::getLastInstance()->csharp->getDeviceId();
+   WideCharToMultiByte(CP_ACP, 0, name->Data(), name->Length(), ret, name->Length() + 1, NULL, NULL);
+}
+void getRomSerialNumberCPP(CharP ret)
+{
+   Platform::String ^name = Direct3DBase::getLastInstance()->csharp->getSerialNumber();
+   WideCharToMultiByte(CP_ACP, 0, name->Data(), name->Length(), ret, name->Length() + 1, NULL, NULL);
+}
+
+bool showMap(JCharP originStr, int32 originLen, JCharP destinationStr, int32 destinationLen)
+{
+   return Direct3DBase::getLastInstance()->csharp->showMap(ref new Platform::String((wchar_t*)originStr, originLen), ref new Platform::String((wchar_t*)destinationStr, destinationLen));
+}
+

@@ -219,7 +219,7 @@ public class SSLCTX
             KeyStore ks12 = KeyStore.getInstance("pkcs12");
             ks12.load(new ByteArrayInputStream(data, 0, len), password.toCharArray());
 
-            java.util.Enumeration aliases = ks12.aliases();
+            java.util.Enumeration<?> aliases = ks12.aliases();
             while (aliases.hasMoreElements())
             {
                String alias = (String) aliases.nextElement();

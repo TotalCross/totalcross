@@ -51,6 +51,7 @@ void destroyDebug()
    debugstr = null;
 }
 
+void iphoneDebug(CharP s);
 /* Displays the given char ptr in stdout (or somewhere else). */
 TC_API bool debug(const char *s, ...)
 {
@@ -59,8 +60,7 @@ TC_API bool debug(const char *s, ...)
    if (debugstr == null) // guich@tc120_3: check disableDebug
    {
 #ifdef ANDROID   
-      if (debugMode == MODE_ADB) // allow vm debugging
-         debugStr((char*)s);
+      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
 #endif         
       return false;  
    }
@@ -69,21 +69,21 @@ TC_API bool debug(const char *s, ...)
 
    vsprintf(buf, s, args);
    va_end(args);
-#ifdef darwin
-   iphoneDebug(buf);
-#endif
    return debugStr(buf);
 }
 
 bool debugStr(char *s)
 {
 #ifdef ANDROID   
-   if (debugMode == MODE_ADB && s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
+   if (s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
    {  
-      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
-      return true;
+      __android_log_write(ANDROID_LOG_INFO, "TotalCross", s);
+      if (debugMode == MODE_ADB)
+         return true;
    }
-#endif   
+#elif defined darwin
+   iphoneDebug(s);
+#endif
    if (tcSettings.disableDebug && *tcSettings.disableDebug) // guich@tc120_3
       return false;
    return privateDebug(s);

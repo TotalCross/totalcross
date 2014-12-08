@@ -11,7 +11,11 @@
 
 package totalcross.map;
 
-/** Shows a Google Maps viewer on a separate viewer. 
+import totalcross.io.*;
+import totalcross.net.*;
+import totalcross.sys.*;
+
+/** Shows a Google Maps viewer on a separate screen. 
  * Pressing back returns to the application.
  * 
  * Internet connection is required.
@@ -22,6 +26,103 @@ package totalcross.map;
  */
 public class GoogleMaps
 {
+   /** An abstract class used to group an array of map items. */
+   public abstract static class MapItem
+   {
+      abstract void serialize(StringBuffer sb);
+   }
+   
+   private static int toCoordI(double v)
+   {
+      return (int)(v * 1e6);
+   }
+
+   /** A map item that represents a circle.
+    * <pre>
+      GoogleMaps.Circle c = new GoogleMaps.Circle();
+      c.lat = -3.73243;
+      c.lon = -38.483414;
+      c.color = Color.BLUE;
+      c.filled = false;
+      c.rad = 70;
+    * </pre>
+    */
+   public static class Circle extends MapItem
+   {
+      /** Center of the circle */
+      public double lat, lon;
+      /** The radius; if > 0, its computed as meters; if < 0, its computed as delta of the coordinates */
+      public double rad;
+      /** Set if the item is filled or not */
+      public boolean filled;
+      /** The item color. Alpha defaults to 255 if not specified. */
+      public int color;
+      
+      void serialize(StringBuffer sb)
+      {
+         sb.append("*C*,").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(rad).append(",").append(filled).append(",").append(color);
+      }
+   }
+   
+   /** A map item that represents a polygon with any shape.
+    * <pre>
+      GoogleMaps.Shape s1 = new GoogleMaps.Shape();
+      s1.color = Color.YELLOW | 0X88000000;
+      s1.filled = true;
+      s1.lats = new double[]{-3.73143,-3.73243,-3.73193};
+      s1.lons = new double[]{-38.483424, -38.483524, -38.483124};
+    * </pre>
+    */
+   public static class Shape extends MapItem
+   {
+      /** The coordinates of the polygon */
+      public double[] lats, lons;
+      /** Set if the item is filled or not */
+      public boolean filled;
+      /** The item color. Alpha defaults to 255 if not specified. */
+      public int color;
+
+      void serialize(StringBuffer sb)
+      {
+         sb.append("*S*,").append(lats.length).append(",");
+         for (int i = 0; i < lats.length; i++)
+            sb.append(toCoordI(lats[i])).append(",").append(toCoordI(lons[i])).append(",");
+         sb.append(filled).append(",").append(color);
+      }
+   }
+   /** A map item that represents a place in the map. It shows with a pin, and above it, a balloon with a text. 
+    * <pre>
+    * </pre>
+    */
+   public static class Place extends MapItem
+   {
+      /** The location of the place */
+      public double lat,lon;
+      /** An optional caption of the place; shown in bold */
+      public String caption;
+      /** The detail of the place. Use \n to split lines. Cannot be null. */
+      public String detail;
+      /** The item's background color. Alpha defaults to 255 if not specified. */
+      public int backColor;
+      /** The item caption's color. Alpha defaults to 255 if not specified. */
+      public int capColor;
+      /** The item details' color. Alpha defaults to 255 if not specified. */
+      public int detColor;
+      /** The item pin's color. Alpha defaults to 255 if not specified. */
+      public int pinColor;
+      /** The percentage of the font based on the device's original font size. Defaults to 100. */      
+      public int fontPerc = 100;
+            
+      void serialize(StringBuffer sb)
+      {
+         sb.append("*P*,\"").append(caption==null?null:caption.replace('"','\'')).append("\",\"").append(detail.replace('"','\''))
+           .append("\",").append(toCoordI(lat)).append(",").append(toCoordI(lon)).append(",").append(backColor)
+           .append(",").append(capColor).append(",").append(detColor).append(",").append(pinColor).append(",").append(fontPerc);
+      }
+   }
+   
+   
+   
    /** Shows the given address in a separate viewer.
     * 
     * If you want to show your current location, you will have to turn
@@ -50,9 +151,57 @@ public class GoogleMaps
    }
    native static boolean showAddress4D(String address, boolean showSatellitePhotos);
 
+   /** Shows the route between two points. The traversed points is a sequence of lat,lon coordinates comma-separated.
+    */
    public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
    {
       return true;
    }
    native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+   
+   /** Shows an array of MapItem elements in the map. The map is zommed in a way that all coordinates are visible.
+    * See the Circle, Shape and Place map items.
+    */
+   public static boolean showMap(MapItem[] items, boolean showSatellitePhotos)
+   {
+      StringBuffer sb = new StringBuffer(items.length * 100);
+      sb.append("***");
+      items[0].serialize(sb);
+      for (int i = 1; i < items.length; i++)
+      {
+         sb.append("|");
+         items[i].serialize(sb);
+      }
+      return showAddress(sb.toString(), showSatellitePhotos);
+   }
+   
+   /** Returns the location after searching Google. Requires internet connection and waits up to 20 seconds for an answer. 
+    * Returns the lat/lon pair, or null if a bad response code was returned. 
+    */
+   public static double[] getLocation(String address) throws IOException, InvalidNumberException
+   {
+      // connect to map web service
+      String url = "http://maps.googleapis.com/maps/api/geocode/xml?address=" + address.replace("  "," ").replace(' ','+') + "&sensor=false";
+      HttpStream hs = new HttpStream(new URI(url));
+      if (hs.badResponseCode)
+      {
+         Vm.debug("getLocation \""+url+"\" returned response code: "+hs.responseCode);
+         return null;
+      }
+      ByteArrayStream bas = new ByteArrayStream(2048);
+      bas.readFully(hs, 5, 2048);
+      String s = new String(bas.getBuffer(), 0, bas.available()).toLowerCase();
+      if (s.contains("<location_type>approximate</location_type>"))
+      {
+         Vm.debug("getLocation \""+url+"\" returned a bad location from google maps");
+         return null;
+      }
+      int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>",idx1);
+      int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>",idx1);
+      if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1)
+         return null;
+      String lat = s.substring(idx1+5,idx2);
+      String lon = s.substring(idx3+5,idx4);
+      return new double[]{Convert.toDouble(lat),Convert.toDouble(lon)};
+   }
 }

@@ -102,6 +102,7 @@ static Type checkPrimitiveType(NMParams p, TCClass cto, Type from, bool isGet) /
       return to;
    return Type_Null;
 }
+void jlC_forName_s(NMParams p);
 static Type checkPrimitiveField(NMParams p, Type from, bool isGet) // check if the field's type can be wide converted to the given src type
 {
    TCObject o = p->obj[0];
@@ -110,7 +111,7 @@ static Type checkPrimitiveField(NMParams p, Type from, bool isGet) // check if t
       throwException(p->currentContext, NullPointerException, "Argument array is null");
    else
    {
-      if (strEq(OBJ_CLASS(Field_type(o))->name, "java.lang.String"))
+      if (OBJ_CLASS(Field_type(o))->flags.isString)
       {
          TNMParams params;
 
@@ -680,15 +681,16 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
                CharP msg;
                TCObject original = p->currentContext->thrownException, omsg = *Throwable_msg(original);
                p->currentContext->thrownException = null;
-               msg = omsg ? JCharP2CharP(String_charsStart(omsg),-1) : null;
+               msg = omsg ? JCharP2CharP(String_charsStart(omsg),String_charsLen(omsg)) : null;
                throwException(p->currentContext, InvocationTargetException, "Exception %s thrown: %s", OBJ_CLASS(original)->name, msg == null ? "" : msg);
                xfree(msg);
             }
             else
             {
+               bool unlockIt = true;
                switch (target->cpReturn)
                {
-                  case Type_Null:    o = null;
+                  case Type_Null:    o = null; unlockIt = false; break;
                   case Type_Byte:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Byte");      if (o) Byte_v     (o) = ret.asInt32; break;
                   case Type_Boolean: o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Boolean");   if (o) Boolean_v  (o) = ret.asInt32; break;
                   case Type_Short:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Short");     if (o) Short_v    (o) = ret.asInt32; break;
@@ -697,9 +699,12 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
                   case Type_Long:    o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Long");      if (o) Long_v     (o) = ret.asInt64; break;
                   case Type_Float:   o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Float");     if (o) Float_v    (o) = ret.asDouble; break;
                   case Type_Double:  o = createObjectWithoutCallingDefaultConstructor(p->currentContext, "java.lang.Double");    if (o) Double_v   (o) = ret.asDouble; break;
-                  default:           o = ret.asObj; break;
+                  default:           o = ret.asObj; unlockIt = false; break;
                }
-               p->retO = o;
+               if (unlockIt)
+                  setObjectLock(p->retO = o, UNLOCKED);
+               else
+                  p->retO = o;
             }
          }
          freeArray(aargs);
@@ -712,7 +717,6 @@ TC_API void jlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public 
    TCObject obj = p->obj[1];
    TCObject args = p->obj[2];
    invoke(p, m, obj, args);
-   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;

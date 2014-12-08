@@ -25,15 +25,21 @@ extern "C" {
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
-#ifdef ANDROID
-   JNIEnv* env = getJNIEnv();         
    TCObject addr = p->obj[0];
+   if (!addr)
+   {
+      p->retI = false;
+      return;
+   }
+#ifdef WP8
+   p->retI = showMap(String_charsStart(addr), String_charsLen(addr), 0, 0);
+#elif defined ANDROID
+   JNIEnv* env = getJNIEnv();         
    jstring jaddr = (*env)->NewString(env, (jchar*) String_charsStart(addr), String_charsLen(addr));
    jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowGoogleMaps, jaddr, (jboolean) p->i32[0]);
    (*env)->DeleteLocalRef(env, jaddr);
    p->retI = result != 0;
 #elif defined darwin
-   TCObject addr = p->obj[0];
    CharP addrp = JCharP2CharP(String_charsStart(addr), String_charsLen(addr));
    bool sat = p->i32[0];
    p->retI = addrp ? iphone_mapsShowAddress(addrp,sat) : 0;
@@ -45,10 +51,17 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
 {
-#ifdef ANDROID
-   JNIEnv* env = getJNIEnv();         
    TCObject addrI = p->obj[0];
    TCObject addrF = p->obj[1];
+   if (!addrI || !addrF)
+   {
+      p->retI = false;
+      return;
+   }
+#ifdef WP8
+   p->retI = showMap(String_charsStart(addrI), String_charsLen(addrI), String_charsStart(addrF), String_charsLen(addrF));
+#elif defined ANDROID
+   JNIEnv* env = getJNIEnv();         
    TCObject coord = p->obj[2];
    jstring jaddrI = (*env)->NewString(env, (jchar*) String_charsStart(addrI), String_charsLen(addrI));
    jstring jaddrF = (*env)->NewString(env, (jchar*) String_charsStart(addrF), String_charsLen(addrF));

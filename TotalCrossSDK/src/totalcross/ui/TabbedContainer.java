@@ -19,13 +19,10 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.Font;
-import totalcross.ui.font.FontMetrics;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.ui.media.Sound;
-import totalcross.util.Vector;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * TabbedContainer is a bar of text or image tabs.
@@ -105,8 +102,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private static final byte FOCUSMODE_INSIDE_CONTAINERS = 2;
    private byte focusMode;
    private boolean brightBack;
-   /** Set to true to enable the beep when a tab is clicked */
-   public  boolean beepOn; // guich@230_37
    /** Set the arrows color right after the constructor and after calling setCaptionsColor, which also change this property. */
    public int arrowsColor = Color.BLACK;
    private Font bold;
@@ -119,6 +114,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private int tempSelected=-1;
    private int []wplains,wbolds;
    private boolean scScrolled;
+   private String[] strCaptions0;
+   
+   /** Set to true to automatically shrink the captions to prevent using arrows. Works only for String-based captions. */
+   public boolean autoShrinkCaptions;
 
    /** Enables or not the arrows if scroll is needed. */
    public boolean showArrows = true;
@@ -187,6 +186,16 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
    
+   /** Set to false to disable flicking between tabs. You can still switch between the tabs by clicking on them.
+    * Sample:
+    * <pre>
+      TabbedContainer.allowFlick = false;
+      TabbedContainer tc = new TabbedContainer(caps);
+      TabbedContainer.allowFlick = true;
+    * </pre>
+    */
+   public static boolean allowFlick = Settings.fingerTouch;
+   
    private TabbedContainer(int count)
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
@@ -195,7 +204,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       started = true;
       focusHandler = true;
       containers = new Container[count];
-      if (Settings.fingerTouch)
+      if (allowFlick)
       {
          flick = new Flick(this);
          flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
@@ -212,6 +221,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          c.ignoreOnAddAgain = c.ignoreOnRemove = true;
       }
       disabled = new boolean[count];
+   }
+   
+   protected void computeClipRect()
+   {
+      bagClipY0 = 0;           // include top otherwise the arrows will not be drawn 
+      bagClipYf = this.height; // y0 + parent.height;
+      bagClipX0 = clientRect.x;           // -this.x;
+      bagClipXf = bagClipX0 + clientRect.width;  //  x0 + parent.width;
    }
    
    public void initUI()
@@ -271,7 +288,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public TabbedContainer(String []strCaptions)
    {
       this(strCaptions.length);
-      this.strCaptions = strCaptions;
+      this.strCaptions = this.strCaptions0 = strCaptions;
       onFontChanged();
    }
 
@@ -490,6 +507,30 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    protected void onBoundsChanged(boolean screenChanged)
    {
       int i;
+      if (autoShrinkCaptions)
+      {
+         Vm.arrayCopy(strCaptions0, 0, strCaptions = new String[strCaptions0.length], 0, strCaptions.length);
+         onFontChanged();
+         int idx = 0;
+         double med = 0; for (i = 0; i < strCaptions.length; i++) med += strCaptions[i].length(); 
+         int tries = (int)med; med /= strCaptions.length;
+         while (mustScroll() && tries-- > 0)
+         {
+            String s = strCaptions[idx];
+            int l = s.length();
+            if (l >= med)
+            {
+               if (s.charAt(l-1) == '.')
+                  l--;
+               s = s.substring(0,l-1).concat(".");
+               strCaptions[idx] = s;
+               onFontChanged();
+               med = 0; for (i = 0; i < strCaptions.length; i++) med += strCaptions[i].length(); med /= strCaptions.length;
+            }
+            if (++idx == strCaptions.length)
+               idx = 0;
+         }
+      }
       onFontChanged();
       computeTabsRect();
       int borderGap = style==Window.NO_BORDER || uiAndroid ? 0 : 1; // guich@400_89
@@ -516,7 +557,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    private boolean mustScroll()
    {
-      return count > 1 && getPreferredWidth() > this.width; // guich@564_10: support scroll - guich@573_2: only add arrows if there's more than one tab
+      if (!allSameWidth)
+         return count > 1 && getPreferredWidth() > this.width; // guich@564_10: support scroll - guich@573_2: only add arrows if there's more than one tab
+      // guich@tc306: if all same width, use a different formula
+      int each = width / count - 12; // 12 = space between tabs
+      for (int i = 0; i < count; i++)
+         if (wbolds[i] > each)
+            return true;
+      return false;
    }
 
    private void addArrows()
@@ -560,8 +608,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       {
          boolean canGoLeft = activeIndex > 0;
          boolean canGoRight = activeIndex < count-1;
-         btnLeft.setEnabled(enabled && canGoLeft);
-         btnRight.setEnabled(enabled && canGoRight);
+         btnLeft.setEnabled(isEnabled() && canGoLeft);
+         btnRight.setEnabled(isEnabled() && canGoRight);
       }
    }
 
@@ -694,8 +742,8 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       }
       if (colorsChanged)
          brightBack = Color.getAlpha(foreColor) > 128;
-      fColor = (enabled || !brightBack) ? getForeColor()    : Color.darker(foreColor);
-      cColor = (enabled || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
+      fColor = (isEnabled() || !brightBack) ? getForeColor()    : Color.darker(foreColor);
+      cColor = (isEnabled() || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
       if (colorsChanged && btnLeft != null)
       {
          btnRight.arrowColor = btnLeft.arrowColor = arrowsColor;
@@ -759,14 +807,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (uiAndroid)
                try
                {
-                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop, true), r.x,r.y);
+                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop), r.x,r.y);
                }
                catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
             else
             if (uiFlat) // the flat style has rect borders instead of hatched ones.
                g.fillRect(r.x,r.y,r.width,r.height);
             else
-            if (uiVista && enabled)
+            if (uiVista && isEnabled())
                g.fillVistaRect(r.x+1,r.y+1,r.width-2,r.height-2, back, atTop,false);
             else
                g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
@@ -785,7 +833,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (uiAndroid)
             try
             {
-               Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true);
+               Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
                g.drawImage(img, r.x,r.y);
             }
             catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
@@ -869,7 +917,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    /** Gets the text color of the captions. return a grayed value if this control is not enabled. */
    public int getCaptionColor()
    {
-      return enabled?captionColor:Color.brighter(captionColor);
+      return isEnabled()?captionColor:Color.brighter(captionColor);
    }
    /** Returns the area excluding the tabs and borders for this TabbedContainer.
      * Note: do not change the returning rect object ! */
@@ -928,7 +976,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                   event.consumed = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
                   {
-                     takeScreenShots();
+                     if (Settings.optimizeScroll) takeScreenShots();
                      flickTimerStarted = false;
                      isScrolling = scScrolled = true;
                   }
@@ -972,7 +1020,6 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                }
                if (sel != activeIndex && sel >= 0 && !disabled[sel])
                {
-                  if (beepOn && !Settings.onJavaSE) Sound.beep(); // guich@300_7
                   tempSelected = sel;
                   if (!uiAndroid)
                      setActiveTab(sel);
@@ -1084,7 +1131,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
       super.getFocusableControls(v);
    }
 

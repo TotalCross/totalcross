@@ -31,6 +31,7 @@ public class ControlBox extends Window
    protected Control cb;
    private int selected = -1;
    protected int prefW,prefH;
+   private String originalText;
    /** Defines the y position on screen where this window opens. Can be changed to TOP or BOTTOM. Defaults to CENTER.
     * @see #CENTER
     * @see #TOP
@@ -106,7 +107,7 @@ public class ControlBox extends Window
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       if (buttonCaptions != null) // guich@tc114_7 
          btns = new PushButtonGroup(buttonCaptions,false,-1,uiAndroid?fmH/2:4,6,buttonRows,uiAndroid,PushButtonGroup.BUTTON);
-      msg = new Label(text,Label.CENTER);
+      msg = new Label(originalText = text,Label.CENTER);
       this.cb = cb;
       this.prefW = prefW;
       this.prefH = prefH;
@@ -120,6 +121,11 @@ public class ControlBox extends Window
       if (btns != null) btns.setFont(font);
       cb.setFont(font);
       msg.setFont(font);
+      int maxW = Settings.screenWidth-fmH*2;
+      String text = originalText;
+      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
+         text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
+      msg.setText(text);
       int wb = btns == null ? 0 : btns.getPreferredWidth();
       int hb = btns == null ? 0 : btns.getPreferredHeight();
       if (uiAndroid && wb > 0)

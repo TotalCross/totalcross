@@ -368,7 +368,7 @@ public class MenuBar extends Window
       {
          if (!uiAndroid && uiVista && borderStyle == BORDER_NONE)
          {
-            g.backColor = popCursor; 
+            g.backColor = popCursor != -1 ? popCursor : popBack; 
             g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
          }
          else

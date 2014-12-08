@@ -6,6 +6,7 @@ import java.lang.reflect.*;
 
 // svn.apache.org/repos/asf/harmony/enhanced/java/trunk/classlib/modules/luni/src/test/api/common/org/apache/harmony/luni/tests/java/lang/reflect/ClassTest.java
 
+@SuppressWarnings("rawtypes")
 public class ClassTest extends TestCase
 {
    public ClassTest()
@@ -32,6 +33,7 @@ public class ClassTest extends TestCase
       }
    }
 
+   @SuppressWarnings("unused")
    public static class TestClass
    {
       private int privField = 1;
@@ -210,7 +212,7 @@ public class ClassTest extends TestCase
    public void test_getDeclaredConstructor$Ljava_lang_Class() throws Exception
    {
       Constructor c = TestClass.class.getDeclaredConstructor(new Class[0]);
-      assertNull(((TestClass) c.newInstance(new Class[0])).cValue());
+      assertNull(((TestClass) c.newInstance((Object)new Class[0])).cValue());
       c = TestClass.class.getDeclaredConstructor(new Class[] { Object.class });
    }
 
@@ -250,7 +252,7 @@ public class ClassTest extends TestCase
    public void test_getDeclaredMethodLjava_lang_String$Ljava_lang_Class() throws Exception
    {
       Method m = TestClass.class.getDeclaredMethod("pubMethod", new Class[0]);
-      assertEquals(2, ((Integer) (m.invoke(new TestClass(), new Class[0]))).intValue());
+      assertEquals(2, ((Integer) (m.invoke((Object)new TestClass(), (Object)new Class[0]))).intValue());
       m = TestClass.class.getDeclaredMethod("privMethod", new Class[0]);
    }
 
@@ -324,7 +326,7 @@ public class ClassTest extends TestCase
    public void test_getMethodLjava_lang_String$Ljava_lang_Class() throws Exception
    {
       Method m = TestClass.class.getMethod("pubMethod", new Class[0]);
-      assertEquals(2, ((Integer) (m.invoke(new TestClass(), new Class[0]))).intValue());
+      assertEquals(2, ((Integer) (m.invoke((Object)new TestClass(), (Object)new Class[0]))).intValue());
       try
       {
          m = TestClass.class.getMethod("privMethod", new Class[0]);
@@ -421,8 +423,8 @@ public class ClassTest extends TestCase
     */
    public void test_isAssignableFromLjava_lang_Class()
    {
-      Class clazz1 = null;
-      Class clazz2 = null;
+      Class<?> clazz1 = null;
+      Class<?> clazz2 = null;
 
       clazz1 = Object.class;
       clazz2 = Class.class;
@@ -514,7 +516,7 @@ public class ClassTest extends TestCase
     */
    public void test_forName_arrays() throws Exception
    {
-      Class c1 = getClass();
+      Class<? extends ClassTest> c1 = getClass();
       String s = c1.getName();
       Class a1 = Class.forName("[L" + s + ";");
       Class a2 = Class.forName("[[L" + s + ";");

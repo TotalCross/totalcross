@@ -32,12 +32,18 @@ public class BaseContainer extends Container
    public static final int SELCOLOR = 0x829CE2; // Color.brighter(BKGCOLOR,120);
    protected Bar headerBar,footerBar;
    private static Vector containerStack = new Vector(5);
-   private static Image infoImg;
+   private static Image infoImg, timerImg;
    public static String defaultTitle = "TotalCross API";
    protected int gap;
    public boolean isSingleCall;
    public String info;
 
+   static
+   {
+      Toast.height = PREFERRED + Font.NORMAL_SIZE;
+      Toast.posY = BOTTOM - Font.NORMAL_SIZE * 3;
+   }
+   
    protected String getHelpMessage()
    {
       return null;
@@ -47,21 +53,24 @@ public class BaseContainer extends Container
    {
       try
       {
+         transitionEffect = TRANSITION_OPEN;
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
-/*         if (isMainMenu) 
-         {
-            backgroundStyle = BACKGROUND_CYLINDRIC_SHADED;
-            setForeColor(0xBFCFFF);
-         }
-*/         
          if (infoImg == null)
             infoImg = new Image("ui/images/ic_dialog_info.png");
+         if (timerImg == null)
+            timerImg = new Image("ui/images/crono.png");
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
+         if (false) // you can uncomment this to test other possibilities
+         {
+            headerBar.titleAlign = CENTER;
+            headerBar.buttonAlign = LEFT;
+         }
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
+         headerBar.addButton(timerImg);
          headerBar.addButton(isMainMenu ? infoImg : Resources.back);
          add(headerBar, LEFT,0,FILL,PREFERRED);
          
@@ -85,6 +94,20 @@ public class BaseContainer extends Container
                   {
                      case 1:
                      {
+                        Vm.gc();
+                        Vm.tweak(Vm.TWEAK_DISABLE_GC,true);
+                        int ini = Vm.getTimeStamp();
+                        for (int i = 0; i < 100; i++)
+                           repaintNow();
+                        int fim = Vm.getTimeStamp();
+                        Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
+                        String s = "Paint 100x elapsed: "+(fim-ini)+"ms";
+                        Toast.show(s, 3000);
+                        Vm.debug(headerBar.getTitle()+" - "+s);
+                        break;
+                     }
+                     case 2:
+                     {
                         boolean isMainMenu = containerStack.size() == 1;
                         if (isMainMenu)
                         {
@@ -92,6 +115,7 @@ public class BaseContainer extends Container
                            if (helpMessage == null) 
                               return;
                            MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
+                           mb.transitionEffect = TRANSITION_FADE;
                            mb.footerColor = mb.headerColor = UIColors.messageboxBack;
                            mb.setIcon(infoImg);
                            mb.popup();

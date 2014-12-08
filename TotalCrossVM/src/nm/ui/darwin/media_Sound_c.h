@@ -16,7 +16,8 @@
   extern "C" {
  #endif
 
- void iphone_soundBeep(void);
+ void iphone_soundPlay(CharP filename);
+ void iphone_soundBeep();
 
  #ifdef __cplusplus
   };
@@ -24,15 +25,18 @@
 #endif // darwin
 
 
+static void soundPlay(CharP filename)
+{
+   iphone_soundPlay(filename);
+}
+
 static void soundSetEnabled(int b)
 {
 }
 
 static void soundBeep(void)
 {
-#if defined (darwin)
    iphone_soundBeep();
-#endif   
 }
 
 bool soundTone(int freq, unsigned short duration)

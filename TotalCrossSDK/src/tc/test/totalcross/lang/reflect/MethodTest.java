@@ -190,7 +190,7 @@ public class MethodTest extends TestCase
       // java.lang.reflect.Method.getExceptionTypes()
 
       Method mth = TestMethod.class.getMethod("voidMethod", new Class[0]);
-      Class[] ex = mth.getExceptionTypes();
+      Class<?>[] ex = mth.getExceptionTypes();
       assertEquals(1, ex.length);
       assertEquals(ex[0], IllegalArgumentException.class);
       mth = TestMethod.class.getMethod("intMethod", new Class[0]);
@@ -205,7 +205,7 @@ public class MethodTest extends TestCase
    {
       // Test for method int java.lang.reflect.Method.getModifiers()
 
-      Class cl = TestMethod.class;
+      Class<?> cl = TestMethod.class;
       int mods = 0;
       Method mth = null;
       int mask = 0;
@@ -256,11 +256,11 @@ public class MethodTest extends TestCase
    {
       // Test for method java.lang.Class []
       // java.lang.reflect.Method.getParameterTypes()
-      Class cl = TestMethod.class;
+      Class<?> cl = TestMethod.class;
       Method mth = null;
-      Class[] parms = null;
+      Class<?>[] parms = null;
       Method[] methods = null;
-      Class[] plist = { int.class, short.class, String.class, boolean.class, Object.class, long.class, byte.class, char.class, double.class };
+      Class<?>[] plist = { int.class, short.class, String.class, boolean.class, Object.class, long.class, byte.class, char.class, double.class };
       mth = cl.getMethod("voidMethod", new Class[0]);
       parms = mth.getParameterTypes();
 
@@ -299,7 +299,7 @@ public class MethodTest extends TestCase
    {
       // Test for method java.lang.Class
       // java.lang.reflect.Method.getReturnType()
-      Class cl = TestMethod.class;
+      Class<?> cl = TestMethod.class;
       Method mth = null;
       /*
        * mth = cl.getMethod("charMethod", new Class[0]); assertTrue("Gave incorrect returne type, wanted char", mth
@@ -330,10 +330,10 @@ public class MethodTest extends TestCase
       // java.lang.reflect.Method.invoke(java.lang.Object, java.lang.Object
       // [])
 
-      Class cl = TestMethod.class;
+      Class<?> cl = TestMethod.class;
       Method mth = null;
       Object ret = null;
-      Class[] dcl = new Class[0];
+      Class<?>[] dcl = new Class[0];
 
       // Get and invoke a static method
       mth = cl.getDeclaredMethod("invokeStaticTest", dcl);
@@ -416,7 +416,7 @@ public class MethodTest extends TestCase
       {
          if (methods[i].getName().startsWith("invokeCastTest1"))
          {
-            Class param = methods[i].getParameterTypes()[0];
+            Class<?> param = methods[i].getParameterTypes()[0];
 
             try
             {
@@ -525,7 +525,7 @@ public class MethodTest extends TestCase
 
       try
       {
-         method.invoke(mockObject, new Class[] { InvocationTargetException.class });
+         method.invoke(mockObject, (Object)new Class[] { InvocationTargetException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -535,7 +535,7 @@ public class MethodTest extends TestCase
 
       try
       {
-         method.invoke(mockObject, new Class[] { IllegalAccessException.class });
+         method.invoke(mockObject, (Object)new Class[] { IllegalAccessException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -545,7 +545,7 @@ public class MethodTest extends TestCase
 
       try
       {
-         method.invoke(mockObject, new Class[] { IllegalArgumentException.class });
+         method.invoke(mockObject, (Object)new Class[] { IllegalArgumentException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -555,7 +555,7 @@ public class MethodTest extends TestCase
 
       try
       {
-         method.invoke(mockObject, new Class[] { InvocationTargetException.class });
+         method.invoke(mockObject, (Object)new Class[] { InvocationTargetException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -565,7 +565,7 @@ public class MethodTest extends TestCase
 
       try
       {
-         method.invoke(mockObject, new Class[] { Throwable.class });
+         method.invoke(mockObject, (Object)new Class[] { Throwable.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -577,7 +577,7 @@ public class MethodTest extends TestCase
    static class MockObject
    {
 
-      public void mockMethod(Class clazz) throws Exception
+      public void mockMethod(Class<?> clazz) throws Exception
       {
          if (clazz == InstantiationException.class)
          {
@@ -611,7 +611,7 @@ public class MethodTest extends TestCase
    public void test_toString() throws Exception
    {
       Method mth = null;
-      Class[] parms = { int.class, short.class, String.class, boolean.class, Object.class, long.class, byte.class, char.class, double.class };
+      Class<?>[] parms = { int.class, short.class, String.class, boolean.class, Object.class, long.class, byte.class, char.class, double.class };
       mth = TestMethod.class.getDeclaredMethod("printTest", parms);
 
       assertEquals(mth.toString(), "public static final void tc.test.totalcross.lang.reflect.MethodTest$TestMethod.printTest(int,short,java.lang.String,boolean,java.lang.Object,long,byte,char,double)");

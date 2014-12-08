@@ -64,13 +64,8 @@ static Context initAll(CharP* args)
    return ok ? c : null;
 }
 
-void dump_memory_map(char* fileSuffix);
-
 static void destroyAll() // must be in inverse order of initAll calls
 {
-#if defined(DEBUG) || defined(_DEBUG)
-   dump_memory_map("destroyAll");
-#endif
    threadDestroyAll(); // first all threads must be destroyed - NOTE: when debugging on win32, this may hang the Visual C++ ide.
    destroyingApplication = true; // now is safe to destroy all objects
    runFinalizers();
@@ -90,7 +85,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    destroyGlobals();
 }
 
-static int32 exitProgram(int32 exitcode)
+int32 exitProgram(int32 exitcode)
 {            
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
@@ -102,11 +97,11 @@ static int32 exitProgram(int32 exitcode)
    mainClass = null;
    if (rebootOnExit) // set by Vm.exitAndReboot
       rebootDevice();      
-#ifdef ANDROID
+   #ifdef ANDROID
    privateExit(exitcode); // exit from the android vm
-#elif defined(WP8)
+   #elif defined(WP8)
    appExit();
-#endif
+   #endif
    return exitCode;
 }
 
@@ -245,7 +240,6 @@ TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
    int32 retc;
-   
    retc = checkActivation(currentContext);
    isDemo = retc == ISDEMO;
 
@@ -346,15 +340,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif defined WIN32
-#if !defined(WP8)
-   {
-      SYSTEM_INFO systemInfo;
-      GetSystemInfo(&systemInfo);
-      if (systemInfo.dwNumberOfProcessors > 1)  // flsobral@tc110_91: On Win32, TotalCross applications will run only in one processor. This should fix our problems with multi-core processors while thread synchronization is not supported.
-         SetProcessAffinityMask(GetCurrentProcess(), 1L);
-   }
-#endif
-   if (xstrstr(argsOriginal,"/scr"))
+   if (argsOriginalLen > 0 && xstrstr(argsOriginal, "/scr"))
    {
       argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);
       if (!argsOriginal)
@@ -376,6 +362,13 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       alert("TCBase not found or corrupted. Please reinstall TotalCross");
       return 101;
    }
+   xstrcpy(tcbase, "TCUI.tcz");
+   if (!tczLoad(currentContext, tcbase))
+   {
+      alert("TCUI not found or corrupted. Please reinstall TotalCross");
+      return 103;
+   }
+   
    initException(); // load exceptions
 
    xstrcpy(argsLower, args);
@@ -404,6 +397,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
              return exitProgram(103);
           }
           waitUntilStarted();
+          imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
           mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
           gcContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError");
           lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
@@ -417,6 +411,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
           return exitProgram(-1);
       }
       c = cmdline;
+      if (cmdline) 
       while (loop)
       {
          switch (*cmdline++)
@@ -455,7 +450,8 @@ jumpArgument:
       }
       while (*c == ' ' && *c != 0)
          c++;
-      xstrcpy(commandLine, c);
+      if (commandLine != null && c != null)
+         xstrcpy(commandLine, c);
    }
 
 #if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
@@ -468,6 +464,7 @@ jumpArgument:
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+   imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
    loadExceptionClasses(currentContext); // guich@tc112_18
    voidTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Void",      false), "TYPE");
    booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");

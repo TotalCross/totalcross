@@ -153,7 +153,7 @@ public class BigDecimal implements Comparable
          char c = num.charAt(point);
          if (c == '.')
          {
-            if (dot >= 0) throw new InvalidNumberException("multiple `.'s in number");
+            if (dot >= 0) throw new InvalidNumberException("multiple '.'s in number "+num);
             dot = point;
          }
          else if (c == 'e' || c == 'E')
@@ -274,7 +274,7 @@ public class BigDecimal implements Comparable
       // Now correct the exponent to account for the bits to the right
       // of the decimal.
       exponent -= mantissaBits;
-      // Ordinary numbers have an implied leading `1' bit.
+      // Ordinary numbers have an implied leading '1' bit.
       if (!denormal) mantissa |= (1L << mantissaBits);
 
       // Shave off factors of 10.
@@ -317,7 +317,6 @@ public class BigDecimal implements Comparable
     * Translates a <code>long</code> unscaled value and an <code>int</code> scale into a <code>BigDecimal</code>. This "static factory method" is 
     * provided in preference to a <code>(long, int)</code> constructor because it allows for reuse of frequently used <code>BigDecimal</code> values.
     *
-    * @param unscaledVal Unscaled value of the <code>BigDecimal</code>.
     * @param scale Scale of the <code>BigDecimal</code>.
     * @return A <code>BigDecimal</code> whose value is <tt>(unscaledVal &times; 10<sup>-scale</sup>)</tt>.
     */
@@ -483,7 +482,7 @@ public class BigDecimal implements Comparable
     * Returns a <code>BigDecimal</code> whose value is <code>(this / val)</code>, and whose scale is <code>this.scale()</code>. If rounding must be 
     * performed to generate a result with the given scale, an <code>ArithmeticException</code> is thrown.
     * 
-    * @param val The value by which this <code>BigDecimal</code> is to be divided.
+    * @param divisor The value by which this <code>BigDecimal</code> is to be divided.
     * @return <code>(this / val)</code>.
     * @throws ArithmeticException If <code>val == 0</code>, or <code>this.scale()</code> is insufficient to represent the result of the division 
     * exactly.

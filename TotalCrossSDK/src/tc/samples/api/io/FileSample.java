@@ -24,7 +24,7 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.util.*;
 
-public class FileSample extends BaseContainer
+public class FileSample extends BaseContainer implements Runnable
 {
    private String rootPath = Settings.appPath+"/";
 
@@ -287,15 +287,11 @@ public class FileSample extends BaseContainer
       }
    }
 
-   public void initUI()
+   public void run()
    {
-      super.initUI();
       String sdId = null;
       MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
       mb.popupNonBlocking();
-
-      addLog(LEFT, TOP + fmH*2, FILL, FILL,null);
-
       if (sdId != null)
          log("SD unique id: " + sdId);
       else
@@ -315,5 +311,12 @@ public class FileSample extends BaseContainer
       testFileReadWrite();
 
       mb.unpop();
+   }
+   
+   public void initUI()
+   {
+      super.initUI();
+      addLog(LEFT, TOP + fmH*2, FILL, FILL,null);
+      MainWindow.getMainWindow().runOnMainThread(this); // allow animation
    }
 }

@@ -88,6 +88,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jdial             = (*env)->GetStaticMethodID(env, applicationClass, "dial", "(Ljava/lang/String;)V");
    jgpsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "gpsFunc", "(I)Ljava/lang/String;");
    jtone             = (*env)->GetStaticMethodID(env, applicationClass, "tone", "(II)V");
+   jsoundPlay        = (*env)->GetStaticMethodID(env, applicationClass, "soundPlay", "(Ljava/lang/String;)V");
    jsoundEnable      = (*env)->GetStaticMethodID(env, applicationClass, "soundEnable", "(Z)V");
    jcellinfoUpdate   = (*env)->GetStaticMethodID(env, applicationClass, "cellinfoUpdate", "()[I");
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
@@ -99,6 +100,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jfindTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "findTCZ", "(Ljava/lang/String;)I");
    jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    jlistTCZs         = (*env)->GetStaticMethodID(env, applicationClass, "listTCZs", "()Ljava/lang/String;");
+   jgetFreeMemory    = (*env)->GetStaticMethodID(env, applicationClass, "getFreeMemory", "()I");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
@@ -132,7 +134,7 @@ JNIEnv* getJNIEnv()
    return env;
 }
 
-void callExecuteProgram() // called from android/gfz_Graphics_c.h
+void callExecuteProgram() // called from android/gfx_Graphics_c.h
 {
    executeProgram(tczname[0] ? tczname : NULL);
 }

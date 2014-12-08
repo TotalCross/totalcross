@@ -70,21 +70,36 @@ void dxUpdateScreen();
 void dxDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, int32 color, bool fill);
 void dxDrawLine(int x1, int y1, int x2, int y2, int color);
 void dxFillRect(int x1, int y1, int x2, int y2, int color);
-void dxDrawPixels(float *glcoords, float *glcolors, int count, int color);
-void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-void dxDeleteTexture(TCObject img, int32* textureId, bool updateList);
-void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask);
+void dxDrawPixelColors(int32* x, int32* y, PixelConv* colors, int32 n);
+void dxDrawPixels(float *glXYA, int count, int color);
+void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+void dxDeleteTexture(TCObject img, int32* textureId);
+void dxDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
 void dxFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
 int32 dxGetSipHeight();
 int32 dxGetScreenSize();
 void dxprivateScreenChange();
 void cameraClick(NMParams p);
 
+// Media
+void nativeSoundPlayCPP(CharP filename);
+
 // Etc
 double getFontHeightCPP();
 void privateWindowSetSIP(bool visible);
 void appExit();
 void appSetFullScreen();
+
+// Settings                   
+bool isVirtualKeyboard();
+int getOSVersion();
+double getDpiX();
+double getDpiY();
+void getDeviceIdCPP(CharP buf);
+void getRomSerialNumberCPP(CharP buf);
+
+// Map
+bool showMap(JCharP originStr, int32 originLen, JCharP destinationStr, int32 destinationLen);
 
 #ifdef __cplusplus
 }

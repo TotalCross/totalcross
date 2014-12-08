@@ -39,6 +39,7 @@
  #define XSELECT(addr, idx) switch (idx)
 #endif
 
+TC_API void jlC_forName_s(NMParams p);
 //////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_TRACE
 static CharP getSpaces(Context currentContext, int32 n)
@@ -66,8 +67,17 @@ static void tcvmCreateException(Context currentContext, Throwable t, int32 pc, i
          vsprintf(str, message, args);
          va_end(args);
       }
-      if (t == OutOfMemoryError)
+      if (t == OutOfMemoryError)           
+      {
          currentContext->thrownException = currentContext->OutOfMemoryErrorObj;
+         if (message)
+         {
+            *Throwable_msg(currentContext->thrownException) = createStringObjectFromCharP(currentContext, str,-1);
+            setObjectLock(*Throwable_msg(currentContext->thrownException), UNLOCKED);
+            if (*Throwable_msg(currentContext->thrownException) == null)
+               debug("out of memory error reason: %s",str);
+         }
+      }
       else
          createException(currentContext, t, false, message != null ? str : null);
       fillStackTrace(currentContext, currentContext->thrownException, pc, currentContext->callStack + decTrace);
@@ -514,6 +524,9 @@ contCall:
 #ifdef ENABLE_TRACE
             TRACE("T %08d %X %X %05d - %04d #%4d %X-%X %X %s calling %s.%s - %s (%X)", getTimeStamp(), thread, context, ++context->ccon, (int)(code-method->code), locateLine(method, (int32)(code-method->code)), (int)regO, context->regO, context->callStack-2, getSpaces(context,context->depth), newMethod->class_->name, newMethod->name, regO[(int32)code->mtd.this_ - (int32)method->oCount] == null ? "" : OBJ_CLASS(regO[(int32)code->mtd.this_ - (int32)method->oCount])->name, (int)(regO[(int32)code->mtd.this_ - (int32)method->oCount]));
             context->depth++;
+#else
+            if (traceOn) 
+               debug("T %08d %X %s - %s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
 #endif
             if (!newMethod->flags.isStatic)
             {
@@ -619,6 +632,7 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
+               nmp->retO = null;
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here
@@ -718,7 +732,7 @@ notYetLinked:
             if (code->op.op == CALL_virtual)
             {
                c = OBJ_CLASS(regO[code->mtd.this_]); // search for the method starting on the class pointed by "this"
-               if (strEq(className, "java.lang.Class") && strEq(c->name, "java.lang.String"))
+               if (c->flags.isString && strEq(className, "java.lang.Class"))
                {
                   TNMParams params;
 
@@ -959,7 +973,11 @@ handleException:
          }
          mutex = Lock_mutex(o);
          if (mutex != null) // guich@tc126_62
-            RELEASE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         {
+            MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
+            if (pmutex)
+               RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+         }
          NEXT_OP
       }
       // end of opcodes
@@ -993,6 +1011,7 @@ throwNoSuchMethodError:
    CharP paramsStr = null;
    for (i = 0; i < len; i++)
       slen += xstrlen(cp->cls[sym[i+2]]);
+   slen++;
    if (slen > 0 && (paramsStr = xmalloc(slen)) != null)
    {                 
       for (i = 0; i < len; i++)
@@ -1002,7 +1021,7 @@ throwNoSuchMethodError:
       }              
       paramsStr[slen-1] = 0;
    }
-   tcvmCreateException(context, NoSuchMethodError, (int32)(code-method->code), 0, "%s %s(%s). The current VM may not be compatible with this program.", className, methodName, slen == 0 ? "" : paramsStr == null ? "..." : paramsStr);
+   tcvmCreateException(context, NoSuchMethodError, (int32)(code-method->code), 0, "%s %s(%s). The current VM may not be compatible with this program OR there may be a bug in the Java compiler; try to upgrade or downgrade your JDK.", className, methodName, slen == 0 ? "" : paramsStr == null ? "..." : paramsStr);
    xfree(paramsStr);
    goto handleException;
 }

@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Integer4D
 {
-   public static final Class TYPE = Integer.class;
+   public static final Class<Integer> TYPE = Integer.class;
    int v;
    
    public Integer4D(int v)
@@ -27,6 +27,11 @@ public class Integer4D
    {
       return super.toString()+" v="+v;
    }
+   public static Integer4D valueOf(int i)
+   {
+      return new Integer4D(i);
+   }
+   
    public static Integer4D valueOf(String s) throws NumberFormatException
    {
       try
@@ -37,5 +42,35 @@ public class Integer4D
       {
          throw new NumberFormatException(ine.getMessage());
       }
+   }
+   public static int parseInt(String str) throws NumberFormatException
+   {
+      try
+      {
+         return Convert.toInt(str);
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
+   }
+      
+   public static int parseInt(String str, int radix) throws NumberFormatException
+   {
+      try
+      {
+         if (radix == 10)
+            return Convert.toInt(str);
+         return (int)Convert.toLong(str, radix);
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
+   }
+
+   public static String toHexString(int i)
+   {
+     return Convert.unsigned2hex(i, 4);
    }
 }

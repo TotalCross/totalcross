@@ -109,15 +109,43 @@ public class SQLiteUtil
          return null;
       }
    }
+   
+   /** SQLite has a problem (not sure if its a bug) where it returns DATE for both 
+    * DATE and DATETIME types, so this method returns the correct correspondence:
+    * DATE for date and TIME for DATETIME (remember that in TotalCross, a Time object also
+    * contains the date).
+    * @param md The ResultSetMetaData obtained with ResultSet.getMetaData.
+    * @param col The column, starting from 1.
+    */
+   public int getColumnType(ResultSetMetaData md, int col) throws SQLException
+   {
+      String s = md.getColumnTypeName(col);
+      return s.equals("DATE") ? Types.DATE : s.equals("DATETIME") ? Types.TIME : md.getColumnType(col);
+   }
 
    public String[][] getStrings(ResultSet rs, Vector v) throws SQLException
    {
+      return getStrings(rs, v, null);
+   }
+   
+   public String[][] getStrings(ResultSet rs, Vector v, int[] decimalPlaces) throws SQLException
+   {
       int cols = getColCount(rs);
+      int[] types = new int[cols];
+      ResultSetMetaData md = rs.getMetaData();
+      for (int i = types.length; --i >= 0;)
+         types[i] = getColumnType(md, i+1);
       while (rs.next())
       {
          String[] linha = new String[cols];
          for (int i = 0; i < cols; i++)
-            linha[i] = rs.getString(i+1);
+            switch (types[i])
+            {
+               case Types.DATE: Date dt = rs.getDate(i+1); linha[i] = dt == null ? "" : dt.toString(); break;
+               case Types.TIME: Time tm = rs.getTime(i+1); linha[i] = tm == null ? "" : tm.toString(); break;
+               case Types.DOUBLE: linha[i] = Convert.toString(rs.getDouble(i+1), decimalPlaces == null ? -1 : decimalPlaces[i]); break;
+               default: linha[i] = rs.getString(i+1);
+            }
          v.addElement(linha);
       }
       String[][] ss = new String[v.size()][];
@@ -128,6 +156,14 @@ public class SQLiteUtil
    public String[][] getStrings(ResultSet rs) throws SQLException
    {
       return getStrings(rs, new Vector(vectorInitialSize));
+   }
+   
+   public String[][] getStrings(String sql) throws SQLException
+   {
+      ResultSet rs = executeQuery(sql);
+      String[][] ret = getStrings(rs, new Vector(vectorInitialSize));
+      rs.close();
+      return ret;
    }
    
    public String getString(String sql) throws SQLException
@@ -193,4 +229,33 @@ public class SQLiteUtil
       return getStrings1("SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'android_metadata' AND name != 'sqlite_sequence';");
    }
    
+   /** Handles single quote when inserting or retrieving data from Sqlite.
+    * Example:
+    * <pre>
+    * String s = SQLiteUtil.fixQuote("'",true); // returns ''
+    * String s = SQLiteUtil.fixQuote("''",false); // returns '
+    * </pre>
+    */
+   public static String fixQuote(String s, boolean toSqlite)
+   {
+      return toSqlite ? Convert.replace(s,"'","''") : Convert.replace(s,"''","'");
+   }
+
+   /** Changes a date in format 2014-02-19 00:00:00:000 to a totalcross.util.Date. 
+    */
+   public static Date fromSqlDate(String sqldate) throws InvalidDateException
+   {
+      int sp = sqldate.indexOf(' ');
+      return new Date(sp == -1 ? sqldate : sqldate.substring(0,sp), Settings.DATE_YMD);
+   }
+   
+   /** Rebuild and shrink the entire database, like the old Litebase's <code>purge</code> method,
+    * but in this case it applies to all tables. 
+    */
+   public void shrinkDB() throws SQLException 
+   {
+      Statement st = con().createStatement();
+      st.execute("VACUUM;");
+      st.close();
+   }
 }

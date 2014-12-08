@@ -62,6 +62,9 @@ public final class Font
     * upscaling, which usually results in a smooth font). */
    public static int MAX_FONT_SIZE = Settings.WIN32.equals(Settings.platform) ? 48 : 80;
 
+   /** For internal use only. */
+   public static int baseChar = ' ';
+
    /** Returns the default font size, based on the screen's size.
     */
    public static int getDefaultFontSize()
@@ -75,6 +78,9 @@ public final class Font
       w = Math.min(Settings.screenWidth,Settings.screenHeight);
       h = Math.max(Settings.screenWidth,Settings.screenHeight);
 
+      if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
+         fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 14; // added this exception to get the right font when running in the WM phone in landscape mode
+      else
       if (Settings.WINDOWSPHONE.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT))
          fontSize = Settings.deviceFontHeight;
       else
@@ -135,7 +141,6 @@ public final class Font
    public static int TAB_SIZE = 3;
 
    private static Hashtable htFonts = new Hashtable(13);
-   private static StringBuffer sb = new StringBuffer(30);
 
    private Font(String name, boolean boldStyle, int size) // guich@580_10
    {
@@ -176,9 +181,9 @@ public final class Font
     */
    public static Font getFont(String name, boolean boldStyle, int size) // guich@580_10
    {
-      sb.setLength(0);
-      String key = sb.append(name).append('$').append(boldStyle?'B':'P').append(size).toString();
-      Font f = (Font)htFonts.get(key);
+      char st = boldStyle ? 'B' : 'P';
+      String key = name+'$'+st+size;
+      Font f = baseChar == ' ' ? (Font)htFonts.get(key) : null;
       if (f == null)
          htFonts.put(key, f = new Font(name, boldStyle, size));
       return f;
@@ -222,14 +227,14 @@ public final class Font
    native void fontCreate4D();
    void fontCreate()
    {
-      hv_UserFont = Launcher.instance.getFont(this, ' ');
+      hv_UserFont = Launcher.instance.getFont(this, (char)baseChar);
    }
    
    /** Used internally. */
    public void removeFromCache()
    {
-      sb.setLength(0);
-      String key = sb.append(name).append('$').append(style==1?'B':'P').append(size).toString();
+      char st = style==1 ? 'B' : 'P';
+      String key = name+'$'+st+size;
       htFonts.remove(key);
    }
    public void removeFromCache4D()

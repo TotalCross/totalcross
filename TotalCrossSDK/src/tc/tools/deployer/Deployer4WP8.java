@@ -11,26 +11,24 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayOutputStream;
+import de.schlichtherle.truezip.file.*;
+import java.io.*;
 import java.io.File;
-import java.io.FilenameFilter;
-import org.apache.commons.io.FileUtils;
-import tc.tools.deployer.zip.SilverlightZip;
-import totalcross.io.ByteArrayStream;
+import org.apache.commons.io.*;
+import tc.tools.deployer.zip.*;
+
+import totalcross.io.*;
 import totalcross.io.IOException;
-import totalcross.sys.Convert;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.util.Hashtable;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TVFS;
+import totalcross.sys.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 public class Deployer4WP8
 {
    public Deployer4WP8() throws Exception
    {
       // locate template and target
-      File templateFile = new File(Convert.appendPath(DeploySettings.folderTotalCross3DistVM, "wp8/TotalCross.xap"));
+      File templateFile = new File(Convert.appendPath(DeploySettings.etcDir, "../dist/vm/wp8/TotalCross.xap"));
       
       // create the output folder
       final String targetDir = Convert.appendPath(DeploySettings.targetDir, "/wp8/");
@@ -38,7 +36,7 @@ public class Deployer4WP8
       if (!f.exists())
          f.mkdirs();
 
-      File tempFile = File.createTempFile(DeploySettings.appTitle, ".zip");
+      File tempFile = File.createTempFile(DeploySettings.appTitle+"temp", ".zip");
       tempFile.deleteOnExit();
       // create a copy of the original file
       FileUtils.copyFile(templateFile, tempFile);
@@ -56,21 +54,36 @@ public class Deployer4WP8
       sz.putEntry("TotalCrossManifest.xml", manifestContent.getBytes("UTF-8"));
 
       // tcz
-      sz.putEntry(new File(DeploySettings.tczFileName).getName(), new File(DeploySettings.tczFileName));
-      // TCBase
-      sz.putEntry("TCBase.tcz", new File(DeploySettings.distDir, "vm/TCBase.tcz"));
+      for (int i = 0; i < DeploySettings.tczs.length; i++)
+         sz.putEntry(new File(DeploySettings.tczs[i]).getName(), new File(DeploySettings.tczs[i]));
+      // TCBase & TCUI
+      sz.putEntry("TCBase.tcz", new File(DeploySettings.folderTotalCross3DistVM, "TCBase.tcz"));
+      sz.putEntry("TCUI.tcz",   new File(DeploySettings.folderTotalCross3DistVM, "TCUI.tcz"));
       // TCFont
-      sz.putEntry(new File(DeploySettings.fontTCZ).getName(), new File(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ));
+      sz.putEntry(new File(DeploySettings.fontTCZ).getName(), new File(DeploySettings.folderTotalCross3DistVM, DeploySettings.fontTCZ));
       // Litebase
-      sz.putEntry("LitebaseLib.tcz", new File(DeploySettings.distDir, "vm/LitebaseLib.tcz"));
+      sz.putEntry("LitebaseLib.tcz", new File(DeploySettings.folderTotalCross3DistVM, "LitebaseLib.tcz"));
 
       // add pkg files
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("wp8.pkg", ht);
-      String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
-      if (extras.length > 0)
+      Vector v = new Vector(Utils.joinGlobalWithLocals(ht, null, true));
+      Utils.preprocessPKG(v,true);
+      String[] extras = (String[])v.toObjectArray();
+      if (extras != null && extras.length > 0)
          for (int i = 0; i < extras.length; i++)
-            sz.putEntry(extras[i], new File(extras[i]));
+         {
+            String pathname = extras[i];
+            File ff = new File(pathname);
+            if (!ff.exists())
+            {
+               ff = new File(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+               if (!ff.exists())
+                  ff = new File(Utils.findPath(extras[i],true));
+            }
+            if (ff.exists())
+               sz.putEntry(extras[i], ff);
+         }
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));

@@ -18,6 +18,7 @@
 
 package totalcross.sys;
 
+
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
@@ -30,10 +31,10 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 303;
+   public static int version = 310;
     
-   /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "3.03";
+   /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
+   public static String versionStr = "3.10";
     
    /** Current build number.
     * @since TotalCross 1.53 
@@ -112,6 +113,7 @@ public final class Settings
     * @see #LINUX        
     * @see #IPHONE       
     * @see #ANDROID      
+    * @see #isWindowsDevice()
     * @see #isIOS()
     */
    public static String platform;
@@ -491,6 +493,7 @@ public final class Settings
     * Setting this field to true allows the execution of multiple instances of the same application.
     * When the application is started, it first checks if there is a running instance of the same application. If so, the
     * running instance is moved to the foreground and the starting application exits.
+    * This only works for Win32 and WinCE.
     * @since TotalCross 1.0
     */
    public static boolean multipleInstances;
@@ -609,7 +612,6 @@ public final class Settings
    
    /** Returns true if the current platform is Windows Mobile or Pocket PC. Note that Windows Desktop (aka WIN32)
     * returns false.
-    * @deprecated TotalCross 2.1 and over don't support Windows CE devices anymore.
     */
    public static boolean isWindowsDevice()
    {
@@ -710,7 +712,6 @@ public final class Settings
     * Setting it to -1 (default value) will use half the current screen height.
     * 
     * This field is used in Windows CE devices only.
-    * @deprecated Unsupported on TC 2.1 and beyond.
     * @since TotalCross 1.3
     */
    public static int SIPBottomLimit = -1;
@@ -766,7 +767,6 @@ public final class Settings
     * @see #WINDOWSIZE_480X640
     * @see #WINDOWSIZE_600X800
     * @see #resizableWindow
-    * @see #windowFont
     */
    public static int windowSize;
    
@@ -777,6 +777,8 @@ public final class Settings
    
    /** Defines the window font size when running in a desktop computer.
     * Must be set in the static initializer.
+    * @deprecated Use at the application's constructor: if (Settings.platform.equals(Settings.WIN32)) setDefaultFont(Font.getFont(false,NN)); where NN is the desired font size
+
     * @since TotalCross 1.53
     * @see #WINDOWFONT_12
     * @see #WINDOWFONT_DEFAULT
@@ -810,6 +812,11 @@ public final class Settings
     * Defaults to the î key, used only if romVersion is 442.
     */
    public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
+   
+   /** Set to false to disable the scroll optimization using images. This optimization
+    * greatly improves performance but uses more memory.
+    */
+   public static boolean optimizeScroll = Settings.isOpenGL;
    
 
    // this class can't be instantiated

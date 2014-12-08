@@ -12,8 +12,7 @@
 package tc.test.totalcross.io;
 
 import totalcross.io.*;
-import totalcross.sys.*;
-import totalcross.unit.TestCase;
+import totalcross.unit.*;
 
 public class TestCompressedByteArrayStream extends TestCase
 {

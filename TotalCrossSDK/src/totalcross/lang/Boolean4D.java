@@ -3,7 +3,7 @@ package totalcross.lang;
 
 public class Boolean4D
 {
-   public static final Class TYPE = Boolean.class;
+   public static final Class<Boolean> TYPE = Boolean.class;
    public static final Boolean4D TRUE = new Boolean4D(true);
    public static final Boolean4D FALSE = new Boolean4D(false);
    boolean v;
@@ -27,6 +27,10 @@ public class Boolean4D
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public static Boolean4D valueOf(boolean b)
+   {
+      return new Boolean4D(b);
    }
    public static Boolean4D valueOf(String s) 
    {

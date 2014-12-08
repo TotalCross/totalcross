@@ -13,6 +13,16 @@
 
 #include "media_Sound.h"
 
+
+
+static void soundPlay(CharP filename)
+{
+#ifdef WP8
+   nativeSoundPlayCPP(filename);
+#endif
+}
+
+
 /*****   soundBeep   *****
  *
  * MessageBeep

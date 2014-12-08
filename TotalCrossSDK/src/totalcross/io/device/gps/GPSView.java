@@ -158,10 +158,9 @@ public class GPSView extends Container implements TimerListener
       seconds = (((absoluteLon - degrees) * 60) - minutes) * 60;
       text[1].setText("lon: " + degrees + " " + minutes + " " + seconds + (lon < 0 ? " W" : " E"));
       
-      int dif = Settings.timeZone + (Settings.daylightSavings ? 1 : 0); //flsobral@tc126_58: use daylightSavings;
-      gps.lastFix.hour += dif;
+      gps.lastFix.inc(0,Settings.timeZoneMinutes,0);
       text[2].setText("fix: "+gps.lastFix);
-      gps.lastFix.hour -= dif;
+      gps.lastFix.inc(0,-Settings.timeZoneMinutes,0);
       
       text[3].setText(gps.velocity != GPS.INVALID ? "speed: " + gps.velocity : "");
       text[4].setText(gps.direction != GPS.INVALID ? "direction: " + gps.direction : "");

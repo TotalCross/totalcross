@@ -17,7 +17,7 @@
 @implementation AppDelegate
 
 #ifdef DEBUG
-#define APPNAME "TotalCrossAPI"
+#define TCZNAME "TotalCrossAPI"
 #endif
 
 -(void) initApp
@@ -36,7 +36,7 @@
          bool targetExists = [[NSFileManager defaultManager] fileExistsAtPath:targetFilePath];
          NSDate *sourceDate = [[[NSFileManager defaultManager] attributesOfItemAtPath:sourceFilePath error:&error] objectForKey:NSFileCreationDate];
          NSDate *targetDate = !targetExists ? nil : [[[NSFileManager defaultManager] attributesOfItemAtPath:targetFilePath error:&error] objectForKey:NSFileCreationDate];
-         if (!targetExists || [sourceDate compare:targetDate] == NSOrderedAscending) // pkg date is more recent than target?
+         if (!targetExists || [targetDate compare:sourceDate] == NSOrderedAscending) // pkg date is more recent than target?
          {
             if (targetExists) //File exist, delete it
                [[NSFileManager defaultManager] removeItemAtPath:targetFilePath error:&error];
@@ -49,15 +49,19 @@
    [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
     
    const char* name =
-#ifdef APPNAME
-       APPNAME;
+#ifdef TCZNAME
+       TCZNAME;
 #else
        [[[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] cStringUsingEncoding:NSASCIIStringEncoding];
 #endif
-   [tcvm startVM:&context appName:(char*)name];
-   [Litebase fillNativeProcAddressesLB];
-    
-   [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
+   NSInteger ret = [tcvm startVM:&context appName:(char*)name];
+   if (ret != 0)
+      exit(ret);
+   else
+   {
+      [Litebase fillNativeProcAddressesLB];
+      [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
+   }
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

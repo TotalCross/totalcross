@@ -505,7 +505,7 @@ public class Label extends Control
       // guich@200b4_126: repaint the background always.
       if (!transparentBackground)
       {
-         if (backgroundType == SOLID_BACKGROUND || !enabled) // guich@tc115_78: use solid or gradient backgrounds
+         if (backgroundType == SOLID_BACKGROUND || !isEnabled()) // guich@tc115_78: use solid or gradient backgrounds
             g.fillRect(0,0,width,height); // guich@200b4_120: make sure the label is painted with the correct color
          else
          {
@@ -553,7 +553,7 @@ public class Label extends Control
             int []linesW = this.linesW; // same
             for (int i =currentLine; i < n; i++,y+=fmH)
             {
-               int justify = align == FILL && (i < lines.length-1) ? this.width : 0; // don't justify the text line
+               int justify = align == FILL && (i < lines.length-1) ? this.width-1 : 0; // don't justify the text line
                int x = x0;
                if (align != LEFT)
                {

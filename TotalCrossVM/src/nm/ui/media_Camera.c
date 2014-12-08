@@ -41,7 +41,7 @@ void createTempFileName(char* dest, char* ext)
 }
 TC_API void tumC_nativeClick(NMParams p) // totalcross/ui/media/Camera native private String nativeClick();
 {
-#if defined(ANDROID) || defined(darwin) || defined(WP8)
+#if defined(ANDROID) || defined(darwin) || defined(WP8) || (defined(WINCE) && _WIN32_WCE >= 300)
    cameraClick(p);
 #else
    UNUSED(p);

@@ -65,6 +65,11 @@ public class Bar extends Container
     */
    public int titleAlign = LEFT;
    
+   /** 
+    * The buttons horizontal alignment (<code>LEFT</code> or <code>RIGHT</code>). Defaults to <code>RIGHT</code>. 
+    */
+   public int buttonAlign = RIGHT;
+   
    private class BarButton extends Control
    {
       String title;
@@ -108,7 +113,7 @@ public class Bar extends Container
          onFontChanged();
          if (title != null)
          {
-            px = titleAlign == LEFT ? gap : titleAlign == CENTER ? (width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
+            px = titleAlign == LEFT ? gap+1 : titleAlign == CENTER ? (width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
             py = (height-fmH)/2;
          }
          else
@@ -262,6 +267,12 @@ public class Bar extends Container
          if (initialized) initUI();
       }
    }
+   
+   /** Returns the icon set (and possibly resized) with setIcon, or null if none was set */
+   public Image getIcon()
+   {
+      return title != null ? title.leftIcon : null;
+   }
 
    /** 
     * Changes the title to the given one. 
@@ -291,10 +302,11 @@ public class Bar extends Container
     * Adds an image button. 
     *
     * @param icon The image to the add to a button in the bar.
+    * @return The button index
     */
-   public void addButton(Image icon)
+   public int addButton(Image icon)
    {
-      addControl(new BarButton(null,icon));
+      return addControl(new BarButton(null,icon));
    }
    
    /** 
@@ -312,12 +324,14 @@ public class Bar extends Container
     * Adds a control to the bar. Not all types of controls are supported. 
     *
     * @param c The control to be added.
+    * @return The button index
     */
-   public void addControl(Control c)
+   public int addControl(Control c)
    {
       icons.addElement(c);
       for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1; // update appId used for selection
       if (initialized) initUI();
+      return icons.size();
    }
    
    /** 
@@ -361,8 +375,11 @@ public class Bar extends Container
       else
       {
          for (int i = n; --i >= 0;)
-            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, height, FILL);
-         add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL);
+            add((Control)icons.items[i], i==n-1 ? buttonAlign : (buttonAlign == RIGHT ? BEFORE : AFTER), TOP, height, FILL);
+         if (titleAlign == LEFT)
+            add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL); 
+         else
+            add(title, AFTER, TOP, FILL, FILL); 
          if (spinner != null)
          {
             add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,fmH,fmH,this.title);
@@ -421,8 +438,16 @@ public class Bar extends Container
       spinner.start();
    }
    
+   /** Updates the spinner; sets it visible if not yet. */
+   public void updateSinner()
+   {
+      if (!spinner.visible)
+         spinner.setVisible(true);
+      spinner.update();
+   }
+   
    /** 
-    * Stops and hides the spinner (if one has been assigned to the <code>spinner</code> field)
+    * Stops and hides the spinner (if createSpinner was called before)
     * 
     * @see #spinner
     */
@@ -479,5 +504,15 @@ public class Bar extends Container
    {
       spinner = new Spinner();
       spinner.setForeColor(color);
+   }
+
+   /** 
+    * Creates a spinner with the following GIF animation. The spinner will be placed at the right of the title (it only works if there's a title).
+    * 
+    * You can download additional animations from: <a href='http://preloaders.net/en'>here</a>. Select image type as GIF and transparent background as Yes.
+    */
+   public void createSpinner(Image gif)
+   {
+      spinner = new Spinner(gif);
    }
 }

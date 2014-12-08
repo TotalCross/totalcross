@@ -5,12 +5,12 @@ public class Constructor4D implements Member4D
    int mod;
    Object nativeStruct; // TClass
    String name;
-   Class declaringClass; // class that owns this method
-   Class parameterTypes[];
-   Class exceptionTypes[];
+   Class<?> declaringClass; // class that owns this method
+   Class<?> parameterTypes[];
+   Class<?> exceptionTypes[];
    String cached;
 
-   public Class getDeclaringClass()
+   public Class<?> getDeclaringClass()
    {
       return declaringClass;
    }
@@ -55,11 +55,11 @@ public class Constructor4D implements Member4D
       return cached = sb.append(')').toString();
    }
    
-   public Class[] getParameterTypes()
+   public Class<?>[] getParameterTypes()
    {
       return parameterTypes;
    }
-   public Class[] getExceptionTypes()
+   public Class<?>[] getExceptionTypes()
    {
       return exceptionTypes;
    }

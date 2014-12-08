@@ -19,6 +19,7 @@ package totalcross.ui.media;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.util.*;
 
 public class Camera4D
 {
@@ -61,8 +62,11 @@ public class Camera4D
 
    public String click() throws IOException
    {
-      if (Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
+      if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
+      {
+         if (initialDir != null) try {new File(initialDir).createDir();} catch (Exception e) {}
          return this.nativeClick();
+      }
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();
 
@@ -87,11 +91,39 @@ public class Camera4D
       {
          String s = getNativeResolutions();
          if (s != null)
-            ret = Convert.tokenizeString(s,',');
+            ret = sortResolutions(Convert.tokenizeString(s,','));
+      }
+      else
+      if (Settings.isWindowsDevice())
+      {
+         Vector v = new Vector(10);
+         String dir = "Software\\Microsoft\\Pictures\\Camera\\OEM\\PictureResolution";
+         String[] folders = Registry.list(Registry.HKEY_LOCAL_MACHINE,dir);
+         for (int i =0; i < folders.length; i++)
+         {
+            String f = folders[i];
+            String fullKey = dir+"\\"+f;
+            try
+            {
+               int w = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Width");
+               int h = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Height");
+               v.addElement(w+"x"+h);
+            }
+            catch (Exception e) {} // key not found
+         }
+         if (v.size() > 0)
+            ret = sortResolutions((String[])v.toObjectArray());
       }
       if (ret == null)
          ret = new String[]{"default resolution","320x240","640x480","1024x768","2048x1536"};
       return ret;
+   }
+   private static String[] sortResolutions(String[] res)
+   {
+      for (int i = res.length; --i >= 0;) {String[] sp = Convert.tokenizeString(res[i],'x'); res[i] = Convert.zeroPad(sp[0],5)+"x"+Convert.zeroPad(sp[1],5);}
+      Convert.qsort(res,0,res.length-1);
+      for (int i = res.length; --i >= 0;) {String[] sp = Convert.tokenizeString(res[i],'x'); res[i] = Convert.zeroUnpad(sp[0])+"x"+Convert.zeroUnpad(sp[1]);}
+      return res;
    }
 
    static native private String getNativeResolutions();

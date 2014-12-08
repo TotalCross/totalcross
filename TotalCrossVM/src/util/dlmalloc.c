@@ -500,6 +500,11 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define FOOTERS 1
 #define DEFAULT_GRANULARITY 2*1024*1024 // // guich@tc124_17: 2MB
 #define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // // guich@tc124_17: DISABLE
+
+#if !defined(WINCE) || !defined(DEBUG)
+#define ABORT_ON_ASSERT_FAILURE 0 // prevent program
+#define PROCEED_ON_ERROR 0        //  crash
+#endif
 #endif
 
 void debug(char *s, ...);
@@ -5837,20 +5842,4 @@ void dump_memory_map_int(char* fileSuffix, char* blockName, msegmentptr mseg)
       if (sizes[255] > 0) sprintf(buf, "%4d: %d (and above)\n", (255+1)<<3, sizes[255]); fwrite(buf, strlen(buf), 1, f);
       fclose(f);
    }
-}
-
-// this #if defined HAS_MSPACE_1_AND_2 is TotalCross intervention
-#if defined HAS_MSPACE_1_AND_2
-#if defined(WIN32) || defined(WINCE)
-extern mspace mspace1,mspace2;
-#endif
-#endif
-
-void dump_memory_map(char* fileSuffix) 
-{
-   dump_memory_map_int(fileSuffix, "main", &gm->seg);
-#if defined HAS_MSPACE_1_AND_2
-   if (mspace1) dump_memory_map_int(fileSuffix, "mspace1", &((mstate)mspace1)->seg);
-   if (mspace2) dump_memory_map_int(fileSuffix, "mspace2", &((mstate)mspace2)->seg);
-#endif
 }

@@ -1359,14 +1359,24 @@ If your desktop has the SDK installed, you may run the application from
  If your application can't found the SDK (or the right SDK if you have more
  than one installed), make sure that the environment variable 
 \family typewriter
-TOTALCROSS_HOME
+TOTALCROSS3_HOME
 \family default
  is pointing to the desired TotalCross installation folder.
  On some systems (Windows 8, for instance), 
 \family typewriter
-TOTALCROSS_HOME
+TOTALCROSS3_HOME
 \family default
  must be set both in user and system environment variables.
+ If there is no 
+\family typewriter
+TOTALCROSS3_HOME
+\family default
+, TotalCross will search for the variable used in older TotalCross versions,
+ which is 
+\family typewriter
+TOTALCROSS_HOME
+\family default
+.
 \end_layout
 
 \end_inset
@@ -1469,6 +1479,10 @@ TCBase.tcz
 , 
 \family typewriter
 TCFont.tcz
+\family default
+, 
+\family typewriter
+TCUI.tcz
 \family default
 , and 
 \family typewriter
@@ -1851,9 +1865,33 @@ totalcross.lang
 \end_layout
 
 \begin_layout Itemize
-TotalCross is compatible only with the Java 1.1 class file format, therefore
- the class files MUST be generated targeting the JDK 1.1 and the source files
- must be compatible with JDK 1.2.
+To use collection classes, the approch is similar for 
+\family typewriter
+java.lang
+\family default
+ classes.
+ You must use 
+\family typewriter
+java.util
+\family default
+ classes and 
+\family typewriter
+tc.Deploy
+\family default
+ will convert them to the correspondent 
+\family typewriter
+totalcross.util
+\family default
+ classes.
+ Notice that in this case some fields and methods found in the Java classes
+ might also be missing in TotalCross classes.
+ Therefore, in this case you must also check the javadocs.
+\end_layout
+
+\begin_layout Itemize
+TotalCross is compatible only with the Java 1.7 class file format or below,
+ therefore the class files MUST be generated targeting the JDK 1.7 and the
+ source files must be compatible with JDK 1.7.
 \end_layout
 
 \begin_deeper
@@ -1864,14 +1902,14 @@ javac
 \family default
  from command line (or an ANT file), add this to your command line: 
 \family typewriter
--target 1.1 -source 1.2
+-target 1.7 -source 1.
 \family default
-.
+7.
 \end_layout
 
 \begin_layout Standard
 If you're using a Java IDE, look for its Java Compiler settings and set
- its compliance level to 1.3.
+ its compliance level to 1.7.
  But please notice that it might happen that the 
 \family typewriter
 .class
@@ -2056,7 +2094,7 @@ HelloWorld.java
 \begin_layout Standard
 
 \family typewriter
-javac -target 1.1 -source 1.2 HelloWorld.java
+javac -target 1.7 -source 1.7 HelloWorld.java
 \end_layout
 
 \begin_layout Standard
@@ -2095,7 +2133,7 @@ TotalCrossSDK
 \backslash
 dist
 \backslash
-tc.jar -target 1.1 -source 1.2 HelloWorld.java
+tc.jar -target 1.7 -source 1.7 HelloWorld.java
 \end_layout
 
 \begin_layout Plain Layout
@@ -3464,8 +3502,8 @@ path
 
 type
 \family default
- : Packages the VM (and optionally Litebase) with the application, creating
- a single installation file.
+ : Packages the VM (and Litebase) with the application, creating a single
+ installation file.
  The type parameter can be one of the following: 
 \family typewriter
 demo
@@ -3484,150 +3522,8 @@ release+litebase
 \family default
  (where demo/release are the virtual machine types you want to include:
  the time-limited demonstration, or the release that requires activation).
- The DEMO SDKs must be in the path or in the 
-\family typewriter
-TOTALCROSS_HOME
-\family default
-/
-\family typewriter
- LITEBASE_HOME
-\family default
- environment variables, and the RELEASE SDKs must be in the same parent
- folder of the DEMO ones.
- Example: if 
-\family typewriter
-TOTALCROSS_HOME
-\family default
- points to 
-\family typewriter
-t:
-\backslash
-sdks
-\backslash
- TotalCrossSDK
-\family default
-, then the VMS must be at 
-\family typewriter
-t:
-\backslash
-sdks
-\backslash
-TotalCrossVMS
-\family default
-.
- If the
-\begin_inset Newline newline
-\end_inset
-
-
-\family typewriter
-TOTALCROSS_HOME
-\family default
- and 
-\family typewriter
-LITEBASE_HOME
-\family default
- variables are not set, then all SDKs must be at the top-level folder of
- the 
-\family typewriter
-%TOTALCROSS_HOME%
-\backslash
-etc
-\family default
- folder.
-\begin_inset Newline newline
-\end_inset
-
-The files are always installed at the same folder of the application, so
- each application will have its own VM/litebase.
- You can optionally set four environment variables, pointing to the folder
- of each SDK (these will have priority over the other locations previously
- described): 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-TabPositions{4.5cm}
 \end_layout
 
-\end_inset
-
-
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-TOTALCROSS_DEMO 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the TotalCross SDK folder
-\end_layout
-
-\begin_layout Itemize
-TOTALCROSS_RELEASE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the TotalCross VMS folder
-\end_layout
-
-\begin_layout Itemize
-LITEBASE_DEMO 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the Litebase SDK folder
-\end_layout
-
-\begin_layout Itemize
-LITEBASE_RELEASE 
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-tab
-\end_layout
-
-\end_inset
-
- : must point to the Litebase VMS folder
-\end_layout
-
-\end_deeper
 \begin_layout Itemize
 
 \family typewriter
@@ -5473,8 +5369,7 @@ Windows Store
 \end_layout
 
 \begin_layout Standard
-In the future there will be support for installing a TotalCross Application
- from the Windows Store.
+It is possible to install a TotalCross application from the Windows Store.
  To do that, your application must follow some rules in order to be accepted
  in the store.
  Here is a link with detailed information:
@@ -6265,7 +6160,11 @@ tcvm.dll
 \family typewriter
 tcbase.tcz
 \family default
- and 
+, 
+\family typewriter
+TCUI.tcz
+\family default
+, and 
 \family typewriter
 tcfont.tcz
 \family default
@@ -6680,6 +6579,645 @@ erial);
 \end_layout
 
 \begin_layout Chapter
+TotalCross 3.1 Differences
+\end_layout
+
+\begin_layout Standard
+First of all, the support for Windows CE and Windows Mobile platforms are
+ back since they are still used specially because of collectors.
+\end_layout
+
+\begin_layout Standard
+Additionally, it is now possible to install a TotalCross application from
+ the Windows Store.
+\end_layout
+
+\begin_layout Standard
+Moreover, now it is possible to use some Java 7 features that were not supported
+ before.
+ To use java 7, just change the ant files, IDE settings, or 
+\family typewriter
+javac
+\family default
+ command line to use target 1.7 and source 1.7.
+ If you use a feature not supported yet, an exception will be thrown during
+ the deploying process.
+\end_layout
+
+\begin_layout Standard
+New features that are now supported and some of them are detailed below:
+\end_layout
+
+\begin_layout Itemize
+enuns;
+\end_layout
+
+\begin_layout Itemize
+generics;
+\end_layout
+
+\begin_layout Itemize
+for each;
+\end_layout
+
+\begin_layout Itemize
+clone (not for arrays yet),
+\end_layout
+
+\begin_layout Itemize
+many collection classes, interfaces, and exceptions (without serialization
+ yet), 
+\end_layout
+
+\begin_layout Itemize
+more interfaces, classes and exceptions in 
+\family typewriter
+java.lang
+\family default
+, and
+\end_layout
+
+\begin_layout Itemize
+many more methods in 
+\family typewriter
+String
+\family default
+ and 
+\family typewriter
+StringBuffer
+\family default
+.
+ 
+\end_layout
+
+\begin_layout Section
+Collections
+\end_layout
+
+\begin_layout Standard
+The following exceptions, interfaces, abstract classes, and classes are
+ now supported.
+ Please check the javadoc to see which methods and fields are allowed.
+\end_layout
+
+\begin_layout Itemize
+Exceptions: 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+ConcurrentModificationException 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+NoSuchElementException
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Interfaces:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+Collection 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Comparator 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Deque 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Enumeration 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Iterator 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+List 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+ListIterator 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+NavigableMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+NavigableSet 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Map 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Queue 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+RandomAccess 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Set 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+SortedMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+SortedSet 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Abstract classes:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+AbstractCollection 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AbstractList 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AbstractMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AbstractQueue 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AbstractSequentialList 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+AbstractSet 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Dictionary
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Classes:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+ArrayList 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Arrays 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+BitSet 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Collections 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+HashMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+HashSet 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+IdentityHashMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LinkedHashMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LinkedHashSet 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+LinkedList 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+PriorityQueue 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+TreeMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+TreeSet 
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Additions in 
+\family typewriter
+java.lang
+\end_layout
+
+\begin_layout Itemize
+Exceptions:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+CloneNotSuportedException
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+UnsupportedOperationException
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Interfaces:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+Cloneable
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Comparable 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Iterable
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+Object.clone()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Float.compare()
+\family default
+, 
+\family typewriter
+Float.floatToIntBits()
+\family default
+, and 
+\family typewriter
+Float.floatToRawIntBits()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Double.compare()
+\family default
+, 
+\family typewriter
+Double.doubleToLongBits()
+\family default
+, and 
+\family typewriter
+Double.doubleToRawLongBits()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String
+\family default
+ now extends 
+\family typewriter
+Comparable<String>
+\family default
+, that is, it is now a 
+\family typewriter
+Comparable
+\family default
+ object.
+\end_layout
+
+\begin_layout Section
+Additions in 
+\family typewriter
+String
+\family default
+ and 
+\family typewriter
+StringBuffer
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+String(StringBuffer buffer)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean contains(String part)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean contentEquals(StringBuffer buffer)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+int compareToIgnoreCase(String str)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean regionMatches(int toffset, String other, int ooffset, int len)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean regionMatches(boolean ignoreCase, int toffset, String other, int
+ ooffset, int len)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean matches(String regex)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String[] split(String regex)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String valueOf(char[] data)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String valueOf(char[] data, int offset, int count)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean isEmpty()
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String replace (String target, String replacement)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer append(StringBuffer stringBuffer)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer deleteCharAt(int index)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer replace(int start, int end, String str)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String substring(int beginIndex)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String substring(int beginIndex, int endIndex)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, char[] str, int str_offset, int len)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, Object obj)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, String str)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, char[] data)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, boolean bool)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, char ch)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, int inum)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, long lnum)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+StringBuffer insert(int offset, double dnum)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+int indexOf(String str)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+int indexOf(String str, int fromIndex)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+int lastIndexOf(String str)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+int lastIndexOf(String str, int fromIndex)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+boolean regionMatches(int toffset, String other)
+\end_layout
+
+\end_deeper
+\begin_layout Chapter
 TotalCross 3.0 Differences
 \end_layout
 
@@ -6809,7 +7347,7 @@ Reflection
 
 \begin_layout Standard
 Now the reflection API of Java 1.1 is full implemented.
- To know more about it, please check JavaDoc or take a look at this link
+ To know more about it, please check javadoc or take a look at this link
  explaining it:
 \begin_inset Newline newline
 \end_inset
@@ -7538,7 +8076,7 @@ target "http://www.tlu.ee/~matsak/oracle/jdbc2_1-spec.pdf"
 \end_inset
 
 .
- You can check TDBC JavaDoc in the package 
+ You can check TDBC javadoc in the package 
 \family typewriter
 totalcross.db.sqlite
 \family default
@@ -10082,6 +10620,19 @@ TCBase.tcz
 
 \begin_layout Itemize
 102 If it was not possible to initialize the event handler.
+\end_layout
+
+\begin_layout Itemize
+103 If it was not possible to load 
+\family typewriter
+TCUI.tcz
+\family default
+.
+ 
+\family typewriter
+TCUI.tcz
+\family default
+ was not found or is corrupted.
 \end_layout
 
 \begin_layout Itemize

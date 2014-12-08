@@ -30,7 +30,6 @@
 package totalcross.util.regex;
 
 import totalcross.io.*;
-import totalcross.util.Hashtable;
 
 /**
  * <b>The Replacer class</b> suggests some methods to replace occurences of a pattern 
@@ -57,7 +56,7 @@ import totalcross.util.Hashtable;
  * </pre>
  * @see        Substitution
  * @see        PerlSubstitution
- * @see        Replacer#Replacer(jregex.Pattern,jregex.Substitution)
+ * @see        Replacer#Replacer(totalcross.util.regex.Pattern,totalcross.util.regex.Substitution)
  */
 
 public class Replacer{

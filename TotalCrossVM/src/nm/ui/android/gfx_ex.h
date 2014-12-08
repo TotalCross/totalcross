@@ -28,4 +28,12 @@ typedef struct
 #define NO_GRAPHICS_LOCK_NEEDED
 #define graphicsLock(screenSurface, on) true
 
+typedef enum
+{
+   INVTEX_INVALIDATE,
+   INVTEX_DEL_ALL,
+   INVTEX_DEL_ONLYOLD
+} INVTEX;
+void invalidateTextures(INVTEX it); // imagePrimitives_c.h
+
 #endif

@@ -54,6 +54,9 @@ public class Resources
    public static Image back;
    public static Image menu;
    public static Image comboArrow;
+   public static Image comboArrow2;
+   
+   public static String chimeMP3 = "device/chime.mp3";
    
    private static void loadImages(String folder) throws ImageException, IOException
    {
@@ -72,7 +75,8 @@ public class Resources
       exit     = new Image(folder+"exit.png");
       back     = new Image(folder+"back.png");
       menu     = new Image(folder+"menu.png");
-      comboArrow = new Image(folder+"comboArrow.png");
+      comboArrow  = new Image(folder+"comboArrow.png");
+      comboArrow2 = new Image(folder+"comboArrow2.png");
       
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");
@@ -90,6 +94,7 @@ public class Resources
                loadImages("totalcross/res/android/");
                break;
          }
+         try {if (!new File("device/chime.mp3").exists()) new File("device/chime.mp3",File.CREATE_EMPTY).writeAndClose(Vm.getFile("totalcross/res/mp3/chime.mp3"));} catch (Exception e) {if (!Settings.onJavaSE) e.printStackTrace();}
       }
       catch (Throwable t)
       {

@@ -4,12 +4,16 @@ import totalcross.sys.*;
 
 public class Long4D
 {
-   public static final Class TYPE = Long.class;
+   public static final Class<Long> TYPE = Long.class;
    long v;
    
    public Long4D(long v)
    {
       this.v = v;
+   }
+   public Long4D(String s) throws NumberFormatException
+   {
+      v = parseLong(s);
    }
    public long longValue()
    {
@@ -23,9 +27,17 @@ public class Long4D
    {
       return (int)(v ^ (v >>> 32));
    }
+   public String toString(long l)
+   {
+      return Convert.toString(l);
+   }
    public String toString()
    {
       return super.toString()+" v="+v;
+   }
+   public Long4D valueOf(long l)
+   {
+      return new Long4D(l);
    }
    public static Long4D valueOf(String s) throws NumberFormatException
    {
@@ -37,5 +49,20 @@ public class Long4D
       {
          throw new NumberFormatException(ine.getMessage());
       }
+   }
+   public static long parseLong(String s) throws NumberFormatException
+   {
+      try
+      {
+         return Convert.toLong(s);
+      }
+      catch (InvalidNumberException ine)
+      {
+         throw new NumberFormatException(ine.getMessage());
+      }
+   }
+   public int intValue()
+   {
+     return (int) v;
    }
 }

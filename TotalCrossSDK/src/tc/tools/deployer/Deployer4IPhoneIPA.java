@@ -25,8 +25,11 @@ import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
 import tc.tools.deployer.ipa.*;
 import tc.tools.deployer.ipa.blob.*;
+
 import totalcross.sys.Convert;
 import totalcross.util.Hashtable;
+import totalcross.util.Vector;
+
 import com.dd.plist.*;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
@@ -39,7 +42,7 @@ public class Deployer4IPhoneIPA
    public static final String appleRootCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleRootCA.pem");
    public static final String appleWWDRCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleWWDRCA.pem");
    
-   private Map ipaContents = new HashMap();
+   private Map<String, TFile> ipaContents = new HashMap<String, TFile>();
    
    MobileProvision Provision;
    
@@ -90,23 +93,33 @@ public class Deployer4IPhoneIPA
       appFolder = newAppFolder;
       
       // Add tcz
-      new TFile(DeploySettings.tczFileName).cp(new TFile(appFolder, new File(DeploySettings.tczFileName).getName()));
-      // TCBase
-      new TFile(DeploySettings.distDir, "vm/TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
+      for (int i = 0; i < DeploySettings.tczs.length; i++)
+         new TFile(DeploySettings.tczs[i]).cp(new TFile(appFolder, new File(DeploySettings.tczs[i]).getName()));
+      // TCBase & TCUI
+      new TFile(DeploySettings.folderTotalCross3DistVM, "TCBase.tcz").cp(new TFile(appFolder, "TCBase.tcz"));
+      new TFile(DeploySettings.folderTotalCross3DistVM, "TCUI.tcz").cp(new TFile(appFolder, "TCUI.tcz"));
       // TCFont
-      new TFile(DeploySettings.distDir, "vm/" + DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
+      new TFile(DeploySettings.folderTotalCross3DistVM, DeploySettings.fontTCZ).cp(new TFile(appFolder, DeploySettings.fontTCZ));
       // Litebase
-      new TFile(DeploySettings.distDir, "vm/LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
+      new TFile(DeploySettings.folderTotalCross3DistVM, "LitebaseLib.tcz").cp(new TFile(appFolder, "LitebaseLib.tcz"));
       
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("iphone.pkg", ht); // guich@tc111_22
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
+      Vector v = new Vector(extras);
+      Utils.preprocessPKG(v,true);
       if (extras.length > 0)
       {
          TFile pkgFolder = new TFile(appFolder, "pkg");
          pkgFolder.mkdir();
          for (int i = 0; i < extras.length; i++)
-            new TFile(extras[i]).cp(new TFile(pkgFolder, Utils.getFileName(extras[i])));
+         {
+            String fname = extras[i];
+            File ff = new File(fname);
+            if (!ff.exists())
+               ff = new File(Utils.findPath(fname,true));            
+            new TFile(ff.getPath()).cp(new TFile(fname.endsWith(".tcz") ? appFolder : pkgFolder, Utils.getFileName(fname))); // guich@tc310: keep all tczs at the same parent folder
+         }
       }
       
       // get references to the contents of the appFolder
@@ -148,7 +161,7 @@ public class Deployer4IPhoneIPA
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.equals("*"))
-         bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.trim().toLowerCase();
+         bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.replace(" ","").trim().toLowerCase();
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
       // overwrite updated info.plist inside the zip file
@@ -294,7 +307,7 @@ public class Deployer4IPhoneIPA
        SHA1Digest digest = new SHA1Digest();
        ByteArrayOutputStream aux = new ByteArrayOutputStream();
        
-       Set ignoredFiles = new HashSet();
+       Set<String> ignoredFiles = new HashSet<String>();
        ignoredFiles.add("Info.plist");
        ignoredFiles.add("CodeResources");
        ignoredFiles.add("_CodeSignature/CodeResources");
@@ -322,7 +335,7 @@ public class Deployer4IPhoneIPA
       return dictionary;
    }
    
-   private void fillCodeResourcesFiles(TFile rootFile, final Set ignoredFiles, final NSDictionary files, final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
+   private void fillCodeResourcesFiles(TFile rootFile, final Set<String> ignoredFiles, final NSDictionary files, final String removePrefix, final ByteArrayOutputStream aux, final GeneralDigest digest)
    {
       rootFile.listFiles(new FilenameFilter()
       {

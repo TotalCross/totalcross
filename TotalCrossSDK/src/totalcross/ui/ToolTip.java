@@ -66,7 +66,6 @@ public class ToolTip extends Label implements PenListener, MouseListener
    {
       outside = new PenEvent();
       outside.type = PenEvent.PEN_UP;
-      outside.absoluteX = outside.x = outside.absoluteY = outside.y = -(Settings.touchTolerance+1); // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
    }
    
    // attributes
@@ -189,15 +188,19 @@ public class ToolTip extends Label implements PenListener, MouseListener
          {
             hide();
             if (control != null) // guich@tc120_22
-            {
-               outside.target = control;
-               outside.consumed = false;
-               control.postEvent(outside);
-            }
+               postOutside();
          }
       }
    }
 
+   private void postOutside()
+   {
+      outside.absoluteX = outside.x = outside.absoluteY = outside.y = -(Settings.touchTolerance+1); // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
+      outside.target = control;
+      outside.consumed = false;
+      control.postEvent(outside);
+   }
+   
    /** Shows the tooltip.
     * If you want to show the tooltip programatically, you must do something like:
     * <pre>
@@ -256,13 +259,11 @@ public class ToolTip extends Label implements PenListener, MouseListener
       if (delayTimer != null || displayTimer != null) // guich@503_1: if the user removes the pen before the popup, do not show the tooltip anymore - guich@570_93: if the user removes the pen before timeout, remove the timers as well
       {
          if (shown && control != null) // guich@tc120_22
-         {
-            outside.target = control;
-            outside.consumed = false;
-            control.postEvent(outside);
-         }
-         removeTimer(displayTimer);
-         removeTimer(delayTimer);
+            postOutside();
+         if (displayTimer != null)
+            removeTimer(displayTimer);
+         if (delayTimer != null)
+            removeTimer(delayTimer);
          displayTimer = delayTimer = null;
       }
       if (shown && e != null)

@@ -32,7 +32,7 @@ public class NativeMethodsPrototypeGenerator
          }
          else
          {
-            Vector v = new Vector(100);
+            Vector<String> v = new Vector<String>(100);
             if (argv[0].equals("makeNativeHT"))
             {
                nativeHTSuffix = argv[1];
@@ -73,11 +73,11 @@ public class NativeMethodsPrototypeGenerator
    }
 
    private static String CRLF = "\r\n";
-   private static Vector prototypes = new Vector(500);
-   private static Vector prototypesH = new Vector(500);
-   private static Vector testcases = new Vector(500);
-   private static Vector iosarray = new Vector(500);
-   private static Hashtable htNames = new Hashtable(1023);
+   private static Vector<String> prototypes = new Vector<String>(500);
+   private static Vector<String> prototypesH = new Vector<String>(500);
+   private static Vector<String> testcases = new Vector<String>(500);
+   private static Vector<String> iosarray = new Vector<String>(500);
+   private static Hashtable<String,String> htNames = new Hashtable<String,String>(1023);
    private static int errorCount;
    private static boolean makeTestCases;
    private static boolean makeNativeHT;
@@ -86,7 +86,7 @@ public class NativeMethodsPrototypeGenerator
 
    //////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////
-   private static Hashtable htTypes = new Hashtable(31);
+   private static Hashtable<String,String> htTypes = new Hashtable<String,String>(31);
    static
    {
       htTypes.put("int[","[I");
@@ -387,7 +387,7 @@ public class NativeMethodsPrototypeGenerator
    }
    //////////////////////////////////////////////////////////////////////////////////
    // reads a text file
-   private static void readFile(Vector v, InputStream is) throws Exception
+   private static void readFile(Vector<String> v, InputStream is) throws Exception
    {
       v.removeAllElements();
       try

@@ -573,7 +573,7 @@ public class Deployer4Android
 
       Vector vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
       Vector vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
-      vLocals.addElement(DeploySettings.tczFileName);
+      vLocals.addElements(DeploySettings.tczs);
       if (vGlobals.size() > 0)
          vLocals.addElements(vGlobals.toObjectArray());
       if (singleApk) // include the vm?
@@ -581,6 +581,7 @@ public class Deployer4Android
          // tc is always included
          // include non-binary files
          vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
          vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
          vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
       }         
@@ -607,7 +608,21 @@ public class Deployer4Android
          }
          catch (FileNotFoundException fnfe)
          {
-            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            try
+            {
+               fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            }
+            catch (FileNotFoundException fnfe2)
+            {
+               String pp = Utils.findPath(pathname,true);
+               if (pp != null)
+                  fis = new FileInputStream(pp);
+               else
+               {
+                  System.out.println("File not found: "+pathname);
+                  continue;
+               }
+            }
          }
          byte[] bytes = new byte[fis.available()];
          fis.read(bytes);

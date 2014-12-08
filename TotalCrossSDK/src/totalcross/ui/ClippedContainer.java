@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+
 /* A container that checks if the sibling is within the visible area before calling paint on it.
  * 
  * Used internally.
@@ -24,6 +25,8 @@ package totalcross.ui;
 public class ClippedContainer extends Container
 {
    public boolean verticalOnly;
+   protected int bagClipX0,bagClipXf,bagClipY0,bagClipYf;
+   private int lastMid;
 
    private int findOneVisible(int y0, int yf, int ini, int end)
    {
@@ -42,35 +45,38 @@ public class ClippedContainer extends Container
       }
       return 0;
    }
-
-   private int lastMid;
+   
+   protected void computeClipRect()
+   {
+      bagClipY0 = -this.y; 
+      bagClipYf = bagClipY0 + parent.height;
+      bagClipX0 = -this.x;
+      bagClipXf = bagClipX0 + parent.width;
+   }
    
    public void paintChildren()
    {
-      int y0 = -this.y;
-      int yf = y0 + parent.height;
-      int x0 = -this.x;
-      int xf = x0 + parent.width;
+      computeClipRect();
       Window pw = getParentWindow();
       if (pw == Window.topMost) pw = null; // no need to check if we're already at the top
       
       if (verticalOnly)
       {
          Object[] items = tabOrder.items;
-         int n = tabOrder.size(),i,first;
+         int n = tabOrder.size(),i,first,painted=0;
          // check if the mid container of the last search is still visible, and restart the search using it
-         if (lastMid != -1 && lastMid < n && ((Control)items[lastMid]).isVisibleAndInside(y0,yf))
+         if (lastMid != -1 && lastMid < n && ((Control)items[lastMid]).isVisibleAndInside(bagClipY0,bagClipYf))
             first = lastMid;
          else // not visible, binary search again
-            first = findOneVisible(y0, yf, 0, n);
+            first = findOneVisible(bagClipY0, bagClipYf, 0, n);
          // found the first (or second) visible, go back to find the really first visible
-         while (first > 0 && ((Control)items[first-1]).isVisibleAndInside(y0,yf)) // find the first visible
+         while (first > 0 && ((Control)items[first-1]).isVisibleAndInside(bagClipY0,bagClipYf)) // find the first visible
             first--;
          // now go forward until no other is visible
          for (i = first; i < n; i++)
          {
             Control child = (Control)items[i];
-            if (!child.isVisibleAndInside(y0,yf))
+            if (painted++ > 0 && !child.isVisibleAndInside(bagClipY0,bagClipYf))
                break;
             if (pw == null || !child.isObscured(pw))            
             {
@@ -84,7 +90,7 @@ public class ClippedContainer extends Container
       else
       {
          for (Control child = children; child != null; child = child.next)
-            if (child.isVisibleAndInside(x0,y0,xf,yf) && (pw == null || !child.isObscured(pw)))
+            if (child.isVisibleAndInside(bagClipX0,bagClipY0,bagClipXf,bagClipYf) && (pw == null || !child.isObscured(pw)))
             {
                if (child.asContainer != null && child.asContainer.offscreen != null)
                   getGraphics().drawImage(child.asContainer.offscreen,child.x,child.y);

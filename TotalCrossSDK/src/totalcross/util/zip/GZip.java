@@ -142,6 +142,7 @@ final public class GZip
             result += out.writeBytes(gbout, 0, bytesRead);
             bytesRead = gis.read(gbout);
          }
+         gis.close();
       }
       catch (java.util.zip.ZipException e)
       {

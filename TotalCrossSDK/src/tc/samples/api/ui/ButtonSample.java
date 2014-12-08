@@ -30,10 +30,10 @@ import totalcross.ui.image.*;
 public class ButtonSample extends BaseContainer
 {
    ScrollContainer sc;
+   private int ccount=10;
    
    public void initUI()
    {
-      super.initUI();
       try
       {
          super.initUI();
@@ -42,7 +42,15 @@ public class ButtonSample extends BaseContainer
          add(sc,LEFT,TOP,FILL,FILL);
          Button c;
    
-         sc.add(new Button("Simple button"), LEFT, AFTER, PREFERRED+gap, PREFERRED );
+         sc.add(c=new Button("Simple button"), LEFT, AFTER, PREFERRED+gap, PREFERRED );
+         c.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               if (--ccount == 0) MainWindow.exit(0);               
+               else setInfo(ccount == 1 ? "1 more click will exit" : ccount+" more clicks to exit");
+            }
+         });
    
          sc.add(c = new Button("This is\na multi-line\nButton"), LEFT, AFTER + gap, PREFERRED+gap, PREFERRED+gap);
          c.setPressedColor(Color.ORANGE);
@@ -107,10 +115,9 @@ public class ButtonSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               Control []btns = sc.getBagChildren();
-               for (int i = btns.length; --i >= 0;)
-                  if (btns[i] instanceof Button)
-                     btns[i].setEnabled(cc.isChecked());
+               for (Control c : sc.getBagChildren())
+                  if (c instanceof Button)
+                     c.setEnabled(cc.isChecked());
             }
          });
       }

@@ -5,7 +5,11 @@
 	<property name="android.deploy" value="${basedir}/deploy"/>
 	<property name="source.vms.path" value="${basedir}/../../../.."/>
 	<property name="source.sdk.path" value="${basedir}/../../../../../TotalCrossSDK"/>
-
+   <property name="source.lb.path.local"  value="${basedir}/../../../../../../Litebase/LitebaseSDK"/>
+   <property name="source.lb.path.server" value="${basedir}/../../../../../LitebaseSDK"/>
+   <available file="${source.lb.path.local}/dist/lib/LitebaseLib.tcz" property="source.lb.path" value="${source.lb.path.local}" />
+   <available file="${source.lb.path.server}/dist/lib/LitebaseLib.tcz" property="source.lb.path" value="${source.lb.path.server}" />
+   
 <!-- The local.properties file is created and updated by the 'android'
      tool.
      It contains the path to the SDK. It should *NOT* be checked into
@@ -99,8 +103,10 @@
 	    <!-- update the tcfiles.zip with the tczs that will be installed -->
 	    <mkdir dir="${android.deploy}/assets" />
 	    <zip destfile="${android.deploy}/assets/tcfiles.zip" filesonly="true" compress="no">
-	      <zipfileset dir="${source.sdk.path}/dist/vm"      includes="TCBase.tcz" />
+	      <zipfileset dir="${source.sdk.path}/dist/vm"   includes="TCBase.tcz" />
+	      <zipfileset dir="${source.sdk.path}/dist/vm"   includes="TCUI.tcz" />
 	      <zipfileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.tcz" />
+	      <zipfileset dir="${source.lb.path}/dist/lib"   includes="LitebaseLib.tcz" erroronmissingarchive="no" />
 	    </zip>    	
     </target>
 	

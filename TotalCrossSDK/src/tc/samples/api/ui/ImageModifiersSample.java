@@ -163,7 +163,7 @@ public class ImageModifiersSample extends BaseContainer
                            {
                               imgContrasted = null;
                               Vm.gc();
-                              imgRotated = img.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor());
+                              imgRotated = img.getRotatedScaledInstance(scaleLevel, rotateLevel, 0);
                            }
                            setImage(imgRotated.getTouchedUpInstance(brightnessLevel,contrastLevel));
                         }

@@ -24,7 +24,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 import totalcross.util.*;
 
 /**
@@ -735,7 +734,7 @@ public class Edit extends Control
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    private int getTotalCharWidth()
@@ -790,7 +789,7 @@ public class Edit extends Control
                try
                {
                   if (npback == null || focusColor != -1)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false,true);
+                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
                }
                catch (ImageException e) {e.printStackTrace();}
                g.drawImage(npback, 0,0);
@@ -847,7 +846,7 @@ public class Edit extends Control
             g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
          cursorX = charPos2x(insertPos);
       }
-      if (hasFocus && enabled && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
+      if (hasFocus && isEnabled() && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
       {
          // draw cursor
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
@@ -980,7 +979,7 @@ public class Edit extends Control
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE || !editable || !enabled) // fdie@ nothing to do if kdb has been disabled
+      if (kbdType == KBD_NONE || !editable || !isEnabled()) // fdie@ nothing to do if kdb has been disabled
          return;
       if (!popupsHidden())
       {
@@ -1090,6 +1089,8 @@ public class Edit extends Control
 
    private void focusOut()
    {
+      if (Settings.isWindowsDevice() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+         hideSip();
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
@@ -1173,7 +1174,7 @@ public class Edit extends Control
             break;
          case KeyEvent.KEY_PRESS:
          case KeyEvent.SPECIAL_KEY_PRESS:
-            if (editable && enabled)
+            if (editable && isEnabled())
             {
                KeyEvent ke = (KeyEvent)event;
                if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
@@ -1281,10 +1282,7 @@ public class Edit extends Control
                      ke.key = Convert.toLowerCase((char)ke.key);
 
                   if (!isCharValid((char)ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
-                  {
-                     Sound.beep();
                      break;
-                  }
                }
                if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                {
@@ -1342,7 +1340,6 @@ public class Edit extends Control
                      newInsertPos++;
                      clearSelect = true;
                   }
-                  else Sound.beep();
                boolean isMove = true;
                switch (ke.key)
                {
@@ -1381,7 +1378,7 @@ public class Edit extends Control
          {
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
-            if (newInsertPos != insertPos && enabled)
+            if (newInsertPos != insertPos && isEnabled())
                extendSelect = true;
             break;
          }
@@ -1664,7 +1661,7 @@ public class Edit extends Control
    {
       String pasted = Vm.clipboardPaste();
       if (pasted == null || pasted.length() == 0)
-         Sound.beep();
+         ;
       else
       {
          showTip(this, pasteStr, 500, -1);

@@ -22,7 +22,6 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
 #pragma region StaticVariables
 
 static TCGuint pointsPosition;
-static int32 *pixcoords, *pixcolors, *pixEnd;
 static int32 desiredglShiftY;
 
 #pragma endregion
@@ -31,12 +30,10 @@ static int32 desiredglShiftY;
 
 int32 setShiftYonNextUpdateScreen;
 
-VoidPs* imgTextures;
 TCGfloat ftransp[16];
 int32 appW, appH, glShiftY;
 int32 flen;
-TCGfloat* glcoords;//[flen*2]; x,y
-TCGfloat* glcolors;//[flen];   alpha
+TCGfloat* glXYA;//[flen*2]; x,y
 
 #pragma endregion
 
@@ -50,6 +47,8 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 	screen->extension = deviceCtx;
 	screen->pitch = screen->screenW * screen->bpp / 8;
 	screen->pixels = (uint8*)1;
+   screen->hRes = (int)getDpiX();
+   screen->vRes = (int)getDpiY();
 	return screen->pixels != null;
 }
 
@@ -61,18 +60,13 @@ bool checkGLfloatBuffer(Context c, int32 n)
 {
 	if (n > flen)
 	{
-		xfree(glcoords);
-		xfree(glcolors);
+      xfree(glXYA);
 		flen = n * 3 / 2;
-		int len = flen * 2;
-		glcoords = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len); pixcoords = (int32*)glcoords;
-		glcolors = (TCGfloat*)xmalloc(sizeof(TCGfloat)*flen); pixcolors = (int32*)glcolors;
-		pixEnd = pixcoords + len;
-		if (!glcoords || !glcolors)
+		int len = flen * 3;
+      glXYA = (TCGfloat*)xmalloc(sizeof(TCGfloat)*len);
+      if (!glXYA)
 		{
 			throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
-			xfree(glcoords);
-			xfree(glcolors);
 			flen = 0;
 			return false;
 		}
@@ -119,8 +113,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 	if (!isScreenChange)
 	{
 		xfree(screen->extension);
-		xfree(glcoords);
-		xfree(glcolors);
+      xfree(glXYA);
 	}
 }
 
@@ -144,17 +137,22 @@ DWORD32 getGlColor(int32 rgb, int32 a)
    return (a << 24) | (pc.r << 16) | (pc.g << 8) | pc.b;
 }
 
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n)
+{
+   dxDrawPixelColors(x, y, colors, n);
+}
+
 void glDrawPixels(int32 n, int32 rgb)
 {
    Pixel colour = getGlColor(rgb,0xFF);
-   dxDrawPixels(glcoords+pointsPosition, glcolors+pointsPosition, n, colour);
+   dxDrawPixels(glXYA + pointsPosition, n, colour);
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
 {
    Pixel colour = getGlColor(rgb, a);
-   float coords[2] = { (float)x, (float)y }, colors[1] = { a/255.0f };
-   dxDrawPixels(coords, colors, 1, colour);
+   float coords[3] = { (float)x, (float)y, a/255.0f };
+   dxDrawPixels(coords, 1, colour);
 }
 
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
@@ -176,12 +174,12 @@ void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv 
 
 extern "C" {extern int32 *shiftYfield, *lastShiftYfield, *shiftHfield; }
 void setTimerInterval(int32 t);
-void setShiftYgl()
+void setShiftYgl(int32 shiftY)
 {
 	if (setShiftYonNextUpdateScreen) 
    {
       int32 sipHeight = dxGetSipHeight();
-		int32 componentPos = desiredScreenShiftY;
+		int32 componentPos = shiftY;
       if (appW > appH) // in landscape we work a bit different
          componentPos += *shiftHfield/4*5;
 		setShiftYonNextUpdateScreen = false;
@@ -202,27 +200,17 @@ void glSetLineWidth(int32 w)
 {
 }
 
-void glDeleteTexture(TCObject img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId)
 {
-   dxDeleteTexture(img, textureId, updateList);
-   if (updateList && img && VoidPsContains(imgTextures, img))
-   {
-      int n1 = listGetCount(imgTextures);
-      imgTextures = VoidPsRemove(imgTextures, img, null);
-      int n2 = listGetCount(imgTextures);
-      if (n1 - 1 != n2)
-         debug("**** tinha %d, tirou 1 mas ficou %d", n1, n2);
-   }
+   dxDeleteTexture(img, textureId);
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
-   dxLoadTexture(currentContext, img, textureId, pixels, width, height, updateList);
-   if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
-      imgTextures = VoidPsAdd(imgTextures, img, null);
+   dxLoadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
 }
 
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask)
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
 {
-   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, imgW, imgH, color, clip, alphaMask);
+   dxDrawTexture(textureId, x, y, w, h, dstX, dstY, dstW, dstH, imgW, imgH, color, alphaMask);
 }

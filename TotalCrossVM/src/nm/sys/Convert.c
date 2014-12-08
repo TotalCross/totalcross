@@ -101,10 +101,10 @@ TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public s
       {
 #ifndef WINCE
          double result;
+         CharP endPtr=null;
          String2CharPBuf(string, buffer);
-         p->retD = result = strtod(buffer, null);
-
-         if (result == 0.0 || result == HUGE_VAL || result == -HUGE_VAL)
+         p->retD = result = strtod(buffer, &endPtr);
+         if (*endPtr != 0 || result == HUGE_VAL || result == -HUGE_VAL) // guich: testing for endPtr to see if it stopped in an invalid character
 #endif
             throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer);
       }

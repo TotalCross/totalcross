@@ -81,6 +81,9 @@ public class Container extends Control
    public static final int TRANSITION_OPEN = 1;
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_CLOSE = 2;
+   /** Used when animating the exhibition of a container. */
+   public static final int TRANSITION_FADE = 3;
+   
    
    /** The color used in the border.
     * @since TotalCross 2.0
@@ -107,7 +110,7 @@ public class Container extends Control
     * 
     * @since TotalCross 1.68
     */
-   public static int TRANSITION_TIME = Settings.onJavaSE ? 500 : 1000;
+   public static int TRANSITION_TIME = 500;
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
@@ -164,30 +167,23 @@ public class Container extends Control
     * @see #TRANSITION_NONE
     * @see #TRANSITION_OPEN
     * @see #TRANSITION_CLOSE
+    * @see #TRANSITION_FADE
     */
-   static void setNextTransitionEffect(int t)
+   public static void setNextTransitionEffect(int t)
    {
-      if (!Settings.isIOS())
-      {
-         nextTransitionEffect = t;
-         if (t != TRANSITION_NONE)
-            try
-            {
-               screen0 = MainWindow.getScreenShot();
-               screen0.lockChanges();
-            }
-            catch (Throwable e) {}
-      }
+      nextTransitionEffect = t;
+      if (t != TRANSITION_NONE)
+         screen0 = MainWindow.getScreenShot();
    }
 
    static Image screen0;
 
-   static void applyTransitionEffect()
+   public static void applyTransitionEffect()
    {
       int transitionEffect = nextTransitionEffect;
-      nextTransitionEffect = Container.TRANSITION_NONE;
+      nextTransitionEffect = TRANSITION_NONE;
       if (transitionEffect == -1)
-         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
+         transitionEffect = TRANSITION_NONE;
 
       if (screen0 != null) // only when transitionEffect is not NONE
       {
@@ -196,52 +192,70 @@ public class Container extends Control
             int ini0 = Vm.getTimeStamp();
             Image screen1 = MainWindow.getScreenShot();
             screen1.lockChanges();
-            int w = totalcross.sys.Settings.screenWidth;
-            int h = totalcross.sys.Settings.screenHeight;
-            int remainingFrames = Math.min(w,h)/2;
-            int mx = w/2;
-            int my = h/2;
-            double incX=1,incY=1;
-            if (w > h)
-               incX = (double)w/h;
-             else
-               incY = (double)h/w;
             Graphics g = MainWindow.mainWindowInstance.getGraphics();
-            int step=1;
-            boolean isClose = transitionEffect == TRANSITION_CLOSE;
-            Image s0 = isClose ? screen1 : screen0;
-            Image s1 = isClose ? screen0 : screen1;
-            for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
+            
+            if (transitionEffect == TRANSITION_FADE)
             {
                int ini = Vm.getTimeStamp();
-               g.clearClip();
-               g.drawImage(s0,0,0);
-               int minx = (int)(mx - i*incX);
-               int miny = (int)(my - i*incY);
-               int maxx = (int)(mx + i*incX);
-               int maxy = (int)(my + i*incY);
-               g.setClip(minx,miny,maxx-minx,maxy-miny);
-               g.drawImage(s1,0,0);
-               Window.updateScreen();
-               int frameElapsed = Vm.getTimeStamp()-ini;
-               int totalElapsed = Vm.getTimeStamp()-ini0;
-               int remainingTime = TRANSITION_TIME - totalElapsed;
-               if (remainingTime <= 0)
-                  break;
-               if (frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+               for (int i = 1; i <= 255; i++)
                {
-                  Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
-                  step = 1;
+                  screen1.alphaMask = (Vm.getTimeStamp() - ini) * 255 / TRANSITION_TIME; 
+                  if (screen1.alphaMask > 255) 
+                     break;
+                  g.drawImage(screen0, 0,0);
+                  g.drawImage(screen1, 0,0);
+                  updateScreen();
+                  Vm.sleep(1);
                }
-               else
+            }
+            else
+            {
+               int w = totalcross.sys.Settings.screenWidth;
+               int h = totalcross.sys.Settings.screenHeight;
+               int remainingFrames = Math.min(w,h)/2;
+               int mx = w/2;
+               int my = h/2;
+               double incX=1,incY=1;
+               if (w > h)
+                  incX = (double)w/h;
+                else
+                  incY = (double)h/w;
+               int step=1;
+               boolean isClose = transitionEffect == TRANSITION_CLOSE;
+               Image s0 = isClose ? screen1 : screen0;
+               Image s1 = isClose ? screen0 : screen1;
+               boolean noDelay = Settings.platform.equals(Settings.WIN32); // the delay does not work well on win32
+               for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
                {
-                  step = frameElapsed * remainingFrames / remainingTime;
-               }
+                  int ini = Vm.getTimeStamp();
+                  g.clearClip();
+                  g.drawImage(s0,0,0);
+                  int minx = (int)(mx - i*incX);
+                  int miny = (int)(my - i*incY);
+                  int maxx = (int)(mx + i*incX);
+                  int maxy = (int)(my + i*incY);
+                  g.setClip(minx,miny,maxx-minx,maxy-miny);
+                  g.drawImage(s1,0,0);
+                  updateScreen();
+                  int frameElapsed = Vm.getTimeStamp()-ini;
+                  int totalElapsed = Vm.getTimeStamp()-ini0;
+                  int remainingTime = TRANSITION_TIME - totalElapsed;
+                  if (remainingTime <= 0)
+                     break;
+                  if (!noDelay && frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+                  {
+                     Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
+                     step = 1;
+                  }
+                  else
+                  {
+                     step = frameElapsed * remainingFrames / remainingTime;
+                  }
+               }                  
             }
          }
          catch (Throwable e) {}
          screen0 = null;
-         Vm.gc();
       }
    }
 
@@ -520,15 +534,11 @@ public class Container extends Control
    /** Sets if this container and all childrens can or not accept events */
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled, false))
       {
-         this.enabled = enabled;
-         onColorsChanged(false);
          for (Control child = children; child != null; child = child.next)
             child.setEnabled(enabled);
-         esce.update(this);
-         postEvent(esce);
-         Window.needsPaint = true; // now the controls have different l&f for disabled states
+         post();
       }
    }
 
@@ -605,7 +615,7 @@ public class Container extends Control
    protected void onColorsChanged(boolean colorsChanged)
    {
       if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP && borderStyle != BORDER_ROUNDED)
-         Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+         Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
    /** Draws the border (if any). If you override this method, be sure to call
@@ -739,7 +749,7 @@ public class Container extends Control
     */
    public void getFocusableControls(Vector v) //kmeehl@tc100
    {
-      if (!visible || !enabled)
+      if (!visible || !isEnabled())
          return;
       Control child = children;
       for (int i = 0; i < numChildren; i++, child = child.next)
@@ -1001,7 +1011,7 @@ public class Container extends Control
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.enabled && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
+            if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
             {
                c.requestFocus();
                if (Settings.virtualKeyboard)
@@ -1035,7 +1045,7 @@ public class Container extends Control
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.enabled && c.visible)
+            if (c != this && c.isEnabled() && c.visible)
             {
                c.requestFocus();
                return c;

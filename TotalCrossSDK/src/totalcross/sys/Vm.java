@@ -264,8 +264,7 @@ public final class Vm
          {
             // guich@120: the ideal were that all classes should be re-instantiated, because any static methods that
             // used the last MainWindow are now pointing to invalid data.
-            Class c = Class.forName(command);
-            Launcher.instance.setNewMainWindow((totalcross.ui.MainWindow) c.newInstance(), args);
+            Launcher.instance.setNewMainWindow((totalcross.ui.MainWindow) Class.forName(command).newInstance(), args);
             status = 0;
          }
          else
@@ -640,6 +639,35 @@ public final class Vm
     * @since TotalCross 1.14
     */
    public static final int TWEAK_DISABLE_GC = 4;
+   
+   /** This flag turns on the trace of created class objects. This helps you track objects that are not
+    * being freed because are held in some way into memory.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_CREATED_CLASSOBJS = 5;
+   /** This flag turns on the trace of locked objects, which are objects that are locked by the vm and will
+    * never be released.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_LOCKED_OBJS = 6;
+   /** This flag turns on the trace objects that are left behind between two garbage collector calls.
+    * This helps you to find objects that are being held into memory by your program and that are thus never collected.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
+   
+   /** Enables dump of executed methods to the console. CAUTION: this makes the program slower since hundreds of
+    * method calls are sent to the console, use with caution.
+    * The output format is: T timestamp thread class - method
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_METHODS = 8;
 
    /**
     * Tweak some parameters of the virtual machine. Note that these
@@ -762,5 +790,24 @@ public final class Vm
     */
    public static void preallocateArray(Object sample, int length)
    {
+   }
+   
+   /**
+    * Returns the same hash code for the given object as would be returned by the default method hashCode(), whether or not the given object's class 
+    * overrides <code>hashCode()</code>.
+    * The hash code for the <code>null</code> reference is zero.
+    *
+    * @param object Object for which the hash code is to be calculated.
+    * @return The desired hash code.
+    */
+   public static int identityHashCode(Object object)
+   {
+      return System.identityHashCode(object);
+   }
+   
+   /** used internally for enum */
+   static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
+   {
+      arrayCopy(src,srcPos,dest,destPos,length);
    }
 }

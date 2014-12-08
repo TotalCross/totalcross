@@ -24,14 +24,15 @@
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a);
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n);
 void glDrawPixels(int32 n, int32 rgb);
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill);
 int32 glGetPixel(int32 x, int32 y);
-void glDeleteTexture(TCObject img, int32* textureId, bool removeFromList);
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList);
-void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH, PixelConv* color, int32* clip, int32 alphaMask);
-void applyChanges(Context currentContext, TCObject obj, bool updateList);
-void freeTexture(TCObject obj, bool updateList);
+void glDeleteTexture(TCObject img, int32* textureId);
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
+void applyChanges(Context currentContext, TCObject obj);
+void freeTexture(TCObject obj);
 bool checkGLfloatBuffer(Context c, int32 n);
 void flushPixels();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
@@ -259,7 +260,7 @@ TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics nativ
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false,false);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
@@ -273,7 +274,7 @@ TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphi
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true,false);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
@@ -700,45 +701,18 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
 #ifdef __gl2_h_
    glFillRect(0,0,appW,appH,0,p->i32[0]);
 #else   
-   //int32 ini = getTimeStamp();
    if (graphicsLock(&screen, true))
    {
-      int32 fadeValue = p->i32[0], j,r,g,b;
-      PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
-      bool dec = fadeValue > 0;
-      PixelConv lastColor, lastFaded, rgb;
-      lastColor.pixel = lastFaded.pixel = rgb.pixel = -1;
-      for (j = screen.screenH * screen.screenW; j-- > 0; f++)
+      int32 fadeValue = p->i32[0], len,r,g,b;
+      PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
+      for (len = screen.screenH * screen.screenW; len-- > 0; pixels++)
       {
-         if (f->pixel == lastColor.pixel) // uigadgets have a cache hit of 90%
-            f->pixel = lastFaded.pixel;
-         else
-         {
-            lastColor.pixel = f->pixel;
-            r = f->r - fadeValue;
-            g = f->g - fadeValue;
-            b = f->b - fadeValue;
-            if (dec) // if the value is being decreased, it will never be greater than the max value
-            {
-               if (r < 0) r = 0; 
-               if (g < 0) g = 0; 
-               if (b < 0) b = 0; 
-            }
-            else
-            {
-               if (r > 255) r = 255;
-               if (g > 255) g = 255;
-               if (b > 255) b = 255;
-            }                 
-            f->r = r;
-            f->g = g;
-            f->b = b;
-            lastFaded.pixel = f->pixel;
-         }
+         r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+         g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+         b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
       }
       graphicsLock(&screen, false);
    }                          
-   //debug("elapsed %d ms",getTimeStamp()-ini);
 #endif   
 }
 //////////////////////////////////////////////////////////////////////////
@@ -774,6 +748,27 @@ TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graph
 {
    TCObject g = p->obj[0];
    fillShadedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], makePixelRGB(p->i32[6]), makePixelRGB(p->i32[7]), p->i32[8]);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
+{       
+   TCObject g = p->obj[0];
+   int32 x1 = p->i32[0], y1 = p->i32[1], x2 = p->i32[2], y2 = p->i32[3], t = p->i32[4];
+   int32 dx = abs32(x2-x1); 
+   int32 dy = abs32(y2-y1); 
+   int32 tlx[4],tly[4];
+   t /= 2;
+   if (dx > dy)
+   {
+      tlx[0] = tlx[1] = x1; tlx[2] = tlx[3] = x2;
+      tly[0] = y1+t; tly[1] = y1-t; tly[2] = y2-t; tly[3] = y2+t;
+   }
+   else
+   {
+      tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
+      tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
+   }
+   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false);
 }
 
 #ifdef ENABLE_TEST_SUITE

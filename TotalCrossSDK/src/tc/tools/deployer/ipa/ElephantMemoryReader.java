@@ -6,7 +6,7 @@ import java.util.Stack;
 
 public class ElephantMemoryReader extends ByteArrayInputStream implements ElephantMemoryStream
 {
-   Stack positions = new Stack();
+   Stack<Integer> positions = new Stack<Integer>();
 
    public ElephantMemoryReader(byte[] data)
    {
@@ -70,12 +70,12 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
 
    public void memorize()
    {
-      positions.push(Integer.valueOf(this.pos));
+      positions.push(this.pos);
    }
 
    public void moveBack()
    {
-      this.pos = ((Integer) positions.pop()).intValue();
+      this.pos = positions.pop();
    }
 
    public int getPos()

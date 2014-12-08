@@ -39,7 +39,7 @@ public class Enum
    }
    
    static Hashtable htGroup = new Hashtable(10);
-   private static EnumGroup getGroup(Class c)
+   private static EnumGroup getGroup(Class<?> c)
    {
       String key = c.getName();
       EnumGroup eg = (EnumGroup)htGroup.get(key);
@@ -68,12 +68,12 @@ public class Enum
       eg.htv2c.put(value, this);
    }
    
-   protected static Enum get(Class c, String name)
+   protected static Enum get(Class<?> c, String name)
    {
       return (Enum)getGroup(c).htn2c.get(name);
    }
    
-   protected static Enum get(Class c, int value, Enum def)
+   protected static Enum get(Class<?> c, int value, Enum def)
    {
       Enum ret = (Enum)getGroup(c).htv2c.get(value);
       if (ret == null)
@@ -81,7 +81,7 @@ public class Enum
       return def;
    }
    
-   public static Vector values(Class c)
+   public static Vector values(Class<?> c)
    {
       EnumGroup eg = getGroup(c);
       return eg.values == null ? eg.values = eg.htn2c.getValues() : eg.values;

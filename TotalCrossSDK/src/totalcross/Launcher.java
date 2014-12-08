@@ -41,6 +41,8 @@ import java.io.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
+import java.security.*;
+import java.security.cert.*;
 import java.util.zip.*;
 
 import totalcross.io.*;
@@ -84,7 +86,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private int[] screenPixels = new int[0];
    private int lookupR[], lookupG[], lookupB[], lookupGray[];
    private int pal685[];
-   private Class _class; // used by the openInputStream method.
+   private Class<?> _class; // used by the openInputStream method.
    protected MemoryImageSource screenMis;
    protected java.awt.Image screenImg;
    private AlertBox alert;
@@ -94,7 +96,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private TCEventThread eventThread;
    private boolean isMainClass;
    private boolean isDemo;
+   private static String key;
 
+   @SuppressWarnings("deprecation")
    public Launcher()
    {
       totalcross.sys.Settings.showDesktopMessages = false; // guich@500_1: avoid messages when calling retroguard
@@ -142,6 +146,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("===================================");
    }
 
+   @SuppressWarnings("static-access")
    public void init()
    {
       boolean showInstructionsOnError = true;
@@ -171,12 +176,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                className = className.substring(0,className.length()-6);
             className = className.replace('/','.');
 
-            Class c = _class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
+            Class<?> c = _class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
             showInstructionsOnError = false;
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
                runtimeInstructions();
-            loadBaseFonts();
             Object o = c.newInstance();
             if (o instanceof MainClass && !(o instanceof MainWindow))
             {
@@ -227,9 +231,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       } // guich@120
    }
 
-   private static boolean checkIfMainClass(Class c)
+   private static boolean checkIfMainClass(Class<?> c)
    {
-      Class []interfaces = c.getInterfaces();
+      Class<?> []interfaces = c.getInterfaces();
       if (interfaces != null)
          for (int i = 0; i < interfaces.length; i++)
             if (interfaces[i].getName().equals("totalcross.MainClass"))
@@ -390,6 +394,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
       System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
+      System.out.println("   /r <key>         : specify a registration key to be used to activate TotalCross when required");
       System.out.println("The class name that extends MainWindow must always be the last argument");
    }
 
@@ -461,6 +466,13 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                      toBpp = toInt(scr[2]);
                }
                System.out.println("Screen is "+toWidth+"x"+toHeight+"x"+toBpp);
+            }
+            else
+            if (args[i].equalsIgnoreCase("/r"))
+            {
+               key = args[++i].toUpperCase(); 
+               if (key.length() != 24)
+                  throw new Exception("Invalid registration key");
             }
             else
             if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -584,6 +596,52 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
+      if (false && key == null)
+      {
+         System.out.println("Error: you must provide a registration key!");
+         System.exit(0);
+         return;
+      }
+      checkKey();
+   }
+   
+   private void checkKey()
+   {
+      /*
+       W:\>openssl req -new -newkey rsa:4096 -days 30 -nodes -x509 -keyout totalcross.key 
+       -out totalcross.cert -subj "/C=BR/ST=CE/L=FORTALEZA/O=TotalCross MGP/CN=Guilherme Campos Hazan
+       /OU=54434C423B6869C50039C06F"
+       */
+      try
+      {
+         InputStream inStream = new FileInputStream("w:\\totalcross.cert");
+         CertificateFactory cf = CertificateFactory.getInstance("X.509");
+         X509Certificate cert = (X509Certificate)cf.generateCertificate(inStream);
+         Principal p = cert.getIssuerDN(); // OU=54434C423B6869C50039C06F, CN=Guilherme Campos Hazan, O=TotalCross MGP, L=FORTALEZA, ST=CE, C=BR
+         java.util.Date exp = cert.getNotAfter(); 
+         java.util.Calendar c = java.util.Calendar.getInstance();
+         
+         c.setTime(exp);
+         int y = c.get(java.util.Calendar.YEAR);
+         int m = c.get(java.util.Calendar.MONTH) + 1;
+         int d = c.get(java.util.Calendar.DAY_OF_MONTH);
+         int iexp = y * 10000 + m * 100 + d;
+         
+         java.util.Date tod = new java.util.Date(); 
+         c.setTime(tod);
+         y = c.get(java.util.Calendar.YEAR);
+         m = c.get(java.util.Calendar.MONTH) + 1;
+         d = c.get(java.util.Calendar.DAY_OF_MONTH);
+         int itod = y * 10000 + m * 100 + d;
+         boolean expired = itod >= iexp;
+         System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+itod);
+         System.out.println(p);
+         inStream.close();
+      }
+      catch (Exception e)
+      {
+         //e.printStackTrace();
+      }
    }
 
    private String[] tokenizeString(String string, char c)
@@ -1027,9 +1085,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       if (toScale != 1) // guich@tc126_74 - guich@tc130 
       {
-         Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
-         g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
-         img.flush();
+         if (!MainWindow.isMainThread())
+            g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
+         else
+         {
+            Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+            g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
+            img.flush();
+         }
       }
       else
       if (g != null)
@@ -1135,6 +1198,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       return getPathOf(main)+"/";
    }
    /** used in some classes so they can correctly open files. now can open jar files. */
+   @SuppressWarnings("resource")
    public InputStream openInputStream(String path)
    {
       String sread = "\nopening for read "+path+"\n";
@@ -1651,6 +1715,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       } catch (SecurityException se) {totalcross.sys.Settings.userName = null;}
    }
 
+   @SuppressWarnings("deprecation")
    public void settingsRefresh(boolean callStoreSettings) // guich@tc115_81
    {
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33
@@ -1671,38 +1736,44 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    static final int AA_4BPP = 1;
    static final int AA_8BPP = 2;
    static int []realSizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
-   static totalcross.ui.font.Font []baseFontN = new totalcross.ui.font.Font[realSizes.length], baseFontB = new totalcross.ui.font.Font[realSizes.length];
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
-   private boolean useRealFont;
-   private void loadBaseFonts()
+   static Hashtable htBaseFonts = new Hashtable(5); // 
+   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size, String suffix)
    {
-      useRealFont = true;
-      for (int i = 0; i < realSizes.length; i++)
+      String key = name+"|"+bold+"|"+size+"|"+suffix;
+      totalcross.ui.font.Font f = (totalcross.ui.font.Font)htBaseFonts.get(key);
+      if (f == null)
       {
-         baseFontN[i] = totalcross.ui.font.Font.getFont(false,realSizes[i]); baseFontN[i].removeFromCache();
-         baseFontB[i] = totalcross.ui.font.Font.getFont(true, realSizes[i]); baseFontB[i].removeFromCache();
+         int i;
+         for (i = 0; i < realSizes.length-1; i++)
+            if (size <= realSizes[i])
+               break;
+      
+         int idx = Integer.parseInt(suffix.substring(suffix.indexOf('u') + 1));
+         totalcross.ui.font.Font.baseChar = (char)idx;
+         f = totalcross.ui.font.Font.getFont(name,bold,realSizes[i]);
+         totalcross.ui.font.Font.baseChar = ' ';
+         if (f != null) 
+         {
+            f.removeFromCache();
+            htBaseFonts.put(key,f); 
+         }         
       }
-      useRealFont = false;
-   }
-   static totalcross.ui.font.Font getBaseFont(boolean bold, int size)
-   {
-      int i;
-      for (i = 0; i < realSizes.length-1; i++)
-         if (size <= realSizes[i])
-            break;
-      return bold ? baseFontB[i] : baseFontN[i];
+      
+      return f;
    }
 
    private UserFont loadUF(String fontName, String suffix)
    {
       try
       {
-         if (!useRealFont && fontName.equals(totalcross.ui.font.Font.DEFAULT) && suffix.endsWith("u0"))
+         if (totalcross.ui.font.Font.baseChar == ' ') // test if there's another 8bpp native font.
          {
             boolean bold = suffix.charAt(1) == 'b';
-            int size = Integer.parseInt(suffix.substring(2,suffix.length()-2));
-            totalcross.ui.font.Font base = getBaseFont(bold, size); 
-            return new UserFont(fontName, suffix, size, base);
+            int size = Integer.parseInt(suffix.substring(2,suffix.indexOf('u')));
+            totalcross.ui.font.Font base = getBaseFont(fontName, bold, size, suffix);
+            if (base != null)
+               return new UserFont(fontName, suffix, size, base);
          }
          return new UserFont(fontName, suffix);
       }
@@ -1765,7 +1836,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          
          if (uf != null)
          {
-            if (!useRealFont)
+            if (totalcross.ui.font.Font.baseChar == ' ')
                htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
             f.name = uf.fontName; // update the name, the font may have been replaced.
          }
@@ -1816,6 +1887,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       private int []bitIndexTable;
       private String fontName;
       private int numberWidth;
+      private int minusW;
 
       private UserFont(String fontName, String sufix, int size, totalcross.ui.font.Font base) throws Exception
       {
@@ -1835,6 +1907,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          this.ascent = size - this.descent;
          this.numberWidth = ubase.numberWidth * maxHeight / ubase.maxHeight;
          this.spaceWidth = ubase.spaceWidth * maxHeight / ubase.maxHeight;
+         this.minusW = ubase.minusW;
       }
       
       private UserFont(String fontName, String sufix) throws Exception
@@ -1849,7 +1922,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                is = openInputStream("vm/"+fileName); // for the release sdk, there's no etc/fonts. the tcfont.tcz is located at dist/vm/tcfont.tcz
                if (is == null)
-                  throw new Exception("file "+fileName+" not found"); // loaded = false
+               {
+                  is = openInputStream("etc/fonts/"+fileName); // if looking for the default font when debugging, use etc/fonts
+                  if (is == null)
+                     throw new Exception("file "+fileName+" not found"); // loaded = false
+               }
             }
             z = new TCZ(new IS2S(is));
             totalcross.io.ByteArrayStream fontChunks[];
@@ -1891,10 +1968,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
          //
+         minusW = antialiased == AA_8BPP && fontName.equals("TCFont") ? 1 : 0;
          if (firstChar <= '0' && '0' <= lastChar)
          {
             index = (int)'0' - (int)firstChar;
-            numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+            numberWidth = bitIndexTable[index+1] - bitIndexTable[index] - minusW;
          }
          if (antialiased == AA_8BPP)
             nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
@@ -1903,7 +1981,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
       {
          int offset = bitIndexTable[index];
-         int width = bitIndexTable[index+1] - offset;
+         int width = bitIndexTable[index+1] - offset - minusW;
          totalcross.ui.image.Image img = new totalcross.ui.image.Image(width,maxHeight);
          int[] pixels = img.getPixels();
          for (int y = 0,idx=0; y < maxHeight; y++)
@@ -1922,7 +2000,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             bits.rowWIB = rowWidthInBytes;
             bits.charBitmapTable = bitmapTable;
             bits.offset = bitIndexTable[index];
-            bits.width = bitIndexTable[index+1] - bits.offset;
+            bits.width = bitIndexTable[index+1] - bits.offset - minusW;
+            if (bits.width == 0) bits.width += minusW;
             if (ubase != null)
                try
                {
@@ -1953,7 +2032,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (ch < ' ')
          return (ch == '\t') ? font.spaceWidth * totalcross.ui.font.Font.TAB_SIZE : 0; // guich@tc100: handle tabs
       int index = (int)ch - (int)font.firstChar;
-      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] : font.spaceWidth;
+      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] - font.minusW : font.spaceWidth;
    }
    
 

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter;
 
 import tc.tools.converter.bytecode.*;
@@ -579,7 +577,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case POP: //87
          {
-            stack.pop();
+            if (!stack.empty())
+               stack.pop();
             break;
          }
          case POP2: //88
@@ -1509,14 +1508,34 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case ATHROW: //191
          {
-            if (!stack.empty())
-            {
-               OperandReg regO = (OperandReg) stack.pop();
-               Reg code = new Reg(THROW, lineOfPC);
-               code.set(regO.index);
-               vcode.addElement(code);
-               stack.push(regO);
-            }
+            /*
+             With this code:
+             
+               Lock objectLock = new Lock();
+               String connection = "";
+               
+               public String recoverTable() {
+                  synchronized (objectLock) {
+                      return connection;
+                  }
+               }
+             
+             Eclipse has an optimization that removes an extra move of the lock from the local
+             variables to the stack. This is the code it generates:
+             
+             14: aload_1
+             15: monitorexit
+             16: athrow
+             
+             At line 14, the stack holds the exception at top, and the lock at local variable 1.
+             However, the TC converter isn't aware that the exception is at the top of the stack,
+             so we check it and provide that extra operand that tells it.
+             */
+            OperandReg regO = stack.empty() ? new OperandRegO() : (OperandReg) stack.pop();
+            Reg code = new Reg(THROW, lineOfPC);
+            code.set(regO.index);
+            vcode.addElement(code);
+            stack.push(regO);
             break;
          }
          case JCHECKCAST: //192
@@ -2002,6 +2021,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
    {
       if (name.startsWith("totalcross/lang/"))
          return "java/lang/" + name.substring(16);
+      if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/")) 
+         return name.replace("totalcross", "java");     
       return name;
    }
 

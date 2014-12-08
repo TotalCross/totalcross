@@ -33,14 +33,14 @@ public class ImageBookSample extends BaseContainer
    RadioGroupController rg;
    String[] images = 
    {
-      "ui/books/book1.png",
-      "ui/books/book2.png",
-      "ui/books/book3.png",
-      "ui/books/book4.png",
-      "ui/books/book5.png",
-      "ui/books/book6.png",
-      "ui/books/book7.png",
-      "ui/books/book8.png",
+      "tc/samples/api/ui/books/book1.png",
+      "tc/samples/api/ui/books/book2.png",
+      "tc/samples/api/ui/books/book3.png",
+      "tc/samples/api/ui/books/book4.png",
+      "tc/samples/api/ui/books/book5.png",
+      "tc/samples/api/ui/books/book6.png",
+      "tc/samples/api/ui/books/book7.png",
+      "tc/samples/api/ui/books/book8.png",
    };
    
    // saves the files that contains the images
@@ -101,9 +101,11 @@ public class ImageBookSample extends BaseContainer
             lastIni = lastMinIdx;
             lastEnd = lastMaxIdx;
             ex = null;
+            Vm.tweak(Vm.TWEAK_DISABLE_GC,true);
             for (int i = lastMinIdx; i <= lastMaxIdx && lastcur == current; i++)
                if (loaded[i] == null)
                   loaded[i] = loadImage(i);
+            Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
          }
       }
       
@@ -119,7 +121,7 @@ public class ImageBookSample extends BaseContainer
                buf = new byte[s];
             f.readBytes(buf,0,s);
             f.close();
-            img = new Image(buf);
+            img = new Image(buf,s);
          }
          catch (IOException ioe)
          {
@@ -278,7 +280,7 @@ public class ImageBookSample extends BaseContainer
          super.initUI();
          setTitle("Image Book");
          
-         if (Settings.isIOS()) // hack for ios: extract the files and write into the folder
+         if (Settings.isIOS() || Settings.isWindowsDevice()) // hack for ios: extract the files and write into the folder
          {
             File dir = new File("device/books");
             if (!dir.exists())
@@ -290,9 +292,7 @@ public class ImageBookSample extends BaseContainer
                   if (b != null)
                      try
                      {
-                        File f = new File("device/"+images[i], File.CREATE_EMPTY);
-                        f.writeBytes(b);
-                        f.close();
+                        new File("device/books/"+Convert.getFileName(images[i]), File.CREATE_EMPTY).writeAndClose(b);
                      }
                      catch (Exception e) {e.printStackTrace();}
                   else
@@ -310,7 +310,7 @@ public class ImageBookSample extends BaseContainer
          // folder that contains the images. can be "/sdcard", for example
          imageFolder = Settings.appPath;
          if (Settings.onJavaSE)
-            imageFolder += "/src/tc/samples/api";
+            imageFolder += "/src/tc/samples/api/ui";
          imageFolder += "/books/";
          // list images in the folder
          String[] arqs0 = new File(imageFolder).listFiles();

@@ -90,9 +90,6 @@ public class Matcher implements MatchResult{
    private int[] counters;
    private MemReg[] memregs;
    private LAEntry[] lookaheads;
-   private int counterCount;
-   private int memregCount;
-   private int lookaheadCount;
    
    private char[] data;
    private int offset,end,wOffset,wEnd;
@@ -146,10 +143,6 @@ public class Matcher implements MatchResult{
          this.lookaheads=lookaheads;
       }
       
-      this.memregCount=memregCount;
-      this.counterCount=counterCount;
-      this.lookaheadCount=lookaheadCount;
-      
       first=new SearchEntry();
       defaultEntry=new SearchEntry();
       minQueueLength=regex.stringRepr.length()/2;  // just evaluation!!!
@@ -167,7 +160,6 @@ public class Matcher implements MatchResult{
    * @see Matcher#setTarget(java.lang.String)
    * @see Matcher#setTarget(java.lang.String,int,int)
    * @see Matcher#setTarget(char[],int,int)
-   * @see Matcher#setTarget(java.io.Reader,int)
    */
    public final void setTarget(Matcher m, int groupId){
       MemReg mr=m.bounds(groupId);
@@ -193,10 +185,9 @@ public class Matcher implements MatchResult{
    * Supplies a text to search in/match with.
    * Resets current search position to zero.
    * @param text - a data
-   * @see Matcher#setTarget(jregex.Matcher,int)
+   * @see Matcher#setTarget(totalcross.util.regex.Matcher,int)
    * @see Matcher#setTarget(java.lang.String,int,int)
    * @see Matcher#setTarget(char[],int,int)
-   * @see Matcher#setTarget(java.io.Reader,int)
    */
    public void setTarget(String text){
       setTarget(text,0,text.length());
@@ -208,10 +199,9 @@ public class Matcher implements MatchResult{
    * @param text - a data source
    * @param start - where the target starts
    * @param len - how long is the target
-   * @see Matcher#setTarget(jregex.Matcher,int)
+   * @see Matcher#setTarget(totalcross.util.regex.Matcher,int)
    * @see Matcher#setTarget(java.lang.String)
    * @see Matcher#setTarget(char[],int,int)
-   * @see Matcher#setTarget(java.io.Reader,int)
    */
    public void setTarget(String text,int start,int len){
       char[] mychars=data;
@@ -236,10 +226,9 @@ public class Matcher implements MatchResult{
    * @param text - a data source
    * @param start - where the target starts
    * @param len - how long is the target
-   * @see Matcher#setTarget(jregex.Matcher,int)
+   * @see Matcher#setTarget(totalcross.util.regex.Matcher,int)
    * @see Matcher#setTarget(java.lang.String)
    * @see Matcher#setTarget(java.lang.String,int,int)
-   * @see Matcher#setTarget(java.io.Reader,int)
    */
    public void setTarget(char[] text,int start,int len){
       setTarget(text,start,len,true);
@@ -258,11 +247,10 @@ public class Matcher implements MatchResult{
    * @param start - where the target starts
    * @param len - how long is the target
    * @param shared - if <code>true<code>: data are shared or used later, <b>don't</b> modify it; if <code>false<code>: possible modifications of the text on subsequent <code>setTarget()</code> calls are perceived and allowed.
-   * @see Matcher#setTarget(jregex.Matcher,int)
+   * @see Matcher#setTarget(totalcross.util.regex.Matcher,int)
    * @see Matcher#setTarget(java.lang.String)
    * @see Matcher#setTarget(java.lang.String,int,int)
    * @see Matcher#setTarget(char[],int,int)
-   * @see Matcher#setTarget(java.io.Reader,int)
    */
    public final void setTarget(char[] text,int start,int len,boolean shared){
       cache=null;
@@ -279,7 +267,7 @@ public class Matcher implements MatchResult{
    * Resets current search position to zero.
    * @param in - a data stream;
    * @param len - how much characters should be read; if len is -1, read the entire stream.
-   * @see Matcher#setTarget(jregex.Matcher,int)
+   * @see Matcher#setTarget(totalcross.util.regex.Matcher,int)
    * @see Matcher#setTarget(java.lang.String)
    * @see Matcher#setTarget(java.lang.String,int,int)
    * @see Matcher#setTarget(char[],int,int)
@@ -337,7 +325,7 @@ public class Matcher implements MatchResult{
          int co=cacheOffset;
          return src.substring(start-co,end-co);
       }
-      int tOffset,tEnd,tLen=(tEnd=this.end)-(tOffset=this.offset);
+      int tOffset,tLen=this.end-(tOffset=this.offset);
       char[] data=this.data;
       if((end-start)>=(tLen/3)){
          //it makes sence to make a cache
@@ -609,22 +597,6 @@ new Exception().printStackTrace();
       called=false;
    }
    
-   //reverse flush
-   //may work significantly faster,
-   //need testing
-   private final void rflush(){
-      SearchEntry entry=top;
-      top=null;
-      MemReg[] memregs=this.memregs;
-      int[] counters=this.counters;
-      while(entry!=null){
-         SearchEntry next=entry.sub;
-         SearchEntry.popState(entry,memregs,counters);
-         entry=next;
-      }
-      SearchEntry.popState(defaultEntry,memregs,counters);
-   }
-   
   /**
    */
    public String toString(){
@@ -780,7 +752,6 @@ new Exception().printStackTrace();
    public Vector groupv(){
       MemReg[] memregs=this.memregs;
       Vector v=new Vector();
-      int in,out;
       MemReg mr;
       for(int i=0;i<memregs.length;i++){
          mr=bounds(i);
@@ -881,8 +852,6 @@ new Exception().printStackTrace();
       
       //int memregCount=memregs.length;
       //int cntCount=counters.length;
-      int memregCount=this.memregCount;
-      int cntCount=this.counterCount;
       
       SearchEntry defaultEntry=this.defaultEntry;
       SearchEntry first=this.first;

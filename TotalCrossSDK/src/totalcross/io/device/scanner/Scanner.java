@@ -67,11 +67,26 @@ public class Scanner
    public static boolean isActive; // guich@200b4: avoid activate the scanner again
    private static String barcode;
    private static int tries;
+   private static boolean driverLoaded;
    /** The scanner version. */
    public static String scanManagerVersion = Settings.onJavaSE ? "Scanner emulation" : "1.0";
 
    /** Set this listener to send all Scanner events to its onEvent method. */
    public static Control listener; // maybe theres another better way to do this...
+
+
+   static
+   {
+      if (Settings.isWindowsDevice())
+      {
+         driverLoaded = Vm.attachNativeLibrary("Motorola") || 
+                        Vm.attachNativeLibrary("Dolphin") || 
+                        Vm.attachNativeLibrary("Intermec") || 
+                        Vm.attachNativeLibrary("Pidion");
+         if (!driverLoaded && tries++ == 0)
+            throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+      }
+   }
 
    /**
    * Activate the scanner. Return true if the scanner could be activated,
@@ -85,6 +100,7 @@ public class Scanner
    public static boolean activate()
    {
       isActive = scannerActivate();
+      scanManagerVersion = getScanManagerVersion();
       return isActive;
    }
 
@@ -112,7 +128,80 @@ public class Scanner
    }
    native public static boolean setBarcodeParam4D(int barcodeType, boolean enable);
 
-
+   /**
+    * Set a parameter for the barcode. You can use the xxx_PARAM constants to
+    * know which parameter to set, and also the values below for their values.
+    * Be careful because some functions may require also the barcode type.
+    * <p>
+    * With Datalogic scanners, the SECOND parameter is not used (always pass 0 to it);
+    * and don't forget to call the commitBarcodeParams method.
+    * <p> Values valid for SYMBOL scanners:
+    * <pre>
+    *    // triggering modes
+    *    #define LEVEL                                       0x00
+    *    #define PULSE                                       0x02
+    *    #define HOST                                        0x08
+    *
+    *    // Linear code type security
+    *    #define SECURITY_LEVEL0                             0x00
+    *    #define SECURITY_LEVEL1                             0x01
+    *    #define SECURITY_LEVEL2                             0x02
+    *    #define SECURITY_LEVEL3                             0x03
+    *    #define SECURITY_LEVEL4                             0x04
+    *
+    *    // UPC/EAN Supplementals
+    *    #define IGNORE_SUPPLEMENTALS                        0x00
+    *    #define DECODE_SUPPLEMENTALS                        0x01
+    *    #define AUTODISCRIMINATE_SUPPLEMENTALS              0x02
+    *
+    *    // Transmit Check Digit options
+    *    #define DO_NOT_TRANSMIT_CHECK_DIGIT                 0x00
+    *    #define TRANSMIT_CHECK_DIGIT                        0x01
+    *
+    *    // Preamble options
+    *    #define NO_PREAMBLE                                 0x00
+    *    #define SYSTEM_CHARACTER                            0x01
+    *    #define SYSTEM_CHARACTER_COUNTRY_CODE               0x02
+    *
+    *    // CheckDigit verification options
+    *    #define DISABLE_CHECK_DIGIT                         0x00
+    *    #define USS_CHECK_DIGIT                             0x01
+    *    #define OPCC_CHECK_DIGIT                            0x02
+    *
+    *    // MSI Plessey checkdigit options
+    *    #define ONE_CHECK_DIGIT                             0x00
+    *    #define TWO_CHECK_DIGITS                            0x01
+    *
+    *    // MSI Plessey check digit algorithms
+    *    #define MOD10_MOD11                                 0x00
+    *    #define MOD10_MOD10                                 0x01
+    *
+    *    // Transmit Code ID Character options
+    *    #define AIM_CODE_ID_CHARACTER                       0x01
+    *    #define SYMBOL_CODE_ID_CHARACTER                    0x02
+    *
+    *    // Scan data transmission formats
+    *    #define DATA_AS_IS                                  0x00
+    *    #define DATA_SUFFIX1                                0x01
+    *    #define DATA_SUFFIX2                                0x02
+    *    #define DATA_SUFFIX1_SUFFIX2                        0x03
+    *    #define PREFIX_DATA                                 0x04
+    *    #define PREFIX_DATA_SUFFIX1                         0x05
+    *    #define PREFIX_DATA_SUFFIX2                         0x06
+    *    #define PREFIX_DATA_SUFFIX1_SUFFIX2                 0x07
+    *
+    *    // Scan angle options
+    *    #define SCAN_ANGLE_WIDE                             0xB6
+    *    #define SCAN_ANGLE_NARROW                           0xB5
+    * </pre>
+    * <p> This method is ignored for Intermec scanners.
+    */
+  public static boolean setParam(int type, int barcodeType, int value) // guich@330_43
+  {
+     return true;
+  }
+  native public static boolean setParam4D(int type, int barcodeType, int value);
+  
    /**
    * Commit the barcode parameters to the scanner. Returns true if the
    * operation is successful and false, otherwise.
@@ -153,6 +242,26 @@ public class Scanner
       return barcode;
    }
    native public static String getData4D();
+
+   /**
+   * Get the scan manager version as an hexadecimal String. If an error occurs or if this method
+   * is called before the Scanner is initialized, a null String will be returned.
+   */
+   public static String getScanManagerVersion()
+   {
+      return "Scanner emulation";
+   }
+   native public static String getScanManagerVersion4D(); //return !isActive?null:scannerGetScanManagerVersion();
+
+   /**
+   * Get the Scanner Port Driver version as an hexadecimal string. If an error occurs or if this method
+   * is called before the Scanner is initialized, a null string will be returned.
+   */
+   public static String getScanPortDriverVersion()
+   {
+      return null;
+   }
+   native public static String getScanPortDriverVersion4D(); //   !isActive?null:scannerGetScanPortDriverVersion();
 
    /**
    * Deactivate the scanner. Returns true if the operation is successful

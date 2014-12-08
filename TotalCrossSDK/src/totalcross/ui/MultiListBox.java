@@ -226,7 +226,7 @@ public class MultiListBox extends ListBox
          selectedIndexes.clear();
          if (order != null) order.removeAllElements();
       }
-      super.setSelectedIndex(index);
+      super.setSelectedIndex(index,false);
    }
 
    protected void leftReached()

@@ -33,6 +33,8 @@ TC_API TCObject createObject(Context currentContext, CharP className);
 typedef TCObject (*createObjectFunc)(Context currentContext, CharP className);
 TC_API TCObject allocObject(Context currentContext, uint32 size);
 typedef TCObject (*allocObjectFunc)(Context currentContext, uint32 size);
+TC_API TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line);
+typedef TCObject (*createByteArrayObjectFunc)(Context currentContext, int32 len);
 TC_API TCObject createArrayObject(Context currentContext, CharP type, int32 len);
 typedef TCObject (*createArrayObjectFunc)(Context currentContext, CharP type, int32 len);
 TC_API TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
@@ -59,9 +61,9 @@ typedef TCObject (*createStringObjectFromCharPFunc)(Context currentContext, Char
 /// Creates an array of Java chars
 #define createCharArray(currentContext, len)   TCAPI_FUNC(createArrayObject)(currentContext, CHAR_ARRAY, len) // these are
 /// Creates an array of Java bytes
-#define createByteArray(currentContext, len)   TCAPI_FUNC(createArrayObject)(currentContext, BYTE_ARRAY, len) // java types
+#define createByteArray(currentContext, len)   TCAPI_FUNC(createByteArrayObject)(currentContext, len,__FILE__,__LINE__) // java types
 /// Creates an array of Java ints
-#define createIntArray(currentContext, len)    TCAPI_FUNC(createArrayObject)(currentContext, INT_ARRAY, len) // java types
+#define createIntArray(currentContext, len)    TCAPI_FUNC(createArrayObject)(currentContext, INT_ARRAY, len)
 /// Creates an array of Java Strings
 #define createStringArray(currentContext, len) TCAPI_FUNC(createArrayObject)(currentContext, "[java.lang.String", len)
 
@@ -72,6 +74,7 @@ typedef void (*gcFunc)(Context currentContext);
 bool initObjectMemoryManager();
 void destroyObjectMemoryManager();
 void runFinalizers();
+void visitImages(VisitElementFunc onImage, int32 param);
 
 /// Changes the object lock state, in a NON-RECURSIVE way.
 /// Locking an object: The object will be removed from the used list and will never be garbage collected.

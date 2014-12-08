@@ -28,7 +28,7 @@ public class TopMenuSample extends BaseContainer
 {
    ScrollContainer sc;
    
-   private class FilterContainer extends Container
+   private class FilterContainer extends Container implements PressListener
    {
       public void initUI()
       {
@@ -39,6 +39,21 @@ public class TopMenuSample extends BaseContainer
          Button b;
          add(b = new Button("Search"),LEFT,AFTER+fmH/4,FILL,PREFERRED);
          b.setBackColor(Color.CYAN);
+         add(b = new Button("Close"),LEFT,AFTER+fmH,FILL,PREFERRED);
+         b.setBackColor(Color.RED);
+         b.addPressListener(this);
+      }
+
+      public void controlPressed(ControlEvent e)
+      {
+         TopMenu top = (TopMenu)getParentWindow();
+         top.unpop(new TopMenu.AnimationListener()
+         {
+            public void onAnimationFinished()
+            {
+               new MessageBox("Message","The search was done.").popup();
+            }
+         });
       }
    }
    

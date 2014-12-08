@@ -54,7 +54,6 @@ import totalcross.util.concurrent.*;
 public class MainWindow extends Window implements totalcross.MainClass
 {
    protected TimerEvent firstTimer;
-   protected TimerEvent lastTimer;
    
    private TimerEvent startTimer;
    static MainWindow mainWindowInstance;
@@ -84,7 +83,6 @@ public class MainWindow extends Window implements totalcross.MainClass
    public MainWindow(String title, byte style) // guich@112
    {
       super(title,style);
-      mainThread = Thread.currentThread();
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
@@ -94,9 +92,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (Settings.fingerTouch) // guich@tc120_48
          Settings.touchTolerance = fmH/2;
       
-      if ((""+Settings.deviceId).indexOf("Treo") >= 0) // guich@tc113_36: disable virtual keyboard for all Treo family
-         Settings.virtualKeyboard = false;
-
       // update some settings
       setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
@@ -276,30 +271,36 @@ public class MainWindow extends Window implements totalcross.MainClass
      * method to add a timer to a control is the addTimer() method in
      * the Control class. The Timer event will be issued to the target every millis milliseconds.
      */
-    protected void addTimer(TimerEvent t, Control target, int millis, boolean append)
+    protected void addTimer(TimerEvent te, Control target, int millis, boolean append)
     {
-       t.target = target;
-       t.millis = millis;
-       t.lastTick = Vm.getTimeStamp();
+       te.target = target;
+       te.millis = millis;
+       te.lastTick = Vm.getTimeStamp();
        if (firstTimer == null) // first timer to be added
        {
-          t.next = null;
-          firstTimer = lastTimer = t;
+          te.next = null;
+          firstTimer = te;
        }
        else if (append) // appending timer to the end of the list
        {
-          lastTimer.next = t;
-          t.next = null;
-          lastTimer = t;
+          TimerEvent last = null;
+          for (TimerEvent t = firstTimer; t != null; t = t.next)
+          {
+             if (t == te) // already inserted? get out!
+                return;
+             last = t;
+          }
+          if (last != null)
+             last.next = te;
+          te.next = null;
        }
        else // inserting timer to the beginning of the list
        {
-          t.next = firstTimer;
-          firstTimer = t;
+          te.next = firstTimer;
+          firstTimer = te;
        }
        setTimerInterval(1); // forces a call to _onTimerTick inside the TC Event Thread
     }
-
 
    /**
    * Removes the given timer from the timers queue. This method returns true if the timer was found
@@ -323,8 +324,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          firstTimer = t.next;
       else
          prev.next = t.next;
-      if (t.next == null) // this was the last timer, so now "prev" is the last one
-         lastTimer = prev;
       if (timer.target != null) // not already removed?
          setTimerInterval(1); // forces a call to _onTimerTick inside the TC Event Thread
       timer.target = null; // guich@tc120_46
@@ -368,6 +367,7 @@ public class MainWindow extends Window implements totalcross.MainClass
      */
    final public void appStarting(int timeAvail) // guich@200b4_107 - guich@tc126_46: added timeAvail parameter to show MessageBox from inside here.
    {
+      mainThread = Thread.currentThread();
       timeAvailable = timeAvail;
       gfx = new Graphics(this); // revalidate the pixels
       startTimer = addTimer(1); // guich@567_17
@@ -504,7 +504,7 @@ public class MainWindow extends Window implements totalcross.MainClass
             }
          }
          else
-         if (Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
+         if (timeAvailable >= 0 && Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
          {
             new MessageBox("Fatal Error", "Failed to retrieve a unique device identification to activate the TotalCross VM. Please check your network settings and activate any disabled networks.").popup();
             exit(0);
@@ -532,10 +532,12 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
       int minInterval = 0;
       TimerEvent timer = firstTimer;
+
       while (timer != null)
       {
          if (timer.target == null) // aleady removed but still in the queue?
          {
+            Vm.debug("removing timer since target is null");
             TimerEvent t = timer.next;
             removeTimer(timer);
             timer = t != null ? t.next : null;
@@ -576,7 +578,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          repaintActiveWindows(); // already calls updateScreen
       else
       if (canUpdate && Graphics.needsUpdate) // guich@tc100: make sure that any pending screen update is committed. - if not called from addTimer/removeTimer (otherwise, an open combobox will flicker)
-         updateScreen();
+         safeUpdateScreen();
    }
 
    void setTimerInterval(int n)
@@ -607,8 +609,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       // no messages, please. just ignore
    }
 
-   static Image screenShotImage;
-   /** Takes a screen shot of the current screen. 
+   /** Takes a screen shot of the current screen. Since TotalCross 3.06, it uses Control.takeScreenShot. 
     * Here's a sample:
     * <pre>
     * Image img = MainWindow.getScreenShot();
@@ -622,39 +623,36 @@ public class MainWindow extends Window implements totalcross.MainClass
     * 
     * @since TotalCross 1.3
     */
-   public static Image getScreenShot() throws ImageException
+   public static Image getScreenShot()
    {
-      Graphics gscr = mainWindowInstance.getGraphics();
-      int w = Settings.screenWidth;
-      int h = Settings.screenHeight;
-      Image img;
-      if (Settings.platform.equals(Settings.WINDOWSPHONE))
+      try
       {
-         img = screenShotImage = new Image(w,h);
-         repaintActiveWindows();
-         img.applyChanges();
-         screenShotImage = null;
-      }
-      else
-      {
-         img = new Image(w,h);
-         Graphics gimg = img.getGraphics();
-         enableUpdateScreen = false;
-         repaintActiveWindows(); // in open gl, the screen buffer is erased after an updateScreen, so we have to fill it again to it can be captured.
-         enableUpdateScreen = true;
-         int buf[] = new int[w];
-         for (int y = 0; y < h; y++)
+         // get main window
+         mainWindowInstance.takeScreenShot();
+         Image img = mainWindowInstance.offscreen;
+         mainWindowInstance.releaseScreenShot();
+         // now paint other windows
+         int lastFade = 1000;
+         for (int j = 0,n=zStack.size(); j < n; j++)
+            if (((Window)zStack.items[j]).fadeOtherWindows)
+               lastFade = j;
+         for (int i = 0, n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
          {
-            gscr.getRGB(buf, 0,0,y,w,1);
-            gimg.setRGB(buf, 0,0,y,w,1);
+            if (i == lastFade)
+               img.applyFade(fadeValue);
+            if (i > 0 && zStack.items[i] != null) 
+            {
+               Window w = (Window)zStack.items[i];
+               Graphics g = img.getGraphics();
+               g.translate(w.x,w.y);
+               w.paint2shot(g,true);
+            }
          }
-         if (Settings.isOpenGL)
-            img.applyChanges();
-         else
-            if (Settings.onJavaSE)
-               img.setTransparentColor(-1);
+         img.lockChanges();
+         return img;
       }
-      return img;
+      catch (Throwable e) {}
+      return null;
    }
 
    // stuff to let a thread update the screen
@@ -663,18 +661,33 @@ public class MainWindow extends Window implements totalcross.MainClass
       Object[] o = null;
       synchronized (runnersLock)
       {
-         int n = runners.size();
-         if (n != 0) 
+         try
          {
-            o = runners.toObjectArray();
-            runners.removeAllElements();
+            int n = runners.size();
+            if (n != 0) 
+            {
+               o = runners.toObjectArray();
+               runners = new Vector(1);
+            }
          }
+         catch (Exception e) {}
       }
       return o;
    }
+   /** The same of <code>runOnMainThread(r, true)</code>. 
+    * @see #runOnMainThread(Runnable, boolean) 
+    * Note that this
+    * */
+   public void runOnMainThread(Runnable r)
+   {
+      runOnMainThread(r, true);
+   }
+
    /** Runs the given code in the main thread. As of TotalCross 2.0, a thread cannot update the screen.
     * So, asking the code to be called in the main thread solves the problem. Of course, this call is asynchronous, ie,
     * the thread may run again before the screen is updated. This method is thread-safe.
+    * If singleInstance is true and the array contains an element of this class, it is replaced by the given one.
+    * Note that passing as false may result in memory leak.
     * Sample:
     * <pre>
     *  new Thread()
@@ -697,12 +710,27 @@ public class MainWindow extends Window implements totalcross.MainClass
     * </pre>
     * @since TotalCross 2.1
     */
-   public void runOnMainThread(Runnable r)
+   public void runOnMainThread(Runnable r, boolean singleInstance)
    {
       synchronized (runnersLock)
       {
-         runners.addElement(r);
-         setTimerInterval(1);
+         try
+         {
+            if (singleInstance && runners.size() > 0)
+            {
+               String origname = r.getClass().getName()+"@";
+               for (int i = 0, n = runners.size(); i < n; i++)
+                  if (runners.items[i].toString().startsWith(origname))
+                  {
+                     runners.removeElementAt(i);
+                     break;
+                  }
+            }
+            runners.addElement(r);
+            setTimerInterval(1);
+         }
+         catch (Exception e) {}
       }
+      Vm.sleep(1);
    }
 }

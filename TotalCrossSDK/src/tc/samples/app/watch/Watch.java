@@ -74,6 +74,7 @@ public class Watch extends Container
    {
       cbxCities = new ComboBox(cities);
       labTime = new Label("",CENTER);
+      for (int i = cities_tzdelta.length; --i >= 0;) cities_tzdelta[i] *= 60; // convert to minutes
    }
 
    public void initUI()
@@ -104,9 +105,9 @@ public class Watch extends Container
    public void setCity(int i)
    {
       cbxCities.setSelectedIndex(i);
-      if (i != 0 && Settings.timeZone != cities_tzdelta[i]) // if the selected city is in our timezone, keep it. Moreover the daylight saving will be correct
+      if (i != 0 && Settings.timeZoneMinutes != cities_tzdelta[i]) // if the selected city is in our timezone, keep it. Moreover the daylight saving will be correct
       {
-         int delta_localtime_utc = Settings.timeZone + (Settings.daylightSavings ? 1:0); // delta to apply to localtime to get the UTC time
+         int delta_localtime_utc = Settings.timeZoneMinutes; // delta to apply to localtime to get the UTC time
          city_delta_localtime = cities_tzdelta[i] - delta_localtime_utc; // apply the city's TZ but we don't know the daylight saving information
       }
       else
@@ -191,7 +192,6 @@ public class Watch extends Container
 
    private void drawClock(Graphics g)
    {
-      g.useAA = true;
       int s1 = (int) (size / 2.95);
       int s2 = (int) (size / 3.05);
       g.foreColor = borderColor;
@@ -201,7 +201,6 @@ public class Watch extends Container
       g.fillCircle(centerX, centerY, s2);
       drawTicks(g);
       drawMarks(g);
-      g.useAA = false;
    }
 
    public void onPaint(Graphics g)

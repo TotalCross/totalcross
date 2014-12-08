@@ -80,6 +80,7 @@ TScreenSurface screen = { 0 };
 TCClass uiColorsClass = { 0 };
 int32* shiftScreenColorP = NULL;
 int32* vistaFadeStepP = NULL;
+TCClass imageClass;
 
 // mem.c
 #ifdef INITIAL_MEM
@@ -125,6 +126,7 @@ jmethodID jsetElapsed;
 #endif
 
 // objectmemorymanager.c
+bool disableGC = 0;
 bool runningGC = 0;
 bool runningFinalizer = 0;
 TCObjectArray freeList = { 0 }; // the array with lists of free objects
@@ -188,7 +190,7 @@ jmethodID jvmExec;
 // utils.c
 int32 firstTS = 0;
 #ifdef ANDROID
-jmethodID jlistTCZs;
+jmethodID jlistTCZs,jgetFreeMemory;
 #endif
 
 // debug.c
@@ -231,7 +233,7 @@ jmethodID jclipboard;
 TSoundSettings soundSettings;
 #ifdef ANDROID
 jmethodID jtone;
-jmethodID jsoundEnable;
+jmethodID jsoundEnable,jsoundPlay;
 #endif
 
 
@@ -271,9 +273,6 @@ int32 threadCount = 0;
 // class.c
 TCObject *voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 
-// MainWindow
-TCObject *screenShotImagePtr;
-
 // These are set in the application's constructor
 uint32 applicationId = 0;
 char applicationIdStr[5] = { 0 };
@@ -298,6 +297,8 @@ DECLARE_MUTEX(metAndCls);
 DECLARE_MUTEX(omm);
 DECLARE_MUTEX(screen);
 DECLARE_MUTEX(opengl);
+DECLARE_MUTEX(alloc);
+DECLARE_MUTEX(fonts);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -312,9 +313,11 @@ bool initGlobals()
    INIT_MUTEX(opengl);
    INIT_MUTEX(omm);
    INIT_MUTEX(metAndCls);
+   INIT_MUTEX(alloc);
    INIT_MUTEX(screen);
    INIT_MUTEX(htSSL); 
    INIT_MUTEX(createdHeaps);
+   INIT_MUTEX(fonts);
 #if defined (WIN32) || defined (WINCE)
    initWinsock();
 #endif
@@ -333,6 +336,8 @@ void destroyGlobals()
    DESTROY_MUTEX(screen);
    DESTROY_MUTEX(htSSL);
    DESTROY_MUTEX(createdHeaps);
+   DESTROY_MUTEX(alloc);
+   DESTROY_MUTEX(fonts);
 #if defined (WIN32) || defined (WINCE)
    closeWinsock();
 #endif

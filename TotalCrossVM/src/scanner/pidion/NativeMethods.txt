@@ -1,0 +1,11 @@
+pidion/Camera|native boolean cameraClick();
+pidion/Camera|native void cameraSetPreview(boolean on);
+pidion/Camera|native void cameraSetZoom(int value);
+pidion/Printer|native public static void setDensity(int value) throws PrinterException;
+pidion/Printer|native public static int getDensity() throws PrinterException;
+pidion/Printer|native public static void setLineSpacing(int value) throws PrinterException;
+pidion/Printer|native public static int getLineSpacing() throws PrinterException;
+pidion/Printer|native public static void print(String text, int options) throws PrinterException;
+pidion/Printer|native public static void printBarcode(String data, int width, int height, int type, int align) throws PrinterException;
+pidion/Printer|native public static void printBitmap(String filename, int mode) throws PrinterException;
+pidion/Printer|native public static void flush() throws PrinterException;

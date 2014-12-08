@@ -32,6 +32,7 @@ public class FieldTest extends TestCase
       protected final double doubleFField = Double.MAX_VALUE;
       protected final float floatFField = Float.MAX_VALUE;
       protected final char charFField = 'T';
+      @SuppressWarnings("unused")
       private static final int x = 1;
       public volatile transient int y = 0;
       protected static transient volatile int prsttrvol = 99;
@@ -69,6 +70,7 @@ public class FieldTest extends TestCase
    /**
     * @tests java.lang.reflect.Field#get(java.lang.Object)
     */
+   @SuppressWarnings("static-access")
    public void test_getLjava_lang_Object() throws Throwable
    {
       // Test for method java.lang.Object
@@ -125,7 +127,7 @@ public class FieldTest extends TestCase
    class SupportSubClass extends Support_Field
    {
 
-      Object getField(char primitiveType, Object o, Field f, Class expectedException)
+      Object getField(char primitiveType, Object o, Field f, Class<? extends IllegalArgumentException> expectedException)
       {
          Object res = null;
          try
@@ -179,7 +181,7 @@ public class FieldTest extends TestCase
          return res;
       }
 
-      void setField(char primitiveType, Object o, Field f, Class expectedException, Object value)
+      void setField(char primitiveType, Object o, Field f, Class<? extends IllegalArgumentException> expectedException, Object value)
       {
          try
          {
@@ -259,7 +261,7 @@ public class FieldTest extends TestCase
     */
    public void testProtectedFieldAccess()
    {
-      Class fieldClass = new Support_Field().getClass();
+      Class<? extends Support_Field> fieldClass = new Support_Field().getClass();
       String fieldName = null;
       Field objectField = null;
       Field booleanField = null;
@@ -311,7 +313,7 @@ public class FieldTest extends TestCase
       SupportSubClass otherSubclass = new SupportSubClass();
       Object plainObject = new Object();
 
-      Class illegalArgumentExceptionClass = new IllegalArgumentException().getClass();
+      Class<? extends IllegalArgumentException> illegalArgumentExceptionClass = new IllegalArgumentException().getClass();
 
       // The test will attempt to use pass an object to set for object, byte,
       // short, ..., float and double fields
@@ -1139,7 +1141,7 @@ public class FieldTest extends TestCase
       f = TestField.class.getDeclaredField("x");
 
       assertEquals(f.toString(),"private static final int tc.test.totalcross.lang.reflect.FieldTest$TestField.x");
-      Class c = FieldTest.class;
+      Class<FieldTest> c = FieldTest.class;
       assertEquals(c.getDeclaredField("t").toString(), "int tc.test.totalcross.lang.reflect.FieldTest.t");
       assertEquals(c.getDeclaredField("it").toString(), "java.lang.Integer tc.test.totalcross.lang.reflect.FieldTest.it");
 
@@ -1189,5 +1191,6 @@ public class FieldTest extends TestCase
 }
 class TestAccess
 {
+   @SuppressWarnings("unused")
    private static int xxx;
 }

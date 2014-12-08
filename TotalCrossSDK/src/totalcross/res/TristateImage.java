@@ -21,7 +21,6 @@ import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
-import totalcross.util.concurrent.*;
 
 /** An image that has three states: normal, pressed and disabled.
  * 
@@ -35,9 +34,7 @@ public class TristateImage
    private Hashtable htNormal = new Hashtable(5);
    private Hashtable htPressed = new Hashtable(5);
    private Hashtable htDisabled = new Hashtable(5);
-   private StringBuffer sb = new StringBuffer(20);
    private Image base;
-   private Lock sblock = new Lock();
    
    public TristateImage(String name) throws ImageException, IOException
    {
@@ -59,11 +56,8 @@ public class TristateImage
    private Image getNormalInstance(int width, int height, int backColor, boolean apply) throws ImageException
    {
       int hash;
-      synchronized(sblock)
-      {
-         sb.setLength(0);
-         hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
-      }
+      StringBuffer sb = new StringBuffer(20);
+      hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
       Image ret = (Image)htNormal.get(hash);
       if (ret == null)
       {
@@ -77,11 +71,8 @@ public class TristateImage
    public Image getDisabledInstance(int width, int height, int backColor) throws ImageException
    {
       int hash;
-      synchronized(sblock)
-      {
-         sb.setLength(0);
-         hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
-      }
+      StringBuffer sb = new StringBuffer(20);
+      hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
       Image ret = (Image)htDisabled.get(hash);
       if (ret == null)
          htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance());
@@ -91,11 +82,8 @@ public class TristateImage
    public Image getPressedInstance(int width, int height, int backColor, int pressColor, boolean enabled) throws ImageException
    {
       int hash;
-      synchronized(sblock)
-      {
-         sb.setLength(0);
-         hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor).append(enabled).append(pressColor));
-      }
+      StringBuffer sb = new StringBuffer(20);
+      hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor).append(enabled).append(pressColor));
       Image ret = (Image)htPressed.get(hash);
       if (ret == null)
       {         

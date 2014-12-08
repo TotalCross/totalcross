@@ -48,13 +48,7 @@ public class Deploy
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
-   private static int platform;
    
-   public static boolean isOnlyBB()
-   {
-      return platform == BUILD_BB;
-   }
-
    public Deploy(String[] args)
    {
       try
@@ -70,7 +64,7 @@ public class Deploy
 
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
-         int options = platform = parseOptions(args);
+         int options = parseOptions(args);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
@@ -97,6 +91,9 @@ public class Deploy
             JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-swing-7.5.1.jar");
             
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
+            if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
+            else
+            if ((options & BUILD_WINMO)   != 0) new Deployer4WinCE(false); // there's no need to build for winmo if built for wince
             if ((options & BUILD_WIN32)   != 0) new Deployer4Win32();
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
@@ -120,8 +117,13 @@ public class Deploy
                   new Deployer4IPhoneIPA();
                }
             }
-            if ((options & BUILD_WP8)     != 0) new Deployer4WP8();
-            if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
+            if ((options & BUILD_WP8) != 0) new Deployer4WP8();
+            if (!DeploySettings.inputFileWasTCZ) 
+               try 
+               {
+                  for (int i = 0; i < DeploySettings.tczs.length; i++)
+                     new totalcross.io.File((String)DeploySettings.tczs[i]).delete();
+               } catch (Exception e) {} // delete the file
             
             if (!DeploySettings.testClass && (options & BUILD_APPLET)  != 0 && DeploySettings.isJarOrZip)
                System.out.println("\nAttention: Deployer for Applet was not able to process the dependencies to create a single jar file because you passed a jar or zip as input file. In this situation, the applet will require the tc.jar file to run.");
@@ -134,7 +136,7 @@ public class Deploy
                String name = fn.substring(0,dot);
                String ext = fn.substring(dot+1);
                System.out.println("\nThe file '"+fileName+"' does not contain a class named '"+name+"' that extends totalcross.ui.MainWindow, so this file is considered as LIBRARY-ONLY and no executable were generated. However, if this jar is indeed an application, make sure that the JAR has the same name of your MainWindow class.");
-               if (!DeploySettings.filePrefix.equals("TCBase") && !DeploySettings.filePrefix.toLowerCase().endsWith("lib"))
+               if (!DeploySettings.filePrefix.equals("TCBase") && !DeploySettings.filePrefix.equals("TCUI") && !DeploySettings.filePrefix.toLowerCase().endsWith("lib"))
                   System.out.println("If this file is really a library, you must name it "+DeploySettings.filePrefix+"Lib."+ext+", or it will NOT be loaded in the device.");
             }
          }
@@ -161,7 +163,7 @@ public class Deploy
    //flsobral@tc115: just a mark for quick search, see class documentation above.
    static class JarClassPathLoader
    {
-      private static final Class[] parameters = new Class[] { URL.class };
+      private static final Class<?>[] parameters = new Class[] { URL.class };
 
       public static void addFile(String s) throws java.io.IOException
       {
@@ -177,7 +179,7 @@ public class Deploy
       public static void addURL(URL u) throws java.io.IOException
       {
          URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-         Class sysclass = URLClassLoader.class;
+         Class<?> sysclass = URLClassLoader.class;
 
          try
          {
@@ -235,9 +237,9 @@ public class Deploy
       iht.put("palmos" .hashCode(), 0);
       iht.put("blackberry".hashCode(), 0);
       iht.put("bb"     .hashCode(), 0);
-      iht.put("ce"     .hashCode(), 0);
-      iht.put("wince"  .hashCode(), 0);
-      iht.put("winmo"  .hashCode(), 0);
+      iht.put("ce"     .hashCode(), BUILD_WINCE);
+      iht.put("wince"  .hashCode(), BUILD_WINCE);
+      iht.put("winmo"  .hashCode(), BUILD_WINMO);
       iht.put("win32"  .hashCode(), BUILD_WIN32);
       iht.put("linux"  .hashCode(), BUILD_LINUX);
       iht.put("applet" .hashCode(), BUILD_APPLET);
@@ -322,12 +324,15 @@ public class Deploy
                          DeploySettings.filePrefix = args[++i];
                          if (DeploySettings.filePrefix.toLowerCase().endsWith(".tcz"))
                             DeploySettings.filePrefix = DeploySettings.filePrefix.substring(0,DeploySettings.filePrefix.length()-4);
-                         DeploySettings.isTotalCrossJarDeploy = DeploySettings.filePrefix.equals("TCBase");
+                         DeploySettings.isTotalCrossJarDeploy = DeploySettings.filePrefix.equals("TCBase") || DeploySettings.filePrefix.equals("TCUI");
                          break;
                case 'x': DeploySettings.excludeOptionSet = true;
                          String [] exc = totalcross.sys.Convert.tokenizeString(args[++i], ',');
                          for (int j =0; j < exc.length; j++)
                             DeploySettings.exclusionList.addElement(exc[j].replace('.','/'));
+                         break;
+               case 'k': Deployer4WinCE.keepExe = true;
+                         Deployer4WinCE.keepExeAndDontCreateCabFiles = op.equals("/kn");
                          break;
                case 'o': DeploySettings.targetDir = args[++i];
                          break;
@@ -380,6 +385,8 @@ public class Deploy
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+
             "<platforms to deploy> : one of the following (none just creates the tcz file)\n" +
+            "   -ce or -wince : create the cab files for Windows CE\n" +
+            "   -winmo : create the cab files for Windows Mobile only\n" +
             "   -win32 : create the exe file to launch the application in Windows\n" +
             "   -linux : create the .sh file to launch the application in Linux\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
@@ -390,7 +397,7 @@ public class Deploy
             "\n"+
             "   -all : single parameter to deploy to all supported platforms\n"+
             "\n"+
-            "Optionally, pass -noPlatformToNOTDeploy, to disable the deployment for that platform. For example \"-all -nowince\" builds for all platforms except wince. Just make sure that all -no options comes after the platform selections (E.G.: \"-nowince -all\" will not work)\n" +
+            "Optionally, pass -noPlatformToNOTDeploy, to disable the deployment for that platform. For example \"+all -nowince\" builds for all platforms except wince. Just make sure that all -no options comes after the platform selections (E.G.: \"-nowince -all\" will not work)\n" +
             "\n"+
             "You can also use the options:\n" +
             "   /a ApId : Assigns the application id; can only be used for libraries or passing a tcz file\n"+
@@ -404,6 +411,8 @@ public class Deploy
       //$END:REMOVE-ON-SDK-GENERATION$
       System.out.println(
             "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Supports: android and wp8. E.G.: /i android,wp8\n" +
+            "   /k      : Keep the exe and other temporary files during wince generation\n"+
+            "   /kn     : As /k, but does not create the cab files for wince\n"+
             "   /m path : Specifies a path to the mobileprovision and certificate store to deploy an ipa file for iOS. You should also provide a splash.png image with 640x1136.\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +

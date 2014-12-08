@@ -364,7 +364,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    {
       // initialize the vertical scrollbar
       itemCount = items.size();
-      vbar.setEnabled(enabled && visibleItems < itemCount);
+      vbar.setEnabled(isEnabled() && visibleItems < itemCount);
       vbar.setMaximum(itemCount);
 
       // initialize the horizontal scrollbar
@@ -373,7 +373,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          maxWidth = Math.max(getItemWidth(i), maxWidth);
       maxWidth = maxWidth - (width - vbar.getPreferredWidth());
       hsCount = (maxWidth > 0) ? maxWidth : 0;
-      hbar.setEnabled(enabled && hsCount > width - vbar.getPreferredWidth());
+      hbar.setEnabled(isEnabled() && hsCount > width - vbar.getPreferredWidth());
       hbar.setMaximum(hsCount);
 
       switch (hbarPolicy)
@@ -414,7 +414,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          // Should never happen
       }
-      x0 = Math.max(imgOpenW,imgPlusSize)+ 3;
+      x0 = Math.max(imgOpenW,imgPlusSize) + (Settings.isWindowsDevice() ? 4 : 3);
    }
 
    /**
@@ -588,7 +588,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       hbar.setMaximum(max);
       if (hbarPolicy == SCROLLBAR_ALWAYS || (width - vbar.getPreferredWidth()) < max)
       {
-         hbar.setEnabled(enabled && (width - vbar.getPreferredWidth()) < max);
+         hbar.setEnabled(isEnabled() && (width - vbar.getPreferredWidth()) < max);
          hbar.setVisible(true);
       }
       else
@@ -603,7 +603,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       itemCount = items.size();
       vbar.setMaximum(itemCount);
       boolean wasDisabled = !vbar.isEnabled();
-      vbar.setEnabled(enabled && visibleItems < itemCount);
+      vbar.setEnabled(isEnabled() && visibleItems < itemCount);
 
       if (vbar.isEnabled() && wasDisabled) // guich@tc126_4: reset vbar position if items got above visible items 
          vbar.setValue(0);
@@ -876,13 +876,10 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     */
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled,false))
       {
-         this.enabled = enabled;
-         onColorsChanged(false);
-         vbar.setEnabled(enabled && visibleItems < itemCount);
-         hbar.setEnabled(enabled);
-         Window.needsPaint = true; // now the controls have different l&f for disabled states
+         vbar.setEnabled(isEnabled() && visibleItems < itemCount);
+         hbar.setEnabled(isEnabled());
       }
    }
 
@@ -906,7 +903,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
       if (fColor == bgColor1)
          fColor = foreColor;
-      Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
    /**
@@ -1434,6 +1431,6 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 }

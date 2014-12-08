@@ -31,7 +31,7 @@ package totalcross.util.regex;
 
 /**
  * Is thrown when Pattern constructor's argument doesn't conform the Perl5 regular expression syntax.
- * @see        jregex.Pattern
+ * @see        totalcross.util.regex.Pattern
  */
 
 public class PatternSyntaxException extends IllegalArgumentException{

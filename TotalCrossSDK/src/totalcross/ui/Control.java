@@ -49,7 +49,7 @@ public class Control extends GfxSurface
    /** The control's previous sibling. */
    Control prev;
    /** True if the control is enabled (accepts events) or false if not */
-   protected boolean enabled=true;
+   private boolean enabled=true;
    /** The font used by the control. */
    protected Font font;
    /** The fontMetrics corresponding to the controls font. */
@@ -227,6 +227,9 @@ public class Control extends GfxSurface
    boolean eventsEnabled = true;
 
    static Rect cli = new Rect();
+   /** Specifies if this device is a tablet, computing the number of text lines.
+    */
+   public static boolean isTablet;
 
    static final int SETX_NOT_SET = -100000000;
    protected int setX = SETX_NOT_SET, setY, setW, setH;
@@ -257,6 +260,7 @@ public class Control extends GfxSurface
    public static final int DARKER_BACKGROUND = -3;
 
    private Vector listeners;
+   private static boolean callingUpdScr,callingRepNow;
 
    /** Set the background to be transparent, by not filling the control's area with the background color.
     * @since TotalCross 1.0
@@ -276,6 +280,9 @@ public class Control extends GfxSurface
     */
    public Image offscreen;
    
+   /** Keep the control disabled even if enabled is true. */
+   public boolean keepDisabled;
+   
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
@@ -284,6 +291,7 @@ public class Control extends GfxSurface
          MainWindow.defaultFont = Font.getFont(Font.DEFAULT, false, Font.NORMAL_SIZE);
          if (Settings.onJavaSE && !Font.DEFAULT.equals("TCFont"))
             Vm.warning("You're using the old font. Consider porting your program to the new font. See Settings.useNewFont javadocs.");
+         isTablet = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30;
       }
       font = MainWindow.defaultFont;
       fm = font.fm; // guich@450_36: new way of getting the fontMetrics.
@@ -294,22 +302,35 @@ public class Control extends GfxSurface
 
    /** Take a screen shot of this container and stores it in <code>offscreen</code>.
     */
-   public void takeScreenShot() throws Exception
+   public void takeScreenShot()
    {
-      offscreen = null;
-      Image offscreen = new Image(width,height);
-      Graphics g = offscreen.getGraphics();
-      if (parent != null) 
-      {     
+      try
+      {
+         offscreen = null;
+         Image offscreen = new Image(width,height);
+         paint2shot(offscreen.getGraphics(),false);
+         this.offscreen = offscreen;
+         this.offscreen.applyChanges();
+      }
+      catch (Throwable t)
+      {
+         this.offscreen = null;
+      }
+   }
+   
+   void paint2shot(Graphics g, boolean shift)
+   {
+      if (!transparentBackground && parent != null && !(parent.parent != null && parent.parent instanceof ScrollContainer && parent.parent.transparentBackground)) // last clause prevents a white background on SAV's menu 
+      {
          g.backColor = parent.backColor;
          g.fillRect(0,0,width,height);
       }
+      g.setFont(font);
       if (asWindow != null)
          asWindow.paintWindowBackground(g);
-      paint2shot(g,this);
-      this.offscreen = offscreen;
+      paint2shot(g,this,shift);
    }
-   
+
    /** Releases the screen shot. */
    public void releaseScreenShot()
    {
@@ -317,20 +338,28 @@ public class Control extends GfxSurface
       Window.needsPaint = true;
    }
    
-   void paint2shot(Graphics g, Control top)
+   void paint2shot(Graphics g, Control top, boolean shift)
    {
       // if (asContainer != null || asWindow != null)
       //  this.refreshGraphics(g,0,top);
       if (this.asWindow == null) 
          this.onPaint(g);
+      Window w = getParentWindow();      
+      int x0 = shift ? w.x : 0;
+      int y0 = shift ? w.y : 0;
+      Rect rtop = top.getRect();
       if (asContainer != null)
          for (Control child = asContainer.children; child != null; child = child.next)
             if (child.visible)
             {
-               child.refreshGraphics(g,0,top);
-               child.onPaint(g);
-               if (child.asContainer != null)
-                  child.asContainer.paint2shot(g,top);
+               Rect r = child.getAbsoluteRect();
+               if (rtop.intersects(r))
+               {
+                  child.refreshGraphics(g,0,top,x0,y0);
+                  child.onPaint(g);
+                  if (child.asContainer != null)
+                     child.asContainer.paint2shot(g,top,shift);
+               }
             }
    }
    
@@ -964,13 +993,13 @@ public class Control extends GfxSurface
             parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
          else
          {
-            Graphics g = refreshGraphics(gfx, 0, null);
+            Graphics g = refreshGraphics(gfx, 0, null,0,0);
             if (g != null)
             {
                onPaint(g);
                if (asContainer != null) // else, if this is a Container, be sure to repaint all its children
                   asContainer.paintChildren();
-               updateScreen();
+               safeUpdateScreen();
             }
          }
       }
@@ -1001,10 +1030,10 @@ public class Control extends GfxSurface
      */
    public Graphics getGraphics()
    {
-      return refreshGraphics(gfx, 0, null);
+      return refreshGraphics(gfx, 0, null,0,0);
    }
 
-   Graphics refreshGraphics(Graphics g, int expand, Control topParent)
+   Graphics refreshGraphics(Graphics g, int expand, Control topParent, int tx0, int ty0)
    {
       if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
          return null;
@@ -1030,7 +1059,7 @@ public class Control extends GfxSurface
             delta = (sy+sh)-(cy+c.height);
             if (delta > 0) sh -= delta;
          }
-      g.refresh(sx-expand,sy-expand,sw+expand+expand,sh+expand+expand, tx, ty, font);
+      g.refresh(sx+tx0-expand,sy-expand+ty0,sw+expand+expand,sh+expand+expand, tx+tx0, ty+ty0, font);
       return g;
    }
 
@@ -1047,7 +1076,7 @@ public class Control extends GfxSurface
          (asContainer!=null?asContainer:parent.asContainer).setHighlighting();
 
       // don't dispatch events when disabled except TIMER events or (fingertouch and pen events) 
-      if ((!enabled && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
+      if ((!isEnabled() && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
          return;
 
       boolean dragTargetCalled = false;
@@ -1099,20 +1128,35 @@ public class Control extends GfxSurface
      */
    public void setEnabled(boolean enabled)
    {
+      internalSetEnabled(enabled, true);
+   }
+   
+   /** For internal use only. Used by derived controls to set the enabled flag. */
+   public boolean internalSetEnabled(boolean enabled, boolean post)
+   {
       if (enabled != this.enabled)
       {
          this.enabled = enabled;
          onColorsChanged(false);
-         esce.update(this);
-         postEvent(esce);
+         if (post)
+            post();
          Window.needsPaint = true; // now the controls have different l&f for disabled states
+         return true;
       }
+      return false;
+   }
+   
+   /** Posts the enable state change event. */
+   public void post()
+   {
+      esce.update(this);
+      postEvent(esce);
    }
 
    /** Returns if this control can or not accept events */
    public boolean isEnabled()
    {
-      return this.enabled;
+      return this.enabled && !keepDisabled;
    }
 
    /**
@@ -1194,7 +1238,7 @@ public class Control extends GfxSurface
    @since SuperWaba 2.0 */
    public int getForeColor()
    {
-      return enabled?foreColor:Color.brighter(foreColor);
+      return isEnabled()?foreColor:Color.brighter(foreColor);
    }
 
    /** Get the desired background color of this control.
@@ -1202,7 +1246,7 @@ public class Control extends GfxSurface
    public int getBackColor()
    {
       // note: if were in a white back color, return the color without darking
-      return (enabled || parent == null)?backColor:Color.darker(backColor);
+      return (isEnabled() || parent == null)?backColor:Color.darker(backColor);
    }
 
    /** Return true if the parent of this Control is added to somewhere.
@@ -1315,7 +1359,7 @@ public class Control extends GfxSurface
             return null;
          idx += inc;
          Control c = (Control)v.items[idx];
-         if (c.visible && c.enabled && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
+         if (c.visible && c.isEnabled() && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
             if (c.focusTraversable) // guich@580_56: added focusTraversable test.
                return c;
             else
@@ -1360,6 +1404,8 @@ public class Control extends GfxSurface
     * is saved in a buffer and, when this method is called,
     * the buffer is transfered to the screen, using the 
     * nextTransitionEffect set.
+    * NOTE: for a thread-safe version, use safeUpdateScreen
+    * @see #safeUpdateScreen() 
     * @see Container#nextTransitionEffect
     * @since SuperWaba 5.0
     */
@@ -1371,6 +1417,33 @@ public class Control extends GfxSurface
          Graphics.needsUpdate = false;
       }
    }
+   
+   /** This method causes the screen's update. If called at the main thread,
+    * the screen is updated immediatly. If not, the updated is schedulled to occur as
+    * soon as possible.
+    * @see #updateScreen()
+    * @since TotalCross 3.1
+    */
+   public static void safeUpdateScreen()
+   {
+      if (MainWindow.isMainThread())
+         updateScreen();
+      else
+      if (!callingUpdScr)
+      {
+         callingUpdScr = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               updateScreen();
+               Vm.sleep(1);
+               callingUpdScr = false;
+            }
+         });
+      }
+   }
+
    
    native public static void updateScreen4D();
 
@@ -1425,7 +1498,7 @@ public class Control extends GfxSurface
             font = setFont; fm = font.fm; fmH = font.fm.height;
             setRect(setX, setY, setW, setH, setRel, true);
             font = current; fm = font.fm; fmH = font.fm.height;
-            refreshGraphics(gfx, 0, null);
+            refreshGraphics(gfx, 0, null,0,0);
          }
          if (recursive && asContainer != null)
          {
@@ -1676,39 +1749,44 @@ public class Control extends GfxSurface
    {
       // although this code is not much eficient, the number of listeners for a single control will be only one, most of the times.
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
-      {
-         Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
-         switch (e.type)
+         try
          {
-            case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
-            case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
-            case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
-            case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
-            case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
-            case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
-            case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
-            case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
-            case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
-            case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
-            case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
-            case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
-            case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
-            case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
-            case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
-            case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
-            case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
-            case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
-            case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
-            case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
-            case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
-            case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
-            case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
-            case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
-            case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
-            case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
+            Listener l = (Listener)listeners.items[i];
+            if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+            switch (e.type)
+            {
+               case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
+               case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
+               case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+               case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
+               case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
+               case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
+               case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
+               case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
+               case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
+               case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
+               case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
+               case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
+               case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
+               case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
+               case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
+               case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
+               case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
+               case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
+               case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
+               case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
+               case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
+               case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
+               case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
+               case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
+               case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
+               case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
+            }
          }
-      }
+         catch (ClassCastException ee) // prevent totalcross.ui.event.PenEvent is not compatible with totalcross.ui.event.DragEvent
+         {
+            if (Settings.onJavaSE) throw ee;
+         }
    }
 
    /**
@@ -1802,7 +1880,7 @@ public class Control extends GfxSurface
     * A scroll occurs before a flick is started.
     * @since TotalCross 1.3
     */
-   protected boolean hadParentScrolled()
+   public boolean hadParentScrolled()
    {
       for (Container c = parent; c != null; c = c.parent)
          if (c instanceof Scrollable && ((Scrollable)c).wasScrolled())
@@ -1863,4 +1941,26 @@ public class Control extends GfxSurface
       return x1 >= cx1 && x2 < cx2 && y1 >= cy1 && y2 < cy2; 
    }
 
+   /** Called by code that runs on threads to safely repaint now.
+    * @since TotalCross 3.1
+    */
+   protected void safeRepaintNow()
+   {
+      if (Settings.isOpenGL || MainWindow.isMainThread())
+         repaintNow();
+      else
+      if (!callingRepNow)
+      {
+         Window.needsPaint = true;
+         callingRepNow = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               repaintNow();
+               callingRepNow = false;
+            }
+         });
+      }
+   }
 }

@@ -142,9 +142,6 @@ public class ExtendedCommand
             throw new SQLException("syntax error: " + sql);
         }
 
-        /**
-         * @see org.sqlite.ExtendedCommand.SQLExtension#execute(org.sqlite.DB)
-         */
         public void execute(DB db) throws SQLException {
             db.restore(targetDB, srcFile, null);
         }

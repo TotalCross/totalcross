@@ -4,7 +4,7 @@ import totalcross.sys.*;
 
 public class Character4D
 {
-   public static final Class TYPE = Character.class;
+   public static final Class<Character> TYPE = Character.class;
    char v;
    
    public Character4D(char v)
@@ -22,6 +22,10 @@ public class Character4D
    public int hashCode()
    {
       return v;
+   }
+   public static Character4D valueOf(char c)
+   {
+      return new Character4D(c);
    }
    public String toString()
    {
@@ -114,6 +118,11 @@ public class Character4D
 
    static byte[] types = totalcross.sys.Vm.getFile("totalcross/chartypes.bin");
    
+   public static int getType(int i)
+   {
+      return types[i];
+   }
+   
    public static int getType(char i)
    {
       return types[i];
@@ -202,5 +211,32 @@ public class Character4D
          || types[codePoint] == FORMAT)
        return true;
      return false;
+   }
+
+   public static boolean isLowerCase(int codePoint)
+   {
+     return getType(codePoint) == LOWERCASE_LETTER;
+   }
+   public static boolean isUpperCase(int codePoint)
+   {
+     return getType(codePoint) == UPPERCASE_LETTER;
+   }
+   public static boolean isLowerCase(char codePoint)
+   {
+     return getType(codePoint) == LOWERCASE_LETTER;
+   }
+   public static boolean isUpperCase(char codePoint)
+   {
+     return getType(codePoint) == UPPERCASE_LETTER;
+   }
+   public static boolean isLetterOrDigit(char codePoint)
+   {
+     return ((1 << getType(codePoint))
+         & ((1 << UPPERCASE_LETTER)
+            | (1 << LOWERCASE_LETTER)
+            | (1 << TITLECASE_LETTER)
+            | (1 << MODIFIER_LETTER)
+            | (1 << OTHER_LETTER)
+            | (1 << DECIMAL_DIGIT_NUMBER))) != 0;
    }
 }

@@ -772,20 +772,18 @@ void updateDaylightSavings(Context currentContext)
    TIME_ZONE_INFORMATION tzi;
    char timeZone[128];
 
-   if ((ret = GetTimeZoneInformation(&tzi)) != TIME_ZONE_ID_UNKNOWN)
-   {
-      (*tcSettings.timeZoneMinutesPtr) = -tzi.Bias; // for gmt-3 it returns 180
-      (*tcSettings.timeZonePtr) = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
-      (*tcSettings.daylightSavingsPtr) = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
-      if (*tcSettings.daylightSavingsPtr)
-         (*tcSettings.daylightSavingsMinutesPtr) = -tzi.DaylightBias;
+   ret = GetTimeZoneInformation(&tzi); // even if TIME_ZONE_ID_UNKNOWN is returned, the fields are filled correctly
+   (*tcSettings.timeZoneMinutesPtr) = -tzi.Bias; // for gmt-3 it returns 180
+   (*tcSettings.timeZonePtr) = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
+   (*tcSettings.daylightSavingsPtr) = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
+   if (*tcSettings.daylightSavingsPtr)
+      (*tcSettings.daylightSavingsMinutesPtr) = -tzi.DaylightBias;
 
-      if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
-         JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
-      else
-         JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
-      setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
-   }
+   if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
+      JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
+   else
+      JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
+   setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
 }
 
 bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
@@ -799,19 +797,20 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #endif
 #endif
 
+#ifdef WP8
+   *(tcSettings.romVersionPtr) = getOSVersion();
+   getRomSerialNumberCPP(romSerialNumber);
+   getDeviceIdCPP(deviceId);
+   *(tcSettings.virtualKeyboardPtr) = isVirtualKeyboard();
+   platform = "WindowsPhone";
+   //   xstrcpy(deviceId, GetDisplayNameWP8());
+#else
    // OS version
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-#ifndef WP8
    GetVersionEx(&osvi);
-#else
-   osvi.dwMajorVersion = 6;
-   osvi.dwMinorVersion = 2;
-   osvi.dwBuildNumber = 0;
-   osvi.dwPlatformId = 0;
-   osvi.szCSDVersion[0] = '\0';
+   *(tcSettings.romVersionPtr) = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #endif
 
-   *(tcSettings.romVersionPtr)   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #ifdef WINCE
    romSerialNumber[0] = 0;
    if (*(tcSettings.romVersionPtr) >= 400)
@@ -859,10 +858,6 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    len = sizeof(deviceId);
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
-# else
-   //XXX deviceId must be getted automatically
-   platform = "WindowsPhone";
-   xstrcpy(deviceId, GetDisplayNameWP8());
 # endif
 
 #if !defined WP8
@@ -879,15 +874,12 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    }
 #endif
 
-   len = sizeof(userName);
-   
+ 
 #if !defined WP8 
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
       queryRegistry(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Logon User Name", userName, sizeof(userName)) || // first, try as a winnt machine
       queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
       ;
-#else
-   xstrcpy(userName, "Windows Phone 8 User");
 #endif
 #endif
    {

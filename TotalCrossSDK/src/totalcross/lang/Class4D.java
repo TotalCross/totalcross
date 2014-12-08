@@ -37,7 +37,7 @@ import java.lang.reflect.*;
  * available.
  */
 
-public final class Class4D
+public final class Class4D<T>
 {
    // place holders for the VM
    Object nativeStruct; // TClass
@@ -49,7 +49,7 @@ public final class Class4D
     * application (the deployer will warn you about that).
     * @see totalcross.sys.Vm#attachLibrary
     */
-   native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+   native public static Class<?> forName(String className) throws java.lang.ClassNotFoundException;
 
    /** Creates a new instance of this class. The class must have a default and public constructor (E.G.: <code>public MyClass()</code>)
     * @throws InstantiationException If you try to instantiate an interface, abstract class or array
@@ -89,27 +89,65 @@ public final class Class4D
    {
       return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
    }
+
+   /**
+    * Returns the enumeration constants of this class, or
+    * null if this class is not an <code>Enum</code>.
+    *
+    * @return an array of <code>Enum</code> constants
+    *         associated with this class, or null if this
+    *         class is not an <code>enum</code>.
+    * @since 1.5
+    */
+   public T[] getEnumConstants()
+   {
+      try
+        {
+          Method m = getMethod("values", new Class[0]);
+          return (T[]) m.invoke(null, new Object[0]);
+        }
+      catch (NoSuchMethodException exception)
+        {
+          throw new Error("Enum lacks values() method");
+        }
+      catch (IllegalAccessException exception)
+        {
+          throw new Error("Unable to access Enum class");
+        }
+      catch (InvocationTargetException exception)
+        {
+          throw new
+            RuntimeException("The values method threw an exception",
+                             exception);
+        }
+   }
+
+   public String getSimpleName()
+   {
+      String s = getName();
+      return s.substring(s.lastIndexOf('.')+1);
+   }
    
-   public native boolean isAssignableFrom(Class cls);
+   public native boolean isAssignableFrom(Class<?> cls);
    public native boolean isInterface();
    public native boolean isArray();
    public native boolean isPrimitive();
-   public native Class getSuperclass();
-   public native Class[] getInterfaces();
-   public native Class getComponentType();
+   public native Class<?> getSuperclass();
+   public native Class<?>[] getInterfaces();
+   public native Class<?> getComponentType();
    public native int getModifiers();
    public native Object[] getSigners();
    public native Field[] getFields() throws SecurityException;
    public native Method[] getMethods() throws SecurityException;
-   public native Constructor[] getConstructors() throws SecurityException;
+   public native Constructor<?>[] getConstructors() throws SecurityException;
    public native Field getField(String name) throws NoSuchFieldException, SecurityException;
-   public native Method getMethod(String name, Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
-   public native Constructor getConstructor(Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Method getMethod(String name, Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor<?> getConstructor(Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
    public native Field[] getDeclaredFields() throws SecurityException;
    public native Method[] getDeclaredMethods() throws SecurityException;
-   public native Constructor[] getDeclaredConstructors() throws SecurityException;
+   public native Constructor<?>[] getDeclaredConstructors() throws SecurityException;
    public native Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
-   public native Method getDeclaredMethod(String name, Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
-   public native Constructor getDeclaredConstructor(Class parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Method getDeclaredMethod(String name, Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor<?> getDeclaredConstructor(Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
    
 }

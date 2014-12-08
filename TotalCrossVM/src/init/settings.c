@@ -31,15 +31,16 @@ TC_API void getRomSerialNumber(CharP outBuf)
    xstrcpy(outBuf, romSerialNumber);
 }
 
+TC_API void getDeviceId(CharP outBuf)
+{
+   xstrcpy(outBuf, deviceId);
+}
+
 TC_API void getImei(CharP outBuf)
 {
    xstrcpy(outBuf, imei);
 }
 
-TC_API void getDeviceId(CharP outBuf)
-{
-   xstrcpy(outBuf, deviceId);
-}
 
 static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
 {
@@ -182,7 +183,6 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    setObjectLock(*getStaticFieldObject(settingsClass, "dataPath")        = createStringObjectFromCharP(currentContext, dataPath        , -1), UNLOCKED);
    setObjectLock(*getStaticFieldObject(settingsClass, "vmPath")          = createStringObjectFromCharP(currentContext, vmPath          , -1), UNLOCKED);
    setObjectLock(*getStaticFieldObject(settingsClass, "iccid")           = createStringObjectFromCharP(currentContext, iccid           , -1), UNLOCKED);
-   screenShotImagePtr = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.MainWindow", false), "screenShotImage");
 
    return true;
 }

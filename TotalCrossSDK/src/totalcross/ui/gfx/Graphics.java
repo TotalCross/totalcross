@@ -107,6 +107,7 @@ public final class Graphics
    private int lastXC, lastYC, lastRX, lastRY, lastSize, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[];
    private double lastPPD;
    private int[] translateAndClipResults = new int[4];
+   private int[] tlx,tly;
    /** Defines if the screen has been changed. */
    public static boolean needsUpdate;
    private static int[]acos,asin;
@@ -143,6 +144,12 @@ public final class Graphics
       this.surface = surface;
    }
 
+   /** Returns true if the source surface is from a Control (if false, its an Image). */   
+   public boolean isControlSurface()
+   {
+      return isControlSurface;
+   }
+
    /** Fades all window pixels with the given value. The window is not repainted, so,
     * if you fade it to bright, you will have to repaint the window to get the original pixels back.
     * Also, don't forget to call updateWindow after this method.
@@ -176,7 +183,6 @@ public final class Graphics
    public static void fadeScreen(int fadeValue)
    {
       int[] pixels = (int[])Graphics.mainWindowPixels;
-      boolean dec = fadeValue > 0;
       int lastColor = -1, lastFaded=0;
       for (int j = pixels.length; --j >= 0;)
       {
@@ -186,22 +192,11 @@ public final class Graphics
          else
          {
             lastColor = rgb;
-            int r = ((rgb >> 16) & 0xFF) - fadeValue;
-            int g = ((rgb >> 8) & 0xFF) - fadeValue;
-            int b = (rgb & 0xFF) - fadeValue;
-            if (dec) // if the value is being decreased, it will never be greater than the max value
-            {
-               if (r < 0) r = 0; 
-               if (g < 0) g = 0; 
-               if (b < 0) b = 0; 
-            }
-            else
-            {
-               if (r > 255) r = 255;
-               if (g > 255) g = 255;
-               if (b > 255) b = 255;
-            }
-            lastFaded = pixels[j] = (r << 16) | (g << 8) | b;
+            int a = ((rgb >> 24) & 0xFF);
+            int r = ((rgb >> 16) & 0xFF) * fadeValue / 255;
+            int g = ((rgb >> 8 ) & 0xFF) * fadeValue / 255;
+            int b =  (rgb        & 0xFF) * fadeValue / 255;
+            lastFaded = pixels[j] = (a << 24) | (r << 16) | (g << 8) | b;
          }
       }
    }
@@ -239,6 +234,15 @@ public final class Graphics
       transX = tx;
       transY = ty;
       if (f != null) setFont(f);
+   }
+   
+   /** Expands the clipping limits. Used internally. */
+   public void expandClipLimits(int dx1, int dy1, int dx2, int dy2)
+   {
+      minX += dx1;
+      minY += dy1;
+      maxX += dx2;
+      maxY += dy2;
    }
 
    /** Returns the palette used when the screen has 8 bpp.
@@ -1064,8 +1068,11 @@ public final class Graphics
       if (clipX2 > maxX) clipX2 = maxX;
       if (clipY2 > maxY) clipY2 = maxY;
 
-      if (clipX2 > Settings.screenWidth)  clipX2 = Settings.screenWidth;
-      if (clipY2 > Settings.screenHeight) clipY2 = Settings.screenHeight;
+      int surfW = isControlSurface ? Settings.screenWidth : surface.getWidth();
+      int surfH = isControlSurface ? Settings.screenHeight: surface.getHeight();
+
+      if (clipX2 > surfW) clipX2 = surfW;
+      if (clipY2 > surfH) clipY2 = surfH;
 
       this.clipX1 = clipX1;
       this.clipY1 = clipY1;
@@ -3109,6 +3116,27 @@ public final class Graphics
    public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip)
    {
       drawImage(image, x,y, doClip);
+   }
+   /** Draws a thick line. You should use odd values for t(hickness). */
+   public void drawThickLine(int x1, int y1, int x2, int y2, int t)
+   {
+      if (tlx == null) {tlx=new int[4]; tly=new int[4];}
+      int dx = x2-x1; if (dx < 0) dx = -dx;
+      int dy = y2-y1; if (dy < 0) dy = -dy;
+      t /= 2;
+      if (dx > dy)
+      {
+         tlx[0] = tlx[1] = x1; tlx[2] = tlx[3] = x2;
+         tly[0] = y1+t; tly[1] = y1-t; tly[2] = y2-t; tly[3] = y2+t;
+      }
+      else
+      {
+         tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
+         tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
+      }
+      int c = backColor; backColor = foreColor;
+      fillPolygon(tlx,tly,4);
+      backColor = c;
    }
 
    /** Dumb field to keep compilation compatibility with TC 1 */

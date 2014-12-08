@@ -41,8 +41,8 @@
 
 <!-- javac settings -->
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.1"/>
-<property name="compile.source"          value="1.2"/>
+<property name="compile.target"          value="7"/>
+<property name="compile.source"          value="7"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
@@ -69,8 +69,6 @@
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
-
-<property name="source.lb.path"   value="${basedir}/../../../Litebase/LitebaseSDK"/>
 
 <!-- installshield paths -->
 <property file="${rootpath}/ishield.properties"/>
@@ -207,7 +205,6 @@ target: buildSkeleton - Build the folders
 </target>
 
 <target name="buildSamples_sdk" >
-	<copy todir="${source.sdk.path}/dist/vm" file="${source.lb.path}/dist/lib/LitebaseLib.tcz" />
 	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
 	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>
@@ -229,35 +226,6 @@ target: buildSkeleton - Build the folders
 target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="mergeAPK" >
-   <unzip src="${target.sdk3.path}/dist/vm/android/Litebase.apk" dest="${target.sdk3.path}/dist/vm/android/lb"/>
-   <unzip src="${target.sdk3.path}/dist/vm/android/TotalCross.apk" dest="${target.sdk3.path}/dist/vm/android/tc"/>
-   <unzip src="${target.sdk3.path}/dist/vm/android/lb/assets/tcfiles.zip" dest="${target.sdk3.path}/dist/vm/android/tc/assets"/>
-   
-   <zip destfile="${target.sdk3.path}/dist/vm/android/tc/assets/tcfiles.zip"  includes="LitebaseLib.tcz" 
-      basedir="${target.sdk3.path}/dist/vm/android/tc/assets" update="yes" compress="no" keepcompression="no" />
-   <delete file="${target.sdk3.path}/dist/vm/android/tc/assets/LitebaseLib.tcz" />
-
-   <copy todir="${target.sdk3.path}/dist/vm/android/tc/lib">  <fileset dir="${target.sdk3.path}/dist/vm/android/lb/lib"/>               </copy>
-
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg"  basedir="${target.sdk3.path}/dist/vm/android/tc"  />
-   <zip destfile="${target.sdk3.path}/dist/vm/android/TotalCross.apk"  includes="assets/tcfiles.zip,res/raw/beep.ogg"  basedir="${target.sdk3.path}/dist/vm/android/tc" update="yes" compress="no" keepcompression="yes"  />
-
-   <delete dir="${target.sdk3.path}/dist/vm/android/lb"/>
-   <delete dir="${target.sdk3.path}/dist/vm/android/tc"/>
-   <delete file="${target.sdk3.path}/dist/vm/android/Litebase.apk"/>
-   
-   <exec executable="jarsigner${exe}">
-      <arg line="-digestalg SHA1 -sigalg MD5withRSA -keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${target.sdk3.path}/dist/vm/android/TotalCross.apk tcandroidkey" />
-   </exec>
-
-   <!--signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
-    storepass="@ndroid$w" keypass="@ndroidsw" sigalg="SHA1withRSA" digestalg="SHA1">
-    <path><fileset dir="${target.sdk3.path}/dist/vm/android" includes="TotalCross.apk" /></path>
-   </signjar-->
-
-</target>
 
 <target name="reorganizeSamples" >
   <property name="samples"  value="${target.sdk3.path}/dist/samples/"/>
@@ -302,7 +270,6 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
    
-   <antcall target="mergeAPK" />
    <antcall target="reorganizeSamples" />
 
 </target>
@@ -519,6 +486,7 @@ target: Linux builds
       <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
       <arg line="-t ${target.path}/dist/vm/linux"/>
       <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${source.sdk.path}/dist/vm/TCUI.tcz"/>
       <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     </java>
 </target>
@@ -553,6 +521,7 @@ target: Android builds
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
   <delete dir="${android.temp}" failonerror="false" />
+  <sleep seconds="1"/>
   <mkdir dir="${android.temp}" />
 
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>
@@ -562,7 +531,10 @@ target: Android builds
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
    <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
-      <fileset dir="${source.vm.path}/src/jni/libs" >
+      <fileset dir="${base.temp.path}/android/TotalCross/${type}/libs" >
+         <include name="**/*.so" />
+      </fileset>
+      <fileset dir="${base.temp.path}/android/Litebase/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
    </copy>
@@ -578,27 +550,7 @@ target: Android builds
   </exec>
 </target>
 
-<target name="mergeAPKlocal" >
-   <property name="out" value="${base.temp.path}/tcapk" />
-   <delete dir="${out}" />
-   <unzip src="${apk}" dest="${out}"/>   
-   <zip destfile="${out}/assets/tcfiles.zip"  includes="LitebaseLib.tcz" basedir="${source.lb.path}/dist/lib" update="yes" compress="no" keepcompression="no" />
-   <copy todir="${out}/lib">  <fileset dir="${source.lb.path}/builders/android/apps/litebase/libs"/> </copy>
-   <zip destfile="${apk}"  includes="**" excludes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" />
-   <zip destfile="${apk}"  includes="assets/tcfiles.zip,res/raw/beep.ogg" basedir="${out}" update="yes" compress="no" keepcompression="yes" />
-
-   <exec executable="jarsigner${exe}">
-      <arg line="-digestalg SHA1 -sigalg MD5withRSA -keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${android.temp}/TotalCross.apk tcandroidkey" />
-   </exec>
-   
-   <!--signjar alias="tcandroidkey" keystore="${source.sdk.path}/etc/security/tcandroidkey.keystore"
-    storepass="@ndroid$w" keypass="@ndroidsw"  sigalg="SHA1withRSA" digestalg="SHA1">
-    <path><fileset dir="${android.temp}" includes="TotalCross.apk" /></path>
-   </signjar-->
-
-</target>
-
-<target name="install_android" depends="buildAndroid_sdkNoClean,mergeAPKlocal,adb" description="Builds and installs TotalCross on Android." />
+<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs TotalCross on Android." />
 
 <target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
@@ -631,7 +583,7 @@ target: checks if we must update the versions of the files prior to a build.
 <target name="buildPostInstall" >
 
   <property name="temp" value="${base.temp.path}/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
+  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
@@ -645,6 +597,30 @@ target: checks if we must update the versions of the files prior to a build.
   <copy file="${temp}\install\win32\PostInstall.tcz" todir="${target.sdk.path}" />
 
 </target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildWinCE
+
+       call evc commandline compiler
+       Important: to be able to compile some of these files, you must delete wce211\bin
+       and copy the wce300\bin to wce211\bin (thus, updating all old compilers to new versions)
+       these folders are located under <program files>\Microsoft eMbedded Tools\EVC\
+
+       Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+    <target name="buildWinCE_sdk">
+        <echo message="GENERATING WINCE FILES - SDK" />
+        <exec executable="${msvc.path}" failonerror="yes">
+            <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
+        </exec>
+        <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+          <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+        </copy>
+        <delete failonerror="no">
+            <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+        </delete>
+    </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build targets
@@ -664,13 +640,6 @@ target: build targets
 <target name="buildPalmOS5_sdk" />
 <target name="buildPalmOS5_vms" />
 <target name="buildPalmOS5_vms_noras" />
-<target name="buildWinCE_vms" />
-<target name="buildWinCE_vms_noras" />
-<target name="buildWinCE_vms_noras_PocketPC_ARM" />
-<target name="buildWinCE_sdk" />
-<target name="buildWinCE_sdk_ARM" />
-<target name="buildWinCECabsSingle" />
-<target name="buildWinCECabsSingle_PocketPC_ARM" />
 <target name="buildWin32_vms" />
 <target name="buildWin32_vms_noras" />
 <target name="buildInstalls_vms" />
@@ -687,5 +656,8 @@ target: build targets
 <target name="buildLinux_vms_noras" />
 <target name="buildAndroid_vms" />
 <target name="buildAndroid_vms_noras" />
-
+<target name="buildWinCE_vms" />
+<target name="buildWinCE_vms_noras" />
+<target name="buildWinCECabsSingle" />
+    
 </project>

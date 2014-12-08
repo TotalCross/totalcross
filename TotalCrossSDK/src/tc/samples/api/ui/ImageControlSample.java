@@ -18,6 +18,7 @@ package tc.samples.api.ui;
 
 import tc.samples.api.*;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -31,6 +32,7 @@ public class ImageControlSample extends BaseContainer
    ImageControl ic;
    Label lab;
    boolean stopped;
+   double minScale, maxScale;
    
    public void initUI()
    {
@@ -40,7 +42,7 @@ public class ImageControlSample extends BaseContainer
          isSingleCall = true;
          
          setTitle("Scale with ImageControl");
-         add(lab = new Label("To Rafaella",CENTER),LEFT,TOP,FILL,PREFERRED);
+         add(lab = new Label("To Jeani",CENTER),LEFT,TOP,FILL,PREFERRED);
          img = new Image("ui/images/heart.png");
          int nw = parent.getWidth()/2, nh = parent.getHeight()/2;
          if (img.getWidth() > nw || img.getHeight() > nh)
@@ -49,6 +51,8 @@ public class ImageControlSample extends BaseContainer
          ic.centerImage = true;
          add(ic,LEFT,AFTER,FILL,FILL);
          timer = addTimer(25);
+         maxScale = Settings.isWindowsDevice() ? 2 : 5;
+         minScale = Settings.isWindowsDevice() ? 1 : 0.5;
       }
       catch (Exception ee)
       {
@@ -57,25 +61,33 @@ public class ImageControlSample extends BaseContainer
    }
    public void onEvent(Event e)
    {
-      if (e.type == TimerEvent.TRIGGERED && timer != null && timer.triggered && !stopped)
+      try
       {
-         if (img.hwScaleH > 5)
-            grow = false;
-         img.hwScaleH = img.hwScaleW = img.hwScaleH * (grow ? 1.05 : 0.95);
-         if (!grow && img.hwScaleH <= 0.5)
-            grow = true;
-         ic.setImage(img); // this actually just computes the center position
+         if (e.type == TimerEvent.TRIGGERED && timer != null && timer.triggered && !stopped)
+         {
+            if (img.hwScaleH > maxScale)
+               grow = false;
+            img.hwScaleH = img.hwScaleW = img.hwScaleH * (grow ? 1.05 : 0.95);
+            if (!grow && img.hwScaleH <= minScale)
+               grow = true;
+            ic.setImage(img); // this actually just computes the center position
+         }
+         else
+         if (e.type == PenEvent.PEN_UP && e.target == ic)
+         {
+            stopped = true;
+            InputBox ib = new InputBox("Change name","(don't type \"To\")","");
+            ib.popup();
+            String s = ib.getValue();
+            if (s != null)
+               lab.setText("To "+s);
+            stopped = false;
+         }
       }
-      else
-      if (e.type == PenEvent.PEN_UP && e.target == ic)
+      catch (Throwable ee)
       {
-         stopped = true;
-         InputBox ib = new InputBox("Change name","(don't type \"To\")","");
-         ib.popup();
-         String s = ib.getValue();
-         if (s != null)
-            lab.setText("To "+s);
-         stopped = false;
+         ee.printStackTrace();
+         Toast.show("Exception: "+ee.getClass().getName(),2000);
       }
    }
    public void onRemove()

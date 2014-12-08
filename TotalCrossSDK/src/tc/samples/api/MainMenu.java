@@ -22,6 +22,7 @@ import tc.samples.api.io.device.*;
 import tc.samples.api.lang.reflection.*;
 import tc.samples.api.lang.thread.*;
 import tc.samples.api.map.*;
+import tc.samples.api.media.*;
 import tc.samples.api.net.*;
 import tc.samples.api.net.mail.*;
 import tc.samples.api.phone.*;
@@ -39,6 +40,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
+@SuppressWarnings("rawtypes")
 public class MainMenu extends BaseContainer
 {
    private ButtonMenu menu;
@@ -72,6 +74,7 @@ public class MainMenu extends BaseContainer
       "ProgressBar",
       "ProgressBox",
       "ScrollContainer",
+      "Spinner inside loop",
       "Signature",
       "TabbedContainer",
       "TopMenu",
@@ -108,6 +111,11 @@ public class MainMenu extends BaseContainer
    String[] mapItems = 
    {
       "GoogleMaps",
+   };
+   
+   String[] mediaItems = 
+   {
+      "Sound",
    };
    
    String[] netItems =
@@ -154,6 +162,7 @@ public class MainMenu extends BaseContainer
       "io",
       "lang",
       "map",
+      "media",
       "net",
       "phone",
       "sql",
@@ -189,6 +198,7 @@ public class MainMenu extends BaseContainer
       ProgressBarSample.class,
       ProgressBoxSample.class,
       ScrollContainerSample.class,
+      SpinnerSample.class,
       SignatureSample.class,      
       TabbedContainerSample.class,
       TopMenuSample.class,
@@ -224,13 +234,17 @@ public class MainMenu extends BaseContainer
    {      
       GoogleMapsSample.class,
    };     
+   Class[] mediaClasses = 
+   {      
+      MediaSample.class,
+   };     
    Class[] netClasses =
    {      
       MailSample.class,
       FTPSample.class,
       ServerSocketSample.class,
       SocketSample.class,
-      SecureSocketSample.class,
+     // SecureSocketSample.class, - buggy
    };     
    Class[] phoneClasses =
    {      
@@ -258,7 +272,7 @@ public class MainMenu extends BaseContainer
 
    protected String getHelpMessage()
    {
-      return "This is a TotalCross "+Settings.versionStr+"."+Settings.buildNumber+" sample that shows most of the Application Programming Interfaces available in the SDK. You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE;
+      return "This is a TotalCross "+Settings.versionStr+"."+Settings.buildNumber+" sample that shows most of the Application Programming Interfaces available in the SDK. You may drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.NORMAL_SIZE+", gc ran "+Settings.gcCount+" in "+Settings.gcTime+"ms";
    }
    
    ButtonMenu topmenu;
@@ -270,6 +284,7 @@ public class MainMenu extends BaseContainer
       ioItems,
       langItems, 
       mapItems, 
+      mediaItems,
       netItems,
       phoneItems,
       sqlItems,
@@ -284,7 +299,8 @@ public class MainMenu extends BaseContainer
       cryptoClasses,
       ioClasses,
       langClasses, 
-      mapClasses, 
+      mapClasses,
+      mediaClasses,
       netClasses,
       phoneClasses,
       sqlClasses,
@@ -296,6 +312,7 @@ public class MainMenu extends BaseContainer
    public void initUI()
    {
       super.initUI(); // important!
+      transitionEffect = TRANSITION_CLOSE;
       
       // single-row
       topmenu = new ButtonMenu(categs, ButtonMenu.SINGLE_ROW);
@@ -308,6 +325,7 @@ public class MainMenu extends BaseContainer
       setInfo(DEFAULT_INFO);
 
       String cmd = MainWindow.getCommandLine();
+      
       if (cmd != null && cmd.startsWith("/t"))
          try 
          {
@@ -321,21 +339,22 @@ public class MainMenu extends BaseContainer
    Class itemClasses;
    private void showMenu(String[] names)
    {
+      setNextTransitionEffect(TRANSITION_FADE);
       if (menu != null) remove(menu);
       menu = new ButtonMenu(names, ButtonMenu.SINGLE_COLUMN);
       
       menu.pressedColor = BKGCOLOR;
-      if (Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30)
+      if (isTablet)
       {
          menu.borderGap = 100;
          menu.buttonHorizGap = menu.buttonVertGap = 200;
       }
       else menu.buttonHorizGap = 50;
-      
       add(menu,LEFT,AFTER,FILL,FILL,topmenu);
+      applyTransitionEffect();
    }
    
-   int topmenuSel;   
+   int topmenuSel=-1;   
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED)
@@ -344,16 +363,20 @@ public class MainMenu extends BaseContainer
          {
             if (e.target == topmenu)
             {
-               topmenuSel = topmenu.getSelectedIndex();
-               if (topmenuSel == -1)
+               int sel = topmenu.getSelectedIndex();
+               if (sel != topmenuSel)
                {
-                  remove(menu);
-                  setTitle(BaseContainer.defaultTitle);
-               }
-               else
-               {
-                  setTitle(BaseContainer.defaultTitle+" - "+categs[topmenuSel]);
-                  showMenu(items[topmenuSel]);
+                  topmenuSel = sel;
+                  if (topmenuSel == -1)
+                  {
+                     remove(menu);
+                     setTitle(BaseContainer.defaultTitle);
+                  }
+                  else
+                  {
+                     setTitle(BaseContainer.defaultTitle+" - "+categs[topmenuSel]);
+                     showMenu(items[topmenuSel]);
+                  }
                }
             }
             else

@@ -21,8 +21,8 @@
 #include "openglWrapper.h"
 #endif
 
-void applyChanges(Context currentContext, TCObject obj, bool updateList);
-void freeTexture(TCObject obj, bool updateList);
+void applyChanges(Context currentContext, TCObject obj);
+void freeTexture(TCObject obj);
 
 static void setCurrentFrame(TCObject obj, int32 nr)
 {
@@ -114,6 +114,9 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    int32 maxContribs,maxContribsXY;   // Almost-const: max number of contribution for current sampling
    double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
+
+   if (width == 0 || height == 0 || newWidth == 0 || newHeight == 0) 
+      return true;
 
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
@@ -348,6 +351,7 @@ static void getScaledInstance(TCObject thisObj, TCObject newObj)
    int32 x,y;
    Pixel *dst,*src;
 
+   if (newWidth != 0 && newHeight != 0 && thisWidth != 0 && thisHeight != 0)
    for (y = 0; y < newHeight; y++, hf += hi)
    {
       wf = thisWidth / w;
@@ -686,7 +690,7 @@ void setTransparentColor(TCObject obj, Pixel color)
 }
 
 #ifdef __gl2_h_                         
-void applyChanges(Context currentContext, TCObject obj, bool updateList)
+void applyChanges(Context currentContext, TCObject obj)
 {
    int32 frameCount = Image_frameCount(obj);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
@@ -696,57 +700,72 @@ void applyChanges(Context currentContext, TCObject obj, bool updateList)
       int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
       int32 height = Image_height(obj);
 #ifdef WP8
-      glDeleteTexture(obj, Image_textureId(obj), false);
+      glDeleteTexture(obj, Image_textureId(obj));
 #endif
-      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height, updateList);
+      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
+      Image_lastAccess(obj) = getTimeStamp();
    }
    Image_changed(obj) = false;
 }
 
-void freeTexture(TCObject img, bool updateList)
+void freeTexture(TCObject img)
 {                                       
-   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null, updateList); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
+   if (ENABLE_TEXTURE_TRACE) debug("freeing texture %X (%dx%d): %d (count: %d)",img,Image_width(img),Image_height(img),Image_textureId(img)[0],Image_instanceCount(img));
+   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
 }
 
-extern VoidPs* imgTextures;
 void resetFontTexture(); // PalmFont_c.h
 #ifdef ANDROID
-void recreateTextures(bool delTex) // called by opengl when the application changes the opengl surface
+static int timestampOldLimit;
+static void onImage(int32 it, VoidP ptr)
 {
-   VoidPs* current = imgTextures;        
-   if (current)
-      do
-      {    
-         TCObject img = (TCObject)current->value;
-         if (delTex)
-            glDeleteTexture(img, Image_textureId(img), false);
-         else
-         {
-            Image_textureId(img)[0] = 0;
-            Image_textureId(img)[1] = 0;
-         }
-         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;      
-      } while (imgTextures != current);
-   if (!delTex)
+   TCObject img = (TCObject)ptr;
+   int32 *ids = Image_textureId(img);
+   if (ids && ids[0])
+   {
+      if (ENABLE_TEXTURE_TRACE) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),ids[0]);
+      switch ((INVTEX)it)
+      {
+         case INVTEX_INVALIDATE:
+            ids[0] = ids[1] = 0;
+            break;
+         case INVTEX_DEL_ALL:
+            glDeleteTexture(img, ids);
+            break;
+         case INVTEX_DEL_ONLYOLD:
+            if (Image_lastAccess(img) != -1 && Image_lastAccess(img) < timestampOldLimit)
+               glDeleteTexture(img, ids);
+            break;
+      }
+   }
+   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+}
+
+void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
+{
+   timestampOldLimit = it == INVTEX_DEL_ONLYOLD ? getTimeStamp() - 10000 : 0; // delete textures
+   visitImages(onImage, it);
+   if (it == INVTEX_INVALIDATE)
       resetFontTexture();
 }
 #else
-void recreateTextures() // called by opengl when the application changes the opengl surface
+static void onImage(int32 dumb, VoidP ptr)
 {
-   VoidPs* current = imgTextures;        
-   if (current)
-      do
-      {    
-         TCObject img = (TCObject)current->value;
-#ifndef WP8 // in wp8 we have to delete the texture when applying the changes
-         // glDeleteTexture(img, Image_textureId(img), false); - TODO use this on iOS
-         Image_textureId(img)[0] = 0;
-         Image_textureId(img)[1] = 0;
-#endif
-         Image_changed(img) = true; //applyChanges(lifeContext, img,false); - update only when the image is going to be painted
-         current = current->next;      
-      } while (imgTextures != current);
+   TCObject img = (TCObject)ptr;
+   if (Image_textureId(img))
+   {
+      #ifndef WP8 // in wp8 we have to delete the texture when applying the changes
+      // glDeleteTexture(img, Image_textureId(img)); - TODO use this on iOS
+      Image_textureId(img)[0] = 0;
+      Image_textureId(img)[1] = 0;
+      #endif
+   }
+   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+}
+
+void invalidateTextures() // called by opengl when the application changes the opengl surface
+{
+   visitImages(onImage, 0);
    resetFontTexture();
 }
 #endif // ANDROID
@@ -767,4 +786,26 @@ static bool nativeEquals(TCObject thisObj, TCObject otherObj)
       if (*p1 != *p2)
          return false;
    return true;
+}
+
+static void applyFade(TCObject obj, int32 fadeValue)
+{
+   int32 frameCount = Image_frameCount(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 len = ARRAYOBJ_LEN(pixelsObj), r,g,b;
+   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+
+   for (; len-- > 0; pixels++)
+   {
+      r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+      g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+      b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
+   }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+   Image_changed(obj) = true;
 }

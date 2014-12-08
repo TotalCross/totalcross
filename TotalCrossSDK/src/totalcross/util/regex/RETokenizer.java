@@ -58,7 +58,6 @@ public class RETokenizer {
    private boolean checked;
    private boolean hasToken;
    private String token;
-   private int pos=0;
    private boolean endReached=false;
    private boolean emptyTokensEnabnled=false;
    
@@ -144,7 +143,7 @@ public class RETokenizer {
       }
       if(!hasMatch){
          endReached=true;
-         if(m.length(m.TARGET)==0 && !emptyOk){
+         if(m.length(MatchResult.TARGET)==0 && !emptyOk){
             hasToken=false;
          }
          else{

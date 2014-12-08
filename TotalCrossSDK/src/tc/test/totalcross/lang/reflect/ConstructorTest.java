@@ -1,13 +1,14 @@
 package tc.test.totalcross.lang.reflect;
 
+import java.lang.reflect.*;
+
 import totalcross.sys.*;
 import totalcross.unit.*;
 import totalcross.util.*;
 
-import java.lang.reflect.*;
-
 // svn.apache.org/repos/asf/harmony/enhanced/java/trunk/classlib/modules/luni/src/test/api/common/org/apache/harmony/luni/tests/java/lang/reflect/ConstructorTest.java
 
+@SuppressWarnings("rawtypes")
 public class ConstructorTest extends TestCase
 {
    static class ConstructorTestHelper extends Object
@@ -23,6 +24,7 @@ public class ConstructorTest extends TestCase
       {
       }
 
+      @SuppressWarnings("unused")
       private ConstructorTestHelper(int a)
       {
       }
@@ -60,7 +62,7 @@ public class ConstructorTest extends TestCase
    {
       // Test for method java.lang.Class
       // java.lang.reflect.Constructor.getDeclaringClass()
-      Class pclass = new ConstructorTestHelper().getClass();
+      Class<? extends ConstructorTestHelper> pclass = new ConstructorTestHelper().getClass();
       Constructor ctor = pclass.getConstructor(new Class[0]);
       assertEquals(ctor.getDeclaringClass(),pclass);
    }
@@ -185,7 +187,7 @@ public class ConstructorTest extends TestCase
 
       try
       {
-         constructor.newInstance(new Class[] { InvocationTargetException.class });
+         constructor.newInstance((Object)new Class[] { InvocationTargetException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -195,7 +197,7 @@ public class ConstructorTest extends TestCase
 
       try
       {
-         constructor.newInstance(new Class[] { IllegalAccessException.class });
+         constructor.newInstance((Object)new Class[] { IllegalAccessException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -205,7 +207,7 @@ public class ConstructorTest extends TestCase
 
       try
       {
-         constructor.newInstance(new Class[] { IllegalArgumentException.class });
+         constructor.newInstance((Object)new Class[] { IllegalArgumentException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -215,7 +217,7 @@ public class ConstructorTest extends TestCase
 
       try
       {
-         constructor.newInstance(new Class[] { InvocationTargetException.class });
+         constructor.newInstance((Object)new Class[] { InvocationTargetException.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -225,7 +227,7 @@ public class ConstructorTest extends TestCase
 
       try
       {
-         constructor.newInstance(new Class[] { Throwable.class });
+         constructor.newInstance((Object)new Class[] { Throwable.class });
          fail("should throw InvocationTargetException");
       }
       catch (InvocationTargetException e)
@@ -282,18 +284,18 @@ public class ConstructorTest extends TestCase
    
    public void test_ConstructorWithParams() throws Exception
    {
-      Class data = Class.forName("tc.test.totalcross.lang.reflect.ConstructorData");
+      Class<?> data = Class.forName("tc.test.totalcross.lang.reflect.ConstructorData");
       Constructor c = data.getConstructor(new Class[]{String.class,String.class,int.class,byte.class});
       Object o = c.newInstance(new Object[]{"Júlia","R Tonelero",new Integer(210),new Byte((byte)1)});
       
       Field fname = data.getField("name");
       Field faddr = data.getField("address");
       Field fnumb = data.getField("number");
-      Method mage = data.getMethod("getAge",new Class[0]);
+      Method mage = data.getMethod("getAge",new Class<?>[0]);
       assertEquals("Júlia",(String)fname.get(o));
       assertEquals("R Tonelero",(String)faddr.get(o));
       assertEquals(210,fnumb.getInt(o));
-      assertEquals(1,((Byte)mage.invoke(o, null)).byteValue());
+      assertEquals(1,((Byte)mage.invoke(o, (Object)null)).byteValue());
    }
 
    public void testRun()

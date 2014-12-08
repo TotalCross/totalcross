@@ -14,7 +14,7 @@ class SQLConvert
    {
       try
       {
-         return new java.sql.Time(x.getTime());
+         return x == null ? null : new java.sql.Time(x.getTime());
       }
       catch (InvalidDateException e)
       {
@@ -36,20 +36,20 @@ class SQLConvert
 
    static java.sql.Date date(Date x)
    {
-      return new java.sql.Date(x.getTime());
+      return x == null ? null : new java.sql.Date(x.getTime());
    }
    static Date date(java.sql.Date x)
    {
       if (x != null)
          try
          {
-            int d = x.getDate();
-            int m = x.getMonth()+1;
-            int y = x.getYear()+1900;
-            return new Date(d, m, y);
+            Time t = new totalcross.sys.Time(x.getTime(),true);
+            return new Date(t);
          }
          catch (Exception e)
          {
+            if (Settings.onJavaSE) e.printStackTrace();
+            return null;
          }
       return null;
    }

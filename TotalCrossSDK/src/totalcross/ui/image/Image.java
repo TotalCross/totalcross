@@ -17,6 +17,9 @@
 
 package totalcross.ui.image;
 
+import java.awt.GraphicsEnvironment;
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
 import totalcross.*;
 import totalcross.io.*;
 import totalcross.sys.*;
@@ -51,6 +54,8 @@ import totalcross.util.zip.*;
  * 
  * Note: TotalCross does not support grayscale PNG with alpha-channel. Convert the image to true-color with
  * alpha-channel and it will work fine (the only backdraw is that the new image will be bigger).
+ * 
+ * The hwScale methods should not be used in images that are shown using transition effects.
  *
  * @see Graphics
  */
@@ -204,10 +209,9 @@ public class Image extends GfxSurface
             break;
          bas.writeBytes(buf, 0, n);
       }
-      byte[] fullDescription = bas.toByteArray();
-      imageParse(fullDescription);
+      imageParse(bas.getBuffer(), bas.getPos());
       if (width == 0)
-         throw new ImageException(fullDescription==null?"Description is null":("Error on bmp with "+fullDescription.length+" bytes length description"));
+         throw new ImageException("Error on bmp with "+bas.getPos()+" bytes length description");
       init();
    }
    
@@ -242,8 +246,8 @@ public class Image extends GfxSurface
      * // save the bmp in a byte stream
      * ByteArrayStream bas = new ByteArrayStream(4096);
      * DataStream ds = new DataStream(bas);
-     * int totalBytesWritten = img.createBmp(ds);
-     * // parse the saved bmp
+     * int totalBytesWritten = img.createPng(ds);
+     * // parse the saved png
      * Image im = new Image(bas.getBuffer()); // Caution! the buffer may be greater than totalBytesWritten, but when parsing theres no problem.
      * if (im.getWidth() > 0) // successfully parsed?
      * {
@@ -256,7 +260,39 @@ public class Image extends GfxSurface
      */
    public Image(byte []fullDescription) throws ImageException
    {
-      imageParse(fullDescription);
+      this(fullDescription, fullDescription.length);
+   }
+   
+   /** Parses an image from the given byte array with the specified length. Note that the byte array must
+    * specify the full JPEG/PNG image, with headers (Gif/Bmp are supported at desktop only).
+    * Here is a code example: <pre>
+    * // create the image and fill it with something
+    * Image img = new Image(160,160);
+    * Graphics g = img.getGraphics();
+    * for (int i =0; i < 16; i++)
+    * {
+    *    g.backColor = Color.getRGB(10*i,10*i,10*i);
+    *    g.fillRect(i*10,0,10,160);
+    * }
+    * img.applyChanges();
+    * // save the bmp in a byte stream
+    * ByteArrayStream bas = new ByteArrayStream(4096);
+    * DataStream ds = new DataStream(bas);
+    * int totalBytesWritten = img.createPng(ds);
+    * // parse the saved png
+    * Image im = new Image(bas.getBuffer()); // Caution! the buffer may be greater than totalBytesWritten, but when parsing theres no problem.
+    * if (im.getWidth() > 0) // successfully parsed?
+    * {
+    *    getGraphics().drawImage(im,CENTER,CENTER);
+    *    Vm.sleep(2000);
+    * }
+    * </pre>
+    * Caution: if reading a JPEG file, the original array contents will be changed!
+    * @throws totalcross.ui.image.ImageException Thrown when something was wrong with the image.
+    */
+   public Image(byte []fullDescription, int length) throws ImageException
+   {
+      imageParse(fullDescription, length);
       if (width == 0)
          throw new ImageException(fullDescription==null?"Description is null":("Error on image with "+fullDescription.length+" bytes length description"));
       init();
@@ -369,6 +405,7 @@ public class Image extends GfxSurface
    public Graphics getGraphics()
    {
       if (Launcher.instance.mainWindow != null) gfx.setFont(MainWindow.getDefaultFont()); // avoid loading the font if running from tc.Deploy
+      gfx.refresh(0,0,width,height,0,0,null);
       return gfx;
    }
    
@@ -1009,7 +1046,7 @@ public class Image extends GfxSurface
     * 100 is not scaling, 200 doubles the size, 50 shrinks the image by 2
     * @param angle the rotation angle, expressed in trigonometric degrees
     * @param fillColor the fill color; -1 indicates the transparent color of this image or
-    * Color.WHITE if the transparentColor was not set.
+    * Color.WHITE if the transparentColor was not set; use 0 for a transparent background, or 0xFF000000 for the BLACK color.
     */
    public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException
    {
@@ -1356,17 +1393,17 @@ public class Image extends GfxSurface
          throw new ImageException("ERROR: can't open image file " + path);
 
       if (new String(bytes, 0, 2).equals("BM"))
-         ImageLoadBMPCompressed(bytes);
+         ImageLoadBMPCompressed(bytes, bytes.length);
       else
-         imageLoad(bytes);
+         imageLoad(bytes, bytes.length);
    }
 
-   private void imageParse(byte[] fullBmpDescription) throws ImageException
+   private void imageParse(byte[] fullBmpDescription, int length) throws ImageException
    {
       if (new String(fullBmpDescription, 0, 2).equals("BM"))
-         ImageLoadBMPCompressed(fullBmpDescription);
+         ImageLoadBMPCompressed(fullBmpDescription, length);
       else
-         imageLoad(fullBmpDescription);
+         imageLoad(fullBmpDescription, length);
    }
 
    // ///////////////// METHODS TAKEN FROM THE TOTALCROSS VM ////////////////////
@@ -1557,7 +1594,7 @@ public class Image extends GfxSurface
    private static final int BI_RGB = 0;
    private static final int BI_RLE8 = 1;
 
-   private void ImageLoadBMPCompressed(byte[] p) throws ImageException
+   private void ImageLoadBMPCompressed(byte[] p, int length) throws ImageException
    {
       int bitmapOffset, infoSize;
       int compression, usedColors;
@@ -1646,11 +1683,11 @@ public class Image extends GfxSurface
     * @param imageNo
     *           position of the image in a multi-image file must start (and default to) zero.
     */
-   private void imageLoad(byte[] input) throws ImageException
+   private void imageLoad(byte[] input, int len) throws ImageException
    {
       try
       {
-         ImageLoader loader = new ImageLoader(input);
+         ImageLoader loader = new ImageLoader(input,len);
          loader.load(this, 20000000);
          if (!loader.isSupported)
             throw new ImageException("TotalCross does not support grayscale+alpha PNG images. Save the image as color (24 bpp).");
@@ -1681,7 +1718,7 @@ public class Image extends GfxSurface
        * @param input
        *           the input stream where the image to retrieve the image data comes from
        */
-      public ImageLoader(byte[] input)
+      public ImageLoader(byte[] input, int len)
       {
          this.imgBytes = input;
          this.isImageComplete = true;
@@ -1689,7 +1726,10 @@ public class Image extends GfxSurface
          {
             java.awt.Component component = new java.awt.Component() {};
             java.awt.MediaTracker tracker = new java.awt.MediaTracker(component);
-            java.awt.Image image = java.awt.Toolkit.getDefaultToolkit().createImage(input);
+
+            java.awt.Image image = GraphicsEnvironment.isHeadless() ?
+                  ImageIO.read(new ByteArrayInputStream(input, 0, len)) :
+                  java.awt.Toolkit.getDefaultToolkit().createImage(input, 0, len);
 
             tracker.addImage(image, 0);
             tracker.waitForAll();
@@ -1703,6 +1743,11 @@ public class Image extends GfxSurface
          }
          catch (InterruptedException e)
          {
+         }
+         catch (java.io.IOException e)
+         {
+            // should never happen
+            e.printStackTrace();
          }
       }
 
@@ -1796,7 +1841,7 @@ public class Image extends GfxSurface
             loaded.frameCount = 1; // guich@tc100b5: cannot be 0
             image.copyFrom(loaded);
             if (fc > 0)
-               image.comment = "FC="+fc;
+               image.comment = loaded.comment == null ? "FC="+fc : loaded.comment;
             if (!useAlpha && transparentColor != -3)
                image.setTransparentColor(transparentColor);
          }
@@ -1845,6 +1890,7 @@ public class Image extends GfxSurface
       {
       }
 
+      @SuppressWarnings("rawtypes")
       public void setProperties(java.util.Hashtable props)
       {
       }
@@ -2055,10 +2101,12 @@ public class Image extends GfxSurface
    final public Image getFrameInstance(int frame) throws ImageException // guich@tc112_7
    {
       Image img = getCopy(width,height);
+      int old = currentFrame;
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;
       Vm.arrayCopy(from, 0, to, 0, from.length);
+      setCurrentFrame(old);
       return img;
    }
 
@@ -2216,5 +2264,27 @@ public class Image extends GfxSurface
    final public Image smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
    {
       return smoothScaledFromResolution(originalRes);
+   }
+
+   /** Applies the given fade value to r,g,b of this image while preserving the alpha value. */
+   public void applyFade(int fadeValue)
+   {
+      int[] pixels = (int[])this.pixels;
+      int lastColor = -1, lastFaded=0;
+      for (int j = pixels.length; --j >= 0;)
+      {
+         int rgb = pixels[j];
+         if (rgb == lastColor)
+            pixels[j] = lastFaded;
+         else
+         {
+            lastColor = rgb;
+            int a = ((rgb >> 24) & 0xFF);
+            int r = ((rgb >> 16) & 0xFF) * fadeValue / 255;
+            int g = ((rgb >> 8 ) & 0xFF) * fadeValue / 255;
+            int b =  (rgb        & 0xFF) * fadeValue / 255;
+            lastFaded = pixels[j] = (a << 24) | (r << 16) | (g << 8) | b;
+         }
+      }
    }
 }
