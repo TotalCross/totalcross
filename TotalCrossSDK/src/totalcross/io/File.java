@@ -1363,9 +1363,7 @@ public class File extends RandomAccessStream
     */
    public byte[] readAndClose() throws IOException
    {
-      int len = getSize();
-      byte[] ret = new byte[len];
-      readBytes(ret,0,len);
+      byte[] ret = read();
       close();
       return ret;
    }
@@ -1383,4 +1381,14 @@ public class File extends RandomAccessStream
       close();
    }
 
+   /** Reads the file and returns a byte array with its contents.
+    * @since TotalCross 3.1
+    */
+   public byte[] read() throws IOException
+   {
+      int len = getSize();
+      byte[] ret = new byte[len];
+      readBytes(ret,0,len);
+      return ret;
+   }
 }
