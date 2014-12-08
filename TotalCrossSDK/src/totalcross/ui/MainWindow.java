@@ -106,7 +106,11 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
 
       canDrag = false; // we can't drag the mainwindow.
-   }
+
+      byte[] bytes = Vm.getFile("tcapp.prop");
+      if (bytes != null)
+         Settings.appProps = new Hashtable(new String(bytes));
+}
    
    /** Returns true if this is the main thread.
     * @since TotalCross 2.0
