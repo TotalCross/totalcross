@@ -1292,7 +1292,7 @@ class Table
          }
          else 
          {
-            int rows = plainDb.rowCount - deletedRowsCount;
+            int rows = plainDb.rowCount; // juliana@284_1: Solved a possible application crash when recreating indices.
             SQLValue[][] vals = new SQLValue[rows][];
             int k = 0;
             boolean isNull;
@@ -2702,11 +2702,13 @@ class Table
                      remove = false;
                   
                   // Sets the old and new index values.
+                  // juliana@282_2: Doesn't update the composed index or PK if the old values are the same of the new ones. 
                   if (values[column] == null) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
                      vals[j] = vOlds[column];
                   else
                   {
-                     change = true;
+                     if (addingNewRecord || values[column].valueCompareTo(vOlds[column], types[column], !remove, !store, null) != 0)
+                        change = true;
                      vals[j] = values[column];
                   }
                   

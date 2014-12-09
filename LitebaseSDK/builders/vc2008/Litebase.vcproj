@@ -1185,7 +1185,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/release/LitebaseSDK/dist/lib/wince"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"

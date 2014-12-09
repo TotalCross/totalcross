@@ -402,25 +402,24 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
          keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
          children = curr->children;
                   
+         // juliana@284_2: solved a possible insertion of a duplicate value in a PK.
          if (pos < (size = curr->size) && keyEquals(context, key, keyFound, numberColumns, plainDB)) 
          {
             if (!markBits)
-            {
                if (keyFound->record != NO_VALUE)
                {
                   TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), 
                                                    index->table->name);
                   return false;
                }
-               break;
-            }
             do
                pos--;
             while (pos >= 0 && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB));  
             while (++pos < size && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB))
             {
-               if (onKey(context, &currKeys[pos], markBits) == -1)
-                  return false;
+               if (markBits)
+                  if (onKey(context, &currKeys[pos], markBits) == -1)
+                     return false;
                if (!nodeIsLeaf(curr))
                   vector[count++] = children[pos]; 
             }
@@ -601,7 +600,8 @@ bool indexSplitNode(Context context, Node* curr, int32 count)
    int32* ancestors = index->table->nodes;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
-   int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
+   // juliana@283_1: solved a bug which would buid corrupted indices when creating or recreating them.
+   int32 medPos = index->isOrdered? (curr->size - 2) : (curr->size / 2),
 
          btreeMaxNodes = index->btreeMaxNodes,
          left,
@@ -806,8 +806,12 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, &key, true)]; // juliana@201_3
          if (pos < (size = curr->size) && keyEquals(context, &key, keyFound, numberColumns, plainDB)) 
          {
-            while (pos >= 0 && keyEquals(context, &key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos--].record >= record);  
-            while (++pos < size && keyEquals(context, &key, &currKeys[pos], numberColumns, plainDB) && currKeys[pos].record < record);
+            // juliana@281_1: corrected a possible index corruption.
+            while (pos >= 0 && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record >= record || keyFound->record == NO_VALUE))
+               pos--;
+            while (++pos < size && keyEquals(context, &key, (keyFound = &currKeys[pos]), numberColumns, plainDB) 
+                && (keyFound->record < record || keyFound->record == NO_VALUE));
          }
          
          if (nodeIsLeaf(curr))
@@ -969,6 +973,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          if ((record = currKeys[i].record) != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, record)))
          {               
             xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
+            count = 0; // juliana@284_3: solved a possible wrong result in MAX() and MIN() if the column searched had an index.
             break;               
          }
    
@@ -1027,6 +1032,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          if ((record = currKeys[i].record) != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, record)))
          {               
             xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
+            count = 0; // juliana@284_3: solved a possible wrong result in MAX() and MIN() if the column searched had an index.
             break;               
          }
       

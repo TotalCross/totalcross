@@ -223,10 +223,10 @@ public class SQLConsole extends MainWindow
          cbsql.fullWidth = true;
 
          // The buttons that execute and clears the queries.
-         container.add(btnExe = new Button(new Image("go.gif").smoothScaledFromResolution(320, container.getBackColor())));
+         container.add(btnExe = new Button(new Image("go.gif").smoothScaledFromResolution(320)));
          btnExe.setBorder(Button.BORDER_NONE);
          btnExe.setRect(RIGHT, AFTER + 1, PREFERRED, PREFERRED, btRem);
-         container.add(btnClr = new Button(new Image("clear.gif").smoothScaledFromResolution(320, container.getBackColor())));
+         container.add(btnClr = new Button(new Image("clear.gif").smoothScaledFromResolution(320)));
          btnClr.setBorder(Button.BORDER_NONE);
          btnClr.setRect(RIGHT, AFTER, PREFERRED, PREFERRED);
 
