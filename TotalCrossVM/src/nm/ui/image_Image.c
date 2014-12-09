@@ -132,7 +132,7 @@ TC_API void tuiI_nativeEquals_i(NMParams p) // totalcross/ui/image/Image native 
 TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native public void applyColor2(int color);
 {
    TCObject thisObj = p->obj[0];
-   Pixel color = makePixelRGB(p->i32[0]);
+   Pixel color = makePixelARGB(p->i32[0]);
    applyColor2(thisObj, color);
 }
 //////////////////////////////////////////////////////////////////////////

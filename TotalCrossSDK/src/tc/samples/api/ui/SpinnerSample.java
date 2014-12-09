@@ -6,30 +6,43 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.util.*;
 
 public class SpinnerSample extends BaseContainer
 {
-   private Spinner sp0,sp1,sp2;
+   private Spinner sp;
    private Button bt;
    private Label l;
+   private RadioGroupController rg;
+   private Image triplex;
    
    public void initUI()
    {
       try
       {
          super.initUI();
-         
-         add(sp0 = new Spinner(new Image("ui/images/triplex.gif")),CENTER,CENTER,fmH*2,fmH*2);
-         Spinner.spinnerType = Spinner.ANDROID;
-         add(sp1 = new Spinner(),CENTER,BEFORE-gap,fmH*2,fmH*2, sp0);
-         Spinner.spinnerType = Spinner.IPHONE;
-         add(sp2 = new Spinner(),CENTER,AFTER+gap,fmH*2,fmH*2, sp0);
-         add(bt = new Button("Start"),CENTER,TOP+gap,PARENTSIZE+50,PREFERRED);
+         rg = new RadioGroupController();
+
          l = new Label("Note that we are blocked in a loop, like if we're downloading something from internet or other kind of processing.");
          l.autoSplit = true;
          add(l,LEFT,TOP,FILL,PREFERRED);
          l.setVisible(false);
+
+         Radio r;
+         add(r = new Radio(" iPhone",rg),LEFT,AFTER,PARENTSIZE+33,PREFERRED); r.leftJustify = true;
+         add(r = new Radio(" Android",rg),AFTER,SAME,SAME,PREFERRED); r.leftJustify = true;
+         add(r = new Radio(" Sync",rg),AFTER,SAME,SAME,PREFERRED); r.leftJustify = true;
+         add(r = new Radio(" Custom (triplex.gif)",rg),LEFT,AFTER,FILL,PREFERRED); r.leftJustify = true;
+         rg.setSelectedIndex(0);
+         
+         triplex = new Image("ui/images/triplex.gif");
+         sp = new Spinner(Spinner.IPHONE);
+         add(sp,CENTER,AFTER+fmH*2,fmH*2,fmH*2);
+
+         add(bt = new Button("Start"),CENTER,TOP+gap,PARENTSIZE+50,PREFERRED);
+         add(new Label("(a random color is used at each Start)"),CENTER,BOTTOM);
       }
       catch (Exception ee)
       {
@@ -37,23 +50,38 @@ public class SpinnerSample extends BaseContainer
       }
    }
    
+   private static Random rr = new Random();
+   
    public void onEvent(Event e)
    {
-      if (e.type == ControlEvent.PRESSED && e.target == bt)
+      if (e.type == ControlEvent.PRESSED)
       {
-         if (!sp1.isRunning())
+         if (e.target instanceof Radio)
          {
-            bt.setVisible(false);
-            l.setVisible(true);
-            int end = Vm.getTimeStamp()+5000;
-            while (Vm.getTimeStamp() < end)
+            int t = rg.getSelectedIndex();
+            switch (t)
             {
-               sp0.update();
-               sp1.update(); // this makes the magic that updates the spinner
-               sp2.update();
-               // you may do other processing here...
+               case 0: case 1: case 2: sp.setType(t+1); break;
+               case 3: sp.setImage(triplex); break;
             }
-            onRemove();
+         }
+         else
+         if (e.target == bt)
+         {
+            if (!sp.isRunning())
+            {
+               sp.setForeColor(Color.getRandomColor(rr));
+               bt.setVisible(false);
+               l.setVisible(true);
+               repaintNow();
+               int end = Vm.getTimeStamp()+5000;
+               while (Vm.getTimeStamp() < end)
+               {
+                  sp.update(); // this makes the magic that updates the spinner
+                  // you may do other processing here...
+               }
+               onRemove();
+            }
          }
       }
    }

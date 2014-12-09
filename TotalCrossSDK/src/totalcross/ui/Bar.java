@@ -447,7 +447,7 @@ public class Bar extends Container
    }
    
    /** 
-    * Stops and hides the spinner (if createSpinner was called before)
+    * Stops and hides the spinner (if createSpinner or setSpinner was called before)
     * 
     * @see #spinner
     */
@@ -506,13 +506,10 @@ public class Bar extends Container
       spinner.setForeColor(color);
    }
 
-   /** 
-    * Creates a spinner with the following GIF animation. The spinner will be placed at the right of the title (it only works if there's a title).
-    * 
-    * You can download additional animations from: <a href='http://preloaders.net/en'>here</a>. Select image type as GIF and transparent background as Yes.
+   /** Sets the spinner to the given one. 
     */
-   public void createSpinner(Image gif)
+   public void setSpinner(Spinner s)
    {
-      spinner = new Spinner(gif);
+      spinner = s;
    }
 }

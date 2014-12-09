@@ -2191,6 +2191,9 @@ public class Image extends GfxSurface
    /** Applies the given color r,g,b values to all pixels of this image, 
     * preserving the transparent color and alpha channel, if set.
     * This method is used to colorize the Android buttons.
+    * 
+    * If the color's alpha is 0xAA, the image's alpha will also be changed. This is used by the Spinner.
+    * 
     * @param color The color to be applied
     * @since TotalCross 1.3
     */
@@ -2199,6 +2202,7 @@ public class Image extends GfxSurface
       int r2 = Color.getRed(color);
       int g2 = Color.getGreen(color);
       int b2 = Color.getBlue(color);
+      boolean changeA = (color & 0xFF000000) == 0xAA000000;
       int m,p;
 
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
@@ -2222,6 +2226,7 @@ public class Image extends GfxSurface
       if (hiR == 0) hiR = 255;
       if (hiG == 0) hiG = 255;
       if (hiB == 0) hiB = 255;
+      hi = hiR > hiG ? hiR : hiG; hi = hi > hiB ? hi : hiB;
       
       for (int n = pixels.length; --n >= 0;)
       {
@@ -2237,7 +2242,14 @@ public class Image extends GfxSurface
             if (r > 255) r = 255;
             if (g > 255) g = 255;
             if (b > 255) b = 255;
-            pixels[n] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
+            if (changeA)
+            {
+               int a = pr > pg ? pr : pg; if (pb > a) a = pb;
+               a = a * 255 / hi; if (a > 255) a = 255;
+               pixels[n] = (a << 24) | (r<<16) | (g<<8) | b;
+            }
+            else
+               pixels[n] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
          }
       }
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
