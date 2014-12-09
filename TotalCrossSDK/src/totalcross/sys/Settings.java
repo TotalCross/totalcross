@@ -66,7 +66,9 @@ public final class Settings
     */
    public static String appBuildNumber()
    {
-      return (String)Settings.appProps.get("build.number");
+      String ret = (String)Settings.appProps.get("build.number");
+      if (ret == null) ret = "0";
+      return ret;
    }
    
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
@@ -439,6 +441,11 @@ public final class Settings
    public static String fullScreenPlatforms; // guich@tc120_59
 
    /** Set it at the application's static initializer. Defines the current application's version, which will be applied to the pdbs.
+    * 
+    * If you turn on automatic build number increment (with appProps) and the appVersion ends with a dot, during deploy the
+    * build number will be appended to the appVersion. For example, if appVersion is "2." and the current build number is 103, 
+    * deploy will change the appVersion to "2.103" during deploy. To see the version that will appear, use at your application's
+    * constructo: <code>Settings.appVersion += Settings.appBuildNumber();</code>
     * @since TotalCross 1.0
     */
    public static String appVersion;

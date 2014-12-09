@@ -89,6 +89,7 @@ public class DeploySettings
    
    public static byte[] tcappProp;
    public static final String TCAPP_PROP = "tcapp.prop";
+   public static int appBuildNumber=-1;
 
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
@@ -211,13 +212,13 @@ public class DeploySettings
             String path = Convert.appendPath(dir, TCAPP_PROP);
             File f = new File(path, File.READ_WRITE);
             Hashtable ht = new Hashtable(new String(f.read()));
-            int bn = Convert.toInt((String)ht.get("build.number","0"), 0);
-            ht.put("build.number", bn+1);
+            appBuildNumber = Convert.toInt((String)ht.get("build.number","0"), 0) + 1;
+            ht.put("build.number", appBuildNumber);
             byte[] bytes = ht.getKeyValuePairs("=").toString("\n").getBytes();
             f.setSize(0);
             f.writeAndClose(bytes);
             tcappProp = bytes;
-            System.out.println("Application's build number: "+(bn+1));
+            System.out.println("Application's build number: "+appBuildNumber);
             break;
          }
          catch (FileNotFoundException fnfe)

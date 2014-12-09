@@ -261,10 +261,12 @@ public final class J2TC implements JConstants, TCConstants
                      else
                      if (field.equals("appVersion"))
                      {
-                        DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
                         for (int i = 0, n = value.length(); i < n; i++)
                            if (APPVER_VALID.indexOf(value.charAt(i)) == -1)
                               throw new IllegalArgumentException("Settings.versionStr '"+value+"' can only have digits and a dot.");
+                        if (value.endsWith(".") && DeploySettings.appBuildNumber != -1)
+                           value += DeploySettings.appBuildNumber;
+                        DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
                      }
                      else
                      if (field.equals("companyInfo"))
