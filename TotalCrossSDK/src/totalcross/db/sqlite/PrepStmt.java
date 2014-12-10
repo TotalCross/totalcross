@@ -396,11 +396,10 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
             batch(pos, null);
         }
         else if (value instanceof Date) {
-            setDate(pos, new Time(((Date)value)));
+           batch(pos, ((Date)value).getSQLString());
         }
         else if (value instanceof Time) {
-           Time t = (Time)value;
-           setDate(pos, t);
+           batch(pos, ((Time)value).getSQLString());
         }
         else if (value instanceof Timestamp) {
            long l = ((Timestamp) value).getTime();
@@ -491,23 +490,6 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
     public void setDate(int pos, Date x) throws SQLException {
         setObject(pos, x);
     }
-
-    /**
-    * Store the date in the user's preferred format (text, int, or real)
-    */
-   private void setDate(int pos, Time t) throws SQLException {
-      long l = t.getTimeLong();
-      //if (conn.datePrecision == DatePrecision.MILLISECONDS)
-         l = l * 1000 + t.millis;
-      batch(pos, new Long(l));
-/*       if (conn.dateClass == SQLiteConfig.DateClass.TEXT)
-          batch(pos, conn.dateFormat.format(new Date(value)));
-       else
-       if (conn.dateClass == SQLiteConfig.DateClass.REAL) // long to Julian date
-          batch(pos, new Double((value/86400000.0) + 2440587.5));
-       else //INTEGER:
-          batch(pos, new Long(value / conn.dateMultiplier));*/
-   }
 
    /**
      * @see java.sql.PreparedStatement#setTime(int, java.sql.Time)

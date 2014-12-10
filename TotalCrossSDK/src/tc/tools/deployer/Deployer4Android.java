@@ -614,7 +614,14 @@ public class Deployer4Android
             }
             catch (FileNotFoundException fnfe2)
             {
-               fis = new FileInputStream(Utils.findPath(pathname,true));
+               String pp = Utils.findPath(pathname,true);
+               if (pp != null)
+                  fis = new FileInputStream(pp);
+               else
+               {
+                  System.out.println("File not found: "+pathname);
+                  continue;
+               }
             }
          }
          byte[] bytes = new byte[fis.available()];

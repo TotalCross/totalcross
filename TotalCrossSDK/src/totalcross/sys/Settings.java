@@ -18,6 +18,8 @@
 
 package totalcross.sys;
 
+import totalcross.util.*;
+
 
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
@@ -36,11 +38,39 @@ public final class Settings
    /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
    public static String versionStr = "3.10";
     
-   /** Current build number.
+   /** Current build number for the TotalCross SDK.
     * @since TotalCross 1.53 
     */
    public static int buildNumber = 000;
-
+   
+   /** Some properties you may want to use in the application. 
+    * The file format must be:
+    * <pre>
+    * property=value&lt;enter&gt;
+    * </pre>
+    * This file must be named <code>tcapp.prop</code> and it is searched from the current folder up to the root folder.
+    * 
+    * To have a build number be incremented by tc.Deploy, just create the file somewhere in a parent folder from
+    * where you run tc.Deploy for your application. 
+    * The file will be inserted into the application's tcz and you will be able to retrieve the build number using
+    * <code>Settings.appBuildNumber()</code>.
+    * 
+    * Note that the properties are always read-only and you can add other values to be used in your application.
+    * @since TotalCross 3.1
+    */
+   public static Hashtable appProps;
+   
+   /** Returns the application's build number. 
+    * @see #appProps
+    * @since TotalCross 3.1
+    */
+   public static String appBuildNumber()
+   {
+      String ret = (String)Settings.appProps.get("build.number");
+      if (ret == null) ret = "0";
+      return ret;
+   }
+   
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
     * @see #DATE_MDY
@@ -411,6 +441,11 @@ public final class Settings
    public static String fullScreenPlatforms; // guich@tc120_59
 
    /** Set it at the application's static initializer. Defines the current application's version, which will be applied to the pdbs.
+    * 
+    * If you turn on automatic build number increment (with appProps) and the appVersion ends with a dot, during deploy the
+    * build number will be appended to the appVersion. For example, if appVersion is "2." and the current build number is 103, 
+    * deploy will change the appVersion to "2.103" during deploy. To see the version that will appear, use at your application's
+    * constructo: <code>Settings.appVersion += Settings.appBuildNumber();</code>
     * @since TotalCross 1.0
     */
    public static String appVersion;

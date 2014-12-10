@@ -447,7 +447,7 @@ public class Bar extends Container
    }
    
    /** 
-    * Stops and hides the spinner (if createSpinner was called before)
+    * Stops and hides the spinner (if createSpinner or setSpinner was called before)
     * 
     * @see #spinner
     */
@@ -504,5 +504,12 @@ public class Bar extends Container
    {
       spinner = new Spinner();
       spinner.setForeColor(color);
+   }
+
+   /** Sets the spinner to the given one. 
+    */
+   public void setSpinner(Spinner s)
+   {
+      spinner = s;
    }
 }

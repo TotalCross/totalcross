@@ -265,6 +265,7 @@ TC_API void tsV_getStackTrace_t(NMParams p);
 TC_API void tsV_showKeyCodes_b(NMParams p);
 TC_API void tsV_turnScreenOn_b(NMParams p);
 TC_API void tsV_vibrate_i(NMParams p);
+TC_API void tsV_identityHashCode_o(NMParams p);
 TC_API void tsR_getInt_iss(NMParams p);
 TC_API void tsR_getString_iss(NMParams p);
 TC_API void tsR_getBlob_iss(NMParams p);

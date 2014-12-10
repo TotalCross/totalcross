@@ -86,6 +86,10 @@ public class DeploySettings
    public static String certStorePath;
    public static java.io.File mobileProvision;
    public static java.io.File appleCertStore;
+   
+   public static byte[] tcappProp;
+   public static final String TCAPP_PROP = "tcapp.prop";
+   public static int appBuildNumber=-1;
 
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
@@ -194,6 +198,43 @@ public class DeploySettings
          folderTotalCross3DistVM = null;
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
+      
+      handleTCAppProp();
+   }
+   
+   private static void handleTCAppProp()
+   {
+      String dir = currentDir;
+      while (true)
+      {
+         try
+         {
+            String path = Convert.appendPath(dir, TCAPP_PROP);
+            File f = new File(path, File.READ_WRITE);
+            Hashtable ht = new Hashtable(new String(f.read()));
+            appBuildNumber = Convert.toInt((String)ht.get("build.number","0"), 0) + 1;
+            ht.put("build.number", appBuildNumber);
+            byte[] bytes = ht.getKeyValuePairs("=").toString("\n").getBytes();
+            f.setSize(0);
+            f.writeAndClose(bytes);
+            tcappProp = bytes;
+            System.out.println("Application's build number: "+appBuildNumber);
+            break;
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            dir = Utils.getParent(dir);
+            if (dir == null)
+               break;
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+            break;
+         }
+         if (tcappProp == null)
+            Utils.println("File "+TCAPP_PROP+" not found; build number could not be generated.");
+      }
    }
 
    /** From 5.21, return 5 */

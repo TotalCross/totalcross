@@ -12,6 +12,7 @@
 
 
 #include "tcvm.h"
+#include "NativeMethods.h"
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/Vm_c.h"
@@ -150,7 +151,7 @@ TC_API void tsV_sleep_i(NMParams p) // totalcross/sys/Vm native public static vo
    {
       Sleep(max32(millis,1)); // don't sleep 0, or threads may starve to death
 #if defined WIN32 && !defined WP8
-      if (millis == 1)
+      //if (millis == 1) - guich@310: also for other sleep values
       {
          MSG msg;
          PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE );
@@ -370,6 +371,11 @@ TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static 
 #if defined(WIN32) || defined(ANDROID) || defined(darwin)
    vmVibrate(p->i32[0]);
 #endif   
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsV_identityHashCode_o(NMParams p) // totalcross/sys/Vm native public static int identityHashCode(Object object);
+{
+   jlO_nativeHashCode(p);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_preallocateArray_oi(NMParams p) // totalcross/sys/Vm native public static void preallocateArray(Object sample, int length);

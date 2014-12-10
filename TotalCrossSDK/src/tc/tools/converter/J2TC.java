@@ -261,10 +261,12 @@ public final class J2TC implements JConstants, TCConstants
                      else
                      if (field.equals("appVersion"))
                      {
-                        DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
                         for (int i = 0, n = value.length(); i < n; i++)
                            if (APPVER_VALID.indexOf(value.charAt(i)) == -1)
                               throw new IllegalArgumentException("Settings.versionStr '"+value+"' can only have digits and a dot.");
+                        if (value.endsWith(".") && DeploySettings.appBuildNumber != -1)
+                           value += DeploySettings.appBuildNumber;
+                        DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
                      }
                      else
                      if (field.equals("companyInfo"))
@@ -912,7 +914,7 @@ public final class J2TC implements JConstants, TCConstants
             if (!DeploySettings.testClass)
             {
                ByteArrayStream basz = new ByteArrayStream(bytes);
-               print = !(name.equals("tckey.bin") || name.equals("tcparms.bin"));
+               print = !name.equals("tckey.bin") && !name.equals("tcparms.bin") && !name.equals(DeploySettings.TCAPP_PROP);
    
                if (print)
                   System.out.print("Adding "+name);
@@ -1237,6 +1239,8 @@ public final class J2TC implements JConstants, TCConstants
             byte[] htDump = htVmParams.getKeyValuePairs("=").toString("\n").getBytes();
 				vin.addElement(new TCZ.Entry(htDump, "tcparms.bin", htDump.length));
 			}
+         if (DeploySettings.tcappProp != null)
+            vin.addElement(new TCZ.Entry(DeploySettings.tcappProp, DeploySettings.TCAPP_PROP, DeploySettings.tcappProp.length));
 
          TCMethod.checkJavaCalls = true;
          GlobalConstantPool.checkLimit = true;

@@ -7,6 +7,23 @@ import totalcross.sys.*;
 import totalcross.util.*;
 
 /** Utility class to make convertion from Litebase to SQLite easier. 
+ * 
+ * Important rules about date and time in SQLite.
+ * 
+ * <ul>
+ * <li> DATE type: must be in the form: YYYY-MM-DD
+ * <li> TIME type: must be in the form: YYYY-MM-DD HH:MM:SS.MMM
+ * </ul>
+ * 
+ * When using 'between' or any other date/time comparation, the arguments MUST MATCH the type form.
+ * So, in "select borndate from test where borndate between '2014-12-10' and '2014-12-14'":
+ * <ul>
+ * <li> If borndate is a DATE, the comparison will succeed.
+ * <li> If borndate is a TIME, the comparison will fail. To make it work, use 
+ * "select borndate from test where borndate between '2014-12-10 00:00:00.000' and '2014-12-14 00:00:00.000'".
+ * </ul>
+ * @see totalcross.util.Date#getSQLString()
+ * @see totalcross.sys.Time#getSQLString()
  */
 
 public class SQLiteUtil
@@ -125,6 +142,11 @@ public class SQLiteUtil
 
    public String[][] getStrings(ResultSet rs, Vector v) throws SQLException
    {
+      return getStrings(rs, v, null);
+   }
+   
+   public String[][] getStrings(ResultSet rs, Vector v, int[] decimalPlaces) throws SQLException
+   {
       int cols = getColCount(rs);
       int[] types = new int[cols];
       ResultSetMetaData md = rs.getMetaData();
@@ -136,8 +158,9 @@ public class SQLiteUtil
          for (int i = 0; i < cols; i++)
             switch (types[i])
             {
-               case Types.DATE: linha[i] = rs.getDate(i+1).toString(); break;
-               case Types.TIME: linha[i] = rs.getTime(i+1).toString(); break;
+               case Types.DATE: Date dt = rs.getDate(i+1); linha[i] = dt == null ? "" : dt.toString(); break;
+               case Types.TIME: Time tm = rs.getTime(i+1); linha[i] = tm == null ? "" : tm.toString(); break;
+               case Types.DOUBLE: linha[i] = Convert.toString(rs.getDouble(i+1), decimalPlaces == null ? -1 : decimalPlaces[i]); break;
                default: linha[i] = rs.getString(i+1);
             }
          v.addElement(linha);

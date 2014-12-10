@@ -56,7 +56,9 @@ public class DriverManager
    }
    static Connection newConnection(String url, String dbname) throws SQLException
    {
-      return new SQLite4JConnection(new org.sqlite.SQLiteConnection(url, dbname));
+      java.util.Properties props = new java.util.Properties();
+      props.put("date_string_format", "yyyy-MM-dd");
+      return new SQLite4JConnection(new org.sqlite.SQLiteConnection(url, dbname, props));
    }
    static Connection newConnection4D(String url, String dbname) throws SQLException
    {

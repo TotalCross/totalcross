@@ -91,7 +91,7 @@ public class Camera4D
       {
          String s = getNativeResolutions();
          if (s != null)
-            ret = Convert.tokenizeString(s,',');
+            ret = sortResolutions(Convert.tokenizeString(s,','));
       }
       else
       if (Settings.isWindowsDevice())
@@ -112,11 +112,18 @@ public class Camera4D
             catch (Exception e) {} // key not found
          }
          if (v.size() > 0)
-            ret = (String[])v.toObjectArray();
+            ret = sortResolutions((String[])v.toObjectArray());
       }
       if (ret == null)
          ret = new String[]{"default resolution","320x240","640x480","1024x768","2048x1536"};
       return ret;
+   }
+   private static String[] sortResolutions(String[] res)
+   {
+      for (int i = res.length; --i >= 0;) {String[] sp = Convert.tokenizeString(res[i],'x'); res[i] = Convert.zeroPad(sp[0],5)+"x"+Convert.zeroPad(sp[1],5);}
+      Convert.qsort(res,0,res.length-1);
+      for (int i = res.length; --i >= 0;) {String[] sp = Convert.tokenizeString(res[i],'x'); res[i] = Convert.zeroUnpad(sp[0])+"x"+Convert.zeroUnpad(sp[1]);}
+      return res;
    }
 
    static native private String getNativeResolutions();

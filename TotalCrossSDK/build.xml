@@ -59,8 +59,8 @@
 </condition>
 
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.7"/>
-<property name="compile.source"          value="1.7"/>
+<property name="compile.target"          value="1.8"/>
+<property name="compile.source"          value="1.8"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
@@ -225,8 +225,9 @@ target: compile
     <fileset dir="${output}/desktopsrc" includes="**/*.java" excludes="tc/**/*" />
   </removemethod>
     
-  <!-- copy the totalcross.lang classes. They are needed by the converter. -->
+  <!-- copy the totalcross.lang and util classes. They are needed by the converter. -->
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true" >
+     <fileset dir="${src}" includes="totalcross/util/*4D.java" />
      <fileset dir="${src}" includes="totalcross/lang/**" excludes="**/*4B.*" />
   </copy>
   <replaceregexp file="${output}/desktopsrc/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
@@ -314,6 +315,7 @@ target: desktop
        </keepclassmembernames>
 
        <injar path="${dist}/tc_desktop.jar" />
+   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
        <outjar path="${dist}/tc_deploy.jar" />
    </proguard>
 
@@ -477,7 +479,7 @@ target: javadoc
     <arg line="-windowtitle 'TotalCross SDK ${versionStr}'"/>
     <arg line="-d ${docs}/html"/>
     <arg line="-doctitle 'Please read the changelogs &lt;a href=changelogs.html _target=blank &gt;here&lt;/a&gt;.'"/>
-    <arg line="-source 1.2"/>
+    <arg line="-source 1.7"/>
     <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>
 
@@ -505,17 +507,15 @@ target: device
   <mkdir dir="${dist}" />
   
   <!-- all but ui classes -->
-  <delete file="${output}/tcsdk.jar"/>
-  <delete file="${output}/tcsdk_.jar"/>
   <copy file="${src}/totalcross/chartypes.bin" todir="${output}/classes/totalcross"/>
-  <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
+  <jar destfile="${output}/tcsdk2_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
     includes="totalcross/util/*.class,totalcross/util/regex/*.class,totalcross/lang/*.class,totalcross/lang/reflect/*.class,totalcross/chartypes.bin,ras/**/*.class,totalcross/db/**/*.class,totalcross/sql/*.class,totalcross/phone/**/*.class,totalcross/mail/**/*.class,totalcross/crypto/**/*.class,totalcross/json/**/*.class,totalcross/MainClass.class,totalcross/Service.class,totalcross/game/*.class,totalcross/io/*.class,totalcross/lang/*.class,totalcross/net/*.class,totalcross/sys/*.class,totalcross/unit/*.class,totalcross/map/*.class,totalcross/util/concurrent/*.class,totalcross/xml/*.class,totalcross/json/*.class,totalcross/io/device/*.class,totalcross/io/device/gps/*.class,totalcross/io/device/scanner/*.class,totalcross/io/device/gps/garmin/*.class,totalcross/net/ssl/*.class,totalcross/util/tcz/*.class,totalcross/util/zip/*.class,totalcross/xml/rpc/*.class,totalcross/xml/soap/*.class,totalcross/io/device/printer/*.class,totalcross/net/mail/*.class,totalcross/io/device/bluetooth/*.class"
     excludes="totalcross/zxing/**,totalcross/android/**,**/*4A*,totalcross/TCEventThread*,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class,totalcross/res/**"
     />
   </jar>
 
-   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/device_${versionStr}.map">
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
        <keepclassmembers>
          <method name="*" />
@@ -523,8 +523,9 @@ target: device
        </keepclassmembers>
        <keepattribute name="LineNumberTable" />
 
-       <injar path="${output}/tcsdk_.jar" />
-       <outjar path="${output}/tcsdk.jar" />
+       <injar path="${output}/tcsdk2_.jar" />
+   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
+       <outjar path="${output}/tcsdk2.jar" />
    </proguard>
 
   <echo message="deploy the non-UI jar package file" />
@@ -533,7 +534,7 @@ target: device
         <pathelement location="${output}/classes"/>
         <pathelement location="${sdk.root}"/>
     </classpath>
-    <arg value="${output}/tcsdk.jar"/>
+    <arg value="${output}/tcsdk2.jar"/>
     <arg line="/n TCBase"/>
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>
@@ -544,16 +545,14 @@ target: device
   
   <!-- ui classes -->
   
-  <delete file="${output}/tcsdk.jar"/>
-  <delete file="${output}/tcsdk_.jar"/>
-  <jar destfile="${output}/tcsdk_.jar" compress="yes" update="no">
+  <jar destfile="${output}/tcsdk2_.jar" compress="yes" update="no">
     <fileset dir="${output}/classes"
     includes="totalcross/res/**,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class"
     />
-    <fileset dir="${src}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.png" />
+    <fileset dir="${src}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.gif,totalcross/res/**/*.png" />
   </jar>
 
-   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/device_${versionStr}.map">
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
        <keepclassmembers>
          <method name="*" />
@@ -561,8 +560,9 @@ target: device
        </keepclassmembers>
        <keepattribute name="LineNumberTable" />
 
-       <injar path="${output}/tcsdk_.jar" />
-       <outjar path="${output}/tcsdk.jar" />
+       <injar path="${output}/tcsdk2_.jar" />
+   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
+       <outjar path="${output}/tcsdk2.jar" />
    </proguard>
 
   <echo message="deploy the UI jar package file" />
@@ -571,7 +571,7 @@ target: device
         <pathelement location="${output}/classes"/>
         <pathelement location="${sdk.root}"/>
     </classpath>
-    <arg value="${output}/tcsdk.jar"/>
+    <arg value="${output}/tcsdk2.jar"/>
     <arg line="/n TCUI"/>
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>

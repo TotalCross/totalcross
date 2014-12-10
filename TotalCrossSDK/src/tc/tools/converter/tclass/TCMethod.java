@@ -372,7 +372,7 @@ public final class TCMethod implements TCConstants
                case 'S': suffix = "&S"; break;
                case 'I': suffix = "&I"; break;
                case 'J': suffix = "&L"; break;
-               case 'F': suffix = "&F"; break;
+               case 'F': suffix = "&D"; break;
                case 'D': suffix = "&D"; break;
                case 'L': suffix = name.substring(j+1,name.length()-1);
             }

@@ -411,7 +411,7 @@ public class Window extends Container
             if (_focus == null) // guich@tc100: maybe the user changed the focus to a new control in the FOCUS_OUT event
             {
                _focus = c;
-               if (c.enabled) // guich@tc152: disabled controls can't send focus events
+               if (c.isEnabled()) // guich@tc152: disabled controls can't send focus events
                {
                   _controlEvent.type = ControlEvent.FOCUS_IN;
                   _controlEvent.target = c;
@@ -785,7 +785,7 @@ public class Window extends Container
                c = highlighted == null ? _focus : highlighted;
                if (c == this || c == null || !c.focusTraversable || c.focusLess)
                { // find a new control to set focus to
-                  if (firstFocus == null || firstFocus.focusLess || !firstFocus.focusTraversable || !firstFocus.visible || !firstFocus.enabled) // kmeehl@tc100: if firstfocus is set and focusable, set it as the first control to get focus
+                  if (firstFocus == null || firstFocus.focusLess || !firstFocus.focusTraversable || !firstFocus.visible || !firstFocus.isEnabled()) // kmeehl@tc100: if firstfocus is set and focusable, set it as the first control to get focus
                   {
                      if (fakeControl == null) // create a fake control and find the closest control to the top-left corner
                      {
@@ -849,9 +849,9 @@ public class Window extends Container
          tempFocus = c;
       }
       // guich@200b4_147: make sure that the focused control is an enabled one
-      if (_focus != null && _focus != this && (!_focus.enabled || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
+      if (_focus != null && _focus != this && (!_focus.isEnabled() || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
       {
-         if (_focus.enabled) // guich@tc152: disabled controls can't send focus events
+         if (_focus.isEnabled()) // guich@tc152: disabled controls can't send focus events
          {
             _controlEvent.type = ControlEvent.FOCUS_OUT;
             _controlEvent.target = _focus;
@@ -862,7 +862,7 @@ public class Window extends Container
          if (_focus == null || _focus.parent == null)
             _focus = this;
          else
-            while (!_focus.enabled && _focus.parent != null)
+            while (!_focus.isEnabled() && _focus.parent != null)
                _focus = _focus.parent;
       }
       if (!isKeyEvent)
@@ -1266,7 +1266,7 @@ public class Window extends Container
          if (!topMost.focusOnPopup.isDisplayed()) // guich@300_61: if we popped up a MessageBox and swapped the container...
             topMost.focusOnPopup = topMost;
          else
-         if (!topMost.focusOnPopup.enabled) // guich@300_62: if the button that dispatched the event is not more enabled...
+         if (!topMost.focusOnPopup.isEnabled()) // guich@300_62: if the button that dispatched the event is not more enabled...
             topMost.focusOnPopup = topMost;
          lastTopMost = topMost;
          topMost.focusOnPopup.postEvent(new ControlEvent(ControlEvent.WINDOW_CLOSED, this)); // tell last control that we closed
@@ -1526,7 +1526,7 @@ public class Window extends Container
                p = (c.asContainer != null && c.asContainer.tabOrder.size() > 0) ? c.asContainer : c.parent;
             if (p == null) // guich@tc113_22
                c = p = this;
-            if (highlighted == null && firstFocus != null && !firstFocus.focusLess && firstFocus.focusTraversable && firstFocus.visible && firstFocus.enabled) // kmeehl@tc100: if firstFocus is set and focusable, use it as the first control to get focus
+            if (highlighted == null && firstFocus != null && !firstFocus.focusLess && firstFocus.focusTraversable && firstFocus.visible && firstFocus.isEnabled()) // kmeehl@tc100: if firstFocus is set and focusable, use it as the first control to get focus
                setHighlighted(firstFocus);
             else
                c.changeHighlighted(p,isForward);

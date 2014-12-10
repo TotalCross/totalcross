@@ -382,7 +382,7 @@ public class MultiEdit extends Container implements Scrollable
    /** user method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == Edit.KBD_NONE || !editable || !enabled) return;
+      if (kbdType == Edit.KBD_NONE || !editable || !isEnabled()) return;
       if (Settings.virtualKeyboard)
          _onEvent(new Event(ControlEvent.FOCUS_IN,this,0)); // simulate a focus in event.
       else
@@ -569,7 +569,7 @@ public class MultiEdit extends Container implements Scrollable
                if (parent != null && (editMode || Settings.fingerTouch)) 
                   Window.needsPaint = true;
                // guich@tc130: show the copy/paste menu
-               if (editable && enabled && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
+               if (editable && isEnabled() && lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
                   if (showClipboardMenu())
                   {
                      event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
@@ -596,7 +596,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             case KeyEvent.KEY_PRESS:
             case KeyEvent.SPECIAL_KEY_PRESS:
-               if (editable && enabled)
+               if (editable && isEnabled())
                {
                   KeyEvent ke = (KeyEvent) event;
                   if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
@@ -929,7 +929,7 @@ public class MultiEdit extends Container implements Scrollable
                   z1.x = pe.x;
                   z1.y = pe.y;
                   newInsertPos = zToCharPos(z1);
-                  if (newInsertPos != insertPos && enabled)
+                  if (newInsertPos != insertPos && isEnabled())
                      extendSelect = true;
                   else
                      return; // guich@320_28: avoid unnecessary repaints
@@ -1146,7 +1146,7 @@ public class MultiEdit extends Container implements Scrollable
             if (npback == null)
                try
                {
-                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, enabled ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, isEnabled() ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
                }
                catch (ImageException e) {}
             g.drawImage(npback, 0,0);
@@ -1268,7 +1268,7 @@ public class MultiEdit extends Container implements Scrollable
       fColor = getForeColor();
       back0  = Color.brighter(getBackColor());
       back1  = back0 != Color.WHITE?backColor:Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
       sb.setBackForeColors(backColor, foreColor);
       npback = null;
    }
@@ -1296,7 +1296,7 @@ public class MultiEdit extends Container implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    /** Scrolls the text to the given line. */

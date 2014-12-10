@@ -130,6 +130,38 @@ public class ListBox extends Container implements Scrollable
       }
    }
 
+   /** An interface that makes easier to draw custom items.
+    * Example:
+    * <pre>
+      class ItemSeek implements ListBox.CustomDrawingItem
+      {
+         int tpsinc;
+         boolean admin;
+         String plat,date;
+         
+         ItemSeek(String s)
+         {
+            // 21Wi2014/12/05
+            tpsinc = s.charAt(0)-'0';
+            admin = s.charAt(1) == '1';
+            plat = s.substring(2,4);
+            date = s.substring(4);
+         }
+   
+         public void onItemPaint(Graphics g, int dx, int dy, int w, int h)
+         {
+            g.drawText(data,dx,dy);
+            // and also other items
+         }
+      }
+    * </pre>
+    * @since TotalCross 3.1 
+    */
+   public static interface CustomDrawingItem
+   {
+      public void onItemPaint(Graphics g, int dx, int dy, int w, int h);
+   }
+
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
     * @see #extraHorizScrollButtonHeight 
@@ -351,8 +383,8 @@ public class ListBox extends Container implements Scrollable
          xOffset = xOffsetMin;
       if (btnLeft != null)
       {
-         btnLeft.setEnabled(enabled && xOffset < 0);
-         btnRight.setEnabled(enabled && xOffset > xOffsetMin);
+         btnLeft.setEnabled(isEnabled() && xOffset < 0);
+         btnRight.setEnabled(isEnabled() && xOffset > xOffsetMin);
       }
    }
 
@@ -393,7 +425,7 @@ public class ListBox extends Container implements Scrollable
             verifyItemWidth(m);
          }
       }
-      sbar.setEnabled(enabled && visibleItems < itemCount);
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
       sbar.setMaximum(itemCount); // guich@210_12: forgot this line!
    }
 
@@ -408,7 +440,7 @@ public class ListBox extends Container implements Scrollable
          verifyItemWidth(w);
       }
       itemCount++;
-      sbar.setEnabled(enabled && visibleItems < itemCount);
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
       sbar.setMaximum(itemCount);
    }
    
@@ -439,7 +471,7 @@ public class ListBox extends Container implements Scrollable
          verifyItemWidth(w);
       }
       itemCount++;
-      sbar.setEnabled(enabled && visibleItems < itemCount);
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
       sbar.setMaximum(itemCount);
    }
 
@@ -489,7 +521,7 @@ public class ListBox extends Container implements Scrollable
             }
          }
          sbar.setMaximum(itemCount);
-         sbar.setEnabled(enabled && visibleItems < itemCount);
+         sbar.setEnabled(isEnabled() && visibleItems < itemCount);
 
          if (selectedIndex == itemCount) // last item was removed?
             setSelectedIndex(selectedIndex-1);
@@ -783,7 +815,7 @@ public class ListBox extends Container implements Scrollable
    public void onEvent(Event event)
    {
       PenEvent pe;
-      if (enabled)
+      if (isEnabled())
       switch (event.type)
       {
          case ControlEvent.PRESSED:
@@ -915,14 +947,11 @@ public class ListBox extends Container implements Scrollable
 
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled,false))
       {
-         this.enabled = enabled;
-         onColorsChanged(false);
          sbar.setEnabled(enabled && visibleItems < itemCount);
          if (btnLeft != null)
             enableButtons();
-         Window.needsPaint = true; // now the controls have different l&f for disabled states
       }
    }
 
@@ -934,7 +963,7 @@ public class ListBox extends Container implements Scrollable
       back1  = customCursorColor!=-1 ? customCursorColor : (back0 != Color.WHITE) ? backColor : Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
       if (fColor == back1) // guich@200b4_206: ops! same color?
          fColor = foreColor;
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
       if (btnRight != null)
       {
          btnRight.setBackForeColors(uiVista?back0:backColor, foreColor);
@@ -957,7 +986,7 @@ public class ListBox extends Container implements Scrollable
             if (npback == null)
                try
                {
-                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false);
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);
                }
             catch (ImageException e) {}
             g.drawImage(npback, 0,0);
@@ -1013,6 +1042,11 @@ public class ListBox extends Container implements Scrollable
    protected void drawItem(Graphics g, int index, int dx, int dy)
    {
       Object obj = items.items[index];
+      if (obj instanceof CustomDrawingItem)
+      {
+         ((CustomDrawingItem)obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
+         return;
+      }
       if (obj instanceof IconItem)
       {
          g.drawImage(((IconItem)obj).icon,dx,dy);
@@ -1042,7 +1076,7 @@ public class ListBox extends Container implements Scrollable
    protected int getItemWidth(int index)
    {
       Object obj = items.items[index];
-      return fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
+      return obj == null ? 0 : fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
    }
 
    int getIndexY(int sel)
@@ -1145,7 +1179,7 @@ public class ListBox extends Container implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // any change here must synchronize with MultiListBox'

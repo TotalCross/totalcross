@@ -6866,6 +6866,12 @@ HashSet
 \begin_layout Itemize
 
 \family typewriter
+IdentityHashMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 LinkedHashMap 
 \end_layout
 

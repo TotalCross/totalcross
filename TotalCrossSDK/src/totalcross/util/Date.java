@@ -608,7 +608,7 @@ public class Date implements Comparable
       if (month < 10) sb.append('0'); sb.append(month);
       sb.append('-');
       if (day   < 10) sb.append('0'); sb.append(day);
-      sb.append(" 00:00:00.000");
+      //sb.append(" 00:00:00.000");
       return sb.toString();
    }
    
@@ -635,12 +635,12 @@ public class Date implements Comparable
    {
       try {SQL_EPOCH = new Date(1,1,1970);} catch (Exception e) {}
    }
-   /** Returns the number of millis since SQL_EPOCH 1/1/1970.
+   /** Returns the number of seconds since SQL_EPOCH 1/1/1970.
     * @since TotalCross 2.1
     */
    public long getTime()
    {
       long days = SQL_EPOCH.subtract(this);
-      return days*24L*60L*60L*1000L;
+      return days*24L*60L*60L;
    }
 }

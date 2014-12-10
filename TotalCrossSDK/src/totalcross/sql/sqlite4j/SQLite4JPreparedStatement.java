@@ -9,6 +9,7 @@ import java.sql.SQLException;
 public class SQLite4JPreparedStatement extends SQLite4JStatement implements PreparedStatement
 {
    java.sql.PreparedStatement ps;
+
    public SQLite4JPreparedStatement(java.sql.PreparedStatement ps)
    {
       super(ps);
@@ -77,12 +78,12 @@ public class SQLite4JPreparedStatement extends SQLite4JStatement implements Prep
 
    public void setDate(int parameterIndex, Date x) throws SQLException
    {
-      ps.setDate(parameterIndex,SQLConvert.date(x));
+      ps.setString(parameterIndex, x == null ? null : x.getSQLString()); // ps.setDate(parameterIndex,SQLConvert.date(x));
    }
 
    public void setTime(int parameterIndex, Time x) throws SQLException
    {
-      ps.setTime(parameterIndex,SQLConvert.time(x));
+      ps.setString(parameterIndex, x == null ? null : x.getSQLString()); // ps.setTime(parameterIndex,SQLConvert.time(x));
    }
 
    public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException

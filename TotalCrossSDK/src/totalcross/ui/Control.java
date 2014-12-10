@@ -49,7 +49,7 @@ public class Control extends GfxSurface
    /** The control's previous sibling. */
    Control prev;
    /** True if the control is enabled (accepts events) or false if not */
-   protected boolean enabled=true;
+   private boolean enabled=true;
    /** The font used by the control. */
    protected Font font;
    /** The fontMetrics corresponding to the controls font. */
@@ -260,7 +260,7 @@ public class Control extends GfxSurface
    public static final int DARKER_BACKGROUND = -3;
 
    private Vector listeners;
-   private static boolean callingUpdScr;
+   private static boolean callingUpdScr,callingRepNow;
 
    /** Set the background to be transparent, by not filling the control's area with the background color.
     * @since TotalCross 1.0
@@ -279,6 +279,9 @@ public class Control extends GfxSurface
    /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
     */
    public Image offscreen;
+   
+   /** Keep the control disabled even if enabled is true. */
+   public boolean keepDisabled;
    
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
@@ -1073,7 +1076,7 @@ public class Control extends GfxSurface
          (asContainer!=null?asContainer:parent.asContainer).setHighlighting();
 
       // don't dispatch events when disabled except TIMER events or (fingertouch and pen events) 
-      if ((!enabled && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
+      if ((!isEnabled() && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
          return;
 
       boolean dragTargetCalled = false;
@@ -1125,20 +1128,35 @@ public class Control extends GfxSurface
      */
    public void setEnabled(boolean enabled)
    {
+      internalSetEnabled(enabled, true);
+   }
+   
+   /** For internal use only. Used by derived controls to set the enabled flag. */
+   public boolean internalSetEnabled(boolean enabled, boolean post)
+   {
       if (enabled != this.enabled)
       {
          this.enabled = enabled;
          onColorsChanged(false);
-         esce.update(this);
-         postEvent(esce);
+         if (post)
+            post();
          Window.needsPaint = true; // now the controls have different l&f for disabled states
+         return true;
       }
+      return false;
+   }
+   
+   /** Posts the enable state change event. */
+   public void post()
+   {
+      esce.update(this);
+      postEvent(esce);
    }
 
    /** Returns if this control can or not accept events */
    public boolean isEnabled()
    {
-      return this.enabled;
+      return this.enabled && !keepDisabled;
    }
 
    /**
@@ -1220,7 +1238,7 @@ public class Control extends GfxSurface
    @since SuperWaba 2.0 */
    public int getForeColor()
    {
-      return enabled?foreColor:Color.brighter(foreColor);
+      return isEnabled()?foreColor:Color.brighter(foreColor);
    }
 
    /** Get the desired background color of this control.
@@ -1228,7 +1246,7 @@ public class Control extends GfxSurface
    public int getBackColor()
    {
       // note: if were in a white back color, return the color without darking
-      return (enabled || parent == null)?backColor:Color.darker(backColor);
+      return (isEnabled() || parent == null)?backColor:Color.darker(backColor);
    }
 
    /** Return true if the parent of this Control is added to somewhere.
@@ -1341,7 +1359,7 @@ public class Control extends GfxSurface
             return null;
          idx += inc;
          Control c = (Control)v.items[idx];
-         if (c.visible && c.enabled && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
+         if (c.visible && c.isEnabled() && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
             if (c.focusTraversable) // guich@580_56: added focusTraversable test.
                return c;
             else
@@ -1923,4 +1941,26 @@ public class Control extends GfxSurface
       return x1 >= cx1 && x2 < cx2 && y1 >= cy1 && y2 < cy2; 
    }
 
+   /** Called by code that runs on threads to safely repaint now.
+    * @since TotalCross 3.1
+    */
+   protected void safeRepaintNow()
+   {
+      if (Settings.isOpenGL || MainWindow.isMainThread())
+         repaintNow();
+      else
+      if (!callingRepNow)
+      {
+         Window.needsPaint = true;
+         callingRepNow = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               repaintNow();
+               callingRepNow = false;
+            }
+         });
+      }
+   }
 }

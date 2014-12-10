@@ -660,6 +660,7 @@ class IconStore extends Hashtable
 
       if (path != null && new File(path).isDir())
       {
+         path = path.trim();
          String[] files = File.listFiles(path, false);
          if (files != null)
          {
@@ -688,6 +689,11 @@ class IconStore extends Hashtable
                   try
                   {
                      byte[] b = Utils.loadFile(files[i], false);
+                     if (b == null)
+                     {
+                        System.out.println("File not found: "+files[i]);
+                        continue;
+                     }
                      Image img = new Image(b);
                      if (img.getWidth() == img.getHeight())
                      {

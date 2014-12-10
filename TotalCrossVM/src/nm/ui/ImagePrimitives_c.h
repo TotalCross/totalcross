@@ -622,8 +622,9 @@ static void applyColor2(TCObject obj, Pixel color)
    int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
    PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
    PixelConv c;
-   int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m;
+   int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m,a;
    PixelConv hip;
+   bool changeA;
 
    hip.pixel = 0;
    c.pixel = color;
@@ -631,6 +632,7 @@ static void applyColor2(TCObject obj, Pixel color)
    r2 = c.r;
    g2 = c.g;
    b2 = c.b;
+   changeA = c.a == 0xAA;                   
 
    // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
    for (len = len0, pixels = pixels0; len-- > 0; pixels++)
@@ -645,6 +647,7 @@ static void applyColor2(TCObject obj, Pixel color)
    if (hiR == 0) hiR = 255;
    if (hiG == 0) hiG = 255;
    if (hiB == 0) hiB = 255;
+   hi = hiR > hiG ? hiR : hiG; hi = hi > hiB ? hi : hiB;
    
    for (len = len0, pixels = pixels0; len-- > 0; pixels++)
    {
@@ -654,6 +657,11 @@ static void applyColor2(TCObject obj, Pixel color)
       if (r > 255) r = 255;
       if (g > 255) g = 255;
       if (b > 255) b = 255;
+      if (changeA)                                      
+      {
+         int32 a = pixels->r > pixels->g ? pixels->r : pixels->g; if (pixels->b > a) a = pixels->b;
+         pixels->a = a*255/hi;
+      }
       pixels->r = r;
       pixels->g = g;
       pixels->b = b;

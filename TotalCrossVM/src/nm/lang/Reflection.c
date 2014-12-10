@@ -703,6 +703,8 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
                }
                if (unlockIt)
                   setObjectLock(p->retO = o, UNLOCKED);
+               else
+                  p->retO = o;
             }
          }
          freeArray(aargs);
@@ -715,7 +717,6 @@ TC_API void jlrM_invoke_oO(NMParams p) // totalcross/lang/reflect/Method public 
    TCObject obj = p->obj[1];
    TCObject args = p->obj[2];
    invoke(p, m, obj, args);
-   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrC_newInstance_O(NMParams p) // totalcross/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;

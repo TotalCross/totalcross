@@ -505,7 +505,7 @@ public class Label extends Control
       // guich@200b4_126: repaint the background always.
       if (!transparentBackground)
       {
-         if (backgroundType == SOLID_BACKGROUND || !enabled) // guich@tc115_78: use solid or gradient backgrounds
+         if (backgroundType == SOLID_BACKGROUND || !isEnabled()) // guich@tc115_78: use solid or gradient backgrounds
             g.fillRect(0,0,width,height); // guich@200b4_120: make sure the label is painted with the correct color
          else
          {

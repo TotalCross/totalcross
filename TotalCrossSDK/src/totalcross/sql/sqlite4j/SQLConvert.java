@@ -36,7 +36,7 @@ class SQLConvert
 
    static java.sql.Date date(Date x)
    {
-      return new java.sql.Date(x.getTime());
+      return x == null ? null : new java.sql.Date(x.getTime());
    }
    static Date date(java.sql.Date x)
    {

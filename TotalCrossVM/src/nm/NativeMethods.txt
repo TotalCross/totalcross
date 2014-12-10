@@ -247,6 +247,7 @@ totalcross/sys/Vm|native public static String getStackTrace(Throwable t);
 totalcross/sys/Vm|native public static void showKeyCodes(boolean on);
 totalcross/sys/Vm|native public static boolean turnScreenOn(boolean on);
 totalcross/sys/Vm|native public static void vibrate(int millis);
+totalcross/sys/Vm|native public static int identityHashCode(Object o);
 totalcross/sys/Registry|native public static int getInt(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
 totalcross/sys/Registry|native public static String getString(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
 totalcross/sys/Registry|native public static byte[] getBlob(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
