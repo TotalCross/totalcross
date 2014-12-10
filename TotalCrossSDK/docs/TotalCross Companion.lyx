@@ -1084,7 +1084,7 @@ TotalCross version, e.g.
 
 \begin_layout Itemize
 Platform used and OS version, e.g.
- JDK 1.6, Windows XP, Windows Phone 8
+ JDK 1.8, Windows XP, Windows Phone 8
 \end_layout
 
 \begin_layout Itemize
@@ -1142,10 +1142,9 @@ g Windows.
 \end_layout
 
 \begin_layout Standard
-In order to deploy applications, the JDK 1.6 is required.
- It's a good idea to install the latest version of Java 1.6.
- However, TotalCross won't work properly with JDK 1.7.
- Therefore, don't install it.
+In order to deploy applications, the JDK 1.8 is recommended.
+ It's a good idea to install the latest version of Java 1.8.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1889,9 +1888,9 @@ totalcross.util
 \end_layout
 
 \begin_layout Itemize
-TotalCross is compatible only with the Java 1.7 class file format or below,
- therefore the class files MUST be generated targeting the JDK 1.7 and the
- source files must be compatible with JDK 1.7.
+TotalCross is compatible only with the Java 1.8 class file format or below,
+ therefore the class files MUST be generated targeting the JDK 1.8 and the
+ source files must be compatible with JDK 1.8.
 \end_layout
 
 \begin_deeper
@@ -1902,14 +1901,14 @@ javac
 \family default
  from command line (or an ANT file), add this to your command line: 
 \family typewriter
--target 1.7 -source 1.
+-target 1.8 -source 1.8
 \family default
-7.
+.
 \end_layout
 
 \begin_layout Standard
 If you're using a Java IDE, look for its Java Compiler settings and set
- its compliance level to 1.7.
+ its compliance level to 1.8.
  But please notice that it might happen that the 
 \family typewriter
 .class
@@ -1944,7 +1943,7 @@ For our first application, let's make a typical “Hello World” application
 \end_layout
 
 \begin_layout Standard
-First, make sure you have a JDK installed (preferably the JDK 6) and the
+First, make sure you have a JDK installed (preferably the JDK 8) and the
  environment variables are set.
  There should be a JAVA_HOME variable set with the installation path of
  your JDK, like 
@@ -1955,7 +1954,7 @@ Program Files
 \backslash
 Java
 \backslash
-jdk1.6.0_45
+jdk1.8.0_25
 \family default
 .
 \end_layout
@@ -2094,7 +2093,7 @@ HelloWorld.java
 \begin_layout Standard
 
 \family typewriter
-javac -target 1.7 -source 1.7 HelloWorld.java
+javac -target 1.8 -source 1.8 HelloWorld.java
 \end_layout
 
 \begin_layout Standard
@@ -2133,7 +2132,7 @@ TotalCrossSDK
 \backslash
 dist
 \backslash
-tc.jar -target 1.7 -source 1.7 HelloWorld.java
+tc.jar -target 1.8 -source 1.8 HelloWorld.java
 \end_layout
 
 \begin_layout Plain Layout
@@ -6593,13 +6592,13 @@ Additionally, it is now possible to install a TotalCross application from
 \end_layout
 
 \begin_layout Standard
-Moreover, now it is possible to use some Java 7 features that were not supported
+Moreover, now it is possible to use some Java 8 features that were not supported
  before.
- To use java 7, just change the ant files, IDE settings, or 
+ To use java 8, just change the ant files, IDE settings, or 
 \family typewriter
 javac
 \family default
- command line to use target 1.7 and source 1.7.
+ command line to use target 1.8 and source 1.8.
  If you use a feature not supported yet, an exception will be thrown during
  the deploying process.
 \end_layout
@@ -8864,7 +8863,11 @@ drop index IDX_NAME
 \family default
 , not 
 \family typewriter
-drop index on table_name(column_name)
+drop index on 
+\begin_inset Newline newline
+\end_inset
+
+table_name(column_name)
 \family default
 .
 \end_layout
@@ -8872,6 +8875,82 @@ drop index on table_name(column_name)
 \begin_layout Enumerate
 You can't alter a table to add or drop a primary key in SQLite.
  
+\end_layout
+
+\begin_layout Enumerate
+Important rules about date and time in SQLite:
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+DATE
+\family default
+ type: must be in the form: 
+\family typewriter
+YYYY-MM-DD
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+TIME
+\family default
+ type: must be in the form: 
+\family typewriter
+YYYY-MM-DD HH:MM:SS.MMM
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+When using 
+\family typewriter
+BETWEEN
+\family default
+ or any other date/time comparation, the arguments MUST MATCH the type form.
+ So, in 
+\family typewriter
+select borndate from test where borndate between 
+\begin_inset Newline newline
+\end_inset
+
+'2014-12-10' and '2014-12-14'
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+If 
+\family typewriter
+borndate
+\family default
+ is a 
+\family typewriter
+DATE
+\family default
+, the comparison will succeed.
+ 
+\end_layout
+
+\begin_layout Itemize
+If 
+\family typewriter
+borndate
+\family default
+ is a 
+\family typewriter
+TIME
+\family default
+, the comparison will fail.
+ To make it work, use 
+\family typewriter
+select borndate from test where borndate between '2014-12-10 00:00:00.000'
+ and 
+\begin_inset Newline newline
+\end_inset
+
+'2014-12-14 00:00:00.000'
+\family default
+.
 \end_layout
 
 \begin_layout Chapter
