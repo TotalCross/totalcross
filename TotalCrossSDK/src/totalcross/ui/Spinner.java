@@ -135,15 +135,18 @@ public class Spinner extends Control implements Runnable
          g.backColor = backColor;
          g.fillRect(0,0,width,height);
       }
-      if (anim == null)
-         try
-         {
-            anim = anim0.smoothScaledFixedAspectRatio(width < height ? width : height,true);
-            anim.applyColor2(getForeColor() | 0xAA000000);
-         } catch (Exception e) {anim = null;}
-      
+      if (anim == null) checkAnim();
       if (anim != null)
          g.drawImage(anim, (width-anim.getWidth())/2,(height-anim.getHeight())/2);
+   }
+   
+   private void checkAnim()
+   {
+      try
+      {
+         anim = anim0.smoothScaledFixedAspectRatio(width < height ? width : height,true);
+         anim.applyColor2(getForeColor() | 0xAA000000);
+      } catch (Exception e) {anim = null;}
    }
    
    /** Starts the spinning thread. */
@@ -169,6 +172,7 @@ public class Spinner extends Control implements Runnable
 
    private void step()
    {
+      if (anim == null) checkAnim();
       if (getParentWindow() == Window.topMost && anim != null) // don't update if we loose focus
       {
          anim.nextFrame();
