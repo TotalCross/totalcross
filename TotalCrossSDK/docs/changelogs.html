@@ -83,7 +83,7 @@
 . fixed npe; geolocator may be null at gpsclose.<br>
 . fixed SQLiteUtil not correctly returning the date or datetime values on getStrings. SQLite has a problem (not sure if its a bug) where it returns DATE for both DATE and DATETIME types, so this method returns the correct correspondence: DATE for date and TIME for DATETIME (remember that in TotalCross, a Time object also contains the date).<br>
 . updated desktop's FontGenerator to use the new 8bpp antialiase and also the correct default sizes.<br>
-<h1>build 2447</h1>
+<h1>build 2446</h1>
 . preventing crash on fillStackTrace when address is not a multiple of 4<br>
 . fixed npe when there's no extras in tc.Deploy<br>
 . added a way to generate 4-bpp fonts in FontGenerator<br>
@@ -104,7 +104,7 @@
 <h1>build 2456</h1>
 . fixed support for unicode 8bpp unicode fonts on native code.<br>
 . now Camera.getSupportedResolutions returns a sorted array.<br>
-<h1>build 2466 *</h1>
+<h1>build 2467</h1>
 . fixed native 8bpp font support for unicode chars<br>
 . added Class.getSimpleName<br>
 . now Image.getFrameInstance restores the previous selected frame.<br>
