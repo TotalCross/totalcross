@@ -59,8 +59,8 @@
 </condition>
 
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.7"/>
-<property name="compile.source"          value="1.7"/>
+<property name="compile.target"          value="1.8"/>
+<property name="compile.source"          value="1.8"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
@@ -315,6 +315,7 @@ target: desktop
        </keepclassmembernames>
 
        <injar path="${dist}/tc_desktop.jar" />
+   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
        <outjar path="${dist}/tc_deploy.jar" />
    </proguard>
 
@@ -516,7 +517,7 @@ target: device
     />
   </jar>
 
-   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/device_${versionStr}.map">
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
        <keepclassmembers>
          <method name="*" />
@@ -525,6 +526,7 @@ target: device
        <keepattribute name="LineNumberTable" />
 
        <injar path="${output}/tcsdk2_.jar" />
+   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
        <outjar path="${output}/tcsdk2.jar" />
    </proguard>
 
@@ -554,7 +556,7 @@ target: device
     <fileset dir="${src}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.png" />
   </jar>
 
-   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" preverify="false" printmapping="${dist}/device_${versionStr}.map">
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
        <keep name="*"><field access="public protected" /></keep>
        <keepclassmembers>
          <method name="*" />
@@ -563,6 +565,7 @@ target: device
        <keepattribute name="LineNumberTable" />
 
        <injar path="${output}/tcsdk2_.jar" />
+   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
        <outjar path="${output}/tcsdk2.jar" />
    </proguard>
 
