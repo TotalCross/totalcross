@@ -7,6 +7,23 @@ import totalcross.sys.*;
 import totalcross.util.*;
 
 /** Utility class to make convertion from Litebase to SQLite easier. 
+ * 
+ * Important rules about date and time in SQLite.
+ * 
+ * <ul>
+ * <li> DATE type: must be in the form: YYYY-MM-DD
+ * <li> TIME type: must be in the form: YYYY-MM-DD HH:MM:SS.MMM
+ * </ul>
+ * 
+ * When using 'between' or any other date/time comparation, the arguments MUST MATCH the type form.
+ * So, in "select borndate from test where borndate between '2014-12-10' and '2014-12-14'":
+ * <ul>
+ * <li> If borndate is a DATE, the comparison will succeed.
+ * <li> If borndate is a TIME, the comparison will fail. To make it work, use 
+ * "select borndate from test where borndate between '2014-12-10 00:00:00.000' and '2014-12-14 00:00:00.000'".
+ * </ul>
+ * @see totalcross.util.Date#getSQLString()
+ * @see totalcross.sys.Time#getSQLString()
  */
 
 public class SQLiteUtil
