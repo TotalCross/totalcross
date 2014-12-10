@@ -24,6 +24,7 @@ public class TestCollectionsAPI extends TestSuite
       
       // Tests exceptions.
       addTestCase(TestConcurrentModificationException.class);
+      addTestCase(TestEmptyStackException.class);
       addTestCase(TestNoSuchElementException.class);
       
       // Tests interfaces.

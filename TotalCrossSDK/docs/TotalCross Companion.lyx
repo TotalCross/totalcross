@@ -6673,6 +6673,12 @@ ConcurrentModificationException
 \begin_layout Itemize
 
 \family typewriter
+EmptyStackException
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 NoSuchElementException
 \end_layout
 
