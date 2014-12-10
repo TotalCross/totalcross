@@ -250,6 +250,7 @@ target: desktop
        </keepclassmembernames>
 
        <injar path="${output}/lb_.jar" />
+   	<libraryjar path ="${java.home}/lib/rt.jar"/>
        <outjar path="${dist}/litebase.jar" />
    </proguard>
 
