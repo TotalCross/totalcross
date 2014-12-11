@@ -66,9 +66,9 @@ public class ScannerInternal extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
+      if (!Settings.platform.equals(Settings.ANDROID) && !Settings.isWindowsDevice() && !Settings.onJavaSE)
       {
-         add(new Label("This sample works only on Android"),CENTER,CENTER);
+         add(new Label("This sample works only on\nAndroid and Windows Mobile"),CENTER,CENTER);
          return;
       }
       add(new Label("Scan manager version:"), CENTER, TOP);
