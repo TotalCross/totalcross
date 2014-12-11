@@ -76,16 +76,13 @@ static TCHAR *createRegistryKey(TCHAR *buf, uint32 crid)
    return buf;
 }
 
-#define SW_STR_DEFAULT_KEY TEXT("Software\\SuperWaba\\appSettings\\1234")
-#define SW_BIN_DEFAULT_KEY TEXT("Software\\SuperWaba\\appSettings\\B1234")
-
 #define STR_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\1234")
 #define BIN_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\B1234") // guich@573_16
-static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM, bool isSW) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
+static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
 {
 #if !defined WP8
    TCHAR buf[40];
-   tcscpy(buf, bin ? (isSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (isSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
+   tcscpy(buf, bin ? BIN_DEFAULT_KEY : STR_DEFAULT_KEY);
 #ifdef WINCE
    if (RegDeleteKey(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, createRegistryKey(buf,crid)) != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
 #endif
@@ -95,15 +92,62 @@ static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM, bool isSW) 
 #endif
 }
 
+static void getSettingsFile(uint32 crid, bool bin, bool isHKLM, CharP out)
+{
+   char src[MAX_PATHNAME];
+   char c1 = (TCHAR)((crid >> 24) & 0xFF);
+   char c2 = (TCHAR)((crid >> 16) & 0xFF);
+   char c3 = (TCHAR)((crid >> 8)  & 0xFF);
+   char c4 = (TCHAR)(crid & 0xFF);
+   int32 type;
+   if (isHKLM)
+   {
+      c1 -= 64;
+      c2 -= 64;
+      c3 -= 64;
+      c4 -= 64;
+   }
+   type = bin ? 1 : isHKLM ? 2 : 3;
+   xstrprintf(src, "%%ALLUSERSPROFILE%%\\app%c%c%c%c.dt%d",c1,c2,c3,c4,type);
+   ExpandEnvironmentStrings(src, out, sizeof(src));
+}
+
 static void deleteAppSettings(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
 {
-   deleteAppSettingsTry(crid, bin, isHKLM, false);
+#if defined(WIN32) && !defined(WINCE) && !defined(WP8)
+   char dest[MAX_PATHNAME];
+   FILE* f;
+   getSettingsFile(crid, bin, isHKLM, dest);
+   f = fopen(dest, "wb"); // just truncate the file
+   if (f) fclose(f);
+#else
+   deleteAppSettingsTry(crid, bin, isHKLM);
+#endif
 }
 
 static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
 	//WP8 app should not use registry
-#if !defined WP8
+#if defined(WIN32) && !defined(WINCE) && !defined(WP8)
+   char dest[MAX_PATHNAME];
+   FILE* f;
+   getSettingsFile(crid, bin, isHKLM, dest);
+   f = fopen(dest, "wb");
+   if (f)
+   {
+      uint8* data;
+      uint32 len;
+      TCObject obj = (TCObject)ptr;
+      if (!bin)
+         obj = String_chars(obj);
+      len = ARRAYOBJ_LEN(obj);
+      data = (uint8*)ARRAYOBJ_START(obj);
+      if (!bin)
+         len *= 2;
+      fwrite(data,len,1,f);
+      fclose(f);
+   }
+#elif !defined WP8
    HKEY handle;
    DWORD disp;
    long ret;
@@ -145,7 +189,7 @@ static void char8tochar16(CharP value, int32 i)
 }
 
 // don't forget to free the allocated buffer
-static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM, bool testSW) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
 	// WP8 app should not use registry
 #if !defined WP8
@@ -155,7 +199,7 @@ static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin,
    TCHAR buf[40];
    TCObject temp = null, target = null;
 
-   tcscpy(buf, bin ? (testSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (testSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
+   tcscpy(buf, bin ? BIN_DEFAULT_KEY : STR_DEFAULT_KEY);
 
 #ifndef WINCE
    ret = RegOpenKeyEx(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,KEY_READ,&handle);
@@ -166,7 +210,7 @@ static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin,
    {
       len = 0;
       ret = RegQueryValueEx(handle,TEXT("Value"),NULL,NULL,NULL,&len);
-      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, testSW ? len : len/2); // guich@tc113_10: sw uses len, not len/2
+      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, len/2); // guich@tc113_10: sw uses len, not len/2
       if (temp)
       {
          type = REG_BINARY;
@@ -174,8 +218,6 @@ static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin,
       }
       if (!bin) // if not binary, create a string and set the chars to our created buffer
       {
-         if (testSW)
-            char8tochar16(ARRAYOBJ_START(temp), len); // guich@tc113_10: sw uses char8, not char16
          if ((target = createObject(currentContext, "java.lang.String")) != null)
             String_chars(target) = temp;
          setObjectLock(temp, UNLOCKED);
@@ -189,13 +231,42 @@ static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin,
 
 static TCObject getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
-   TCObject o = getAppSettingsTry(currentContext, crid, bin, isHKLM, false); // first test at TC
-   if (o == null)
+   TCObject o = null;
+#if !defined WP8
+#ifndef WINCE
+   // guich@tc310: now we first look at the file, then at the registry
+   char dest[MAX_PATHNAME];
+   FILE* f;
+   getSettingsFile(crid, bin, isHKLM, dest);
+   f = fopen(dest, "rb");
+   if (f)
    {
-      o = getAppSettingsTry(currentContext, crid, bin, isHKLM, true); // guich@tc111_14: now test at SW
-      if (o != null) // if we retrieved it, then delete the SW key
-         deleteAppSettingsTry(crid, bin, isHKLM, true);
+      TCObject temp = null, target = null;
+      int32 len;
+
+      fseek(f, 0, SEEK_END);
+      len=ftell(f);
+      fseek(f, 0, SEEK_SET);
+      if (len == 0) // deleted?
+         goto end;
+
+      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, len/2); // guich@tc113_10: sw uses len, not len/2
+      if (temp)
+         fread(ARRAYOBJ_START(temp), len, 1, f);
+      if (!bin) // if not binary, create a string and set the chars to our created buffer
+      {
+         if ((target = createObject(currentContext, "java.lang.String")) != null)
+            String_chars(target) = temp;
+         setObjectLock(temp, UNLOCKED);
+      }
+      o = target;
+end:
+      fclose(f);
    }
+   if (o == null)
+#endif // wince
+      o = getAppSettingsTry(currentContext, crid, bin, isHKLM); // first test at TC
+#endif
    return o;
 }
 
