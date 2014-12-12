@@ -175,11 +175,12 @@ public abstract class Enum4D<T extends Enum4D<T>>
    */
   public final Class<T> getDeclaringClass()
   {
-    Class k = getClass();
+    Class k = getClass(),
+          s = k.getSuperclass();
     // We might be in an anonymous subclass of the enum class, so go
     // up one more level.
-    if (k.getSuperclass() != Enum.class)
-      k = k.getSuperclass();
+    if (!s.equals(Enum.class))
+      return s;
     return k;
   }
 
