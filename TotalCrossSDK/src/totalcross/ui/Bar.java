@@ -65,11 +65,6 @@ public class Bar extends Container
     */
    public int titleAlign = LEFT;
    
-   /** 
-    * The buttons horizontal alignment (<code>LEFT</code> or <code>RIGHT</code>). Defaults to <code>RIGHT</code>. 
-    */
-   public int buttonAlign = RIGHT;
-   
    private class BarButton extends Control
    {
       String title;
@@ -126,11 +121,14 @@ public class Bar extends Container
       
       public void onPaint(Graphics g)
       {
+         int fc = Bar.this.foreColor;
+         int bc = Bar.this.backColor;
+         
          int w = width;
          int h = height;
          
          if (pressed)
-            g.fillShadedRect(0,0,w,h,true,false,foreColor,pcolor,30);
+            g.fillShadedRect(0,0,w,h,true,false,fc,pcolor,30);
          
          // draw borders
          g.foreColor = c1; g.drawLine(0,0,w,0);
@@ -138,7 +136,7 @@ public class Bar extends Container
          g.foreColor = c4; g.drawLine(0,h-1,w,h-1);
          g.foreColor = c2; 
          if (backgroundStyle == BACKGROUND_SHADED) 
-            g.fillShadedRect(0,1,1,h-2,true,false,foreColor,c2,30); // drawLine causes an unexpected effect on shaded backgrounds
+            g.fillShadedRect(0,1,1,h-2,true,false,fc,c2,30); // drawLine causes an unexpected effect on shaded backgrounds
          else
             g.drawLine(0,0,0,h); 
 
@@ -153,11 +151,14 @@ public class Bar extends Container
                tx += leftIcon.getWidth()+gap;
             }
             
-            g.foreColor = tcolor;
-            g.drawText(title, tx+1,py-1);
-            g.foreColor = backColor;
-            g.drawText(title, tx-1,py+1);
-            g.foreColor = foreColor;
+            if (backgroundStyle != Container.BACKGROUND_SOLID)
+            {
+               g.foreColor = tcolor;
+               g.drawText(title, tx+1,py-1);
+               g.foreColor = bc;
+               g.drawText(title, tx-1,py+1);
+            }
+            g.foreColor = fc;
             g.drawText(title, tx,py);
          }
          else
@@ -178,6 +179,7 @@ public class Bar extends Container
                   if (startRepeat-- <= 0)
                   {
                      selected = appId;
+                     if (selected > 1000) selected -= 1000;
                      parent.postPressedEvent();
                   }                     
                }
@@ -195,6 +197,7 @@ public class Bar extends Container
                if (pressed)
                {
                   selected = appId;
+                  if (selected > 1000) selected -= 1000;
                   boolean fired = repeatTimer != null && startRepeat <= 0;
                   pressed = false;
                   if (repeatTimer != null)
@@ -223,6 +226,7 @@ public class Bar extends Container
             }
             case KeyEvent.ACTION_KEY_PRESS:
                selected = appId;
+               if (selected > 1000) selected -= 1000;
                parent.postPressedEvent();
                break;
          }
@@ -299,14 +303,26 @@ public class Bar extends Container
    }
    
    /** 
-    * Adds an image button. 
+    * Adds an image button at right. 
     *
     * @param icon The image to the add to a button in the bar.
     * @return The button index
     */
    public int addButton(Image icon)
    {
-      return addControl(new BarButton(null,icon));
+      return addButton(icon,true);
+   }
+   
+   /** 
+    * Adds an image button at the given position. 
+    *
+    * @param icon The image to the add to a button in the bar.
+    * @param atRight if true, button is added at right; if false, button is added at left.
+    * @return The button index
+    */
+   public int addButton(Image icon, boolean atRight)
+   {
+      return addControl(new BarButton(null,icon), atRight);
    }
    
    /** 
@@ -321,15 +337,32 @@ public class Bar extends Container
    }
    
    /** 
-    * Adds a control to the bar. Not all types of controls are supported. 
+    * Adds a control to the bar at right. Not all types of controls are supported. 
     *
     * @param c The control to be added.
     * @return The button index
     */
    public int addControl(Control c)
    {
+      return addControl(c, true);
+   }
+   
+   /** 
+    * Adds a control to the bar. Not all types of controls are supported. 
+    *
+    * @param atRight if true, button is added at right; if false, button is added at left.
+    * @param c The control to be added.
+    * @return The button index
+    */
+   public int addControl(Control c, boolean atRight)
+   {
       icons.addElement(c);
-      for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1; // update appId used for selection
+      for (int i = icons.size(); --i >= 0;) 
+      {
+         Control cc = (Control)icons.items[i];
+         cc.appId = cc.appId == 0 ? (atRight ? 1000 : 0) : (cc.appId > 1000 ? 1000 : 0); // update appId used for selection
+         cc.appId += i+1;
+      }
       if (initialized) initUI();
       return icons.size();
    }
@@ -342,7 +375,11 @@ public class Bar extends Container
    public void removeButton(int index)
    {
       icons.removeElementAt(index-1);
-      for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1;
+      for (int i = icons.size(); --i >= 0;)
+      {
+         Control c = (Control)icons.items[i];
+         c.appId = (c.appId > 1000 ? 1000 : 0) + i+1;
+      }
       if (initialized) initUI();
    }
    
@@ -374,12 +411,36 @@ public class Bar extends Container
       }
       else
       {
+         Control lastAtRight = null, lastAtLeft = null;
          for (int i = n; --i >= 0;)
-            add((Control)icons.items[i], i==n-1 ? buttonAlign : (buttonAlign == RIGHT ? BEFORE : AFTER), TOP, height, FILL);
-         if (titleAlign == LEFT)
-            add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL); 
+         {
+            Control c = (Control)icons.items[i];
+            boolean atRight = c.appId >= 1000;
+            int posX;
+            Control rel = null;
+            if (atRight)
+            {
+               posX = lastAtRight == null ? RIGHT : BEFORE;
+               rel = lastAtRight;
+               lastAtRight = c;
+            }
+            else
+            {
+               posX = lastAtLeft == null ? LEFT : AFTER;
+               rel = lastAtLeft;
+               lastAtLeft = c;
+            }
+            add(c, posX, TOP, height, FILL, rel);
+         }
+         if (n == 0)
+            add(title, AFTER, TOP, FILL, FILL);
          else
-            add(title, AFTER, TOP, FILL, FILL); 
+         {
+            Spacer spl = new Spacer(0,0), spr = new Spacer(0,0);
+            add(spl,lastAtLeft != null ? AFTER : LEFT,SAME,lastAtLeft);
+            add(spr,lastAtRight != null ? BEFORE : RIGHT,SAME,lastAtRight);
+            add(title, AFTER, TOP, FIT, FILL,spl);
+         }
          if (spinner != null)
          {
             add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,fmH,fmH,this.title);
@@ -488,6 +549,7 @@ public class Bar extends Container
             {
                e.consumed = true;
                selected = ((BarButton)icons.items[i]).appId;
+               if (selected > 1000) selected -= 1000;
                postPressedEvent();
             }
          }
