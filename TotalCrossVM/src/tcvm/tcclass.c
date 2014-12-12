@@ -798,7 +798,6 @@ CompatibilityResult areClassesCompatible(Context currentContext, TCClass s, Char
       return NOT_COMPATIBLE;
    }
    className = s->name;
-   sIsArray = s->flags.isArray;
 tryAgain:
    if (ident == null || className == null)
    {
@@ -806,6 +805,9 @@ tryAgain:
       return NOT_COMPATIBLE;
    }
    tIsArray = *ident == '[';
+   sIsArray = *className == '[';
+   if (!s && !(s = loadClass(currentContext, className, true)))
+      result = TARGET_CLASS_NOT_FOUND;
    if (strEq(ident,className)) // quick test
       result = COMPATIBLE;
    else
@@ -875,6 +877,7 @@ tryAgain:
             // TC and SC are reference types (2.4.6), and type SC can be cast to TC by recursive application of these rules.
             ident++; // strip the first array dimension and try again
             className++;
+            s = null;
             goto tryAgain;
          }
       }
