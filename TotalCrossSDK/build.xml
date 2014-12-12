@@ -265,7 +265,7 @@ target: compile
 
   <!-- copy some other files to the classes folder -->
   <copy todir="${output}/classes_desktop">
-     <fileset dir="${src}" includes="**/*.png"/>
+     <fileset dir="${src}" includes="**/*.png,**/*.gif"/>
   </copy>
 
 </target>

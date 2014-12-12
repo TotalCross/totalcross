@@ -622,7 +622,7 @@ static void applyColor2(TCObject obj, Pixel color)
    int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
    PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
    PixelConv c;
-   int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m,a;
+   int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m;
    PixelConv hip;
    bool changeA;
 
