@@ -183,6 +183,7 @@ public class NinePatch
       return ret;
    }
    
+   // rotate is only used by TabbedContainer
    public Image getNormalInstance(int type, int width, int height, int color, boolean rotate) throws ImageException
    {
       Image ret = null;
