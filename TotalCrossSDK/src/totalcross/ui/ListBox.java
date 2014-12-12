@@ -988,8 +988,16 @@ public class ListBox extends Container implements Scrollable
                {
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);
                }
-            catch (ImageException e) {}
-            g.drawImage(npback, 0,0);
+               catch (ImageException e) {}
+            try
+            {
+               g.drawImage(npback, 0,0);
+            }
+            catch (OutOfMemoryError oome)
+            {
+               NinePatch.getInstance().flush(); // release memory and try again
+               g.drawImage(npback, 0,0);
+            }
          }
          g.foreColor = foreColor;
          if (!uiAndroid)
