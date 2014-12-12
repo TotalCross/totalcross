@@ -6859,6 +6859,12 @@ Collections
 \begin_layout Itemize
 
 \family typewriter
+EnumMap 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 HashMap 
 \end_layout
 
