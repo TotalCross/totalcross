@@ -816,20 +816,32 @@ public class Utils
    /////////////////////////////////////////////////////////////////////////////////////
    public static int version2int(String v)
    {
-      v = Convert.replace(v,".","");
+      int i;
       try
       {
-         int i = Convert.toInt(v);
-         if (i < 10)
-            i *= 10;
-         if (i < 100)
-            i *= 10;
-         return i;
+         if (DeploySettings.appBuildNumber != -1) // 2.9 -> 209, 2.10 -> 210, 2.123 -> 2123
+         {
+            int afterDot = v.length() - (v.indexOf('.')+1);            
+            i = Convert.toInt(afterDot == 1 ? v.replace('.','0')  // 2.9 -> 209 
+                                            : v.replace(".","")); // 2.10 -> 210
+         }
+         else
+         {
+            // 2.9 -> 290
+            v = Convert.replace(v,".","");
+            i = Convert.toInt(v);
+            if (i < 10)
+               i *= 10;
+            if (i < 100)
+               i *= 10;
+            return i;
+         }
       }
       catch (InvalidNumberException ine)
       {
-         return 100;
+         i = 100;
       }
+      return i;
    }
    public static String toString(String[] cmd)
    {
