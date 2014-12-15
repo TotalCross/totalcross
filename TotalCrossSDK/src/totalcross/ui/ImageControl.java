@@ -43,6 +43,8 @@ public class ImageControl extends Control
 
    /** Change this member to set the border color.
     * You may also set it to -1 if you don't want a border color.
+    * Note: starting on TotalCross 3.1, the border is drawn around the color and no longer around the image,
+    * because it was not working on OpenGL devices.
     */
    public int borderColor = -1;
    /** Set to true to let the image be dragged beyond container limits. 
@@ -93,13 +95,6 @@ public class ImageControl extends Control
       // test if it is really loaded.
       if (img != null && getImageWidth() > 0)
       {
-         // draw a red border in the image
-         if (borderColor != -1)
-         {
-            Graphics g = img.getGraphics();
-            g.foreColor = borderColor;
-            g.drawRect(0,0,getImageWidth(),getImageHeight());
-         }
          if (scaleToFit)
             try
             {
@@ -263,6 +258,11 @@ public class ImageControl extends Control
       }
       if (drawBack)
          fillBack(g);
+      if (borderColor != -1)
+      {
+         g.foreColor = borderColor;
+         g.drawRect(0,0,width,height);
+      }
    }
 
    /** Returns the image's width; when scaling, returns the scaled width. */
