@@ -23,7 +23,7 @@ public class ExternalViewersSample extends BaseContainer
       {
          if (!Settings.onJavaSE && !isAndroid && !Settings.isIOS())
          {
-            add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
+            add(new Label("This program runs on the\nAndroid and iOS platforms only",CENTER),CENTER,CENTER);
             return;
          }
          if (Settings.isIOS())
