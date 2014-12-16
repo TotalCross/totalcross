@@ -43,6 +43,7 @@
    int locationFlags, locationDate, locationTime, locationSat, locationCount;
    double locationVeloc, locationPDOP, locationDir;
    double locationLat, locationLon;
+   UIWebView* webView;
 }
 
 - (bool)hasEvents;
@@ -62,6 +63,7 @@
 - (int) gpsStart;
 - (void) gpsStop;
 - (int) gpsUpdateLocation;
+- (IBAction)closeWebView:(id)sender;
 @end
 
 typedef struct
