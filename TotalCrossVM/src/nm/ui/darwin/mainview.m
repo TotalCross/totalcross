@@ -347,6 +347,13 @@ static bool callingCamera;
    return 0;
 }
 
+
+-(IBAction)closeWebView:(id)sender
+{
+   self.view = child_view;
+   webView = nil;
+}
+
 //--------------------------------------------------------------------------------------------------------
 
 @end
