@@ -234,6 +234,14 @@ public final class Vm
     * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
     * <li> Vm.exec("broadcast","broadcast package",flags,true); -- sends a broadcast intent. "flag" is used in intent.addFlags if different of 0.
     * </ul>
+    * <p>
+    * In iOS, the following work as in Android:
+    * <ul>
+    * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
+    * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
+    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and all file types that the <code>UIWebView</code> component can show. A PDF reader is NOT required.
+    * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed.
+    * </ul>
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
     * in the desired Activities button. The <code>command</code> parameter for Vm.exec is the "Process" description, and the 
