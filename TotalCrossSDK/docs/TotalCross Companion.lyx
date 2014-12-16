@@ -6608,6 +6608,10 @@ New features that are now supported and some of them are detailed below:
 \end_layout
 
 \begin_layout Itemize
+JSON;
+\end_layout
+
+\begin_layout Itemize
 enuns;
 \end_layout
 
