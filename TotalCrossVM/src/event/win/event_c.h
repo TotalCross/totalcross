@@ -300,6 +300,18 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          }
          break;
       }
+#ifndef WINCE
+      case WM_MOUSEHWHEEL:
+      case WM_MOUSEWHEEL:
+      {
+         int32 x = lastPenX;//(int32)((int16)LOWORD(lParam)); using the last position because the ones that comes in lParam are relative to window's origin!
+         int32 y = lastPenY;//(int32)((int16)HIWORD(lParam));
+         int32 a = (int32)((int16)HIWORD(wParam));
+         if (y >= 0 && keepRunning)
+            postEvent(mainContext, a > 0 ? MOUSEEVENT_MOUSE_WHEEL_UP : MOUSEEVENT_MOUSE_WHEEL_DOWN, 0, lastPenX = x, lastPenY = max32(y,0),-1);
+         break;
+      }
+#endif
       case WM_MOUSEMOVE:
       {
          int32 x = (int32)((int16)LOWORD(lParam));

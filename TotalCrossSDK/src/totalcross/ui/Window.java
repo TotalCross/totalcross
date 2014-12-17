@@ -702,6 +702,18 @@ public class Window extends Container
          if (!invokeMenu) return;
       }
 
+      if (Settings.scrollDistanceOnMouseWheelMove != 0 && (type == MouseEvent.MOUSE_WHEEL_DOWN || type == MouseEvent.MOUSE_WHEEL_UP) && contains(x, y))
+      {
+         Control c = findChild(x - this.x, y - this.y);
+         for (; c != null && !(c instanceof ScrollContainer); c = c.parent) {}
+         if (c != null && c instanceof ScrollContainer)
+         {
+            int amount = type == MouseEvent.MOUSE_WHEEL_DOWN ? Settings.scrollDistanceOnMouseWheelMove : -Settings.scrollDistanceOnMouseWheelMove;
+            ((ScrollContainer)c).scrollContent(amount, amount);
+            repaintNow();
+            return;
+         }
+      }
       if (isPenEvent || type == MouseEvent.MOUSE_MOVE) // guich@102: user clicked outside the window? - guich@tc126_45: send MOUSE_IN/OUT when the window bounds are crossed
       {
          boolean inside = contains(x, y);

@@ -1758,6 +1758,8 @@ public class Control extends GfxSurface
                case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
                case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
                case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+               case MouseEvent.MOUSE_WHEEL_DOWN:  if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseWheelDown((MouseEvent)e);   break;
+               case MouseEvent.MOUSE_WHEEL_UP:    if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseWheelUp((MouseEvent)e);     break;
                case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
                case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
                case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;

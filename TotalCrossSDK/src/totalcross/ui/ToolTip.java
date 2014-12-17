@@ -314,4 +314,12 @@ public class ToolTip extends Label implements PenListener, MouseListener
       hide();
       super.reposition();
    }
+
+   public void mouseWheelUp(MouseEvent e)
+   {
+   }
+
+   public void mouseWheelDown(MouseEvent e)
+   {
+   }
 }

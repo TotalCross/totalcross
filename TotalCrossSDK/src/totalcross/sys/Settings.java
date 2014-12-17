@@ -873,4 +873,9 @@ public final class Settings
    public static boolean keypadOnly;
    
    public static final boolean debugging = buildNumber == 0;
+   
+   /** Set to 0 to disable the automatic scroll of the ScrollContainer under the
+    * mouse position when the mouse wheel changes.
+    */
+   public static int scrollDistanceOnMouseWheelMove;
 }
