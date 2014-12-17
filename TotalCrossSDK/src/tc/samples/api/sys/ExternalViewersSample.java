@@ -14,21 +14,22 @@ public class ExternalViewersSample extends BaseContainer
    String sdcardPath = "/sdcard/xviewers/";
    String jpg = "sys/filhos_gui.jpg";
    String pdf = "sys/TotalCrossCompanion.pdf";
+   private static boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
    
    public void initUI()
    {
       super.initUI();
       try
       {
-         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS())
+         if (!Settings.onJavaSE && !isAndroid && !Settings.isIOS())
          {
-            add(new Label("This program runs on\nthe Android or iOS platforms only",CENTER),CENTER,CENTER);
+            add(new Label("This program runs on the\nAndroid and iOS platforms only",CENTER),CENTER,CENTER);
             return;
          }
          if (Settings.isIOS())
             sdcardPath = Settings.appPath+"/";
          
-         if (Settings.platform.equals(Settings.ANDROID))
+         if (isAndroid || Settings.isIOS())
             copyFiles2Sdcard();
          
          String[] items = {"Zoom image","Read PDF *","Open HTML page"};
@@ -47,22 +48,25 @@ public class ExternalViewersSample extends BaseContainer
    
    private void copyFiles2Sdcard() throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
-      try {new File("/sdcard/xviewers").createDir();} catch (Exception e) {}
+      if (isAndroid) try {new File(sdcardPath).createDir();} catch (Exception e) {}
       // extract the files from the tcz and copy them to the sdcard
       copyFile(jpg);
       copyFile(pdf);
+      
+   }
+   
+   private String getTargetName(String name)
+   {
+      return sdcardPath+name.substring(name.lastIndexOf('/')+1);
    }
    
    private void copyFile(String name) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
-      String fullPath = sdcardPath+name;
+      String fullPath = getTargetName(name);
       if (!new File(fullPath).exists())
       {
          try {new File(Convert.getFilePath(fullPath)).createDir();} catch (Exception e) {}
-         File f = new File(fullPath,File.CREATE_EMPTY);
-         byte[] b = Vm.getFile(name);
-         f.writeBytes(b);
-         f.close();
+         new File(fullPath,File.CREATE_EMPTY).writeAndClose(Vm.getFile(name));
       }
    }
 
@@ -75,8 +79,8 @@ public class ExternalViewersSample extends BaseContainer
             int ret = 0;
             switch (idx)
             {
-               case 0: ret = Vm.exec("viewer",sdcardPath+jpg,0,true); break;
-               case 1: ret = Vm.exec("viewer",sdcardPath+pdf,0,true); break;
+               case 0: ret = Vm.exec("viewer",getTargetName(jpg),0,true); break;
+               case 1: ret = Vm.exec("viewer",getTargetName(pdf),0,true); break;
                case 2: Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); break; // always returns 0
             }
             if (ret == -2)

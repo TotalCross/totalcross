@@ -24,11 +24,10 @@
    UIViewController* controller;
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
-   int taskbarHeight;
    bool firstCall;
    UIDeviceOrientation lastKnownOrientation;
 @public
-   UIDocumentInteractionController *uidController;
+   int taskbarHeight;
 }
 - (CGRect)getBounds;
 - (CGSize)getResolution;

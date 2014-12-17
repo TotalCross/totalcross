@@ -667,6 +667,16 @@ public class Utils
       return slash == -1 ? path : path.substring(slash+1);
    }
    /////////////////////////////////////////////////////////////////////////////////////
+   public static String getFileNameWithoutExt(String path)
+   {
+      int slash = path.lastIndexOf('/');
+      if (slash == -1)
+         slash = path.lastIndexOf('\\'); // guich@tc112_8: consider \ too
+      path = slash == -1 ? path : path.substring(slash+1);
+      int i = path.lastIndexOf('.');
+      return i == -1 ? path : path.substring(0,i);
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
    private static final char[] NON_LETTERS = {' ',':','-','\\','/'};
    /** "Agenda" -> "Agenda"    "Agenda 1.0" -> "Agenda"     "--== Agenda ==--" -> "Agenda"  */
    public static String stripNonLetters(String s)
@@ -816,20 +826,32 @@ public class Utils
    /////////////////////////////////////////////////////////////////////////////////////
    public static int version2int(String v)
    {
-      v = Convert.replace(v,".","");
+      int i;
       try
       {
-         int i = Convert.toInt(v);
-         if (i < 10)
-            i *= 10;
-         if (i < 100)
-            i *= 10;
-         return i;
+         if (DeploySettings.appBuildNumber != -1) // 2.9 -> 209, 2.10 -> 210, 2.123 -> 2123
+         {
+            int afterDot = v.length() - (v.indexOf('.')+1);            
+            i = Convert.toInt(afterDot == 1 ? v.replace('.','0')  // 2.9 -> 209 
+                                            : v.replace(".","")); // 2.10 -> 210
+         }
+         else
+         {
+            // 2.9 -> 290
+            v = Convert.replace(v,".","");
+            i = Convert.toInt(v);
+            if (i < 10)
+               i *= 10;
+            if (i < 100)
+               i *= 10;
+            return i;
+         }
       }
       catch (InvalidNumberException ine)
       {
-         return 100;
+         i = 100;
       }
+      return i;
    }
    public static String toString(String[] cmd)
    {
