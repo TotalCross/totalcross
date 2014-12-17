@@ -65,7 +65,16 @@ public class Bar extends Container
     */
    public int titleAlign = LEFT;
    
-   private class BarButton extends Control
+   /** A Bar's button. You can create an extension of this class using:
+    * <pre>
+      Bar b = new Bar();
+      b.new BarButton("Hi",null)
+      {
+         ... other methods
+      };
+    * </pre>
+    */
+   public class BarButton extends Control
    {
       String title;
       Image icon0,icon;
@@ -76,7 +85,7 @@ public class Bar extends Container
       private TimerEvent repeatTimer;
       private int startRepeat;
       
-      BarButton(String title, Image icon) // title or icon
+      public BarButton(String title, Image icon) // title or icon
       {
          this.title = title;
          this.icon0 = icon;
