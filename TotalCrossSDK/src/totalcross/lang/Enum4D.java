@@ -128,7 +128,7 @@ public abstract class Enum4D<T extends Enum4D<T>>
    */ 
   public final int compareTo(T e)
   {
-    if (getDeclaringClass() != e.getDeclaringClass())
+    if (!getDeclaringClass().equals(e.getDeclaringClass()))
       throw new ClassCastException();
     return ordinal - e.ordinal;
   }
