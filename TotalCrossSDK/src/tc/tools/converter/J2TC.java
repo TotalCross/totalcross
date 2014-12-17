@@ -13,6 +13,8 @@
 
 package tc.tools.converter;
 
+import java.util.*;
+import java.util.zip.*;
 import tc.tools.converter.bytecode.*;
 import tc.tools.converter.ir.*;
 import tc.tools.converter.ir.Instruction.*;
@@ -27,9 +29,9 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
+import totalcross.util.Hashtable;
+import totalcross.util.Vector;
 import totalcross.util.zip.*;
-
-import java.util.zip.*;
 
 public final class J2TC implements JConstants, TCConstants
 {
@@ -838,6 +840,12 @@ public final class J2TC implements JConstants, TCConstants
       return tcf;
    }
 
+   static class NameBytes
+   {
+      String name;
+      byte[] bytes;
+   }
+   
    private static void expandZip(Vector vin, String fName) throws Exception
    {
       JavaClass jc;
@@ -851,6 +859,10 @@ public final class J2TC implements JConstants, TCConstants
          String mainCandidate = Utils.getFileName(fName);
          if (mainCandidate != null && mainCandidate.indexOf('.') > 0)
             mainCandidate = mainCandidate.substring(0, mainCandidate.indexOf('.'));
+         int mainCandidateIndex = -1;
+         // guich@tc310: now we read all classes and search for the MainClass one.
+         // then we place it at the begining of the list, to ensure that it will be in the first tcz if they are splitted.
+         ArrayList<NameBytes> all = new ArrayList<NameBytes>(500);
          for (java.util.zip.ZipEntry zEntry = zIn.getNextEntry(); zEntry != null; zEntry =zIn.getNextEntry())
          {
             // if the name is a path, exit.
@@ -861,6 +873,23 @@ public final class J2TC implements JConstants, TCConstants
             // replace by the system path separator so that the file can be open.
             name = name.replace('/',java.io.File.separatorChar);
             byte[] bytes = Utils.readJavaInputStream(zIn);
+            NameBytes nb = new NameBytes();
+            nb.name = name;
+            nb.bytes = bytes;
+            if (mainCandidateIndex == -1 && name.endsWith(".class") && Utils.getFileNameWithoutExt(name).equals(mainCandidate))
+               mainCandidateIndex = all.size();
+            all.add(nb);
+         }
+         if (mainCandidateIndex != -1) // move the MainWindow to the begin
+         {
+            NameBytes nb = all.get(mainCandidateIndex);
+            all.remove(mainCandidateIndex);
+            all.add(0,nb);
+         }
+         for (NameBytes nb: all)
+         {
+            String name = nb.name;
+            byte[] bytes = nb.bytes;
             if (name.endsWith(".class"))
             {
                jc = new JavaClass(bytes, false);
