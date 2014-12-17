@@ -771,7 +771,7 @@ Type type2javaType(CharP type)
    }
 }
 
-static bool isSuperClass(TCClass s, TCClass t) // s instanceof t
+bool isSuperClass(TCClass s, TCClass t) // s instanceof t
 {
    int32 i;
    for (; s != null; s = s->superClass)

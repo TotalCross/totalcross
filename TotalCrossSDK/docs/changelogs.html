@@ -1,4 +1,12 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2472</h1>
+. Corrected areClassesCompatible() when both parameters are arrays.<br>
+. Finished EnumMap.<br>
+. fixed version2int converting 2.9 to 290. now it correctly converts to 209.<br>
+. Fixed ImageControl.borderColor not working on OpenGL devices. now the border is drawn around the control instead of drawing around the image.<br>
+. added support for showing pdf (and also doc,xls,etc) on iOS using Vm.exec. External viewers sample fully working on iOS<br>
+. fixed ListContainer.ITEM_SELECTED_EVENT not being sent to the listener.<br>
+. now we ensure that, if the tcz is splitted, the main class is stored in the first tcz.<br>
 <h1>build 2470</h1>
 . now we store the appSettings stuff in files in win32. Windows 8 blocks any write to the HKLM registry, so we were unable to use it in such OS<br>
 . included new gif files in tc.jar<br>
@@ -40,7 +48,7 @@
 . keep all tczs at the same parent folder in the ipa<br>
 . now using target 1.7 to build the javadocs<br>
 . fixed NPE in SQLiteUtil when date or time is null<br>
-<h1>build 2444</h1>
+<h1> build 2444</h1>
 * now in tc.Deploy the tcz is automatically splitted when it reaches the methods and fields limits. You can pass a huge jar file and tc.Deploy will split it automatically into some tczs.<br>
 * upgraded compiler and source level support to Java 1.7, including enum, switch with String, for each, and generics.<br>
 * added support for the following classes in TotalCross: AbstractCollection,AbstractList,AbstractMap,AbstractQueue,AbstractSequentialList,AbstractSet,ArrayList,Arrays,BitSet,Collection,Collections,Comparator,ConcurrentModificationException,Deque,Dictionary,Enum,Enumeration,HashMap,HashSet,IdentityHashMap,InvalidDateException,Iterator,LinkedHashMap,LinkedHashSet,LinkedList,List,ListIterator,Map,NavigableMap,NavigableSet,NoSuchElementException,PriorityQueue,Properties,Queue,RandomAccess,Set,SortedMap,SortedSet,TreeMap,TreeSet.<br>

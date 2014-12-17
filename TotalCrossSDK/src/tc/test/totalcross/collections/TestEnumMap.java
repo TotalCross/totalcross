@@ -19,7 +19,7 @@ public class TestEnumMap extends TestCase
 {
    public void testRun()
    {
-      Test34 test1 = new Test34(TestEnum.class);
+      Test34 test1 = new Test34(TestEnum1.class);
       AbstractMap test2 = new Test34(test1);
       EnumMap test3 = new Test34(test2);
       
@@ -31,21 +31,21 @@ public class TestEnumMap extends TestCase
       assertFalse(test2.containsValue(2));
       assertFalse(test3.containsValue(3));
       
-      assertFalse(test1.containsKey(TestEnum.One));
-      assertFalse(test2.containsKey(TestEnum.Two));
-      assertFalse(test3.containsKey(TestEnum.Three));
+      assertFalse(test1.containsKey(TestEnum1.One));
+      assertFalse(test2.containsKey(TestEnum1.Two));
+      assertFalse(test3.containsKey(TestEnum1.Three));
       
-      assertEquals(null, test1.get(TestEnum.One));
-      assertEquals(null, test2.get(TestEnum.Two));
-      assertEquals(null, test3.get(TestEnum.Three));
+      assertEquals(null, test1.get(TestEnum1.One));
+      assertEquals(null, test2.get(TestEnum1.Two));
+      assertEquals(null, test3.get(TestEnum1.Three));
       
-      assertEquals(null, test1.put(TestEnum.One, "1"));
-      assertEquals(null, test2.put(TestEnum.Two, "2"));
-      assertEquals(null, test3.put(TestEnum.Three, "3"));
+      assertEquals(null, test1.put(TestEnum1.One, "1"));
+      assertEquals(null, test2.put(TestEnum1.Two, "2"));
+      assertEquals(null, test3.put(TestEnum1.Three, "3"));
       
-      assertEquals("1", test1.remove(TestEnum.One));
-      assertEquals("2", test2.remove(TestEnum.Two));
-      assertEquals("3", test3.remove(TestEnum.Three));
+      assertEquals("1", test1.remove(TestEnum1.One));
+      assertEquals("2", test2.remove(TestEnum1.Two));
+      assertEquals("3", test3.remove(TestEnum1.Three));
      
       test1.putAll(test2);
       test2.putAll(test3);
@@ -113,13 +113,13 @@ public class TestEnumMap extends TestCase
       set2.clear();
       set3.clear();
       
-      assertFalse(set1.contains(TestEnum.One));
-      assertFalse(set2.contains(TestEnum.Two));
-      assertFalse(set3.contains(TestEnum.Three));
+      assertFalse(set1.contains(TestEnum1.One));
+      assertFalse(set2.contains(TestEnum1.Two));
+      assertFalse(set3.contains(TestEnum1.Three));
       
-      assertFalse(set1.remove(TestEnum.One));
-      assertFalse(set2.remove(TestEnum.Two));
-      assertFalse(set3.remove(TestEnum.Three));
+      assertFalse(set1.remove(TestEnum1.One));
+      assertFalse(set2.remove(TestEnum1.Two));
+      assertFalse(set3.remove(TestEnum1.Three));
       
       Collection collection1 = test1.values();
       Collection collection2 = test2.values();
@@ -225,13 +225,13 @@ public class TestEnumMap extends TestCase
       set2.clear();
       set3.clear();
       
-      assertFalse(set1.contains(TestEnum.One));
-      assertFalse(set2.contains(TestEnum.Two));
-      assertFalse(set3.contains(TestEnum.Three));
+      assertFalse(set1.contains(TestEnum1.One));
+      assertFalse(set2.contains(TestEnum1.Two));
+      assertFalse(set3.contains(TestEnum1.Three));
       
-      assertFalse(set1.remove(TestEnum.One));
-      assertFalse(set2.remove(TestEnum.Two));
-      assertFalse(set3.remove(TestEnum.Three));
+      assertFalse(set1.remove(TestEnum1.One));
+      assertFalse(set2.remove(TestEnum1.Two));
+      assertFalse(set3.remove(TestEnum1.Three));
       
       assertTrue(test1.equals(test2));
       assertTrue(test2.equals(test3));
@@ -259,7 +259,7 @@ class Test34 extends EnumMap implements Cloneable
    }
 }
 
-enum TestEnum
+enum TestEnum1
 {
    One,
    Two,

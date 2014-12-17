@@ -273,6 +273,8 @@ int32 threadCount = 0;
 // class.c
 TCObject *voidTYPE, *booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 
+TCClass cloneable;
+
 // These are set in the application's constructor
 uint32 applicationId = 0;
 char applicationIdStr[5] = { 0 };

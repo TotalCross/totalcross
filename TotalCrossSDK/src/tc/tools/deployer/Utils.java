@@ -667,6 +667,16 @@ public class Utils
       return slash == -1 ? path : path.substring(slash+1);
    }
    /////////////////////////////////////////////////////////////////////////////////////
+   public static String getFileNameWithoutExt(String path)
+   {
+      int slash = path.lastIndexOf('/');
+      if (slash == -1)
+         slash = path.lastIndexOf('\\'); // guich@tc112_8: consider \ too
+      path = slash == -1 ? path : path.substring(slash+1);
+      int i = path.lastIndexOf('.');
+      return i == -1 ? path : path.substring(0,i);
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
    private static final char[] NON_LETTERS = {' ',':','-','\\','/'};
    /** "Agenda" -> "Agenda"    "Agenda 1.0" -> "Agenda"     "--== Agenda ==--" -> "Agenda"  */
    public static String stripNonLetters(String s)

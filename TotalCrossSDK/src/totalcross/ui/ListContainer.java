@@ -677,7 +677,7 @@ public class ListContainer extends ScrollContainer
                         return;
                      setSelectedItem((Container)c);
                      if (c instanceof Item)
-                        ((Item)c).postListContainerEvent(c,e.target,ListContainerEvent.ITEM_SELECTED_EVENT,false);
+                        ((Item)c).postListContainerEvent(this,e.target,ListContainerEvent.ITEM_SELECTED_EVENT,false);
                      else
                         postPressedEvent();
                      break;
