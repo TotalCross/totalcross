@@ -132,6 +132,7 @@
 #include "utils.h"
 #include "debug.h"
 #include "objectmemorymanager.h"
+#include "tcclass.h"
 #include "../tests/tc_testsuite.h"
 #include "../nm/instancefields.h"
 #include "../nm/ui/GraphicsPrimitives.h"

@@ -52,6 +52,7 @@ public class TestCollectionsAPI extends TestSuite
       addTestCase(TestAbstractSequentialList.class);
       addTestCase(TestAbstractSet.class);
       addTestCase(TestDictionary.class);
+      addTestCase(TestEnumSet.class);
       
       // Classes
       addTestCase(TestArrays.class);

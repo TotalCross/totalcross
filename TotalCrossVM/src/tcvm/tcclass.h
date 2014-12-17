@@ -631,6 +631,7 @@ typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, 
 bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2, UInt16Array params2);
 
 Type type2javaType(CharP type);
+bool isSuperClass(TCClass s, TCClass t);
 
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
 

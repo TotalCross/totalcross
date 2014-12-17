@@ -237,6 +237,9 @@ extern int32 threadCount;
 // class.c
 extern TCObject *voidTYPE,*booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
 
+// object.c
+extern TCClass cloneable;
+
 // These are set in the application's constructor
 extern uint32 applicationId;
 extern char applicationIdStr[5];
