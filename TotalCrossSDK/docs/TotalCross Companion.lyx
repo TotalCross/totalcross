@@ -6624,6 +6624,10 @@ for each;
 \end_layout
 
 \begin_layout Itemize
+varargs;
+\end_layout
+
+\begin_layout Itemize
 switch with strings;
 \end_layout
 
@@ -6832,6 +6836,12 @@ AbstractSet
 
 \family typewriter
 Dictionary
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+EnumSet
 \end_layout
 
 \end_deeper
