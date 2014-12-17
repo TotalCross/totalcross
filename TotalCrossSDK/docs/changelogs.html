@@ -1,11 +1,12 @@
 <h2>TotalCross 3.1</h2>
-<h1>build 2471</h1>
+<h1>build 2472</h1>
 . Corrected areClassesCompatible() when both parameters are arrays.<br>
 . Finished EnumMap.<br>
 . fixed version2int converting 2.9 to 290. now it correctly converts to 209.<br>
 . Fixed ImageControl.borderColor not working on OpenGL devices. now the border is drawn around the control instead of drawing around the image.<br>
 . added support for showing pdf (and also doc,xls,etc) on iOS using Vm.exec. External viewers sample fully working on iOS<br>
 . fixed ListContainer.ITEM_SELECTED_EVENT not being sent to the listener.<br>
+. now we ensure that, if the tcz is splitted, the main class is stored in the first tcz.<br>
 <h1>build 2470</h1>
 . now we store the appSettings stuff in files in win32. Windows 8 blocks any write to the HKLM registry, so we were unable to use it in such OS<br>
 . included new gif files in tc.jar<br>
