@@ -20,5 +20,4 @@
 "54434C42266453E9E511AB96" /*  intercom        */ \
 "54434F4E4F90B34E08B123EA" /*  415 Econz       */ \
 "54434C4203B80B1C48E3882A" /* ParceriaNet      */ \
-"54434C425CCDCC662899E140" /*  679 Ekspert     */ \
 "54434C42BA9DE2F85E053FDA" /*  248 Zaragoza    */
