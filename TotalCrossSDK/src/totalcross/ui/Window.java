@@ -702,14 +702,39 @@ public class Window extends Container
          if (!invokeMenu) return;
       }
 
-      if (Settings.scrollDistanceOnMouseWheelMove != 0 && (type == MouseEvent.MOUSE_WHEEL_DOWN || type == MouseEvent.MOUSE_WHEEL_UP) && contains(x, y))
+      if (Settings.scrollDistanceOnMouseWheelMove != 0 && type == MouseEvent.MOUSE_WHEEL && contains(x, y))
       {
          Control c = findChild(x - this.x, y - this.y);
          for (; c != null && !(c instanceof ScrollContainer); c = c.parent) {}
          if (c != null && c instanceof ScrollContainer)
          {
-            int amount = type == MouseEvent.MOUSE_WHEEL_DOWN ? Settings.scrollDistanceOnMouseWheelMove : -Settings.scrollDistanceOnMouseWheelMove;
-            ((ScrollContainer)c).scrollContent(amount, amount);
+            int k = Settings.scrollDistanceOnMouseWheelMove;
+            ScrollContainer sc = (ScrollContainer)c;
+            if (sc.sbH == null) // only vertical?
+               switch (key)
+               {
+                  case MouseEvent.WHEEL_DOWN : 
+                  case MouseEvent.WHEEL_LEFT : sc.scrollContent(0, k); break;
+                  case MouseEvent.WHEEL_UP   : 
+                  case MouseEvent.WHEEL_RIGHT: sc.scrollContent(0, -k); break;
+               }
+            else
+            if (sc.sbV == null) // only horizontal
+               switch (key)
+               {
+                  case MouseEvent.WHEEL_DOWN : 
+                  case MouseEvent.WHEEL_LEFT : sc.scrollContent(k, 0); break;
+                  case MouseEvent.WHEEL_UP   : 
+                  case MouseEvent.WHEEL_RIGHT: sc.scrollContent(-k, 0); break;
+               }
+            else // both horizontal and vertical
+               switch (key)
+               {
+                  case MouseEvent.WHEEL_DOWN : sc.scrollContent(0, k); break;
+                  case MouseEvent.WHEEL_UP   : sc.scrollContent(0, -k); break;
+                  case MouseEvent.WHEEL_LEFT : sc.scrollContent(k, 0); break;
+                  case MouseEvent.WHEEL_RIGHT: sc.scrollContent(-k, 0); break;
+               }
             repaintNow();
             return;
          }
@@ -1006,6 +1031,17 @@ public class Window extends Container
          focusOnPenUp = _focus != null && (_focus instanceof Edit || _focus instanceof MultiEdit) ? _focus : null;
          tempFocus = null;
       }
+      if (type == MouseEvent.MOUSE_WHEEL)
+      {
+         _mouseEvent.target = event.target;
+         _mouseEvent.consumed = false;
+         _mouseEvent.timeStamp = timeStamp;
+         _mouseEvent.type = MouseEvent.MOUSE_WHEEL;
+         _mouseEvent.wheelDirection = key;
+         event = _mouseEvent;
+         (_focus != null ? _focus : this).postEvent(event);
+      }
+      else
       if (type == MouseEvent.MOUSE_MOVE)
       {
          if (event instanceof MouseEvent)

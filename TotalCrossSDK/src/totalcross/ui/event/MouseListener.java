@@ -39,14 +39,9 @@ public interface MouseListener
     */
    public void mouseOut(MouseEvent e);
    
-   /** The event type for a mouse wheel moving up.
-    * This is a hardware event. 
-    */
-   public void mouseWheelUp(MouseEvent e);
-   
    /** The event type for a mouse wheel moving down.
     * This is a hardware event. 
     */
-   public void mouseWheelDown(MouseEvent e);
+   public void mouseWheel(MouseEvent e);
 
 }

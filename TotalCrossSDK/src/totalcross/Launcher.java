@@ -901,12 +901,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
       {
-         int ev = e.getWheelRotation() < 0 ? totalcross.ui.event.MouseEvent.MOUSE_WHEEL_UP : totalcross.ui.event.MouseEvent.MOUSE_WHEEL_DOWN;
+         int ev = totalcross.ui.event.MouseEvent.MOUSE_WHEEL;
          if (!eventThread.hasEvent(ev))
          {
             int px = (int)(e.getX()/toScale);
             int py = (int)(e.getY()/toScale);
-            eventThread.pushEvent(ev, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+            eventThread.pushEvent(ev, e.getWheelRotation() < 0 ? totalcross.ui.event.MouseEvent.WHEEL_UP : totalcross.ui.event.MouseEvent.WHEEL_DOWN, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
          }
       }
    }
