@@ -84,6 +84,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       super(title,style);
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
+      Settings.scrollDistanceOnMouseWheelMove = fmH;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
       boolean isIphone = Settings.isIOS();

@@ -28,6 +28,12 @@ package totalcross.ui.event;
 
 public class MouseEvent extends PenEvent
 {
+   public static final int WHEEL_UP    = 1;
+   public static final int WHEEL_DOWN  = 2;
+   public static final int WHEEL_LEFT  = 3;
+   public static final int WHEEL_RIGHT = 4;
+   public int wheelDirection;
+   
    /** The event type for a mouse moving over a control.
     * This is a hardware event. 
     */
@@ -42,5 +48,10 @@ public class MouseEvent extends PenEvent
     * This is a software event (computed internally). 
     */
    public static final int MOUSE_OUT = 207;
+
+   /** The event type for a mouse wheel.
+    * This is a hardware event. 
+    */
+   public static final int MOUSE_WHEEL = 208;
 }
 

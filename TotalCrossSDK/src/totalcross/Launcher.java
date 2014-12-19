@@ -56,7 +56,7 @@ import totalcross.util.zip.*;
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
-public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseMotionListener, ComponentListener
+public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener
 {
    public static Launcher instance;
    public static boolean isApplication;
@@ -105,6 +105,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       instance  = this;
       addKeyListener(this);
       addMouseListener(this);
+      addMouseWheelListener(this);
       addMouseMotionListener(this);
       try {Runtime.runFinalizersOnExit(true);} catch (Throwable t) {}
       //try {System.runFinalizersOnExit(true);} catch (Throwable t) {} // guich@300_31
@@ -893,6 +894,20 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          else
          if (!eventThread.hasEvent(PenEvent.PEN_DRAG))
             eventThread.pushEvent(PenEvent.PEN_DRAG, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+      }
+   }
+
+   public void mouseWheelMoved(MouseWheelEvent e)
+   {
+      if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
+      {
+         int ev = totalcross.ui.event.MouseEvent.MOUSE_WHEEL;
+         if (!eventThread.hasEvent(ev))
+         {
+            int px = (int)(e.getX()/toScale);
+            int py = (int)(e.getY()/toScale);
+            eventThread.pushEvent(ev, e.getWheelRotation() < 0 ? totalcross.ui.event.MouseEvent.WHEEL_UP : totalcross.ui.event.MouseEvent.WHEEL_DOWN, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+         }
       }
    }
 

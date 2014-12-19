@@ -40,7 +40,7 @@ public class PenEvent extends Event
    /** The event type for a pen or mouse drag end. */
    public static final int PEN_DRAG_END = 204; // kmeehl@tc100
    
-   protected static final String[] EVENT_NAME = {"PEN_DOWN","PEN_UP","PEN_DRAG","PEN_DRAG_START","PEN_DRAG_END","MOUSE_MOVE","MOUSE_IN","MOUSE_OUT"};
+   protected static final String[] EVENT_NAME = {"PEN_DOWN","PEN_UP","PEN_DRAG","PEN_DRAG_START","PEN_DRAG_END","MOUSE_MOVE","MOUSE_IN","MOUSE_OUT","MOUSE_WHEEL"};
 
    /** The x location of the event. */
    public int x;
