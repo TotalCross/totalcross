@@ -382,8 +382,6 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
             
-      if (value.equals("java.util.Vector")) value = "totalcross.util.Vector";
-      else
       if (value.equals("java.util.Hashtable")) value = "totalcross.util.Hashtable";
       else
       if (value.equals("java.util.Random")) value = "totalcross.util.Random";
