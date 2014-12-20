@@ -705,35 +705,37 @@ public class Window extends Container
       if (Settings.scrollDistanceOnMouseWheelMove != 0 && type == MouseEvent.MOUSE_WHEEL && contains(x, y))
       {
          Control c = findChild(x - this.x, y - this.y);
-         for (; c != null && !(c instanceof ScrollContainer); c = c.parent) {}
-         if (c != null && c instanceof ScrollContainer)
+         for (; c != null && !(c instanceof Scrollable); c = c.parent) {}
+         if (c != null && c instanceof Scrollable)
          {
             int k = Settings.scrollDistanceOnMouseWheelMove;
-            ScrollContainer sc = (ScrollContainer)c;
-            if (sc.sbH == null) // only vertical?
+            Scrollable sc = (Scrollable)c;
+            boolean canScrollHoriz = sc.canScrollContent(DragEvent.LEFT,sc) || sc.canScrollContent(DragEvent.RIGHT,sc);
+            boolean canScrollVert  = sc.canScrollContent(DragEvent.UP,sc)   || sc.canScrollContent(DragEvent.DOWN,sc);
+            if (canScrollVert && !canScrollHoriz) // only vertical?
                switch (key)
                {
-                  case MouseEvent.WHEEL_DOWN : 
-                  case MouseEvent.WHEEL_LEFT : sc.scrollContent(0, k); break;
-                  case MouseEvent.WHEEL_UP   : 
-                  case MouseEvent.WHEEL_RIGHT: sc.scrollContent(0, -k); break;
+                  case DragEvent.DOWN : 
+                  case DragEvent.LEFT : sc.scrollContent(0, k); break;
+                  case DragEvent.UP   : 
+                  case DragEvent.RIGHT: sc.scrollContent(0, -k); break;
                }
             else
-            if (sc.sbV == null) // only horizontal
+            if (canScrollHoriz) // only horizontal
                switch (key)
                {
-                  case MouseEvent.WHEEL_DOWN : 
-                  case MouseEvent.WHEEL_LEFT : sc.scrollContent(k, 0); break;
-                  case MouseEvent.WHEEL_UP   : 
-                  case MouseEvent.WHEEL_RIGHT: sc.scrollContent(-k, 0); break;
+                  case DragEvent.DOWN : 
+                  case DragEvent.LEFT : sc.scrollContent(k, 0); break;
+                  case DragEvent.UP   : 
+                  case DragEvent.RIGHT: sc.scrollContent(-k, 0); break;
                }
             else // both horizontal and vertical
                switch (key)
                {
-                  case MouseEvent.WHEEL_DOWN : sc.scrollContent(0, k); break;
-                  case MouseEvent.WHEEL_UP   : sc.scrollContent(0, -k); break;
-                  case MouseEvent.WHEEL_LEFT : sc.scrollContent(k, 0); break;
-                  case MouseEvent.WHEEL_RIGHT: sc.scrollContent(-k, 0); break;
+                  case DragEvent.DOWN : sc.scrollContent(0, k); break;
+                  case DragEvent.UP   : sc.scrollContent(0, -k); break;
+                  case DragEvent.LEFT : sc.scrollContent(k, 0); break;
+                  case DragEvent.RIGHT: sc.scrollContent(-k, 0); break;
                }
             repaintNow();
             return;

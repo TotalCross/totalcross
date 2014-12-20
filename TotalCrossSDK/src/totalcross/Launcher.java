@@ -906,7 +906,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          {
             int px = (int)(e.getX()/toScale);
             int py = (int)(e.getY()/toScale);
-            eventThread.pushEvent(ev, e.getWheelRotation() < 0 ? totalcross.ui.event.MouseEvent.WHEEL_UP : totalcross.ui.event.MouseEvent.WHEEL_DOWN, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+            eventThread.pushEvent(ev, e.getWheelRotation() < 0 ? totalcross.ui.event.DragEvent.UP : totalcross.ui.event.DragEvent.DOWN, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
          }
       }
    }
