@@ -98,6 +98,13 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
 #endif
    //XXX all below should be reworked
 #if !defined WP8
+#ifndef WINCE
+   if (strEq(szCommand,"viewer") || strEq(szCommand,"url"))
+   {
+	  ShellExecute(NULL, "open", szArgs, NULL, NULL, SW_SHOWNORMAL);
+	  return 0;
+   }
+#endif
    ok = CreateProcess(szCommand, szArgs, null, null, false, 0, null, null, startInfo, &processInfo); // guich@tc100b5_16: iexplore requires this mode.
    err = GetLastError();
 

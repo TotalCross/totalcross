@@ -164,9 +164,7 @@ public final class Vm
     * The wait parameter passed to this method determines whether to execute the command asynchronously. If false, then
     * the method will return without waiting for the command to complete execution. If true, the method will wait for
     * the program to finish executing and the return value of the method will be the value returned from the application
-    * under Java, Win32 and WinCE. In Palm OS, only a few headless applications can be called with wait being true.
-    * <p>
-    * <b>Note: this method kills all running threads.</b>
+    * under Java, Win32 and WinCE.
     * <p>
     * To run another TotalCross program from Windows CE devices, use:
     *
@@ -179,15 +177,8 @@ public final class Vm
     * </pre>
     * You cannot pass null nor "" in the args, or you'll get error 87. IExplore requires a page to open; in this case,
     * we open the blank page.
-    * <p>
-    * To run another TotalCross program from Palm OS devices, use:
     *
-    * <pre>
-    * Vm.exec(&quot;ProgName&quot;, null, 0, false);
-    * </pre>
-    *
-    * In other words, you must call the program's executable. Note that in Palm OS, the program's name is the name of the prc
-    * appended by the _ character. For example, to launch UIGadgets, you must pass "UIGadgets_" as the command.
+    * In other words, you must call the program's executable.
     * <p>
     * When calling a TotalCross program, you can pass a command line parameter to the calling application, just placing
     * the parameters in the proper argument. It can be retrieved with <code>getCommandLine</code> method from the
@@ -241,6 +232,11 @@ public final class Vm
     * <li> Vm.exec("viewer",Settings.appPath+"/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
     * <li> Vm.exec("viewer",Settings.appPath+"/handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and all file types that the <code>UIWebView</code> component can show. A PDF reader is NOT required.
     * <li> Vm.exec("viewer",Settings.appPath+"/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed.
+    * </ul>
+    * In Win32, you can also use the "viewer" or "url" to open files and web pages:
+    * <ul>
+    * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
+    * <li> Vm.exec("viewer","c:\\handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and other registered extensions.
     * </ul>
     * 
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
@@ -421,7 +417,6 @@ public final class Vm
    /**
     * Sends a text, preceeded with the current time stamp and followed by a line feed, to:
     * <ul>
-    * <li>Palm OS: the "DebugConsole" file in the NVFS volume
     * <li>Windows CE / 32: the "DebugConsole.txt" file at the current application's folder
     * <li>Blackberry: the event logger, which can be accessed using alt+LGLG
     * <li>iPhone: the "DebugConsole.txt" file in the application's folder.
@@ -452,7 +447,6 @@ public final class Vm
    /**
     * Shows an alert IMMEDIATELY on screen. It uses the sytem message box to show the alert,
     * not the totalcross.ui.MessageBox class.
-    * Showing an alert from Palm OS threads may reset the device.
     * <br><br>Note that unicode characters are not displayed on alerts.
     *
     * @since TotalCross 1.0
