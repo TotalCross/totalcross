@@ -967,14 +967,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                DragEvent de = (DragEvent)event;
                if (isScrolling)
                {
-                  scrollContent(-de.xDelta, 0);
+                  scrollContent(-de.xDelta, 0, true);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   event.consumed = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0, true))
                   {
                      if (Settings.optimizeScroll) takeScreenShots();
                      flickTimerStarted = false;
@@ -1227,7 +1227,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
              (direction == DragEvent.RIGHT && activeIndex < containers.length-1 && (flickIntoDisabledTabs || !disabled[activeIndex+1]));
    }
 
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {      
       if (containers.length == 1)
          return false;

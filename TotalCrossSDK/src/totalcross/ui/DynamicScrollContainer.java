@@ -236,9 +236,9 @@ public class DynamicScrollContainer extends ScrollContainer
 		}
 	}
 
-	public boolean scrollContent(int dx, int dy)
+	public boolean scrollContent(int dx, int dy, boolean fromFlick)
 	{
-		if (super.scrollContent(dx, dy))
+		if (super.scrollContent(dx, dy, fromFlick))
 		{
 			updateVisibleViews(dy < 0 ? SCROLL_UP : SCROLL_DOWN);
 			return true;

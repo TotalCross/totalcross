@@ -47,10 +47,10 @@ typedef enum
 
 typedef enum
 {
-   WHEEL_UP    = 1,
-   WHEEL_DOWN  = 2,
-   WHEEL_LEFT  = 3,
-   WHEEL_RIGHT = 4,
+   WHEEL_RIGHT = 1,
+   WHEEL_LEFT  = 2,
+   WHEEL_UP    = 3,
+   WHEEL_DOWN  = 4,
 } MouseWheelDir;
 
 #ifdef WIN32

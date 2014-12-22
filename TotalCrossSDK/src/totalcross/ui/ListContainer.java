@@ -766,10 +766,10 @@ public class ListContainer extends ScrollContainer
       // guich@tc150: make sure the item is visible
       int yy = c.y + c.parent.y;
       if (yy < 0)
-         scrollContent(0,yy-height+c.height);
+         scrollContent(0,yy-height+c.height, true);
       else
       if ((yy+c.height) > height)
-         scrollContent(0,yy);
+         scrollContent(0,yy, true);
    }
    
    /** Returns the given container number or null if its invalid. */

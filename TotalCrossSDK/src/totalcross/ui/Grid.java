@@ -525,7 +525,7 @@ public class Grid extends Container implements Scrollable
    }
    
    private int lastV,lastH;
-   public boolean scrollContent(int dx, int dy)
+   public boolean scrollContent(int dx, int dy, boolean fromFlick)
    {
       boolean scrolled = false;
 
@@ -544,6 +544,7 @@ public class Grid extends Container implements Scrollable
          {
             gridOffset = lastV;
             refreshDataSource();
+            if (!fromFlick) sbVert.tempShow();
          }
       }
       if (flickDirection == HORIZONTAL && dx != 0 && sbHoriz != null)
@@ -553,6 +554,7 @@ public class Grid extends Container implements Scrollable
          sbHoriz.setValue(hbarX0 + hbarDX);
          lastH = sbHoriz.getValue();
 
+         if (!fromFlick) sbHoriz.tempShow();
          scrolled = true;
          if (oldValue != lastH)
             xOffset = -lastH;
@@ -1952,14 +1954,14 @@ public class Grid extends Container implements Scrollable
                
                if (isScrolling)
                {
-                  scrollContent(dx, dy);
+                  scrollContent(dx, dy, true);
                   e.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   e.consumed = true;
-                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy, true))
                      isScrolling = scScrolled = true;
                }
             }
