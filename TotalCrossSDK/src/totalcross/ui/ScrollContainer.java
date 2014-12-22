@@ -475,21 +475,21 @@ public class ScrollContainer extends Container implements Scrollable
                boolean scrolled = false;
                if (sbV != null)
                {
-                  int toScroll = this.height/2;
-                  if (r.y > this.height/2)
-                     scrolled = scrollContent(0, toScroll,false);
+                  int k = this.height/3;
+                  if (r.y > 2*k)
+                     scrolled = scrollContent(0, k,false);
                   else
-                  if (r.y2() < this.height/2)
-                     scrolled = scrollContent(0,-toScroll,false);
+                  if (r.y2() < k)
+                     scrolled = scrollContent(0,-k,false);
                }
                if (sbH != null && !scrolled)
                {
-                  int toScroll = this.width/2;
-                  if (r.x > this.width/2)
-                     scrollContent(toScroll,0,false);
+                  int k = this.width/3;
+                  if (r.x > 2*k)
+                     scrollContent(k,0,false);
                   else
-                  if (r.x2() < this.width/2)
-                     scrollContent(-toScroll,0,false);
+                  if (r.x2() < k)
+                     scrollContent(-k,0,false);
                }
             }
             break;
