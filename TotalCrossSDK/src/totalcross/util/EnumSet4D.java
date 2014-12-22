@@ -126,7 +126,7 @@ public abstract class EnumSet4D<T extends Enum<T>>
       {
         r = (EnumSet4D<T>) super.clone();
       }
-    catch (CloneNotSupportedException _)
+    catch (CloneNotSupportedException cnse)
       {
         /* Can't happen */
         return null;
