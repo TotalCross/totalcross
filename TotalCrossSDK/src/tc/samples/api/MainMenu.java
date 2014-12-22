@@ -55,7 +55,7 @@ public class MainMenu extends BaseContainer
       "Camera",
       "Chart",
       "Check/Radio",
-      "Combo/ListBox",
+      "ComboBox/ListBox",
       "ControlAnimation",
       "Dynamic ScrollContainer",
       "Edit",
