@@ -339,7 +339,7 @@ large
 
 \begin_layout Plain Layout
 
-Version 3.0
+Version 3.1
 \end_layout
 
 \begin_layout Plain Layout
@@ -6931,10 +6931,38 @@ TreeMap
 \begin_layout Itemize
 
 \family typewriter
-TreeSet 
+TreeSet
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+Vector
 \end_layout
 
 \end_deeper
+\begin_layout Standard
+Note that now there are two 
+\family typewriter
+Vector
+\family default
+ classes.
+ One from 
+\family typewriter
+totalcross.util
+\family default
+ and another from 
+\family typewriter
+java.util
+\family default
+.
+ To use the one from the Collections API, use 
+\family typewriter
+java.util.Vector
+\family default
+.
+\end_layout
+
 \begin_layout Section
 Additions in 
 \family typewriter
@@ -64846,14 +64874,14 @@ Because this isn't a guide for Eclipse or Java, it assumes the following:
 \end_layout
 
 \begin_layout Itemize
-Java JDK 6 is installed and configured.
+Java JDK 8 is installed and configured.
 \end_layout
 
 \begin_layout Itemize
 The Eclipse IDE with Java Development Tools installed.
- Please notice this guide was created using the Eclipse Ganymede (version
- 3.4.x) package “Eclipse IDE for Java Developers”, and the steps presented
- here may not be valid for other versions.
+ Please notice this guide was created using the Eclipse Luna (version 4.4.x)
+ package “Eclipse IDE for Java EE Developers”, and the steps presented here
+ may not be valid for other versions.
 \end_layout
 
 \begin_layout Itemize
@@ -64861,8 +64889,8 @@ We'll refer to the TotalCross location as TotalCrossSDK.
 \end_layout
 
 \begin_layout Standard
-We'll use the UIControls sample that comes with the SDK to skip the programming
- and focus on the project setup:
+We'll use the TotalCrossAPI sample that comes with the SDK to skip the programmi
+ng and focus on the project setup:
 \end_layout
 
 \begin_layout Enumerate
@@ -64871,51 +64899,64 @@ Create a new Java Project: Open the menu File and click on New > Java Project.
 
 \begin_layout Enumerate
 Choose a project name for your project and click on Finish.
- We'll use UIControls.
+ We'll use TotalCrossAPI.
+ Then click on 
+\begin_inset Quotes eld
+\end_inset
+
+Finish
+\begin_inset Quotes erd
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Enumerate
-Click on “+” to expand the project and right-click on the folder “src” and
+Expand the newly created project and right-click on the folder “src” and
  choose “Import...”.
 \end_layout
 
 \begin_layout Enumerate
-On the new “Import” dialog shown, click on “+” to expand the folder “General”,
- select “File System” and click “Next >”.
+On the new “Import” dialog shown, expand the folder “General”, select “File
+ System” and click “Next >”.
 \end_layout
 
 \begin_layout Enumerate
-Now write the complete file path to the UIControls example, or use “Browse”
+Now write the complete file path to the TotalCrossAPI example, or use “Browse”
  to navigate to the file system.
  Our source is located at 
 \family typewriter
-TotalCrossSDK/src/tc/samples/ui/controls
+TotalCrossSDK/src/tc/samples/api/
 \family default
 .
 \end_layout
 
 \begin_layout Enumerate
-After inputing the source location, check the file 
+On the left box, check the folder 
 \family typewriter
-UIControls.java
+api
 \family default
- on the right panel; Below you can see the default input folder is 
-\family typewriter
-UIControls/src
-\family default
-, change it to 
-\family typewriter
-UIControls/ src/tc/samples/ui/controls
-\family default
- and click on “Finish”.
+.
 \end_layout
 
 \begin_layout Enumerate
-Now we can see our project has 
+On the edit 
+\begin_inset Quotes eld
+\end_inset
+
+Into folder:
+\begin_inset Quotes erd
+\end_inset
+
+, write 
 \family typewriter
-tc.samples.ui.controls.UIControls.java
+TotalCrossAPI/src/tc/samples
 \family default
- on it, but it is also displaying several build errors.
+.
+\end_layout
+
+\begin_layout Enumerate
+Now we can see our project is displaying several build errors.
  To fix this, right-click on the project and choose “Properties”.
 \end_layout
 
@@ -64939,7 +64980,7 @@ Now the “Libraries” tab should also show the
 tc.jar
 \family default
 .
- Click on “+” to expand it and select “Javadoc location”.
+ Expand it and select “Javadoc location”.
  Now click on the button “Edit...” to open a new dialog, then browse your file
  system and select the 
 \family typewriter
@@ -64962,7 +65003,7 @@ TotalCrossSDK/src
 \begin_layout Enumerate
 Look again at the left panel and select “Java Compiler”.
  Check the option “Enable project specific settings” and change the “Compiler
- compliance level” to “1.3”.
+ compliance level” to “1.8”.
 \end_layout
 
 \begin_layout Enumerate

@@ -28,10 +28,8 @@ package totalcross.ui.event;
 
 public class MouseEvent extends PenEvent
 {
-   public static final int WHEEL_UP    = 1;
-   public static final int WHEEL_DOWN  = 2;
-   public static final int WHEEL_LEFT  = 3;
-   public static final int WHEEL_RIGHT = 4;
+   /** @see totalcross.ui.event.DragEvent 
+    */
    public int wheelDirection;
    
    /** The event type for a mouse moving over a control.

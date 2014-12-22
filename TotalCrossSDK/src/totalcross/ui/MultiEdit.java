@@ -1060,6 +1060,24 @@ public class MultiEdit extends Container implements Scrollable
       }
    }
 
+   /** Cuts the text on the given range. */
+   public void cutText(int sel1, int sel2)
+   {
+      if (sel1 > sel2)
+      {
+         int temp = sel1;
+         sel1 = sel2;
+         sel2 = temp;
+      }
+      startSelectPos = sel1;
+      insertPos = sel2;
+      if (sel1 != -1)
+      {
+         backspaceEvent.target = this;
+         _onEvent(backspaceEvent);
+      }
+   }
+   
    private void clipboardCopy()
    {
       int sel1 = startSelectPos;
