@@ -78,6 +78,7 @@ public class ListContainerSample extends BaseContainer
          }
          int ini2 = Vm.getTimeStamp();
          lc.addContainers(all);
+lc.autoScroll = true;
          int ini3 = Vm.getTimeStamp();
          gcTime = Settings.gcTime - gcTime;
          gcCount = Settings.gcCount - gcCount;

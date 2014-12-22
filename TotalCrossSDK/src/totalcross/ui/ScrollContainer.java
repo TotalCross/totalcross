@@ -77,6 +77,9 @@ public class ScrollContainer extends Container implements Scrollable
    private boolean isScrolling;
    private boolean scScrolled;
 
+   /** Automatically scrolls the container when an item is clicked. */
+   public boolean autoScroll;
+
    /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
      */
    public ScrollContainer()
@@ -465,6 +468,30 @@ public class ScrollContainer extends Container implements Scrollable
             break;
          case PenEvent.PEN_UP:
             isScrolling = false;
+            if (autoScroll && event.target instanceof Control && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
+            {
+               Control c = (Control)event.target;
+               Rect r = c.getAbsoluteRect();
+               boolean scrolled = false;
+               if (sbV != null)
+               {
+                  int toScroll = this.height/2;
+                  if (r.y > this.height/2)
+                     scrolled = scrollContent(0, toScroll,false);
+                  else
+                  if (r.y2() < this.height/2)
+                     scrolled = scrollContent(0,-toScroll,false);
+               }
+               if (sbH != null && !scrolled)
+               {
+                  int toScroll = this.width/2;
+                  if (r.x > this.width/2)
+                     scrollContent(toScroll,0,false);
+                  else
+                  if (r.x2() < this.width/2)
+                     scrollContent(-toScroll,0,false);
+               }
+            }
             break;
          case ControlEvent.HIGHLIGHT_IN:
             if (event.target != this)
