@@ -40,7 +40,7 @@ public class Register
    
    boolean activate() throws Exception
    {
-      String addr = "http://www.totalcross.com/valida.asp";
+      String addr = "http://www.superwaba.net/SDKRegistrationService/services/SDKRegistration";
       // connection setup
       URL url = new URL(addr);
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
