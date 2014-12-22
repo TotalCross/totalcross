@@ -128,7 +128,14 @@ public class SpinList extends Control
       selected = 0;
       Window.needsPaint = true;
    }
-   
+
+   /** Just replaces the choices array. */
+   public void replaceChoices(String []choices) throws InvalidNumberException
+   {
+      this.choices = choices;
+      if (selected >= choices.length) selected = choices.length;
+   }
+
    /** Expands the items in the format "prefix [start,end] suffix", where prefix and suffix are optional.
     * For example, passing some string as "Day [1,31]" will expand that to an array of 
     * <code>"Day 1","Day 2",...,"Day 31"</code>.
