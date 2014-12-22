@@ -476,6 +476,7 @@ public class ScrollContainer extends Container implements Scrollable
                if (sbV != null)
                {
                   int k = this.height/3;
+                  r.y -= this.getAbsoluteRect().y;
                   if (r.y > 2*k)
                      scrolled = scrollContent(0, k,false);
                   else
@@ -485,6 +486,7 @@ public class ScrollContainer extends Container implements Scrollable
                if (sbH != null && !scrolled)
                {
                   int k = this.width/3;
+                  r.x -= this.getAbsoluteRect().x;
                   if (r.x > 2*k)
                      scrollContent(k,0,false);
                   else
