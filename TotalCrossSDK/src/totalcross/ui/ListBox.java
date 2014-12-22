@@ -283,7 +283,7 @@ public class ListBox extends Container implements Scrollable
       return false;
    }
    
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {
       boolean hFlick = xDelta != 0 && ivWidths != null;
       boolean vFlick = yDelta != 0;
@@ -333,6 +333,7 @@ public class ListBox extends Container implements Scrollable
                   vFlick = false;
                else
                {
+                  if (!fromFlick) sbar.tempShow();
                   offset = newOffset;
                   Window.needsPaint = true;
                }
@@ -887,14 +888,14 @@ public class ListBox extends Container implements Scrollable
             {
                if (isScrolling)
                {
-                  scrollContent(-de.xDelta, -de.yDelta);
+                  scrollContent(-de.xDelta, -de.yDelta, true);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   event.consumed = true;
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true))
                      isScrolling = scScrolled = true;
                }
             }

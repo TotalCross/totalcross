@@ -213,7 +213,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    private int flickDirection = NONE;
    private boolean isFlicking;
 
-   public boolean scrollContent(int dx, int dy)
+   public boolean scrollContent(int dx, int dy, boolean fromFlick)
    {
       boolean scrolled = false;
 
@@ -228,6 +228,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          {
             hsOffset = lastH;
             scrolled = true;
+            if (!fromFlick) hbar.tempShow();
          }
       }
       if (flickDirection == VERTICAL && dy != 0)
@@ -241,6 +242,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          {
             offset = lastV;
             scrolled = true;
+            if (!fromFlick) vbar.tempShow();
          }
       }
 
@@ -1008,14 +1010,14 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          
          if (isScrolling)
          {
-            scrollContent(dx, dy);
+            scrollContent(dx, dy, true);
             de.consumed = true;
          }
          else
          {
             int direction = DragEvent.getInverseDirection(de.direction);
             //de.consumed = true; - with this, the ScrollPositions don't appear
-            if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+            if (canScrollContent(direction, de.target) && scrollContent(dx, dy, true))
                scScrolled = isScrolling = true;
          }
          de.consumed = true; // guich@tc166: if inside a TabbedContainer, prevent it from scrolling

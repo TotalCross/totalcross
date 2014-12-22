@@ -145,7 +145,7 @@ public class ScrollContainer extends Container implements Scrollable
       return ret;
    }
    
-   public boolean scrollContent(int dx, int dy)
+   public boolean scrollContent(int dx, int dy, boolean fromFlick)
    {
       boolean scrolled = false;
 
@@ -161,6 +161,7 @@ public class ScrollContainer extends Container implements Scrollable
             bag.setRect(LEFT - lastH, KEEP,KEEP,KEEP);
             bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
             scrolled = true;
+            if (!fromFlick) sbH.tempShow();
          }
       }
       if (dy != 0 && sbV != null)
@@ -175,6 +176,7 @@ public class ScrollContainer extends Container implements Scrollable
             bag.setRect(KEEP, TOP - lastV, KEEP, KEEP);
             bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
             scrolled = true;
+            if (!fromFlick) sbV.tempShow();
          }
       }
 
@@ -447,7 +449,7 @@ public class ScrollContainer extends Container implements Scrollable
                int dy = -de.yDelta;
                if (isScrolling)
                {
-                  scrollContent(dx, dy);
+                  scrollContent(dx, dy, true);
                   event.consumed = true;
                   //Event.clearQueue(PenEvent.PEN_DRAG);
                }
@@ -456,7 +458,7 @@ public class ScrollContainer extends Container implements Scrollable
                   int direction = DragEvent.getInverseDirection(de.direction);
                   if (!flick.isValidDirection(direction))
                      break;
-                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy, true))
                      event.consumed = isScrolling = scScrolled = true;
                }
             }

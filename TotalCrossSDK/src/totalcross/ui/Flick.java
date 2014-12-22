@@ -529,12 +529,23 @@ public class Flick implements PenListener, TimerListener
          calledFlickStarted = true;
          if (target.flickStarted())
          {
-            if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickStarted();
+            callListeners(true,false);
             currentFlick = this;
             flickPos = 0;
             ((Control)target).addTimer(timer, 1000 / frameRate);
          }
       }
+   }
+
+   /** Calls the listeners of this flick. */
+   public void callListeners(boolean started, boolean atPenDown)
+   {
+      if (listeners != null) 
+         for (int i = listeners.size(); --i >= 0;)
+            if (started)
+               ((Scrollable)listeners.items[i]).flickStarted();
+            else
+               ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
    }
    
    /**
@@ -552,7 +563,7 @@ public class Flick implements PenListener, TimerListener
       {
          calledFlickStarted = false;
          ((Control)target).removeTimer(timer);
-         if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
+         callListeners(false, atPenDown);
          target.flickEnded(atPenDown);
       }
    }
@@ -587,15 +598,15 @@ public class Flick implements PenListener, TimerListener
             {
                case DragEvent.UP:
                case DragEvent.DOWN:
-                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion);
-                  if (!target.scrollContent(0, -flickMotion))
+                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion, true);
+                  if (!target.scrollContent(0, -flickMotion, true))
                      endReached = true;
                break;
    
                case DragEvent.LEFT:
                case DragEvent.RIGHT:
-                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0);
-                  if (!target.scrollContent(-flickMotion, 0))
+                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0, true);
+                  if (!target.scrollContent(-flickMotion, 0, true))
                      endReached = true;
                break;
             }

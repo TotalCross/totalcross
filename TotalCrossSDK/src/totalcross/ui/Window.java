@@ -710,34 +710,39 @@ public class Window extends Container
          {
             int k = Settings.scrollDistanceOnMouseWheelMove;
             Scrollable sc = (Scrollable)c;
-            boolean canScrollHoriz = sc.canScrollContent(DragEvent.LEFT,sc) || sc.canScrollContent(DragEvent.RIGHT,sc);
             boolean canScrollVert  = sc.canScrollContent(DragEvent.UP,sc)   || sc.canScrollContent(DragEvent.DOWN,sc);
+            boolean canScrollHoriz = sc.canScrollContent(DragEvent.LEFT,sc) || sc.canScrollContent(DragEvent.RIGHT,sc);
+            int kx = 0, ky = 0;
             if (canScrollVert && !canScrollHoriz) // only vertical?
                switch (key)
                {
                   case DragEvent.DOWN : 
-                  case DragEvent.LEFT : sc.scrollContent(0, k); break;
+                  case DragEvent.LEFT : ky =  k; break;
                   case DragEvent.UP   : 
-                  case DragEvent.RIGHT: sc.scrollContent(0, -k); break;
+                  case DragEvent.RIGHT: ky = -k; break;
                }
             else
-            if (canScrollHoriz) // only horizontal
+            if (!canScrollVert && canScrollHoriz) // only horizontal
                switch (key)
                {
                   case DragEvent.DOWN : 
-                  case DragEvent.LEFT : sc.scrollContent(k, 0); break;
+                  case DragEvent.LEFT : kx =  k; break;
                   case DragEvent.UP   : 
-                  case DragEvent.RIGHT: sc.scrollContent(-k, 0); break;
+                  case DragEvent.RIGHT: kx = -k; break;
                }
             else // both horizontal and vertical
                switch (key)
                {
-                  case DragEvent.DOWN : sc.scrollContent(0, k); break;
-                  case DragEvent.UP   : sc.scrollContent(0, -k); break;
-                  case DragEvent.LEFT : sc.scrollContent(k, 0); break;
-                  case DragEvent.RIGHT: sc.scrollContent(-k, 0); break;
+                  case DragEvent.DOWN : ky =  k; break;
+                  case DragEvent.UP   : ky = -k; break;
+                  case DragEvent.LEFT : kx =  k; break;
+                  case DragEvent.RIGHT: kx = -k; break;
                }
-            repaintNow();
+            if (kx != 0 || ky != 0)
+            {
+               sc.scrollContent(kx, ky, false);
+               repaintNow();
+            }
             return;
          }
       }

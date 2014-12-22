@@ -210,7 +210,7 @@ public class MultiEdit extends Container implements Scrollable
       return false;
    }
    
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {
       if (Math.abs(xDelta) > Math.abs(yDelta)) // MultiEdit has only vertical scrolling
          return false;
@@ -233,6 +233,7 @@ public class MultiEdit extends Container implements Scrollable
          firstToDraw = lastFirstToDrawLine;
       
       sb.setValue(firstToDraw);
+      if (!fromFlick) sb.tempShow();
       newInsertPos = zToCharPos(z1);
       
       Window.needsPaint = true;
@@ -901,14 +902,14 @@ public class MultiEdit extends Container implements Scrollable
                {
                   if (isScrolling)
                   {
-                     scrollContent(-de.xDelta, -de.yDelta);
+                     scrollContent(-de.xDelta, -de.yDelta, true);
                      event.consumed = true;
                   }
                   else
                   {
                      int direction = DragEvent.getInverseDirection(de.direction);
                      event.consumed = true;
-                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
+                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true))
                      {
                         isScrolling = scScrolled = true;
                         dragDistance = 0;
