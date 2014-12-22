@@ -6925,6 +6925,12 @@ PriorityQueue
 \begin_layout Itemize
 
 \family typewriter
+Stack
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 TreeMap 
 \end_layout
 

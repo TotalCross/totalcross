@@ -67,6 +67,7 @@ public class TestCollectionsAPI extends TestSuite
       addTestCase(TestLinkedHashSet.class);
       addTestCase(TestLinkedList.class);
       addTestCase(TestPriorityQueue.class); 
+      addTestCase(TestStack.class); 
       addTestCase(TestTreeSet.class); 
       addTestCase(TestTreeMap.class);
       addTestCase(TestVector.class);
