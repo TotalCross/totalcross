@@ -273,6 +273,11 @@ public final class Vm
             status = 0;
          }
          else
+         if (command.equals("viewer"))
+         {
+            java.awt.Desktop.getDesktop().browse(new java.net.URI(args.replace(' ','+')));
+         }
+         else
          {
             java.lang.Runtime runtime = java.lang.Runtime.getRuntime();
             if (args != null)
