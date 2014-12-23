@@ -37,7 +37,7 @@ public class GoogleMapsSample extends BaseContainer
    Edit edAddr, edLat, edLon, edTo;
    Button btnShow;
    RadioGroupController rg;
-   Check chSat,chGPS;
+   Check chSat,chGPS,chWaze;
    
    ScrollContainer sc;
    private boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
@@ -64,6 +64,7 @@ public class GoogleMapsSample extends BaseContainer
          sc.add(chGPS = new Check("Use GPS if activated."),LEFT+2*g,AFTER+g,FILL,PREFERRED);
          sc.add(r = new Radio(" Address",rg),LEFT+g,AFTER+2*g,FILL,PREFERRED); r.leftJustify = true;
          sc.add(edAddr = new Edit(),LEFT+2*g,AFTER+g,FILL-g*4,PREFERRED);
+         sc.add(chWaze = new Check("Use WAZE if installed"),LEFT+g,AFTER+g);
          sc.add(new Label("To (optional): "), LEFT+2*g,AFTER+g);
          sc.add(edTo = new Edit(),AFTER+2*g,SAME,FILL-g*4,PREFERRED);
          sc.add(r = new Radio(" Coordinates",rg),LEFT+g,AFTER+2*g,FILL,PREFERRED); r.leftJustify = true;
@@ -80,6 +81,14 @@ public class GoogleMapsSample extends BaseContainer
          edTo.setText("Av Norte 2920, Fortaleza, CE, Brazil");
          rg.setSelectedIndex(0);
          enableControls();
+         chWaze.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               if (chWaze.isChecked())
+                  Toast.show("The address you specify will be\nused as the destination address.\nDont use \"To (optional)\".",3000);
+            }
+         });
       }
       catch (Exception e)
       {
@@ -289,8 +298,8 @@ public class GoogleMapsSample extends BaseContainer
                               to = tempTo;
                         }
                         Vm.debug("addr: "+addr+", to: "+to);
-                        if (to != null && to.length() > 0)
-                           ok = totalcross.map.GoogleMaps.showRoute(addr,to,null,chSat.isChecked());
+                        if (chWaze.isChecked() || (to != null && to.length() > 0))
+                           ok = totalcross.map.GoogleMaps.showRoute(addr,to,null,(chSat.isChecked() ? GoogleMaps.SHOW_SATELLITE_PHOTOS : 0) | (chWaze.isChecked() ? GoogleMaps.USE_WAZE : 0));
                         else
                            ok = totalcross.map.GoogleMaps.showAddress(addr,chSat.isChecked());                        
                      }
