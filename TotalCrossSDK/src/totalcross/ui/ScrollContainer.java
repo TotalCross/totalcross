@@ -18,6 +18,8 @@
 
 package totalcross.ui;
 
+import java.util.*;
+
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -77,8 +79,21 @@ public class ScrollContainer extends Container implements Scrollable
    private boolean isScrolling;
    private boolean scScrolled;
 
-   /** Automatically scrolls the container when an item is clicked. */
+   /** Automatically scrolls the container when an item is clicked.
+    * @see #hsIgnoreAutoScroll 
+    */
    public boolean autoScroll;
+   
+   /** Defines a list of classes that will make autoScroll be ignored.
+    * Use it like:
+    * <pre>
+    * ScrollContainer.hsIgnoreAutoScroll.add(totalcross.ui.SpinList.class);
+    * ...
+    * </pre>
+    * This is useful if such class usually requires more than one press to have a value defined.
+    * @see #autoScroll
+    */
+   public static HashSet<Class<?>> hsIgnoreAutoScroll = new HashSet<Class<?>>(5);
 
    /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
      */
@@ -468,7 +483,7 @@ public class ScrollContainer extends Container implements Scrollable
             break;
          case PenEvent.PEN_UP:
             isScrolling = false;
-            if (autoScroll && event.target instanceof Control && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
+            if (autoScroll && event.target instanceof Control && !hsIgnoreAutoScroll.contains(event.target.getClass()) && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
             {
                Control c = (Control)event.target;
                Rect r = c.getAbsoluteRect();
