@@ -16,7 +16,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    bool iphone_mapsShowAddress(char* addr, bool showSatellitePhotos);
+    bool iphone_mapsShowAddress(char* addr, int flags);
 #ifdef __cplusplus
 };
 #endif
@@ -41,8 +41,7 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
    p->retI = result != 0;
 #elif defined darwin
    CharP addrp = JCharP2CharP(String_charsStart(addr), String_charsLen(addr));
-   bool sat = p->i32[0];
-   p->retI = addrp ? iphone_mapsShowAddress(addrp,sat) : 0;
+   p->retI = addrp ? iphone_mapsShowAddress(addrp,p->i32[0]) : 0;
    xfree(addrp);
 #else
    p->retI = false;
@@ -72,6 +71,8 @@ TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native 
    if (jcoord) (*env)->DeleteLocalRef(env, jcoord);
    p->retI = result != 0;
 #elif defined darwin
-   p->retI = false;
-#endif	
+   CharP addrp = JCharP2CharP(String_charsStart(addrI), String_charsLen(addrI));
+   p->retI = addrp ? iphone_mapsShowAddress(addrp,p->i32[0] | 2) : 0;
+   xfree(addrp);
+#endif
 }
