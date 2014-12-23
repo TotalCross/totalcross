@@ -49,7 +49,7 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
 #endif	
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags);
 {
    TCObject addrI = p->obj[0];
    TCObject addrF = p->obj[1];
@@ -64,11 +64,11 @@ TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native 
    JNIEnv* env = getJNIEnv();         
    TCObject coord = p->obj[2];
    jstring jaddrI = (*env)->NewString(env, (jchar*) String_charsStart(addrI), String_charsLen(addrI));
-   jstring jaddrF = (*env)->NewString(env, (jchar*) String_charsStart(addrF), String_charsLen(addrF));
+   jstring jaddrF = addrF ? (*env)->NewString(env, (jchar*) String_charsStart(addrF), String_charsLen(addrF)) : 0;
    jstring jcoord = !coord ? null : (*env)->NewString(env, (jchar*) String_charsStart(coord), String_charsLen(coord));
-   jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowRoute, jaddrI, jaddrF, jcoord, (jboolean) p->i32[0]);
+   jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowRoute, jaddrI, jaddrF, jcoord, p->i32[0]);
    (*env)->DeleteLocalRef(env, jaddrI);
-   (*env)->DeleteLocalRef(env, jaddrF);
+   if (jaddrF) (*env)->DeleteLocalRef(env, jaddrF);
    if (jcoord) (*env)->DeleteLocalRef(env, jcoord);
    p->retI = result != 0;
 #elif defined darwin
