@@ -702,6 +702,7 @@ public class Window extends Container
          if (!invokeMenu) return;
       }
 
+      // checks for mouse wheel on DESKTOP/WIN32 only
       if (Settings.scrollDistanceOnMouseWheelMove != 0 && type == MouseEvent.MOUSE_WHEEL && contains(x, y))
       {
          Control c = findChild(x - this.x, y - this.y);
@@ -738,11 +739,21 @@ public class Window extends Container
                   case DragEvent.LEFT : kx =  k; break;
                   case DragEvent.RIGHT: kx = -k; break;
                }
-            if (kx != 0 || ky != 0)
-            {
-               sc.scrollContent(kx, ky, false);
-               repaintNow();
-            }
+            if (ky != 0)
+               for (int i = 0,n=ky>0?ky:-ky; i < n; i++)
+               {
+                  sc.scrollContent(0, ky>0?1:-1, false);
+                  repaintNow();
+                  Vm.sleep(1);
+               }
+            else
+            if (kx != 0)
+               for (int i = 0,n=kx>0?kx:-kx; i < n; i++)
+               {
+                  sc.scrollContent(kx>0?1:-1, 0, false);
+                  repaintNow();
+                  Vm.sleep(1);
+               }
             return;
          }
       }
