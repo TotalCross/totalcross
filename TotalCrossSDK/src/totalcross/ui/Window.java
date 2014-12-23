@@ -740,17 +740,17 @@ public class Window extends Container
                   case DragEvent.RIGHT: kx = -k; break;
                }
             if (ky != 0)
-               for (int i = 0,n=ky>0?ky:-ky; i < n; i++)
+               for (int i = 0,n=ky>0?ky:-ky, inc=ky>0?1:-1; i < n; i++)
                {
-                  sc.scrollContent(0, ky>0?1:-1, false);
+                  sc.scrollContent(0, inc, false);
                   repaintNow();
                   Vm.sleep(1);
                }
             else
             if (kx != 0)
-               for (int i = 0,n=kx>0?kx:-kx; i < n; i++)
+               for (int i = 0,n=kx>0?kx:-kx, inc=kx>0?1:-1; i < n; i++)
                {
-                  sc.scrollContent(kx>0?1:-1, 0, false);
+                  sc.scrollContent(inc, 0, false);
                   repaintNow();
                   Vm.sleep(1);
                }
