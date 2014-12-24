@@ -13,8 +13,6 @@
 
 #include "tcvm.h"
 
-#define STRING_BUILDER_MSG "\nTotalCross is not compatible\nwith Java 1.5, so you must\ncompile your application passing\n-source 1.2 -target 1.1\nto instruct JavaC to replace\nStringBuilder by StringBuffer."
-
 TC_API void throwException(Context currentContext, Throwable t, CharP message, ...) // throw an exception based on the Throwable enumeration
 {
    TCObject exception;
@@ -36,12 +34,6 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
       setObjectLock(currentContext->thrownException, UNLOCKED);
    }
 
-   if (message && strEq(exceptionClassName, throwableAsCharP[ClassNotFoundException]) && strEq(message,"java.lang.StringBuilder"))
-   {
-      *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, STRING_BUILDER_MSG,-1);
-      setObjectLock(*Throwable_msg(exception), UNLOCKED);
-   }
-   else
    if (message)
    {
       va_list args;
@@ -76,12 +68,7 @@ TC_API TCObject createException(Context currentContext, Throwable t, bool fillSt
       currentContext->thrownException = exception;
       setObjectLock(currentContext->thrownException, UNLOCKED);
    }
-   if (message && t == ClassNotFoundException && strEq(message,"java.lang.StringBuilder"))
-   {
-      *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, STRING_BUILDER_MSG,-1);
-      setObjectLock(*Throwable_msg(exception), UNLOCKED);
-   }
-   else
+   
    if (message)
    {
       va_list args;
@@ -114,12 +101,7 @@ TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName
       currentContext->thrownException = exception;
       setObjectLock(currentContext->thrownException, UNLOCKED);
    }
-   if (message && strEq(exceptionClassName, throwableAsCharP[ClassNotFoundException]) && strEq(message,"java.lang.StringBuilder"))
-   {
-      *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, STRING_BUILDER_MSG,-1);
-      setObjectLock(*Throwable_msg(exception), UNLOCKED);
-   }
-   else
+   
    if (message)
    {
       va_list args;
