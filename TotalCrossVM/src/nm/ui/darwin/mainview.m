@@ -269,11 +269,16 @@ static bool callingCamera;
    callingCamera = false;
 }
 
-- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+#define SHOW_SAT 1
+#define USE_WAZE 2
+- (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;
 {
    NSString *stringURL;
    char c = [address characterAtIndex:0];
-   NSString* type = showSat ? @"&t=h" : @"&t=m";
+   NSString* type = (flags & SHOW_SAT) != 0 ? @"&t=h" : @"&t=m";
+   if ((flags & USE_WAZE) != 0 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"waze://"]])
+      stringURL = [NSString stringWithFormat:@"waze://?q=%@&navigate=yes", address];
+   else
    if ([address length] == 0) // not working yet
    {
 //      CLLocationCoordinates2D cl = [self getCurrentLocation];
@@ -386,10 +391,10 @@ void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, in
 
 //////////////// interface to mainview methods ///////////////////
 
-bool iphone_mapsShowAddress(char* addr, bool showSatellitePhotos)
+bool iphone_mapsShowAddress(char* addr, int flags)
 {
    NSString* string = [NSString stringWithFormat:@"%s", addr];
-   return [DEVICE_CTX->_mainview mapsShowAddress:string showSatellitePhotos:showSatellitePhotos];
+   return [DEVICE_CTX->_mainview mapsShowAddress:string flags:flags];
 }
 
 void iphone_dialNumber(char* number)

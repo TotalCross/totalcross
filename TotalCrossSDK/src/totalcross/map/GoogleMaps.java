@@ -26,6 +26,12 @@ import totalcross.sys.*;
  */
 public class GoogleMaps
 {
+   /** Used in the flags argument of showRoute: shows the satellite photos. */
+   public static final int SHOW_SATELLITE_PHOTOS = 1;
+   /** Used in the flags argument of showRoute: use waze to show the route of the current location to a target
+    * address. Note that the destination address is NOT used. */
+   public static final int USE_WAZE = 2;
+   
    /** An abstract class used to group an array of map items. */
    public abstract static class MapItem
    {
@@ -152,13 +158,24 @@ public class GoogleMaps
    native static boolean showAddress4D(String address, boolean showSatellitePhotos);
 
    /** Shows the route between two points. The traversed points is a sequence of lat,lon coordinates comma-separated.
+    * @deprecated 
+    * @see #showRoute(String, String, String, int)
     */
    public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
    {
-      return true;
+      return showRoute(addressI, addressF, traversedPoints, SHOW_SATELLITE_PHOTOS);
    }
    native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
-   
+
+   /** Shows the route between two points. The traversed points is a sequence of lat,lon coordinates comma-separated.
+    * If flags is USE_WAZE, the addressF is not used and can be null.
+    */
+   public static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags)
+   {
+      return true;
+   }
+   native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, int flags);
+
    /** Shows an array of MapItem elements in the map. The map is zommed in a way that all coordinates are visible.
     * See the Circle, Shape and Place map items.
     */

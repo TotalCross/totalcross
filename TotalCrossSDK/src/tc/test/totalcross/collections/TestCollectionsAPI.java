@@ -62,11 +62,13 @@ public class TestCollectionsAPI extends TestSuite
       addTestCase(TestEnumMap.class);
       addTestCase(TestHashMap.class);
       addTestCase(TestHashSet.class);
+      addTestCase(TestHashtable.class);
       addTestCase(TestIdentityHashMap.class);
       addTestCase(TestLinkedHashMap.class);
       addTestCase(TestLinkedHashSet.class);
       addTestCase(TestLinkedList.class);
       addTestCase(TestPriorityQueue.class); 
+      addTestCase(TestStack.class); 
       addTestCase(TestTreeSet.class); 
       addTestCase(TestTreeMap.class);
       addTestCase(TestVector.class);

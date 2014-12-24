@@ -196,6 +196,7 @@ public class Check extends Control
       if (!uiAndroid && uiVista && enabled) // guich@573_6
          g.fillVistaRect(0,0,wh,wh,cbColor,true,false);
       else
+      if (!uiAndroid || !transparentBackground)
       {
          g.backColor = uiAndroid ? backColor : cbColor;
          g.fillRect(0,0,wh,wh); // guich@220_28
