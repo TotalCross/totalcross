@@ -64,7 +64,7 @@ public final class J2TC implements JConstants, TCConstants
       jc.className = Bytecode2TCCode.replaceTotalCrossLangToJavaLang(jc.className);
       //  if xxx is the current class, compile it if and only if not exist a class xxx4D
       boolean has4D = htAddedClasses.exists(jc.className+"4D.class");
-      if (!has4D || jc.className.equals("totalcross/util/Vector"))
+      if (!has4D || jc.className.equals("totalcross/util/Vector") || jc.className.equals("totalcross/util/Hashtable"))
       {
          if (isInnerClassOfNon4DClass(jc.className))
             return;
