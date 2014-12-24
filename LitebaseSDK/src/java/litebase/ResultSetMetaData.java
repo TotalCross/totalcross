@@ -168,9 +168,9 @@ public class ResultSetMetaData
     * Given the column index (starting at 1), returns the column type.
     *
     * @param column The column index (starting at 1).
-    * @return The column type, which can be: <b><code>SHORT_TYPE</b></code>, <b><code>INT_TYPE</b></code>, <b><code>LONG_TYPE</b></code>, 
-    * <b><code>FLOAT_TYPE</b></code>, <b><code>DOUBLE_TYPE</b></code>, <b><code>CHAR_TYPE</b></code>, <b><code>CHAR_NOCASE_TYPE</b></code>, 
-    * <b><code>DATE_TYPE</b></code>, <b><code>DATETIME_TYPE</b></code>, or <b><code>BLOB_TYPE</b></code>.
+    * @return The column type, which can be: <code><b>SHORT_TYPE</b></code>, <code><b>INT_TYPE</b></code>, <code><b>LONG_TYPE</b></code>, 
+    * <code><b>FLOAT_TYPE</b></code>, <code><b>DOUBLE_TYPE</b></code>, <code><b>CHAR_TYPE</b></code>, <code><b>CHAR_NOCASE_TYPE</b></code>, 
+    * <code><b>DATE_TYPE</b></code>, <code><b>DATETIME_TYPE</b></code>, or <code><b>BLOB_TYPE</b></code>.
     */
    public int getColumnType(int column)
    {
@@ -191,9 +191,9 @@ public class ResultSetMetaData
     * Given the column index (starting at 1), returns the name of the column type.
     *
     * @param column The column index (starting at 1).
-    * @return The name of the column type, which can be: <b><code>chars</b></code>, <b><code>short</b></code>, <b><code>int</b></code>, 
-    * <b><code>long</b></code>, <b><code>float</b></code>, <b><code>double</b></code>, <b><code>date</b></code>, <b><code>datetime</b></code>, 
-    * <b><code>blob</b></code>, or null if an error occurs.
+    * @return The name of the column type, which can be: <code><b>chars</b></code>, <code><b>short</b></code>, <code><b>int</b></code>, 
+    * <code><b>long</b></code>, <code><b>float</b></code>, <code><b>double</b></code>, <code><b>date</b></code>, <code><b>datetime</b></code>, 
+    * <code><b>blob</b></code>, or null if an error occurs.
     */
    public String getColumnTypeName(int column) 
    {
