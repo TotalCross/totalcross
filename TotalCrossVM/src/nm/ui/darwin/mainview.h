@@ -59,7 +59,7 @@
 - (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
 - (void) updateLayout;
 - (void) dialNumber:(NSString*) number;
-- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+- (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;
 - (int) gpsStart;
 - (void) gpsStop;
 - (int) gpsUpdateLocation;

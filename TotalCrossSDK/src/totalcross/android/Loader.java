@@ -114,17 +114,37 @@ public class Loader extends Activity implements BarcodeReadListener
       }
    }
    
-   private void callRoute(double latI, double lonI, double latF, double lonF, String coord, boolean sat)
+   private static final int SHOW_SATELLITE_PHOTOS = 1;
+   private static final int USE_WAZE = 2;
+
+   private void callRoute(double latI, double lonI, double latF, double lonF, String coord, int flags)
    {
       try
       {
+         if ((flags & USE_WAZE) != 0)
+         {
+            try
+            {
+               String url = "waze://?ll="+latI+","+lonI+"&navigate=yes";
+               Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
+               Launcher4A.showingMap = false; // note: waze runs as a separate app, so we just return directly from here
+               startActivity(intent);
+               return;
+            }
+            catch ( ActivityNotFoundException ex)
+            {
+               AndroidUtils.debug("Waze not found, using default app");
+               callGoogleMap(latI, lonI, (flags & SHOW_SATELLITE_PHOTOS) != 0);
+            }
+         }
+         
          Intent intent = new Intent(this, Class.forName(totalcrossPKG+".RouteViewer"));
          intent.putExtra("latI",latI);
          intent.putExtra("lonI",lonI);
          intent.putExtra("latF",latF);
          intent.putExtra("lonF",lonF);
          intent.putExtra("coord",coord);
-         intent.putExtra("sat",sat);
+         intent.putExtra("sat",(flags & SHOW_SATELLITE_PHOTOS) != 0);
          startActivityForResult(intent, MAP_RETURN);
       }
       catch (Throwable e)
@@ -296,7 +316,7 @@ public class Loader extends Activity implements BarcodeReadListener
                callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
                break;
             case ROUTE:
-               callRoute(b.getDouble("latI"), b.getDouble("lonI"),b.getDouble("latF"), b.getDouble("lonF"), b.getString("coord"), b.getBoolean("sat"));
+               callRoute(b.getDouble("latI"), b.getDouble("lonI"),b.getDouble("latF"), b.getDouble("lonF"), b.getString("coord"), b.getInt("flags"));
                break;
             case FULLSCREEN:
             {

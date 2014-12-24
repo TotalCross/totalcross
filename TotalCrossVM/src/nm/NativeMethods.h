@@ -81,7 +81,7 @@ TC_API void jlrF_setLong_ol(NMParams p);
 TC_API void jlrF_setFloat_od(NMParams p);
 TC_API void jlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
-TC_API void tmGM_showRoute_sssb(NMParams p);
+TC_API void tmGM_showRoute_sssi(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);

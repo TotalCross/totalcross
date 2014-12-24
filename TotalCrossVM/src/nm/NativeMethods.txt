@@ -63,7 +63,7 @@ java/lang/reflect/Field|public native void setLong(Object obj, long l) throws Il
 java/lang/reflect/Field|public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
 java/lang/reflect/Field|public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
 totalcross/map/GoogleMaps|native static boolean showAddress(String address, boolean showSatellitePhotos);
-totalcross/map/GoogleMaps|native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+totalcross/map/GoogleMaps|native static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags);
 totalcross/util/concurrent/Lock|native void create();
 totalcross/util/concurrent/Lock|native void destroy();
 totalcross/util/zip/ZLib|native public static int deflate(totalcross.io.Stream in, totalcross.io.Stream out, int compressionLevel, int strategy, boolean noWrap) throws IOException;
