@@ -6895,6 +6895,12 @@ HashSet
 \begin_layout Itemize
 
 \family typewriter
+HashTable
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 IdentityHashMap 
 \end_layout
 
@@ -6952,19 +6958,27 @@ Note that now there are two
 \family typewriter
 Vector
 \family default
+ and two 
+\family typewriter
+Hashtable
+\family default
  classes.
- One from 
+ Two from 
 \family typewriter
 totalcross.util
 \family default
- and another from 
+ and the others from 
 \family typewriter
 java.util
 \family default
 .
- To use the one from the Collections API, use 
+ To use the ones from the Collections API, use 
 \family typewriter
 java.util.Vector
+\family default
+ and 
+\family typewriter
+java.util.Hashtable
 \family default
 .
 \end_layout
