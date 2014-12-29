@@ -77,10 +77,21 @@ public class SQLiteUtil
    {
       try
       {
-         Statement st = con().createStatement();
-         ResultSet rs = st.executeQuery(sql);
+         return isNotEmpty(executeQuery(sql+" limit 1"));
+      }
+      catch (SQLException e)
+      {
+         if (e.getErrorCode() != 1 && Settings.onJavaSE) e.printStackTrace();
+      }
+      return false;
+   }
+
+   public boolean isNotEmpty(ResultSet rs) 
+   {
+      try
+      {
          boolean exists = rs.next();
-         rs.close();
+         close(rs);
          return exists;
       }
       catch (SQLException e)
@@ -113,7 +124,19 @@ public class SQLiteUtil
    {
       try
       {
-         ResultSet rs = executeQuery(sql);
+         return getStrings1(executeQuery(sql));
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+         return null;
+      }
+   }
+   
+   public String[] getStrings1(ResultSet rs) 
+   {
+      try
+      {
          Vector out = new Vector(vectorInitialSize);
          while (rs.next())
             out.addElement(rs.getString(1));
@@ -201,7 +224,11 @@ public class SQLiteUtil
 
    public int getShort(String sql) throws SQLException
    {
-      ResultSet rs = executeQuery(sql);
+      return getShort(executeQuery(sql));
+   }
+
+   public int getShort(ResultSet rs) throws SQLException
+   {
       int ret = rs.next() ? rs.getShort(1) : 0;
       close(rs);
       return ret;

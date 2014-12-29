@@ -62,11 +62,21 @@ TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object cl
    TCObject cloneObj;
    int32 length = ARRAYLENV(thisClass->interfaces);
 
+   // Loads the Cloneable interface.
+   if (!cloneable && !(cloneable = loadClass(p->currentContext, "java.lang.Cloneable", true)))
+      return;
+
    // If the class does not implement Cloneable, throws CloneNotSupportedException.
-   if (!cloneable)
-      cloneable = loadClass(p->currentContext, "java.lang.Cloneable", true);
-   if (cloneable && !isSuperClass(thisClass, cloneable))
+   if (!isSuperClass(thisClass, cloneable))
       throwExceptionNamed(p->currentContext, "java.lang.CloneNotSupportedException", "");
+   else if (thisClass->flags.isArray)
+   {
+      // Array.clone().
+      if (!(p->retO = cloneObj = createArrayObject(p->currentContext, thisClass->name, length = ARRAYOBJ_LEN(thisObj))))
+         return;
+      xmemmove(ARRAYOBJ_START(cloneObj), ARRAYOBJ_START(thisObj), length << thisClass->flags.bits2shift);
+      setObjectLock(cloneObj, UNLOCKED);
+   }
    else if (p->retO = cloneObj = createObject(p->currentContext, thisClass->name))
    {
       FieldArray* allFields = thisClass->instanceFields;
@@ -94,7 +104,7 @@ TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object cl
       length = ARRAYLENV(fields);
       while (--length >= 0)
          FIELD_OBJ(cloneObj, thisClass, length) = FIELD_OBJ(thisObj, thisClass, length);
-
+      
       setObjectLock(cloneObj, UNLOCKED);
    }
 }
