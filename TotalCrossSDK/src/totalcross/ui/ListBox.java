@@ -89,6 +89,7 @@ public class ListBox extends Container implements Scrollable
    private boolean isScrolling;
    private Image npback;
    private boolean scScrolled;
+   int showLast;
    
    /** The gap between the icon and the text. Used in IconItem. Defaults to fmH*4/3.
     * If you plan to change this value, do it after calling setFont (if you call it).
@@ -1076,10 +1077,27 @@ public class ListBox extends Container implements Scrollable
       g.drawText(s,dx,dy+(!uiAndroid?0:(getItemHeight(index)-fmH)/2), textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
       g.foreColor = f;
    }
+   private Rect rclip;
    /** You can extend ListBox and overide this method to draw the items */
    protected void drawSelectedItem(Graphics g, int index, int dx, int dy)
    {
-      g.drawText(getText(),dx,dy, textShadowColor != -1, textShadowColor);
+      String txt = getText();
+      if (txt.length() > showLast)
+      {
+         if (rclip == null) rclip = new Rect();
+         int sep = txt.length()-showLast;
+         StringBuffer start = new StringBuffer(txt.substring(0,sep));
+         String end = txt.substring(sep);
+         rclip = g.getClip(rclip);
+         
+         int ww = rclip.width - fm.stringWidth("...".concat(end));
+         int idx = Convert.getBreakPos(fm, start, 0, ww, false);
+         start.setLength(idx);
+         
+         g.drawText(start+"..."+end,dx,dy, textShadowColor != -1, textShadowColor);
+      }
+      else g.drawText(txt,dx,dy, textShadowColor != -1, textShadowColor);
+         
    }
    /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
    protected int getItemWidth(int index)
