@@ -6632,12 +6632,12 @@ switch with strings;
 \end_layout
 
 \begin_layout Itemize
-clone (not for arrays yet),
+clone;
 \end_layout
 
 \begin_layout Itemize
 many collection classes, interfaces, and exceptions (without serialization
- yet), 
+ yet);
 \end_layout
 
 \begin_layout Itemize
