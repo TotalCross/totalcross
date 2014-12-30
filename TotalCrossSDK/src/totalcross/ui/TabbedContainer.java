@@ -181,6 +181,9 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     */
    public int extraTabHeight;
    
+   /** The color used for the text of unselected tabs. Defaults to the foreground color. */
+   public int unselectedTextColor = -1;
+   
    private Container prevScr,curScr,nextScr;
 
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
@@ -855,7 +858,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          int yy = r.y + (r.height-fmH)/2;
          if (isText)
          {
-            g.foreColor = disabled[i] ? Color.getCursorColor(cColor) : cColor; // guich@200b4_156
+            g.foreColor = disabled[i] ? Color.getCursorColor(cColor) : i != activeIndex && unselectedTextColor != -1 ? unselectedTextColor : cColor; // guich@200b4_156
             if (uiAndroid)
                g.drawText(strCaptions[i],xx, atTop ? (extraTabHeight > 0 ? r.y + r.height-fmH-7 : yy-2) : (extraTabHeight > 0 ? r.y + 7 : yy), textShadowColor != -1, textShadowColor);
             else
