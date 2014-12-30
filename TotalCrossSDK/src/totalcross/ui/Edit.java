@@ -423,12 +423,7 @@ public class Edit extends Control
             if (maskedEdit)
             {
                if (mask == null || mask.length == 0) // use a default mask
-               {
-                  String s = decimalPlaces == 0 ? "999a999a999a999a999" : ("999a999a999a999a999b"+Convert.dup('9',decimalPlaces));
-                  s = s.replace('a', Settings.thousandsSeparator);
-                  s = s.replace('b', Settings.decimalSeparator);
-                  mask = s.toCharArray();
-               }
+                  mask = getDefaultCurrencyMask(decimalPlaces);
                applyMaxLengthBasedOnMask();
                alignment = RIGHT;
             }
@@ -441,6 +436,14 @@ public class Edit extends Control
       }
       if (kbdType != KBD_NONE) // guich@tc115_29
          setKeyboard(KBD_DEFAULT);
+   }
+   
+   public static char[] getDefaultCurrencyMask(int decimalPlaces)
+   {
+      String s = decimalPlaces == 0 ? "999a999a999a999a999" : ("999a999a999a999a999b"+Convert.dup('9',decimalPlaces));
+      s = s.replace('a', Settings.thousandsSeparator);
+      s = s.replace('b', Settings.decimalSeparator);
+      return s.toCharArray();
    }
 
    private void applyMaxLengthBasedOnMask()
