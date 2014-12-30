@@ -334,7 +334,7 @@ public class File extends RandomAccessStream
              * Attempts to get an exclusive lock for this file, using reflection to call methods from JDK 1.4
              * ((java.io.RandomAccessFile) fileEx).getChannel().tryLock();
              */
-            if (mode == READ_WRITE)
+            if (mode != READ_ONLY)
             try
             {
                // RandomAccessFile.getChannel()
