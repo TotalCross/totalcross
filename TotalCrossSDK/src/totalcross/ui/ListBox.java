@@ -1082,7 +1082,7 @@ public class ListBox extends Container implements Scrollable
    protected void drawSelectedItem(Graphics g, int index, int dx, int dy)
    {
       String txt = getText();
-      if (txt.length() > showLast)
+      if (showLast > 0 && txt.length() > showLast)
       {
          if (rclip == null) rclip = new Rect();
          int sep = txt.length()-showLast;
