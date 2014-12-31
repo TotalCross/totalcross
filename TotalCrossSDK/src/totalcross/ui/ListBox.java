@@ -1094,7 +1094,7 @@ public class ListBox extends Container implements Scrollable
          int idx = Convert.getBreakPos(fm, start, 0, ww, false);
          start.setLength(idx);
          
-         g.drawText(start+"..."+end,dx,dy, textShadowColor != -1, textShadowColor);
+         g.drawText(idx == sep ? txt : start+"..."+end,dx,dy, textShadowColor != -1, textShadowColor);
       }
       else g.drawText(txt,dx,dy, textShadowColor != -1, textShadowColor);
          
