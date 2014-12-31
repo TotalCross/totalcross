@@ -21,6 +21,7 @@ package totalcross.lang;
 
 import java.text.*;
 import totalcross.sys.*;
+import totalcross.util.ElementNotFoundException;
 import totalcross.util.regex.*;
 
 /** 
@@ -486,11 +487,11 @@ public final class String4D implements Comparable<String4D>
     * @see #replaceAll(String, String)
     * @see Pattern#compile(String)
     */
-/*   public String replaceFirst(String regex, String replacement)
+   /*public String replaceFirst(String regex, String replacement)
    {
      return Pattern.compile(regex).matcher(this.toString()).replaceFirst(replacement); // TODO JEFF
-   }
-*/
+   }*/
+
    /**
     * Replaces all matching substrings of the regular expression with a
     * given replacement. This is shorthand for <code>{@link Pattern}
@@ -504,11 +505,11 @@ public final class String4D implements Comparable<String4D>
     * @see #replaceFirst(String, String)
     * @see Pattern#compile(String)
     */
-/*   public String replaceAll(String regex, String replacement)
+   public String replaceAll(String regex, String replacement)
    {
-     return Pattern.compile(regex).matcher(this.toString()).replaceAll(replacement); // TODO JEFF
+      return Pattern.compile(regex).replacer(replacement).replace(this.toString());
    }
-*/
+
    /**
     * Split this string around the matches of a regular expression. Each
     * element of the returned array is the largest block of characters not
@@ -541,11 +542,11 @@ public final class String4D implements Comparable<String4D>
     * @throws PatternSyntaxException if regex is invalid
     * @see Pattern#compile(String)
     */
-/*   public String[] split(String regex, int limit)
+  /* public String[] split(String regex, int limit)
    {
-     return Pattern.compile(regex).split(this.toString(), limit); // TODO JEFF
-   }
-*/
+      return Pattern.compile(regex).split(this.toString(), limit); // TODO JEFF
+   } */
+
    /**
     * Split this string around the matches of a regular expression. Each
     * element of the returned array is the largest block of characters not
@@ -561,8 +562,14 @@ public final class String4D implements Comparable<String4D>
     */
    public String[] split(String regex)
    {
-      //return Pattern.compile(regex).split(this.toString(), 0); // TODO JEFF
-      return Convert.tokenizeString(this.toString(), regex);
+      try
+      {
+         return Pattern.compile(regex).tokenizer(this.toString()).split();
+      }
+      catch (ElementNotFoundException e)
+      {
+         return null;
+      }
    }
 
    /**
