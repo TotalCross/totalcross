@@ -432,7 +432,10 @@ cont:
          PostQuitMessage(0);
 #else
          if (*tcSettings.closeButtonTypePtr == NO_BUTTON)
+         {        
+            postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, SK_MENU, 0,0,-1); // must pass control chars, otherwise clipboard functions won't work
             break;
+         }
 #endif
          keepRunning = false;
          break;
