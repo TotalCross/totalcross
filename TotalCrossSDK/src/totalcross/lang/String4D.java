@@ -562,7 +562,8 @@ public final class String4D implements Comparable<String4D>
     */
    public String[] split(String regex)
    {
-      try
+      return Convert.tokenizeString(this.toString(), regex);
+/*      try
       {
          return Pattern.compile(regex).tokenizer(this.toString()).split();
       }
@@ -570,7 +571,7 @@ public final class String4D implements Comparable<String4D>
       {
          return null;
       }
-   }
+*/   }
 
    /**
     * Returns a String representation of a character array. Subsequent
