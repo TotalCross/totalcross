@@ -913,8 +913,13 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void windowClosing(java.awt.event.WindowEvent event)
    {
-      destroy();
-      exit(0);
+      if (Settings.closeButtonType == Settings.NO_BUTTON)
+         eventThread.pushEvent(totalcross.ui.event.KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.MENU, 0,0,0, Vm.getTimeStamp());
+      else
+      {
+         destroy();
+         exit(0);
+      }
    }
 
    public void mouseEntered(java.awt.event.MouseEvent event)
