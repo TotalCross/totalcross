@@ -1077,19 +1077,16 @@ public class ListBox extends Container implements Scrollable
       g.drawText(s,dx,dy+(!uiAndroid?0:(getItemHeight(index)-fmH)/2), textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
       g.foreColor = f;
    }
-   private Rect rclip;
    /** You can extend ListBox and overide this method to draw the items */
    protected void drawSelectedItem(Graphics g, int index, int dx, int dy)
    {
       String txt = getText();
       if (showLast > 0 && txt.length() > showLast)
       {
-         if (rclip == null) rclip = new Rect();
-         rclip = g.getClip(rclip);
          int sep = txt.length()-showLast;
          StringBuffer start = new StringBuffer(txt.substring(0,sep));
          String end = txt.substring(sep);
-         int ww = rclip.width - fm.stringWidth("...".concat(end));
+         int ww = g.getClipWidth() - fm.stringWidth("...".concat(end));
          int idx = Convert.getBreakPos(fm, start, 0, ww, false);
          start.setLength(idx);
          
