@@ -1085,11 +1085,10 @@ public class ListBox extends Container implements Scrollable
       if (showLast > 0 && txt.length() > showLast)
       {
          if (rclip == null) rclip = new Rect();
+         rclip = g.getClip(rclip);
          int sep = txt.length()-showLast;
          StringBuffer start = new StringBuffer(txt.substring(0,sep));
          String end = txt.substring(sep);
-         rclip = g.getClip(rclip);
-         
          int ww = rclip.width - fm.stringWidth("...".concat(end));
          int idx = Convert.getBreakPos(fm, start, 0, ww, false);
          start.setLength(idx);
