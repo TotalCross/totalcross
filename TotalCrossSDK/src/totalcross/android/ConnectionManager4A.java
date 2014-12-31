@@ -207,7 +207,6 @@ public class ConnectionManager4A
       {
          ConnectivityManager connMgr = (ConnectivityManager) Launcher4A.loader.getSystemService(Context.CONNECTIVITY_SERVICE);
          int type = connMgr.getActiveNetworkInfo().getType();
-         AndroidUtils.debug("type: "+type);
          if (type == ConnectivityManager.TYPE_WIFI)
          {
             WifiManager wifiMgr = (WifiManager) Launcher4A.loader.getSystemService(Context.WIFI_SERVICE);
