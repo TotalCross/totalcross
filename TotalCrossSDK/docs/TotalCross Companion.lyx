@@ -1808,7 +1808,7 @@ Integer
 \family default
  class and the method 
 \family typewriter
-String.split()
+String.replaceFirst()
 \family default
 , which are not implemented by TotalCross.
 \end_layout
@@ -7150,7 +7150,7 @@ replaceAll(String regex, String replacement)
 \begin_layout Itemize
 
 \family typewriter
-String[] split(String delim)
+String[] split(String regex)
 \end_layout
 
 \begin_layout Itemize
