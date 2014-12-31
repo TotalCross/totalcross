@@ -7144,7 +7144,13 @@ boolean matches(String regex)
 \begin_layout Itemize
 
 \family typewriter
-String[] split(String regex)
+replaceAll(String regex, String replacement)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String[] split(String delim)
 \end_layout
 
 \begin_layout Itemize
