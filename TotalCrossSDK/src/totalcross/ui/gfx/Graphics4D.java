@@ -123,6 +123,14 @@ public final class Graphics4D
       clipX2 = maxX;
       clipY2 = maxY;
    }
+   public int getClipWidth()
+   {
+      return clipX2 - clipX1;
+   }
+   public int getClipHeight()
+   {
+      return clipY2 - clipY1;
+   }
    public Rect getClip(Rect r)
    {
       r.x      = clipX1 - transX;
