@@ -73,12 +73,6 @@ public class ComboBox extends Container
     */
    public boolean enableSearch=true;
    
-   /** Make sure that the last n characters are shown in the ComboBox, by cutting the string and using ellipsis.
-    * The item cut only when drawing.
-    * @since TotalCross 3.1
-    */
-   public int showLast;
-   
    /** Set to false to don't use the PopupMenu when the user interface style is Android.
     * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
     * popup list, but keep others with the PopupMenu, you can do something like:
@@ -622,7 +616,6 @@ public class ComboBox extends Container
       if (trickW) pop.lb.width = width - btnW;
       int ih = pop.lb.itemCount > 0 ? pop.lb.getItemHeight(0) : fmH;
       boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String;
-      pop.lb.showLast = showLast;
       pop.lb.drawSelectedItem(g, pop.lb.selectedIndex, 3, height == fmH+Edit.prefH ? Edit.prefH/2 : isString && uiAndroid ? (height-(fmH+Edit.prefH))/2 : (height - ih)/2); // guich@200b4: let the listbox draw the item
       if (trickW) pop.lb.width = 0;
    }

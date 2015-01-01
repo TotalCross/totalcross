@@ -89,7 +89,6 @@ public class ListBox extends Container implements Scrollable
    private boolean isScrolling;
    private Image npback;
    private boolean scScrolled;
-   int showLast;
    
    /** The gap between the icon and the text. Used in IconItem. Defaults to fmH*4/3.
     * If you plan to change this value, do it after calling setFont (if you call it).
@@ -1080,20 +1079,7 @@ public class ListBox extends Container implements Scrollable
    /** You can extend ListBox and overide this method to draw the items */
    protected void drawSelectedItem(Graphics g, int index, int dx, int dy)
    {
-      String txt = getText();
-      if (showLast > 0 && txt.length() > showLast)
-      {
-         int sep = txt.length()-showLast;
-         StringBuffer start = new StringBuffer(txt.substring(0,sep));
-         String end = txt.substring(sep);
-         int ww = g.getClipWidth() - fm.stringWidth("...".concat(end));
-         int idx = Convert.getBreakPos(fm, start, 0, ww, false);
-         start.setLength(idx);
-         
-         g.drawText(idx == sep ? txt : start+"..."+end,dx,dy, textShadowColor != -1, textShadowColor);
-      }
-      else g.drawText(txt,dx,dy, textShadowColor != -1, textShadowColor);
-         
+      g.drawText(getText(),dx,dy, textShadowColor != -1, textShadowColor);         
    }
    /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
    protected int getItemWidth(int index)
