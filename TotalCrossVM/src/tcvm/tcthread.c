@@ -88,3 +88,10 @@ void threadDestroyAll()
          c->thread = null;
       }
 }
+
+void freeMutex(int32 hash, MUTEX_TYPE* mutex)
+{
+   UNUSED(hash);
+   DESTROY_MUTEX_VAR(*mutex);
+   xfree(mutex);
+}

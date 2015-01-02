@@ -118,6 +118,7 @@ extern DECLARE_MUTEX(htSSL);
 extern DECLARE_MUTEX(createdHeaps);
 extern DECLARE_MUTEX(alloc);
 extern DECLARE_MUTEX(fonts);
+extern DECLARE_MUTEX(mutexes);
 
 #if defined(WIN32)
 
@@ -152,6 +153,7 @@ ThreadHandle threadGetCurrent();
 void threadCreateJava(Context currentContext, TCObject this_);
 void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used when exiting the application or the thread itself
 void threadDestroyAll(); // destroy all threads
+void freeMutex(int32 hash, MUTEX_TYPE* mutex);
 
 #define ThreadArgsFromObject(o) ((ThreadArgs)ARRAYOBJ_START(Thread_taskID(o)))
 #define ThreadHandleFromObject(o) ThreadArgsFromObject(o)->h

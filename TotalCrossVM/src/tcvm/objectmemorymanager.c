@@ -905,6 +905,18 @@ void finalizeObject(TCObject o, TCClass c)
 {
    while (c != null) 
    {
+      MUTEX_TYPE* mutex;
+
+      LOCKVAR(mutexes); 
+      mutex = htGetPtr(&htMutexes, (int32)o);
+      if (mutex)
+      {
+         DESTROY_MUTEX_VAR(*mutex);
+         xfree(mutex);
+         htRemove(&htMutexes, (int32)o);         
+      }
+      UNLOCKVAR(mutexes);
+
       if (c->finalizeMethod == null) 
          c = c->superClass;
       else 

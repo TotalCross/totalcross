@@ -946,37 +946,65 @@ handleException:
       OPCODE(INC_regI)  regI[code->inc.reg] += (int32)code->inc.s16; NEXT_OP
       OPCODE(MONITOR_Enter)
       {
-         TCObject mutex;
          // get variables and do some checks
          o = regO[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {
-            className = OBJ_CLASS(o)->name;
-            goto throwMonitorRuntimeException;
+            MUTEX_TYPE* mutex;
+             
+            LOCKVAR(mutexes);
+            if (!(mutex = htGetPtr(&htMutexes, (int32)o)))
+            {
+               if (!(mutex = (MUTEX_TYPE*)xmalloc(sizeof(MUTEX_TYPE))))
+               {
+                  UNLOCKVAR(mutexes);
+                  goto throwOutOfMemoryError;
+               }
+               SETUP_MUTEX;
+               INIT_MUTEX_VAR(*mutex);
+               if (!htPutPtr(&htMutexes, (int32)o, mutex))
+               {                  
+                  DESTROY_MUTEX_VAR(*mutex);
+                  UNLOCKVAR(mutexes);
+                  goto throwOutOfMemoryError;
+               }
+            }
+
+            RESERVE_MUTEX_VAR(*mutex);
+            UNLOCKVAR(mutexes);
          }
-         mutex = Lock_mutex(o);
-         if (mutex != null) // guich@tc126_62
-            RESERVE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         else
+         {
+            TCObject mutex = Lock_mutex(o);
+            if (mutex != null) // guich@tc126_62
+               RESERVE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         }
          NEXT_OP
       }
       OPCODE(MONITOR_Exit)
       {
-         TCObject mutex;
          // get variables and do some checks
          o = regO[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {
-            className = OBJ_CLASS(o)->name;
-            goto throwMonitorRuntimeException;
+             MUTEX_TYPE* mutex;
+
+             LOCKVAR(mutexes);
+             mutex = htGetPtr(&htMutexes, (int32)o);
+             RELEASE_MUTEX_VAR(*mutex);
+             UNLOCKVAR(mutexes);
          }
-         mutex = Lock_mutex(o);
-         if (mutex != null) // guich@tc126_62
-         {
-            MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
-            if (pmutex)
-               RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+         else
+         {   
+            TCObject mutex = Lock_mutex(o);
+            if (mutex != null) // guich@tc126_62
+            {
+               MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
+               if (pmutex)
+                  RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+            }
          }
          NEXT_OP
       }
@@ -1025,9 +1053,6 @@ throwNoSuchMethodError:
    xfree(paramsStr);
    goto handleException;
 }
-throwMonitorRuntimeException:
-   tcvmCreateException(context, RuntimeException, (int32)(code-method->code), 0, "Invalid class '%s'. Only totalcross.util.concurrent.Lock can be used with 'synchronized' keyword", className);
-   goto handleException;
 
 finishMethod:
    context->regO  = regO; // alredy points to the end of the previous called method

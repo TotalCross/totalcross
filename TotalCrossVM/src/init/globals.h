@@ -144,6 +144,7 @@ extern int32 vmTweaks;
 extern bool showKeyCodes;
 extern int32 profilerMaxMem;
 extern TCClass lockClass;
+extern Hashtable htMutexes;
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
 #if !defined(WIN32)

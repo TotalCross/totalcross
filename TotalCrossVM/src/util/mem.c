@@ -127,7 +127,7 @@ static bool checkMemHeapLeaks();
 bool initMem()
 {
    #if defined(WIN32) && !defined(WINCE) && defined(_DEBUG)
-   //leakCheckingEnabled = true;
+   leakCheckingEnabled = true;
    #endif
 #if defined HAS_MSPACE_1_AND_2
    mspace1 = create_mspace(0,0);
