@@ -158,7 +158,7 @@ uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, 
       if (ext)
          fieldClassName = ext->name;
    }
-   return ext ? UNBOUND_FIELD_ERROR : UNBOUND_CLASS_ERROR;
+   return UNBOUND_FIELD_ERROR;
 }
 
 // used by external libraries, NOT by the vm
