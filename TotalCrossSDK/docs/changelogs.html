@@ -1,4 +1,24 @@
-<h2>TotalCross 3.1</h2>
+<h2>TotalCross 3.1</h2>             
+<h1>build 2490</h1>
+. Added EnumSet.<br>
+. added MouseEvent.MOUSE_WHEEL event. added Settings.scrollDistanceOnMouseWheelMove. now the mouse wheel automatically scrolls all the Scrollable controls under the mouse position on Win32 and Java.<br>
+. now Vm.exec("viewer") works for win32 and JavaSE to open an url without using cmd<br>
+. added MultiEdit.cutText<br>
+. added SpinList.replaceChoices<br>
+. added ScrollContainer.autoScroll to automatically scroll the container when an item is clicked. added hsIgnoreAutoScroll: Defines a list of classes that will make autoScroll be ignored.<br>
+. Check: dont erase background if transparentBackground is true<br>
+. now GoogleMaps.showAddress receives a flag, and one of the flags is to use WAZE to show a route to a destination address. works on iOS and Android<br>
+. added InputBox.setEdit<br>
+. added a few functions do sqliteutils<br>
+. Implemented Array.clone().<br>
+. fixed File's lock on java working only when mode was READ_WRITE; now works also on CREATE*<br>
+. added Edit.getDefaultCurrencyMask<br>
+. added TabbedContainer.unselectedTextColor<br>
+. added SpinList.choicesLen<br>
+. added Graphics.getClipWidth/Height<br>
+. now in win32 and JavaSE when closeButtonType is NO_BUTTON, an SK_MENU key is posted to the event queue.<br>
+. now when a field is not found in the vm, we throw a NoSuchField error instead of the ClassNotFoundError<br>
+. fixed problem of activation not working on tc3 when the tcz was splitted.<br>
 <h1>build 2472</h1>
 . Corrected areClassesCompatible() when both parameters are arrays.<br>
 . Finished EnumMap.<br>
