@@ -240,13 +240,14 @@ TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
    int32 retc;
-   retc = checkActivation(currentContext);
-   isDemo = retc == ISDEMO;
-
-   // load libraries
+   
+   // load libraries must be before checking the activation, because the tcz may have been splitted
    if (!loadLibraries(currentContext, vmPath, true))
       return exitProgram(115);
-         
+   
+   retc = checkActivation(currentContext);
+   isDemo = retc == ISDEMO;
+        
 #if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
    {
       TCHAR litebasePath[MAX_PATHNAME];
