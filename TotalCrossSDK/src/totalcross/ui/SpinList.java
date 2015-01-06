@@ -360,6 +360,7 @@ public class SpinList extends Control
 	            if (!isVertical && (useNumericBox || useCalculatorBox) && width/3 <= pe.x && pe.x <= 2*width/3)
 	            {
 	               CalculatorBox nb = new CalculatorBox(useCalculatorBox);
+	               nb.cOrigDefault = this;
 	               if (useNumericBox)
    	               nb.maxLength = Math.max(choices[0].length(),choices[choicesLen-1].length());
 	               nb.popup();
