@@ -94,4 +94,9 @@ public class Float4D extends Double4D
        // handle +/- 0.0
        return (ix < iy) ? -1 : 1;
    }
+   
+   public String toString()
+   {
+      return String.valueOf(v);
+   }
 }

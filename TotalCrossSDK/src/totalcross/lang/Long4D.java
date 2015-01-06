@@ -33,7 +33,7 @@ public class Long4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
    public Long4D valueOf(long l)
    {

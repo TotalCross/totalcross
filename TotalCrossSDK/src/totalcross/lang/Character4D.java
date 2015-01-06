@@ -29,7 +29,7 @@ public class Character4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
 
    // functions used in regex
