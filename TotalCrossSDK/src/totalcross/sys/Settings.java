@@ -650,7 +650,7 @@ public final class Settings
 
    /**
     * <b>READ-ONLY</b> unique identifier available for registered applications after the TotalCross VM is activated.<br>
-    * Value defaults to "NOT AVAILABLE" when running on DEMO.
+    * Value defaults to "NOT AVAILABLE" when running on DEMO, and "NO ACTIVATION" when using the new licensing model.
     * 
     * @since TotalCross 1.25
     */

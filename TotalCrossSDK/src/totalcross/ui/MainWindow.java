@@ -515,7 +515,13 @@ public class MainWindow extends Window implements totalcross.MainClass
             exit(0);
             return;
          }
-         //$START:REMOVE-ON-SDK-GENERATION$                         
+         //$START:REMOVE-ON-SDK-GENERATION$
+         if (timeAvailable == -999998)
+         {
+            Settings.activationId = "NO ACTIVATION";
+            startProgram();
+         }
+         else
          if (timeAvailable == -999999)
             try
             {
