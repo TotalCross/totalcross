@@ -60,7 +60,17 @@ public final class Settings
     */
    public static Hashtable appProps;
    
-   /** Returns the application's build number. 
+   /** Returns the application's build number. You can make tc.Deploy use this automatically by
+    * making the appVersion end with a dot. For example:
+    * <pre>
+    * static
+    * {
+    *    Settings.appVersion = "2.1."; // leading dot
+    * }
+    * // then at the application's constructor:
+    * Settings.appVersion += Settings.appBuildNumber();
+    * </pre> 
+    * This way, when you run tc.Deploy, it will update the appVersion to include the build number in all platforms.
     * @see #appProps
     * @since TotalCross 3.1
     */
