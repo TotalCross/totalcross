@@ -945,14 +945,17 @@ handleException:
       OPCODE(TEST_regO) if (regO[code->reg.reg] == null) goto throwNullPointerException; NEXT_OP
       OPCODE(INC_regI)  regI[code->inc.reg] += (int32)code->inc.s16; NEXT_OP
       OPCODE(MONITOR_Enter)
+      OPCODE(MONITOR_Enter2)
       {
          // get variables and do some checks
-         o = regO[code->reg_reg.reg0];
+         if (code->s24.op == MONITOR_Enter)        
+            o = regO[code->reg_reg.reg0];
+         else
+            o = cp->str[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {
             MUTEX_TYPE* mutex;
-             
             LOCKVAR(mutexes);
             if (!(mutex = htGetPtr(&htMutexes, (int32)o)))
             {
@@ -983,9 +986,13 @@ handleException:
          NEXT_OP
       }
       OPCODE(MONITOR_Exit)
+      OPCODE(MONITOR_Exit2) 
       {
          // get variables and do some checks
-         o = regO[code->reg_reg.reg0];
+         if (code->s24.op == MONITOR_Exit)        
+            o = regO[code->reg_reg.reg0];
+         else
+            o = cp->str[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {
