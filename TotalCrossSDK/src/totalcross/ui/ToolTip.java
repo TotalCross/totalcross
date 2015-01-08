@@ -164,7 +164,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
       else
          xx = r.x + distX - w.x; // guich@tc126_48: decrease window's x
 
-      setRect(xx,yy,ww,hh,null,false); // careful: xx,yy are relative to window position, but the control's rect passed as parameter is ABSOLUTE
+      setRect(xx,yy,ww+fmH,hh,null,false); // careful: xx,yy are relative to window position, but the control's rect passed as parameter is ABSOLUTE
    }
 
    public void onEvent(Event e)
