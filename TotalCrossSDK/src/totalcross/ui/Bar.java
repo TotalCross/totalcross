@@ -411,6 +411,9 @@ public class Bar extends Container
    {
       removeAll();
       int n = icons.size();
+      if (n == 1 && icons.items[0] instanceof Label)
+         add((Control)icons.items[0],LEFT,TOP,FILL,FILL);
+      else
       if (title == null) // if there's no title, make the icons take the whole size of the container
       {
          for (int i = n; --i > 0;)
