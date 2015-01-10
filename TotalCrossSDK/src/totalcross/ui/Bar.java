@@ -65,6 +65,9 @@ public class Bar extends Container
     */
    public int titleAlign = LEFT;
    
+   /** The preferred height on portrait or landscape, in pixels. */
+   public int portraitPrefH,landscapePrefH;
+   
    /** A Bar's button. You can create an extension of this class using:
     * <pre>
       Bar b = new Bar();
@@ -498,7 +501,7 @@ public class Bar extends Container
     */
    public int getPreferredHeight()
    {
-      return fmH*2;
+      return Settings.isLandscape() ? (landscapePrefH != 0 ? landscapePrefH : fmH*2) : (portraitPrefH != 0 ? portraitPrefH : fmH*2);
    }
    
    /** 
