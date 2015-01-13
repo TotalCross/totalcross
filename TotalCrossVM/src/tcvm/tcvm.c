@@ -954,8 +954,9 @@ handleException:
             o = cp->str[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
-         {
+         {            
             MUTEX_TYPE* mutex;
+
             LOCKVAR(mutexes);
             if (!(mutex = htGetPtr(&htMutexes, (int32)o)))
             {
@@ -973,9 +974,8 @@ handleException:
                   goto throwOutOfMemoryError;
                }
             }
-
-            RESERVE_MUTEX_VAR(*mutex);
             UNLOCKVAR(mutexes);
+            RESERVE_MUTEX_VAR(*mutex);            
          }
          else
          {
@@ -998,10 +998,8 @@ handleException:
          {
              MUTEX_TYPE* mutex;
 
-             LOCKVAR(mutexes);
              mutex = htGetPtr(&htMutexes, (int32)o);
              RELEASE_MUTEX_VAR(*mutex);
-             UNLOCKVAR(mutexes);
          }
          else
          {   

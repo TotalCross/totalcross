@@ -907,7 +907,6 @@ void finalizeObject(TCObject o, TCClass c)
    {
       MUTEX_TYPE* mutex;
 
-      LOCKVAR(mutexes); 
       mutex = htGetPtr(&htMutexes, (int32)o);
       if (mutex)
       {
@@ -915,7 +914,6 @@ void finalizeObject(TCObject o, TCClass c)
          xfree(mutex);
          htRemove(&htMutexes, (int32)o);         
       }
-      UNLOCKVAR(mutexes);
 
       if (c->finalizeMethod == null) 
          c = c->superClass;
