@@ -455,8 +455,14 @@ public class Loader extends Activity implements BarcodeReadListener
             }
             else
             {
-               Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
-               intent.putExtra("url",args);
+               Intent intent;
+               if (argl.indexOf("youtu.be") >= 0 || argl.indexOf("youtube") >= 0)
+                  intent = new Intent(Intent.ACTION_VIEW, Uri.parse(args));
+               else
+               {
+                  intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
+                  intent.putExtra("url",args);
+               }
                if (!wait)
                   startActivityForResult(intent, JUST_QUIT);
                else

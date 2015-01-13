@@ -20,8 +20,8 @@
 package totalcross.lang;
 
 import java.text.*;
+
 import totalcross.sys.*;
-import totalcross.util.ElementNotFoundException;
 import totalcross.util.regex.*;
 
 /** 
@@ -502,7 +502,6 @@ public final class String4D implements Comparable<String4D>
     * @return the modified string
     * @throws NullPointerException if regex or replacement is null
     * @throws PatternSyntaxException if regex is invalid
-    * @see #replaceFirst(String, String)
     * @see Pattern#compile(String)
     */
    public String replaceAll(String regex, String replacement)

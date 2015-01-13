@@ -81,7 +81,7 @@ public class ControlBox extends Window
     * @param text The text that will be displayed in a Label above the control.
     * @param cb The control that will be used to get input from the user.
     * @param buttonCaptions The button captions that will be used in the PushButtonGroup, or null to hide them.
-    * @param prefW The preferred width for the control.
+    * @param prefW The preferred width for the control. You can also use FILL or PREFERREED
     * @param prefH The preferred height for the control.
     */
    public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions)
@@ -95,7 +95,7 @@ public class ControlBox extends Window
     * @param text The text that will be displayed in a Label above the control.
     * @param cb The control that will be used to get input from the user.
     * @param buttonCaptions The button captions that will be used in the PushButtonGroup, or null to hide them.
-    * @param prefW The preferred width for the control.
+    * @param prefW The preferred width for the control. You can also use FILL or PREFERREED
     * @param prefH The preferred height for the control.
     * @param buttonRows The number of rows for the buttons.
     */
@@ -148,7 +148,8 @@ public class ControlBox extends Window
       msg.setRect(LEFT,TOP,FILL,hm);
       if (btns != null) btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
       msg.setBackForeColors(backColor, foreColor);
-      cb.setRect(we==FILL ? LEFT : CENTER,AFTER+2,we,he,msg);
+      int gap = we == FILL ? fmH/2 : 0;
+      cb.setRect(we==FILL ? LEFT+gap : CENTER,AFTER+2,we-gap,he,msg);
    }
 
    /** handle scroll buttons and normal buttons */

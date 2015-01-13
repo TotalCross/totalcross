@@ -25,7 +25,7 @@ public class Integer4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
    public static Integer4D valueOf(int i)
    {

@@ -240,13 +240,14 @@ TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
    int32 retc;
-   retc = checkActivation(currentContext);
-   isDemo = retc == ISDEMO;
-
-   // load libraries
+   
+   // load libraries must be before checking the activation, because the tcz may have been splitted
    if (!loadLibraries(currentContext, vmPath, true))
       return exitProgram(115);
-         
+   
+   retc = checkActivation(currentContext);
+   isDemo = retc == ISDEMO;
+        
 #if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
    {
       TCHAR litebasePath[MAX_PATHNAME];
@@ -283,7 +284,7 @@ TC_API int32 startProgram(Context currentContext)
       // 6. call appStarting
       if (!isDemo && isMainWindow) waitUntilStarted(); // guich@tc115_27 - guich@tc120_7: only if MainWindow - in demo mode, the MessageBox already does what waitUntilStarted does. Calling this in demo mode blocks the vm.
       executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN), mainClass, 
-         retc == ISNORAS || retc == ISACTIVATED ? -1 : retc == ISNOTACTIVATED ? -999999 : checkDemo());
+         retc == ISNORAS ? -999998 : retc == ISACTIVATED ? -1 : retc == ISNOTACTIVATED ? -999999 : checkDemo());
       // 7. call the main event loop
       if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding

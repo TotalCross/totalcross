@@ -32,7 +32,7 @@ public class Double4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
    public static Double4D valueOf(double d)
    {

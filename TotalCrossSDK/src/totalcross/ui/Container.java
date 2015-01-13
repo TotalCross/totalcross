@@ -98,6 +98,7 @@ public class Container extends Control
     * @see #TRANSITION_NONE
     * @see #TRANSITION_OPEN
     * @see #TRANSITION_CLOSE
+    * @SEE #TRANSITION_FADE
     * @see Window#swap(Container)
     * @see Window#popup()
     * @see Window#unpop()
