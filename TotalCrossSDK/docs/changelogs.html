@@ -1,4 +1,17 @@
 <h2>TotalCross 3.1</h2>             
+<h1>build ?</h1>
+. Now device/ maps to Settings.appPath on JavaSE and Win32. this fixes a problem of creating chimes.mp3 at the root of the current drive on JavaSE<br>
+. now if you use Vm.exec with "youtu.be" or "youtube" it opens the video directly in the youtube app<br>
+. fixed SpinList's gray area not working<br>
+. updated javadoc for better explain the Settings.appBuildNumber<br>
+. now if using noras, Settings.activationId equals to "NO ACTIVATION";<br>
+. fixed all primitive type wrappers toString method<br>
+. improved ControlBox javadocs. now if prefW is FILL, a small gap is added between the control and the borders.<br>
+. added a translucent gray background to ios X button on webview<br>
+. Now in Bar, if you addControl a single label, it will take the whole Bar's rectangle.<br>
+. added Control.ignoreInsets. Used in Bar so you can place a Bar at bottom and top and it will snap to parent's size when rotating.<br>
+. added Bar.landscapePrefH and portraitPrefH, so you can choose the preferred height when on portrait or landscape<br>
+. make sure that the folder exists when writting the tcz<br>
 <h1>build 2490</h1>
 . Added EnumSet.<br>
 . added MouseEvent.MOUSE_WHEEL event. added Settings.scrollDistanceOnMouseWheelMove. now the mouse wheel automatically scrolls all the Scrollable controls under the mouse position on Win32 and Java.<br>
