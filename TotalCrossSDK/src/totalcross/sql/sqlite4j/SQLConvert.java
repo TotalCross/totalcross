@@ -21,11 +21,11 @@ class SQLConvert
          return null;
       }
    }
-   static totalcross.sys.Time time(java.sql.Time x)
+   static totalcross.sys.Time time(String x) // 2015-01-14 17:28:09.708
    {
       try
       {
-         return x == null ? null : new totalcross.sys.Time(x.getTime(),true);
+         return x == null ? null : new Time(x, true,true,true,true,true,true);
       }
       catch (Exception e)
       {
@@ -54,38 +54,6 @@ class SQLConvert
       return null;
    }
    
-   private static void test(long l)
-   {
-      try
-      {
-         Time t = new Time(l); // como vem da nuvem
-         long lt = t.getTime(); // desde 1/1/1970
-         Time t2 = new Time(lt,true);
-         long lf = t2.getTimeLong();
-         String s = t2.getSQLString();
-         System.out.println(l+" -> "+lf+" ("+s+")");
-      }
-      catch (InvalidDateException e)
-      {
-         e.printStackTrace();
-      }
-   }
-   public static void main(String args[])
-   {
-      Settings.is24Hour = true;
-      Settings.dateSeparator = '/';
-      Settings.timeZoneMinutes = -240;
-      
-      totalcross.sys.Time t0 = new totalcross.sys.Time();
-      java.sql.Time t1 = time(t0);
-      totalcross.sys.Time t2 = time(t1);
-      System.out.println(t0.getTimeLong()+" -> "+t2.getTimeLong());
-      
-      test(20121203000000L);
-      test(20130127232922L); // fails if Settings.timeZoneMinutes is considered
-      test(20130125125200L);
-   }
-
    static java.sql.Timestamp timestamp(Timestamp x)
    {
       return new java.sql.Timestamp(x.getTime());

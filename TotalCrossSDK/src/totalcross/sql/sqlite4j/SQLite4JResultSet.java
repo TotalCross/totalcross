@@ -93,7 +93,7 @@ public class SQLite4JResultSet implements ResultSet
 
    public Time getTime(int columnIndex) throws SQLException
    {
-      return SQLConvert.time(rs.getTime(columnIndex));
+      return SQLConvert.time(rs.getString(columnIndex));
    }
 
    public Timestamp getTimestamp(int columnIndex) throws SQLException
@@ -158,7 +158,7 @@ public class SQLite4JResultSet implements ResultSet
 
    public Time getTime(String columnName) throws SQLException
    {
-      return SQLConvert.time(rs.getTime(columnName));
+      return SQLConvert.time(rs.getString(columnName));
    }
 
    public Timestamp getTimestamp(String columnName) throws SQLException
