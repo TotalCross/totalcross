@@ -146,6 +146,7 @@ public final class Time
       minute = (int)(time % 60); time /= 60;
       hour   = (int)(time % 24); time /= 24;
       hour  += Settings.timeZoneMinutes/60;
+      if (hour < 0) hour += 24;
       Date d = new Date(Date.SQL_EPOCH.getDateInt());
       d.advance((int)time);
       day = d.getDay();
