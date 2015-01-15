@@ -444,7 +444,7 @@ static int32 getMax(int32* values, int32 ret, int32 len)
 static bool buildFontTexture(Context currentContext, UserFont uf)
 {  
    int32 ch = uf->fontP.firstChar, last = uf->fontP.lastChar, fontH = uf->fontP.maxHeight, y=0;
-   int16 *charX = uf->charX + ch, *charY = uf->charY + ch;
+   int16 *charX = uf->charX, *charY = uf->charY;
    int32 widthsCount=0, maxH=0, w=0, offset=0;
 #ifdef ANDROID
    int32 maxW = 1024;
@@ -488,8 +488,8 @@ bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* r
 {
    if (uf->textureId[0] == 0 && (uf->maxW != 0 || buildFontTexture(currentContext, uf)))
       glLoadTexture(currentContext, null, uf->textureId, (Pixel*)uf->textureAlphas, uf->maxW, uf->maxH, true);
-   ret[0] = uf->charX[ch];
-   ret[1] = uf->charY[ch];
+   ret[0] = uf->charX[ch - uf->fontP.firstChar];
+   ret[1] = uf->charY[ch - uf->fontP.firstChar];
    return uf->textureId[0] != 0;
 }
 
