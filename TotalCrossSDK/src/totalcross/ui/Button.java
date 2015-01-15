@@ -579,10 +579,9 @@ public class Button extends Control
       if (imageHeightFactor != 0 && img0 != null)
          try 
          {
-            if (width < height)
+            img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);
+            if (img.getWidth() > this.width-4)
                img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(width-4,false) : img0.hwScaledFixedAspectRatio(width-4,false);
-            else
-               img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);
             img.setCurrentFrame(currentFrame);
             imgDis = null;
          } catch (Throwable t) {img = img0;}
