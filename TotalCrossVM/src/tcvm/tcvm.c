@@ -208,7 +208,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       OPADDR(MOV_arc_reg64)       OPADDR(MOV_aru_regI)        OPADDR(MOV_aru_regO)        OPADDR(MOV_aru_reg64)       OPADDR(MOV_arc_regIb)      OPADDR(MOV_arc_reg16)       OPADDR(MOV_aru_regIb)       OPADDR(MOV_aru_reg16)       OPADDR(MOV_regIb_arc)      OPADDR(MOV_reg16_arc)       OPADDR(MOV_regIb_aru)       OPADDR(MOV_reg16_aru)       OPADDR(MOV_regO_null)      OPADDR(INC_regI)            OPADDR(ADD_regI_regI_regI)  OPADDR(ADD_regI_s12_regI)   OPADDR(ADD_regI_arc_s6)      OPADDR(ADD_regI_aru_s6)     OPADDR(ADD_regI_regI_sym)   OPADDR(ADD_regD_regD_regD)  OPADDR(ADD_regL_regL_regL) OPADDR(ADD_aru_regI_s6)     OPADDR(SUB_regI_s12_regI)   OPADDR(SUB_regI_regI_regI)  OPADDR(SUB_regD_regD_regD) OPADDR(SUB_regL_regL_regL)  OPADDR(MUL_regI_regI_s12)   OPADDR(MUL_regI_regI_regI)  OPADDR(MUL_regD_regD_regD) OPADDR(MUL_regL_regL_regL)  OPADDR(DIV_regI_regI_s12)   OPADDR(DIV_regI_regI_regI)
       OPADDR(DIV_regD_regD_regD)  OPADDR(DIV_regL_regL_regL)  OPADDR(MOD_regI_regI_s12)   OPADDR(MOD_regI_regI_regI)  OPADDR(MOD_regD_regD_regD) OPADDR(MOD_regL_regL_regL)  OPADDR(SHR_regI_regI_s12)   OPADDR(SHR_regI_regI_regI)  OPADDR(SHR_regL_regL_regL) OPADDR(SHL_regI_regI_s12)   OPADDR(SHL_regI_regI_regI)  OPADDR(SHL_regL_regL_regL)  OPADDR(USHR_regI_regI_s12) OPADDR(USHR_regI_regI_regI) OPADDR(USHR_regL_regL_regL) OPADDR(AND_regI_regI_s12)   OPADDR(AND_regI_aru_s6)      OPADDR(AND_regI_regI_regI)  OPADDR(AND_regL_regL_regL)  OPADDR(OR_regI_regI_s12)    OPADDR(OR_regI_regI_regI)  OPADDR(OR_regL_regL_regL)   OPADDR(XOR_regI_regI_s12)   OPADDR(XOR_regI_regI_regI)  OPADDR(XOR_regL_regL_regL) OPADDR(JEQ_regO_regO)       OPADDR(JEQ_regO_null)       OPADDR(JEQ_regI_regI)       OPADDR(JEQ_regL_regL)      OPADDR(JEQ_regD_regD)       OPADDR(JEQ_regI_s6)         OPADDR(JEQ_regI_sym)
       OPADDR(JNE_regO_regO)       OPADDR(JNE_regO_null)       OPADDR(JNE_regI_regI)       OPADDR(JNE_regL_regL)       OPADDR(JNE_regD_regD)      OPADDR(JNE_regI_s6)         OPADDR(JNE_regI_sym)        OPADDR(JLT_regI_regI)       OPADDR(JLT_regL_regL)      OPADDR(JLT_regD_regD)       OPADDR(JLT_regI_s6)         OPADDR(JLE_regI_regI)       OPADDR(JLE_regL_regL)      OPADDR(JLE_regD_regD)       OPADDR(JLE_regI_s6)         OPADDR(JGT_regI_regI)       OPADDR(JGT_regL_regL)        OPADDR(JGT_regD_regD)       OPADDR(JGT_regI_s6)         OPADDR(JGE_regI_regI)       OPADDR(JGE_regL_regL)      OPADDR(JGE_regD_regD)       OPADDR(JGE_regI_s6)         OPADDR(JGE_regI_arlen)      OPADDR(DECJGTZ_regI)       OPADDR(DECJGEZ_regI)        OPADDR(TEST_regO)           OPADDR(JUMP_s24)            OPADDR(CONV_regI_regL)     OPADDR(CONV_regI_regD)      OPADDR(CONV_regIb_regI)     OPADDR(CONV_regIc_regI)
-      OPADDR(CONV_regIs_regI)     OPADDR(CONV_regL_regI)      OPADDR(CONV_regL_regD)      OPADDR(CONV_regD_regI)      OPADDR(CONV_regD_regL)     OPADDR(RETURN_regI)         OPADDR(RETURN_regO)         OPADDR(RETURN_reg64)        OPADDR(RETURN_void)        OPADDR(RETURN_s24I)         OPADDR(RETURN_null)         OPADDR(RETURN_s24D)         OPADDR(RETURN_s24L)        OPADDR(RETURN_symI)         OPADDR(RETURN_symO)         OPADDR(RETURN_symD)         OPADDR(RETURN_symL)          OPADDR(SWITCH)              OPADDR(NEWARRAY_len)        OPADDR(NEWARRAY_regI)       OPADDR(NEWARRAY_multi)     OPADDR(NEWOBJ)              OPADDR(THROW)               OPADDR(INSTANCEOF)          OPADDR(CHECKCAST)          OPADDR(CALL_normal)         OPADDR(CALL_virtual)        OPADDR(JUMP_regI)           OPADDR(MONITOR_Enter)      OPADDR(MONITOR_Exit)
+      OPADDR(CONV_regIs_regI)     OPADDR(CONV_regL_regI)      OPADDR(CONV_regL_regD)      OPADDR(CONV_regD_regI)      OPADDR(CONV_regD_regL)     OPADDR(RETURN_regI)         OPADDR(RETURN_regO)         OPADDR(RETURN_reg64)        OPADDR(RETURN_void)        OPADDR(RETURN_s24I)         OPADDR(RETURN_null)         OPADDR(RETURN_s24D)         OPADDR(RETURN_s24L)        OPADDR(RETURN_symI)         OPADDR(RETURN_symO)         OPADDR(RETURN_symD)         OPADDR(RETURN_symL)          OPADDR(SWITCH)              OPADDR(NEWARRAY_len)        OPADDR(NEWARRAY_regI)       OPADDR(NEWARRAY_multi)     OPADDR(NEWOBJ)              OPADDR(THROW)               OPADDR(INSTANCEOF)          OPADDR(CHECKCAST)          OPADDR(CALL_normal)         OPADDR(CALL_virtual)        OPADDR(JUMP_regI)           OPADDR(MONITOR_Enter)      OPADDR(MONITOR_Enter2)      OPADDR(MONITOR_Exit)        OPADDR(MONITOR_Exit2)
    }
    address = _address;
    addrMtdParam = _addrMtdParam;
@@ -947,34 +947,26 @@ handleException:
       OPCODE(MONITOR_Enter)
       OPCODE(MONITOR_Enter2)
       {
-         TCClass classe;
          // get variables and do some checks
          if (code->s24.op == MONITOR_Enter)        
             o = regO[code->reg_reg.reg0];
          else
             o = cp->str[code->reg_reg.reg0];
-         debug(OBJ_CLASS(o)->name);
          if (o == null) goto throwNullPointerException;
-         debug("aqui 1");
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {            
             MUTEX_TYPE* mutex;
-            debug("aqui 2"); 
+
             LOCKVAR(mutexes);
-            debug("aqui 3");
             if (!(mutex = htGetPtr(&htMutexes, (int32)o)))
             {
-               debug("aqui 4");
                if (!(mutex = (MUTEX_TYPE*)xmalloc(sizeof(MUTEX_TYPE))))
                {
                   UNLOCKVAR(mutexes);
                   goto throwOutOfMemoryError;
                }
-               debug("aqui 5");
                SETUP_MUTEX;
-               debug("aqui 6");
                INIT_MUTEX_VAR(*mutex);
-               debug("aqui 7");
                if (!htPutPtr(&htMutexes, (int32)o, mutex))
                {                  
                   DESTROY_MUTEX_VAR(*mutex);
@@ -982,11 +974,8 @@ handleException:
                   goto throwOutOfMemoryError;
                }
             }
-            debug("aqui 8");
             UNLOCKVAR(mutexes);
-            debug("aqui 9");
             RESERVE_MUTEX_VAR(*mutex);   
-            debug("aqui 10");
          }
          else
          {
