@@ -947,26 +947,34 @@ handleException:
       OPCODE(MONITOR_Enter)
       OPCODE(MONITOR_Enter2)
       {
+         TCClass classe;
          // get variables and do some checks
          if (code->s24.op == MONITOR_Enter)        
             o = regO[code->reg_reg.reg0];
          else
             o = cp->str[code->reg_reg.reg0];
+         debug(OBJ_CLASS(o)->name);
          if (o == null) goto throwNullPointerException;
+         debug("aqui 1");
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {            
             MUTEX_TYPE* mutex;
-
+            debug("aqui 2"); 
             LOCKVAR(mutexes);
+            debug("aqui 3");
             if (!(mutex = htGetPtr(&htMutexes, (int32)o)))
             {
+               debug("aqui 4");
                if (!(mutex = (MUTEX_TYPE*)xmalloc(sizeof(MUTEX_TYPE))))
                {
                   UNLOCKVAR(mutexes);
                   goto throwOutOfMemoryError;
                }
+               debug("aqui 5");
                SETUP_MUTEX;
+               debug("aqui 6");
                INIT_MUTEX_VAR(*mutex);
+               debug("aqui 7");
                if (!htPutPtr(&htMutexes, (int32)o, mutex))
                {                  
                   DESTROY_MUTEX_VAR(*mutex);
@@ -974,8 +982,11 @@ handleException:
                   goto throwOutOfMemoryError;
                }
             }
+            debug("aqui 8");
             UNLOCKVAR(mutexes);
-            RESERVE_MUTEX_VAR(*mutex);            
+            debug("aqui 9");
+            RESERVE_MUTEX_VAR(*mutex);   
+            debug("aqui 10");
          }
          else
          {
