@@ -477,6 +477,8 @@ jumpArgument:
    doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double",    false), "TYPE");
    charTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Character", false), "TYPE");
 
+   cloneable = loadClass(currentContext, "java.lang.Cloneable", false); // Loads the Cloneable interface.
+
    // Create a Java thread for the main context and call it "TC Event Thread"
    mainContext->threadObj = createObjectWithoutCallingDefaultConstructor(currentContext, "java.lang.Thread");
    name = createStringObjectFromCharP(currentContext, "TC Event Thread", -1);

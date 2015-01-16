@@ -980,7 +980,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void pumpEvents()
    {
-      eventThread.pumpEvents();
+      if (eventThread != null) eventThread.pumpEvents();
    }
    
    public void update(java.awt.Graphics g) {}

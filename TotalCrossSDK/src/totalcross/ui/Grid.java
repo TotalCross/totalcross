@@ -1079,7 +1079,7 @@ public class Grid extends Container implements Scrollable
                npcapt = NinePatch.getInstance().getNormalInstance(NinePatch.GRID_CAPTION,width,lineH+5,captionsBackColor,false);
             // draw top
             g.setClip(0,0,width,lineH);
-            g.drawImage(npcapt,0,0);
+            NinePatch.tryDrawImage(g,npcapt,0,0);
             g.clearClip();
          }
          catch (ImageException ie)
@@ -1238,7 +1238,7 @@ public class Grid extends Container implements Scrollable
             {
                if (npback == null)
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.GRID,width,height,captionsBackColor,false);
-               g.drawImage(npback,0,0); // parent.getGraphics().drawImage(npback,this.x,this.y);
+               NinePatch.tryDrawImage(g,npback,0,0);
             }
             catch (ImageException ie)
             {

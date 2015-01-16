@@ -1146,7 +1146,11 @@ public class MultiEdit extends Container implements Scrollable
             Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
          }
          if (Settings.unmovableSIP) // guich@tc126_21
-            getParentWindow().shiftScreen(this,0);
+         {
+            Window w = getParentWindow();
+            if (w == null) w = Window.topMost;
+            w.shiftScreen(this,0);
+         }
          lastZ1y = -9999;
       }
    }
@@ -1168,7 +1172,7 @@ public class MultiEdit extends Container implements Scrollable
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, isEnabled() ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
                }
                catch (ImageException e) {}
-            g.drawImage(npback, 0,0);
+            NinePatch.tryDrawImage(g,npback,0,0);
          }
          else
             g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);

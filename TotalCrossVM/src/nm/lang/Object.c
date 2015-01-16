@@ -62,10 +62,6 @@ TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object cl
    TCObject cloneObj;
    int32 length = ARRAYLENV(thisClass->interfaces);
 
-   // Loads the Cloneable interface.
-   if (!cloneable && !(cloneable = loadClass(p->currentContext, "java.lang.Cloneable", true)))
-      return;
-
    // If the class does not implement Cloneable, throws CloneNotSupportedException.
    if (!isSuperClass(thisClass, cloneable))
       throwExceptionNamed(p->currentContext, "java.lang.CloneNotSupportedException", "");

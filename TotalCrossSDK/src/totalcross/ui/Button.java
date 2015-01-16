@@ -575,18 +575,21 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      int tiGap = getGap(this.tiGap);
       if (imageHeightFactor != 0 && img0 != null)
          try 
          {
             img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);
-            img.setCurrentFrame(currentFrame); 
+            if (img.getWidth() > this.width-4)
+               img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(width-4,false) : img0.hwScaledFixedAspectRatio(width-4,false);
+            img.setCurrentFrame(currentFrame);
+            imgDis = null;
          } catch (Throwable t) {img = img0;}
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (isAndroidStyle && clip == null)
          clip = new Rect();
       npback = null;
       int th=0,iw=0,ih=0;
-      int tiGap = getGap(this.tiGap);
       
       if (isAndroidStyle && width > 0 && height > 0)
          transparentBackground = true;
@@ -594,8 +597,8 @@ public class Button extends Control
       if (text != null)
       {
          th = fmH * lines.length;
-         tx0 = (width  - maxTW) >> 1;
-         ty0 = (height - th) >> 1;
+         tx0 = (width  - maxTW) / 2;
+         ty0 = (height - th) / 2;
       }
       if (border == BORDER_GRAY_IMAGE) // guich@tc113_6: recompute image's
       {
@@ -658,15 +661,6 @@ public class Button extends Control
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
       if (!isAndroidStyle)
          fourColors[1] = pressColor;
-      if (!enabled && img != null) // guich@tc110_50
-         try
-         {
-            imgDis = img.getFadedInstance();
-         }
-         catch (ImageException e)
-         {
-            imgDis = img;
-         }
    }
 
    /** Paint button's background. */
@@ -745,13 +739,26 @@ public class Button extends Control
          {
             if (npback == null)
                npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
-            g.drawImage(enabled ? armed ? 
+            NinePatch.tryDrawImage(g, enabled ? armed ? 
                   NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : 
                   npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false),ix,iy);
          }
          catch (ImageException ie) {ie.printStackTrace();}
       else
-         g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
+      if (!enabled)
+      {
+         if (img != null && imgDis == null) // guich@tc110_50 - guich@tc310: moved to here the generation of the disabled image
+            try
+            {
+               imgDis = img.getFadedInstance();
+            }
+            catch (ImageException e)
+            {
+               imgDis = img;
+            }
+         g.drawImage(imgDis,ix,iy);
+      }
+      else g.drawImage(armed && pressedImage != null ? pressedImage : img,ix,iy);
    }
 
    /** Returns the image that is assigned to this Button, or null if none. */

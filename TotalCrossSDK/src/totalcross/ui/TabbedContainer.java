@@ -810,7 +810,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (uiAndroid)
                try
                {
-                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop), r.x,r.y);
+                  NinePatch.tryDrawImage(g, NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop), r.x,r.y);
                }
                catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
             else
@@ -837,7 +837,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             try
             {
                Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
-               g.drawImage(img, r.x,r.y);
+               NinePatch.tryDrawImage(g, img, r.x,r.y);
             }
             catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
          else
