@@ -990,6 +990,11 @@ public class ListBox extends Container implements Scrollable
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);
                }
                catch (ImageException e) {}
+               catch (OutOfMemoryError oome)
+               {
+                  NinePatch.getInstance().flush(); // release memory and try again
+                  try {npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);} catch (Exception e) {}
+               }
             try
             {
                g.drawImage(npback, 0,0);
@@ -997,7 +1002,8 @@ public class ListBox extends Container implements Scrollable
             catch (OutOfMemoryError oome)
             {
                NinePatch.getInstance().flush(); // release memory and try again
-               g.drawImage(npback, 0,0);
+               if (npback != null) 
+                  g.drawImage(npback, 0,0);
             }
          }
          g.foreColor = foreColor;
