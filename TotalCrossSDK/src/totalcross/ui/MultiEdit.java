@@ -1146,7 +1146,11 @@ public class MultiEdit extends Container implements Scrollable
             Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
          }
          if (Settings.unmovableSIP) // guich@tc126_21
-            getParentWindow().shiftScreen(this,0);
+         {
+            Window w = getParentWindow();
+            if (w == null) w = Window.topMost;
+            w.shiftScreen(this,0);
+         }
          lastZ1y = -9999;
       }
    }
