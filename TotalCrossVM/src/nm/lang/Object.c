@@ -60,7 +60,7 @@ TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object cl
    TCObject thisObj = p->obj[0];
    TCClass thisClass = OBJ_CLASS(thisObj);
    TCObject cloneObj;
-   int32 length = ARRAYLENV(thisClass->interfaces);
+   int32 length;
 
    // If the class does not implement Cloneable, throws CloneNotSupportedException.
    if (!isSuperClass(thisClass, cloneable))
