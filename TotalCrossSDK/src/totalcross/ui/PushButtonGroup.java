@@ -380,7 +380,7 @@ public class PushButtonGroup extends Control
    
                   if (uiAndroid)
                   {
-                     g.drawImage(getAndroidButton(r.width,r.height,isEnabled() ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
+                     NinePatch.tryDrawImage(g,getAndroidButton(r.width,r.height,isEnabled() ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
                      continue;
                   }
                   else

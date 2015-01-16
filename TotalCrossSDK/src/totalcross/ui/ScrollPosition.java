@@ -209,10 +209,10 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                catch (Exception e) {e.printStackTrace();}
             
             if (isHandle())
-               getGraphics().drawImage(handle, 0, dragBarPos); // when the button is pressed, the graphic's clip becomes invalid
+               NinePatch.tryDrawImage(getGraphics(), handle, 0, dragBarPos); // when the button is pressed, the graphic's clip becomes invalid
             else
             if (npback != null)
-               g.drawImage(npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
+               NinePatch.tryDrawImage(g,npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
          }
          else
          {

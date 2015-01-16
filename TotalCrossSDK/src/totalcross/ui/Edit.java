@@ -795,7 +795,7 @@ public class Edit extends Control
                      npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
                }
                catch (ImageException e) {e.printStackTrace();}
-               g.drawImage(npback, 0,0);
+               NinePatch.tryDrawImage(g,npback,0,0);
             }
          }
          // draw the text and/or the selection

@@ -101,7 +101,7 @@ public class MultiButton extends Control
          g.backColor = parent.getBackColor();
          g.fillRect(0,0,width,height);
          
-         g.drawImage(npback,0,0);
+         NinePatch.tryDrawImage(g,npback,0,0);
          int w = width / tits.length;
          if (sel != -1)
             g.copyRect(npsel,sel*w+2,0,w-2,height,sel*w+2,1);

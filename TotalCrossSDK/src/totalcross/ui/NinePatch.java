@@ -227,5 +227,20 @@ public class NinePatch
       htBtn.clear();
       htPressBtn.clear();
    }
+
+   /** Used internally to prevent Out of Memory errors. */
+   public static void tryDrawImage(Graphics g, Image npback, int x, int y)
+   {
+      try
+      {
+         if (npback != null)
+            g.drawImage(npback, x,y);
+      }
+      catch (OutOfMemoryError oome)
+      {
+         getInstance().flush(); // release memory and try again
+         g.drawImage(npback, x,y);
+      }
+   }
 }
 
