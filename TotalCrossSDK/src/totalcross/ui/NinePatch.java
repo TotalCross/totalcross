@@ -50,6 +50,10 @@ public class NinePatch
    
    static NinePatch instance;
    
+   /** Defines if we will use the Image.applyColor (1) or Image.applyColor2 (2) algorithms
+    * when getting the pressed instance. */ 
+   public static int pressColorAlgorithm = 1;
+   
    public static NinePatch getInstance()
    {
       return instance != null ? instance : (instance = new NinePatch());
@@ -214,7 +218,10 @@ public class NinePatch
             if (pressColor != -1)
             {
                pressed = img.getFrameInstance(0); // get a copy of the image
-               pressed.applyColor(pressColor); // colorize it
+               if (pressColorAlgorithm == 1)
+                  pressed.applyColor(pressColor); // colorize it
+               else
+                  pressed.applyColor2(pressColor); // colorize it
             }
             else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
             htPressBtn.put(hash, pressed);
