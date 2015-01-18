@@ -2316,6 +2316,8 @@ public class Image extends GfxSurface
       try
       {
          Image img = new Image(filePath);
+         if (img.getFrameCount() == count)
+            throw new RuntimeException("The image "+filePath+" already has "+count+" frames! Please remove the code that called writeFrameCount!");
          img.setFrameCount(count);
          File f = new File(filePath,File.CREATE_EMPTY);
          img.createPng(f);
