@@ -2299,4 +2299,32 @@ public class Image extends GfxSurface
          }
       }
    }
+
+   /** Utility method used to change the frame count of an image. This method exists in
+    * java only, not on device. The frame count of a TotalCross' Image is stored in a
+    * comment inside the PNG file. If you create a PNG with many frames and don't want to 
+    * keep calling the setFrameCount manually, you can call this method like:
+    * <pre>
+    * Image.writeFrameCount("c:/project/src/images/people.png",2);
+    * </pre>
+    * Be careful that this must be done once only; this method does not exist in the device
+    * and will abort the vm if you try to call it there!
+    * @since TotalCross 3.1
+    */
+   public static void writeFrameCount(String filePath, int count)
+   {
+      try
+      {
+         Image img = new Image(filePath);
+         img.setFrameCount(count);
+         File f = new File(filePath,File.CREATE_EMPTY);
+         img.createPng(f);
+         f.close();
+         Vm.debug("\n\nSuccess changing frame count of "+filePath+" to "+count+"! Now don't forget to comment or remove the code, and refresh your project so your IDE can reload the image.\n\n");
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
 }
