@@ -561,16 +561,18 @@ public final class String4D implements Comparable<String4D>
     */
    public String[] split(String regex)
    {
+      for (int i = 0, n = regex.length(); i < n; i++)
+         if ("^$.[]{}()\\|?+*".indexOf(regex.charAt(i)) >= 0)
+            try
+            {
+               return Pattern.compile(regex).tokenizer(this.toString()).split();
+            }
+            catch (totalcross.util.ElementNotFoundException e)
+            {
+               return null;
+            }
       return Convert.tokenizeString(this.toString(), regex);
-/*      try
-      {
-         return Pattern.compile(regex).tokenizer(this.toString()).split();
-      }
-      catch (ElementNotFoundException e)
-      {
-         return null;
-      }
-*/   }
+   }
 
    /**
     * Returns a String representation of a character array. Subsequent
