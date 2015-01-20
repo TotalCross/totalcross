@@ -107,7 +107,7 @@ public class Loader extends Activity implements BarcodeReadListener
             int column_index_data = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA); 
             cursor.moveToFirst(); 
             String capturedImageFilePath = cursor.getString(column_index_data);
-            if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN))
+            if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
@@ -185,13 +185,18 @@ public class Loader extends Activity implements BarcodeReadListener
    }
 
    private String imageFN;
-   private void captureCamera(String s, int quality, int width, int height, boolean allowRotation)
+   //private static final int CAMERA_CUSTOM = 0;
+   private static final int CAMERA_NATIVE = 1;
+   private static final int CAMERA_NATIVE_NOCOPY = 2;
+   private int cameraType;
+   private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType)
    {
       try
       {
          imageFN = s;
+         this.cameraType = cameraType;
          String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
-         if (quality == 999)
+         if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY)
          {
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");  
@@ -301,7 +306,7 @@ public class Loader extends Activity implements BarcodeReadListener
                break;
             case CAMERA:
                captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
-                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"));
+                                                               ,b.getInt("showCamera.height"),b.getBoolean("showCamera.allowRotation"),b.getInt("showCamera.cameraType"));
 			   break;
             case TITLE:
                setTitle(b.getString("setDeviceTitle.title"));
