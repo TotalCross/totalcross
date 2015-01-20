@@ -1,4 +1,16 @@
 <h2>TotalCross 3.1</h2>             
+<h1>build 2503</h1>
+. fixed NPE when using Vm.safeSleep at the application's constructor<br>
+. prevent hour from being under 0 in Time<br>
+. Fixed SQLite.getTime on JavaSE<br>
+. fixed two things: 1. images getting too big when using imageHeightFactor on tall buttons 2. disabled image not being regenerated when the bounds are changed<br>
+. now we try to bypass OutOfMemoryErrors in all places that use a NinePatch image.<br>
+. added NinePatch.pressColorAlgorithm<br>
+. added Image.writeFrameCount<br>
+. prevent problems if Image's resize results in width/height under 0<br>
+. optimized RETokenizer.split that was using recursion to avoid using an array. The array is 10% faster than recursion. Also, now String4D checks if the argument passed in the split is a regex and if not, use Convert.tokenizeString, which is 5 times faster<br>
+. fixed crash that will occur if a method is called recursively and trigger a call stack increase. (changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively)<br>
+. changed the way to use the native camera application in Android. now use Camera.cameraType with one of the 3 constants: CAMERA_CUSTOM (default), CAMERA_NATIVE (android's native) or CAMERA_NATIVE_NOCOPY (android's native and delete copy from gallery)<br>
 <h1>build 2498</h1>
 . Now device/ maps to Settings.appPath on JavaSE and Win32. this fixes a problem of creating chimes.mp3 at the root of the current drive on JavaSE<br>
 . now if you use Vm.exec with "youtu.be" or "youtube" it opens the video directly in the youtube app<br>
