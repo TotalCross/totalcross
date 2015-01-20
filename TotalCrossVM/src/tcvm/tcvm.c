@@ -166,7 +166,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    Int32Array   regI  = context->regI;
    Value64Array reg64 = context->reg64;
    TCObjectArray  regO  = context->regO,regO2;
-   VoidPArray callStack0 = null;
+   int32 callStackMethodEnd = 0;
    // get method's variables
    register Code code = method->code;
    TCClass class_ = method->class_, c=null,thisClass;
@@ -254,7 +254,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 
 #ifdef ENABLE_TEST_SUITE
    if (context->callStackForced)
-      callStack0 = context->callStackForced; // needed by the RETURN_XXX test cases
+      callStackMethodEnd = context->callStackForced - context->callStackStart; // needed by the RETURN_XXX test cases
 #endif
 
    returnedValue.asInt32 = (int32)0xFFFFFFFF;
@@ -263,7 +263,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    if (((context->regI  + method->iCount)   >= context->regIEnd      && !contextIncreaseRegI(context, &regI))   ||
        ((context->regO  + method->oCount)   >= context->regOEnd      && !contextIncreaseRegO(context, &regO))   ||
        ((context->reg64 + method->v64Count) >= context->reg64End     && !contextIncreaseReg64(context, &reg64)) ||
-       ((context->callStack+2)              >= context->callStackEnd && !contextIncreaseCallStack(context, &callStack0)))
+       ((context->callStack+2)              >= context->callStackEnd && !contextIncreaseCallStack(context)))
       goto throwOutOfMemoryError;
 
 #ifndef ENABLE_TEST_SUITE
@@ -279,7 +279,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #ifdef ENABLE_TEST_SUITE
    if (context->callStackForced == null)
 #endif
-      callStack0 = context->callStack; // method will end when callStack0 is reached.
+      callStackMethodEnd = context->callStack - context->callStackStart; // method will end when callStackMethodEnd is reached. guich@tc310: changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively
 
    // push the parameters
 #ifdef ENABLE_TRACE
@@ -506,7 +506,7 @@ contCall:
             if ((context->regI      >= context->regIEnd      && !contextIncreaseRegI(context, &regI))   ||
                 (context->regO      >= context->regOEnd      && !contextIncreaseRegO(context, &regO))   ||
                 (context->reg64     >= context->reg64End     && !contextIncreaseReg64(context, &reg64)) ||
-                (context->callStack >= context->callStackEnd && !contextIncreaseCallStack(context, &callStack0)))
+                (context->callStack >= context->callStackEnd && !contextIncreaseCallStack(context)))
             {
                context->regI  -= newMethod->iCount;
                context->regO  -= newMethod->oCount;
@@ -665,7 +665,7 @@ popStackFrame:
                TRACE("T %08d %X %X %05d - %04d #%4d %X-%X %X %s native method called and returned to %s.%s - %s (%X)", getTimeStamp(), thread, context, ++context->ccon, (int)(code-method->code), locateLine(method, (int32)(code-method->code)), (int)regO, context->regO, context->callStack-2, getSpaces(context,context->depth), method->class_->name, method->name, regO[0] == null ? "" : OBJ_CLASS(regO[0])->name, regO[0]);
 #endif
                // check the returned value
-               if (context->callStack >= callStack0)
+               if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd)
                {
                   if (newMethod->cpReturn) // not returning void?
                   {
@@ -801,20 +801,20 @@ notYetLinked:
       //         means: where the caller wants the answer to be placed
       // reg.reg: points where the current routine placed the answer
       // so, the movement is: reg.reg -> retReg
-      OPCODE(RETURN_s24I)  context->callStack -= 2; if (context->callStack >= callStack0) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = (int32 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt32  = (int32 )code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_null)  context->callStack -= 2; if (context->callStack >= callStack0) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = null;                      goto resumePreviousMethod;} else {returnedValue.asObj    = null;                     goto finishMethod;}
-      OPCODE(RETURN_s24D)  context->callStack -= 2; if (context->callStack >= callStack0) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (double)code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asDouble = (double)code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_s24L)  context->callStack -= 2; if (context->callStack >= callStack0) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (int64 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt64  = (int64 )code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_symI)  context->callStack -= 2; if (context->callStack >= callStack0) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = cp->i32[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt32  = cp->i32[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symO)  context->callStack -= 2; if (context->callStack >= callStack0) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = cp->str[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asObj    = cp->str[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symD)  context->callStack -= 2; if (context->callStack >= callStack0) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->dbl[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asDouble = cp->dbl[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symL)  context->callStack -= 2; if (context->callStack >= callStack0) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->i64[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt64  = cp->i64[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_regI)  context->callStack -= 2; if (context->callStack >= callStack0) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = regI[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asInt32  = regI[code->reg.reg];      goto finishMethod;}
-      OPCODE(RETURN_regO)  context->callStack -= 2; if (context->callStack >= callStack0) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = regO[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asObj    = regO[code->reg.reg];      goto finishMethod;}
-      OPCODE(RETURN_reg64) context->callStack -= 2; if (context->callStack >= callStack0) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
+      OPCODE(RETURN_s24I)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = (int32 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt32  = (int32 )code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_null)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = null;                      goto resumePreviousMethod;} else {returnedValue.asObj    = null;                     goto finishMethod;}
+      OPCODE(RETURN_s24D)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (double)code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asDouble = (double)code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_s24L)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (int64 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt64  = (int64 )code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_symI)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = cp->i32[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt32  = cp->i32[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symO)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = cp->str[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asObj    = cp->str[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symD)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->dbl[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asDouble = cp->dbl[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symL)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->i64[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt64  = cp->i64[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_regI)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = regI[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asInt32  = regI[code->reg.reg];      goto finishMethod;}
+      OPCODE(RETURN_regO)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = regO[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asObj    = regO[code->reg.reg];      goto finishMethod;}
+      OPCODE(RETURN_reg64) context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
 returnVoid:
       OPCODE(RETURN_void)  context->callStack -= 2;
-         if (context->callStack >= callStack0)
+         if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd)
          {
 resumePreviousMethod:
             code = ((Code)context->callStack[-1]) + method->paramSkip; // now that retReg was used, its safe to skip over the parameters
@@ -1033,7 +1033,7 @@ finishMethod:
    context->regO  = regO; // alredy points to the end of the previous called method
    context->regI  = regI;
    context->reg64 = reg64;
-   context->callStack = callStack0-2; // needed for testcases
+   context->callStack = context->callStackStart + callStackMethodEnd-2; // needed for testcases
    context->code = code;
 
 #ifdef ENABLE_TRACE
