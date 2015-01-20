@@ -386,9 +386,9 @@ public class ScrollContainer extends Container implements Scrollable
       else
       {
          if (sbH != null)
-            sbH.setValue(-(bag.x = vx));
+            sbH.setValue(-(bag.x = sbH.maximum == 0 ? 0 : vx));
          if (sbV != null)
-            sbV.setValue(-(bag.y = vy));
+            sbV.setValue(-(bag.y = sbV.maximum == 0 ? 0 : vy)); // if we're scrolled but we don't need scroll, move to origin
       }
    }
    
