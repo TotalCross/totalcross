@@ -42,9 +42,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
 import java.security.*;
-import java.security.cert.*;
+import java.security.NoSuchAlgorithmException;
 import java.util.zip.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
 
+import totalcross.crypto.*;
 import totalcross.io.*;
 import totalcross.io.IOException;
 import totalcross.sys.*;
@@ -606,45 +609,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       checkKey();
    }
    
-   private void checkKey()
-   {
-      /*
-       W:\>openssl req -new -newkey rsa:4096 -days 30 -nodes -x509 -keyout totalcross.key 
-       -out totalcross.cert -subj "/C=BR/ST=CE/L=FORTALEZA/O=TotalCross MGP/CN=Guilherme Campos Hazan
-       /OU=54434C423B6869C50039C06F"
-       */
-      try
-      {
-         InputStream inStream = new FileInputStream("w:\\totalcross.cert");
-         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-         X509Certificate cert = (X509Certificate)cf.generateCertificate(inStream);
-         Principal p = cert.getIssuerDN(); // OU=54434C423B6869C50039C06F, CN=Guilherme Campos Hazan, O=TotalCross MGP, L=FORTALEZA, ST=CE, C=BR
-         java.util.Date exp = cert.getNotAfter(); 
-         java.util.Calendar c = java.util.Calendar.getInstance();
-         
-         c.setTime(exp);
-         int y = c.get(java.util.Calendar.YEAR);
-         int m = c.get(java.util.Calendar.MONTH) + 1;
-         int d = c.get(java.util.Calendar.DAY_OF_MONTH);
-         int iexp = y * 10000 + m * 100 + d;
-         
-         java.util.Date tod = new java.util.Date(); 
-         c.setTime(tod);
-         y = c.get(java.util.Calendar.YEAR);
-         m = c.get(java.util.Calendar.MONTH) + 1;
-         d = c.get(java.util.Calendar.DAY_OF_MONTH);
-         int itod = y * 10000 + m * 100 + d;
-         boolean expired = itod >= iexp;
-         System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+itod);
-         System.out.println(p);
-         inStream.close();
-      }
-      catch (Exception e)
-      {
-         //e.printStackTrace();
-      }
-   }
-
    private String[] tokenizeString(String string, char c)
    {
       java.util.StringTokenizer st = new java.util.StringTokenizer(string, ""+c);
@@ -2356,5 +2320,97 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          screenResized(w >= toWidth ? w : toWidth,h >= toHeight ? h : toHeight,true);
       else
          screenResized(w,h,false);
+   }
+   
+   private int getToday()
+   {
+      java.util.Calendar c = java.util.Calendar.getInstance();
+      int y = c.get(java.util.Calendar.YEAR);
+      int m = c.get(java.util.Calendar.MONTH) + 1;
+      int d = c.get(java.util.Calendar.DAY_OF_MONTH);
+      return y * 10000 + m * 100 + d;
+   }
+   
+   private String getMAC()
+   {
+      try
+      {
+         InetAddress ip = InetAddress.getLocalHost();
+         NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+         byte[] mac = network.getHardwareAddress();
+         StringBuilder sb = new StringBuilder();
+         for (int i = 0; i < mac.length; i++)
+             sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));        
+         return sb.toString();
+      }
+      catch (Exception e)
+      {
+         return "";
+      }
+   }
+   
+   private byte[] doCrypto(boolean encrypt, String key, byte[] in) throws Exception 
+   {
+      Key secretKey = new SecretKeySpec(key.getBytes(), "AES");
+      Cipher cipher = Cipher.getInstance("AES");
+      cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, secretKey);
+      return cipher.doFinal(in);
+   }
+   
+   private static final String MAGIC = "T0T@LCR0$$";
+   //private static final int PREDATA = 512;
+   private void checkKey()
+   {
+      int today = getToday();
+      String currentMac = getMAC();
+      try
+      {
+         // read license file
+         InputStream in = new FileInputStream("tc_license.dat");
+         byte[] fin = new byte[in.available()];
+         in.read(fin);
+         in.close();
+         // use the key passed to launcher
+         byte[] bin = doCrypto(false, Launcher.key, fin);
+         
+         DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
+         String magic     = ds.readUTF();
+         if (!magic.equals(MAGIC))
+            throw new RuntimeException("This license key does not correspond to the stored key!");
+         String storedMac  = ds.readUTF();
+         int    iexp = ds.readInt();
+         boolean expired = today >= iexp;
+         
+         if (!storedMac.equals(currentMac))
+            throw new RuntimeException("This license key does not correspond to the stored key!");
+         if (expired)
+            throw new RuntimeException("This license is EXPIRED!");
+         
+         System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+today);
+      }
+      catch (FileNotFoundException fnfe)
+      {
+         try
+         {
+            URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
+            con.setUseCaches(false);
+            con.setDoOutput(true);
+            con.setDoInput(true);
+            OutputStream os = con.getOutputStream();
+            DataOutputStream dos = new DataOutputStream(os);
+            dos.writeUTF(key);
+            dos.writeInt(today);
+            
+            OutputStream out = new FileOutputStream("tc_license.dat");
+         }
+         catch (Exception ee)
+         {
+            ee.printStackTrace();            
+         }
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
    }
 }
