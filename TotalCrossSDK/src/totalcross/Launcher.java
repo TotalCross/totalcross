@@ -42,12 +42,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
 import java.security.*;
-import java.security.NoSuchAlgorithmException;
 import java.util.zip.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
-import totalcross.crypto.*;
 import totalcross.io.*;
 import totalcross.io.IOException;
 import totalcross.sys.*;
@@ -59,7 +57,7 @@ import totalcross.util.zip.*;
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
-public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener
+final public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener
 {
    public static Launcher instance;
    public static boolean isApplication;
@@ -600,9 +598,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (false && key == null)
+      if (key == null)
       {
-         System.out.println("Error: you must provide a registration key!");
+         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
          System.exit(0);
          return;
       }
@@ -2349,68 +2347,124 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
    }
    
-   private byte[] doCrypto(boolean encrypt, String key, byte[] in) throws Exception 
+   private byte[] doCrypto(boolean encrypt, byte[] in) throws Exception 
    {
-      Key secretKey = new SecretKeySpec(key.getBytes(), "AES");
+      char[] keystr = (Launcher.key+"CAFEBABE").toCharArray();
+      byte[] keybytes = new byte[16];
+      for (int i = 0, n = keystr.length; i < n; i+=2)
+         keybytes[i/2] = (byte)Integer.valueOf(""+keystr[i]+keystr[i+1],16).intValue();
+      
+      Key secretKey = new SecretKeySpec(keybytes, "AES");
       Cipher cipher = Cipher.getInstance("AES");
       cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, secretKey);
       return cipher.doFinal(in);
    }
-   
+
    private static final String MAGIC = "T0T@LCR0$$";
-   //private static final int PREDATA = 512;
+   private static final int XDATA = 512;
    private void checkKey()
    {
       int today = getToday();
       String currentMac = getMAC();
       try
       {
-         // read license file
-         InputStream in = new FileInputStream("tc_license.dat");
-         byte[] fin = new byte[in.available()];
-         in.read(fin);
-         in.close();
-         // use the key passed to launcher
-         byte[] bin = doCrypto(false, Launcher.key, fin);
-         
-         DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
-         String magic     = ds.readUTF();
-         if (!magic.equals(MAGIC))
-            throw new RuntimeException("This license key does not correspond to the stored key!");
-         String storedMac  = ds.readUTF();
-         int    iexp = ds.readInt();
-         boolean expired = today >= iexp;
-         
-         if (!storedMac.equals(currentMac))
-            throw new RuntimeException("This license key does not correspond to the stored key!");
-         if (expired)
-            throw new RuntimeException("This license is EXPIRED!");
-         
-         System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+today);
+         readLicense(currentMac, today);
       }
       catch (FileNotFoundException fnfe)
       {
          try
          {
-            URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
-            con.setUseCaches(false);
-            con.setDoOutput(true);
-            con.setDoInput(true);
-            OutputStream os = con.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-            dos.writeUTF(key);
-            dos.writeInt(today);
-            
-            OutputStream out = new FileOutputStream("tc_license.dat");
+            getNewLicense(currentMac, today);
+            readLicense(currentMac, today);
          }
          catch (Exception ee)
          {
-            ee.printStackTrace();            
+            throw new RuntimeException(ee);
          }
       }
       catch (Exception e)
       {
          e.printStackTrace();
       }
+   }
+
+   private void readLicense(String currentMac, int today) throws Exception
+   {
+      // read license file
+      InputStream in = new FileInputStream("tc_license.dat");
+      byte[] fin = new byte[in.available()];
+      in.read(fin);
+      in.close();
+      // use the key passed to launcher
+      byte[] bin = doCrypto(false, fin);
+      DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
+      ds.skip(XDATA);
+      String magic     = ds.readUTF();
+      if (!magic.equals(MAGIC))
+         throw new RuntimeException("This license key does not correspond to the stored key!");
+      String storedMac  = ds.readUTF();
+      int    iexp = ds.readInt();
+      boolean expired = today >= iexp;
+      
+      if (!storedMac.equals(currentMac))
+         throw new RuntimeException("This license key does not correspond to the stored key !");
+      if (expired)
+         throw new RuntimeException("This license is EXPIRED!");
+      
+      System.out.println("License expiration date: "+new Date(iexp));
+   }
+
+   private void getNewLicense(String currentMac, int today) throws Exception
+   {
+      // connect to the registration service and validate the key and mac.
+      int expdate = 20150130; //getExpdateFromServer(currentMac, today);
+      if (expdate > 0)
+      {
+         int day = expdate % 100;
+         int month = expdate / 100 % 100;
+         int year = expdate / 10000;
+         ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
+         DataOutputStream dos = new DataOutputStream(baos);
+         java.util.Random r = new java.util.Random(expdate);
+         byte[] xdata = new byte[XDATA]; r.nextBytes(xdata);
+         dos.write(xdata);
+         dos.writeUTF(MAGIC);
+         dos.writeUTF(currentMac);
+         dos.writeInt(expdate);
+         r.nextBytes(xdata);
+         dos.write(xdata);
+         dos.close();
+         byte[] bytes = baos.toByteArray();
+         byte[] cript = doCrypto(true, bytes);
+         OutputStream out = new FileOutputStream("tc_license.dat");
+         out.write(cript);
+         out.close();
+      }
+      else
+         switch (expdate)
+         {
+         }            
+   }
+
+   private int getExpdateFromServer(String currentMac, int today) throws Exception
+   {
+      URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
+      con.setUseCaches(false);
+      con.setDoOutput(true);
+      con.setDoInput(true);
+      OutputStream os = con.getOutputStream();
+      DataOutputStream dos = new DataOutputStream(os);
+      dos.writeUTF(key);
+      dos.writeUTF(currentMac);
+      dos.writeInt(today);
+      dos.close();
+      os.close();
+      // get response - the expiration date or a negative value for error codes
+      InputStream in = con.getInputStream();
+      DataInputStream dis = new DataInputStream(in);
+      int expdate = dis.readInt();
+      dis.close();
+      in.close();
+      return expdate;
    }
 }
