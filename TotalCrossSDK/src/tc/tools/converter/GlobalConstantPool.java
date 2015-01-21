@@ -287,6 +287,8 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
    {
       if (className.equals("java/lang/System") && name.equals("arraycopy")) // special case for enum
          className = "totalcross/sys/Vm";
+      else if (((className.charAt(0) == 'L' && className.charAt(className.length()-1) == ';') || className.charAt(0) == '[') && name.equals("clone"))
+         className = "java/lang/Array";
       // normalize everything
       if (name.equals("<init>")) name = CONSTRUCTOR_NAME; else
       if (name.equals("<clinit>")) name = STATIC_INIT_NAME;
@@ -382,8 +384,6 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
             
-      if (value.equals("java.util.Hashtable")) value = "totalcross.util.Hashtable";
-      else
       if (value.equals("java.util.Random")) value = "totalcross.util.Random";
       else
       if (value.indexOf("StringBuilder") >= 0)

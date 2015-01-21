@@ -423,12 +423,7 @@ public class Edit extends Control
             if (maskedEdit)
             {
                if (mask == null || mask.length == 0) // use a default mask
-               {
-                  String s = decimalPlaces == 0 ? "999a999a999a999a999" : ("999a999a999a999a999b"+Convert.dup('9',decimalPlaces));
-                  s = s.replace('a', Settings.thousandsSeparator);
-                  s = s.replace('b', Settings.decimalSeparator);
-                  mask = s.toCharArray();
-               }
+                  mask = getDefaultCurrencyMask(decimalPlaces);
                applyMaxLengthBasedOnMask();
                alignment = RIGHT;
             }
@@ -441,6 +436,14 @@ public class Edit extends Control
       }
       if (kbdType != KBD_NONE) // guich@tc115_29
          setKeyboard(KBD_DEFAULT);
+   }
+   
+   public static char[] getDefaultCurrencyMask(int decimalPlaces)
+   {
+      String s = decimalPlaces == 0 ? "999a999a999a999a999" : ("999a999a999a999a999b"+Convert.dup('9',decimalPlaces));
+      s = s.replace('a', Settings.thousandsSeparator);
+      s = s.replace('b', Settings.decimalSeparator);
+      return s.toCharArray();
    }
 
    private void applyMaxLengthBasedOnMask()
@@ -792,7 +795,7 @@ public class Edit extends Control
                      npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
                }
                catch (ImageException e) {e.printStackTrace();}
-               g.drawImage(npback, 0,0);
+               NinePatch.tryDrawImage(g,npback,0,0);
             }
          }
          // draw the text and/or the selection

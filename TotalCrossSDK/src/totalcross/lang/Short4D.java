@@ -25,7 +25,7 @@ public class Short4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
    public static Short4D valueOf(short s)
    {

@@ -594,7 +594,7 @@ public class ComboBox extends Container
             if ((armed || btn.armed) && nparmed == null)
                nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
             Image img = armed || btn.armed ? nparmed : npback;
-            g.drawImage(img, 0,0);
+            NinePatch.tryDrawImage(g, img, 0,0);
 //            Graphics gg = img.getGraphics();
 //            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
             g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);

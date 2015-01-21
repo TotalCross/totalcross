@@ -65,6 +65,9 @@ public class Bar extends Container
     */
    public int titleAlign = LEFT;
    
+   /** The preferred height on portrait or landscape, in pixels. */
+   public int portraitPrefH,landscapePrefH;
+   
    /** A Bar's button. You can create an extension of this class using:
     * <pre>
       Bar b = new Bar();
@@ -262,6 +265,7 @@ public class Bar extends Container
    {
       this.title = title != null ? new BarButton(title,null) : null;
       this.backgroundStyle = BACKGROUND_SHADED;
+      this.ignoreInsets = true;
       setFont(font.asBold());
    }
    
@@ -411,6 +415,9 @@ public class Bar extends Container
    {
       removeAll();
       int n = icons.size();
+      if (n == 1 && icons.items[0] instanceof Label)
+         add((Control)icons.items[0],LEFT,TOP,FILL,FILL);
+      else
       if (title == null) // if there's no title, make the icons take the whole size of the container
       {
          for (int i = n; --i > 0;)
@@ -494,7 +501,7 @@ public class Bar extends Container
     */
    public int getPreferredHeight()
    {
-      return fmH*2;
+      return Settings.isLandscape() ? (landscapePrefH != 0 ? landscapePrefH : fmH*2) : (portraitPrefH != 0 ? portraitPrefH : fmH*2);
    }
    
    /** 

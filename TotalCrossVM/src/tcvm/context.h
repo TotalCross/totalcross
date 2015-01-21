@@ -94,7 +94,7 @@ void deleteContext(Context c, bool destroyThread);
 bool contextIncreaseRegI(Context c, int32** r);
 bool contextIncreaseRegO(Context c, TCObject** r);
 bool contextIncreaseReg64(Context c, Value64* r);
-bool contextIncreaseCallStack(Context c, VoidP** r);
+bool contextIncreaseCallStack(Context c);
 
 Context initContexts();
 void destroyContexts();

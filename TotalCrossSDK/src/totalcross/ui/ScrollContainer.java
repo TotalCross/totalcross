@@ -18,6 +18,8 @@
 
 package totalcross.ui;
 
+import java.util.*;
+
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -76,6 +78,22 @@ public class ScrollContainer extends Container implements Scrollable
    public boolean shrink2size;
    private boolean isScrolling;
    private boolean scScrolled;
+
+   /** Automatically scrolls the container when an item is clicked.
+    * @see #hsIgnoreAutoScroll 
+    */
+   public boolean autoScroll;
+   
+   /** Defines a list of classes that will make autoScroll be ignored.
+    * Use it like:
+    * <pre>
+    * ScrollContainer.hsIgnoreAutoScroll.add(totalcross.ui.SpinList.class);
+    * ...
+    * </pre>
+    * This is useful if such class usually requires more than one press to have a value defined.
+    * @see #autoScroll
+    */
+   public static HashSet<Class<?>> hsIgnoreAutoScroll = new HashSet<Class<?>>(5);
 
    /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
      */
@@ -145,7 +163,7 @@ public class ScrollContainer extends Container implements Scrollable
       return ret;
    }
    
-   public boolean scrollContent(int dx, int dy)
+   public boolean scrollContent(int dx, int dy, boolean fromFlick)
    {
       boolean scrolled = false;
 
@@ -161,6 +179,7 @@ public class ScrollContainer extends Container implements Scrollable
             bag.setRect(LEFT - lastH, KEEP,KEEP,KEEP);
             bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
             scrolled = true;
+            if (!fromFlick) sbH.tempShow();
          }
       }
       if (dy != 0 && sbV != null)
@@ -175,6 +194,7 @@ public class ScrollContainer extends Container implements Scrollable
             bag.setRect(KEEP, TOP - lastV, KEEP, KEEP);
             bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
             scrolled = true;
+            if (!fromFlick) sbV.tempShow();
          }
       }
 
@@ -366,9 +386,9 @@ public class ScrollContainer extends Container implements Scrollable
       else
       {
          if (sbH != null)
-            sbH.setValue(-(bag.x = vx));
+            sbH.setValue(-(bag.x = sbH.maximum == 0 ? 0 : vx));
          if (sbV != null)
-            sbV.setValue(-(bag.y = vy));
+            sbV.setValue(-(bag.y = sbV.maximum == 0 ? 0 : vy)); // if we're scrolled but we don't need scroll, move to origin
       }
    }
    
@@ -447,7 +467,7 @@ public class ScrollContainer extends Container implements Scrollable
                int dy = -de.yDelta;
                if (isScrolling)
                {
-                  scrollContent(dx, dy);
+                  scrollContent(dx, dy, true);
                   event.consumed = true;
                   //Event.clearQueue(PenEvent.PEN_DRAG);
                }
@@ -456,13 +476,39 @@ public class ScrollContainer extends Container implements Scrollable
                   int direction = DragEvent.getInverseDirection(de.direction);
                   if (!flick.isValidDirection(direction))
                      break;
-                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy, true))
                      event.consumed = isScrolling = scScrolled = true;
                }
             }
             break;
          case PenEvent.PEN_UP:
             isScrolling = false;
+            if (autoScroll && event.target instanceof Control && !hsIgnoreAutoScroll.contains(event.target.getClass()) && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
+            {
+               Control c = (Control)event.target;
+               Rect r = c.getAbsoluteRect();
+               boolean scrolled = false;
+               if (sbV != null)
+               {
+                  int k = this.height/3;
+                  r.y -= this.getAbsoluteRect().y;
+                  if (r.y > 2*k)
+                     scrolled = scrollContent(0, k,false);
+                  else
+                  if (r.y2() < k)
+                     scrolled = scrollContent(0,-k,false);
+               }
+               if (sbH != null && !scrolled)
+               {
+                  int k = this.width/3;
+                  r.x -= this.getAbsoluteRect().x;
+                  if (r.x > 2*k)
+                     scrollContent(k,0,false);
+                  else
+                  if (r.x2() < k)
+                     scrollContent(-k,0,false);
+               }
+            }
             break;
          case ControlEvent.HIGHLIGHT_IN:
             if (event.target != this)

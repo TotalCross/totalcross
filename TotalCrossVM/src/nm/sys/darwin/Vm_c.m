@@ -35,6 +35,7 @@ int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
          UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
          [button addTarget:DEVICE_CTX->_mainview action:@selector(closeWebView:) forControlEvents:UIControlEventTouchUpInside];
          [button setTitle:@" X " forState:UIControlStateNormal];
+         [button setBackgroundColor:[UIColor colorWithRed:0.5f green:0.5f blue:0.5f alpha:0.5f]];
          int h = DEVICE_CTX->_childview->taskbarHeight;
          button.frame = CGRectMake(0,0,h,h);
          [webView addSubview:button];

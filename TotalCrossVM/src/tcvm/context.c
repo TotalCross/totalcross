@@ -127,7 +127,7 @@ static bool contextIncrease(Heap h, uint8** start, uint8** end, uint8** current,
    xmemmove(a, *start, oldLen * ssize); // move old contents
    // setup new pointers
    *current = ((int32)(*current - *start)) + a; // must be the first update!
-   *r = ((int32)(*r - *start)) + a;
+   if (r) *r = ((int32)(*r - *start)) + a;
    heapFreeArray(h, *start); // free old pointer
    *start = a;
    *end   = a + newLen * ssize;
@@ -146,9 +146,9 @@ bool contextIncreaseReg64(Context c, Value64* r)
 {
    return contextIncrease(c->heap, (uint8**)&c->reg64Start, (uint8**)&c->reg64End, (uint8**)&c->reg64, (uint8**)r, sizeof(*c->reg64), STARTING_REG64_SIZE / 4);
 }
-bool contextIncreaseCallStack(Context c, VoidP** r)
+bool contextIncreaseCallStack(Context c)
 {
-   return contextIncrease(c->heap, (uint8**)&c->callStackStart, (uint8**)&c->callStackEnd, (uint8**)&c->callStack, (uint8**)r, sizeof(*c->callStack), STARTING_STACK_SIZE / 4);
+   return contextIncrease(c->heap, (uint8**)&c->callStackStart, (uint8**)&c->callStackEnd, (uint8**)&c->callStack, null, sizeof(*c->callStack), STARTING_STACK_SIZE / 4);
 }
 
 Context getMainContext()

@@ -283,7 +283,7 @@ public class ListBox extends Container implements Scrollable
       return false;
    }
    
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {
       boolean hFlick = xDelta != 0 && ivWidths != null;
       boolean vFlick = yDelta != 0;
@@ -333,6 +333,7 @@ public class ListBox extends Container implements Scrollable
                   vFlick = false;
                else
                {
+                  if (!fromFlick) sbar.tempShow();
                   offset = newOffset;
                   Window.needsPaint = true;
                }
@@ -887,14 +888,14 @@ public class ListBox extends Container implements Scrollable
             {
                if (isScrolling)
                {
-                  scrollContent(-de.xDelta, -de.yDelta);
+                  scrollContent(-de.xDelta, -de.yDelta, true);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   event.consumed = true;
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true))
                      isScrolling = scScrolled = true;
                }
             }
@@ -989,15 +990,7 @@ public class ListBox extends Container implements Scrollable
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);
                }
                catch (ImageException e) {}
-            try
-            {
-               g.drawImage(npback, 0,0);
-            }
-            catch (OutOfMemoryError oome)
-            {
-               NinePatch.getInstance().flush(); // release memory and try again
-               g.drawImage(npback, 0,0);
-            }
+            NinePatch.tryDrawImage(g,npback,0,0);
          }
          g.foreColor = foreColor;
          if (!uiAndroid)
@@ -1078,7 +1071,7 @@ public class ListBox extends Container implements Scrollable
    /** You can extend ListBox and overide this method to draw the items */
    protected void drawSelectedItem(Graphics g, int index, int dx, int dy)
    {
-      g.drawText(getText(),dx,dy, textShadowColor != -1, textShadowColor);
+      g.drawText(getText(),dx,dy, textShadowColor != -1, textShadowColor);         
    }
    /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
    protected int getItemWidth(int index)

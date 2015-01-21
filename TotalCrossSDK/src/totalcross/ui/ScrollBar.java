@@ -663,4 +663,8 @@ public class ScrollBar extends Container
        _onEvent(ke);
        return this;
    }
+   
+   public void tempShow()
+   {
+   }
 }

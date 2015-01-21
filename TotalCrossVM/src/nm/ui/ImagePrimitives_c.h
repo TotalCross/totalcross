@@ -115,7 +115,7 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
 
-   if (width == 0 || height == 0 || newWidth == 0 || newHeight == 0) 
+   if (width <= 0 || height <= 0 || newWidth <= 0 || newHeight <= 0) 
       return true;
 
    xScale = ((double)newWidth / width);

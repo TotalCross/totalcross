@@ -182,6 +182,9 @@ public class Control extends GfxSurface
     */
    public static final int WILL_RESIZE = RANGE/3; // guich@tc114_68
    private static final int MAXABSOLUTECOORD = PREFERRED - RANGE;
+   
+   /** Set to true to ignore parent's insets when placing this control on screen. */
+   public boolean ignoreInsets;
 
    private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
 
@@ -622,7 +625,15 @@ public class Control extends GfxSurface
          // relative placement
          if (parent != null)
          {
-            parent.getClientRect(cli);
+            if (!ignoreInsets)
+               parent.getClientRect(cli);
+            else
+            {
+               cli.x = cli.y = 0;
+               cli.width = parent.width;
+               cli.height = parent.height;
+            }
+               
             lpx = parent.lastX;
             lpy = parent.lastY;
             if (relative != null)

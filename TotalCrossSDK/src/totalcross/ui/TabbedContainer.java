@@ -181,6 +181,9 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     */
    public int extraTabHeight;
    
+   /** The color used for the text of unselected tabs. Defaults to the foreground color. */
+   public int unselectedTextColor = -1;
+   
    private Container prevScr,curScr,nextScr;
 
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
@@ -807,7 +810,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (uiAndroid)
                try
                {
-                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop), r.x,r.y);
+                  NinePatch.tryDrawImage(g, NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop), r.x,r.y);
                }
                catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
             else
@@ -834,7 +837,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             try
             {
                Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
-               g.drawImage(img, r.x,r.y);
+               NinePatch.tryDrawImage(g, img, r.x,r.y);
             }
             catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
          else
@@ -855,7 +858,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          int yy = r.y + (r.height-fmH)/2;
          if (isText)
          {
-            g.foreColor = disabled[i] ? Color.getCursorColor(cColor) : cColor; // guich@200b4_156
+            g.foreColor = disabled[i] ? Color.getCursorColor(cColor) : i != activeIndex && unselectedTextColor != -1 ? unselectedTextColor : cColor; // guich@200b4_156
             if (uiAndroid)
                g.drawText(strCaptions[i],xx, atTop ? (extraTabHeight > 0 ? r.y + r.height-fmH-7 : yy-2) : (extraTabHeight > 0 ? r.y + 7 : yy), textShadowColor != -1, textShadowColor);
             else
@@ -967,14 +970,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                DragEvent de = (DragEvent)event;
                if (isScrolling)
                {
-                  scrollContent(-de.xDelta, 0);
+                  scrollContent(-de.xDelta, 0, true);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   event.consumed = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0, true))
                   {
                      if (Settings.optimizeScroll) takeScreenShots();
                      flickTimerStarted = false;
@@ -1227,7 +1230,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
              (direction == DragEvent.RIGHT && activeIndex < containers.length-1 && (flickIntoDisabledTabs || !disabled[activeIndex+1]));
    }
 
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {      
       if (containers.length == 1)
          return false;

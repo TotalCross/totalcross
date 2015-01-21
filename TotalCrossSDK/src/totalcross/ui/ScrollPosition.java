@@ -91,14 +91,23 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       super(orientation);
       btnInc.setVisible(false);
       btnDec.setVisible(false);
-      visible = true;//!autoHide;
       disableBlockIncrement = true;
       enableAutoScroll = false;
+      tempShow();
+   }
+   
+   public void tempShow()
+   {
+      visible = true;//!autoHide;
       if (autoHide) 
       {
          visibleCount = VISIBLE_COUNT;
-         timer = addTimer(500);
-         addTimerListener(this);
+         if (timer == null)
+         {
+            timer = addTimer(500);
+            addTimerListener(this);
+         }
+         Window.needsPaint = true;
       }
    }
 
@@ -121,7 +130,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       npback = null;
    }
    
-   /** Don't allow change the visibility flbjsag. This is done automatically. */
+   /** Don't allow change the visibility. This is done automatically. */
    public void setVisible(boolean b)
    {
    }
@@ -200,10 +209,10 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                catch (Exception e) {e.printStackTrace();}
             
             if (isHandle())
-               getGraphics().drawImage(handle, 0, dragBarPos); // when the button is pressed, the graphic's clip becomes invalid
+               NinePatch.tryDrawImage(getGraphics(), handle, 0, dragBarPos); // when the button is pressed, the graphic's clip becomes invalid
             else
             if (npback != null)
-               g.drawImage(npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
+               NinePatch.tryDrawImage(g,npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
          }
          else
          {
@@ -291,7 +300,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       return false;
    }
 
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {
       return false;
    }

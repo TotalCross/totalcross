@@ -1103,6 +1103,17 @@ public final class Graphics
       return r;
    }
 
+   /** Returns the clip's width */
+   public int getClipWidth()
+   {
+      return clipX2 - clipX1;
+   }
+   /** Returns the clip's height */
+   public int getClipHeight()
+   {
+      return clipY2 - clipY1;
+   }
+
    /** Clips the specified rectangle to the clipping bounds.
     * @param r The coordinates of the rectangle that are to be adjusted to match the clipping bounds.
     * @return false if the specified rectangle does not intersects the clipping bounds

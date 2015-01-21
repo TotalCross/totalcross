@@ -1,4 +1,50 @@
-<h2>TotalCross 3.1</h2>
+<h2>TotalCross 3.1</h2>             
+<h1>build 2503</h1>
+. fixed NPE when using Vm.safeSleep at the application's constructor<br>
+. prevent hour from being under 0 in Time<br>
+. Fixed SQLite.getTime on JavaSE<br>
+. fixed two things: 1. images getting too big when using imageHeightFactor on tall buttons 2. disabled image not being regenerated when the bounds are changed<br>
+. now we try to bypass OutOfMemoryErrors in all places that use a NinePatch image.<br>
+. added NinePatch.pressColorAlgorithm<br>
+. added Image.writeFrameCount<br>
+. prevent problems if Image's resize results in width/height under 0<br>
+. optimized RETokenizer.split that was using recursion to avoid using an array. The array is 10% faster than recursion. Also, now String4D checks if the argument passed in the split is a regex and if not, use Convert.tokenizeString, which is 5 times faster<br>
+. fixed crash that will occur if a method is called recursively and trigger a call stack increase. (changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively)<br>
+. changed the way to use the native camera application in Android. now use Camera.cameraType with one of the 3 constants: CAMERA_CUSTOM (default), CAMERA_NATIVE (android's native) or CAMERA_NATIVE_NOCOPY (android's native and delete copy from gallery)<br>
+<h1>build 2498</h1>
+. Now device/ maps to Settings.appPath on JavaSE and Win32. this fixes a problem of creating chimes.mp3 at the root of the current drive on JavaSE<br>
+. now if you use Vm.exec with "youtu.be" or "youtube" it opens the video directly in the youtube app<br>
+. fixed SpinList's gray area not working<br>
+. updated javadoc for better explain the Settings.appBuildNumber<br>
+. now if using noras, Settings.activationId equals to "NO ACTIVATION";<br>
+. fixed all primitive type wrappers toString method<br>
+. improved ControlBox javadocs. now if prefW is FILL, a small gap is added between the control and the borders.<br>
+. added a translucent gray background to ios X button on webview<br>
+. Now in Bar, if you addControl a single label, it will take the whole Bar's rectangle.<br>
+. added Control.ignoreInsets. Used in Bar so you can place a Bar at bottom and top and it will snap to parent's size when rotating.<br>
+. added Bar.landscapePrefH and portraitPrefH, so you can choose the preferred height when on portrait or landscape<br>
+. make sure that the folder exists when writting the tcz<br>
+. fixed crash when sliding unicode fonts in a container<br>
+<h1>build 2490</h1>
+. Added EnumSet.<br>
+. added MouseEvent.MOUSE_WHEEL event. added Settings.scrollDistanceOnMouseWheelMove. now the mouse wheel automatically scrolls all the Scrollable controls under the mouse position on Win32 and Java.<br>
+. now Vm.exec("viewer") works for win32 and JavaSE to open an url without using cmd<br>
+. added MultiEdit.cutText<br>
+. added SpinList.replaceChoices<br>
+. added ScrollContainer.autoScroll to automatically scroll the container when an item is clicked. added hsIgnoreAutoScroll: Defines a list of classes that will make autoScroll be ignored.<br>
+. Check: dont erase background if transparentBackground is true<br>
+. now GoogleMaps.showAddress receives a flag, and one of the flags is to use WAZE to show a route to a destination address. works on iOS and Android<br>
+. added InputBox.setEdit<br>
+. added a few functions do sqliteutils<br>
+. Implemented Array.clone().<br>
+. fixed File's lock on java working only when mode was READ_WRITE; now works also on CREATE*<br>
+. added Edit.getDefaultCurrencyMask<br>
+. added TabbedContainer.unselectedTextColor<br>
+. added SpinList.choicesLen<br>
+. added Graphics.getClipWidth/Height<br>
+. now in win32 and JavaSE when closeButtonType is NO_BUTTON, an SK_MENU key is posted to the event queue.<br>
+. now when a field is not found in the vm, we throw a NoSuchField error instead of the ClassNotFoundError<br>
+. fixed problem of activation not working on tc3 when the tcz was splitted.<br>
 <h1>build 2472</h1>
 . Corrected areClassesCompatible() when both parameters are arrays.<br>
 . Finished EnumMap.<br>

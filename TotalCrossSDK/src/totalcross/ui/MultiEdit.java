@@ -210,7 +210,7 @@ public class MultiEdit extends Container implements Scrollable
       return false;
    }
    
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {
       if (Math.abs(xDelta) > Math.abs(yDelta)) // MultiEdit has only vertical scrolling
          return false;
@@ -233,6 +233,7 @@ public class MultiEdit extends Container implements Scrollable
          firstToDraw = lastFirstToDrawLine;
       
       sb.setValue(firstToDraw);
+      if (!fromFlick) sb.tempShow();
       newInsertPos = zToCharPos(z1);
       
       Window.needsPaint = true;
@@ -901,14 +902,14 @@ public class MultiEdit extends Container implements Scrollable
                {
                   if (isScrolling)
                   {
-                     scrollContent(-de.xDelta, -de.yDelta);
+                     scrollContent(-de.xDelta, -de.yDelta, true);
                      event.consumed = true;
                   }
                   else
                   {
                      int direction = DragEvent.getInverseDirection(de.direction);
                      event.consumed = true;
-                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
+                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true))
                      {
                         isScrolling = scScrolled = true;
                         dragDistance = 0;
@@ -1145,7 +1146,11 @@ public class MultiEdit extends Container implements Scrollable
             Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
          }
          if (Settings.unmovableSIP) // guich@tc126_21
-            getParentWindow().shiftScreen(this,0);
+         {
+            Window w = getParentWindow();
+            if (w == null) w = Window.topMost;
+            w.shiftScreen(this,0);
+         }
          lastZ1y = -9999;
       }
    }
@@ -1167,7 +1172,7 @@ public class MultiEdit extends Container implements Scrollable
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, isEnabled() ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
                }
                catch (ImageException e) {}
-            g.drawImage(npback, 0,0);
+            NinePatch.tryDrawImage(g,npback,0,0);
          }
          else
             g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);

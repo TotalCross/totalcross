@@ -611,7 +611,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation)
+   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation, int cameraType)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
@@ -619,7 +619,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("showCamera.quality", stillQuality);
       b.putInt("showCamera.width",width);
       b.putInt("showCamera.height",height);
-	  b.putBoolean("showCamera.allowRotation", allowRotation);
+      b.putBoolean("showCamera.allowRotation", allowRotation);
+      b.putInt("showCamera.cameraType", cameraType);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
@@ -1055,7 +1056,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
-   public static boolean showRoute(String addressI, String addressF, String coords, boolean showSatellite) throws IOException
+   public static boolean showRoute(String addressI, String addressF, String coords, int flags) throws IOException
    {
       boolean tryAgain = false;
       int tryAgainCount = 0;
@@ -1065,7 +1066,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
-            double[] llF = getLatLon(addressF);
+            double[] llF = addressF == null ? new double[]{0,0} : getLatLon(addressF);
             if (llI != null && llF != null)
             {
                AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
@@ -1079,7 +1080,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                b.putDouble("latF", llF[0]);
                b.putDouble("lonF", llF[1]);
                b.putString("coord", coords);
-               b.putBoolean("sat", showSatellite);
+               b.putInt("flags", flags);
                msg.setData(b);
                loader.achandler.sendMessage(msg);
                while (showingMap)

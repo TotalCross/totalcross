@@ -60,7 +60,17 @@ public final class Settings
     */
    public static Hashtable appProps;
    
-   /** Returns the application's build number. 
+   /** Returns the application's build number. You can make tc.Deploy use this automatically by
+    * making the appVersion end with a dot. For example:
+    * <pre>
+    * static
+    * {
+    *    Settings.appVersion = "2.1."; // leading dot
+    * }
+    * // then at the application's constructor:
+    * Settings.appVersion += Settings.appBuildNumber();
+    * </pre> 
+    * This way, when you run tc.Deploy, it will update the appVersion to include the build number in all platforms.
     * @see #appProps
     * @since TotalCross 3.1
     */
@@ -391,8 +401,9 @@ public final class Settings
     */
    public static String appPath; // guich@581_1
    
-   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. In Windows 32, the X button will still be visible, but clicking on it will not close the application
-    * If the device does not support removing the button, it will change to a MINIMIZE_BUTTON, which is the default on CE devices. 
+   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. 
+    * In Windows 32, the X button will still be visible, but clicking on it will not close the application;
+    * instead, the SpcialKeys.MENU key event will be sent to the application.
     */
    public static final int NO_BUTTON = 0;
    /** To be used in the closeButtonType. An OK button is placed, and the application is closed when its pressed. */
@@ -639,7 +650,7 @@ public final class Settings
 
    /**
     * <b>READ-ONLY</b> unique identifier available for registered applications after the TotalCross VM is activated.<br>
-    * Value defaults to "NOT AVAILABLE" when running on DEMO.
+    * Value defaults to "NOT AVAILABLE" when running on DEMO, and "NO ACTIVATION" when using the new licensing model.
     * 
     * @since TotalCross 1.25
     */

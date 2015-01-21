@@ -236,7 +236,7 @@ public class File extends RandomAccessStream
 
       path = Convert.normalizePath(path);
       if (path.startsWith("device/")) // flsobral@tc110_108: added support for the alias "device/".
-         path = path.substring(6);
+         path = Convert.appendPath(Settings.appPath,path.substring(6)); // guich@tc310: in desktop was using the root folder of current drive
 
       this.path = path;
       this.mode = mode; // remove the sequential flag
@@ -334,7 +334,7 @@ public class File extends RandomAccessStream
              * Attempts to get an exclusive lock for this file, using reflection to call methods from JDK 1.4
              * ((java.io.RandomAccessFile) fileEx).getChannel().tryLock();
              */
-            if (mode == READ_WRITE)
+            if (mode != READ_ONLY)
             try
             {
                // RandomAccessFile.getChannel()

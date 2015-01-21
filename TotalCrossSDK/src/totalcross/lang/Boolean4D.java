@@ -26,7 +26,7 @@ public class Boolean4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
    public static Boolean4D valueOf(boolean b)
    {

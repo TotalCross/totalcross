@@ -1808,7 +1808,7 @@ Integer
 \family default
  class and the method 
 \family typewriter
-String.split()
+String.replaceFirst()
 \family default
 , which are not implemented by TotalCross.
 \end_layout
@@ -6632,12 +6632,12 @@ switch with strings;
 \end_layout
 
 \begin_layout Itemize
-clone (not for arrays yet),
+clone;
 \end_layout
 
 \begin_layout Itemize
 many collection classes, interfaces, and exceptions (without serialization
- yet), 
+ yet);
 \end_layout
 
 \begin_layout Itemize
@@ -6895,6 +6895,12 @@ HashSet
 \begin_layout Itemize
 
 \family typewriter
+HashTable
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 IdentityHashMap 
 \end_layout
 
@@ -6925,6 +6931,12 @@ PriorityQueue
 \begin_layout Itemize
 
 \family typewriter
+Stack
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
 TreeMap 
 \end_layout
 
@@ -6946,19 +6958,27 @@ Note that now there are two
 \family typewriter
 Vector
 \family default
+ and two 
+\family typewriter
+Hashtable
+\family default
  classes.
- One from 
+ Two from 
 \family typewriter
 totalcross.util
 \family default
- and another from 
+ and the others from 
 \family typewriter
 java.util
 \family default
 .
- To use the one from the Collections API, use 
+ To use the ones from the Collections API, use 
 \family typewriter
 java.util.Vector
+\family default
+ and 
+\family typewriter
+java.util.Hashtable
 \family default
 .
 \end_layout
@@ -7124,7 +7144,13 @@ boolean matches(String regex)
 \begin_layout Itemize
 
 \family typewriter
-String[] split(String regex)
+replaceAll(String regex, String replacement)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+String[] split(String delim)
 \end_layout
 
 \begin_layout Itemize

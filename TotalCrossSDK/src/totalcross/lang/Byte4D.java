@@ -25,7 +25,7 @@ public class Byte4D
    }
    public String toString()
    {
-      return super.toString()+" v="+v;
+      return String.valueOf(v);
    }
    public static Byte4D valueOf(byte b)
    {
