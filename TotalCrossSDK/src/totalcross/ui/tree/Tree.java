@@ -52,11 +52,8 @@ import totalcross.util.*;
  * n.add(new Node("SubBranch2"));
  * </pre>
  * You can also see the FileChooserBox control and FileChooserTest (in UIGadgets sample).
- * 
- * The Node's userObject can be a Control (or Container); in this case, all controls inside of 
- * it are drawn. The control itself is added to the Tree at an invisible location and is painted
- * at the right position. This means that events are somewhat limited. You should change the lineH 
- * to increase the line to the desired control's height.
+ *
+ * @see Node#userObject
  */
 public class Tree extends Container implements PressListener, PenListener, KeyListener, Scrollable
 {
