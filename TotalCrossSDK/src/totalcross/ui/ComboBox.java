@@ -508,6 +508,7 @@ public class ComboBox extends Container
                pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
                pm.setCursorColor(pop.lb.back1);
                pm.setSelectedIndex(pop.lb.selectedIndex);
+               pm.setFont(this.font);
                if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
                pm.popup();
                Event.clearQueue(PenEvent.PEN_UP); // prevent problem when user selects an item that is at the top of this ComboBox
