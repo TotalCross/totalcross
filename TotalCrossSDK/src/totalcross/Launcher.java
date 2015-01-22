@@ -169,6 +169,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          }
 
          fillSettings();
+         checkKey();
 
          try
          {
@@ -604,7 +605,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          System.exit(0);
          return;
       }
-      checkKey();
    }
    
    private String[] tokenizeString(String string, char c)
@@ -2361,21 +2361,22 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    }
 
    private static final String MAGIC = "T0T@LCR0$$";
-   private static final int XDATA = 512;
    private void checkKey()
    {
       int today = getToday();
       String currentMac = getMAC();
+      String currentUser = Settings.userName;
+      String licenseFolder = System.getProperty("user.home");
       try
       {
-         readLicense(currentMac, today);
+         readLicense(currentMac, currentUser, licenseFolder, today);
       }
       catch (FileNotFoundException fnfe)
       {
          try
          {
-            getNewLicense(currentMac, today);
-            readLicense(currentMac, today);
+            getNewLicense(currentMac, currentUser, licenseFolder, today);
+            readLicense(currentMac, currentUser, licenseFolder, today);
          }
          catch (Exception ee)
          {
@@ -2388,55 +2389,74 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       }
    }
 
-   private void readLicense(String currentMac, int today) throws Exception
+   private void readLicense(String currentMac, String currentUser, String licenseFolder, int today) throws Exception
    {
       // read license file
-      InputStream in = new FileInputStream("tc_license.dat");
+      InputStream in = new FileInputStream(licenseFolder+"/tc_license.dat");
       byte[] fin = new byte[in.available()];
       in.read(fin);
       in.close();
       // use the key passed to launcher
       byte[] bin = doCrypto(false, fin);
       DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
-      ds.skip(XDATA);
-      String magic     = ds.readUTF();
-      if (!magic.equals(MAGIC))
+      // skip trash
+      int xdataLen = Math.abs(key.hashCode() % 1000);
+      ds.skip(xdataLen);
+      // checks if the magic equals
+      boolean magicEquals = false;
+      try
+      {
+         String magic     = ds.readUTF();
+         magicEquals = magic.equals(MAGIC);
+      } catch (Exception e) {}
+      if (!magicEquals)
          throw new RuntimeException("This license key does not correspond to the stored key!");
+      // read the rest of stored data and compare with current values
       String storedMac  = ds.readUTF();
-      int    iexp = ds.readInt();
+      String storedUser = ds.readUTF();
+      String storedFolder = ds.readUTF();
+      int iexp = ds.readInt();
       boolean expired = today >= iexp;
       
-      if (!storedMac.equals(currentMac))
-         throw new RuntimeException("This license key does not correspond to the stored key !");
+      int diffM = storedMac.equals(currentMac) ? 0 : 1;
+      int diffU = storedUser.equals(currentUser) ? 0 : 2;
+      int diffF = storedFolder.equals(licenseFolder) ? 0 : 4;
+      int diff = diffM | diffU | diffF;
+      
+      if (diff != 0)
+         throw new RuntimeException("Invalid license file. Error #"+diff);
       if (expired)
          throw new RuntimeException("This license is EXPIRED!");
       
       System.out.println("License expiration date: "+new Date(iexp));
    }
 
-   private void getNewLicense(String currentMac, int today) throws Exception
+   private void getNewLicense(String currentMac, String currentUser, String licenseFolder, int today) throws Exception
    {
       // connect to the registration service and validate the key and mac.
-      int expdate = 20150130; //getExpdateFromServer(currentMac, today);
+      int expdate = 20150130; //getExpdateFromServer(currentMac, currentUser, licenseFolder, today);
       if (expdate > 0)
       {
-         int day = expdate % 100;
-         int month = expdate / 100 % 100;
-         int year = expdate / 10000;
          ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
          DataOutputStream dos = new DataOutputStream(baos);
+         // generate random data to put before and at end of important data
          java.util.Random r = new java.util.Random(expdate);
-         byte[] xdata = new byte[XDATA]; r.nextBytes(xdata);
+         int xdataLen = Math.abs(key.hashCode() % 1000);
+         byte[] xdata = new byte[xdataLen]; r.nextBytes(xdata);
          dos.write(xdata);
+         // write important data
          dos.writeUTF(MAGIC);
          dos.writeUTF(currentMac);
+         dos.writeUTF(currentUser);
+         dos.writeUTF(licenseFolder);
          dos.writeInt(expdate);
+         // write random data at end
          r.nextBytes(xdata);
          dos.write(xdata);
          dos.close();
          byte[] bytes = baos.toByteArray();
          byte[] cript = doCrypto(true, bytes);
-         OutputStream out = new FileOutputStream("tc_license.dat");
+         OutputStream out = new FileOutputStream(licenseFolder+"/tc_license.dat");
          out.write(cript);
          out.close();
       }
@@ -2446,7 +2466,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          }            
    }
 
-   private int getExpdateFromServer(String currentMac, int today) throws Exception
+   private int getExpdateFromServer(String currentMac, String currentUser, String licenseFolder, int today) throws Exception
    {
       URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
       con.setUseCaches(false);
@@ -2456,6 +2476,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       DataOutputStream dos = new DataOutputStream(os);
       dos.writeUTF(key);
       dos.writeUTF(currentMac);
+      dos.writeUTF(currentUser);
+      dos.writeUTF(licenseFolder);
       dos.writeInt(today);
       dos.close();
       os.close();
