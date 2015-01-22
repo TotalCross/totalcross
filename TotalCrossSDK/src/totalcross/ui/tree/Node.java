@@ -24,6 +24,11 @@ import totalcross.util.*;
 /**
  * This class defines the requirements for an object that can be used as a
  * tree node in a Tree. 
+ * 
+ * The userObject can be a Control (or Container); in this case, all controls inside of 
+ * it are drawn. The control itself is added to the Tree at an invisible location and is painted
+ * at the right position. This means that events are somewhat limited. You should change the lineH 
+ * to increase the line to the desired control's height.
  */ 
 
 public class Node extends Vector implements totalcross.util.Comparable

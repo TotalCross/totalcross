@@ -20,11 +20,9 @@ package totalcross.ui.tree;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.gfx.Graphics;
-import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
-import totalcross.util.Vector;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * This class is a simple implementation of a tree widget. Since it's
@@ -54,6 +52,11 @@ import totalcross.util.Vector;
  * n.add(new Node("SubBranch2"));
  * </pre>
  * You can also see the FileChooserBox control and FileChooserTest (in UIGadgets sample).
+ * 
+ * The Node's userObject can be a Control (or Container); in this case, all controls inside of 
+ * it are drawn. The control itself is added to the Tree at an invisible location and is painted
+ * at the right position. This means that events are somewhat limited. You should change the lineH 
+ * to increase the line to the desired control's height.
  */
 public class Tree extends Container implements PressListener, PenListener, KeyListener, Scrollable
 {
@@ -132,8 +135,16 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    private boolean isScrolling;
    private int lastV=-10000000, lastH=-10000000; // eliminate duplicate events
 
-   /** Default line height. */
+   /** @deprecated Use setLineHeight and getLineHeight */
    public int lineH;
+   private boolean lineHset;
+   /** Default line height. */
+   public void setLineHeight(int k)
+   {
+      this.lineH = k;
+      lineHset = true;
+   }
+   public int getLineHeight() {return lineH;}
    
    /** Constructs a new Tree based on an empty TreeModel. */
    public Tree()
@@ -356,7 +367,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void onFontChanged()
    {
-      lineH = Settings.fingerTouch ? fmH*3/2 : fmH;
+      if (!lineHset)
+         lineH = Settings.fingerTouch ? fmH*3/2 : fmH;
    }
 
    /**
@@ -432,7 +444,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       Image img;
       Graphics gImg;
 
-      w = fmH/2;//fm.charWidth(Settings.screenWidth == 240 ? 'O' : '$'); // 160=7 $, 240=9 O, 320=11 $
+      w = fmH/2;
       if ((w % 2) == 0) w++; // make sure we have an odd number of pixels for our plus sign
 
       img = new Image(w, w);
@@ -1028,39 +1040,52 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void penDown(PenEvent pe)
    {
+      if (pe.target != this) return;
       scScrolled = false;
       vbarY0 = vbar.getValue();
       hbarX0 = hbar.getValue();
       hbarDX = vbarDY = 0;
       
       if (!(pe.target instanceof ScrollBar || Settings.fingerTouch)) // the click is inside the scrollbar, get out
-         computeSel(pe.x,pe.y);
+         computeSel(pe);
    }
    
-   private void computeSel(int pex, int pey)
+   private void computeSel(PenEvent pe)
    {
-      int sel = ((pey - 4) / lineH) + offset;
+      lastControl = null;
+      int sel = ((pe.y - 4) / lineH) + offset;
       if (sel < itemCount)
       {
-         if (multipleSelection && pex < imgPlusSize+2)
+         if (multipleSelection && pe.x < imgPlusSize+2)
             checkClicked(sel);
-         if (pex < btnX && sel != selectedIndex)
+         else
+         if (pe.x < btnX)
          {
-            selectedIndex = sel;
-            Window.needsPaint = true;
+            Node node = (Node)items.items[sel];
+            if (sel != selectedIndex)
+            {
+               selectedIndex = sel;
+               Window.needsPaint = true;
+            }
+            if (node.userObject != null && node.userObject instanceof Control)
+            {
+               postControlEvent(node, pe);
+               Window.needsPaint = true;
+            }
          }
       }
    }
    
    public void penUp(PenEvent pe)
    {
+      if (pe.target != this) return;
       if (!isFlicking)
          flickDirection = NONE;
       isScrolling = false;
       if (pe.target instanceof ScrollBar) // the click is inside the scrollbar, get out
          return;
-      if (!scScrolled && Settings.fingerTouch)
-         computeSel(pe.x,pe.y);
+      if (!scScrolled/* && Settings.fingerTouch*/) // guich@tc310: had to comment fingerTouch to allow userObject's Control receive the PEN_UP even
+         computeSel(pe);
       
       // Post the event
       int sel = ((pe.y - 4) / lineH) + offset;
@@ -1125,6 +1150,12 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void keyPressed(KeyEvent e)
    {
+      if (lastControl != null)
+      {
+         e.target = lastControl;
+         lastControl.onEvent(e);
+      }
+      else
       if (multipleSelection && selectedIndex >= 0 && ((KeyEvent)e).key == ' ')
          checkClicked(selectedIndex);
       else
@@ -1133,7 +1164,13 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void specialkeyPressed(KeyEvent e)
    {
-      handleKeys((KeyEvent)e);
+      if (lastControl != null)
+      {
+         e.target = lastControl;
+         lastControl.onEvent(e);
+      }
+      else
+         handleKeys((KeyEvent)e);
    }
 
    private boolean handleKeys(KeyEvent ke)
@@ -1208,6 +1245,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       Node node = (Node) items.items[index];
       int level = node.level - 1;
 
+      dx += 2;
       dy += 2;
       if (index > 0) drawConnector(g, index, dx, dy, node); // draw the line that connect the nodes
       boolean expand = node.expanded;
@@ -1258,20 +1296,39 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
             g.drawImage(expand ? imgOpen : imgClose, x, y);
       }
 
-      dy--;
-      x += imgOpenW + gap;
-      y = dy+(lineH-fmH)/2;
       if (node.userObject != null && node.userObject instanceof Control)
-         ((Control)node.userObject).onPaint(g);
+      {
+         x += imgOpenW + gap+1;
+         y = dy;
+         Control c = (Control)node.userObject;
+         int ww = width-x - (!uiAndroid ? vbar.getWidth() : 0) - 2 - hsOffset;
+         int hh = lineH-2;
+         if (c.getWidth() == 0)
+         {
+            super.add(c); // caution: this.add does nothing!
+            c.setRect(0,0,ww,hh);
+         }
+         else if (c.getWidth() != ww) // allow rotation
+         {
+            c.intXYWH(0,0,ww,hh);
+            c.reposition();
+         }
+         c.intXYWH(x,y,ww,hh);
+         c.onPaint(c.getGraphics());
+         if (c instanceof Container)
+            ((Container)c).paintChildren();
+         c.intXYWH(100000,0,ww,hh);
+      }
       else
       {
+         dy--;
+         x += imgOpenW + gap + gap + 2;
+         y = dy+(lineH-fmH)/2;
          String text = node.toString();
-         if (Settings.screenWidth > 160)
-            x += gap + 2;
          if (node.backColor != -1) // guich@tc120_13
          {
             g.backColor = node.backColor;
-           g.fillRect(x,y,fm.stringWidth(text),lineH);
+            g.fillRect(x,y,fm.stringWidth(text),lineH);
          }
          if (node.foreColor != -1) // guich@tc120_13
             g.foreColor = node.foreColor;
@@ -1279,6 +1336,27 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       }
    }
 
+   private PenEvent pec = new PenEvent();
+   private Control lastControl;
+   private void postControlEvent(Node node, PenEvent peorig)
+   {
+      Control c = (Control)node.userObject;
+      pec.type = peorig.type;
+      pec.touch();
+      int xstart = getTextX(node.level);
+      int sel = ((peorig.y - 4) / lineH) + offset;
+      pec.x = peorig.x - xstart + c.getX() - gap;
+      pec.y = peorig.y - sel * lineH - 4;
+      if (c instanceof Container)
+      {
+         c = ((Container) c).findChild(pec.x -= 100000,pec.y);
+         pec.x -= c.getX();
+         pec.y -= c.getY();
+      }
+      pec.target = lastControl = c;
+      c.postEvent(pec);
+   }
+   
    private int getTextX(int level) // guich@tc125_24
    {
       int dx = multipleSelection ? x0+imgPlusSize+2 : x0;
@@ -1287,9 +1365,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       int x = dx + (imgPlusSize + hline + gap + imgOpenW / 2 - imgPlusSize / 2) * level;
       x += imgPlusSize;
       x += hline + gap;
-      x += imgOpenW + gap;
-      if (Settings.screenWidth > 160)
-         x += gap + 2;
+      x += imgOpenW + gap + gap + 2;
       return x-1;
    }
    /** Allows the draw of customized file images. */
@@ -1393,18 +1469,21 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          else
             dx += imgPlusSize + hline + gap + imgOpenW + (imgPlusSize + hline + gap + imgOpenW / 2 - imgPlusSize / 2) * (level - 1);
 
-         if (Settings.screenWidth > 160) dx += 3;
+         dx += 3;
 
          int dy = 4;
 
          dy += (sel - offset) * lineH;
          g.setClip(useFullWidthOnSelection ? 2 : dx - 1, dy - 1, btnX - (useFullWidthOnSelection ? 2 : dx), Math.min(lineH * visibleItems, this.height - dy));
+         int oldb = g.backColor;
          g.backColor = bgColor1;
+         int extraH = n.userObject != null && n.userObject instanceof Control ? 0 : fm.descent - 1;
          if (useFullWidthOnSelection)
-            g.fillRect(2,dy-1,btnX-2,lineH + fm.descent - 1);
+            g.fillRect(2,dy-1,btnX-2,lineH + extraH);
          else
-            g.fillRect(dx + 1, dy-1, this.width-dx, lineH + fm.descent - 1);
+            g.fillRect(dx + 1, dy-1, this.width-dx, lineH + extraH);
          g.clearClip();
+         g.backColor = oldb;
       }
    }
 
