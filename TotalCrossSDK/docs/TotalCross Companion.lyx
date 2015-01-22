@@ -7150,7 +7150,7 @@ replaceAll(String regex, String replacement)
 \begin_layout Itemize
 
 \family typewriter
-String[] split(String delim)
+String[] split(String regex)
 \end_layout
 
 \begin_layout Itemize
