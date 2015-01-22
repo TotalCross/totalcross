@@ -24,6 +24,7 @@ import totalcross.util.*;
 /**
  * This class defines the requirements for an object that can be used as a
  * tree node in a Tree. 
+ * 
  */ 
 
 public class Node extends Vector implements totalcross.util.Comparable
@@ -31,7 +32,51 @@ public class Node extends Vector implements totalcross.util.Comparable
    /** This node's parent (root node is when the parent node = null). */
    protected Node           parent;                
 
-   /** The user's object that can be set with anything you want. */
+   /** The user's object that can be set with anything you want.
+    * 
+   * The userObject can also be a Control (or Container); in this case, all controls inside of 
+   * it are drawn. The control itself is added to the Tree at an invisible location and is painted
+   * at the right position. This means that events are somewhat limited. You should change the lineH 
+   * to increase the line to the desired control's height.
+   * 
+   * Here's a sample:
+   * <pre>
+   class Item extends Container
+   {
+      String txt;
+      public Item(String s) {txt = s;}
+      
+      public void initUI()
+      {
+         add(new Check("Here"),LEFT,CENTER,PARENTSIZE+50,PREFERRED);
+         add(new Button(txt),AFTER,CENTER,PARENTSIZE+50,PREFERRED);
+      }
+   }
+   
+   public void initUI()
+   {
+      try
+      {
+         setUIStyle(Settings.Android);
+         TreeModel tmodel = new TreeModel();
+         Tree tree = new Tree(tmodel);
+         tree.setCursorColor(Color.RED);
+         tree.setLineHeight(fmH*3/2);
+         add(tree,LEFT+50,TOP+50,FILL-50,FILL-50);
+         Node root = new Node("Tree");
+         tmodel.setRoot(root);
+         Node n;
+         root.add(n = new Node("Branch1"));
+         n.add(new Node(new Item("b1")));
+         n.add(new Node(new Item("b2")));         
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
+   }
+   * </pre>
+   */
    public Object            userObject;
    
    /** The user's int that can be set with anything you want.

@@ -99,24 +99,18 @@ public class RETokenizer {
    }
    
    public String[] split() throws ElementNotFoundException{
-      return collect(this,null,0);
+      return collect(this);
    }
    
    public void reset(){
       matcher.setPosition(0);
    }
    
-   private static final String[] collect(RETokenizer tok,String[] arr,int count) throws ElementNotFoundException{
-      if(tok.hasMore()){
-         String s=tok.nextToken();
-//System.out.println("collect(,,"+count+"): token="+s);
-         arr=collect(tok,arr,count+1);
-         arr[count]=s;
-      }
-      else{
-         arr=new String[count];
-      }
-      return arr;
+   private static final String[] collect(RETokenizer tok) throws ElementNotFoundException{
+      java.util.ArrayList<String> ll = new java.util.ArrayList<String>(50);//<String> ll = new java.util.LinkedList<String>();
+      while (tok.hasMore())
+         ll.add(tok.nextToken());
+      return (String[])ll.toArray(new String[ll.size()]);
    }
    
    private void check(){

@@ -374,7 +374,7 @@ public class AndroidUtils
        return output.toByteArray();
    }
 
-   public static boolean copyFile(String in, String out)
+   public static boolean copyFile(String in, String out, boolean deleteOriginal)
    {
       try
       {
@@ -386,6 +386,8 @@ public class AndroidUtils
             fout.write(buf,0,r);
          fin.close();
          fout.close();
+         if (deleteOriginal)
+            new File(in).delete();
          return true;
       }
       catch (Exception e)

@@ -1975,4 +1975,13 @@ public class Control extends GfxSurface
          });
       }
    }
+
+   // for internal use only. Used by Tree
+   public void intXYWH(int x, int y, int w, int h)
+   {
+      this.x = x;
+      this.y = y;
+      if (w != 0) this.width = w;
+      if (h != 0) this.height = h;
+   }
 }

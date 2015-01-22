@@ -390,6 +390,7 @@
 #define Camera_videoTimeLimit(o)   FIELD_I32(o, 4)
 #define Camera_captureMode(o)      FIELD_I32(o, 5)
 #define Camera_allowRotation(o)    FIELD_I32(o, 6)
+#define Camera_cameraType(o)       FIELD_I32(o, 7)
 
 // totalcross.util.concurrent.Lock
 #define Lock_mutex(o)        FIELD_OBJ(o, OBJ_CLASS(o), 0)

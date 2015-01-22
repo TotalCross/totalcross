@@ -50,8 +50,7 @@ import totalcross.ui.dialog.*;
  * In iOS there's no way to return the supported resolutions; it will take a photo using the default camera's resolution, and 
  * then will resize to the resolution defined in resolutionWidth/resolutionHeight, keeping the camera's aspect ratio. In iOS you can specify the defaultFileName with a path or just the name, or use a system-generated name. 
  * 
- * In Android, you can use the internal camera by passing 999 as the stillQuality parameter, like this:
- * <code>Camera c = new Camera();  c.stillQuality = 999; c.click();</code>
+ * In Android, you can use the internal camera by setting the cameraType field.
 
  * 
  * @see #getSupportedResolutions()
@@ -65,7 +64,7 @@ public class Camera
    public String defaultFileName;
    /** The title to display in the window. */
    public String title;
-
+   
    /**
     * The still quality.
     * 
@@ -105,6 +104,16 @@ public class Camera
 	 */
    public boolean allowRotation;
 
+   /** The camera type; defaults to CAMERA_CUSTOM. */
+   public int cameraType;
+
+   /** The original camera used in TotalCross */
+   public static final int CAMERA_CUSTOM = 0;
+   /** The native camera application; a copy of the image is returned. */      
+   public static final int CAMERA_NATIVE = 1;
+   /** The native camera application; the original image is deleted and a copy of it is returned. */
+   public static final int CAMERA_NATIVE_NOCOPY = 2;
+   
    /** Used in the cameraMode member. */
    public static final int CAMERACAPTURE_MODE_STILL = 0;
    /** Used in the cameraMode member. */
