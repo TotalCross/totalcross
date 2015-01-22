@@ -1261,17 +1261,22 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       dy--;
       x += imgOpenW + gap;
       y = dy+(lineH-fmH)/2;
-      String text = node.toString();
-      if (Settings.screenWidth > 160)
-         x += gap + 2;
-      if (node.backColor != -1) // guich@tc120_13
+      if (node.userObject != null && node.userObject instanceof Control)
+         ((Control)node.userObject).onPaint(g);
+      else
       {
-         g.backColor = node.backColor;
-        g.fillRect(x,y,fm.stringWidth(text),lineH);
+         String text = node.toString();
+         if (Settings.screenWidth > 160)
+            x += gap + 2;
+         if (node.backColor != -1) // guich@tc120_13
+         {
+            g.backColor = node.backColor;
+           g.fillRect(x,y,fm.stringWidth(text),lineH);
+         }
+         if (node.foreColor != -1) // guich@tc120_13
+            g.foreColor = node.foreColor;
+         g.drawText(text, x, y, textShadowColor != -1, textShadowColor);
       }
-      if (node.foreColor != -1) // guich@tc120_13
-         g.foreColor = node.foreColor;
-      g.drawText(text, x, y, textShadowColor != -1, textShadowColor);
    }
 
    private int getTextX(int level) // guich@tc125_24
