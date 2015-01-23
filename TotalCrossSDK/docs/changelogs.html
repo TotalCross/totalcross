@@ -1,4 +1,10 @@
 <h2>TotalCross 3.1</h2>             
+<h1>build 2509</h1>
+. added Settings.bugreportEmail. With this you can receive automatic bug reports when your application exits by an unhandled exception. read the javadocs for more information.<br>
+. Fixed ScrollContainer: if we're scrolled in a rotation but we don't need scroll, move to origin instead of keeping it scrolled<br>
+. Now if you use a Control in Tree's Node.userObject, it will draw the control instead of drawing a String<br>
+. Now the ComboBox's popup uses the same font of the ComboBox.<br>
+. Enhanced Tree in some ways: 1. lineH now is deprecated, use setLineHeight and getLineHeight; 2. fixed items not being drawn correctly when not using Android ui; now Node.userObject can be a Control or a Container (however, Edit and MultiEdit are supported)<br>
 <h1>build 2503</h1>
 . fixed NPE when using Vm.safeSleep at the application's constructor<br>
 . prevent hour from being under 0 in Time<br>
