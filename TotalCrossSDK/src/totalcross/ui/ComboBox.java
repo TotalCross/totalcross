@@ -508,6 +508,7 @@ public class ComboBox extends Container
                pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
                pm.setCursorColor(pop.lb.back1);
                pm.setSelectedIndex(pop.lb.selectedIndex);
+               pm.setFont(this.font);
                if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
                pm.popup();
                Event.clearQueue(PenEvent.PEN_UP); // prevent problem when user selects an item that is at the top of this ComboBox
@@ -594,7 +595,7 @@ public class ComboBox extends Container
             if ((armed || btn.armed) && nparmed == null)
                nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
             Image img = armed || btn.armed ? nparmed : npback;
-            NinePatch.tryDrawImage(g, img, 0,0);
+            g.drawImage(img, 0,0);
 //            Graphics gg = img.getGraphics();
 //            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
             g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);

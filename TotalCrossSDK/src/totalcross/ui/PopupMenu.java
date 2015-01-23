@@ -131,6 +131,7 @@ public class PopupMenu extends Window
       try
       {
          list = new ListContainer();
+         list.setFont(this.font);
          if (cursorColor != -1)
             list.highlightColor = cursorColor;
          
