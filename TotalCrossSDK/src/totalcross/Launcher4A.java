@@ -1515,7 +1515,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static boolean sendToUser,bugreportStarted,bugreportFinished;
    private static void createBugreport() 
    {
-      //if (Settings4A.buildNumber != 0) // dont use when debugging
+      if (Settings4A.buildNumber == 0) return; // dont use when debugging
       if (!bugreportStarted)
       {
          bugreportStarted = true;
