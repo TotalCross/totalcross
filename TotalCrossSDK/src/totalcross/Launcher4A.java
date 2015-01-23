@@ -1561,7 +1561,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                boolean sendToUser = false;
                for (int n; (n = fin.read(buf)) > 0;)
                {
-                  sendToUser = sendToUser || new String(buf,0,n).indexOf("unhandled exception") >= 0;
+                  if (bugreportEmail != null) sendToUser = sendToUser || new String(buf,0,n).indexOf("unhandled exception") >= 0;
                   zout.write(buf,0,n);
                }
                zout.closeEntry();
