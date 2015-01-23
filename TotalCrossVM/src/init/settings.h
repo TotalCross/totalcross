@@ -84,6 +84,7 @@ typedef struct
    int32* isOpenGL;                      // boolean
    TCObject* lineNumber;                 // java.lang.String
    TCObject* bugreportEmail;             // java.lang.String
+   TCObject* appVersion;
    int32 *unmovableSIP;                  // boolean
 } TTCSettings, *TCSettings;
 

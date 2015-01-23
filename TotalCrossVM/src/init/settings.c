@@ -89,6 +89,7 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.lineNumber                  = getStaticFieldObject(settingsClass, "lineNumber");
    tcSettings.unmovableSIP                = getStaticFieldInt(settingsClass, "unmovableSIP");
    tcSettings.bugreportEmail              = getStaticFieldObject(settingsClass, "bugreportEmail");
+   tcSettings.appVersion                  = getStaticFieldObject(settingsClass, "appVersion");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;

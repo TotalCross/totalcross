@@ -102,7 +102,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    jlistTCZs         = (*env)->GetStaticMethodID(env, applicationClass, "listTCZs", "()Ljava/lang/String;");
    jgetFreeMemory    = (*env)->GetStaticMethodID(env, applicationClass, "getFreeMemory", "()I");
-   jsendBugreport    = (*env)->GetStaticMethodID(env, applicationClass, "sendBugreport", "(Ljava/lang/String;)V");
+   jsendBugreport    = (*env)->GetStaticMethodID(env, applicationClass, "sendBugreport", "(Ljava/lang/String;Ljava/lang/String;Z)V");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
@@ -120,11 +120,14 @@ void updateSettingsFromStaticInitializer()
    if (*tcSettings.bugreportEmail != null && String_charsLen(*tcSettings.bugreportEmail) >= 6) // a@a.br
    {
       char* str = JCharP2CharP(String_charsStart(*tcSettings.bugreportEmail), String_charsLen(*tcSettings.bugreportEmail));
+      char* appVersion = *tcSettings.appVersion == null ? "" : JCharP2CharP(String_charsStart(*tcSettings.appVersion), String_charsLen(*tcSettings.appVersion));
       JNIEnv *env = getJNIEnv();
       jstring jstr = (*env)->NewStringUTF(env, str); 
+      jstring jappv = (*env)->NewStringUTF(env, appVersion); 
       // must check if the alert is already being show (maybe by the system itself) prior to calling another alert
-      (*env)->CallStaticVoidMethod(env, applicationClass, jsendBugreport, jstr);
+      (*env)->CallStaticVoidMethod(env, applicationClass, jsendBugreport, jstr, jappv, false);
       (*env)->DeleteLocalRef(env, jstr);
+      (*env)->DeleteLocalRef(env, jappv);
       xfree(str);
    }   
 }
