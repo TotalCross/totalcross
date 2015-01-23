@@ -66,6 +66,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static boolean lastWasPenDown;
    static ActivityManager activityManager;
    static MemoryInfo mi = new MemoryInfo();
+   public static String bugreportEmail;
    
    private static String appPath;
    private static android.text.ClipboardManager clip;
@@ -1521,11 +1522,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                AndroidUtils.debug("Generating bugreport");
                long ini = System.currentTimeMillis();
                try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
+               String bugreportfn = "bugreport"+((int)(Math.random()*10000))+".txt";
                String[] commands =
                   {
-                     "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/bugreport.txt \n",
-//                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/bugreport.txt \n",
-//                     "echo ========================================================= >>/sdcard/IssueReport/bugreport.txt\n",
+                     "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/"+bugreportfn+" \n",
+//                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/"+bugreportfn+" \n",
+//                     "echo ========================================================= >>/sdcard/IssueReport/"+bugreportfn+"\n",
 //                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
                   };
       /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
@@ -1536,7 +1538,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                DataOutputStream os = new DataOutputStream(p.getOutputStream());
                for (String tmpCmd : commands) 
                   os.writeBytes(tmpCmd);
-               File f = new File("/sdcard/IssueReport/bugreport.txt"); // takes 33 seconds on a s3 mini
+               File f = new File("/sdcard/IssueReport/"+bugreportfn); // takes 33 seconds on a s3 mini
                long l2 = 0;
                while (true)
                {
@@ -1547,18 +1549,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      break;
                }            
                long end = System.currentTimeMillis();
-               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/bugreport.txt in "+(end-ini)+"ms with "+l2+" bytes");
+               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/"+bugreportfn+" in "+(end-ini)+"ms with "+l2+" bytes");
                // zip the bugreport
                ini = System.currentTimeMillis();
                FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
                ZipOutputStream zout = new ZipOutputStream(fout);
-               File ff = new File("/sdcard/IssueReport/bugreport.txt");
+               File ff = new File("/sdcard/IssueReport/"+bugreportfn);
                FileInputStream fin = new FileInputStream(ff);
-               // check if there's a SIGSEGV, which indicates an vm abort
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
                byte[] buf = new byte[8192];
+               boolean sendToUser = false;
                for (int n; (n = fin.read(buf)) > 0;)
+               {
+                  sendToUser = sendToUser || new String(buf,0,n).indexOf("unhandled exception") >= 0;
                   zout.write(buf,0,n);
+               }
                zout.closeEntry();
                zout.close();
                fin.close();
@@ -1585,6 +1590,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                ); 
                m.addAttachment("/sdcard/IssueReport/bugreport.zip");
                m.send();
+               if (sendToUser)
+               {
+                  m.setTo(new String[]{bugreportEmail});
+                  m.send();
+               }
                AndroidUtils.debug("Bugreport mail sent!");
             }
             catch (Exception e) 
