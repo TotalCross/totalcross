@@ -92,6 +92,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jsoundEnable      = (*env)->GetStaticMethodID(env, applicationClass, "soundEnable", "(Z)V");
    jcellinfoUpdate   = (*env)->GetStaticMethodID(env, applicationClass, "cellinfoUpdate", "()[I");
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
+   jkeepCrash        = (*env)->GetStaticFieldID (env, applicationClass, "keepCrash", "Z");
    jgetHeight        = (*env)->GetStaticMethodID(env, applicationClass, "getAppHeight", "()I");
    jsipVisible       = (*env)->GetStaticFieldID (env, applicationClass, "sipVisible", "Z");
    jappTitleH        = (*env)->GetStaticFieldID (env, applicationClass, "appTitleH", "I");
@@ -101,11 +102,31 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    jlistTCZs         = (*env)->GetStaticMethodID(env, applicationClass, "listTCZs", "()Ljava/lang/String;");
    jgetFreeMemory    = (*env)->GetStaticMethodID(env, applicationClass, "getFreeMemory", "()I");
+   jsendBugreport    = (*env)->GetStaticMethodID(env, applicationClass, "sendBugreport", "(Ljava/lang/String;)V");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
    jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
+}
+
+void keepCrash()
+{
+   JNIEnv *env = getJNIEnv();
+   (*env)->SetStaticBooleanField(env, applicationClass, jkeepCrash, true);
+}
+void updateSettingsFromStaticInitializer()
+{
+   if (*tcSettings.bugreportEmail != null && String_charsLen(*tcSettings.bugreportEmail) >= 6) // a@a.br
+   {
+      char* str = JCharP2CharP(String_charsStart(*tcSettings.bugreportEmail), String_charsLen(*tcSettings.bugreportEmail));
+      JNIEnv *env = getJNIEnv();
+      jstring jstr = (*env)->NewStringUTF(env, str); 
+      // must check if the alert is already being show (maybe by the system itself) prior to calling another alert
+      (*env)->CallStaticVoidMethod(env, applicationClass, jsendBugreport, jstr);
+      (*env)->DeleteLocalRef(env, jstr);
+      xfree(str);
+   }   
 }
 
 char* getTotalCrossAndroidClass(CharP className)

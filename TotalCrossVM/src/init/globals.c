@@ -61,9 +61,9 @@ bool isMainWindow = false;   // extends MainWindow ?
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
-jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+jfieldID jshowingAlert,jhardwareKeyboardIsVisible,jkeepCrash;
 jfieldID jsipVisible,jappTitleH;
-jmethodID jgetHeight;
+jmethodID jgetHeight,jsendBugreport;
 #elif defined WIN32 || defined linux
 TCHAR exeName[MAX_PATHNAME];
 #endif

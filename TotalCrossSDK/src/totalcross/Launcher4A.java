@@ -66,7 +66,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static boolean lastWasPenDown;
    static ActivityManager activityManager;
    static MemoryInfo mi = new MemoryInfo();
-   public static String bugreportEmail;
    
    private static String appPath;
    private static android.text.ClipboardManager clip;
@@ -159,7 +158,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       lastOrientation = getOrientation();
       String vmPath = context.getApplicationInfo().dataDir;
       if (hadCrash()) // note: if the crash occurs too early, the report may not be sent by the thread. and we cannot remove it from a thread or Android will shout.
-         bugreport();
+         bugreport(true);
       createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
       if (GENERATE_FONT)
@@ -1498,9 +1497,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       try {new FileOutputStream(appPath+"/crash.txt").close();} catch (Exception e) {}
    }
+   public static boolean keepCrash; // called when an unhandled exception occurs
    private static void deleteCrash()
    {
-      try {new File(appPath+"/crash.txt").delete();} catch (Exception e) {}
+      if (!keepCrash)
+         try {new File(appPath+"/crash.txt").delete();} catch (Exception e) {}
    }
    private static boolean hadCrash()
    {
@@ -1509,9 +1510,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return b;
    }
    
-   private void bugreport() 
+   static boolean sendToUser;
+   static boolean bugreportGenerated;
+   private static void bugreport(final boolean send) 
    {
-      if (Settings4A.buildNumber != 0) // dont use when debugging
+      if (!bugreportGenerated)
+      //if (Settings4A.buildNumber != 0) // dont use when debugging
       new Thread()
       {
          public void run() 
@@ -1526,15 +1530,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                String[] commands =
                   {
                      "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/"+bugreportfn+" \n",
-//                     "logcat -v threadtime -d *:v >/sdcard/IssueReport/"+bugreportfn+" \n",
-//                     "echo ========================================================= >>/sdcard/IssueReport/"+bugreportfn+"\n",
-//                     "logcat -b events -v threadtime -d *:v >>/sdcard/IssueReport/bugreport.txt\n",
                   };
-      /*            {"dumpstate  > /sdcard/IssueReport/bugreport.txt\n", 
-                   "dumpsys   >> /sdcard/IssueReport/bugreport.txt\n",
-                   "logcat -d >> /sdcard/IssueReport/bugreport.txt\n",
-                  };
-      */         java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+               java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
                DataOutputStream os = new DataOutputStream(p.getOutputStream());
                for (String tmpCmd : commands) 
                   os.writeBytes(tmpCmd);
@@ -1558,51 +1555,79 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                FileInputStream fin = new FileInputStream(ff);
                zout.putNextEntry(new ZipEntry("bugreport.txt"));
                byte[] buf = new byte[8192];
-               boolean sendToUser = false;
                for (int n; (n = fin.read(buf)) > 0;)
                {
-                  if (bugreportEmail != null) sendToUser = sendToUser || new String(buf,0,n).indexOf("unhandled exception") >= 0;
+                  sendToUser = sendToUser || new String(buf,0,n).indexOf("unhandled exception") >= 0;
                   zout.write(buf,0,n);
                }
                zout.closeEntry();
                zout.close();
                fin.close();
                end = System.currentTimeMillis();
+               if (sendToUser) // if we have useful info for user, save the bugreport
+               {
+                  fin = new FileInputStream(ff);
+                  buf = new byte[fin.available()];
+                  fin.read(buf);
+                  fin.close();
+               }
                ff.delete();
                AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
-               WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-               Display display = wm.getDefaultDisplay();
-               
                // send by email
-               final Mail m = new Mail("totalcross", "t0t4lcr0ss"); 
-               String[] toArr = {"bugreport@totalcross.com","guich@totalcross.com"}; 
-               m.setTo(toArr);
-               m.setFrom("registro@totalcross.com"); 
-               m.setSubject("Bugreport TotalCross build #"+Settings4A.buildNumber); 
-               m.setBody(
-                     "Imei: "+Settings4A.imei+"\n"+
-                     "Serial: "+Settings4A.serialNumber+"\n"+
-                     "Device id: "+Settings4A.deviceId+"\n"+
-                     "OS version: "+Settings4A.romVersion+"\n"+
-                     "Processor: "+System.getProperty("os.arch")+"\n"+
-                     "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
-                     "Font: "+deviceFontHeight+"\n"
-               ); 
-               m.addAttachment("/sdcard/IssueReport/bugreport.zip");
-               m.send();
-               if (sendToUser)
-               {
-                  m.setTo(new String[]{bugreportEmail});
-                  m.send();
-               }
-               AndroidUtils.debug("Bugreport mail sent!");
+               if (send)
+                  sendBugreportEmail("guich@totalcross.com");
             }
             catch (Exception e) 
             {
                AndroidUtils.handleException(e,false);
             }
+            bugreportGenerated = true;
          }
       }.start();
+   }
+
+   public static void sendBugreportEmail(final String toAddr) // called from here
+   {
+      try
+      {
+         String[] addr = new String[]{toAddr};
+         WindowManager wm = (WindowManager) loader.getSystemService(Context.WINDOW_SERVICE);
+         Display display = wm.getDefaultDisplay();
+         final Mail m = new Mail("totalcross", "t0t4lcr0ss"); 
+         m.setTo(addr);
+         m.setFrom("registro@totalcross.com"); 
+         m.setSubject("Bugreport TotalCross build #"+Settings4A.buildNumber); 
+         m.setBody(
+               "Imei: "+Settings4A.imei+"\n"+
+               "Serial: "+Settings4A.serialNumber+"\n"+
+               "Device id: "+Settings4A.deviceId+"\n"+
+               "OS version: "+Settings4A.romVersion+"\n"+
+               "Processor: "+System.getProperty("os.arch")+"\n"+
+               "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
+               "Font: "+deviceFontHeight+"\n"
+         ); 
+         m.addAttachment("/sdcard/IssueReport/bugreport.zip");
+         m.send();
+         AndroidUtils.debug("Bugreport mail sent to "+addr[0]+"!");
+      }
+      catch (Exception e) 
+      {
+         AndroidUtils.handleException(e,false);
+      }
+   }
+
+   public static void sendBugreport(final String toAddr) // called from tcvm
+   {
+      new Thread() {public void run() {
+         if (!bugreportGenerated)
+         {
+            bugreport(false);
+            while (!bugreportGenerated)
+               try {Thread.sleep(250);} catch (Exception e) {}
+         }
+         if (sendToUser)
+            sendBugreportEmail(toAddr);
+      }}.start();
    }
    
    private static SoundPool player;

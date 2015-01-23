@@ -88,6 +88,7 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
    tcSettings.lineNumber                  = getStaticFieldObject(settingsClass, "lineNumber");
    tcSettings.unmovableSIP                = getStaticFieldInt(settingsClass, "unmovableSIP");
+   tcSettings.bugreportEmail              = getStaticFieldObject(settingsClass, "bugreportEmail");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
@@ -187,6 +188,7 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    return true;
 }
 
+void updateSettingsFromStaticInitializer(); // android/startup_c.h
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 {
    TCObject appId = *getStaticFieldObject(settingsClass, "applicationId");
@@ -204,6 +206,9 @@ void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
    setObjectLock(*tcSettings.appSettingsBinPtr, UNLOCKED);
    setObjectLock(*tcSettings.appSecretKeyPtr, UNLOCKED);
    setObjectLock(*tcSettings.appSettingsPtr, UNLOCKED);
+#ifdef ANDROID   
+   updateSettingsFromStaticInitializer(); 
+#endif
 }
 
 static void updateEntry(char *name, uint32 crtr, bool bin, bool isHKLM)

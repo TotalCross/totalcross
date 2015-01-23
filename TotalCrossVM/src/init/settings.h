@@ -83,6 +83,7 @@ typedef struct
    int32* windowFont;                    // int 
    int32* isOpenGL;                      // boolean
    TCObject* lineNumber;                 // java.lang.String
+   TCObject* bugreportEmail;             // java.lang.String
    int32 *unmovableSIP;                  // boolean
 } TTCSettings, *TCSettings;
 
