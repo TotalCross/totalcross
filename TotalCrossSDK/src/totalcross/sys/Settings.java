@@ -889,4 +889,27 @@ public final class Settings
     * mouse position when the mouse wheel changes.
     */
    public static int scrollDistanceOnMouseWheelMove;
+   
+   /** An email that will be used to send bug reports when an unhandled exception is caught
+    * on your application. Note that you may receive dozens of emails per day. The bug report
+    * is sent after an application crash if, and only if, the application is called within 3 minutes
+    * after the crash, otherwise, Android may roll out the logs. Note that we always receive a copy 
+    * of the same message, even if you don't set this email, so we will be aware of the problems. The 
+    * bug report takes from 5 to 20 seconds to be generated and sent from application's startup time, 
+    * so if your application crashes too early, the report will halt the exit process until its effectively
+    * sent, and a black screen will appear in the meanwhile.
+    * 
+    * You must set this in your application's static initializer, perferrably at the first line. E.G.:
+    * <pre>
+    * static
+    * {
+    *    Settings.bugreportEmail = "bugreports@mycompany.com";
+    *    ...
+    * }
+    * </pre>
+    * Currently this is supported only on Android.
+    * 
+    * @since TotalCross 3.1
+    */
+   public static String bugreportEmail;
 }
