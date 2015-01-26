@@ -41,10 +41,8 @@ import java.io.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
-import java.security.*;
 import java.util.zip.*;
-import javax.crypto.*;
-import javax.crypto.spec.*;
+import tc.tools.*;
 
 import totalcross.io.*;
 import totalcross.io.IOException;
@@ -97,7 +95,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    private TCEventThread eventThread;
    private boolean isMainClass;
    private boolean isDemo;
-   private static String key;
+   private String activationKey;
 
    @SuppressWarnings("deprecation")
    public Launcher()
@@ -169,7 +167,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          }
 
          fillSettings();
-         checkKey();
+         new RegisterSDK(activationKey);
 
          try
          {
@@ -473,9 +471,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             else
             if (args[i].equalsIgnoreCase("/r"))
             {
-               key = args[++i].toUpperCase(); 
-               if (key.length() != 24)
-                  throw new Exception("Invalid registration key");
+               activationKey = args[++i].toUpperCase(); 
+               if (activationKey.length() != 24)
+                  throw new RuntimeException("Invalid registration key");
             }
             else
             if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -599,7 +597,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (key == null)
+      if (activationKey == null || activationKey.length() != 24)
       {
          System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
          System.exit(0);
@@ -2318,175 +2316,5 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          screenResized(w >= toWidth ? w : toWidth,h >= toHeight ? h : toHeight,true);
       else
          screenResized(w,h,false);
-   }
-   
-   private int getToday()
-   {
-      java.util.Calendar c = java.util.Calendar.getInstance();
-      int y = c.get(java.util.Calendar.YEAR);
-      int m = c.get(java.util.Calendar.MONTH) + 1;
-      int d = c.get(java.util.Calendar.DAY_OF_MONTH);
-      return y * 10000 + m * 100 + d;
-   }
-   
-   private String getMAC()
-   {
-      try
-      {
-         InetAddress ip = InetAddress.getLocalHost();
-         NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-         byte[] mac = network.getHardwareAddress();
-         StringBuilder sb = new StringBuilder();
-         for (int i = 0; i < mac.length; i++)
-             sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));        
-         return sb.toString();
-      }
-      catch (Exception e)
-      {
-         return "";
-      }
-   }
-   
-   private byte[] doCrypto(boolean encrypt, byte[] in) throws Exception 
-   {
-      char[] keystr = (Launcher.key+"CAFEBABE").toCharArray();
-      byte[] keybytes = new byte[16];
-      for (int i = 0, n = keystr.length; i < n; i+=2)
-         keybytes[i/2] = (byte)Integer.valueOf(""+keystr[i]+keystr[i+1],16).intValue();
-      
-      Key secretKey = new SecretKeySpec(keybytes, "AES");
-      Cipher cipher = Cipher.getInstance("AES");
-      cipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, secretKey);
-      return cipher.doFinal(in);
-   }
-
-   private static final String MAGIC = "T0T@LCR0$$";
-   private void checkKey()
-   {
-      int today = getToday();
-      String currentMac = getMAC();
-      String currentUser = Settings.userName;
-      String licenseFolder = System.getProperty("user.home");
-      try
-      {
-         readLicense(currentMac, currentUser, licenseFolder, today);
-      }
-      catch (FileNotFoundException fnfe)
-      {
-         try
-         {
-            getNewLicense(currentMac, currentUser, licenseFolder, today);
-            readLicense(currentMac, currentUser, licenseFolder, today);
-         }
-         catch (Exception ee)
-         {
-            throw new RuntimeException(ee);
-         }
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
-   private void readLicense(String currentMac, String currentUser, String licenseFolder, int today) throws Exception
-   {
-      // read license file
-      InputStream in = new FileInputStream(licenseFolder+"/tc_license.dat");
-      byte[] fin = new byte[in.available()];
-      in.read(fin);
-      in.close();
-      // use the key passed to launcher
-      byte[] bin = doCrypto(false, fin);
-      DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
-      // skip trash
-      int xdataLen = Math.abs(key.hashCode() % 1000);
-      ds.skip(xdataLen);
-      // checks if the magic equals
-      boolean magicEquals = false;
-      try
-      {
-         String magic     = ds.readUTF();
-         magicEquals = magic.equals(MAGIC);
-      } catch (Exception e) {}
-      if (!magicEquals)
-         throw new RuntimeException("This license key does not correspond to the stored key!");
-      // read the rest of stored data and compare with current values
-      String storedMac  = ds.readUTF();
-      String storedUser = ds.readUTF();
-      String storedFolder = ds.readUTF();
-      int iexp = ds.readInt();
-      boolean expired = today >= iexp;
-      
-      int diffM = storedMac.equals(currentMac) ? 0 : 1;
-      int diffU = storedUser.equals(currentUser) ? 0 : 2;
-      int diffF = storedFolder.equals(licenseFolder) ? 0 : 4;
-      int diff = diffM | diffU | diffF;
-      
-      if (diff != 0)
-         throw new RuntimeException("Invalid license file. Error #"+diff);
-      if (expired)
-         throw new RuntimeException("This license is EXPIRED!");
-      
-      System.out.println("License expiration date: "+new Date(iexp));
-   }
-
-   private void getNewLicense(String currentMac, String currentUser, String licenseFolder, int today) throws Exception
-   {
-      // connect to the registration service and validate the key and mac.
-      int expdate = 20150130; //getExpdateFromServer(currentMac, currentUser, licenseFolder, today);
-      if (expdate > 0)
-      {
-         ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
-         DataOutputStream dos = new DataOutputStream(baos);
-         // generate random data to put before and at end of important data
-         java.util.Random r = new java.util.Random(expdate);
-         int xdataLen = Math.abs(key.hashCode() % 1000);
-         byte[] xdata = new byte[xdataLen]; r.nextBytes(xdata);
-         dos.write(xdata);
-         // write important data
-         dos.writeUTF(MAGIC);
-         dos.writeUTF(currentMac);
-         dos.writeUTF(currentUser);
-         dos.writeUTF(licenseFolder);
-         dos.writeInt(expdate);
-         // write random data at end
-         r.nextBytes(xdata);
-         dos.write(xdata);
-         dos.close();
-         byte[] bytes = baos.toByteArray();
-         byte[] cript = doCrypto(true, bytes);
-         OutputStream out = new FileOutputStream(licenseFolder+"/tc_license.dat");
-         out.write(cript);
-         out.close();
-      }
-      else
-         switch (expdate)
-         {
-         }            
-   }
-
-   private int getExpdateFromServer(String currentMac, String currentUser, String licenseFolder, int today) throws Exception
-   {
-      URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
-      con.setUseCaches(false);
-      con.setDoOutput(true);
-      con.setDoInput(true);
-      OutputStream os = con.getOutputStream();
-      DataOutputStream dos = new DataOutputStream(os);
-      dos.writeUTF(key);
-      dos.writeUTF(currentMac);
-      dos.writeUTF(currentUser);
-      dos.writeUTF(licenseFolder);
-      dos.writeInt(today);
-      dos.close();
-      os.close();
-      // get response - the expiration date or a negative value for error codes
-      InputStream in = con.getInputStream();
-      DataInputStream dis = new DataInputStream(in);
-      int expdate = dis.readInt();
-      dis.close();
-      in.close();
-      return expdate;
    }
 }

@@ -13,12 +13,12 @@
 
 package tc.tools.deployer;
 
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.net.*;
+import java.util.zip.*;
 
-import totalcross.util.*;
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.util.*;
 
 /**
  * Some general utility methods used by the deployer programs.
@@ -853,6 +853,7 @@ public class Utils
       }
       return i;
    }
+   /////////////////////////////////////////////////////////////////////////////////////
    public static String toString(String[] cmd)
    {
       StringBuilder sb = new StringBuilder(200);
@@ -860,4 +861,56 @@ public class Utils
          sb.append(cmd[i]).append(" ");
       return sb.toString();
    }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static int getToday()
+   {
+      java.util.Calendar c = java.util.Calendar.getInstance();
+      int y = c.get(java.util.Calendar.YEAR);
+      int m = c.get(java.util.Calendar.MONTH) + 1;
+      int d = c.get(java.util.Calendar.DAY_OF_MONTH);
+      return y * 10000 + m * 100 + d;
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static String getMAC()
+   {
+      try
+      {
+         InetAddress ip = InetAddress.getLocalHost();
+         NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+         byte[] mac = network.getHardwareAddress();
+         StringBuilder sb = new StringBuilder();
+         for (int i = 0; i < mac.length; i++)
+             sb.append(Integer.toHexString(mac[i])).append('-');
+         sb.setLength(sb.length()-1);
+         return sb.toString();
+      }
+      catch (Exception e)
+      {
+         return "";
+      }
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static String pipeConcat(String... kv)
+   {
+      StringBuilder sb = new StringBuilder(256);
+      for (int i = 0; i < kv.length;)
+      {
+         if (i > 0) sb.append('|');
+         sb.append(kv[i++]).append('=').append(kv[i++]);
+      }
+      return sb.toString();
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static java.util.HashMap<String,String> pipeSplit(String sp)
+   {
+      java.util.HashMap<String,String> ret = new java.util.HashMap<String,String>(5);
+      String[] kv = sp.split("|");
+      for (int i = 0; i < kv.length; i++)
+      {
+         String []s = kv[i].split("=");
+         ret.put(s[0],s[1]);
+      }
+      return ret;
+   }
+   
 }
