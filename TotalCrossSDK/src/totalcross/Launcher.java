@@ -135,15 +135,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       // print instructions
       System.out.println("===================================");
       System.out.println("Device key emulations:");
-      System.out.println("F1-F4 : HARD1 to HARD4");
-      System.out.println("F5 : COMMAND");
       System.out.println("F6 : MENU");
-      System.out.println("F7 : CALC");
-      System.out.println("F8 : FIND");
       System.out.println("F9 : CHANGE ORIENTATION");
-      System.out.println("F10: LAUNCH (HOME)");
-      System.out.println("F11: OPEN KEYBOARD");
-      System.out.println("F12: ACTION (Center button press)"); // guich@400
+      System.out.println("F11: TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
       System.out.println("===================================");
    }
 
@@ -699,15 +693,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    private int modifiers;
 
-   private boolean isIntercepting(int key)
-   {
-      int[] k = Vm.keysBeingIntercepted;
-      for (int i = (k == null ? 0 : k.length)-1; i >= 0; i--)
-         if (k[i] == key)
-            return true;
-      return false;
-   }
-
    private void updateModifiers(java.awt.event.KeyEvent event)
    {
       if (event.isShiftDown())    
@@ -769,17 +754,17 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             case java.awt.event.KeyEvent.VK_PAGE_UP:    key = SpecialKeys.PAGE_UP;    keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_DOWN,0); break; // don't let down/up simultanealy
             case java.awt.event.KeyEvent.VK_PAGE_DOWN:  key = SpecialKeys.PAGE_DOWN;  keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_UP,0);   break;
             // guich@120 - emulate more keys
-            case java.awt.event.KeyEvent.VK_F1:         if (isIntercepting(SpecialKeys.HARD1)) {key = SpecialKeys.HARD1; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F2:         if (isIntercepting(SpecialKeys.HARD2)) {key = SpecialKeys.HARD2; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F3:         if (isIntercepting(SpecialKeys.HARD3)) {key = SpecialKeys.HARD3; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F4:         if (isIntercepting(SpecialKeys.HARD4)) {key = SpecialKeys.HARD4; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F5:         key = SpecialKeys.COMMAND; break;
+            case java.awt.event.KeyEvent.VK_F1:         break;
+            case java.awt.event.KeyEvent.VK_F2:         break;
+            case java.awt.event.KeyEvent.VK_F3:         break;
+            case java.awt.event.KeyEvent.VK_F4:         break;
+            case java.awt.event.KeyEvent.VK_F5:         break;
             case java.awt.event.KeyEvent.VK_F6:         key = SpecialKeys.MENU; break;
-            case java.awt.event.KeyEvent.VK_F7:         if (isIntercepting(SpecialKeys.CALC)) key = SpecialKeys.CALC; break;
-            case java.awt.event.KeyEvent.VK_F8:         if (isIntercepting(SpecialKeys.FIND)) key = SpecialKeys.FIND; break;
-            case java.awt.event.KeyEvent.VK_F10:        if (isIntercepting(SpecialKeys.LAUNCH)) key = SpecialKeys.LAUNCH; break;
-            case java.awt.event.KeyEvent.VK_F11:        key = SpecialKeys.KEYBOARD_123; break;
-            case java.awt.event.KeyEvent.VK_F12:        key = SpecialKeys.ACTION; break; // guich@400_64
+            case java.awt.event.KeyEvent.VK_F7:         break;
+            case java.awt.event.KeyEvent.VK_F8:         break;
+            case java.awt.event.KeyEvent.VK_F10:        break;
+            case java.awt.event.KeyEvent.VK_F11:        takeScreenShot(); break;
+            case java.awt.event.KeyEvent.VK_F12:        break;
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
                {
@@ -802,6 +787,23 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             final String msg = "Key code: " + (key == 0 ? event.getKeyCode() : key) + ", Modifier: " + modifiers;
             new Thread() {public void run() {Vm.alert(msg);}}.start(); // must place this in a separate thread, or the vm dies
          }
+      }
+   }
+   
+   private void takeScreenShot()
+   {
+      try
+      {
+         totalcross.ui.image.Image img = MainWindow.getScreenShot();
+         String name = totalcross.sys.Settings.appPath+new Time().getTimeLong()+".png";
+         totalcross.io.File f = new totalcross.io.File(name,totalcross.io.File.CREATE_EMPTY);
+         img.createPng(f);
+         f.close();
+         System.out.println("Saved at "+name);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
       }
    }
    
@@ -828,10 +830,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (event.isActionKey())
          switch (event.getKeyCode())
          {
-            case java.awt.event.KeyEvent.VK_F1:        keysPressed.put(SpecialKeys.HARD1,0); break;
-            case java.awt.event.KeyEvent.VK_F2:        keysPressed.put(SpecialKeys.HARD2,0); break;
-            case java.awt.event.KeyEvent.VK_F3:        keysPressed.put(SpecialKeys.HARD3,0); break;
-            case java.awt.event.KeyEvent.VK_F4:        keysPressed.put(SpecialKeys.HARD4,0); break;
+//            case java.awt.event.KeyEvent.VK_F1:        keysPressed.put(SpecialKeys.HARD1,0); break;
+//            case java.awt.event.KeyEvent.VK_F2:        keysPressed.put(SpecialKeys.HARD2,0); break;
+//            case java.awt.event.KeyEvent.VK_F3:        keysPressed.put(SpecialKeys.HARD3,0); break;
+//            case java.awt.event.KeyEvent.VK_F4:        keysPressed.put(SpecialKeys.HARD4,0); break;
             case java.awt.event.KeyEvent.VK_PAGE_UP:   keysPressed.put(SpecialKeys.PAGE_UP,0); break;
             case java.awt.event.KeyEvent.VK_PAGE_DOWN: keysPressed.put(SpecialKeys.PAGE_DOWN,0); break;
          }
