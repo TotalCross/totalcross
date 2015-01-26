@@ -18,13 +18,9 @@ public final class RegisterSDK
    private static final String MAGIC = "T0T@LCR0$$";
    private static final int DATE_MASK = 0xBADCFE;
    
-   private static class RegistrationFailedException extends RuntimeException 
-   {
-      public RegistrationFailedException(String s)
-      {
-         super(s);
-      }
-   }
+   private String currentMac, currentUser, userhome, key;
+   private int today;
+   private File flicense;
    
    public RegisterSDK(String newkey) throws Exception
    {
@@ -33,14 +29,19 @@ public final class RegisterSDK
    
    private RegisterSDK(String key, boolean force) throws Exception
    {
-      int today = Utils.getToday();
-      String currentMac = Utils.getMAC();
-      String currentUser = Settings.userName;
-      String userhome = System.getProperty("user.home");
-      File flicense = new File(userhome+"/tc_license.dat");
-      if (force || !flicense.exists())
-         updateLicense(key, currentMac, currentUser, userhome, today, flicense);
-      checkLicense(key, currentMac, currentUser, userhome, today, flicense);
+      today = Utils.getToday();
+      currentMac = Utils.getMAC();
+      currentUser = Settings.userName;
+      userhome = System.getProperty("user.home");
+      flicense = new File(userhome+"/tc_license.dat");
+      if (force || !flicense.exists()) // 
+         updateLicense();
+      if (!checkLicense())
+      {
+         updateLicense();
+         if (!checkLicense())
+            throw new RuntimeException("The license is expired");
+      }         
    }
    
    public static void main(String[] args)
@@ -58,7 +59,7 @@ public final class RegisterSDK
          }
    }
    
-   private byte[] doCrypto(String key, boolean encrypt, byte[] in) throws Exception 
+   private byte[] doCrypto(boolean encrypt, byte[] in) throws Exception 
    {
       char[] keystr = (key+"CAFEBABE").toCharArray();
       byte[] keybytes = new byte[16];
@@ -71,7 +72,7 @@ public final class RegisterSDK
       return cipher.doFinal(in);
    }
 
-   private void checkLicense(String key, String currentMac, String currentUser, String userhome, int today, File flicense) throws Exception
+   private boolean checkLicense() throws Exception
    {
       // read license file
       InputStream in = new FileInputStream(flicense);
@@ -79,7 +80,7 @@ public final class RegisterSDK
       in.read(fin);
       in.close();
       // use the key passed to launcher
-      byte[] bin = doCrypto(key, false, fin);
+      byte[] bin = doCrypto(false, fin);
       DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
       // skip trash
       int xdataLen = Math.abs(key.hashCode() % 1000);
@@ -92,7 +93,7 @@ public final class RegisterSDK
          magicEquals = magic.equals(MAGIC);
       } catch (Exception e) {}
       if (!magicEquals)
-         throw new RegistrationFailedException("This license key does not correspond to the stored key!");
+         throw new RuntimeException("This license key does not correspond to the stored key!");
       // read the rest of stored data and compare with current values
       HashMap<String,String> kv = Utils.pipeSplit(ds.readUTF());
       String storedMac  = kv.get("mac");
@@ -107,18 +108,21 @@ public final class RegisterSDK
       int diff = diffM | diffU | diffF;
       
       if (diff != 0)
-         throw new RegistrationFailedException("Invalid license file. Error #"+diff);
-      if (expired)
-         throw new RegistrationFailedException("This license is EXPIRED!");
+         throw new RuntimeException("Invalid license file. Error #"+diff);
       
       System.out.println("License expiration date: "+new Date(iexp));
+      return !expired;
    }
 
-   private void updateLicense(String key, String currentMac, String currentUser, String userhome, int today, File flicense) throws Exception
+   private void updateLicense() throws Exception
    {
       // connect to the registration service and validate the key and mac.
-      int expdate = getExpdateFromServer(key, currentMac, currentUser, userhome, today);
-      if (expdate > 0)
+      int expdate = getExpdateFromServer();
+      if (expdate <= 0)
+         switch (expdate)
+         {
+         }
+      else
       {
          ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
          DataOutputStream dos = new DataOutputStream(baos);
@@ -136,18 +140,14 @@ public final class RegisterSDK
          dos.write(xdata);
          dos.close();
          byte[] bytes = baos.toByteArray();
-         byte[] cript = doCrypto(key, true, bytes);
+         byte[] cript = doCrypto(true, bytes);
          OutputStream out = new FileOutputStream(flicense);
          out.write(cript);
          out.close();
       }
-      else
-         switch (expdate)
-         {
-         }            
    }
    
-   private int getExpdateFromServer(String key, String currentMac, String currentUser, String userhome, int today) throws Exception
+   private int getExpdateFromServer() throws Exception
    {
       URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
       con.setRequestProperty("Request-Method", "POST");
