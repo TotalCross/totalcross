@@ -1,24 +1,22 @@
 package tc.tools;
 
 import java.io.*;
-import java.io.File;
 import java.net.*;
 import java.security.*;
 import java.util.*;
+import java.util.zip.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import tc.tools.deployer.*;
 
-import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.util.zip.*;
 
 public final class RegisterSDK
 {
    private static final String MAGIC = "T0T@LCR0$$";
    private static final int DATE_MASK = 0xBADCFE;
    
-   private String currentMac, currentUser, userhome, key;
+   private String mac, user, home, key;
    private int today;
    private File flicense;
    
@@ -30,11 +28,11 @@ public final class RegisterSDK
    private RegisterSDK(String key, boolean force) throws Exception
    {
       today = Utils.getToday();
-      currentMac = Utils.getMAC();
-      currentUser = Settings.userName;
-      userhome = System.getProperty("user.home");
-      flicense = new File(userhome+"/tc_license.dat");
-      if (force || !flicense.exists()) // 
+      mac = Utils.getMAC();
+      user = Settings.userName;
+      home = System.getProperty("user.home");
+      flicense = new File(home+"/tc_license.dat");
+      if (force || !flicense.exists()) 
          updateLicense();
       if (!checkLicense())
       {
@@ -98,13 +96,13 @@ public final class RegisterSDK
       HashMap<String,String> kv = Utils.pipeSplit(ds.readUTF());
       String storedMac  = kv.get("mac");
       String storedUser = kv.get("user");
-      String storedFolder = kv.get("userhome");
+      String storedFolder = kv.get("home");
       int iexp = ds.readInt();
       boolean expired = today >= iexp;
       
-      int diffM = storedMac.equals(currentMac) ? 0 : 1;
-      int diffU = storedUser.equals(currentUser) ? 0 : 2;
-      int diffF = storedFolder.equals(userhome) ? 0 : 4;
+      int diffM = storedMac.equals(mac) ? 0 : 1;
+      int diffU = storedUser.equals(user) ? 0 : 2;
+      int diffF = storedFolder.equals(home) ? 0 : 4;
       int diff = diffM | diffU | diffF;
       
       if (diff != 0)
@@ -125,20 +123,20 @@ public final class RegisterSDK
       else
       {
          ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
-         DataOutputStream dos = new DataOutputStream(baos);
+         DataOutputStream ds = new DataOutputStream(baos);
          // generate fake data to put before and at end of important data
          java.util.Random r = new java.util.Random(expdate);
          int xdataLen = Math.abs(key.hashCode() % 1000);
          byte[] xdata = new byte[xdataLen]; r.nextBytes(xdata);
-         dos.write(xdata);
+         ds.write(xdata);
          // write important data
-         dos.writeUTF(MAGIC);
-         dos.writeUTF(Utils.pipeConcat("mac",currentMac,"user",currentUser,"userhome",userhome));
-         dos.writeInt(expdate);
+         ds.writeUTF(MAGIC);
+         ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
+         ds.writeInt(expdate);
          // write fake data at end
          r.nextBytes(xdata);
-         dos.write(xdata);
-         dos.close();
+         ds.write(xdata);
+         ds.close();
          byte[] bytes = baos.toByteArray();
          byte[] cript = doCrypto(true, bytes);
          OutputStream out = new FileOutputStream(flicense);
@@ -149,22 +147,23 @@ public final class RegisterSDK
    
    private int getExpdateFromServer() throws Exception
    {
+      // zip data
+      ByteArrayOutputStream bas = new ByteArrayOutputStream(256);
+      DeflaterOutputStream zs = new DeflaterOutputStream(bas);
+      DataOutputStream ds = new DataOutputStream(bas);
+      ds.writeUTF(key);
+      ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
+      ds.writeInt(today);
+      zs.close();
+      byte[] bytes = bas.toByteArray();
+      
+      // prepare connection
       URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
       con.setRequestProperty("Request-Method", "POST");
       con.setUseCaches(false);
       con.setDoOutput(true);
       con.setDoInput(true);
-      
-      // zip data
-      ByteArrayStream bas = new ByteArrayStream(256);
-      ZLibStream zs = new ZLibStream(bas, ZLibStream.DEFLATE);
-      DataStream ds = new DataStream(bas);
-      ds.writeString(key);
-      ds.writeString(Utils.pipeConcat("mac",currentMac,"user",currentUser,"userhome",userhome));
-      ds.writeInt(today);
-      zs.close();
-      byte[] bytes = bas.toByteArray();
-      
+
       // send data
       OutputStream os = con.getOutputStream();
       os.write(bytes);
