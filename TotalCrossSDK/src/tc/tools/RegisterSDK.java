@@ -13,9 +13,17 @@ import totalcross.sys.*;
 
 public final class RegisterSDK
 {
+   public class SDKRegistrationException extends RuntimeException {SDKRegistrationException(String s) {super(s);}}
+   
    private static final String MAGIC = "T0T@LCR0$$";
    private static final int DATE_MASK = 0xBADCFE;
-   
+
+   private static final int INVALID_DATE             = -1000;
+   private static final int INVALID_REGISTRATION_KEY = -1001;
+   private static final int EXPIRED_CONTRACT         = -1002;
+   private static final int NO_MORE_DEVELOPERS       = -1003;
+   private static final int CONTRACT_NOT_ACTIVE      = -1004;
+
    private String mac, user, home, key;
    private int today;
    private File flicense;
@@ -27,6 +35,7 @@ public final class RegisterSDK
    
    private RegisterSDK(String key, boolean force) throws Exception
    {
+      this.key = key;
       today = Utils.getToday();
       mac = Utils.getMAC();
       user = Settings.userName;
@@ -38,7 +47,7 @@ public final class RegisterSDK
       {
          updateLicense();
          if (!checkLicense())
-            throw new RuntimeException("The license is expired");
+            throw new SDKRegistrationException("The license is expired");
       }         
    }
    
@@ -91,7 +100,7 @@ public final class RegisterSDK
          magicEquals = magic.equals(MAGIC);
       } catch (Exception e) {}
       if (!magicEquals)
-         throw new RuntimeException("This license key does not correspond to the stored key!");
+         throw new SDKRegistrationException("This license key does not correspond to the stored key!");
       // read the rest of stored data and compare with current values
       HashMap<String,String> kv = Utils.pipeSplit(ds.readUTF());
       String storedMac  = kv.get("mac");
@@ -106,9 +115,9 @@ public final class RegisterSDK
       int diff = diffM | diffU | diffF;
       
       if (diff != 0)
-         throw new RuntimeException("Invalid license file. Error #"+diff);
+         throw new SDKRegistrationException("Invalid license file. Error #"+diff);
       
-      System.out.println("License expiration date: "+new Date(iexp));
+      System.out.println("Next SDK expiration date: "+showDate(iexp));
       return !expired;
    }
 
@@ -119,6 +128,11 @@ public final class RegisterSDK
       if (expdate <= 0)
          switch (expdate)
          {
+            case INVALID_DATE            : throw new SDKRegistrationException("Please update your computer's date.");
+            case INVALID_REGISTRATION_KEY: throw new SDKRegistrationException("The registration key is invalid.");
+            case EXPIRED_CONTRACT        : throw new SDKRegistrationException("The contract is EXPIRED.");
+            case NO_MORE_DEVELOPERS      : throw new SDKRegistrationException("The number of active developers has been reached.");
+            case CONTRACT_NOT_ACTIVE     : throw new SDKRegistrationException("This contract is not yet active.");
          }
       else
       {
@@ -149,12 +163,14 @@ public final class RegisterSDK
    {
       // zip data
       ByteArrayOutputStream bas = new ByteArrayOutputStream(256);
-      DeflaterOutputStream zs = new DeflaterOutputStream(bas);
-      DataOutputStream ds = new DataOutputStream(bas);
+      Deflater dd = new Deflater(9, false);
+      DeflaterOutputStream def = new DeflaterOutputStream(bas, dd);
+      DataOutputStream ds = new DataOutputStream(def);
       ds.writeUTF(key);
       ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
       ds.writeInt(today);
-      zs.close();
+      def.finish();
+      dd.end();
       byte[] bytes = bas.toByteArray();
       
       // prepare connection
@@ -173,9 +189,20 @@ public final class RegisterSDK
       InputStream in = con.getInputStream();
       DataInputStream dis = new DataInputStream(in);
       int expdate = dis.readInt() ^ DATE_MASK;
+      int expcontract = dis.readInt() ^ DATE_MASK;
+      if (expcontract != 0)
+         System.out.println("INFO: the contract will expire at "+showDate(expcontract));
       dis.close();
       in.close();
       
       return expdate;
+   }
+   
+   private String showDate(int d)
+   {
+      int day   = d % 100;
+      int month = d / 100 % 100;
+      int year  = d / 10000;
+      return day+" "+totalcross.util.Date.monthNames[month]+", "+year;
    }
 }

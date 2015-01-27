@@ -219,6 +219,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             exit(-1);
          }
       }
+      catch (RegisterSDK.SDKRegistrationException re)
+      {
+         System.out.println("SDK registration returned: "+re.getMessage());
+         exit(-2);
+      }
       catch (Exception ee)
       {
          if (showInstructionsOnError) showInstructions();

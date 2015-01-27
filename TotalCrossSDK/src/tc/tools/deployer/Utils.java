@@ -880,9 +880,13 @@ public class Utils
          byte[] mac = network.getHardwareAddress();
          StringBuilder sb = new StringBuilder();
          for (int i = 0; i < mac.length; i++)
-             sb.append(Integer.toHexString(mac[i])).append('-');
-         sb.setLength(sb.length()-1);
-         return sb.toString();
+         {
+            int h = mac[i] & 0xFF;
+            if (i > 0) sb.append('-');
+            if (h <= 0x0F) sb.append('0');
+            sb.append(Integer.toHexString(h));
+         }
+         return sb.toString().toUpperCase();
       }
       catch (Exception e)
       {
@@ -904,7 +908,7 @@ public class Utils
    public static java.util.HashMap<String,String> pipeSplit(String sp)
    {
       java.util.HashMap<String,String> ret = new java.util.HashMap<String,String>(5);
-      String[] kv = sp.split("|");
+      String[] kv = sp.split("\\|");
       for (int i = 0; i < kv.length; i++)
       {
          String []s = kv[i].split("=");
