@@ -85,7 +85,7 @@ public class FontGenerator
                sizesArg = argLow.substring(argLow.indexOf(':')+1);
             else
             if (argLow.equals("/aa"))
-               antialiased = AA_4BPP;
+               antialiased = AA_8BPP; // always force 8bpp
             else
             if (argLow.equals("/aa8"))
                antialiased = AA_8BPP;
