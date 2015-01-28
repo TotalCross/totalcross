@@ -138,7 +138,8 @@ public class AndroidUtils
       try
       {
          File f = new File(path);
-         return f.getCanonicalPath();
+         String ret = f.getCanonicalPath();
+         return ret;
       }
       catch (Exception e)
       {
@@ -162,6 +163,7 @@ public class AndroidUtils
          }
          catch (UnsatisfiedLinkError ule2)
          {
+            handleException(ule2,false);
             error("The TotalCross Virtual Machine was not found!",true);
             while (true)
                try {Thread.sleep(500);} catch (Exception e) {}
