@@ -135,6 +135,7 @@ public class Loader extends Activity implements BarcodeReadListener
             {
                AndroidUtils.debug("Waze not found, using default app");
                callGoogleMap(latI, lonI, (flags & SHOW_SATELLITE_PHOTOS) != 0);
+               return;
             }
          }
          
