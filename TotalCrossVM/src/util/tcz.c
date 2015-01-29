@@ -29,15 +29,17 @@ static int32 callReadTCZ(int32 apkIdx, uint8* buf, int32 offset, int32 length)
 {
    JNIEnv* env = getJNIEnv();
    jbyteArray jbytesP = (*env)->NewByteArray(env, length); // !!! temporary byte array has length: count-offset
-   jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
-   int32 ret;
+   int32 ret,i;
 
    ret = (*env)->CallStaticIntMethod(env, applicationClass, jreadTCZ, apkIdx, offset, jbytesP);
    
    if (ret > 0)
+   {                 
+      jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0); // android5 require get the array after returning from method
       xmemmove(buf, jbytes, ret);
+      (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
+   }
    
-   (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
    (*env)->DeleteLocalRef(env, jbytesP);
    return ret;
 }
