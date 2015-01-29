@@ -997,9 +997,9 @@ public final class Convert
          {
             while (l < lt) // checks if the number of lines equals to the number of parts; if not, skip to next word and try again
             {
-               int lines = getLineCount(ww, fm, text);
+               int lines = getLineCount(ww+fm.height/4, fm, text);
                if (lines == parts)
-                  return insertLineBreak(ww, fm, text);
+                  return insertLineBreak(ww+fm.height/4, fm, text);
                l++;
                while (l < lt && sb.charAt(l) != ' ')
                   l++;
