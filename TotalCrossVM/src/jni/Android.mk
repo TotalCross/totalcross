@@ -55,6 +55,7 @@ UTIL_FILES =                                  \
 	$(TC_SRCDIR)/util/debug.c                  \
 	$(TC_SRCDIR)/util/tcz.c                    \
 	$(TC_SRCDIR)/util/utils.c                  \
+	$(TC_SRCDIR)/util/dlmalloc.c               \
 	$(TC_SRCDIR)/util/mem.c                    \
 	$(TC_SRCDIR)/util/errormsg.c               \
 	$(TC_SRCDIR)/util/nativelib.c              \
