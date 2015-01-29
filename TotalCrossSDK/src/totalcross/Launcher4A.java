@@ -21,11 +21,13 @@ package totalcross;
 import android.app.*;
 import android.app.ActivityManager.MemoryInfo;
 import android.content.*;
+import android.content.pm.*;
 import android.content.res.*;
 import android.graphics.*;
 import android.hardware.Camera;
 import android.location.*;
 import android.media.*;
+import android.net.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
@@ -1058,7 +1060,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
-   public static boolean showRoute(String addressI, String addressF, String coords, int flags) throws IOException
+   private static boolean isCallable(Intent intent) 
+   {
+      return loader.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
+   }
+   
+   public static int showRoute(String addressI, String addressF, String coords, int flags) throws IOException
    {
       boolean tryAgain = false;
       int tryAgainCount = 0;
@@ -1066,6 +1073,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
+            if ((flags & Loader.USE_WAZE) != 0 && !isCallable(new Intent( Intent.ACTION_VIEW, Uri.parse("waze://?ll=0,0&navigate=yes") )))
+               return -2;
+
             AndroidUtils.debug("addrs: "+addressI+", "+addressF);
             double[] llI = getLatLon(addressI);
             double[] llF = addressF == null ? new double[]{0,0} : getLatLon(addressF);
@@ -1087,7 +1097,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                loader.achandler.sendMessage(msg);
                while (showingMap)
                   try {Thread.sleep(400);} catch (Exception e) {}
-               return true;
+               return 0;
             }
             else
                throw new Exception(tryAgainCount+" parse response for address"); // make it try again
@@ -1104,7 +1114,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             }
          }
       } while (tryAgain);
-      return false;
+      return -1;
    }
    
    public static boolean showingMap;

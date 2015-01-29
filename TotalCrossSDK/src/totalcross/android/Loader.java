@@ -115,7 +115,7 @@ public class Loader extends Activity implements BarcodeReadListener
    }
    
    private static final int SHOW_SATELLITE_PHOTOS = 1;
-   private static final int USE_WAZE = 2;
+   public static final int USE_WAZE = 2;
 
    private void callRoute(double latI, double lonI, double latF, double lonF, String coord, int flags)
    {

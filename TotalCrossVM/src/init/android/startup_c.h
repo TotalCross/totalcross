@@ -74,7 +74,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
       	 targetPackage[len] = '_';            
    }   	
 
-   jshowRoute        = (*env)->GetStaticMethodID(env, applicationClass, "showRoute", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Z");
+   jshowRoute        = (*env)->GetStaticMethodID(env, applicationClass, "showRoute", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)I");
    jshowGoogleMaps   = (*env)->GetStaticMethodID(env, applicationClass, "showGoogleMaps", "(Ljava/lang/String;Z)Z");
    jeventIsAvailable = (*env)->GetStaticMethodID(env, applicationClass, "eventIsAvailable", "()Z");
    jpumpEvents       = (*env)->GetStaticMethodID(env, applicationClass, "pumpEvents", "()V");
