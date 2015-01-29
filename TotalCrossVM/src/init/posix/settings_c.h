@@ -284,6 +284,16 @@ bool fillSettings(Context currentContext)
    jstring jStringField;
    char strTemp[128];
 
+   // phone number - needed to move to here or jni on android 5 will abort
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "lineNumber", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      setObjectLock(*getStaticFieldObject(settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+   }
+
    // date format
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "dateFormat", "B");
    *tcSettings.dateFormatPtr = (int32) (*env)->GetStaticByteField(env, jSettingsClass, jfID);
@@ -392,16 +402,6 @@ bool fillSettings(Context currentContext)
    if (jStringField != null)
       jstring2CharP(jStringField, romSerialNumber);
    (*env)->DeleteLocalRef(env, jSettingsClass);
-
-   // phone number
-   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "lineNumber", "Ljava/lang/String;");
-   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
-   if (jStringField != null)
-   {
-      jstring2CharP(jStringField, strTemp);
-      (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
-   }
 
    return true;
 }
