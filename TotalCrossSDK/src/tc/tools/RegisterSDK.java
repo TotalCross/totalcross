@@ -67,7 +67,7 @@ public final class RegisterSDK
          }
    }
    
-   private byte[] doCrypto(boolean encrypt, byte[] in) throws Exception 
+   private byte[] doCrypto(boolean encrypt, byte[] in) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException 
    {
       char[] keystr = (key+"CAFEBABE").toCharArray();
       byte[] keybytes = new byte[16];
@@ -171,13 +171,13 @@ public final class RegisterSDK
             out.close();
          }
       }
-      catch (Exception e)
+      catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e)
       {
          System.out.println("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
       }
    }
    
-   private int getExpdateFromServer() throws Exception
+   private int getExpdateFromServer() throws IOException
    {
       // zip data
       ByteArrayOutputStream bas = new ByteArrayOutputStream(256);
