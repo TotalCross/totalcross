@@ -14,6 +14,7 @@ package totalcross.map;
 import totalcross.io.*;
 import totalcross.net.*;
 import totalcross.sys.*;
+import totalcross.util.*;
 
 /** Shows a Google Maps viewer on a separate screen. 
  * Pressing back returns to the application.
@@ -161,20 +162,21 @@ public class GoogleMaps
     * @deprecated 
     * @see #showRoute(String, String, String, int)
     */
-   public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos)
+   public static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos) throws NotInstalledException
    {
       return showRoute(addressI, addressF, traversedPoints, SHOW_SATELLITE_PHOTOS);
    }
-   native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+   native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos) throws NotInstalledException;
 
    /** Shows the route between two points. The traversed points is a sequence of lat,lon coordinates comma-separated.
-    * If flags is USE_WAZE, the addressF is not used and can be null.
+    * If flags is USE_WAZE, the addressF is not used and can be null, and a NotInstalledException is thrown if WAZE is not installed.
+    * 
     */
-   public static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags)
+   public static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags) throws NotInstalledException
    {
       return true;
    }
-   native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, int flags);
+   native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, int flags) throws NotInstalledException;
 
    /** Shows an array of MapItem elements in the map. The map is zommed in a way that all coordinates are visible.
     * See the Circle, Shape and Place map items.

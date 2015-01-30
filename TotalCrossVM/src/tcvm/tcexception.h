@@ -55,6 +55,7 @@ typedef enum
    InvocationTargetException,
    NoSuchMethodException,
    NoSuchFieldException,
+   NotInstalledException,
    ThrowableCount,
 } Throwable;
 

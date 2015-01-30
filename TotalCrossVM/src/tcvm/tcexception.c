@@ -316,4 +316,5 @@ void initException()
    throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
    throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
    throwableAsCharP[NoSuchFieldException          ] = "java.lang.NoSuchFieldException";
+   throwableAsCharP[NotInstalledException         ] = "totalcross.util.NotInstalledException";
 }

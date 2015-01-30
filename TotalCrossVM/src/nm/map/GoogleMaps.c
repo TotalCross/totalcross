@@ -65,11 +65,13 @@ TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native 
    jstring jaddrI = (*env)->NewString(env, (jchar*) String_charsStart(addrI), String_charsLen(addrI));
    jstring jaddrF = addrF ? (*env)->NewString(env, (jchar*) String_charsStart(addrF), String_charsLen(addrF)) : 0;
    jstring jcoord = !coord ? null : (*env)->NewString(env, (jchar*) String_charsStart(coord), String_charsLen(coord));
-   jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowRoute, jaddrI, jaddrF, jcoord, p->i32[0]);
+   jint result = (*env)->CallStaticIntMethod(env, applicationClass, jshowRoute, jaddrI, jaddrF, jcoord, p->i32[0]);
    (*env)->DeleteLocalRef(env, jaddrI);
    if (jaddrF) (*env)->DeleteLocalRef(env, jaddrF);
    if (jcoord) (*env)->DeleteLocalRef(env, jcoord);
-   p->retI = result != 0;
+   if (result == -2)
+      throwException(p->currentContext, NotInstalledException, null);
+   p->retI = result == 0;
 #elif defined darwin
    CharP addrp = JCharP2CharP(String_charsStart(addrI), String_charsLen(addrI));
    p->retI = addrp ? iphone_mapsShowAddress(addrp,p->i32[0] | 2) : 0;

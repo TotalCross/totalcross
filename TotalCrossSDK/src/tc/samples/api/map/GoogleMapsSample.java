@@ -28,6 +28,7 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.util.*;
 
 public class GoogleMapsSample extends BaseContainer
 {
@@ -86,7 +87,7 @@ public class GoogleMapsSample extends BaseContainer
             public void controlPressed(ControlEvent e)
             {
                if (chWaze.isChecked())
-                  Toast.show("The address you specify will be\nused as the destination address.\nDont use \"To (optional)\".",3000);
+                  Toast.show("The address you specify will be used as the destination address. Dont use \"To (optional)\".",3000);
             }
          });
       }
@@ -320,6 +321,10 @@ public class GoogleMapsSample extends BaseContainer
                }
                break;
          }
+      }
+      catch (NotInstalledException nie)
+      {
+         Toast.show("Waze is not installed. Uncheck it and try again",2000);
       }
       catch (Exception ee)
       {

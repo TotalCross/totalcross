@@ -41,6 +41,9 @@ public class Toast
     * </pre>
     * See the public static fields of this class to show how you can customize the appearance.
     * Calling with a nulled message will make the last toast disappear.
+    * 
+    * The text is splitted if wider than the screen.
+    * 
     * If delay is INFINITE, it will wait forever until you call show(null,0).
     * If delay is INFINITE_NOANIM, it will wait forever until you call show(null,0) and will not use animation.
     */
@@ -61,9 +64,12 @@ public class Toast
             if (message != null)
             try
             {
+               String msg = message;
+               if (message.indexOf('\n') == -1)
+                  msg = Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, font.fm, message);
                btn = new Button("");
                btn.eventsEnabled = false;
-               btn.setText(message);
+               btn.setText(msg);
                btn.setBorder(Button.BORDER_ROUND);
                btn.setBackForeColors(backColor, foreColor);
                btn.setFont(font);

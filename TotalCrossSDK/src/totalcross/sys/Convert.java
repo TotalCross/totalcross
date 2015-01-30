@@ -957,6 +957,60 @@ public final class Convert
       return chars.toString();
    }
 
+   private static int getLineCount(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
+   {
+      StringBuffer chars = new StringBuffer(text); // guich@tc114_76: change | to \n before applying our algorithm.
+      int last = chars.length()-1;
+      int lines = 1;
+      for (int pos = 0; pos <= last; pos++)
+      {
+         pos = getBreakPos(fm, chars, pos, maxWidth, true);
+         if (pos < 0 || pos > last) // not enough space to break the string or reached the end?
+            break;
+         if (chars.charAt(pos) != '\n')
+         {
+            insertAt(chars, pos, '\n');
+            last++;
+            lines++;
+         }
+      }
+      return lines;
+   }
+
+   /** This method is useful to insert line breaks into the text used in the Toast.show; it behaves like
+    * insertLineBreak but tries to split the string in a balanced number of chars.
+    * @see #insertLineBreak(int, FontMetrics, String)
+    */
+   public static String insertLineBreakBalanced(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
+   {
+      // check if the string already fits
+      if (fm.stringWidth(text) <= maxWidth)
+         return text;
+      int parts = 2;
+      StringBuffer sb = new StringBuffer(text);
+      int lt = text.length();
+      for (int i = 0; i < lt; i++, parts++)
+      {
+         int l = lt / parts; // finds the number of parts
+         int ww = fm.sbWidth(sb,0,l);
+         if (ww < maxWidth) // does the first string already fits in the desired max width?
+         {
+            while (l < lt) // checks if the number of lines equals to the number of parts; if not, skip to next word and try again
+            {
+               int lines = getLineCount(ww+fm.height/4, fm, text);
+               if (lines == parts)
+                  return insertLineBreak(ww+fm.height/4, fm, text);
+               l++;
+               while (l < lt && sb.charAt(l) != ' ')
+                  l++;
+               ww = fm.sbWidth(sb,0,l);
+            }
+         }
+      }
+      return insertLineBreak(maxWidth, fm, text);
+   }
+
+
    /** Finds the best position to break the line, with word-wrap and respecting \n.
     * @since TotalCross 1.0
     */
