@@ -66,7 +66,8 @@ public class Deploy
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
          int options = parseOptions(args);
-         new RegisterSDK(activationKey);
+         if (!Settings.debugging)
+            new RegisterSDK(activationKey);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
