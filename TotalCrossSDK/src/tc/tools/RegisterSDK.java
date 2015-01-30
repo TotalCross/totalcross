@@ -36,6 +36,8 @@ public final class RegisterSDK
    private RegisterSDK(String key, boolean force) throws Exception
    {
       this.key = key;
+      if (key.length() != 24)
+         throw new SDKRegistrationException("The key is incorrect");
       today = Utils.getToday();
       mac = Utils.getMAC();
       user = Settings.userName;
@@ -44,10 +46,10 @@ public final class RegisterSDK
       if (force || !flicense.exists()) 
          updateLicense();
       int ret = checkLicense();
-      if (ret == 0 || ret > 12) // if expired or last activation occured after 8 hours
+      if (ret == EXPIRED || ret == OLD) // if expired or last activation occured after 8 hours
       {
          updateLicense();
-         if (checkLicense() == 0) // only throw exception if expired
+         if (checkLicense() == EXPIRED) // only throw exception if expired
             throw new SDKRegistrationException("The license is expired");
       }         
    }
@@ -80,6 +82,10 @@ public final class RegisterSDK
       return cipher.doFinal(in);
    }
 
+   private static final int EXPIRED = 0;
+   private static final int OLD = 1;
+   private static final int VALID = 2;
+   
    private int checkLicense() throws Exception
    {
       // read license file
@@ -103,7 +109,8 @@ public final class RegisterSDK
       if (!magicEquals)
          throw new SDKRegistrationException("This license key does not correspond to the stored key!");
       // read the rest of stored data and compare with current values
-      HashMap<String,String> kv = Utils.pipeSplit(ds.readUTF());
+      String skv = ds.readUTF();
+      HashMap<String,String> kv = Utils.pipeSplit(skv);
       String storedMac  = kv.get("mac");
       String storedUser = kv.get("user");
       String storedFolder = kv.get("home");
@@ -128,7 +135,7 @@ public final class RegisterSDK
          throw new SDKRegistrationException("Invalid license file. Error #"+diff);
       
       System.out.println("Next SDK expiration date: "+showDate(iexp));
-      return expired ? 0 : (int)hoursElapsed;
+      return expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
    }
 
    private void updateLicense()
