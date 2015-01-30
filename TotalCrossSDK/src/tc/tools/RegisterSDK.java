@@ -43,10 +43,11 @@ public final class RegisterSDK
       flicense = new File(home+"/tc_license.dat");
       if (force || !flicense.exists()) 
          updateLicense();
-      if (!checkLicense())
+      int ret = checkLicense();
+      if (ret == 0 || ret > 12) // if expired or last activation occured after 8 hours
       {
          updateLicense();
-         if (!checkLicense())
+         if (checkLicense() == 0) // only throw exception if expired
             throw new SDKRegistrationException("The license is expired");
       }         
    }
@@ -79,7 +80,7 @@ public final class RegisterSDK
       return cipher.doFinal(in);
    }
 
-   private boolean checkLicense() throws Exception
+   private int checkLicense() throws Exception
    {
       // read license file
       InputStream in = new FileInputStream(flicense);
@@ -107,55 +108,72 @@ public final class RegisterSDK
       String storedUser = kv.get("user");
       String storedFolder = kv.get("home");
       int iexp = ds.readInt();
+      // check if user has changed the time
+      long storedTimestamp = ds.readLong();
+      long currentTimestamp = System.currentTimeMillis();
+      long hoursElapsed = (currentTimestamp - storedTimestamp) / (60*60*1000);
+      if (hoursElapsed < 0)
+         throw new SDKRegistrationException("The computer's time is invalid.");
       boolean expired = today >= iexp;
       
       int diffM = storedMac.equals(mac) ? 0 : 1;
       int diffU = storedUser.equals(user) ? 0 : 2;
       int diffF = storedFolder.equals(home) ? 0 : 4;
       int diff = diffM | diffU | diffF;
+      // if changed mac but same user and home, ok
+      if (diff == 1)
+         diff = 0;
       
       if (diff != 0)
          throw new SDKRegistrationException("Invalid license file. Error #"+diff);
       
       System.out.println("Next SDK expiration date: "+showDate(iexp));
-      return !expired;
+      return expired ? 0 : (int)hoursElapsed;
    }
 
-   private void updateLicense() throws Exception
+   private void updateLicense()
    {
-      // connect to the registration service and validate the key and mac.
-      int expdate = getExpdateFromServer();
-      if (expdate <= 0)
-         switch (expdate)
-         {
-            case INVALID_DATE            : throw new SDKRegistrationException("Please update your computer's date.");
-            case INVALID_REGISTRATION_KEY: throw new SDKRegistrationException("The registration key is invalid.");
-            case EXPIRED_CONTRACT        : throw new SDKRegistrationException("The contract is EXPIRED.");
-            case NO_MORE_DEVELOPERS      : throw new SDKRegistrationException("The number of active developers has been reached.");
-            case CONTRACT_NOT_ACTIVE     : throw new SDKRegistrationException("This contract is not yet active.");
-         }
-      else
+      try
       {
-         ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
-         DataOutputStream ds = new DataOutputStream(baos);
-         // generate fake data to put before and at end of important data
-         java.util.Random r = new java.util.Random(expdate);
-         int xdataLen = Math.abs(key.hashCode() % 1000);
-         byte[] xdata = new byte[xdataLen]; r.nextBytes(xdata);
-         ds.write(xdata);
-         // write important data
-         ds.writeUTF(MAGIC);
-         ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
-         ds.writeInt(expdate);
-         // write fake data at end
-         r.nextBytes(xdata);
-         ds.write(xdata);
-         ds.close();
-         byte[] bytes = baos.toByteArray();
-         byte[] cript = doCrypto(true, bytes);
-         OutputStream out = new FileOutputStream(flicense);
-         out.write(cript);
-         out.close();
+         // connect to the registration service and validate the key and mac.
+         int expdate = getExpdateFromServer();
+         if (expdate <= 0)
+            switch (expdate)
+            {
+               case INVALID_DATE            : throw new SDKRegistrationException("Please update your computer's date.");
+               case INVALID_REGISTRATION_KEY: throw new SDKRegistrationException("The registration key is invalid.");
+               case EXPIRED_CONTRACT        : throw new SDKRegistrationException("The contract is EXPIRED.");
+               case NO_MORE_DEVELOPERS      : throw new SDKRegistrationException("The number of active developers has been reached.");
+               case CONTRACT_NOT_ACTIVE     : throw new SDKRegistrationException("This contract is not yet active. Please send email to renato@totalcross.com with your activation key.");
+            }
+         else
+         {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
+            DataOutputStream ds = new DataOutputStream(baos);
+            // generate fake data to put before and at end of important data
+            java.util.Random r = new java.util.Random(expdate);
+            int xdataLen = Math.abs(key.hashCode() % 1000);
+            byte[] xdata = new byte[xdataLen]; r.nextBytes(xdata);
+            ds.write(xdata);
+            // write important data
+            ds.writeUTF(MAGIC);
+            ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
+            ds.writeInt(expdate);
+            ds.writeLong(System.currentTimeMillis());
+            // write fake data at end
+            r.nextBytes(xdata);
+            ds.write(xdata);
+            ds.close();
+            byte[] bytes = baos.toByteArray();
+            byte[] cript = doCrypto(true, bytes);
+            OutputStream out = new FileOutputStream(flicense);
+            out.write(cript);
+            out.close();
+         }
+      }
+      catch (Exception e)
+      {
+         System.out.println("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
       }
    }
    
