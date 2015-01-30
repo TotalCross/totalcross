@@ -188,6 +188,24 @@
 . fixed SQLiteUtil not correctly returning the date or datetime values on getStrings. SQLite has a problem (not sure if its a bug) where it returns DATE for both DATE and DATETIME types, so this method returns the correct correspondence: DATE for date and TIME for DATETIME (remember that in TotalCross, a Time object also contains the date).<br>
 . updated desktop's FontGenerator to use the new 8bpp antialiase and also the correct default sizes.<br>
 
+<h2>TotalCross 3.08 build 2521</h2>
+. fixed totalcross on android 5<br>
+. added a new sample for TabbedContainer, using bullets instead of tabs<br>
+. fixed MenuBar's background color when popColor is -1<br>
+. now tc.Deploy throws an exception if Settings.versionStr contains non-digit nor dot.<br>
+. added Graphics.drawThickLine<br>
+. decreased default distance of selected pie<br>
+. improved drawThickLine. now using on LineChart<br>
+. added SQLiteUtil.getStrings(sql)<br>
+. now we use dlmalloc over dlmalloc on android. This seems to fix several memory errors that was aborting the vm.<br>
+. removed coffecatch stuff<br>
+. fixed timezone not being set on win32<br>
+. making some buffer bigger to try to prevent messages: xfree - not a memory chunk or chunk's start was overwritten: 2542490 - 0. freed at jni/../axtls/bigint.c, line 153 xfree - not a memory chunk or chunk's start was overwritten: 253c0f8 - 0. freed at jni/../axtls/rsa.c, line 136 xfree - not a memory chunk or chunk's start was overwritten: 253b490 - 0. freed at jni/../axtls/asn1.c, line 713 xfree - not a memory chunk or chunk's start was overwritten: 25431f0 - 0. freed at jni/../axtls/tls1.c, line 282<br>
+. Check if timeAvailable is non-negative, so we can ignore the lack of romSerialNumber on Win32 for NORAS.<br>
+. fixed infinite recursion at MultiListBox<br>
+. Now the ComboBox's popup uses the same font of the ComboBox.<br>
+. fixed font not being set on PopupMenu's ListContainer.<br>
+
 <h2>TotalCross 3.07 build 2372</h2>
 . fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>
 . now the ComboBox.usePopupMenu can be specified for a single popup<br>
