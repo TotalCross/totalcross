@@ -11,8 +11,6 @@ import tc.tools.deployer.*;
 
 public final class RegisterSDK
 {
-   public class RegisterSDKException extends RuntimeException {RegisterSDKException(String s) {super(s);}}
-   
    private static final String MAGIC = "T0T@LCR0$$";
    private static final int DATE_MASK = 0xBADCFE;
 

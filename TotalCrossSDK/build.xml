@@ -305,8 +305,7 @@ target: desktop
        <keep name="tc.tools.deployer.bzip2.*"><field access="public protected" /><method access="public protected" /></keep> 
        <keep name="tc.tools.NativeMethodsPrototypeGenerator"><field  access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.FontGenerator"><field  access="public protected" /><method access="public protected" /></keep>
-       <keep name="tc.tools.RegisterSDK"><field  access="public protected" /><method access="public protected" /></keep>
-       <keep name="tc.tools.RegisterSDK$*"><field  access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.tools.RegisterSDK*"><field  access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.SW2TC"><field access="public protected" /><method access="public protected" /></keep>
        <!-- keep some method names, otherwise Hashtable class and dump will not work. -->
        <keepclassmembernames>
