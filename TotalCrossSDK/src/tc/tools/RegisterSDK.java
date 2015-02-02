@@ -181,7 +181,11 @@ public final class RegisterSDK
             out.close();
          }
       }
-      catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e)
+      catch (RegisterSDKException rse)
+      {
+         throw rse;
+      }
+      catch (Exception e)
       {
          System.out.println("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
       }
