@@ -40,7 +40,7 @@
 <property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 <property name="lb.src"                 value="${sdk.root}/../../Litebase/LitebaseSDK/src/java"/>
-<property name="sqlite-jdbc"            value="sqlite-jdbc4-3.8.2"/>
+<property name="sqlite-jdbc"            value="sqlite-jdbc-3.8.7"/>
 
 <!-- defined alxjoin task -->	
 <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${tools}/ant/tctasks.jar" />
