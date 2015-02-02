@@ -66,7 +66,7 @@ public class Deploy
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
          int options = parseOptions(args);
-         if (activationKey != null) // for DEMO vm, dont try to activate
+         if (activationKey != null && !Settings.debugging) // for DEMO vm, dont try to activate
             new RegisterSDK(activationKey);
 
          // convert the jar file into a tcz file
