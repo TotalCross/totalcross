@@ -185,7 +185,7 @@ public final class RegisterSDK
       {
          throw rse;
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          System.out.println("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
       }
