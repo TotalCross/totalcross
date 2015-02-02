@@ -514,7 +514,7 @@ public class Bitmaps
    static final Image4iOS[] ITUNES_ICONS =
    {
         // new Image4iOS("iTunesArtwork", 512), - no longer support on ios 7
-         new Image4iOS("iTunesArtwork@2x", 1024)
+         //new Image4iOS("iTunesArtwork@2x", 1024)
    };
 
    static class Image4iOS
