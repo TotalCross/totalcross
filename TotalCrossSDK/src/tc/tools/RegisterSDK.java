@@ -140,7 +140,7 @@ public final class RegisterSDK
       return diff != 0 ? INVALID : expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
    }
 
-   private void updateLicense()
+   private void updateLicense() throws Exception
    {
       try
       {
