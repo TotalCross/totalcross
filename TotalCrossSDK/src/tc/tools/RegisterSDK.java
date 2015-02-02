@@ -45,7 +45,7 @@ public final class RegisterSDK
       if (force || !flicense.exists()) 
          updateLicense();
       int ret = checkLicense();
-      if (ret == EXPIRED || ret == OLD) // if expired or last activation occured after 8 hours
+      if (ret == EXPIRED || ret == OLD || ret == INVALID) // if expired or last activation occured after 8 hours
       {
          updateLicense();
          if (checkLicense() == EXPIRED) // only throw exception if expired
@@ -82,8 +82,9 @@ public final class RegisterSDK
    }
 
    private static final int EXPIRED = 0;
-   private static final int OLD = 1;
-   private static final int VALID = 2;
+   private static final int OLD = -1;
+   private static final int VALID = -2;
+   private static final int INVALID = -3;
    
    private int checkLicense() throws Exception
    {
@@ -130,15 +131,15 @@ public final class RegisterSDK
       if (diff == 1)
          diff = 0;
       
-      if (diffM != 0) System.out.println("mac: "+storedMac+" / "+mac);
-      if (diffU != 0) System.out.println("user: "+storedUser+" / "+user);
-      if (diffF != 0) System.out.println("user home: "+storedFolder+" / "+home);
+      //if (diffM != 0) System.out.println("mac: "+storedMac+" / "+mac);
+      //if (diffU != 0) System.out.println("user: "+storedUser+" / "+user);
+      //if (diffF != 0) System.out.println("user home: "+storedFolder+" / "+home);
       
       if (diff != 0)
-         throw new RegisterSDKException("Invalid license file. Error #"+diff);
-      
-      System.out.println("Next SDK expiration date: "+showDate(iexp));
-      return expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
+         System.out.println("The license parameters have changed (#"+diff+"). A new license will be requested");
+      else
+         System.out.println("Next SDK expiration date: "+showDate(iexp));
+      return diff != 0 ? INVALID : expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
    }
 
    private void updateLicense()
