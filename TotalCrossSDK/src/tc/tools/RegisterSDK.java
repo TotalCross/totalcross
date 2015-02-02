@@ -9,8 +9,6 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 import tc.tools.deployer.*;
 
-import totalcross.sys.*;
-
 public final class RegisterSDK
 {
    public class RegisterSDKException extends RuntimeException {RegisterSDKException(String s) {super(s);}}
@@ -41,7 +39,7 @@ public final class RegisterSDK
          throw new RegisterSDKException("The key is incorrect");
       today = Utils.getToday();
       mac = Utils.getMAC();
-      user = Settings.userName;
+      user = System.getProperty("user.name");
       home = System.getProperty("user.home");
       flicense = new File(home+"/tc_license.dat");
       if (force || !flicense.exists()) 
