@@ -132,6 +132,10 @@ public final class RegisterSDK
       if (diff == 1)
          diff = 0;
       
+      if (diffM != 0) System.out.println("mac: "+storedMac+" / "+mac);
+      if (diffU != 0) System.out.println("user: "+storedUser+" / "+user);
+      if (diffF != 0) System.out.println("user home: "+storedFolder+" / "+home);
+      
       if (diff != 0)
          throw new RegisterSDKException("Invalid license file. Error #"+diff);
       
