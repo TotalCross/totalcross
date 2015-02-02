@@ -186,6 +186,7 @@ target: device
     <arg line="/a LBTC"/>
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>
+    <arg line="/r 54434C428C28BD4E4AB111CE"/>
   </java>
 
   <copy file="${output}/install/win32/LitebaseLib.tcz" todir="${dist}/lib"/>
@@ -304,6 +305,7 @@ target: samples
        <arg value="${output}/classes/samples/${app.srcdir}/${app.name}.class"/>
        <arg line="${tcdeploy_line}"/>
        <arg line="${supportedPlatforms}"/>
+       <arg line="/r 54434C428C28BD4E4AB111CE"/>
    </java>
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
@@ -323,6 +325,7 @@ target: samples
       <arg value="${app.name}.jar"/>
       <arg line="${tcdeploy_line}"/>
       <arg line="${supportedPlatforms}"/>
+      <arg line="/r 54434C428C28BD4E4AB111CE"/>
    </java>
 </target>
 
