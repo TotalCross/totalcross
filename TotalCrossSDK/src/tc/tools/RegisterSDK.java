@@ -13,7 +13,7 @@ import totalcross.sys.*;
 
 public final class RegisterSDK
 {
-   public class SDKRegistrationException extends RuntimeException {SDKRegistrationException(String s) {super(s);}}
+   public class RegisterSDKException extends RuntimeException {RegisterSDKException(String s) {super(s);}}
    
    private static final String MAGIC = "T0T@LCR0$$";
    private static final int DATE_MASK = 0xBADCFE;
@@ -38,7 +38,7 @@ public final class RegisterSDK
    {
       this.key = key;
       if (key.length() != 24)
-         throw new SDKRegistrationException("The key is incorrect");
+         throw new RegisterSDKException("The key is incorrect");
       today = Utils.getToday();
       mac = Utils.getMAC();
       user = Settings.userName;
@@ -51,7 +51,7 @@ public final class RegisterSDK
       {
          updateLicense();
          if (checkLicense() == EXPIRED) // only throw exception if expired
-            throw new SDKRegistrationException("The license is expired");
+            throw new RegisterSDKException("The license is expired");
       }         
    }
    
@@ -108,7 +108,7 @@ public final class RegisterSDK
          magicEquals = magic.equals(MAGIC);
       } catch (Exception e) {}
       if (!magicEquals)
-         throw new SDKRegistrationException("This license key does not correspond to the stored key!");
+         throw new RegisterSDKException("This license key does not correspond to the stored key!");
       // read the rest of stored data and compare with current values
       String skv = ds.readUTF();
       HashMap<String,String> kv = Utils.pipeSplit(skv);
@@ -121,7 +121,7 @@ public final class RegisterSDK
       long currentTimestamp = System.currentTimeMillis();
       long hoursElapsed = (currentTimestamp - storedTimestamp) / (60*60*1000);
       if (hoursElapsed < 0)
-         throw new SDKRegistrationException("The computer's time is invalid.");
+         throw new RegisterSDKException("The computer's time is invalid.");
       boolean expired = today >= iexp;
       
       int diffM = storedMac.equals(mac) ? 0 : 1;
@@ -133,7 +133,7 @@ public final class RegisterSDK
          diff = 0;
       
       if (diff != 0)
-         throw new SDKRegistrationException("Invalid license file. Error #"+diff);
+         throw new RegisterSDKException("Invalid license file. Error #"+diff);
       
       System.out.println("Next SDK expiration date: "+showDate(iexp));
       return expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
@@ -148,12 +148,12 @@ public final class RegisterSDK
          if (expdate <= 0)
             switch (expdate)
             {
-               case INVALID_DATE            : throw new SDKRegistrationException("Please update your computer's date.");
-               case INVALID_REGISTRATION_KEY: throw new SDKRegistrationException("The registration key is invalid.");
-               case EXPIRED_CONTRACT        : throw new SDKRegistrationException("The contract is EXPIRED.");
-               case NO_MORE_DEVELOPERS      : throw new SDKRegistrationException("The number of active developers has been reached.");
-               case CONTRACT_NOT_ACTIVE     : throw new SDKRegistrationException("This contract is not yet active. Please send email to renato@totalcross.com with your activation key.");
-               case INVALID_COMPANY         : throw new SDKRegistrationException("Invalid company"); 
+               case INVALID_DATE            : throw new RegisterSDKException("Please update your computer's date.");
+               case INVALID_REGISTRATION_KEY: throw new RegisterSDKException("The registration key is invalid.");
+               case EXPIRED_CONTRACT        : throw new RegisterSDKException("The contract is EXPIRED.");
+               case NO_MORE_DEVELOPERS      : throw new RegisterSDKException("The number of active developers has been reached.");
+               case CONTRACT_NOT_ACTIVE     : throw new RegisterSDKException("This contract is not yet active. Please send email to renato@totalcross.com with your activation key.");
+               case INVALID_COMPANY         : throw new RegisterSDKException("Invalid company"); 
             }
          else
          {
