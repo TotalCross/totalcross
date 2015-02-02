@@ -23,6 +23,7 @@ public final class RegisterSDK
    private static final int EXPIRED_CONTRACT         = -1002;
    private static final int NO_MORE_DEVELOPERS       = -1003;
    private static final int CONTRACT_NOT_ACTIVE      = -1004;
+   private static final int INVALID_COMPANY          = -1005;
 
    private String mac, user, home, key;
    private int today;
@@ -152,6 +153,7 @@ public final class RegisterSDK
                case EXPIRED_CONTRACT        : throw new SDKRegistrationException("The contract is EXPIRED.");
                case NO_MORE_DEVELOPERS      : throw new SDKRegistrationException("The number of active developers has been reached.");
                case CONTRACT_NOT_ACTIVE     : throw new SDKRegistrationException("This contract is not yet active. Please send email to renato@totalcross.com with your activation key.");
+               case INVALID_COMPANY         : throw new SDKRegistrationException("Invalid company"); 
             }
          else
          {
