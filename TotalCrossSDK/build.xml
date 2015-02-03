@@ -540,7 +540,7 @@ target: device
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>
     <arg line="/a TCvm"/>
-    <arg line="/r 54434C428C28BD4E4AB111CE"/>
+    <arg line="/r 5443444B314891CE3D2DD791"/>
   </java>
 
   <copy file="${output}/install/win32/TCBase.tcz" todir="${dist}/vm"/>
@@ -578,7 +578,7 @@ target: device
     <arg line="${tcdeploy_line}"/>
     <arg line="-win32"/>
     <arg line="/a TCvm"/>
-    <arg line="/r 54434C428C28BD4E4AB111CE"/>
+    <arg line="/r 5443444B314891CE3D2DD791"/>
   </java>
 
   <copy file="${output}/install/win32/TCUI.tcz" todir="${dist}/vm"/>
@@ -633,7 +633,7 @@ target: samples
        <arg value="${output}/classes/tc/samples/${app.srcdir}/${app.name}.class"/>
        <arg line="${tcdeploy_line}"/>
        <arg line="${supportedPlatforms}"/>
-       <arg line="/r 54434C428C28BD4E4AB111CE"/>
+       <arg line="/r 5443444B314891CE3D2DD791"/>
    </java>
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
