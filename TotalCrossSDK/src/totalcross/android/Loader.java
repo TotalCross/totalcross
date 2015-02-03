@@ -102,20 +102,24 @@ public class Loader extends Activity implements BarcodeReadListener
             Launcher4A.callingZXing = false;
             break;
          case EXTCAMERA_RETURN:
-            String[] projection = { MediaStore.Images.Media.DATA}; 
+            String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID}; 
             Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null); 
-            int column_index_data = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA); 
+            int dataIdx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            int idIdx   = cursor.getColumnIndexOrThrow(BaseColumns._ID);
             cursor.moveToFirst(); 
-            String capturedImageFilePath = cursor.getString(column_index_data);
+            String capturedImageFilePath = cursor.getString(dataIdx);
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
+            else
+            if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
+               try{ getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);} catch (Exception e) {AndroidUtils.handleException(e,false);}
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
       }
    }
    
    private static final int SHOW_SATELLITE_PHOTOS = 1;
-   private static final int USE_WAZE = 2;
+   public static final int USE_WAZE = 2;
 
    private void callRoute(double latI, double lonI, double latF, double lonF, String coord, int flags)
    {
@@ -135,6 +139,7 @@ public class Loader extends Activity implements BarcodeReadListener
             {
                AndroidUtils.debug("Waze not found, using default app");
                callGoogleMap(latI, lonI, (flags & SHOW_SATELLITE_PHOTOS) != 0);
+               return;
             }
          }
          

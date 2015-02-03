@@ -265,7 +265,7 @@ public class Bar extends Container
    {
       this.title = title != null ? new BarButton(title,null) : null;
       this.backgroundStyle = BACKGROUND_SHADED;
-      this.ignoreInsets = true;
+      //this.ignoreInsets = true;
       setFont(font.asBold());
    }
    

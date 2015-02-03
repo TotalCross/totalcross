@@ -254,12 +254,18 @@ void printStackTrace(Context currentContext)
    fillStackTrace(currentContext, null, -1, currentContext->callStack); 
    debug(currentContext->exmsg);
 }
+
+void keepCrash(); // android/startup_c.h
 void showUnhandledException(Context context, bool useAlert)
 {
    TCObject o;
    TCObject thrownException = context->thrownException;
    CharP msg=null, throwableTrace=null;              
-   
+
+#ifdef ANDROID
+   keepCrash();
+#endif
+      
    context->thrownException = null; // guich@tc130: null it out before the alert
    
    o = *Throwable_msg(thrownException);
@@ -310,4 +316,5 @@ void initException()
    throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
    throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
    throwableAsCharP[NoSuchFieldException          ] = "java.lang.NoSuchFieldException";
+   throwableAsCharP[NotInstalledException         ] = "totalcross.util.NotInstalledException";
 }

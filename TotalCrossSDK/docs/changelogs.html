@@ -1,4 +1,12 @@
 <h2>TotalCross 3.1</h2>             
+<h1>build 2511</h1>
+. removed many outdated Fn functions that were still mapping to Palm OS. now F11 takes a screenshot and saves to disk. Note that /scale does not affect the screenshot.<br>
+<h1>build 2509</h1>
+. added Settings.bugreportEmail. With this you can receive automatic bug reports when your application exits by an unhandled exception. read the javadocs for more information.<br>
+. Fixed ScrollContainer: if we're scrolled in a rotation but we don't need scroll, move to origin instead of keeping it scrolled<br>
+. Now if you use a Control in Tree's Node.userObject, it will draw the control instead of drawing a String<br>
+. Now the ComboBox's popup uses the same font of the ComboBox.<br>
+. Enhanced Tree in some ways: 1. lineH now is deprecated, use setLineHeight and getLineHeight; 2. fixed items not being drawn correctly when not using Android ui; now Node.userObject can be a Control or a Container (however, Edit and MultiEdit are supported)<br>
 <h1>build 2503</h1>
 . fixed NPE when using Vm.safeSleep at the application's constructor<br>
 . prevent hour from being under 0 in Time<br>
@@ -179,6 +187,24 @@
 . fixed npe; geolocator may be null at gpsclose.<br>
 . fixed SQLiteUtil not correctly returning the date or datetime values on getStrings. SQLite has a problem (not sure if its a bug) where it returns DATE for both DATE and DATETIME types, so this method returns the correct correspondence: DATE for date and TIME for DATETIME (remember that in TotalCross, a Time object also contains the date).<br>
 . updated desktop's FontGenerator to use the new 8bpp antialiase and also the correct default sizes.<br>
+
+<h2>TotalCross 3.08 build 2521</h2>
+. fixed totalcross on android 5<br>
+. added a new sample for TabbedContainer, using bullets instead of tabs<br>
+. fixed MenuBar's background color when popColor is -1<br>
+. now tc.Deploy throws an exception if Settings.versionStr contains non-digit nor dot.<br>
+. added Graphics.drawThickLine<br>
+. decreased default distance of selected pie<br>
+. improved drawThickLine. now using on LineChart<br>
+. added SQLiteUtil.getStrings(sql)<br>
+. now we use dlmalloc over dlmalloc on android. This seems to fix several memory errors that was aborting the vm.<br>
+. removed coffecatch stuff<br>
+. fixed timezone not being set on win32<br>
+. making some buffer bigger to try to prevent messages: xfree - not a memory chunk or chunk's start was overwritten: 2542490 - 0. freed at jni/../axtls/bigint.c, line 153 xfree - not a memory chunk or chunk's start was overwritten: 253c0f8 - 0. freed at jni/../axtls/rsa.c, line 136 xfree - not a memory chunk or chunk's start was overwritten: 253b490 - 0. freed at jni/../axtls/asn1.c, line 713 xfree - not a memory chunk or chunk's start was overwritten: 25431f0 - 0. freed at jni/../axtls/tls1.c, line 282<br>
+. Check if timeAvailable is non-negative, so we can ignore the lack of romSerialNumber on Win32 for NORAS.<br>
+. fixed infinite recursion at MultiListBox<br>
+. Now the ComboBox's popup uses the same font of the ComboBox.<br>
+. fixed font not being set on PopupMenu's ListContainer.<br>
 
 <h2>TotalCross 3.07 build 2372</h2>
 . fixed Grid.getCheckCount not returning the correct value; fixed Grid.removeAllElements not unsetting the check at the top of the grid.<br>

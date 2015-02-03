@@ -41,9 +41,8 @@ import java.io.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
-import java.security.*;
-import java.security.cert.*;
 import java.util.zip.*;
+import tc.tools.*;
 
 import totalcross.io.*;
 import totalcross.io.IOException;
@@ -56,7 +55,7 @@ import totalcross.util.zip.*;
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
-public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener
+final public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener
 {
    public static Launcher instance;
    public static boolean isApplication;
@@ -96,7 +95,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private TCEventThread eventThread;
    private boolean isMainClass;
    private boolean isDemo;
-   private static String key;
+   private String activationKey;
 
    @SuppressWarnings("deprecation")
    public Launcher()
@@ -135,15 +134,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       // print instructions
       System.out.println("===================================");
       System.out.println("Device key emulations:");
-      System.out.println("F1-F4 : HARD1 to HARD4");
-      System.out.println("F5 : COMMAND");
       System.out.println("F6 : MENU");
-      System.out.println("F7 : CALC");
-      System.out.println("F8 : FIND");
       System.out.println("F9 : CHANGE ORIENTATION");
-      System.out.println("F10: LAUNCH (HOME)");
-      System.out.println("F11: OPEN KEYBOARD");
-      System.out.println("F12: ACTION (Center button press)"); // guich@400
+      System.out.println("F11: TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
       System.out.println("===================================");
    }
 
@@ -168,6 +161,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          }
 
          fillSettings();
+         new RegisterSDK(activationKey);
 
          try
          {
@@ -224,6 +218,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             System.out.println(". Its location was not added to the classpath: if you're running from the prompt, be sure to add the path where your application is to the CLASSPATH argument. For example, if the class is in the current path, add a . specifying the current path: java -classpath .;tc.jar totalcross.Launcher "+className);
             exit(-1);
          }
+      }
+      catch (RegisterSDKException re)
+      {
+         System.out.println("SDK registration returned: "+re.getMessage());
+         exit(-2);
       }
       catch (Exception ee)
       {
@@ -471,9 +470,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             else
             if (args[i].equalsIgnoreCase("/r"))
             {
-               key = args[++i].toUpperCase(); 
-               if (key.length() != 24)
-                  throw new Exception("Invalid registration key");
+               activationKey = args[++i].toUpperCase(); 
+               if (activationKey.length() != 24)
+                  throw new RuntimeException("Invalid registration key");
             }
             else
             if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -597,54 +596,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (false && key == null)
+      if (activationKey == null || activationKey.length() != 24)
       {
-         System.out.println("Error: you must provide a registration key!");
+         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
          System.exit(0);
          return;
       }
-      checkKey();
    }
    
-   private void checkKey()
-   {
-      /*
-       W:\>openssl req -new -newkey rsa:4096 -days 30 -nodes -x509 -keyout totalcross.key 
-       -out totalcross.cert -subj "/C=BR/ST=CE/L=FORTALEZA/O=TotalCross MGP/CN=Guilherme Campos Hazan
-       /OU=54434C423B6869C50039C06F"
-       */
-      try
-      {
-         InputStream inStream = new FileInputStream("w:\\totalcross.cert");
-         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-         X509Certificate cert = (X509Certificate)cf.generateCertificate(inStream);
-         Principal p = cert.getIssuerDN(); // OU=54434C423B6869C50039C06F, CN=Guilherme Campos Hazan, O=TotalCross MGP, L=FORTALEZA, ST=CE, C=BR
-         java.util.Date exp = cert.getNotAfter(); 
-         java.util.Calendar c = java.util.Calendar.getInstance();
-         
-         c.setTime(exp);
-         int y = c.get(java.util.Calendar.YEAR);
-         int m = c.get(java.util.Calendar.MONTH) + 1;
-         int d = c.get(java.util.Calendar.DAY_OF_MONTH);
-         int iexp = y * 10000 + m * 100 + d;
-         
-         java.util.Date tod = new java.util.Date(); 
-         c.setTime(tod);
-         y = c.get(java.util.Calendar.YEAR);
-         m = c.get(java.util.Calendar.MONTH) + 1;
-         d = c.get(java.util.Calendar.DAY_OF_MONTH);
-         int itod = y * 10000 + m * 100 + d;
-         boolean expired = itod >= iexp;
-         System.out.println("Expired? "+expired+", exp: "+iexp+", today: "+itod);
-         System.out.println(p);
-         inStream.close();
-      }
-      catch (Exception e)
-      {
-         //e.printStackTrace();
-      }
-   }
-
    private String[] tokenizeString(String string, char c)
    {
       java.util.StringTokenizer st = new java.util.StringTokenizer(string, ""+c);
@@ -698,15 +657,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    }
 
    private int modifiers;
-
-   private boolean isIntercepting(int key)
-   {
-      int[] k = Vm.keysBeingIntercepted;
-      for (int i = (k == null ? 0 : k.length)-1; i >= 0; i--)
-         if (k[i] == key)
-            return true;
-      return false;
-   }
 
    private void updateModifiers(java.awt.event.KeyEvent event)
    {
@@ -769,17 +719,17 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             case java.awt.event.KeyEvent.VK_PAGE_UP:    key = SpecialKeys.PAGE_UP;    keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_DOWN,0); break; // don't let down/up simultanealy
             case java.awt.event.KeyEvent.VK_PAGE_DOWN:  key = SpecialKeys.PAGE_DOWN;  keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_UP,0);   break;
             // guich@120 - emulate more keys
-            case java.awt.event.KeyEvent.VK_F1:         if (isIntercepting(SpecialKeys.HARD1)) {key = SpecialKeys.HARD1; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F2:         if (isIntercepting(SpecialKeys.HARD2)) {key = SpecialKeys.HARD2; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F3:         if (isIntercepting(SpecialKeys.HARD3)) {key = SpecialKeys.HARD3; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F4:         if (isIntercepting(SpecialKeys.HARD4)) {key = SpecialKeys.HARD4; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F5:         key = SpecialKeys.COMMAND; break;
+            case java.awt.event.KeyEvent.VK_F1:         break;
+            case java.awt.event.KeyEvent.VK_F2:         break;
+            case java.awt.event.KeyEvent.VK_F3:         break;
+            case java.awt.event.KeyEvent.VK_F4:         break;
+            case java.awt.event.KeyEvent.VK_F5:         break;
             case java.awt.event.KeyEvent.VK_F6:         key = SpecialKeys.MENU; break;
-            case java.awt.event.KeyEvent.VK_F7:         if (isIntercepting(SpecialKeys.CALC)) key = SpecialKeys.CALC; break;
-            case java.awt.event.KeyEvent.VK_F8:         if (isIntercepting(SpecialKeys.FIND)) key = SpecialKeys.FIND; break;
-            case java.awt.event.KeyEvent.VK_F10:        if (isIntercepting(SpecialKeys.LAUNCH)) key = SpecialKeys.LAUNCH; break;
-            case java.awt.event.KeyEvent.VK_F11:        key = SpecialKeys.KEYBOARD_123; break;
-            case java.awt.event.KeyEvent.VK_F12:        key = SpecialKeys.ACTION; break; // guich@400_64
+            case java.awt.event.KeyEvent.VK_F7:         break;
+            case java.awt.event.KeyEvent.VK_F8:         break;
+            case java.awt.event.KeyEvent.VK_F10:        break;
+            case java.awt.event.KeyEvent.VK_F11:        takeScreenShot(); break;
+            case java.awt.event.KeyEvent.VK_F12:        break;
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
                {
@@ -802,6 +752,23 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             final String msg = "Key code: " + (key == 0 ? event.getKeyCode() : key) + ", Modifier: " + modifiers;
             new Thread() {public void run() {Vm.alert(msg);}}.start(); // must place this in a separate thread, or the vm dies
          }
+      }
+   }
+   
+   private void takeScreenShot()
+   {
+      try
+      {
+         totalcross.ui.image.Image img = MainWindow.getScreenShot();
+         String name = totalcross.sys.Settings.appPath+new Time().getTimeLong()+".png";
+         totalcross.io.File f = new totalcross.io.File(name,totalcross.io.File.CREATE_EMPTY);
+         img.createPng(f);
+         f.close();
+         System.out.println("Saved at "+name);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
       }
    }
    
@@ -828,10 +795,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (event.isActionKey())
          switch (event.getKeyCode())
          {
-            case java.awt.event.KeyEvent.VK_F1:        keysPressed.put(SpecialKeys.HARD1,0); break;
-            case java.awt.event.KeyEvent.VK_F2:        keysPressed.put(SpecialKeys.HARD2,0); break;
-            case java.awt.event.KeyEvent.VK_F3:        keysPressed.put(SpecialKeys.HARD3,0); break;
-            case java.awt.event.KeyEvent.VK_F4:        keysPressed.put(SpecialKeys.HARD4,0); break;
+//            case java.awt.event.KeyEvent.VK_F1:        keysPressed.put(SpecialKeys.HARD1,0); break;
+//            case java.awt.event.KeyEvent.VK_F2:        keysPressed.put(SpecialKeys.HARD2,0); break;
+//            case java.awt.event.KeyEvent.VK_F3:        keysPressed.put(SpecialKeys.HARD3,0); break;
+//            case java.awt.event.KeyEvent.VK_F4:        keysPressed.put(SpecialKeys.HARD4,0); break;
             case java.awt.event.KeyEvent.VK_PAGE_UP:   keysPressed.put(SpecialKeys.PAGE_UP,0); break;
             case java.awt.event.KeyEvent.VK_PAGE_DOWN: keysPressed.put(SpecialKeys.PAGE_DOWN,0); break;
          }

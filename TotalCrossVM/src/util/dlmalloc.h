@@ -97,7 +97,7 @@ struct mallinfo {
   MALLINFO_FIELD_TYPE uordblks; /* total allocated space */
   MALLINFO_FIELD_TYPE fordblks; /* total free space */
   MALLINFO_FIELD_TYPE keepcost; /* releasable (via malloc_trim) space */
-  MALLINFO_FIELD_TYPE maxfblk;  // TOTALCROSS: maximum free block
+//  MALLINFO_FIELD_TYPE maxfblk;  // TOTALCROSS: maximum free block
 };
 #endif /* STRUCT_MALLINFO_DECLARED */
 #endif  /* _MALLOC_H */

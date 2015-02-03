@@ -59,10 +59,9 @@ extern bool isMainWindow;   // extends MainWindow ?
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
-;
-extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible,jkeepCrash;
 extern jfieldID jsipVisible,jappTitleH;
-extern jmethodID jgetHeight;
+extern jmethodID jgetHeight,jsendBugreport;
 #elif defined WIN32 || defined linux
 extern TCHAR exeName[MAX_PATHNAME];
 #endif

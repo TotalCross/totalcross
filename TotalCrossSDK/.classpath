@@ -11,7 +11,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="etc/tools/ipa/dd-plist.jar"/>
-	<classpathentry kind="lib" path="etc/tools/sqlite/sqlite-jdbc4-3.8.2.jar"/>
+	<classpathentry kind="lib" path="G:/TotalCross/TotalCrossSDK/etc/tools/sqlite/sqlite-jdbc-3.8.7.jar"/>
 	<classpathentry kind="lib" path="etc/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="etc/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
 	<classpathentry kind="lib" path="etc/libs/commons/commons-compress-1.4.jar"/>

@@ -32,6 +32,7 @@ public class CameraSample extends BaseContainer
    Button btnFilm, btnPhoto, btnRotate;
    Label l;
    ComboBox cbRes;
+   Check chNat;
    ImageControl ic;
    Camera camera;
    
@@ -42,11 +43,12 @@ public class CameraSample extends BaseContainer
       
       add(l = new Label(""), LEFT, BOTTOM);
       add(btnFilm = new Button("Film"), LEFT+gap, BEFORE,PREFERRED+fmH,PREFERRED+fmH);
-      add(btnPhoto = new Button("Photo"), AFTER + 5, SAME, SAME, SAME);
-      add(btnRotate = new Button("Rotate"), AFTER + 5, SAME, SAME, SAME);
+      add(btnPhoto = new Button("Photo"), AFTER + gap, SAME, SAME, SAME);
+      add(btnRotate = new Button("Rotate"), AFTER + gap, SAME, SAME, SAME);
       add(cbRes = new ComboBox(Camera.getSupportedResolutions()),AFTER+gap,SAME,FILL-gap,SAME,btnRotate); // guich@tc126_24
       cbRes.setSelectedIndex(0);
       btnRotate.setEnabled(false);
+      add(chNat = new Check("Use native camera's application"), LEFT+gap, BEFORE-gap);
       add(ic = new ImageControl(), LEFT+gap, TOP+gap, FILL-gap, FIT-gap);
       ic.setEventsEnabled(true);
       camera = new Camera();
@@ -83,6 +85,7 @@ public class CameraSample extends BaseContainer
                l.setText("Starting camera...");
                l.repaintNow();
                camera.defaultFileName = "picture.jpg";
+               camera.cameraType = chNat.isChecked() ? Camera.CAMERA_NATIVE_NOCOPY : Camera.CAMERA_CUSTOM;
                String ret = camera.click();
                if (ret != null)
                {

@@ -504,13 +504,17 @@ public class Bitmaps
          new Image4iOS("Icon-Small-iPad@2x.png", 100),
          new Image4iOS("Icon-Small-iPad.png", 50),
          new Image4iOS("Icon-Small-iPad@2x.png", 100),
-         new Image4iOS("Default-568h@2x.png", 640, 1136)
+         new Image4iOS("Default-568h@2x.png", 640, 1136),
+         // ios 7
+         new Image4iOS("Icon76.png", 76),
+         new Image4iOS("Icon152.png", 152),
+         new Image4iOS("Icon120.png", 120),
    };
 
    static final Image4iOS[] ITUNES_ICONS =
    {
-         new Image4iOS("iTunesArtwork", 512),
-         new Image4iOS("iTunesArtwork@2x", 1024)
+        // new Image4iOS("iTunesArtwork", 512), - no longer support on ios 7
+         //new Image4iOS("iTunesArtwork@2x", 1024)
    };
 
    static class Image4iOS

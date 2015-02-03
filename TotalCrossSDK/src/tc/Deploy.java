@@ -13,13 +13,13 @@
 
 package tc;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import tc.tools.*;
 import tc.tools.converter.*;
 import tc.tools.deployer.*;
+
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -48,6 +48,7 @@ public class Deploy
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
+   private String activationKey;
    
    public Deploy(String[] args)
    {
@@ -65,6 +66,8 @@ public class Deploy
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
          int options = parseOptions(args);
+         if (activationKey != null) // for DEMO vm, dont try to activate
+            new RegisterSDK(activationKey);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
@@ -339,8 +342,9 @@ public class Deploy
                case 'v': DeploySettings.quiet = false;
                          break;
                case 'r': String key = args[++i].toUpperCase();
-                         if (!key.matches("([0-9A-F]{4}(\\-)?){6}"))
-                            throw new DeployerException("The key must be specified in the following format: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (with or without '-')");
+                         if (key.length() != 24)
+                            throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX");
+                         activationKey = key;
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
                          System.out.println("The application was signed with the given registration key.");
                          break;
