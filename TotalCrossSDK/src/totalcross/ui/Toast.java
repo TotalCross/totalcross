@@ -69,7 +69,7 @@ public class Toast
                   msg = Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, font.fm, message);
                btn = new Button("");
                btn.eventsEnabled = false;
-               btn.setText(msg);
+               btn.setText(msg.trim());
                btn.setBorder(Button.BORDER_ROUND);
                btn.setBackForeColors(backColor, foreColor);
                btn.setFont(font);
