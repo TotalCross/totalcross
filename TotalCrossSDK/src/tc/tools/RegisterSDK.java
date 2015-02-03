@@ -86,58 +86,69 @@ public final class RegisterSDK
    
    private int checkLicense() throws Exception
    {
-      // read license file
-      InputStream in = new FileInputStream(flicense);
-      byte[] fin = new byte[in.available()];
-      in.read(fin);
-      in.close();
-      // use the key passed to launcher
-      byte[] bin = doCrypto(false, fin);
-      DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
-      // skip trash
-      int xdataLen = Math.abs(key.hashCode() % 1000);
-      ds.skip(xdataLen);
-      // checks if the magic equals
-      boolean magicEquals = false;
       try
       {
-         String magic     = ds.readUTF();
-         magicEquals = magic.equals(MAGIC);
-      } catch (Exception e) {}
-      if (!magicEquals)
-         throw new RegisterSDKException("This license key does not correspond to the stored key!");
-      // read the rest of stored data and compare with current values
-      String skv = ds.readUTF();
-      HashMap<String,String> kv = Utils.pipeSplit(skv);
-      String storedMac  = kv.get("mac");
-      String storedUser = kv.get("user");
-      String storedFolder = kv.get("home");
-      int iexp = ds.readInt();
-      // check if user has changed the time
-      long storedTimestamp = ds.readLong();
-      long currentTimestamp = System.currentTimeMillis();
-      long hoursElapsed = (currentTimestamp - storedTimestamp) / (60*60*1000);
-      if (hoursElapsed < 0)
-         throw new RegisterSDKException("The computer's time is invalid.");
-      boolean expired = today >= iexp;
-      
-      int diffM = storedMac.equals(mac) ? 0 : 1;
-      int diffU = storedUser.equals(user) ? 0 : 2;
-      int diffF = storedFolder.equals(home) ? 0 : 4;
-      int diff = diffM | diffU | diffF;
-      // if changed mac but same user and home, ok
-      if (diff == 1)
-         diff = 0;
-      
-      //if (diffM != 0) System.out.println("mac: "+storedMac+" / "+mac);
-      //if (diffU != 0) System.out.println("user: "+storedUser+" / "+user);
-      //if (diffF != 0) System.out.println("user home: "+storedFolder+" / "+home);
-      
-      if (diff != 0)
-         System.out.println("The license parameters have changed (#"+diff+"). A new license will be requested");
-      else
-         System.out.println("Next SDK expiration date: "+showDate(iexp));
-      return diff != 0 ? INVALID : expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
+         // read license file
+         InputStream in = new FileInputStream(flicense);
+         byte[] fin = new byte[in.available()];
+         in.read(fin);
+         in.close();
+         // use the key passed to launcher
+         byte[] bin = doCrypto(false, fin);
+         DataInputStream ds = new DataInputStream(new ByteArrayInputStream(bin));
+         // skip trash
+         int xdataLen = Math.abs(key.hashCode() % 1000);
+         ds.skip(xdataLen);
+         // checks if the magic equals
+         boolean magicEquals = false;
+         try
+         {
+            String magic     = ds.readUTF();
+            magicEquals = magic.equals(MAGIC);
+         } catch (Exception e) {}
+         if (!magicEquals)
+         {
+            System.out.println("This license key does not correspond to the stored key! Requesting new license with current key...");
+            return INVALID;
+         }
+         // read the rest of stored data and compare with current values
+         String skv = ds.readUTF();
+         HashMap<String,String> kv = Utils.pipeSplit(skv);
+         String storedMac  = kv.get("mac");
+         String storedUser = kv.get("user");
+         String storedFolder = kv.get("home");
+         int iexp = ds.readInt();
+         // check if user has changed the time
+         long storedTimestamp = ds.readLong();
+         long currentTimestamp = System.currentTimeMillis();
+         long hoursElapsed = (currentTimestamp - storedTimestamp) / (60*60*1000);
+         if (hoursElapsed < 0)
+            throw new RegisterSDKException("The computer's time is invalid.");
+         boolean expired = today >= iexp;
+         
+         int diffM = storedMac.equals(mac) ? 0 : 1;
+         int diffU = storedUser.equals(user) ? 0 : 2;
+         int diffF = storedFolder.equals(home) ? 0 : 4;
+         int diff = diffM | diffU | diffF;
+         // if changed mac but same user and home, ok
+         if (diff == 1)
+            diff = 0;
+         
+         //if (diffM != 0) System.out.println("mac: "+storedMac+" / "+mac);
+         //if (diffU != 0) System.out.println("user: "+storedUser+" / "+user);
+         //if (diffF != 0) System.out.println("user home: "+storedFolder+" / "+home);
+         
+         if (diff != 0)
+            System.out.println("The license parameters have changed (#"+diff+"). A new license will be requested");
+         else
+            System.out.println("Next SDK expiration date: "+showDate(iexp));
+         return diff != 0 ? INVALID : expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
+      }
+      catch (javax.crypto.BadPaddingException bpe)
+      {
+         System.out.println("This license key does not correspond to the stored key! Requesting new license with current key...");
+         return INVALID;
+      }
    }
 
    private void updateLicense() throws Exception
