@@ -2375,85 +2375,25 @@ public final class Convert
    {
    }
 
+   static String withAcc = "áÁâÂàÀåÅãÃäÄçÇéÉêÊèÈëËíÍîÎìÌïÏñÑóÓôÔòÒõÕöÖúÚûÛùÙüÜýÝÿÿ";
+   static char[] woutAcc = "aAaAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOoOuUuUuUuUyYyY".toCharArray();
    /** Returns the given string without accentuation characters, using the unicode range 0-255 */
    public static String removeAccentuation(String s)
    {
-      if (htAcc == null)
-         buildHTaccentuation();
       char[] chars = s.toCharArray();
       boolean changed = false;
       for (int i = chars.length; --i >= 0;)
       {
-         int normal = htAcc.get(chars[i],0);
-         if (normal != 0)
+         int normal = withAcc.indexOf(chars[i]);
+         if (normal != -1)
          {
             changed = true;
-            chars[i] = (char)normal;
+            chars[i] = woutAcc[normal];
          }
       }
       return changed ? new String(chars) : s;
    }
    
-   private static IntHashtable htAcc;
-   private static void buildHTaccentuation()
-   {
-      htAcc = new IntHashtable(235);
-      htAcc.put('á' ,'a');
-      htAcc.put('Á' ,'A');
-      htAcc.put('â' ,'a');
-      htAcc.put('Â' ,'A');
-      htAcc.put('à' ,'a');
-      htAcc.put('À' ,'A');
-      htAcc.put('å' ,'a');
-      htAcc.put('Å' ,'A');
-      htAcc.put('ã' ,'a');
-      htAcc.put('Ã' ,'A');
-      htAcc.put('ä' ,'a');
-      htAcc.put('Ä' ,'A');
-      htAcc.put('ç' ,'c');
-      htAcc.put('Ç' ,'C');
-      htAcc.put('é' ,'e');
-      htAcc.put('É' ,'E');
-      htAcc.put('ê' ,'e');
-      htAcc.put('Ê' ,'E');
-      htAcc.put('è' ,'e');
-      htAcc.put('È' ,'E');
-      htAcc.put('ë' ,'e');
-      htAcc.put('Ë' ,'E');
-      htAcc.put('í' ,'i');
-      htAcc.put('Í' ,'I');
-      htAcc.put('î' ,'i');
-      htAcc.put('Î' ,'I');
-      htAcc.put('ì' ,'i');
-      htAcc.put('Ì' ,'I');
-      htAcc.put('ï' ,'i');
-      htAcc.put('Ï' ,'I');
-      htAcc.put('ñ' ,'n');
-      htAcc.put('Ñ' ,'N');
-      htAcc.put('ó' ,'o');
-      htAcc.put('Ó' ,'O');
-      htAcc.put('ô' ,'o');
-      htAcc.put('Ô' ,'O');
-      htAcc.put('ò' ,'o');
-      htAcc.put('Ò' ,'O');
-      htAcc.put('õ' ,'o');
-      htAcc.put('Õ' ,'O');
-      htAcc.put('ö' ,'o');
-      htAcc.put('Ö' ,'O');
-      htAcc.put('ú' ,'u');
-      htAcc.put('Ú' ,'U');
-      htAcc.put('û' ,'u');
-      htAcc.put('Û' ,'U');
-      htAcc.put('ù' ,'u');
-      htAcc.put('Ù' ,'U');
-      htAcc.put('ü' ,'u');
-      htAcc.put('Ü' ,'U');
-      htAcc.put('ý' ,'y');
-      htAcc.put('Ý' ,'Y');
-      htAcc.put('ÿ' ,'y');
-      htAcc.put('ÿ' ,'Y');
-   }
-
    //////// Native methods for device
    native public static String dup4D(char c, int count);
    native public static String spacePad4D(String what, int count, boolean before);
