@@ -297,6 +297,13 @@ void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this
       {
          if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
          invalidateTextures(INVTEX_DEL_ALL); // first we delete the textures before the gl context is invalid
+         if (glShiftY != 0) // fixes green screen that occurs when the keyboard is open and the user turns off the device
+         {
+            desiredglShiftY = 0; // change only after the next screen update, since here we are running in a different thread
+            setShiftYonNextUpdateScreen = true;
+            *needsPaint = true; // schedule a screen paint to update the shiftY values
+            setTimerInterval(1);
+         }
       }
       else
       if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
