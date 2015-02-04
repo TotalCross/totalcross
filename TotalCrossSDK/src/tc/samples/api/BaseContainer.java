@@ -178,17 +178,17 @@ public class BaseContainer extends Container
    public void show()
    {
       containerStack.push(this); // push ourself
-      Window.getTopMost().swap(this);
+      MainWindow.getMainWindow().swap(this);
    }
    
    public void back()
    {
-      if (!(this instanceof MainMenu))
+      if (!(this instanceof MainMenu) && getParentWindow() == Window.getTopMost())
          try
          {
             setInfo(MainMenu.DEFAULT_INFO);
             containerStack.pop(); // pop ourself
-            Window.getTopMost().swap((Container)containerStack.peek());
+            MainWindow.getMainWindow().swap((Container)containerStack.peek());
             Window.keyHook = null;
          }
          catch (ElementNotFoundException enfe)
