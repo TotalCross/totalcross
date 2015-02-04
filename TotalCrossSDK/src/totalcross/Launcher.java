@@ -134,9 +134,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       // print instructions
       System.out.println("===================================");
       System.out.println("Device key emulations:");
+      System.out.println("F2 : TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
       System.out.println("F6 : MENU");
+      System.out.println("F7 : ESCAPE / BACK");
       System.out.println("F9 : CHANGE ORIENTATION");
-      System.out.println("F11: TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
+      System.out.println("F11: OPEN KEYBOARD");
       System.out.println("===================================");
    }
 
@@ -720,15 +722,15 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             case java.awt.event.KeyEvent.VK_PAGE_DOWN:  key = SpecialKeys.PAGE_DOWN;  keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_UP,0);   break;
             // guich@120 - emulate more keys
             case java.awt.event.KeyEvent.VK_F1:         break;
-            case java.awt.event.KeyEvent.VK_F2:         break;
+            case java.awt.event.KeyEvent.VK_F2:         takeScreenShot(); break;
             case java.awt.event.KeyEvent.VK_F3:         break;
             case java.awt.event.KeyEvent.VK_F4:         break;
             case java.awt.event.KeyEvent.VK_F5:         break;
             case java.awt.event.KeyEvent.VK_F6:         key = SpecialKeys.MENU; break;
-            case java.awt.event.KeyEvent.VK_F7:         break;
+            case java.awt.event.KeyEvent.VK_F7:         key = SpecialKeys.ESCAPE; break;
             case java.awt.event.KeyEvent.VK_F8:         break;
             case java.awt.event.KeyEvent.VK_F10:        break;
-            case java.awt.event.KeyEvent.VK_F11:        takeScreenShot(); break;
+            case java.awt.event.KeyEvent.VK_F11:        key = SpecialKeys.KEYBOARD_ABC; break;
             case java.awt.event.KeyEvent.VK_F12:        break;
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
