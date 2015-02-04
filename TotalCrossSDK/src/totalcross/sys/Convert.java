@@ -2375,6 +2375,25 @@ public final class Convert
    {
    }
 
+   static String withAcc = "áÁâÂàÀåÅãÃäÄçÇéÉêÊèÈëËíÍîÎìÌïÏñÑóÓôÔòÒõÕöÖúÚûÛùÙüÜýÝÿÿ";
+   static char[] woutAcc = "aAaAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOoOuUuUuUuUyYyY".toCharArray();
+   /** Returns the given string without accentuation characters, using the unicode range 0-255 */
+   public static String removeAccentuation(String s)
+   {
+      char[] chars = s.toCharArray();
+      boolean changed = false;
+      for (int i = chars.length; --i >= 0;)
+      {
+         int normal = withAcc.indexOf(chars[i]);
+         if (normal != -1)
+         {
+            changed = true;
+            chars[i] = woutAcc[normal];
+         }
+      }
+      return changed ? new String(chars) : s;
+   }
+   
    //////// Native methods for device
    native public static String dup4D(char c, int count);
    native public static String spacePad4D(String what, int count, boolean before);

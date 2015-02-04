@@ -137,9 +137,9 @@ public class GoogleMaps
     * 
     * See the tc.samples.map.GoogleMaps sample.
     * 
-    * @param address The address to show (E.G.: "rua tonelero 10, copacabana, rio de janeiro, brasil", or "22030,brasil").
+    * @param address The address (WITHOUT ACCENTUATION) to show (E.G.: "rua tonelero 10, copacabana, rio de janeiro, brasil", or "22030,brasil").
     * The address is resolved and its latitude and logitude coordinates are retrieved.
-    * Careful with the address given, be sure to make some tests before. 
+    * Careful with the address given, be sure to make some tests before. To remove accentuation, you can use Convert.removeAccentuation.  
     * 
     * If you want to pass the lat/lon coordinates, pass them in the form: "@lat,lon" (E.G.: "@-22.966000,-43.185000").
     * Note that, due to Android's restrictions, only the first 6 decimal digits in the coordinates are used.
@@ -151,6 +151,7 @@ public class GoogleMaps
     * bandwidth and internet resources.
     * 
     * @return true if the map was shown, false otherwise. False is often returned when there's no internet connection.
+    * @see Convert#removeAccentuation(String)
     */
    public static boolean showAddress(String address, boolean showSatellitePhotos)
    {
@@ -171,6 +172,9 @@ public class GoogleMaps
    /** Shows the route between two points. The traversed points is a sequence of lat,lon coordinates comma-separated.
     * If flags is USE_WAZE, the addressF is not used and can be null, and a NotInstalledException is thrown if WAZE is not installed.
     * 
+    * Note that you must remove accentuation from addressI and addressF; you may use Convert.removeAccentuation.
+    * 
+    * @see Convert#removeAccentuation(String)
     */
    public static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags) throws NotInstalledException
    {
@@ -200,7 +204,7 @@ public class GoogleMaps
    public static double[] getLocation(String address) throws IOException, InvalidNumberException
    {
       // connect to map web service
-      String url = "http://maps.googleapis.com/maps/api/geocode/xml?address=" + address.replace("  "," ").replace(' ','+') + "&sensor=false";
+      String url = "http://maps.googleapis.com/maps/api/geocode/xml?address=" + Convert.removeAccentuation(address).replace("  "," ").replace(' ','+') + "&sensor=false";
       HttpStream hs = new HttpStream(new URI(url));
       if (hs.badResponseCode)
       {
