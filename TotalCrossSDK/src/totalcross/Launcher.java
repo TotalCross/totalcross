@@ -136,7 +136,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.out.println("Device key emulations:");
       System.out.println("F2 : TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
       System.out.println("F6 : MENU");
-      System.out.println("F7 : ESCAPE / BACK");
+      System.out.println("F7 : BACK (ESCAPE)");
       System.out.println("F9 : CHANGE ORIENTATION");
       System.out.println("F11: OPEN KEYBOARD");
       System.out.println("===================================");
