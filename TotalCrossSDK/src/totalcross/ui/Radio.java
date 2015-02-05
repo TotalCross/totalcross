@@ -167,13 +167,13 @@ public class Radio extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1;
+      return textW+2+getPreferredHeight(); // use getPreferredHeight since it may be overloaded
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return fmH+Edit.prefH; // guich@tc110_18: min size is 12
+      return fmH+Edit.prefH;
    }
 
    /** Called by the system to pass events to the radio control. */
@@ -321,10 +321,12 @@ public class Radio extends Control
       if (uiAndroid)
          try 
          {
-            Image ret = isEnabled() ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, foreColor);
-            g.drawImage(ret,0,0);
+            int hh = Math.min(width - (textW+2), height); 
+            Image ret = isEnabled() ? Resources.radioBkg.getNormalInstance(hh,hh,foreColor) : Resources.radioBkg.getDisabledInstance(hh, hh, foreColor);
+            yy = (height - hh) / 2;
+            g.drawImage(ret,0,yy);
             if (checked)
-               g.drawImage(Resources.radioSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled()),0,0);
+               g.drawImage(Resources.radioSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled()),0,yy);
          } catch (ImageException ie) {}
       else
       if (uiVista && imgSel != null)
