@@ -130,22 +130,23 @@ public class Deployer4Android
       updateResources(); // 3+4+5
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
       new ZipAlign().zipAlign(new File(targetDir+"/"+fileName+".apk"),new File(targetDir+"/"+fileName+"_.apk"));
-      Utils.copyFile(targetDir+"/"+fileName+"_.apk",targetDir+"/"+fileName+".apk",true); 
+      String apk = targetDir+"/"+fileName+".apk";
+      Utils.copyFile(targetDir+"/"+fileName+"_.apk",apk,true); 
       
       String extraMsg = "";
       if (DeploySettings.installPlatforms.indexOf("android,") >= 0)
-         extraMsg = callADB();
+         extraMsg = callADB(apk);
       
       System.out.println("... Files written to folder "+targetDir+extraMsg);
       
    }
 
-   private String callADB() throws Exception
+   private String callADB(String apk) throws Exception
    {
       String adb = Utils.findPath(DeploySettings.etcDir+"tools/android/adb.exe",false);
       if (adb == null)
          throw new DeployerException("File android/adb.exe not found!");
-      String message = Utils.exec(new String[]{adb,"install","-r","*.apk"},targetDir);
+      String message = Utils.exec(new String[]{adb,"install","-r",apk},targetDir);
       if (message != null && message.indexOf("INPUT:Success") >= 0)
          return " (installed)";
       System.out.println(message);
