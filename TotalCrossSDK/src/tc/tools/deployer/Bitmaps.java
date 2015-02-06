@@ -240,7 +240,7 @@ public class Bitmaps
          height          = readInt(offset);   offset += 4;
          /*planes      = */readShort(offset); offset += 2;
          bitsPerPixel    = readShort(offset); offset += 2;
-         if (bitsPerPixel > 8) throw new IllegalArgumentException("Bitmaps cannot be 24bpp!");
+         if (bitsPerPixel > 8) throw new IllegalArgumentException("Bitmaps "+width+"x"+(height/2)+" cannot be 24bpp!");
          compression     = readInt(offset);   offset += 4;
          if (compression != 0)
            new Exception("The bitmap used to create icons can't be compressed (RLE)!");
