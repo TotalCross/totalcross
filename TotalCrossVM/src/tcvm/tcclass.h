@@ -55,7 +55,8 @@ typedef struct
    uint16 isFinal        : 1;
    uint16 isNative       : 1;
    uint16 isAbstract     : 1;
-   uint16 __available    : 9; // prefer to fill the gap to prevent structure size optimization
+   uint16 isSynchronized : 1;
+   uint16 __available    : 8; // prefer to fill the gap to prevent structure size optimization
 } __attribute_packed__ MethodFlags;
 
 /// Flags for a Java field

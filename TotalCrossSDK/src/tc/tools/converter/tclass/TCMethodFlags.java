@@ -25,6 +25,7 @@ public final class TCMethodFlags
    public boolean /*uint16*/ isFinal        ;// 1;
    public boolean /*uint16*/ isNative       ;// 1;
    public boolean /*uint16*/ isAbstract     ;// 1;
+   public boolean /*uint16*/ isSynchronized ;// 1;
 
    public void write(DataStreamLE ds) throws totalcross.io.IOException
    {
@@ -34,7 +35,8 @@ public final class TCMethodFlags
               ((isStatic       ?1:0) << 3) |
               ((isFinal        ?1:0) << 4) |
               ((isNative       ?1:0) << 5) |
-              ((isAbstract     ?1:0) << 6);
+              ((isAbstract     ?1:0) << 6) |
+              ((isSynchronized ?1:0) << 7);
       ds.writeShort(v);
    }
 }

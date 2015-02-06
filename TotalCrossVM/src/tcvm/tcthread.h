@@ -153,7 +153,10 @@ ThreadHandle threadGetCurrent();
 void threadCreateJava(Context currentContext, TCObject this_);
 void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used when exiting the application or the thread itself
 void threadDestroyAll(); // destroy all threads
+
 void freeMutex(int32 hash, MUTEX_TYPE* mutex);
+bool lockMutex(int32 address);
+void unlockMutex(int32 address);
 
 #define ThreadArgsFromObject(o) ((ThreadArgs)ARRAYOBJ_START(Thread_taskID(o)))
 #define ThreadHandleFromObject(o) ThreadArgsFromObject(o)->h
