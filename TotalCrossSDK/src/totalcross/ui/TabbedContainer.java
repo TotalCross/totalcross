@@ -617,7 +617,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    }
 
    /** compute the rects that represents each tab on the screen. */
-   private void computeTabsRect()
+   public void computeTabsRect()
    {
       int x0 = 1;
       int y0 = atTop?0:(height-tabH);
@@ -684,7 +684,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    /** Compute the rectangles of the tabs based on the selected
     * (bolded) and unselected (plain) titles. */
-   protected void onFontChanged() // guich@564_11
+   public void onFontChanged() // guich@564_11
    {
       boolean isText = isTextCaption;
       if (wplains == null)
@@ -1267,5 +1267,15 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public boolean wasScrolled()
    {
       return scScrolled;
+   }
+
+   /** Changes the tab captions. The new array must have the same length or an exception is thrown. */
+   public void setCaptions(String[] caps)
+   {
+      if (strCaptions == null || caps.length != strCaptions.length)
+         throw new IllegalArgumentException("The TabbedContainer's captions does not match the given ones.");
+      strCaptions = strCaptions0 = caps;
+      onFontChanged();
+      computeTabsRect();
    }
 }
