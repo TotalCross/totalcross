@@ -34,11 +34,12 @@ static void soundSetEnabled(int b)
 {
 }
 
-static void soundBeep(void)
+/*static void soundBeep(void)
 {
    iphone_soundBeep();
-}
+}*/
 
 bool soundTone(int freq, unsigned short duration)
 {
+   return false;
 }

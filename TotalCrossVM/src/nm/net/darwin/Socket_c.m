@@ -11,6 +11,9 @@
 #include <netdb.h>          // getaddrinfo, struct addrinfo, AI_NUMERICHOST
 #include <unistd.h>         // getopt
 
+bool debug(const char *s, ...);
+
+
 int iphoneSocket(char* hostname, struct sockaddr *in_addr)
 {
    CFStringRef hostnameStr;

@@ -172,7 +172,7 @@ int process_sslv23_client_hello(SSL *ssl)
     int ret = SSL_OK;
 
     /* we have already read 3 extra bytes so far */
-    int read_len = SOCKET_READ(ssl->client_fd, buf, bytes_needed-3);
+    int read_len = SOCKET_READ(ssl->client_fd, (char*)buf, bytes_needed-3);
     int cs_len = buf[1];
     int id_len = buf[3];
     int ch_len = buf[5];

@@ -56,7 +56,7 @@
 #endif
    NSInteger ret = [tcvm startVM:&context appName:(char*)name];
    if (ret != 0)
-      exit(ret);
+      exit((int)ret);
    else
    {
       [Litebase fillNativeProcAddressesLB];

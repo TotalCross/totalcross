@@ -193,7 +193,7 @@ static int asn1_get_utc_time_h(const uint8_t *buf, int *offset, time_h *t) // fd
 {
     int ret = X509_NOT_OK, len, t_offset;
     int time_type;
-    int year, month, day, hour, min, sec;
+    int year=0, month, day, hour, min, sec;
 
     time_type = buf[(*offset)++];
     if (time_type != ASN1_UTC_TIME && time_type != ASN1_GENERALIZED_TIME)

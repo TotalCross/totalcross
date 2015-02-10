@@ -322,7 +322,7 @@ static Hashtable htObjsPerClass;
 
 bool initObjectMemoryManager()
 {
-   int32 i,skip = sizeof(TObjectProperties), size = skip+4, n = OBJARRAY_MAX_INDEX+1;
+   int32 i,skip = sizeof(TObjectProperties), size = skip+TSIZE, n = OBJARRAY_MAX_INDEX+1;
    uint8 *f, *u, *l;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
@@ -405,9 +405,9 @@ TCObject allocObject(Context currentContext, uint32 size)
       while (runningFinalizer) // otherwise, another thread is trying to create an object; pass the timeslice back to the gc.
          Sleep(1);
 
-   if (size < 4)
-      size = 4;
-   size = ((size+3)>>2)<<2; // make power of 4
+   if (size < TSIZE)
+      size = TSIZE;
+   size = ((size+TSIZE-1)>>TSHIFT)<<TSHIFT; // make power of SIZE_T
 
    LOCKVAR(omm);
    o = allocObjWith(size);
@@ -547,8 +547,10 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    c = loadClass(currentContext, type, true);
    if (!c)
       goto end;
-   arraySize = len << c->flags.bits2shift;
-   objectSize = 4 + arraySize; // there's a single instance field in the Array class: length
+   arraySize = ARRAYSIZE(c,len);
+   if (!strEq(type,CHAR_ARRAY))
+      arraySize += 0;
+   objectSize = TSIZE + arraySize; // there's a single instance field in the Array class: length
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
@@ -1012,7 +1014,6 @@ void gc(Context currentContext)
    bool traceCreatedClassObjs;
    bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
    LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
-
    iniT = getTimeStamp();
    elapsed = iniT - lastGC;
 #ifdef WINCE // guich@tc113_20

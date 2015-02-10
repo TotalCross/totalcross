@@ -22,6 +22,9 @@
  #include "posix/Vm_c.h"
 #endif
 
+int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait);
+void vmVibrate(int32 ms);
+
 CompatibilityResult areArraysCompatible(Context currentContext, TCObject array, CharP ident)
 {
    // this function searches for the first non-null element in array and checks if it is compatible with ident
@@ -40,7 +43,7 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    int32 srcStart = p->i32[0];
    int32 dstStart = p->i32[1];
    int32 length = p->i32[2];
-   int8 *src, *dst;
+   uint8 *src, *dst;
    bool result = false;
 
    if (!srcArray)
@@ -69,9 +72,10 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    else
    {
       TCClass c = OBJ_CLASS(srcArray);
-      length <<= c->flags.bits2shift; // convert array units into byte units
-      dstStart <<= c->flags.bits2shift;
-      srcStart <<= c->flags.bits2shift;
+      uint32 s = ARRAYSIZE(c, 1);
+      length *= s; // convert array units into byte units
+      dstStart *= s;
+      srcStart *= s;
       // Copy
       src = ARRAYOBJ_START(srcArray);
       dst = ARRAYOBJ_START(dstArray);

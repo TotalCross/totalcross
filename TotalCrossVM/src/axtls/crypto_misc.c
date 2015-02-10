@@ -65,13 +65,13 @@ int get_file(const char *filename, uint8_t **buf)
 
     /* Win CE doesn't support stat() */
     fseek(stream, 0, SEEK_END);
-    filesize = ftell(stream);
+    filesize = (int)ftell(stream);
     *buf = (uint8_t *)malloc(filesize);
     fseek(stream, 0, SEEK_SET);
 
     do
     {
-        bytes_read = fread(*buf+total_bytes, 1, filesize-total_bytes, stream);
+        bytes_read = (int)fread(*buf+total_bytes, 1, filesize-total_bytes, stream);
         total_bytes += bytes_read;
     } while (total_bytes < filesize && bytes_read > 0);
     
@@ -116,7 +116,7 @@ EXP_FUNC void STDCALL RNG_initialize(const uint8_t *seed_buf, int size)
         for (i = 0; i < size/(int)sizeof(uint64_t); i++)
             rng_num ^= *((uint64_t *)&seed_buf[i*sizeof(uint64_t)]);
 
-        srand((long)seed_buf);  /* use the stack ptr as another rnd seed */
+        srand((int)seed_buf);  /* use the stack ptr as another rnd seed */
 #endif
     }
 

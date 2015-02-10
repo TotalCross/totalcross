@@ -77,7 +77,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
    writeMethod = getMethod((TCClass) OBJ_CLASS(out), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
 
    c_stream.avail_out = buffersize;
-   c_stream.next_out = outArray;
+   c_stream.next_out = (Bytef*)outArray;
    c_stream.avail_in = 0;
 
    do
@@ -94,7 +94,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
          } while (wrote != count && currentContext->thrownException == null);
          if (currentContext->thrownException != null)
             goto error;
-         c_stream.next_out = outArray;
+         c_stream.next_out = (Bytef*)outArray;
          c_stream.avail_out = buffersize;
       }
 
@@ -106,7 +106,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
          if (currentContext->thrownException != null)
             goto error;
          if (count <= 0) break;
-         c_stream.next_in = inArray;
+         c_stream.next_in = (Bytef*)inArray;
          c_stream.avail_in = count;
          if (levelOrSizeIn > 0)
             levelOrSizeIn -= count;
@@ -154,7 +154,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
          } while (wrote != count && currentContext->thrownException == null);
          if (currentContext->thrownException != null)
             goto error;
-         c_stream.next_out = outArray;
+         c_stream.next_out = (Bytef*)outArray;
          c_stream.avail_out = buffersize;
       }
    }

@@ -138,12 +138,13 @@ void getSField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
 ///////////////////////////////////////////////////////////////////////////////
 
 // used by both
-
+int ccount;
 uint16 getInstanceFieldIndex(CharP fieldName, CharP fieldClassName, TCObject o, RegType t)
 {
    bool found=false;
    FieldArray fields, f;
    TCClass ext = OBJ_CLASS(o);
+   ccount++;
    while (ext)
    {
       for (fields = ext->instanceFields[(int32)t], f = fields+ARRAYLENV(fields); --f >= fields;) // guich@tc110_101: must go backwards

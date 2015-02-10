@@ -417,8 +417,10 @@ bool fillSettings(Context currentContext)
    char timeSep = ':';      // time separator
    int time24h;             // time 0-24h
    int datefmt;             // date format
+#ifndef darwing
    int gmtBias;             // gmt+0
    int daylightSavings;     // 1 when DST is on
+#endif
 
 #if defined (darwin)
    *tcSettings.romVersionPtr = getRomVersion(); //flsobral@tc126_3: implemented Settings.romVersion for iPhone/iPad.

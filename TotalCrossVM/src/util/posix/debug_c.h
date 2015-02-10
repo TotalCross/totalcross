@@ -12,6 +12,7 @@
 
 
 // Debug
+#include<unistd.h>
 
 static FILE* fdebug;
 

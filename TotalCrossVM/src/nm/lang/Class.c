@@ -30,6 +30,7 @@ static void createClassObject(Context currentContext, CharP className, Type type
       case Type_Long:    *ret = *longTYPE;    return;
       case Type_Float:   *ret = *floatTYPE;   return;
       case Type_Double:  *ret = *doubleTYPE;  return;
+      default: break;
    }
    if (*ret == null)
    {
@@ -142,7 +143,7 @@ static void createMethodObject(Context currentContext, Method m, TCClass declari
 
 static void getFieldByName(NMParams p, bool onlyPublic)
 {
-   TCObject me = p->obj[0], ret=null;
+   TCObject me = p->obj[0];
    TCObject nameObj = p->obj[1];
    CharP name;
    int32 i;
@@ -188,7 +189,7 @@ CharP getParameterType(TCClass c, Type t)
 }
 static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool onlyPublic)
 {
-   TCObject me = p->obj[0], ret=null;
+   TCObject me = p->obj[0];
    TCObject classesObj = p->obj[isConstructor ? 1 : 2];
    TCClass c;
    bool found=false;

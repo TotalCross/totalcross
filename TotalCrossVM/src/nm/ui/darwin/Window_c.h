@@ -17,10 +17,10 @@ extern "C" {
 
 void windowSetSIP(Context currentContext, int32 sipOption, TCObject control, bool secret);
 
-static void windowSetDeviceTitle(TCObject titleObj)
+/*static void windowSetDeviceTitle(TCObject titleObj)
 {
    UNUSED(titleObj)
-}
+}*/
 
 #ifdef __cplusplus
 }
