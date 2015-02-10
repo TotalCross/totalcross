@@ -221,6 +221,8 @@ public class Button extends Control
    /** The height of the image based on the button's height, ranging from 1 to 100. Used when an image is passed as parameter in one of the constructors. 
     */
    public int imageHeightFactor;
+   /** Fills the button when pressed even if transparentBackground is set. */
+   public boolean fillWhenPressedOnTransparentBackground;
 
    /** Creates a button that shows the given text and image.
     * @param text The text to be displayed
@@ -522,7 +524,7 @@ public class Button extends Control
          }
       }
       else
-      if (!isRound && (!transparentBackground || drawBordersIfTransparentBackground))
+      if (!isRound && (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground) || drawBordersIfTransparentBackground))
          paintBackground(g);
 
       if (isRound)
@@ -667,7 +669,7 @@ public class Button extends Control
    protected void paintBackground(Graphics g)
    {
       boolean enabled = isEnabled();
-      if (!transparentBackground)
+      if (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground))
       {
          if (border == BORDER_GRAY_IMAGE)
          {
