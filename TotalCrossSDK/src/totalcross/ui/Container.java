@@ -70,6 +70,8 @@ public class Container extends Control
    static public final int BACKGROUND_SOLID = 0;
    /** used in the backgroundStyle field */
    static public final int BACKGROUND_SHADED = 1;
+   /** used in the backgroundStyle field */
+   static public final int BACKGROUND_SHADED_INV = 3;
    /** used in the backgroundStyle field. The bright color must be the fore color, and the darker color, the back color
     * @since TotalCross 2.0 
     */
@@ -634,6 +636,9 @@ public class Container extends Control
                break;
             case BACKGROUND_SHADED:
                g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
+               break;
+            case BACKGROUND_SHADED_INV:
+               g.fillShadedRect(0,0,width,height,false,false,foreColor,backColor,UIColors.shadeFactor);
                break;
             case BACKGROUND_CYLINDRIC_SHADED:
                g.drawCylindricShade(foreColor,backColor,0,0,width,height);
