@@ -53,7 +53,7 @@ package totalcross.net.ssl;
 public class SSL4D
 {
    /** A pointer to the real SSL type. For internal use only. */
-   int ssl;
+   long ssl;
    boolean dontFinalize;
    
    protected Object nativeHeap;
