@@ -401,7 +401,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_ENABLE_OBJC_ARC = NO;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -431,7 +431,7 @@
 				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
 				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "-ObjC";
-				SDKROOT = iphoneos5.1;
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm/tcvm.h";
 			};
@@ -441,7 +441,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
+				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_ENABLE_OBJC_ARC = NO;
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -466,7 +466,7 @@
 				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
 				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "-ObjC";
-				SDKROOT = iphoneos5.1;
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm/tcvm.h";
 				VALIDATE_PRODUCT = YES;
