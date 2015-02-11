@@ -107,7 +107,6 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
    TCObject file = p->obj[0];
    TCObject path = p->obj[1];
    int32 mode  = p->i32[0];
-   int32 slot  = p->i32[1];
    TCObject fileRef = null;
    NATIVE_FILE* natFile = null;
    TCHAR szPath[MAX_PATHNAME];
@@ -451,7 +450,7 @@ TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public in
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-      if ((err = fileReadBytes(*fref, ARRAYOBJ_START(bytes), off, len, &bytesRead)) != NO_ERROR)
+      if ((err = fileReadBytes(*fref, (char*)ARRAYOBJ_START(bytes), off, len, &bytesRead)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
       else
       {
@@ -590,7 +589,7 @@ TC_API void tiF_writeBytes_Bii(NMParams p) // totalcross/io/File native public i
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-      if ((err = fileWriteBytes(*fref, ARRAYOBJ_START(bytes), off, len, &bytesWritten)) != NO_ERROR)
+      if ((err = fileWriteBytes(*fref, (char*)ARRAYOBJ_START(bytes), off, len, &bytesWritten)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
       else
       {

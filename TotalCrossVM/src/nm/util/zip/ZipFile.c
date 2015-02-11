@@ -74,7 +74,7 @@ TC_API void tuzZF_createZipFile_f(NMParams p) // totalcross/util/zip/ZipFile nat
          if (err == UNZ_OK)
          {
             ZipFile_nativeFile(zipFile) = zipNativeObj;
-            ZipFile_size(zipFile) = unzGlobalInfo.number_entry;
+            ZipFile_size(zipFile) = (int32)unzGlobalInfo.number_entry;
             setObjectLock(zipNativeObj, UNLOCKED);
 
             p->retO = zipFile;
@@ -269,7 +269,7 @@ TC_API void tuzZS_available(NMParams p) // totalcross/util/zip/ZipStream native 
    if ((err = unzGetCurrentFileInfo(*unzipFile, &file_info, null, 0, null, 0, null, 0)) != UNZ_OK)
       throwException(p->currentContext, IOException, null);
    else
-      p->retI = file_info.compressed_size - unztell(*unzipFile);
+      p->retI = (int)(file_info.compressed_size - unztell(*unzipFile));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream native public totalcross.util.zip.ZipEntry getNextEntry() throws IOException;
@@ -309,17 +309,17 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
          throwException(p->currentContext, IOException, "Failed to retrieve details for the next entry");
       else if ((zipEntryObj = createObject(p->currentContext, "totalcross.util.zip.ZipEntry")) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if ((zipEntryNameObj = createStringObjectFromCharP(p->currentContext, zipEntryName, file_info.size_filename)) == null)
+      else if ((zipEntryNameObj = createStringObjectFromCharP(p->currentContext, zipEntryName, (int)file_info.size_filename)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if (file_info.size_file_comment > 0 && (zipEntryCommentP = xmalloc(file_info.size_file_comment)) == null)
+      else if (file_info.size_file_comment > 0 && (zipEntryCommentP = (CharP)xmalloc((int)file_info.size_file_comment)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if (file_info.size_file_extra > 0 && (zipEntryExtraObj = createByteArray(p->currentContext, file_info.size_file_extra)) == null)
+      else if (file_info.size_file_extra > 0 && (zipEntryExtraObj = createByteArray(p->currentContext, (int)file_info.size_file_extra)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
       else if ((err = unzGetCurrentFileInfo(zipNativeP->zipFile, &file_info, zipEntryName, MAX_PATHNAME, 
          zipEntryCommentP, file_info.size_file_comment, 
-         file_info.size_file_comment > 0 ? ARRAYOBJ_START(zipEntryCommentObj) : null, file_info.size_file_extra)) != UNZ_OK) // guich@tc126_31: check for comment length
+         file_info.size_file_comment > 0 ? (CharP)ARRAYOBJ_START(zipEntryCommentObj) : null, file_info.size_file_extra)) != UNZ_OK) // guich@tc126_31: check for comment length
          throwException(p->currentContext, IOException, "Failed to retrieve details for the next entry");
-      else if ((zipEntryCommentObj = createStringObjectFromCharP(p->currentContext, zipEntryCommentP, file_info.size_file_comment)) == null)
+      else if ((zipEntryCommentObj = createStringObjectFromCharP(p->currentContext, zipEntryCommentP, (int)file_info.size_file_comment)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
       else if (unzOpenCurrentFile(zipNativeP->zipFile, &c_stream) != UNZ_OK)
          throwException(p->currentContext, IOException, "Failed to open the next entry");
@@ -327,13 +327,13 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
       {
          zipNativeP->isFirstFile = false;
          ZipEntry_name(zipEntryObj) = zipEntryNameObj;
-         ZipEntry_time(zipEntryObj) = file_info.dosDate;
-         ZipEntry_method(zipEntryObj) = file_info.compression_method;
+         ZipEntry_time(zipEntryObj) = (int32)file_info.dosDate;
+         ZipEntry_method(zipEntryObj) = (int32)file_info.compression_method;
          ZipEntry_comment(zipEntryObj) = zipEntryCommentObj;
          ZipEntry_extra(zipEntryObj) = zipEntryExtraObj;
-         ZipEntry_crc(zipEntryObj) = file_info.crc;
-         ZipEntry_size(zipEntryObj) = file_info.uncompressed_size;
-         ZipEntry_csize(zipEntryObj) = file_info.compressed_size;
+         ZipEntry_crc(zipEntryObj) = (int32)file_info.crc;
+         ZipEntry_size(zipEntryObj) = (int32)file_info.uncompressed_size;
+         ZipEntry_csize(zipEntryObj) = (int32)file_info.compressed_size;
          p->retO = zipEntryObj;
       }
       setObjectLock(zipEntryCommentObj, UNLOCKED);

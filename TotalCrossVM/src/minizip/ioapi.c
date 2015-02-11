@@ -93,7 +93,7 @@ uLong ZCALLBACK fread_file_func (opaque, stream, buf, size)
    if (bufSize < size)
    {
       setObjectLock(zipNativeP->readBuf, UNLOCKED);
-      zipNativeP->readBuf = createByteArray(zipNativeP->context, size);
+      zipNativeP->readBuf = createByteArray(zipNativeP->context, (int)size);
    }
 
    ret = executeMethod(zipNativeP->context, zipNativeP->streamRead, streamObj,  zipNativeP->readBuf, 0, size).asInt32;
@@ -119,7 +119,7 @@ uLong ZCALLBACK fwrite_file_func (opaque, stream, buf, size)
    if (bufSize < size)
    {
       setObjectLock(zipNativeP->writeBuf, UNLOCKED);
-      zipNativeP->writeBuf = createByteArray(zipNativeP->context, size);
+      zipNativeP->writeBuf = createByteArray(zipNativeP->context, (int)size);
    }
 
    xmemmove(ARRAYOBJ_START(zipNativeP->writeBuf), buf, size);
@@ -176,8 +176,8 @@ int ZCALLBACK fclose_file_func (opaque, stream)
    voidpf opaque;
    voidpf stream;
 {
-   TCObject streamObj = (TCObject) stream;
-   ZipNativeP zipNativeP = (ZipNativeP) opaque;
+   //TCObject streamObj = (TCObject) stream;
+   //ZipNativeP zipNativeP = (ZipNativeP) opaque;
 
    //executeMethod(zipNativeP->context, zipNativeP->streamClose, streamObj);
    return 0;

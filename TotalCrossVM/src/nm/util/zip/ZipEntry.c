@@ -50,7 +50,7 @@ TC_API void tuzZE_setTime_l(NMParams p) // totalcross/util/zip/ZipEntry native p
                                  | systemTime.wMinute << 5
                                  | systemTime.wSecond >> 1;
 #elif defined (POSIX) || defined (ANDROID) || defined (darwin)
-   time_t fileTimeLocal = time / 1000; // milliseconds -> seconds
+   time_t fileTimeLocal = (time_t)(time / 1000); // milliseconds -> seconds
    struct tm* systemTime;
 
    systemTime = localtime(&fileTimeLocal);

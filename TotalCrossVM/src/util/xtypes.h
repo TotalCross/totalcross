@@ -254,7 +254,7 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
  #define tcscmp strcmp
  #define tcsncpy xstrncpy
  #define tcscpy strcpy
- #define tcslen strlen
+ #define tcslen (int)strlen
  #define tcscat strcat
  #define tcsrchr xstrrchr
  #define tcschr strchr

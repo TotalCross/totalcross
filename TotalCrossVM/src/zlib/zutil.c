@@ -124,7 +124,7 @@ int z_verbose = verbose;
 void z_error (m)
     char *m;
 {
-    debug(stderr, "z_error calling exit: %s\n", m);
+    debug("z_error calling exit: %s\n", m);
 #ifndef darwin    
     exit(1);  
 #endif    

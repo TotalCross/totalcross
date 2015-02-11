@@ -139,7 +139,7 @@ bool iosLowMemory;
 
 - (bool)isEventAvailable;
 {
-   unsigned int num = [_events count];
+   int num = (int)[_events count];
    Sleep(5); // prevent 100% cpu as shown in XCode. 5ms=0%cpu, 2ms=3%cpu
    return num > 0;
 }
@@ -282,13 +282,13 @@ static bool callingCamera;
    if ([address length] == 0) // not working yet
    {
 //      CLLocationCoordinates2D cl = [self getCurrentLocation];
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%20Location&z=14%@%",type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%%20Location&z=14%@",type];
    }
    else
    if (c == '@')
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address substringFromIndex:1],type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%%&z=14%@", [address substringFromIndex:1],type];
    else
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%%&z=14%@", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
    dispatch_sync(dispatch_get_main_queue(), ^
    {
       NSURL *url = [NSURL URLWithString:stringURL];
@@ -317,8 +317,8 @@ static bool callingCamera;
    locationPDOP = newLocation.horizontalAccuracy;
    locationVeloc = newLocation.speed;
    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:newLocation.timestamp];
-   locationDate = [components day] + [components month] * 100 + [components year] * 10000;
-   locationTime = [components second] + [components minute] * 100 + [components hour] * 10000;
+   locationDate = (int)([components day] + [components month] * 100 + [components year] * 10000);
+   locationTime = (int)([components second] + [components minute] * 100 + [components hour] * 10000);
 }
 
 - (int) gpsStart

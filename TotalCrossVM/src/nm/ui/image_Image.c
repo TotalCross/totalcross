@@ -29,7 +29,7 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
    tcz = tczGetFile(path, false);
    if (tcz != null)
    {
-      uint8 magic[4]; // read the magic to find if its a png or a jpeg (note that jpeg has no magic)
+      char magic[4]; // read the magic to find if its a png or a jpeg (note that jpeg has no magic)
       tczRead(tcz, magic, 4);
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
          pngLoad(p->currentContext, imageObj, null, null, tcz, magic);

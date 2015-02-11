@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_fontMetricsCreate(NMParams p) // totalcross/ui/font/FontMetrics native void fontMetricsCreate();
 {
-   TCObject fm, font = FontMetrics_font(fm = p->obj[0]);
+   TCObject fm = p->obj[0],font = FontMetrics_font(fm);
    UserFont uf = loadUserFontFromFontObj(p->currentContext, font, ' ');
    if (uf != null)
    {

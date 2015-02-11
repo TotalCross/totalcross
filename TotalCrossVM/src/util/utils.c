@@ -310,7 +310,7 @@ TC_API CharP int2str(int32 i, IntBuf buf)
    if (i == 0)
       return "0";
    else
-   if (i == 0x80000000L) // handle the only exception - guich@tc126_69: hex value, not decimal!
+   if (i == 0x80000000) // handle the only exception - guich@tc126_69: hex value, not decimal!
       return "-2147483648";
    else
    {
@@ -532,7 +532,7 @@ TC_API double str2double(CharP str, bool *err) // guich@566_38: new routine
    if (dotPtr)
    {
       CharP end = ePtr ? ePtr : (str+len);
-      int32 order = end - dotPtr-1;
+      int32 order = (int)(end - dotPtr-1);
       int64 v = str2longPriv(dotPtr+1, &err2, true);
       if (err2)
       {
@@ -750,7 +750,7 @@ TC_API CharP int2CRID(int32 i, CharP crid)
 int32 fread32(FILE* f)
 {
    int32 i,err;
-   err = fread(&i, 1, 4, f);
+   err = (int32)fread(&i, 1, 4, f);
    if (err == -1)
       alert("Error on fread16: %d",errno);
    return i;
@@ -759,7 +759,7 @@ int16 fread16(FILE* f)
 {
    int16 i;
    int32 err;
-   err = fread(&i, 1, 2, f);
+   err = (int32)fread(&i, 1, 2, f);
    if (err == -1)
       alert("Error on fread16: %d",errno);
    return i;

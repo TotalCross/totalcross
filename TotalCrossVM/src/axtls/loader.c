@@ -265,7 +265,7 @@ static int pem_decrypt(const char *where, const char *end,
 
     /* work out the key */
     MD5Init(&md5_ctx);
-    MD5Update(&md5_ctx, (const uint8_t *)password, strlen(password));
+    MD5Update(&md5_ctx, (const uint8_t *)password, xstrlen(password));
     MD5Update(&md5_ctx, iv, SALT_SIZE);
     MD5Final(&md5_ctx, key);
 
@@ -273,7 +273,7 @@ static int pem_decrypt(const char *where, const char *end,
     {
         MD5Init(&md5_ctx);
         MD5Update(&md5_ctx, key, MD5_SIZE);
-        MD5Update(&md5_ctx, (const uint8_t *)password, strlen(password));
+        MD5Update(&md5_ctx, (const uint8_t *)password, xstrlen(password));
         MD5Update(&md5_ctx, iv, SALT_SIZE);
         MD5Final(&md5_ctx, &key[MD5_SIZE]);
     }

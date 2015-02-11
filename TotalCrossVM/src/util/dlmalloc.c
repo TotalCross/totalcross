@@ -2725,10 +2725,10 @@ static size_t traverse_and_check(mstate m);
 
 /* ---------------------------- Indexing Bins ---------------------------- */
 
-#define is_small(s)         (((s) >> SMALLBIN_SHIFT) < NSMALLBINS)
-#define small_index(s)      ((s)  >> SMALLBIN_SHIFT)
-#define small_index2size(i) ((i)  << SMALLBIN_SHIFT)
-#define MIN_SMALL_INDEX     (small_index(MIN_CHUNK_SIZE))
+#define is_small(s)         (int)(((s) >> SMALLBIN_SHIFT) < NSMALLBINS)
+#define small_index(s)      (int)((s)  >> SMALLBIN_SHIFT)
+#define small_index2size(i) (int)((i)  << SMALLBIN_SHIFT)
+#define MIN_SMALL_INDEX     (int)(small_index(MIN_CHUNK_SIZE))
 
 /* addressing by index. See above about smallbin repositioning */
 #define smallbin_at(M, i)   ((sbinptr)((char*)&((M)->smallbins[(i)<<1])))
@@ -3196,7 +3196,7 @@ static void do_check_tree(mstate m, tchunkptr t) {
   bindex_t tindex = t->index;
   size_t tsize = chunksize(t);
   bindex_t idx;
-  compute_tree_index(tsize, idx);
+  compute_tree_index((int)tsize, idx);
   assert(tindex == idx);
   assert(tsize >= MIN_LARGE_SIZE);
   assert(tsize >= minsize_for_tree_index(idx));
@@ -3291,7 +3291,7 @@ static int bin_find(mstate m, mchunkptr x) {
   }
   else {
     bindex_t tidx;
-    compute_tree_index(size, tidx);
+    compute_tree_index((int)size, tidx);
     if (treemap_is_marked(m, tidx)) {
       tchunkptr t = *treebin_at(m, tidx);
       size_t sizebits = size << leftshift_for_tree_index(tidx);
@@ -5820,7 +5820,7 @@ void dump_memory_map_int(char* fileSuffix, char* blockName, msegmentptr mseg)
             i++;
             if (is_inuse(q))
             {      
-               sprintf(buf,"%4d: %X - %ld\n",i,((unsigned long)chunk2mem(q))+8,sz); 
+               sprintf(buf,"%4d: %X - %ld\n",i,((unsigned long)chunk2mem(q))+8,sz);
                fwrite(buf, strlen(buf), 1, f);
                idx = (sz>>3) - 1;
                sizes[idx > 255 ? 255 : idx]++;

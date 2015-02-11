@@ -28,9 +28,11 @@
 extern "C" {
 #endif
 
+typedef long HTKey; // 64-bit hardware
+   
 typedef struct HTEntryType
 {
-   int32 key;
+   HTKey key;
    union
    {
       int32 i32;
@@ -49,33 +51,33 @@ typedef struct
 } Hashtable;
 
 typedef void (*VisitElementFunc)(int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
-typedef void (*VisitElementKeyFunc)(int32 key, int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
+typedef void (*VisitElementKeyFunc)(HTKey key, int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 typedef bool (*VisitElementContextFunc)(Context context, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 
 TC_API  Hashtable   htNew     (int32 count, Heap heap); // heap is optional; if passed, the rehash function will not be called if the hashtable gets too big (in this case, remember to initialize the hashtable with a value big enough to hold all items)
 typedef Hashtable (*htNewFunc)(int32 count, Heap heap);
-TC_API  int32   htGet32           (Hashtable *iht, int32 key);  // returns 0 if the key was not found
-typedef int32 (*htGet32Func)      (Hashtable *iht, int32 key);
-TC_API  int32   htGet32Inv        (Hashtable *iht, int32 key);  // returns -1 if the key was not found
-typedef int32 (*htGet32InvFunc)   (Hashtable *iht, int32 key);
-TC_API  VoidP   htGetPtr          (Hashtable *iht, int32 key);
-typedef VoidP (*htGetPtrFunc)     (Hashtable *iht, int32 key);
-TC_API  bool    htPut32           (Hashtable *iht, int32 key, int32 value);  // replaces the key if it exists
-typedef bool  (*htPut32Func)      (Hashtable *iht, int32 key, int32 value);
-TC_API  bool    htPut32IfNew      (Hashtable *iht, int32 key, int32 value);  // keeps the old key if it exists
-typedef bool  (*htPut32IfNewFunc) (Hashtable *iht, int32 key, int32 value);
-TC_API  bool    htPutPtr          (Hashtable *iht, int32 key, VoidP value);  // replaces the key if it exists
-typedef bool  (*htPutPtrFunc)     (Hashtable *iht, int32 key, VoidP value);
-TC_API  bool    htPutPtrIfNew     (Hashtable *iht, int32 key, VoidP value);  // keeps the old key if it exists
-typedef bool  (*htPutPtrIfNewFunc)(Hashtable *iht, int32 key, VoidP value);
-TC_API  void    htRemove          (Hashtable *iht, int32 key);
-typedef void  (*htRemoveFunc)     (Hashtable *iht, int32 key);               // removes the key from the table. If there's a heap, the pointer is NOT freed
+TC_API  int32   htGet32           (Hashtable *iht, HTKey key);  // returns 0 if the key was not found
+typedef int32 (*htGet32Func)      (Hashtable *iht, HTKey key);
+TC_API  int32   htGet32Inv        (Hashtable *iht, HTKey key);  // returns -1 if the key was not found
+typedef int32 (*htGet32InvFunc)   (Hashtable *iht, HTKey key);
+TC_API  VoidP   htGetPtr          (Hashtable *iht, HTKey key);
+typedef VoidP (*htGetPtrFunc)     (Hashtable *iht, HTKey key);
+TC_API  bool    htPut32           (Hashtable *iht, HTKey key, int32 value);  // replaces the key if it exists
+typedef bool  (*htPut32Func)      (Hashtable *iht, HTKey key, int32 value);
+TC_API  bool    htPut32IfNew      (Hashtable *iht, HTKey key, int32 value);  // keeps the old key if it exists
+typedef bool  (*htPut32IfNewFunc) (Hashtable *iht, HTKey key, int32 value);
+TC_API  bool    htPutPtr          (Hashtable *iht, HTKey key, VoidP value);  // replaces the key if it exists
+typedef bool  (*htPutPtrFunc)     (Hashtable *iht, HTKey key, VoidP value);
+TC_API  bool    htPutPtrIfNew     (Hashtable *iht, HTKey key, VoidP value);  // keeps the old key if it exists
+typedef bool  (*htPutPtrIfNewFunc)(Hashtable *iht, HTKey key, VoidP value);
+TC_API  void    htRemove          (Hashtable *iht, HTKey key);
+typedef void  (*htRemoveFunc)     (Hashtable *iht, HTKey key);               // removes the key from the table. If there's a heap, the pointer is NOT freed
 TC_API  void    htFree     (Hashtable *iht, VisitElementFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
 typedef void  (*htFreeFunc)(Hashtable *iht, VisitElementFunc freeElement);
 TC_API  bool    htFreeContext     (Context context, Hashtable *iht, VisitElementContextFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
 typedef bool  (*htFreeContextFunc)(Context context, Hashtable *iht, VisitElementContextFunc freeElement);
-TC_API  bool    htInc             (Hashtable *iht, int32 key, int32 incValue);  // holds a count of something
-typedef bool  (*htIncFunc)        (Hashtable *iht, int32 key, int32 incValue);
+TC_API  bool    htInc             (Hashtable *iht, HTKey key, int32 incValue);  // holds a count of something
+typedef bool  (*htIncFunc)        (Hashtable *iht, HTKey key, int32 incValue);
 void htTraverse(Hashtable *iht, VisitElementFunc visitElement);
 void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement);
 ///////////////////////////////////////////////////////////////////////////

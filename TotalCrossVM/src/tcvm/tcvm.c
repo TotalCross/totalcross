@@ -279,7 +279,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #ifdef ENABLE_TEST_SUITE
    if (context->callStackForced == null)
 #endif
-      callStackMethodEnd = context->callStack - context->callStackStart; // method will end when callStackMethodEnd is reached. guich@tc310: changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively
+      callStackMethodEnd = (int32)(context->callStack - context->callStackStart); // method will end when callStackMethodEnd is reached. guich@tc310: changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively
 
    // push the parameters
 #ifdef ENABLE_TRACE
@@ -1019,7 +1019,7 @@ throwNoSuchMethodError:
    for (i = 0; i < len; i++)
       slen += xstrlen(cp->cls[sym[i+2]]);
    slen++;
-   if (slen > 0 && (paramsStr = xmalloc(slen)) != null)
+   if (slen > 0 && (paramsStr = (CharP)xmalloc(slen)) != null)
    {                 
       for (i = 0; i < len; i++)
       {

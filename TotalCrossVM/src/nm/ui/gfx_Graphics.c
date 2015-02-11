@@ -570,10 +570,9 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
    int32 width = p->i32[2];
    int32 height = p->i32[3];
    int32 type = p->i32[4];
-   bool yMirror = (bool)p->i32[5];
    bool simple = (bool)p->i32[6];
    int32 *fourColorsI = (int32*)ARRAYOBJ_START(p->obj[1]);
-   Pixel fourColors[4], foreColor = Graphics_forePixel(g), backColor = Graphics_backPixel(g);
+   Pixel fourColors[4], foreColor = Graphics_forePixel(g);
 
    if (fourColorsI == null)
       return;

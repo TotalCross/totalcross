@@ -57,8 +57,8 @@ static bool canWideConvert(Type from, Type to)
       case Type_Int:   return to == Type_Long || to == Type_Float || to == Type_Double;
       case Type_Long:  return to == Type_Float || to == Type_Double;
       case Type_Float: return to == Type_Double;
+      default: return false;
    }
-   return false;
 }
 static Type checkPrimitiveArray(NMParams p, Type from, bool isGet)
 {
@@ -138,6 +138,7 @@ static void getArrayI32(NMParams p, Type targetType)
       case Type_Short: 
       case Type_Char:    p->retI = ((int16*)ARRAYOBJ_START(array))[index]; break;
       case Type_Int:     p->retI = ((int32*)ARRAYOBJ_START(array))[index]; break;
+      default: break;
    }
 }
 static void setArrayI32(NMParams p, Type srcType)
@@ -152,6 +153,7 @@ static void setArrayI32(NMParams p, Type srcType)
       case Type_Short: 
       case Type_Char:    ((int16*)ARRAYOBJ_START(array))[index] = (int16)value; break;
       case Type_Int:     ((int32*)ARRAYOBJ_START(array))[index] = (int32)value; break;
+      default: break;
    }
 }
 static void field(NMParams p, Type srcType, bool isGet, void* value)
@@ -369,6 +371,7 @@ TC_API void jlrA_getLong_oi(NMParams p) // totalcross/lang/reflect/Array public 
       case Type_Long:    p->retL = ((int64*)ARRAYOBJ_START(array))[index]; break;
       case Type_Float:
       case Type_Double:  p->retL = (int64)((double*)ARRAYOBJ_START(array))[index]; break;
+      default: break;
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -386,6 +389,7 @@ TC_API void jlrA_getDouble_oi(NMParams p) // totalcross/lang/reflect/Array publi
       case Type_Long:    p->retD = (double)((int64*)ARRAYOBJ_START(array))[index]; break;
       case Type_Float:
       case Type_Double:  p->retD = ((double*)ARRAYOBJ_START(array))[index]; break;
+      default: break;
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -456,6 +460,7 @@ TC_API void jlrA_setLong_oil(NMParams p) // totalcross/lang/reflect/Array public
       case Type_Float: 
       case Type_Double: ((double*)ARRAYOBJ_START(array))[index] = (double)value; break;
       case Type_Long:   ((int64*)ARRAYOBJ_START(array))[index] = value; break;
+      default: break;
    }
 }
 //////////////////////////////////////////////////////////////////////////
@@ -469,6 +474,7 @@ TC_API void jlrA_setDouble_oid(NMParams p) // totalcross/lang/reflect/Array publ
       case Type_Float: 
       case Type_Double: ((double*)ARRAYOBJ_START(array))[index] = value; break;
       case Type_Long:   ((int64*)ARRAYOBJ_START(array))[index] = (int64)value; break;
+      default: break;
    }
 }
 //////////////////////////////////////////////////////////////////////////

@@ -1450,7 +1450,7 @@ png_handle_hIST(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
       return;
    }
 
-   num = length / 2 ;
+   num = (int)(length / 2);
    if (num != (unsigned int) png_ptr->num_palette || num >
       (unsigned int) PNG_MAX_PALETTE_LENGTH)
    {

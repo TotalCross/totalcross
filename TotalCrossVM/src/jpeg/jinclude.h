@@ -96,8 +96,8 @@ typedef unsigned char boolean;
 
 // GUICH - IMPORTANT: I CHANGED THE NAME OF FILE TO JPEGFILE in jpeglib.h and jdatasrc.c so it doesn't clashes with FILE from stdlib
 // I ALSO CHANGED fread to jpegRead below
-#define JFREAD(file,buf,sizeofbuf)  jpegRead ((void *) (buf), (size_t) (sizeofbuf), (file))
+#define JFREAD(file,buf,sizeofbuf)  jpegRead ((void *) (buf), (int) (sizeofbuf), (file))
 
-#define JFWRITE(file,buf,sizeofbuf) jpegWrite((void *) (buf), (size_t) (sizeofbuf), (file))
+#define JFWRITE(file,buf,sizeofbuf) jpegWrite((void *) (buf), (int) (sizeofbuf), (file))
 
 #endif

@@ -202,7 +202,7 @@ TC_API void tuzCS_close(NMParams p) // totalcross/util/zip/CompressedStream nati
                   break;
                }
                if ((int32) zstreamRef->c_stream.avail_out < streamBufferLen)
-                  executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, streamBufferLen - zstreamRef->c_stream.avail_out).asInt32;
+                  executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, streamBufferLen - zstreamRef->c_stream.avail_out);
             }
             while (zstreamRef->c_stream.avail_out == 0);
             if (err != Z_STREAM_END)

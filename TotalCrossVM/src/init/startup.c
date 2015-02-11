@@ -201,7 +201,7 @@ static int checkActivation(Context currentContext)
    TCObject rasClientInstance, ret;
    Method m;
    char buf[4];
-   uint8 *allowedKey, *allowedKeysBase = NORAS_KEYS, *signedKey;
+   uint8 *allowedKey, *allowedKeysBase = (uint8*)NORAS_KEYS, *signedKey;
 
    // load ActivationClient
    c = loadClass(currentContext, "ras.ActivationClient", true);

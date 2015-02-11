@@ -62,7 +62,8 @@ TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/Connec
    (*env)->DeleteLocalRef(env, jConnectionManager4A);
    if (szConnCfg) (*env)->DeleteLocalRef(env, szConnCfg);
 #else
-   UNUSED(p)
+   UNUSED(connCfg);
+   UNUSED(type);
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
@@ -249,6 +250,7 @@ TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager n
          throwIllegalArgumentExceptionI(p->currentContext, "type", type);
    }
 #else
+   UNUSED(type);
    p->retI = false;
 #endif
 }

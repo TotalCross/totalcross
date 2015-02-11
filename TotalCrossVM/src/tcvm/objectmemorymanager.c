@@ -986,14 +986,14 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
 #define MINTIME 500
 #endif
 
-static void dumpCount(int32 key, int32 i32, VoidP ptr)
+static void dumpCount(HTKey key, int32 i32, VoidP ptr)
 {
    TCClass cc = (TCClass)key;
    if (i32 > 0)
       debug("%30s: %d (%d)",cc->name, i32, cc->objSize);
 }
 static int lastUsed, countp, indp;
-static void dumpDif(int32 key, int32 i32, VoidP ptr)
+static void dumpDif(HTKey key, int32 i32, VoidP ptr)
 {
    TCClass cc = (TCClass)key;
    int conta2 = i32;
@@ -1022,7 +1022,7 @@ void gc(Context currentContext)
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
    freemem = getFreeMemory(USE_MAX_BLOCK);
-   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
+   if (disableGC || ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE)) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);

@@ -209,12 +209,12 @@
 #define PDBFile_openRef(o)          FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define PDBFile_name(o)             FIELD_OBJ(o, OBJ_CLASS(o), 2)
 #define PDBFile_hvRecordPos(o)      FIELD_I32(o, 0)
-#define PDBFile_hvRecordHandle(o)   FIELD_I32(o, 1)
-#define PDBFile_hvRecordOffset(o)   FIELD_I32(o, 2)
-#define PDBFile_hvRecordLength(o)   FIELD_I32(o, 3)
-#define PDBFile_hvRecordChanged(o)  FIELD_I32(o, 4)
-#define PDBFile_dontFinalize(o)     FIELD_I32(o, 5)
-#define PDBFile_mode(o)             FIELD_I32(o, 6)
+#define PDBFile_hvRecordOffset(o)   FIELD_I32(o, 1)
+#define PDBFile_hvRecordLength(o)   FIELD_I32(o, 2)
+#define PDBFile_hvRecordChanged(o)  FIELD_I32(o, 3)
+#define PDBFile_dontFinalize(o)     FIELD_I32(o, 4)
+#define PDBFile_mode(o)             FIELD_I32(o, 5)
+#define PDBFile_hvRecordHandle(o)   FIELD_I64(o, OBJ_CLASS(o), 0)
 
 // totalcross.io.device.PortConnector
 #define PortConnector_portConnector(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
@@ -292,13 +292,13 @@
 #define ServerSocket_dontFinalize(o)      FIELD_I32(o, 2)
 
 // totalcross.net.ssl.SSL
-#define SSL_sslRef(o)                     FIELD_I32(o, 0)
-#define SSL_sslDontFinalize(o)            FIELD_I32(o, 1)
+#define SSL_sslRef(o)                     FIELD_I64(o, OBJ_CLASS(o), 0)
+#define SSL_sslDontFinalize(o)            FIELD_I32(o, 0)
 #define SSL_nativeHeap(o)                 getInstanceFieldObject(o, "nativeHeap", "totalcross.net.ssl.SSL")
 
 // totalcross.net.ssl.SSLCTX
-#define SSLCTX_ctxRef(o)                  FIELD_I32(o, 0)
-#define SSLCTX_dontFinalize(o)            FIELD_I32(o, 1)
+#define SSLCTX_ctxRef(o)                  FIELD_I64(o, OBJ_CLASS(o), 0)
+#define SSLCTX_dontFinalize(o)            FIELD_I32(o, 0)
 #define SSLCTX_nativeHeap(o)              getInstanceFieldObject(o, "nativeHeap", "totalcross.net.ssl.SSLCTX")
 
 // totalcross.net.ssl.SSLReadHolder

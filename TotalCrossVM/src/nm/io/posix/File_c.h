@@ -200,7 +200,6 @@ error:
 
 static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
 {
-   int ret;
    struct stat statData;
 
    if (stat(path, &statData))
@@ -291,7 +290,7 @@ static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
       fileFlush(fref); // flsobral: must flush before getSize, otherwise the value returned may not be accurate - this fix a bug in ZipStream introduced with the forced flush in setSize.
       if (!fstat(fileno(fref.handle), &statData))
       {
-         *size = statData.st_size;
+         *size = (int)statData.st_size;
          return NO_ERROR;
       }
    }
@@ -370,7 +369,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
    }
    else
    {
-      *isEmpty = statData.st_size;
+      *isEmpty = (int)statData.st_size;
    }
    return err;
 }
@@ -387,7 +386,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
 
 static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {
-   if ((*bytesRead = fread(bytes+offset, 1, length, fref.handle)) <= 0 && !feof(fref.handle)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
+   if ((*bytesRead = (int)fread(bytes+offset, 1, length, fref.handle)) <= 0 && !feof(fref.handle)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
       return errno;
 
    return NO_ERROR;
@@ -444,7 +443,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 
 static inline Err fileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
 {
-   if ((*bytesWritten = fwrite(bytes+offset, 1, length, fref.handle)) < 0)
+   if ((*bytesWritten = (int)fwrite(bytes+offset, 1, length, fref.handle)) < 0)
       return errno;
    return NO_ERROR;
 }

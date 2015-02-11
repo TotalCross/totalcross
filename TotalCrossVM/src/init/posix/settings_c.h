@@ -44,7 +44,7 @@
  #define lstrstr wsstr
 #else
  #define PATH_SEPARATOR_STR "/"
- #define lstrlen strlen
+ #define lstrlen (int)strlen
  #define lstrcmp strcmp
  #define lstrcpy strcpy
  #define lstrcat strcat
@@ -89,7 +89,7 @@ static int ensureAppPreferencesDirectory(TCHAR * buf)
       if (errno != ENOENT) return 0;
       if (mkdir(buf, DEFAULT_DIR_PERMS) != 0) return 0;
    }
-   int finalpos = strlen(buf) - 1;
+   int finalpos = lstrlen(buf) - 1;
    if (buf[finalpos] != '/')
    {
       if (buf[finalpos] == '\\')
@@ -148,7 +148,7 @@ static char *readAppPreferences(TCHAR *hive, bool bin, UInt16* outlen)
       char temp[BLK_SZ];
       UInt16 total = 0;
       int count;
-      while ((count = read(f, temp, sizeof(temp))) > 0)
+      while ((count = (int)read(f, temp, sizeof(temp))) > 0)
       {
          uint32 i = total + count;
          char *tmp = (char*)xmalloc(i+(bin?0:1)); // guich@tc124_18
@@ -417,7 +417,7 @@ bool fillSettings(Context currentContext)
    char timeSep = ':';      // time separator
    int time24h;             // time 0-24h
    int datefmt;             // date format
-#ifndef darwing
+#ifndef darwin
    int gmtBias;             // gmt+0
    int daylightSavings;     // 1 when DST is on
 #endif
