@@ -823,7 +823,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              }
        }
 #ifndef __gl2_h_
-       if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+       if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, (x2>x1)?(x2-x1):(x1-x2), (y2>y1)?(y2-y1):(y1-y2));
 #else
       if (Graphics_isImageSurface(g))
          Image_changed(Graphics_surface(g)) = true;
