@@ -40,7 +40,7 @@ void setEditText(Context currentContext, TCObject control, NSString *str)
 {
    if (control)
    {
-      int len = [ str length ];
+      int len = (int)[ str length ];
       unichar *data = (unichar*)xmalloc(len * sizeof(unichar));
       [ str getCharacters: data ];
       if (control && OBJ_CLASS(control))

@@ -45,14 +45,6 @@ static int64 fromref(void * value)
     return (int64)value;
 }
 
-static void throwex(Context currentContext, TCObject this_)
-{
-    static Method mth_throwex = 0;
-    if (!mth_throwex)
-       mth_throwex = getMethod(dbclass, true, "throwex", 0);
-    executeMethod(currentContext, mth_throwex, this_);
-}
-
 static void throw_errorcode(Context currentContext, TCObject this_, int32 errorCode)
 {
     static Method mth_throwex = 0;
@@ -68,16 +60,6 @@ static void throwexmsg(Context currentContext, TCObject this_, char *str)
     if (!mth_throwex)
        mth_throwex = getMethod(dbclass, true, "throwex", 1, "java.lang.String"); // method is static!
     executeMethod(currentContext, mth_throwex, o);
-    setObjectLock(o,UNLOCKED);
-}
-
-static void throw_errorcod_and_msg(Context currentContext, TCObject this_, int32 errorCode, char *str)
-{
-    static Method mth_throwex = 0;
-    TCObject o = createStringObjectFromCharP(currentContext, str, -1);
-    if (!mth_throwex)
-       mth_throwex = getMethod(dbclass, true, "throwex", 2, J_INT, "java.lang.String");
-    executeMethod(currentContext, mth_throwex, this_, errorCode, o);
     setObjectLock(o,UNLOCKED);
 }
 
@@ -133,7 +115,6 @@ TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native stat
 TC_API void tdsNDB_shared_cache_b(NMParams p) // totalcross/db/sqlite/NativeDB native int shared_cache(boolean enable);
 {
    TRACE("tdsNDB_shared_cache_b")
-   TCObject this_ = p->obj[0];
    bool enable = p->i32[0];
    LOCKDB
    p->retI = sqlite3_enable_shared_cache(enable);
@@ -421,7 +402,7 @@ TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB n
    if (length > 0) 
    {
       TCObject jBlob = createByteArray(p->currentContext, length);
-      int8 *a = ARRAYOBJ_START(jBlob);
+      uint8 *a = ARRAYOBJ_START(jBlob);
       LOCKDB
       void *blob = (void*)sqlite3_column_blob(toref(stmt), col);
       memcpy(a, blob, length);

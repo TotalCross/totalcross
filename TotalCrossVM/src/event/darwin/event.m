@@ -11,7 +11,7 @@
 #include "../../nm/ui/darwin/mainview.h"
 #define Class __Class
 #include "GraphicsPrimitives.h"
-typedef id Context;
+#define Context id
 #include "event.h"
 #undef Class
 
@@ -27,6 +27,9 @@ bool iphone_privateIsEventAvailable()
 {
    return [DEVICE_CTX->_mainview isEventAvailable];
 }
+
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // rotate the screen
+void setEditText(Context currentContext, TCObject control, NSString *str);
 
 void iphone_privatePumpEvent(Context currentContext)
 {
@@ -89,7 +92,7 @@ void iphone_privatePumpEvent(Context currentContext)
       }
       if([type isEqualToString:@"updateEdit"])
       {
-         setEditText(currentContext, [[ event objectForKey:@"control"] intValue ], [ event objectForKey:@"value"]);
+         setEditText(currentContext, (TCObject)[[ event objectForKey:@"control"] longValue ], [ event objectForKey:@"value"]);
       }
    }
 }

@@ -398,10 +398,10 @@ public class Bitmaps
          copyBits(bmp32x32x8.pixels, bmp32x32x8.palette, loadPalette(bytes, iconOffset+40, 256), 32, bytes, iconOffset+40+1024, 32, -32, 8, iconOffset+32*32+40+1024,false, bmp32x32x8.shouldInvertY);
    }
 
-   public void saveAndroidIcon(java.util.zip.ZipOutputStream zos) throws Exception // 72x72 png
+   public void saveAndroidIcon(java.util.zip.ZipOutputStream zos, int res) throws Exception // icon.png
    {
-      Image img = IconStore.getSquareIcon(72);
-      ByteArrayStream s = new ByteArrayStream(72 * 72);
+      Image img = IconStore.getSquareIcon(res);
+      ByteArrayStream s = new ByteArrayStream(res * res);
       img.createPng(s);
       zos.write(s.getBuffer(), 0, s.getPos());
    }
@@ -490,8 +490,6 @@ public class Bitmaps
       return palette;
    }
 
-   static final Image4iOS IPHONE_DEB = new Image4iOS("Icon.png", 60);
-
    static final Image4iOS[] IOS_ICONS =
    {
          new Image4iOS("Icon.png", 57),
@@ -509,12 +507,6 @@ public class Bitmaps
          new Image4iOS("Icon76.png", 76),
          new Image4iOS("Icon152.png", 152),
          new Image4iOS("Icon120.png", 120),
-   };
-
-   static final Image4iOS[] ITUNES_ICONS =
-   {
-        // new Image4iOS("iTunesArtwork", 512), - no longer support on ios 7
-         //new Image4iOS("iTunesArtwork@2x", 1024)
    };
 
    static class Image4iOS
@@ -673,6 +665,11 @@ class IconStore extends Hashtable
                String name = null;
                String file = files[i].toLowerCase();
                if (file.endsWith("appicon.gif"))
+               {
+                  System.out.println("*** Warning: appicon.gif is deprecated. Convert it to a 256x256 png with transparency");
+                  name = "appicon";
+               }
+               else if (file.endsWith("appicon.png"))
                   name = "appicon";
                else if (file.endsWith(".bmp") || file.endsWith(".png"))
                {

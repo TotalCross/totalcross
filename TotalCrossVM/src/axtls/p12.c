@@ -153,7 +153,7 @@ static char *make_uni_pass(const char *password, int *uni_pass_len)
         password = "";
     }
 
-    uni_pass = (char *)malloc((strlen(password)+1)*2);
+    uni_pass = (char *)malloc((xstrlen(password)+1)*2);
 
     /* modify the password into a unicode version */
     for (i = 0; i < (int)strlen(password); i++)

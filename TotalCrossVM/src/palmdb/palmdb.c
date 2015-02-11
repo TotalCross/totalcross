@@ -745,7 +745,7 @@ MemHandle myDmResizeRecord(DmOpenRef dbP, uint16 index, uint32 size)
       }
       if (rl->size != size)
       {
-         recPtrTemp = (char*)xrealloc(rl->recPtr, temp);
+         recPtrTemp = (uint8*)xrealloc(rl->recPtr, temp);
          if (recPtrTemp == null)
             return null;
          rl->recPtr = recPtrTemp;
@@ -1053,7 +1053,7 @@ static bool storeRecPtr(PDBFile db, CharP mh, uint16 index, uint16 size)
       return false;
    xmemzero(rl, sizeof(RecordList));
 
-   rl->recPtr = mh;
+   rl->recPtr = (uint8*)mh;
    rl->index = index;
    rl->size = size;
    rl->next = db->recPtrList[pos];
@@ -1064,7 +1064,7 @@ static bool storeRecPtr(PDBFile db, CharP mh, uint16 index, uint16 size)
 static int32 getRecordSize(PDBFile db, uint16 index)
 {
    RecordHeader rh;
-   int32 size;
+   int32 size=0;
    int32 bytesRW;
 
    // guich@556_5: removed cache code
@@ -1079,7 +1079,6 @@ static int32 getRecordSize(PDBFile db, uint16 index)
       size = db->fileSize;
 
    size -= rh.offset; // sub
-   return size;
    size = (size < 0) ? 0 : size;
    return size;
 }
@@ -1110,7 +1109,7 @@ static MemHandle getRecord(PDBFile db, uint16 index, CharP buf, int32 ofs, uint3
          db->recordCachedSize = db->fileSize;
       }
       db->recordCachedSize -= db->recordCachedHeader.offset; // sub
-      if (db->recordCachedSize < 0) // error?
+      if ((int32)db->recordCachedSize < 0) // error?
          return null;
 
       db->recordCachedPos = index;
@@ -1159,7 +1158,7 @@ static MemHandle getRecord(PDBFile db, uint16 index, CharP buf, int32 ofs, uint3
          db->lockedRecords++;
          resizeBuffer(db, size);
          xmemmove(db->recordBuf, memHandle, size + sizeof(uint32));
-         memHandle = db->recordBuf;
+         memHandle = (CharP)db->recordBuf;
       }
    }
    else
@@ -1260,17 +1259,17 @@ static MemHandle resizeBuffer(PDBFile db, uint32 size)
    if (db->recordBuf == null || db->sizeofRecordBuf < recordBufSize)
    {
       temp = recordBufSize;
-      recordBuf = xrealloc(db->recordBuf, temp);
+      recordBuf = (CharP)xrealloc((uint8*)db->recordBuf, temp);
       if (recordBuf == null)
          return null;
-      db->recordBuf = recordBuf;
+      db->recordBuf = (int8*)recordBuf;
       db->sizeofRecordBuf = temp;
    }
    (*(uint32*) db->recordBuf) = size;
    db->recordSize = size;
 
    db->dbh.modificationNumber++;
-   return db->recordBuf;
+   return (MemHandle)db->recordBuf;
 }
 
 bool endsWithPDB(TCHARP fName)

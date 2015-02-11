@@ -21,6 +21,7 @@
  #include "posix/Registry_c.h"
 #endif
 
+#ifndef darwin
 static bool getKeyValue(NMParams p, TCHARP* key, TCHARP* value) // key and value are always in the same position
 {
    bool ret = false;
@@ -45,6 +46,7 @@ static bool getKeyValue(NMParams p, TCHARP* key, TCHARP* value) // key and value
    }
    return ret;
 }
+#endif
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsR_getInt_iss(NMParams p) // totalcross/sys/Registry native public static int getInt(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
 {

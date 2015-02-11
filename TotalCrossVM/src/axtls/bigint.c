@@ -650,7 +650,7 @@ bigint *bi_import(BI_CTX *ctx, const uint8_t *data, int size)
  */
 bigint *bi_str_import(BI_CTX *ctx, const char *data)
 {
-    int size = strlen(data);
+    int size = (int)strlen(data);
     bigint *biR = alloc(ctx, (size+COMP_NUM_NIBBLES-1)/COMP_NUM_NIBBLES);
     int i, j = 0, offset = 0;
     memset(biR->comps, 0, biR->size*COMP_BYTE_SIZE);

@@ -255,12 +255,6 @@ public class Deployer4IPhoneIPA
    
    private void addMetadata(TFile targetZip) throws Exception
    {
-      for (int i = Bitmaps.ITUNES_ICONS.length - 1; i >= 0; i--)
-      {
-         TFile icon = new TFile(targetZip, Bitmaps.ITUNES_ICONS[i].name);
-         icon.input(new ByteArrayInputStream(Bitmaps.ITUNES_ICONS[i].getImage()));
-      }
-
       NSDictionary metadata = new NSDictionary();
       metadata.put("product-type", "ios-app");
       metadata.put("genre", "Business");

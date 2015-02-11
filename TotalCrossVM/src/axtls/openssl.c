@@ -68,9 +68,9 @@ void SSL_CTX_set_default_passwd_cb(SSL_CTX *ssl_ctx, pem_password_cb *cb)
 #if defined(WINCE) && _WIN32_WCE >= 300
       OPENSSL_CTX_ATTR->password = strdup(buffer);
 #else
-      OPENSSL_CTX_ATTR->password = malloc(strlen(buffer));
+      OPENSSL_CTX_ATTR->password = (char*)malloc(xstrlen(buffer));
       if (OPENSSL_CTX_ATTR->password)
-         memmove(OPENSSL_CTX_ATTR->password, buffer, strlen(buffer)+1);
+         memmove(OPENSSL_CTX_ATTR->password, buffer, xstrlen(buffer)+1);
 #endif
    }
 }

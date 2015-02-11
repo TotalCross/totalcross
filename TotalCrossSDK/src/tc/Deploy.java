@@ -429,10 +429,11 @@ public class Deploy
             "   /w      : Waits for a key press if an error occurs\n" +
             "   /x list : Comma-separated list of class names that must be excluded (in a starts-with manner). E.G.: \"/x com/framework/\" \n" +
             "\n" +
-            "   The easiest way to create an icon is to provide an 'appicon.gif' file of any SQUARE size (80x80 preferable) " +
-            "and any palette, which will be automatically converted to the target icon sizes. Put the file in the src folder." +
-            "If you need better icons, you can create some png files with these sizes: " +
-            "icon60x60.png (iPhone), icon72x72.png (Android); for all icons, use alpha channel on PNG for better appearance. " +
+            "   The easiest way to create an icon is to provide an 'appicon.png' file of SQUARED size 256x256" +
+            "which will be automatically converted to the target icon sizes. Put the file in the src folder." +
+            "If your icon source is VECTOR-based, you may create better icons by exporting to png at the following sizes: " +
+            "icon60x60.png (iPhone), icon72x72.png, icon96x96.png, icon144x144.png, icon192x192 (Android). " + 
+            "Note that TotalCross' algorithm used to downscale the icons, CATMULL-ROM, is the best of the world for that." +
             "");
    }
 }

@@ -34,7 +34,7 @@ extern void free JPP((void *ptr));
 GLOBAL(void *)
 jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-  return heapAlloc(cinfo->err->heap, sizeofobject);
+  return heapAlloc(cinfo->err->heap, (int)sizeofobject);
 }
 
 GLOBAL(void)

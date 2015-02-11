@@ -16,14 +16,14 @@
 		0F5AF51B1507FA3600D6142B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F5AF51A1507FA3600D6142B /* ViewController.m */; };
 		0F7318C01513DD1C001EE647 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318BF1513DD1C001EE647 /* AudioToolbox.framework */; };
 		0F7318C31513DE2F001EE647 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F7318C21513DE2F001EE647 /* CFNetwork.framework */; };
+		3A0140BD1A82692700667180 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A0140BB1A82692700667180 /* libLitebase.a */; };
+		3A0140BE1A82692700667180 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A0140BC1A82692700667180 /* libtcvm.a */; };
 		3A0CE75615A493CC00E24110 /* NSString+MD5Addition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */; };
 		3A0CE75715A493CC00E24110 /* UIDevice+IdentifierAddition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */; };
 		3A387B1318999E6C00D3DDAB /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A387B1218999E6C00D3DDAB /* AdSupport.framework */; };
 		3A52AAD2162739C000DCEE4A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A52AAD1162739C000DCEE4A /* OpenGLES.framework */; };
 		3A52AAD4162739D900DCEE4A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A52AAD3162739D900DCEE4A /* QuartzCore.framework */; };
 		3A7CDBBF1A0D4F500006A94A /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3A7CDBBE1A0D4F500006A94A /* Default-568h@2x.png */; };
-		3AE3BF861627649C00BDDBF8 /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE3BF851627649C00BDDBF8 /* libtcvm.a */; };
-		3AE3BF88162764B900BDDBF8 /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE3BF87162764B900BDDBF8 /* libLitebase.a */; };
 		3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
@@ -45,14 +45,14 @@
 		0F7318C21513DE2F001EE647 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		0F7CBA4315545CC100E9BD43 /* libtcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libtcvm.h; sourceTree = "<group>"; };
 		0F7CBA4415545CE000E9BD43 /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = liblitebase.h; path = ../../../../Litebase/LitebaseSDK/builders/xcode/liblitebase.h; sourceTree = "<group>"; };
+		3A0140BB1A82692700667180 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../Litebase/LitebaseSDK/builders/xcode/build/Debug-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
+		3A0140BC1A82692700667180 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../Library/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
 		3A0CE75415A493CC00E24110 /* NSString+MD5Addition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSString+MD5Addition.m"; path = "../../../src/init/darwin/NSString+MD5Addition.m"; sourceTree = "<group>"; };
 		3A0CE75515A493CC00E24110 /* UIDevice+IdentifierAddition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "UIDevice+IdentifierAddition.m"; path = "../../../src/init/darwin/UIDevice+IdentifierAddition.m"; sourceTree = "<group>"; };
 		3A387B1218999E6C00D3DDAB /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		3A52AAD1162739C000DCEE4A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		3A52AAD3162739D900DCEE4A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		3A7CDBBE1A0D4F500006A94A /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		3AE3BF851627649C00BDDBF8 /* libtcvm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtcvm.a; path = "../../../../../Library/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos/libtcvm.a"; sourceTree = "<group>"; };
-		3AE3BF87162764B900BDDBF8 /* libLitebase.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLitebase.a; path = "../../../../../Library/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos/libLitebase.a"; sourceTree = "<group>"; };
 		3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -61,8 +61,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3AE3BF88162764B900BDDBF8 /* libLitebase.a in Frameworks */,
-				3AE3BF861627649C00BDDBF8 /* libtcvm.a in Frameworks */,
+				3A0140BD1A82692700667180 /* libLitebase.a in Frameworks */,
+				3A0140BE1A82692700667180 /* libtcvm.a in Frameworks */,
 				3A387B1318999E6C00D3DDAB /* AdSupport.framework in Frameworks */,
 				3A52AAD4162739D900DCEE4A /* QuartzCore.framework in Frameworks */,
 				3A52AAD2162739C000DCEE4A /* OpenGLES.framework in Frameworks */,
@@ -82,8 +82,6 @@
 			isa = PBXGroup;
 			children = (
 				3A7CDBBE1A0D4F500006A94A /* Default-568h@2x.png */,
-				3AE3BF87162764B900BDDBF8 /* libLitebase.a */,
-				3AE3BF851627649C00BDDBF8 /* libtcvm.a */,
 				3A52AAD3162739D900DCEE4A /* QuartzCore.framework */,
 				3A52AAD1162739C000DCEE4A /* OpenGLES.framework */,
 				3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */,
@@ -104,6 +102,8 @@
 		0F5AF5061507FA3600D6142B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3A0140BB1A82692700667180 /* libLitebase.a */,
+				3A0140BC1A82692700667180 /* libtcvm.a */,
 				3A387B1218999E6C00D3DDAB /* AdSupport.framework */,
 				0F7CBA4315545CC100E9BD43 /* libtcvm.h */,
 				0F7CBA4415545CE000E9BD43 /* liblitebase.h */,
@@ -168,7 +168,7 @@
 		0F5AF4FA1507FA3600D6142B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
@@ -236,11 +236,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
 				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -256,16 +263,17 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
-				LIBRARY_SEARCH_PATHS = (
-					"../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos",
-					"build/Release-iphoneos",
-				);
+				LIBRARY_SEARCH_PATHS = "";
+				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "9E86B290-3B52-4C8C-8B94-89FA147675DD";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
@@ -277,11 +285,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = armv7;
 				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				COPY_PHASE_STRIP = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -292,16 +307,16 @@
 				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_OUTPUT_FORMAT = xml;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
-				LIBRARY_SEARCH_PATHS = (
-					"../../../../Litebase/LitebaseSDK/builders/xcode/build/Release-iphoneos",
-					"build/Release-iphoneos",
-				);
+				LIBRARY_SEARCH_PATHS = "";
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -314,7 +329,6 @@
 		0F5AF53A1507FA3600D6142B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = armv7;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEBUG = "1 $(inherited)";
@@ -333,10 +347,11 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../Library/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos\"",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "9E86B290-3B52-4C8C-8B94-89FA147675DD";
+				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
@@ -363,6 +378,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../../Library/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos\"",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/TotalCross-egrfippeefqznwheljpmagvoaxfm/Build/Products/Debug-iphoneos",
 				);
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";

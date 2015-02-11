@@ -70,7 +70,9 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    int hostSocket;
    int res, valopt;
    struct sockaddr_in destination_sin;
+#ifndef darwin
    struct hostent *phostent;
+#endif
    long arg;
    fd_set fdWriteSet;
    struct timeval timeout_val;
@@ -214,7 +216,6 @@ static Err socketReadWriteBytes(SOCKET socketHandle, int32 timeoutMillis, CharP 
    fd_set fdSet;
    struct timeval timeout;
    int32 result;
-   int32 timeoutLeft = timeoutMillis >= 0 ? timeoutMillis : 0; // we should enter the read/write loop at least once, even if timeout <= 0
    int32 timestamp;
    *retCount = 0; // clear bytes count
 
@@ -243,12 +244,12 @@ static Err socketReadWriteBytes(SOCKET socketHandle, int32 timeoutMillis, CharP 
    {
       if (isRead)
       {
-         result = recv(socketHandle, buf + start + *retCount, count - *retCount, 0); //Read
+         result = (int)recv(socketHandle, buf + start + *retCount, count - *retCount, 0); //Read
          if (result == 0) // flsobral@tc110_2: if result is 0, the connection was gracefully closed by the remote host.
             return NO_ERROR;
       }
       else
-         result = send(socketHandle, buf + start + *retCount, count - *retCount, 0); //Write
+         result = (int)send(socketHandle, buf + start + *retCount, count - *retCount, 0); //Write
       *retCount += result; // update the number of bytes write/read
    } while (result < 0 && errno == EWOULDBLOCK && (getTimeStamp() - timestamp < timeoutMillis));
 

@@ -18,7 +18,7 @@
 #endif
 
 #define TRACE if (traceOn) debug
-#define DUMP_BYTECODE(s) //TRACE("T %08d %X %X %05d - %4d: %s", getTimeStamp(), thread, context, ++context->ccon, (int32)(code-method->code), s);
+#define DUMP_BYTECODE(s) //TRACE("%s",s); //TRACE("T %08d %X %X %05d - %4d: %s", getTimeStamp(), thread, context, ++context->ccon, (int32)(code-method->code), s);
 
 #ifdef DIRECT_JUMP // use a direct jump if supported
  #define OPCODE(x) _##x: DUMP_BYTECODE(#x)
@@ -279,7 +279,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #ifdef ENABLE_TEST_SUITE
    if (context->callStackForced == null)
 #endif
-      callStackMethodEnd = context->callStack - context->callStackStart; // method will end when callStackMethodEnd is reached. guich@tc310: changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively
+      callStackMethodEnd = (int32)(context->callStack - context->callStackStart); // method will end when callStackMethodEnd is reached. guich@tc310: changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively
 
    // push the parameters
 #ifdef ENABLE_TRACE
@@ -525,8 +525,12 @@ contCall:
             TRACE("T %08d %X %X %05d - %04d #%4d %X-%X %X %s calling %s.%s - %s (%X)", getTimeStamp(), thread, context, ++context->ccon, (int)(code-method->code), locateLine(method, (int32)(code-method->code)), (int)regO, context->regO, context->callStack-2, getSpaces(context,context->depth), newMethod->class_->name, newMethod->name, regO[(int32)code->mtd.this_ - (int32)method->oCount] == null ? "" : OBJ_CLASS(regO[(int32)code->mtd.this_ - (int32)method->oCount])->name, (int)(regO[(int32)code->mtd.this_ - (int32)method->oCount]));
             context->depth++;
 #else
-            if (traceOn) 
+            if (traceOn)
+            {
                debug("T %08d %X %s - %s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
+               if (strEq(newMethod->name,"get"))
+                  traceOn = 1;
+            }
 #endif
             if (!newMethod->flags.isStatic)
             {
@@ -672,7 +676,10 @@ popStackFrame:
                      XSELECT(addrNMRet, newMethod->returnReg)
                      {
                         XOPTION(nm,RegI): regI [code->mtd.retOr1stParam] = nmp->retI; code += newMethod->paramSkip; NEXT_OP;
-                        XOPTION(nm,RegO): regO [code->mtd.retOr1stParam] = nmp->retO; code += newMethod->paramSkip; nmp->retO = null; NEXT_OP;
+                        XOPTION(nm,RegO): regO [code->mtd.retOr1stParam] = nmp->retO;
+                        if (((long)nmp->retO & 1) == 1)
+                           nmp->retO = 0;
+                        code += newMethod->paramSkip; nmp->retO = null; NEXT_OP;
                         XOPTION(nm,RegD):
                         XOPTION(nm,RegL): reg64[code->mtd.retOr1stParam] = nmp->retL; code += newMethod->paramSkip; NEXT_OP;
                      }
@@ -1012,7 +1019,7 @@ throwNoSuchMethodError:
    for (i = 0; i < len; i++)
       slen += xstrlen(cp->cls[sym[i+2]]);
    slen++;
-   if (slen > 0 && (paramsStr = xmalloc(slen)) != null)
+   if (slen > 0 && (paramsStr = (CharP)xmalloc(slen)) != null)
    {                 
       for (i = 0; i < len; i++)
       {

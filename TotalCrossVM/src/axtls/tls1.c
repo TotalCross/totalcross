@@ -937,7 +937,7 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
     while (sent < pkt_size)
     {
         if ((ret = SOCKET_WRITE(ssl->client_fd,
-                        &ssl->bm_all_data[sent], pkt_size)) < 0)
+                        (char*)&ssl->bm_all_data[sent], pkt_size)) < 0)
         {
             ret = SSL_ERROR_CONN_LOST;
             break;
@@ -1177,7 +1177,7 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
 
     do
     {
-       read_len = SOCKET_READ(ssl->client_fd, &buf[ssl->bm_read_index],
+       read_len = SOCKET_READ(ssl->client_fd, (char*)&buf[ssl->bm_read_index],
                                ssl->need_bytes-ssl->got_bytes);
 
        /* connection has gone, so die */

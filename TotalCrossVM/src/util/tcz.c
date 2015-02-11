@@ -74,7 +74,7 @@ static bool tczReadMore(TCZFile f)
 #else   
    if (f->expectedFilePos != f->header->realFilePos) // if the file position has changed by some other instance, reposition it
       fseek(f->header->fin, f->expectedFilePos, SEEK_SET);
-   n = fread(f->buf, 1, TCZ_BUFFER_SIZE, f->header->fin);
+   n = (int32)fread(f->buf, 1, TCZ_BUFFER_SIZE, f->header->fin);
 #endif   
    f->header->realFilePos = (f->expectedFilePos += n);
    if (n <= 0)

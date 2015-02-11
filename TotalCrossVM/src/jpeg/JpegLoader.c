@@ -52,7 +52,7 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
          cur += n;
          count -= n;
       }
-      return cur - start;
+      return (int)(cur - start);
    }
 }
 
@@ -70,7 +70,7 @@ int jpegWrite(void *buff, int count, JPEGFILE *in)
       remaining = count - current;
       toCopy = in->params[3].asInt32 = bufObjSize < remaining ? bufObjSize : remaining;
       xmemmove(ARRAYOBJ_START(bufObj), (uint8*) buff + current, toCopy);
-      executeMethod(in->currentContext, in->writeBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32).asInt32;
+      executeMethod(in->currentContext, in->writeBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32);
       current += toCopy;
    }
    return current;

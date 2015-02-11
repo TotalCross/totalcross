@@ -105,6 +105,9 @@ struct TObjectProperties
       uint32 size: 30; // object's size
       uint32 lock: 1;  // lock the object, preventing it from being gc'd. The initial purpose of locking an object was to lock all constant pool strings and speedup the garbage collector process.
       uint32 mark: 1;  // mark the object during a garbage collect.
+#if TBITS==64
+      uint32 dumb;
+#endif
    };
 };
 
@@ -116,7 +119,11 @@ typedef uint8* Chunk;
 /// Gets the length of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
 #define ARRAYOBJ_LEN(o) ((o)->arrayLen)
 /// Gets the start of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
-#define ARRAYOBJ_START(o) (((uint8*)(o))+4)
+#define ARRAYOBJ_START(o) (((uint8*)(o))+TSIZE)
+
+// Gets the size in bytes of an array. Added to support 64-bit without needing to change tcz structure
+#undef ARRAYSIZE
+#define ARRAYSIZE(c, len) (c->flags.isObjectArray ? len * TSIZE : len << c->flags.bits2shift)
 
 #ifdef __cplusplus
 }

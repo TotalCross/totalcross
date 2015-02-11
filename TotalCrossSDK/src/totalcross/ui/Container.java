@@ -37,7 +37,10 @@ public class Container extends Control
    byte borderStyle = BORDER_NONE;
    private int []fourColors = new int[4];
    private Vector childControls;
-   
+   private int pressColor=-1;
+   private PenListener pe;
+   private boolean cpressed;
+
    /** Sets the type of background of this Container. To disable the background, set the 
     * <code>transparentBackground</code> of the Control class to true. This field is used when
     * transparentBackground is set to false (default).
@@ -70,6 +73,8 @@ public class Container extends Control
    static public final int BACKGROUND_SOLID = 0;
    /** used in the backgroundStyle field */
    static public final int BACKGROUND_SHADED = 1;
+   /** used in the backgroundStyle field */
+   static public final int BACKGROUND_SHADED_INV = 3;
    /** used in the backgroundStyle field. The bright color must be the fore color, and the darker color, the back color
     * @since TotalCross 2.0 
     */
@@ -159,6 +164,45 @@ public class Container extends Control
    {
       asContainer = this;
       focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
+   }
+   
+   public void setPressColor(int color)
+   {
+      this.pressColor = color;
+      if (color == -1 && pe != null)
+      {
+         removePenListener(pe);
+         pe = null;
+         callListenersOnAllTargets = cpressed = false;
+      }
+      if (color != -1 && pe == null)
+      {
+         callListenersOnAllTargets = true;
+         addPenListener(pe = new PenListener()
+         {
+            public void penUp(PenEvent e)
+            {
+               if (e.type == PenEvent.PEN_UP && isEnabled() && !hadParentScrolled())
+               {
+                  setPressed(!cpressed);
+                  postPressedEvent();
+               }
+            }
+            public void penDown(PenEvent e) {}   
+            public void penDrag(DragEvent e) {}  
+            public void penDragStart(DragEvent e) {}   
+            public void penDragEnd(DragEvent e) {}
+         });
+      }
+   }
+   public void setPressed(boolean p)
+   {
+      cpressed = p;
+      Window.needsPaint = true;
+   }
+   public boolean isPressed()
+   {
+      return cpressed;
    }
 
    /** The transition effect to apply in the next screen update.
@@ -624,19 +668,23 @@ public class Container extends Control
      */
    public void onPaint(Graphics g)
    {
-      if (!transparentBackground && parent != null && (backColor != parent.backColor || parent.asWindow != null || alwaysEraseBackground)) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
+      int b = pressColor != -1 && cpressed ? pressColor : backColor;
+      if (!transparentBackground && parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground)) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
       {
          switch (backgroundStyle)
          {
             case BACKGROUND_SOLID:
-               g.backColor = backColor;
+               g.backColor = b;
                g.fillRect(0,0,width,height);
                break;
             case BACKGROUND_SHADED:
-               g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
+               g.fillShadedRect(0,0,width,height,true,false,foreColor,b,UIColors.shadeFactor);
+               break;
+            case BACKGROUND_SHADED_INV:
+               g.fillShadedRect(0,0,width,height,false,false,foreColor,b,UIColors.shadeFactor);
                break;
             case BACKGROUND_CYLINDRIC_SHADED:
-               g.drawCylindricShade(foreColor,backColor,0,0,width,height);
+               g.drawCylindricShade(foreColor,b,0,0,width,height);
                break;
          }
       }
@@ -656,7 +704,7 @@ public class Container extends Control
             break;
             
          case BORDER_ROUNDED:
-            g.drawWindowBorder(0,0,width,height,0,0,borderColor != -1 ? borderColor : getForeColor(),backColor,backColor,backColor,2,false);
+            g.drawWindowBorder(0,0,width,height,0,0,borderColor != -1 ? borderColor : getForeColor(),b,b,b,2,false);
             break;
 
          default:

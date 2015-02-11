@@ -1558,7 +1558,7 @@ public final class Graphics
     * @param width the width of the rectangle
     * @param height the height of the rectangle
     * @param type one of the R3D constants
-    * @param yMirror if true, the rectangle will be drawn upside-down
+    * @param yMirror no longer used
     * @param simple if true, a simple rectangle will be drawn
     * @param fourColors the four colors used if ui style is WinCE
     * @see #R3D_EDIT

@@ -70,14 +70,14 @@ int pngRead(void *buff, int count, UserData *in)
          cur += n;
          count -= n;
       }
-      return cur - start;
+      return (int32)(cur - start);
    }
 }
 
 static png_voidp usermalloc(png_structp png_ptr, png_size_t size)
 {
    Heap h = (Heap)png_ptr->mem_ptr;
-   return heapAlloc(h, size);
+   return heapAlloc(h, (int)size);
 }
 void userfree(png_structp png_ptr, png_voidp ptr)
 {
@@ -158,7 +158,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
    // guich@tc100: check if a comment came with the png
    if (info_ptr->text && strEq("Comment",info_ptr->text->key))
    {
-      Image_comment(imageObj) = createStringObjectFromCharP(currentContext, info_ptr->text->text, info_ptr->text->text_length);
+      Image_comment(imageObj) = createStringObjectFromCharP(currentContext, info_ptr->text->text, (int)info_ptr->text->text_length);
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
@@ -240,14 +240,14 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    png_read_update_info(png_ptr, info_ptr);
    if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE && png_ptr->num_trans != 0) // we don't support transparent palettes
       png_set_strip_alpha(png_ptr);
-   userData->width = width;
-   userData->height = height;
-   userData->bytesPerRow = png_get_rowbytes(png_ptr, info_ptr);
+   userData->width = (int32)width;
+   userData->height = (int32)height;
+   userData->bytesPerRow = (int32)png_get_rowbytes(png_ptr, info_ptr);
    userData->upixels = png_malloc(png_ptr, userData->bytesPerRow);
    if (width > 65535 || height > 65535)  // bad width/height?
       HEAP_ERROR(userData->heap, 998);
 
-   Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, width*height);
+   Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, (int32)(width*height));
    if (!userData->pixelsObj)
       HEAP_ERROR(userData->heap, 997);
    setObjectLock(Image_pixels(userData->imageObj), UNLOCKED);

@@ -28,7 +28,7 @@ public class PDBFile4D extends Stream
    private String name;
 
    private int hvRecordPos;
-   int hvRecordHandle;
+   long hvRecordHandle;
    private int hvRecordOffset;
    private int hvRecordLength;
    boolean hvRecordChanged;

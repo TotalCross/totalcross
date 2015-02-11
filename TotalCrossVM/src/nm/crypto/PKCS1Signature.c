@@ -257,7 +257,7 @@ TC_API void tcsPKCS1S_doSign_B(NMParams p) // totalcross/crypto/signature/PKCS1S
    TCObject digest = *PKCS1Signature_digest(pkcs1Obj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(signatureObj);
 
-   uint8_t *hashedBuf, *encBuf;
+   uint8_t *hashedBuf=null, *encBuf=null;
    TCObject byteArrayResult;
    int32 count;
    TCObject msgDigest;
@@ -303,7 +303,7 @@ TC_API void tcsPKCS1S_doVerify_BB(NMParams p) // totalcross/crypto/signature/PKC
    TCObject digest = *PKCS1Signature_digest(pkcs1Obj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(signatureObj);
 
-   uint8 *sigDigestBuf, *decBuf;
+   uint8 *sigDigestBuf=null, *decBuf=null;
    int32 digestLen, sigDigestLen;
 
    TCObject msgDigest;

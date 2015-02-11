@@ -131,7 +131,7 @@ static bool splitName(TCHARP fullName, TCHARP* name, TCHARP* creator, TCHARP* ty
    }
    else
    {
-      nameLen = *creator - strP;
+      nameLen = (int)(*creator - strP);
       if (nameLen >= DB_NAME_LENGTH || nameLen == 0)
          return false;
    }
@@ -235,7 +235,7 @@ TC_API void tiPDBF_create_sssi(NMParams p) // totalcross/io/PDBFile native priva
          case READ_WRITE: // open database
             if (!dbId)
             {
-               fnfeMsg = xmalloc(128);
+               fnfeMsg = (char*)xmalloc(128);
                if (fnfeMsg != null)
                {
                   xstrcpy(fnfeMsg, "Could not find the pdb file: ");
@@ -589,7 +589,7 @@ TC_API void tiPDBF_readWriteBytes_Biib(NMParams p)
    hvRecordOffset = PDBFile_hvRecordOffset(obj);
    handle = (MemHandle) PDBFile_hvRecordHandle(obj);
 
-   bufP = ARRAYOBJ_START(buf);
+   bufP = (CharP)ARRAYOBJ_START(buf);
    recPtr = MemHandleLock(handle);
    if (isRead)
       xmemmove(bufP + start, recPtr + hvRecordOffset, count); // copy to buffer
@@ -638,7 +638,7 @@ TC_API void tiPDBF_inspectRecord_Bii(NMParams p) // totalcross/io/PDBFile native
          throwIllegalArgumentIOException(p->currentContext, "recordPos", int2str(recordPos, intBuf));
       else
       {
-         buf = ARRAYOBJ_START(byteBuf);
+         buf = (CharP)ARRAYOBJ_START(byteBuf);
          bufLen = ARRAYOBJ_LEN(byteBuf);
 
          if (!(handle = DmQueryRecord(dbP, (UInt16) recordPos)))
@@ -814,7 +814,7 @@ TC_API void tiPDBF_searchBytes_Bii(NMParams p) // totalcross/io/PDBFile native p
          throwException(p->currentContext, ArrayIndexOutOfBoundsException, null);
       else
       {
-         toSearchBuf = ARRAYOBJ_START(toSearch);
+         toSearchBuf = (CharP)ARRAYOBJ_START(toSearch);
          toSearchFirst = toSearchBuf + 1;
          toSearchLast = toSearchBuf + length - 1;
          lenM1 = length - 1;

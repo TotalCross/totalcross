@@ -43,10 +43,10 @@ static Err mediaClipResume(MediaData media)
    return NO_ERROR;
 }
 
-static Err mediaClipStop(MediaData media, bool pause)
+/*static Err mediaClipStop(MediaData media, bool pause)
 {
    return NO_ERROR;
-}
+}*/
 
 static Err mediaClipReset(TCObject mediaClip, MediaData media)
 {

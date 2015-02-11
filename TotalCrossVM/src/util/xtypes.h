@@ -178,7 +178,7 @@ typedef int64* Value64Array;
 #define xstrcmp(str1, str2) strcmp(str1, str2)
 CharP xstrncpy(CharP dest, CharP src, int32 len); // this one makes sure that the string is terminated with \0
 #define xstrcpy(dest, src) strcpy(dest, src)
-#define xstrlen(str) strlen(str)
+#define xstrlen(str) (int)strlen(str)
 #define xstrcat(dest, src) strcat(dest, src)
 CharP xstrrchr(CharP str, int32 what);
 #define xstrchr(str, what) strchr(str, what)
@@ -254,7 +254,7 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
  #define tcscmp strcmp
  #define tcsncpy xstrncpy
  #define tcscpy strcpy
- #define tcslen strlen
+ #define tcslen (int)strlen
  #define tcscat strcat
  #define tcsrchr xstrrchr
  #define tcschr strchr

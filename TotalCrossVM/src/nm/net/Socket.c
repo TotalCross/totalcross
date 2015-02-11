@@ -104,7 +104,7 @@ TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native 
       timeout = Socket_writeTimeout(socket);
 
    socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
-   if ((err = socketReadWriteBytes(*socketHandle, timeout, ARRAYOBJ_START(buf), start, count, &retCount, isRead)) != NO_ERROR)
+   if ((err = socketReadWriteBytes(*socketHandle, timeout, (CharP)ARRAYOBJ_START(buf), start, count, &retCount, isRead)) != NO_ERROR)
       throwExceptionWithCode(p->currentContext, IOException, err);
    else if (retCount == -2) // timeout!
       throwException(p->currentContext, SocketTimeoutException, "Operation timed out");

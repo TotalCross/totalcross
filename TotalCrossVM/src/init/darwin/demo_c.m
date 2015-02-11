@@ -8,7 +8,7 @@ bool getElapsed(int32 *value)
    if (cfNumber != null)
    {
       ret = CFNumberGetValue(cfNumber, kCFNumberSInt32Type, value);
-      [cfNumber release];
+      [(id)cfNumber release];
    }
    return false;
 }

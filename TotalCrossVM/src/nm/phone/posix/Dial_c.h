@@ -30,6 +30,6 @@ static void dialNumber(CharP number)
 #endif
 }
 
-static void hangup()
+/* static void hangup()
 {
-}
+}*/

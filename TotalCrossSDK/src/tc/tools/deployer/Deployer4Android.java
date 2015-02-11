@@ -216,7 +216,7 @@ public class Deployer4Android
             insertResources_arsc(zis, zos);
          else
          if (name.indexOf("icon.png") >= 0)
-            insertIcon_png(zos);
+            insertIcon_png(zos, name);
          else
          if (name.indexOf("AndroidManifest.xml") >= 0)
             insertAndroidManifest_xml(zis,zos);
@@ -370,9 +370,21 @@ public class Deployer4Android
       dstZip.closeEntry();
    }
    
-   private void insertIcon_png(ZipOutputStream zos) throws Exception
+   private void insertIcon_png(ZipOutputStream zos, String name) throws Exception
    {
-      if (DeploySettings.bitmaps != null) DeploySettings.bitmaps.saveAndroidIcon(zos); // libraries don't have icons
+      if (DeploySettings.bitmaps != null)
+      {
+         int res;
+         switch (name)
+         {
+            case "res/drawable-xhdpi/icon.png": res = 96; break;
+            case "res/drawable-xxhdpi/icon.png": res = 144; break;
+            case "res/drawable-xxxhdpi/icon.png": res = 192; break;
+            //case "res/drawable-hdpi/icon.png":
+            default: res = 72;
+         }
+         DeploySettings.bitmaps.saveAndroidIcon(zos,res); // libraries don't have icons
+      }
    }
 
    private totalcross.io.ByteArrayStream readInputStream(java.io.InputStream is)

@@ -698,6 +698,7 @@ void setTransparentColor(TCObject obj, Pixel color)
 }
 
 #ifdef __gl2_h_                         
+void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 void applyChanges(Context currentContext, TCObject obj)
 {
    int32 frameCount = Image_frameCount(obj);
@@ -715,7 +716,7 @@ void applyChanges(Context currentContext, TCObject obj)
    }
    Image_changed(obj) = false;
 }
-
+void glDeleteTexture(TCObject img, int32* textureId);
 void freeTexture(TCObject img)
 {                                       
    if (ENABLE_TEXTURE_TRACE) debug("freeing texture %X (%dx%d): %d (count: %d)",img,Image_width(img),Image_height(img),Image_textureId(img)[0],Image_instanceCount(img));

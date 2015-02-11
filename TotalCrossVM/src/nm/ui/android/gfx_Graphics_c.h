@@ -54,8 +54,8 @@ static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
-#endif
 static void destroyEGL();
+#endif
 static bool surfaceWillChange;
 
 int32 realAppH,appW,appH,glShiftY;
@@ -816,7 +816,6 @@ bool checkGLfloatBuffer(Context c, int32 n)
 
 bool setupGL(int width, int height)
 {
-    int i;
     pixLastRGB = -1;
     appW = width;
     appH = height;

@@ -1677,9 +1677,9 @@ static void readfileFunc(
   fseek(in, 0, SEEK_END);
   nIn = ftell(in);
   rewind(in);
-  pBuf = sqlite3_malloc( nIn );
+  pBuf = sqlite3_malloc( (int)nIn );
   if( pBuf && 1==fread(pBuf, nIn, 1, in) ){
-    sqlite3_result_blob(context, pBuf, nIn, sqlite3_free);
+    sqlite3_result_blob(context, pBuf, (int)nIn, sqlite3_free);
   }else{
     sqlite3_free(pBuf);
   }

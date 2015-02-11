@@ -43,7 +43,7 @@ TC_API Hashtable htNew(int32 count, Heap heap)
 /* Gets the stored item with the given key. If the key is not found,
  * returns null.
  */
-static HtEntry* htGet(Hashtable *iht, int32 key)
+static HtEntry* htGet(Hashtable *iht, HTKey key)
 {
    if (iht && iht->items && iht->size > 0) // guich@tc113_14: check size
    {
@@ -56,19 +56,19 @@ static HtEntry* htGet(Hashtable *iht, int32 key)
    return null;
 }
 
-TC_API int32 htGet32(Hashtable *iht, int32 key)
+TC_API int32 htGet32(Hashtable *iht, HTKey key)
 {
    HtEntry* h = htGet(iht, key);
    return h ? h->i32 : 0;
 }
 
-TC_API int32 htGet32Inv(Hashtable *iht, int32 key)
+TC_API int32 htGet32Inv(Hashtable *iht, HTKey key)
 {
    HtEntry* h = htGet(iht, key);
    return h ? h->i32 : (int32) 0xFFFFFFFF;
 }
 
-TC_API VoidP htGetPtr(Hashtable *iht, int32 key)
+TC_API VoidP htGetPtr(Hashtable *iht, HTKey key)
 {
    HtEntry* h = htGet(iht, key);
    return h ? h->ptr : null;
@@ -111,7 +111,7 @@ static bool htRehash(Hashtable *table)
 /* Puts the given pair of key/value in the Hashtable.
  * If the key already exists, the value will be replaced.
  */
-static bool htPut(Hashtable *iht, int32 key, int32 i32, VoidP ptr, bool isI32, bool ignoreIfNotNew)
+static bool htPut(Hashtable *iht, HTKey key, int32 i32, VoidP ptr, bool isI32, bool ignoreIfNotNew)
 {
    HtEntry *e;
    int32 index;
@@ -156,33 +156,33 @@ static bool htPut(Hashtable *iht, int32 key, int32 i32, VoidP ptr, bool isI32, b
    return true;
 }
 
-TC_API bool htPut32(Hashtable *iht, int32 key, int32 value)
+TC_API bool htPut32(Hashtable *iht, HTKey key, int32 value)
 {
    return htPut(iht, key, value, null, true,false);
 }
 
-TC_API bool htPutPtr(Hashtable *iht, int32 key, void* value)
+TC_API bool htPutPtr(Hashtable *iht, HTKey key, void* value)
 {
    return htPut(iht, key, 0, value, false, false);
 }
 
-TC_API bool htInc(Hashtable *iht, int32 key, int32 incValue)
+TC_API bool htInc(Hashtable *iht, HTKey key, int32 incValue)
 {
    return htPut32(iht, key, incValue + htGet32(iht, key));
 }
 
-TC_API bool htPut32IfNew(Hashtable *iht, int32 key, int32 value)
+TC_API bool htPut32IfNew(Hashtable *iht, HTKey key, int32 value)
 {
    return htPut(iht, key, value, null, true, true);
 }
 
-TC_API bool htPutPtrIfNew(Hashtable *iht, int32 key, void* value)
+TC_API bool htPutPtrIfNew(Hashtable *iht, HTKey key, void* value)
 {
    return htPut(iht, key, 0, value, false, true);
 }
 
 /* Removes the given key from the hashtable. */
-TC_API void htRemove(Hashtable *iht, int32 key)
+TC_API void htRemove(Hashtable *iht, HTKey key)
 {
    HtEntry **tab = iht->items;
    HtEntry *e,*prev;

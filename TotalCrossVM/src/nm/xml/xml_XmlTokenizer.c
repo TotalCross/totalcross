@@ -229,7 +229,7 @@ static JChar ref2char(uint8* input, int32 count)
 {
    uint8** refs = (uint8**)chrRef;
    for (; *refs != null; refs++)
-      if (strEqn(input, *refs+1, count))
+      if (strEqn((CharP)input, (CharP)(*refs+1), count))
          return *refs[0];
    return 0xFFFF;
 }

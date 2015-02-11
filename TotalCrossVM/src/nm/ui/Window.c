@@ -54,7 +54,9 @@ TC_API void tuW_pumpEvents(NMParams p) // totalcross/ui/Window native public sta
 TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native public static void setDeviceTitle(String title);
 {
    UNUSED(p);
+#ifndef darwin
    windowSetDeviceTitle(p->obj[0]); // guich@tc113_32: changed 1 to 0
+#endif
 }
 
 #ifdef ENABLE_TEST_SUITE

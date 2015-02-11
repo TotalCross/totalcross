@@ -697,7 +697,6 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
        int32 currentX,currentY;  // saved for later markScreenDirty
        Pixel *row;
        int32 on = 1;
-       int32 dx = dX+1, dy = dY+1; // fdie@580_37
        int32 clipX1 = Graphics_clipX1(g), clipY1 = Graphics_clipY1(g), clipX2 = Graphics_clipX2(g), clipY2 = Graphics_clipY2(g);
        bool dontClip = true; // the most common will be draw lines that do not cross the clip bounds, so we may speedup a little
 
@@ -727,12 +726,14 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
                       glDrawPixel(currentX, currentY, pixel1, 255);
                    else
 #endif
                       *row = pixel1;                        // plot the pixel - never in opengl
+                }
                 row      += xInc;                        // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -748,12 +749,14 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              for (; dX >= 0; dX--)                       // process each point in the line one at a time (just use dX)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
                       glDrawPixel(currentX, currentY, (on++ & 1) ? pixel1 : pixel2, 255);
                    else
 #endif
                    *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
+                }
                 row += xInc;                             // increment independent variable
                 currentX += xInc;
                 if (p > 0)                               // is the pixel going right AND up?
@@ -776,12 +779,14 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
                       glDrawPixel(currentX, currentY, pixel1, 255);
                    else
 #endif
                       *row = pixel1;                        // plot the pixel
+                }
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -797,12 +802,14 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              for (; dY >= 0; dY--)                       // process each point in the line one at a time (just use dY)
              {
                 if (dontClip || (clipX1 <= currentX && currentX < clipX2 && clipY1 <= currentY && currentY < clipY2))
+                {
 #ifdef __gl2_h_
                    if (Graphics_useOpenGL(g))
                       glDrawPixel(currentX, currentY, (on++ & 1) ? pixel1 : pixel2, 255);
                    else
 #endif
                    *row = (on++ & 1) ? pixel1 : pixel2;  // plot the pixel
+                }
                 row += yInc;                             // increment independent variable
                 currentY += pyInc;
                 if (p > 0)                               // is the pixel going up AND right?
@@ -816,7 +823,7 @@ static void drawDottedLine(Context currentContext, TCObject g, int32 x1, int32 y
              }
        }
 #ifndef __gl2_h_
-       if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, dx, dy);
+       if (!currentContext->fullDirty && !Graphics_isImageSurface(g)) markScreenDirty(currentContext, xMin, yMin, (x2>x1)?(x2-x1):(x1-x2), (y2>y1)?(y2-y1):(y1-y2));
 #else
       if (Graphics_isImageSurface(g))
          Image_changed(Graphics_surface(g)) = true;
@@ -2462,6 +2469,7 @@ static bool createColorPaletteLookupTables()
    return true;
 }
 
+#ifndef darwin
 static void fillWith8bppPalette(uint32* ptr)
 {
    uint32 R = 6, G = 8, B = 5,r,g,b,rr,gg,bb,k,kk;
@@ -2486,6 +2494,7 @@ static void fillWith8bppPalette(uint32* ptr)
       }
    }
 }
+#endif
 
 static void fillHatchedRect(Context currentContext, TCObject g, int32 x, int32 y, int32 w, int32 h, bool top, bool bottom, Pixel c)
 {
@@ -2875,7 +2884,6 @@ static void drawVLineA(Context currentContext, TCObject g, int32 x, int32 y, int
       */
       if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= (y+height) && y < Graphics_clipY2(g)) // NOPT
       {
-         int32 pitch = Graphics_pitch(g);
          if (y < Graphics_clipY1(g))           // line start before clip y1
          {
             height -= Graphics_clipY1(g)-y;

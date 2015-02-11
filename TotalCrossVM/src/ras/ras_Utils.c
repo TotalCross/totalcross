@@ -133,7 +133,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
       else
          MD5Update(&ctx, serial, serialLen);
 #else
-      MD5Update(&ctx, serial, xstrlen(serial));
+      MD5Update(&ctx, (uint8*)serial, xstrlen(serial));
 #endif
    }
    else notFound++;
@@ -144,7 +144,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #endif
    {
       if (*imei)
-         MD5Update(&ctx, imei, xstrlen(imei));
+         MD5Update(&ctx, (uint8*)imei, xstrlen(imei));
 #if defined (WINCE)
       else if (RdIsSupported(PHONE))
          return GDHERR_IMEI;
@@ -157,7 +157,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
       serial[0] = 0;
       getArtificialHash(serial);
       if (*serial)
-         MD5Update(&ctx, serial, xstrlen(serial));
+         MD5Update(&ctx, (uint8*)serial, xstrlen(serial));
       else
          return GDHERR_ARTIFICIAL_HASH;
    }

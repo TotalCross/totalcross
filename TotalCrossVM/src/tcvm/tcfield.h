@@ -23,9 +23,8 @@ extern "C" {
 #define UNBOUND_FIELD_ERROR 65535U
 #define UNBOUND_CLASS_ERROR 65534U
 
-// IMPORTANT: to support 64-bit processors, these two macros must be redefined accordingly to 1<<32-1, 1<<32-2
-#define SF_FIELD_ERROR  ((VoidP)0xFFFFFFFF)
-#define SF_CLASS_ERROR  ((VoidP)0xFFFFFFFE)
+#define SF_FIELD_ERROR  ((VoidP)-1)
+#define SF_CLASS_ERROR  ((VoidP)-2)
 #define SF_ERROR_ANY    SF_CLASS_ERROR
 
 /// Returns a reference to a static field of the given Java type.

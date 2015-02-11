@@ -179,7 +179,7 @@ TC_API Heap privateHeapCreate(bool add2list, const char *file, int32 line)
    Heap p = newX(Heap);
    if (p)
    {
-      int32 len = strlen(file);
+      int32 len = xstrlen(file);
       VoidPs* ch;
       xstrcpy(p->ex.creationFile, max32(0,len-(sizeof(p->ex.creationFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
       p->ex.creationLine = line;
@@ -344,7 +344,7 @@ TC_API void heapDestroyPrivate(Heap m, bool added2list)
 TC_API void privateHeapError(Heap m, int32 errorCode, const char *file, int32 line)
 {
    jmp_buf errorJump;
-   int32 len = strlen(file);
+   int32 len = xstrlen(file);
    xstrcpy(m->ex.errorFile, max32(0,len-(sizeof(m->ex.errorFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
    m->ex.errorLine = line;
    m->ex.errorCode = errorCode;
@@ -361,7 +361,7 @@ void heapSetFinalizer(Heap m, HeapFinalizerFunc fin, void* bag)
 
 TC_API int32 privateHeapSetJump(Heap m, const char *file, int32 line)
 {
-   int32 len = strlen(file);
+   int32 len = xstrlen(file);
    xstrcpy(m->ex.setjmpFile, max32(0,len-(sizeof(m->ex.setjmpFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
    m->ex.setjmpLine = line;
    return 0;
@@ -426,7 +426,7 @@ static struct htmElem *htmPut(uint32 addr, int line, const char* src)
          np->line = line;
          np->memH = memH;
          np->count = ++alcount;
-         len = strlen(src);
+         len = xstrlen(src);
          xstrcpy(np->src, max32(0,len-(sizeof(np->src)-1)) + (char*)src); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
          /* attach to hashtab array */
          mHashTable[hashval] = np;
@@ -500,6 +500,7 @@ static uint32 getPtrSize(void *p)
 ///// guich@550: added sanity checks for xmalloc/xfree/xrealloc
 #define XPTR_SIZE(ptr) *((uint32*)(((uint8*)ptr)-XMALLOC_MARK_START))
 
+#ifndef darwin
 static void *addMemMarks(uint32 size, uint8 *ptr)
 {
    // guich@550: detecting begin/end overwrites
@@ -547,6 +548,7 @@ static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks
    }
    return p;
 }
+#endif
 
 static uint8* memError(char* func, int32 origSize, const char* file, int line)
 {
@@ -696,7 +698,10 @@ TC_API void privateXfree(void *p, const char *file, int line)
 
 TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line)
 {                           
-   uint32 oldSize=0, origSize = size;
+   uint32 origSize = size;
+#ifndef darwin
+   uint32 oldSize=0;
+#endif
    uint8* p=null;
    if (ptr == null) // first allocation?
       return privateXmalloc(size, file, line);

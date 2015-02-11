@@ -127,7 +127,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
 {
    int32 len,i,partSize;
    CharPArray sa; TCObjectArray oa;
-   int16* u;
+   uint16* u;
    char chars[256];
    uint8 mark;
 
@@ -200,7 +200,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
       for (sa++, i = t->mtdfldCount; --i > 0; sa++)
       {
          len = *bunch;
-         *sa = bunch+1;
+         *sa = (CharP)(bunch+1);
          *bunch = 0; // cut the string
          bunch += len+1;
       }
@@ -215,7 +215,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
       for (sa++, i = t->clsCount; --i > 0; sa++)
       {
          len = *bunch;
-         *sa = bunch+1;
+         *sa = (CharP)(bunch+1);
          *bunch = 0; // cut the string
          bunch += len+1;
       }
@@ -244,7 +244,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
             if (mark == 254) // can && l > 255
             {
                JCharP jc = String_charsStart(*oa);
-               uint8* c;
+               CharP c;
                while (len > 0)
                {
                   int32 l  = min32(255, len);

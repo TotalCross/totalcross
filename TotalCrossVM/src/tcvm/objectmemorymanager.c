@@ -322,7 +322,7 @@ static Hashtable htObjsPerClass;
 
 bool initObjectMemoryManager()
 {
-   int32 i,skip = sizeof(TObjectProperties), size = skip+4, n = OBJARRAY_MAX_INDEX+1;
+   int32 i,skip = sizeof(TObjectProperties), size = skip+TSIZE, n = OBJARRAY_MAX_INDEX+1;
    uint8 *f, *u, *l;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
@@ -405,9 +405,9 @@ TCObject allocObject(Context currentContext, uint32 size)
       while (runningFinalizer) // otherwise, another thread is trying to create an object; pass the timeslice back to the gc.
          Sleep(1);
 
-   if (size < 4)
-      size = 4;
-   size = ((size+3)>>2)<<2; // make power of 4
+   if (size < TSIZE)
+      size = TSIZE;
+   size = ((size+TSIZE-1)>>TSHIFT)<<TSHIFT; // make power of SIZE_T
 
    LOCKVAR(omm);
    o = allocObjWith(size);
@@ -547,8 +547,10 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    c = loadClass(currentContext, type, true);
    if (!c)
       goto end;
-   arraySize = len << c->flags.bits2shift;
-   objectSize = 4 + arraySize; // there's a single instance field in the Array class: length
+   arraySize = ARRAYSIZE(c,len);
+   if (!strEq(type,CHAR_ARRAY))
+      arraySize += 0;
+   objectSize = TSIZE + arraySize; // there's a single instance field in the Array class: length
    o = allocObject(currentContext, objectSize);
    if (!o)
       goto end;
@@ -984,14 +986,14 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
 #define MINTIME 500
 #endif
 
-static void dumpCount(int32 key, int32 i32, VoidP ptr)
+static void dumpCount(HTKey key, int32 i32, VoidP ptr)
 {
    TCClass cc = (TCClass)key;
    if (i32 > 0)
       debug("%30s: %d (%d)",cc->name, i32, cc->objSize);
 }
 static int lastUsed, countp, indp;
-static void dumpDif(int32 key, int32 i32, VoidP ptr)
+static void dumpDif(HTKey key, int32 i32, VoidP ptr)
 {
    TCClass cc = (TCClass)key;
    int conta2 = i32;
@@ -1012,7 +1014,6 @@ void gc(Context currentContext)
    bool traceCreatedClassObjs;
    bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
    LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
-
    iniT = getTimeStamp();
    elapsed = iniT - lastGC;
 #ifdef WINCE // guich@tc113_20
@@ -1021,7 +1022,7 @@ void gc(Context currentContext)
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
    freemem = getFreeMemory(USE_MAX_BLOCK);
-   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
+   if (disableGC || ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE)) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);

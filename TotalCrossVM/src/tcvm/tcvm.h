@@ -17,6 +17,16 @@
 //#define ENABLE_TRACE
 #define ENABLE_TEXTURE_TRACE 0
 
+#if defined(__x86_64__) || defined(__LP64__) // 1st: GCC, 2nd: XCODE
+ #define TBITS 64
+ #define TSIZE 8
+ #define TSHIFT 3
+#else
+ #define TBITS 32
+ #define TSIZE 4
+ #define TSHIFT 2
+#endif
+
 #ifdef darwin
 #include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
