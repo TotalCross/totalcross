@@ -22,7 +22,6 @@
  #include "posix/Vm_c.h"
 #endif
 
-int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait);
 void vmVibrate(int32 ms);
 
 CompatibilityResult areArraysCompatible(Context currentContext, TCObject array, CharP ident)
