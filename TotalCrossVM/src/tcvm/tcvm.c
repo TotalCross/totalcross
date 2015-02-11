@@ -208,7 +208,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       OPADDR(MOV_arc_reg64)       OPADDR(MOV_aru_regI)        OPADDR(MOV_aru_regO)        OPADDR(MOV_aru_reg64)       OPADDR(MOV_arc_regIb)      OPADDR(MOV_arc_reg16)       OPADDR(MOV_aru_regIb)       OPADDR(MOV_aru_reg16)       OPADDR(MOV_regIb_arc)      OPADDR(MOV_reg16_arc)       OPADDR(MOV_regIb_aru)       OPADDR(MOV_reg16_aru)       OPADDR(MOV_regO_null)      OPADDR(INC_regI)            OPADDR(ADD_regI_regI_regI)  OPADDR(ADD_regI_s12_regI)   OPADDR(ADD_regI_arc_s6)      OPADDR(ADD_regI_aru_s6)     OPADDR(ADD_regI_regI_sym)   OPADDR(ADD_regD_regD_regD)  OPADDR(ADD_regL_regL_regL) OPADDR(ADD_aru_regI_s6)     OPADDR(SUB_regI_s12_regI)   OPADDR(SUB_regI_regI_regI)  OPADDR(SUB_regD_regD_regD) OPADDR(SUB_regL_regL_regL)  OPADDR(MUL_regI_regI_s12)   OPADDR(MUL_regI_regI_regI)  OPADDR(MUL_regD_regD_regD) OPADDR(MUL_regL_regL_regL)  OPADDR(DIV_regI_regI_s12)   OPADDR(DIV_regI_regI_regI)
       OPADDR(DIV_regD_regD_regD)  OPADDR(DIV_regL_regL_regL)  OPADDR(MOD_regI_regI_s12)   OPADDR(MOD_regI_regI_regI)  OPADDR(MOD_regD_regD_regD) OPADDR(MOD_regL_regL_regL)  OPADDR(SHR_regI_regI_s12)   OPADDR(SHR_regI_regI_regI)  OPADDR(SHR_regL_regL_regL) OPADDR(SHL_regI_regI_s12)   OPADDR(SHL_regI_regI_regI)  OPADDR(SHL_regL_regL_regL)  OPADDR(USHR_regI_regI_s12) OPADDR(USHR_regI_regI_regI) OPADDR(USHR_regL_regL_regL) OPADDR(AND_regI_regI_s12)   OPADDR(AND_regI_aru_s6)      OPADDR(AND_regI_regI_regI)  OPADDR(AND_regL_regL_regL)  OPADDR(OR_regI_regI_s12)    OPADDR(OR_regI_regI_regI)  OPADDR(OR_regL_regL_regL)   OPADDR(XOR_regI_regI_s12)   OPADDR(XOR_regI_regI_regI)  OPADDR(XOR_regL_regL_regL) OPADDR(JEQ_regO_regO)       OPADDR(JEQ_regO_null)       OPADDR(JEQ_regI_regI)       OPADDR(JEQ_regL_regL)      OPADDR(JEQ_regD_regD)       OPADDR(JEQ_regI_s6)         OPADDR(JEQ_regI_sym)
       OPADDR(JNE_regO_regO)       OPADDR(JNE_regO_null)       OPADDR(JNE_regI_regI)       OPADDR(JNE_regL_regL)       OPADDR(JNE_regD_regD)      OPADDR(JNE_regI_s6)         OPADDR(JNE_regI_sym)        OPADDR(JLT_regI_regI)       OPADDR(JLT_regL_regL)      OPADDR(JLT_regD_regD)       OPADDR(JLT_regI_s6)         OPADDR(JLE_regI_regI)       OPADDR(JLE_regL_regL)      OPADDR(JLE_regD_regD)       OPADDR(JLE_regI_s6)         OPADDR(JGT_regI_regI)       OPADDR(JGT_regL_regL)        OPADDR(JGT_regD_regD)       OPADDR(JGT_regI_s6)         OPADDR(JGE_regI_regI)       OPADDR(JGE_regL_regL)      OPADDR(JGE_regD_regD)       OPADDR(JGE_regI_s6)         OPADDR(JGE_regI_arlen)      OPADDR(DECJGTZ_regI)       OPADDR(DECJGEZ_regI)        OPADDR(TEST_regO)           OPADDR(JUMP_s24)            OPADDR(CONV_regI_regL)     OPADDR(CONV_regI_regD)      OPADDR(CONV_regIb_regI)     OPADDR(CONV_regIc_regI)
-      OPADDR(CONV_regIs_regI)     OPADDR(CONV_regL_regI)      OPADDR(CONV_regL_regD)      OPADDR(CONV_regD_regI)      OPADDR(CONV_regD_regL)     OPADDR(RETURN_regI)         OPADDR(RETURN_regO)         OPADDR(RETURN_reg64)        OPADDR(RETURN_void)        OPADDR(RETURN_s24I)         OPADDR(RETURN_null)         OPADDR(RETURN_s24D)         OPADDR(RETURN_s24L)        OPADDR(RETURN_symI)         OPADDR(RETURN_symO)         OPADDR(RETURN_symD)         OPADDR(RETURN_symL)          OPADDR(SWITCH)              OPADDR(NEWARRAY_len)        OPADDR(NEWARRAY_regI)       OPADDR(NEWARRAY_multi)     OPADDR(NEWOBJ)              OPADDR(THROW)               OPADDR(INSTANCEOF)          OPADDR(CHECKCAST)          OPADDR(CALL_normal)         OPADDR(CALL_virtual)        OPADDR(JUMP_regI)           OPADDR(MONITOR_Enter)      OPADDR(MONITOR_Exit)
+      OPADDR(CONV_regIs_regI)     OPADDR(CONV_regL_regI)      OPADDR(CONV_regL_regD)      OPADDR(CONV_regD_regI)      OPADDR(CONV_regD_regL)     OPADDR(RETURN_regI)         OPADDR(RETURN_regO)         OPADDR(RETURN_reg64)        OPADDR(RETURN_void)        OPADDR(RETURN_s24I)         OPADDR(RETURN_null)         OPADDR(RETURN_s24D)         OPADDR(RETURN_s24L)        OPADDR(RETURN_symI)         OPADDR(RETURN_symO)         OPADDR(RETURN_symD)         OPADDR(RETURN_symL)          OPADDR(SWITCH)              OPADDR(NEWARRAY_len)        OPADDR(NEWARRAY_regI)       OPADDR(NEWARRAY_multi)     OPADDR(NEWOBJ)              OPADDR(THROW)               OPADDR(INSTANCEOF)          OPADDR(CHECKCAST)          OPADDR(CALL_normal)         OPADDR(CALL_virtual)        OPADDR(JUMP_regI)           OPADDR(MONITOR_Enter)      OPADDR(MONITOR_Enter2)      OPADDR(MONITOR_Exit)        OPADDR(MONITOR_Exit2)
    }
    address = _address;
    addrMtdParam = _addrMtdParam;
@@ -297,6 +297,9 @@ TC_API TValue executeMethod(Context context, Method method, ...)
          tcvmCreateException(context, NullPointerException, -1, 0, "Instance is null when calling method %s", method->name); // cannot use "goto throwNullPointerException" here, because we can't replace "method" by newMethod
          goto handleException;
       }
+
+      if (method->flags.isSynchronized)
+         lockMutex(method->flags.isStatic? (int32)method->class_ : (int32)regO[0]);
 
       if (method->paramCount > 0)
       {
@@ -545,6 +548,9 @@ contCall:
                   goto popStackFrame; // stack frame must be pulled before handling the exception
                }
             }
+
+            if (newMethod->flags.isSynchronized)
+               lockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[0]);           
             // retrieve the instance reference, the return register and the parameters
             nparam = newMethod->paramCount;
             if (nparam == 0) // is anything being passed along?
@@ -657,7 +663,10 @@ popStackFrame:
                   reg64 = context->reg64;
                }
                context->callStack -= 2;
-
+               newMethod = (Method)context->callStack[0];
+               if (newMethod->flags.isSynchronized)
+                  unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]);
+         
                if (context->thrownException != null) // if an exception was thrown by the native method, handle it
                {
                   nmp->retO = null;
@@ -808,19 +817,23 @@ notYetLinked:
       //         means: where the caller wants the answer to be placed
       // reg.reg: points where the current routine placed the answer
       // so, the movement is: reg.reg -> retReg
-      OPCODE(RETURN_s24I)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = (int32 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt32  = (int32 )code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_null)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = null;                      goto resumePreviousMethod;} else {returnedValue.asObj    = null;                     goto finishMethod;}
-      OPCODE(RETURN_s24D)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (double)code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asDouble = (double)code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_s24L)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (int64 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt64  = (int64 )code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_symI)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = cp->i32[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt32  = cp->i32[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symO)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = cp->str[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asObj    = cp->str[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symD)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->dbl[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asDouble = cp->dbl[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symL)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->i64[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt64  = cp->i64[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_regI)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = regI[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asInt32  = regI[code->reg.reg];      goto finishMethod;}
-      OPCODE(RETURN_regO)  context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = regO[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asObj    = regO[code->reg.reg];      goto finishMethod;}
-      OPCODE(RETURN_reg64) context->callStack -= 2; if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
+      OPCODE(RETURN_s24I)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = (int32 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt32  = (int32 )code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_null)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = null;                      goto resumePreviousMethod;} else {returnedValue.asObj    = null;                     goto finishMethod;}
+      OPCODE(RETURN_s24D)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (double)code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asDouble = (double)code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_s24L)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (int64 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt64  = (int64 )code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_symI)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = cp->i32[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt32  = cp->i32[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symO)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = cp->str[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asObj    = cp->str[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symD)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->dbl[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asDouble = cp->dbl[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symL)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->i64[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt64  = cp->i64[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_regI)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = regI[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asInt32  = regI[code->reg.reg];      goto finishMethod;}
+      OPCODE(RETURN_regO)  context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = regO[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asObj    = regO[code->reg.reg];      goto finishMethod;}
+      OPCODE(RETURN_reg64) context->callStack -= 2; newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]); if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
 returnVoid:
-      OPCODE(RETURN_void)  context->callStack -= 2;
+      OPCODE(RETURN_void)  
+         context->callStack -= 2;
+         newMethod = (Method)context->callStack[0];
+         if (newMethod->flags.isSynchronized)
+            unlockMutex(newMethod->flags.isStatic? (int32)newMethod->class_ : (int32)regO[-method->oCount]);
          if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd)
          {
 resumePreviousMethod:
@@ -952,38 +965,47 @@ handleException:
       OPCODE(TEST_regO) if (regO[code->reg.reg] == null) goto throwNullPointerException; NEXT_OP
       OPCODE(INC_regI)  regI[code->inc.reg] += (int32)code->inc.s16; NEXT_OP
       OPCODE(MONITOR_Enter)
+      OPCODE(MONITOR_Enter2)
       {
-         TCObject mutex;
          // get variables and do some checks
-         o = regO[code->reg_reg.reg0];
+         if (code->s24.op == MONITOR_Enter)        
+            o = regO[code->reg_reg.reg0];
+         else
+            o = cp->str[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
-         {
-            className = OBJ_CLASS(o)->name;
-            goto throwMonitorRuntimeException;
+         {            
+            if (!lockMutex((int32)o))
+               goto throwOutOfMemoryError;              
          }
-         mutex = Lock_mutex(o);
-         if (mutex != null) // guich@tc126_62
-            RESERVE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         else
+         {
+            TCObject mutex = Lock_mutex(o);
+            if (mutex != null) // guich@tc126_62
+               RESERVE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         }
          NEXT_OP
       }
       OPCODE(MONITOR_Exit)
+      OPCODE(MONITOR_Exit2) 
       {
-         TCObject mutex;
          // get variables and do some checks
-         o = regO[code->reg_reg.reg0];
+         if (code->s24.op == MONITOR_Exit)        
+            o = regO[code->reg_reg.reg0];
+         else
+            o = cp->str[code->reg_reg.reg0];
          if (o == null) goto throwNullPointerException;
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
-         {
-            className = OBJ_CLASS(o)->name;
-            goto throwMonitorRuntimeException;
-         }
-         mutex = Lock_mutex(o);
-         if (mutex != null) // guich@tc126_62
-         {
-            MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
-            if (pmutex)
-               RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+            unlockMutex((int32)o);
+         else
+         {   
+            TCObject mutex = Lock_mutex(o);
+            if (mutex != null) // guich@tc126_62
+            {
+               MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
+               if (pmutex)
+                  RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+            }
          }
          NEXT_OP
       }
@@ -1032,9 +1054,6 @@ throwNoSuchMethodError:
    xfree(paramsStr);
    goto handleException;
 }
-throwMonitorRuntimeException:
-   tcvmCreateException(context, RuntimeException, (int32)(code-method->code), 0, "Invalid class '%s'. Only totalcross.util.concurrent.Lock can be used with 'synchronized' keyword", className);
-   goto handleException;
 
 finishMethod:
    context->regO  = regO; // alredy points to the end of the previous called method
