@@ -647,6 +647,7 @@ bool initClassInfo()
    SETUP_MUTEX;
    INIT_MUTEX(classLoaderLock);
    htLoadedClasses = htNew(0xFF,null);
+   htMutexes = htNew(10, null);
    return true;
 }
 
@@ -664,6 +665,7 @@ void destroyClassInfo()
 {
    DESTROY_MUTEX(classLoaderLock);
    htFree(&htLoadedClasses, freeClass);
+   htFree(&htMutexes, freeMutex);
 }
 
 static int32 getArrayElementSize(CharP type)

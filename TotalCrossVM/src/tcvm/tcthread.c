@@ -88,3 +88,42 @@ void threadDestroyAll()
          c->thread = null;
       }
 }
+
+void freeMutex(int32 hash, MUTEX_TYPE* mutex)
+{
+   UNUSED(hash);
+   DESTROY_MUTEX_VAR(*mutex);
+   xfree(mutex);
+}
+
+bool lockMutex(int32 address)
+{
+   MUTEX_TYPE* mutex;
+
+   LOCKVAR(mutexes);
+   if (!(mutex = htGetPtr(&htMutexes, address)))
+   {
+      if (!(mutex = (MUTEX_TYPE*)xmalloc(sizeof(MUTEX_TYPE))))
+      {
+         UNLOCKVAR(mutexes);
+         return false;
+      }
+      SETUP_MUTEX;
+      INIT_MUTEX_VAR(*mutex);
+      if (!htPutPtr(&htMutexes, address, mutex))
+      {                  
+         DESTROY_MUTEX_VAR(*mutex);
+         UNLOCKVAR(mutexes);
+         return false;
+      }
+   }
+   UNLOCKVAR(mutexes);
+   RESERVE_MUTEX_VAR(*mutex); 
+   return true;
+}
+
+void unlockMutex(int32 address)
+{
+   MUTEX_TYPE* mutex = htGetPtr(&htMutexes, address);
+   RELEASE_MUTEX_VAR(*mutex);
+}

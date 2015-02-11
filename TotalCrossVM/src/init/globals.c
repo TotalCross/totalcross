@@ -170,6 +170,7 @@ int32 vmTweaks = 0;
 bool showKeyCodes = false;
 int32 profilerMaxMem = 0; // guich@tc111_4 - also on mem.c
 TCClass lockClass = { 0 };
+Hashtable htMutexes = { 0 };
 
 // file.c
 #ifdef ANDROID
@@ -301,6 +302,7 @@ DECLARE_MUTEX(screen);
 DECLARE_MUTEX(opengl);
 DECLARE_MUTEX(alloc);
 DECLARE_MUTEX(fonts);
+DECLARE_MUTEX(mutexes);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -320,6 +322,7 @@ bool initGlobals()
    INIT_MUTEX(htSSL); 
    INIT_MUTEX(createdHeaps);
    INIT_MUTEX(fonts);
+   INIT_MUTEX(mutexes);
 #if defined (WIN32) || defined (WINCE)
    initWinsock();
 #endif
@@ -340,6 +343,7 @@ void destroyGlobals()
    DESTROY_MUTEX(createdHeaps);
    DESTROY_MUTEX(alloc);
    DESTROY_MUTEX(fonts);
+   DESTROY_MUTEX(mutexes);
 #if defined (WIN32) || defined (WINCE)
    closeWinsock();
 #endif

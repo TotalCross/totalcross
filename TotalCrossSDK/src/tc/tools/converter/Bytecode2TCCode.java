@@ -200,8 +200,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       BC169_ret ji = (BC169_ret)i;
       int regIndex = -1;
       try {regIndex = htForBytecodeRet.get(ji.answer);} catch(Exception e) {}
-      Reg code = new Reg(JUMP_regI, lineOfPC);
-      code.set(regIndex);
+      Reg code = new Reg(JUMP_regI, lineOfPC, regIndex);
       vcode.addElement(code);
       return code;
    }
@@ -1532,8 +1531,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
              so we check it and provide that extra operand that tells it.
              */
             OperandReg regO = stack.empty() ? new OperandRegO() : (OperandReg) stack.pop();
-            Reg code = new Reg(THROW, lineOfPC);
-            code.set(regO.index);
+            Reg code = new Reg(THROW, lineOfPC, regO.index);
             vcode.addElement(code);
             stack.push(regO);
             break;
@@ -1561,18 +1559,26 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case MONITORENTER: //194
          {
-            OperandReg regO = (OperandReg) stack.pop();
-            Reg code = new Reg(MONITOR_Enter, lineOfPC);
-            code.set(regO.index);
+            Operand reg = stack.pop();
+            Reg code;
+            
+            if (reg instanceof OperandReg)
+               code = new Reg(MONITOR_Enter, lineOfPC, ((OperandReg)reg).index);
+            else 
+               code = new Reg(MONITOR_Enter2, lineOfPC, ((OperandSymO)reg).index);
             vcode.addElement(code);
             tc = code;
             break;
          }
          case MONITOREXIT: //195
          {
-            OperandReg regO = (OperandReg) stack.pop();
-            Reg code = new Reg(MONITOR_Exit, lineOfPC);
-            code.set(regO.index);
+            Operand reg = (Operand) stack.pop();
+            Reg code;
+            
+            if (reg instanceof OperandReg)
+               code = new Reg(MONITOR_Exit, lineOfPC, ((OperandReg)reg).index);
+            else 
+               code = new Reg(MONITOR_Exit2, lineOfPC, ((OperandSymO)reg).index);
             vcode.addElement(code);
             tc = code;
             break;

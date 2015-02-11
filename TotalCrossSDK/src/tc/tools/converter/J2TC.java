@@ -57,7 +57,6 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegIStatic = 0;
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
-   private static boolean syncWarned;
 
    public J2TC(JavaClass jc) throws IOException,Exception
    {
@@ -564,12 +563,9 @@ public final class J2TC implements JConstants, TCConstants
       f.isProtected = jm.isProtected;
       f.isPublic = jm.isPublic;
       f.isStatic = jm.isStatic;
+      f.isSynchronized = jm.isSynchronized;
       // jm.isStrict - not used
-      if (jm.isSynchronized && !syncWarned)
-      {
-         System.out.println("Synchronized is not supported for methods nor classes, only for totalcross.util.concurrent.Lock objects.");
-         syncWarned = true;
-      }
+     
       return f;
    }
 
