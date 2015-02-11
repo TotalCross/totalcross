@@ -664,7 +664,12 @@ class IconStore extends Hashtable
             {
                String name = null;
                String file = files[i].toLowerCase();
-               if (file.endsWith("appicon.gif") || file.endsWith("appicon.png"))
+               if (file.endsWith("appicon.gif"))
+               {
+                  System.out.println("*** Warning: appicon.gif is deprecated. Convert it to a 256x256 png with transparency");
+                  name = "appicon";
+               }
+               else if (file.endsWith("appicon.png"))
                   name = "appicon";
                else if (file.endsWith(".bmp") || file.endsWith(".png"))
                {
