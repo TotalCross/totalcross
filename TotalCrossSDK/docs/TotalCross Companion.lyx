@@ -4071,147 +4071,43 @@ Specifying the Icon
 The easiest way to create an icon is to provide a file whose name ends with
  
 \family typewriter
-appicon.gif
+appicon.png
 \family default
- of any SQUARE size (80x80 preferable) and any palette, which will be automatica
-lly converted to the target icon sizes.
+ of SQUARE size 256x256 and any palette, which will be automatically converted
+ to the target icon sizes.
  Put the file in the 
 \family typewriter
 src
 \family default
  folder.
-\end_layout
-
-\begin_layout Standard
-If the appearance of the icons does not look good, you can create some 
-\family typewriter
-.bmp
-\family default
- and 
+ If your icon source is VECTOR-based, you may create better icons by exporting
+ to 
 \family typewriter
 .png
 \family default
- files for each platform: 
-\end_layout
-
-\begin_layout Standard
-\begin_inset Box Frameless
-position "t"
-hor_pos "c"
-has_inner_box 1
-inner_pos "t"
-use_parbox 0
-use_makebox 0
-width "100col%"
-special "none"
-height "1in"
-height_special "totalheight"
-status open
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-Windows
-\begin_inset space ~
-\end_inset
-
-32
+ at the following sizes: 
 \family typewriter
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon32x32x8.bmp
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-iOS
-\family typewriter
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon29x29.png
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon50x50.png 
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon57x57.png
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon58x58.png
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
+icon60x60.png
+\family default
+ (iOS), 
 \family typewriter
 icon72x72.png
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
+\family default
+, 
 \family typewriter
-icon100x100.png
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon114x114.png 
-\end_layout
-
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
+icon96x96.png
+\family default
+, 
 \family typewriter
 icon144x144.png
-\end_layout
-
-\end_deeper
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-Android
+\family default
+, and 
 \family typewriter
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Labeling
-\labelwidthstring Blackberry0
-
-\family typewriter
-icon72x72.png
-\end_layout
-
-\end_deeper
-\end_inset
-
-
+icon192x192
+\family default
+ (Android).
+ Note that TotalCross' algorithm used to downscale the icons, CATMULL-ROM,
+ is the best of the world for that.
 \end_layout
 
 \begin_layout Standard
@@ -6633,6 +6529,18 @@ switch with strings;
 
 \begin_layout Itemize
 clone;
+\end_layout
+
+\begin_layout Itemize
+the keyword 
+\family typewriter
+synchronized
+\family default
+ now works with methods and objects that are not 
+\family typewriter
+Lock
+\family default
+;
 \end_layout
 
 \begin_layout Itemize
