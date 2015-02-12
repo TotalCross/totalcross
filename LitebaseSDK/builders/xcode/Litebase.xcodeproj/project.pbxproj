@@ -102,7 +102,7 @@
 		0F91CCC8154EDFA8000868DA /* NormalFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NormalFile.h; sourceTree = "<group>"; };
 		0F91CCCA154EDFA8000868DA /* LitebaseLex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseLex.c; sourceTree = "<group>"; };
 		0F91CCCB154EDFA8000868DA /* LitebaseLex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseLex.h; sourceTree = "<group>"; };
-		0F91CCCC154EDFA8000868DA /* LitebaseMessage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseMessage.c; sourceTree = "<group>"; };
+		0F91CCCC154EDFA8000868DA /* LitebaseMessage.c */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.c; path = LitebaseMessage.c; sourceTree = "<group>"; };
 		0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseMessage.h; sourceTree = "<group>"; };
 		0F91CCCE154EDFA8000868DA /* LitebaseParser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseParser.c; sourceTree = "<group>"; };
 		0F91CCCF154EDFA8000868DA /* LitebaseParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseParser.h; sourceTree = "<group>"; };

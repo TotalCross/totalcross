@@ -332,7 +332,7 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
          (cand = nodes[idx - 1] = createNode(index))->idx = idx;
          nodeLoad(context, cand);
       }
-      else if (cand->idx == -1)
+      else if (cand->idx == (uint16)-1)
       {
          cand->idx = idx;
          nodeLoad(context, cand);
@@ -902,7 +902,7 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
          (node = nodes[idx - 1] = createNode(index))->idx = idx;
          nodeLoad(context, node);
       }
-      else if (node->idx == -1)
+      else if (node->idx == (uint16)-1)
       {
          node->idx = idx;
          nodeLoad(context, node);
@@ -1246,7 +1246,7 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
    if (valRec != NO_VALUE && (!bitMap->items || IntVectorisBitSet(bitMap, valRec))) 
    {
       PlainDB* plainDB = &origTable->db;
-      int16* offsets = origTable->columnOffsets;
+      uint16* offsets = origTable->columnOffsets;
       int8* types = origTable->columnTypes;
       uint8* origNulls = origTable->columnNulls;
       uint8* tempNulls = tempTable->columnNulls;

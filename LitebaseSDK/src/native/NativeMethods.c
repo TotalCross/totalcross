@@ -1389,7 +1389,6 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
-         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -2102,8 +2101,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
                type;
          bool useCrypto = OBJ_LitebaseUseCrypto(driver),
               useOldCrypto;
-         uint32 j,
-               auxRowId = -1, // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
+         uint32 j;
+         int32 auxRowId = -1, // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
                currentRowId = -1; // juliana@270_26: solved a possible duplicate rowid after issuing LitebaseConnection.recoverTable() on a table.
          int8* types;       
          

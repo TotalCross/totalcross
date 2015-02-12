@@ -106,7 +106,7 @@ TCObject create(Context context, int32 crid, TCObject objParams);
  * @param context The thread context where the function is being executed.
  * @param driver The driver as an int because this function may be called from a hash table.
  */
-void freeLitebase(Context context, int32 driver);
+void freeLitebase(Context context, size_t driver);
 
 /**
  * Used to execute a <code>create table</code> or <code>create index</code> SQL commands.

@@ -248,7 +248,7 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @return The total number of records added to the table or -1 if an error occurs.
  */
 int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, int32* columnIndexesTables, int32 whereClauseType, Heap heap);
+                                             SQLSelectClause* selectClause, size_t* columnIndexesTables, int32 whereClauseType, Heap heap);
 
 /**
  * Counts the number of ON bits.

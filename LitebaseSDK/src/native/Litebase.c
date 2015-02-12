@@ -346,7 +346,7 @@ error1:
  * @param context The thread context where the function is being executed.
  * @param driver The driver as an int because this function may be called from a hash table.
  */
-void freeLitebase(Context context, int32 driver)
+void freeLitebase(Context context, size_t driver)
 {
 	TRACE("freeLitebase")
    TCHARP sourcePath = getLitebaseSourcePath(driver);
@@ -1220,7 +1220,7 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
             
             // Column types.
             xmemmove(newTypes, table->columnTypes, oldCount);
-            (table->columnTypes = newTypes)[oldCount] = type;
+            (table->columnTypes = (int8*)newTypes)[oldCount] = type;
             
             // Column sizes.
             xmemmove(newSizes, table->columnSizes, oldCount << 2);
@@ -1734,7 +1734,6 @@ void encDecTables(NMParams params, bool toEncrypt)
                   error,
                   count = 0,
                   encByte = toEncrypt? 0 : 1;
-            bool deleted = false;
             Heap heap = heapCreate();
             TCHAR buffer[MAX_PATHNAME];
             NATIVE_FILE file;
@@ -1772,7 +1771,7 @@ fileError:
                      fileError(params->currentContext, error, value);
                      goto error;
                   }
-                  if ((error = lbfileReadBytes(file, bytes, 0, 4, &j)) || (error = lbfileClose(&file)))
+                  if ((error = lbfileReadBytes(file, (CharP)bytes, 0, 4, &j)) || (error = lbfileClose(&file)))
                      goto fileError; 
                   if ((toEncrypt? bytes[0] != 0 : (bytes[0] != 1 && bytes[0] != 3)) || bytes[1] != 0 || bytes[2] != 0 || bytes[3] != 0)
                   {
@@ -1799,22 +1798,22 @@ fileError:
                   count = 0;
                   if (xstrstr(value, ".db")) // Changes the .db file crypto information.
                   {
-                     if ((error = lbfileReadBytes(file, bytes, 0, 4, &j)))
+                     if ((error = lbfileReadBytes(file, (CharP)bytes, 0, 4, &j)))
                         goto fileError;
                      bytes[0] = encByte;
-                     if ((error = lbfileSetPos(file, 0)) || (error = lbfileWriteBytes(file, bytes, 0, 4, &j)))
+                     if ((error = lbfileSetPos(file, 0)) || (error = lbfileWriteBytes(file, (CharP)bytes, 0, 4, &j)))
                         goto fileError;
                      count = 4;
                   }
                   
                   // Encrypts or decrypts all the table files data.
-                  while (!(error = lbfileReadBytes(file, bytes, 0, CACHE_INITIAL_SIZE, &j)) && j)
+                  while (!(error = lbfileReadBytes(file, (CharP)bytes, 0, CACHE_INITIAL_SIZE, &j)) && j)
                   {
                      k = j;
                      while (--k >= 0)
                         bytes[k] ^= 0xAA;
                         
-                     if ((error = lbfileSetPos(file, count)) || (error = lbfileWriteBytes(file, bytes, 0, j, &j)))
+                     if ((error = lbfileSetPos(file, count)) || (error = lbfileWriteBytes(file, (CharP)bytes, 0, j, &j)))
                         goto fileError;
                      count += j;      
                   }

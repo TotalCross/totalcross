@@ -293,7 +293,7 @@ JCharP str16LeftTrim(JCharP string16Str, int32* string16Len)
    while (*string16Str == ' ') // Left trim.
    { 
       string16Str++; 
-      *string16Len--;
+      (*string16Len)--;
    }
    return string16Str;
 }

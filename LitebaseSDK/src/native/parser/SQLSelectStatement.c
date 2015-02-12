@@ -642,9 +642,9 @@ Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStateme
 	int32 columnHashes[MAXIMUMS], 
 		   columnSizes[MAXIMUMS], 
 		   aggFunctionsRealParamCols[MAXIMUMS],
-		   columnIndexesTables[MAXIMUMS],
 		   groupCountCols[MAXIMUMS],
-		   aggFunctionsParamCols[MAXIMUMS]; 
+		   aggFunctionsParamCols[MAXIMUMS];
+   size_t columnIndexesTables[MAXIMUMS];
    SQLResultSetField* field;
    SQLResultSetField* param;
    ResultSet* rsTemp = null;
@@ -2077,7 +2077,7 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @return The total number of records added to the table or -1 if an error occurs.
  */
 int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, int32* columnIndexesTables, int32 whereClauseType, Heap heap)
+                                             SQLSelectClause* selectClause, size_t* columnIndexesTables, int32 whereClauseType, Heap heap)
 {
    TRACE("writeResultSetToTable")
    int32 count = table->columnCount;
@@ -2194,7 +2194,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    }
    else // Join.
    {
-      int32* columnIndexesTablesItems = columnIndexesTables;
+      size_t* columnIndexesTablesItems = columnIndexesTables;
 
       i = numTables;
       while (--i >= 0)

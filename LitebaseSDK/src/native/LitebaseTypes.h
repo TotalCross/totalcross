@@ -1736,7 +1736,7 @@ struct Index // renamed from BTree to Index
    /**
     * An array for climbing on index nodes.
     */
-   int32 nodes[4]; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
+   size_t nodes[4]; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
 };
 
 /**

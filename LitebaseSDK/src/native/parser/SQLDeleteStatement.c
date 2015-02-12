@@ -170,7 +170,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
    XFile* dbFile;
 	uint8* basbuf;
 	Index* index;
-	int32 nn,
+	int32 nn=0,
 		   i,
 			id,
 			columnCount,

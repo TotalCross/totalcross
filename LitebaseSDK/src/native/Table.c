@@ -2414,7 +2414,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          
          while (--j >= 0)
          {
-            if (isBitSet(columnNulls0, column = columns[j])) // Only stores non-null values.
+            column = columns[j];
+            if (isBitSet(columnNulls0, column)) // Only stores non-null values.
                valueOk = false;
                
             // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
