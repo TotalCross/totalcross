@@ -46,8 +46,6 @@ extern "C" {
  #define I64_CONST(x) x##LL
 #endif
 
-#define PTRSIZE sizeof(void*)
-
 #ifdef darwin
  #define inline_
 #else
@@ -185,7 +183,7 @@ CharP xstrrchr(CharP str, int32 what);
 #define xstrstr(str, what) strstr(str, what)
 #define xstrprintf sprintf
 #define xstrvprintf vsprintf
-// faster routines to move 8, 4, 2 and PTRSIZE pointers
+// faster routines to move 8, 4, 2 and TSIZE pointers
 #define xmove8(dest,src)                         \
    do                                            \
    {                                             \
@@ -219,7 +217,7 @@ CharP xstrrchr(CharP str, int32 what);
 #define xmoveptr(dest, src)                       \
    do                                            \
    {                                             \
-      if (PTRSIZE == 4)                          \
+      if (TSIZE == 4)                          \
          xmove4(dest,src);                       \
       else                                       \
          xmove8(dest,src);                       \

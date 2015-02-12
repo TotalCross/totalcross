@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-typedef long HTKey; // 64-bit hardware
+typedef size_t HTKey; // 64-bit hardware
    
 typedef struct HTEntryType
 {

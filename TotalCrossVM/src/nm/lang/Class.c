@@ -42,7 +42,7 @@ static void createClassObject(Context currentContext, CharP className, Type type
    {
       if (c != null &&
          (*ret = createObject(currentContext, "java.lang.Class")) != null &&
-         (ptrObj = createByteArray(currentContext, PTRSIZE)) != null)
+         (ptrObj = createByteArray(currentContext, TSIZE)) != null)
       {
          xmoveptr(ARRAYOBJ_START(ptrObj), &c);
          setObjectLock(Class_targetName(*ret) = createStringObjectFromCharP(currentContext,className,-1),UNLOCKED);
@@ -79,7 +79,7 @@ static void createFieldObject(Context currentContext, Field f, int32 idx, TCObje
       Field_index(*ret) = idx;
       Field_primitiveType(*ret) = f->flags.type;
       // field ptr
-      ptrObj = createByteArray(currentContext, PTRSIZE);
+      ptrObj = createByteArray(currentContext, TSIZE);
       if (ptrObj)
          xmoveptr(ARRAYOBJ_START(ptrObj), &f);
       setObjectLock(Field_nativeStruct(*ret) = ptrObj, UNLOCKED);
@@ -107,7 +107,7 @@ static void createMethodObject(Context currentContext, Method m, TCClass declari
       if (m->flags.isAbstract ) mod |= JFLAG_ABSTRACT;
       Method_mod(*ret) = mod;
       // ptr
-      ptrObj = createByteArray(currentContext, PTRSIZE);
+      ptrObj = createByteArray(currentContext, TSIZE);
       if (ptrObj)
          xmoveptr(ARRAYOBJ_START(ptrObj), &m);
       setObjectLock(Method_nativeStruct(*ret) = ptrObj, UNLOCKED);

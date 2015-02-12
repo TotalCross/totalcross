@@ -54,7 +54,7 @@ TESTCASE(jlO_getClass) // java/lang/Object native public final Class getClass();
    c = OBJ_CLASS(p.retO);
    ASSERT2_EQUALS(Sz, c->name, "java.lang.Class");
    ASSERT1_EQUALS(NotNull, Class_nativeStruct(p.retO));
-   ASSERT3_EQUALS(Block, *((TCClass*)ARRAYOBJ_START(Class_nativeStruct(p.retO))), OBJ_CLASS(obj), PTRSIZE);
+   ASSERT3_EQUALS(Block, *((TCClass*)ARRAYOBJ_START(Class_nativeStruct(p.retO))), OBJ_CLASS(obj), TSIZE);
    nameStr = Class_targetName(p.retO);
    ASSERT1_EQUALS(NotNull, nameStr);
    buf = String2CharP(nameStr);

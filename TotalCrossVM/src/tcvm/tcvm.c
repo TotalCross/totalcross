@@ -717,7 +717,7 @@ popStackFrame:
                {
                   goto throwOutOfMemoryError;
                }
-               macArray = cp->boundVirtualMethod[code->mtd.sym] = (MethodAndClass*)heapAlloc(cp->heap, PTRSIZE*16);
+               macArray = cp->boundVirtualMethod[code->mtd.sym] = (MethodAndClass*)heapAlloc(cp->heap, TSIZE*16);
                boundHead = &macArray[thisClass->hash&15];
                goto notYetLinked;
             }

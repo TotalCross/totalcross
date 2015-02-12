@@ -188,7 +188,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
          }
       }
       t->boundNormal = (MethodPtrArray)newArray(sizeof(Method), t->mtdCount, heap);
-      t->boundVirtualMethod = (MethodAndClassPtrArray)newArray(PTRSIZE, t->mtdCount, heap);
+      t->boundVirtualMethod = (MethodAndClassPtrArray)newArray(TSIZE, t->mtdCount, heap);
    }
 
    partSize = tczRead32(tcz);
@@ -600,11 +600,11 @@ static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
       totalI32 = ci.i32InstanceFieldsCount + superI32;
       totalObj = ci.objInstanceFieldsCount + superObj;
       totalV64 = ci.v64InstanceFieldsCount + superV64;
-      c->objSize = totalI32 * 4 + totalObj * PTRSIZE + totalV64 * 8;
+      c->objSize = totalI32 * 4 + totalObj * TSIZE + totalV64 * 8;
       // The fields are placed sequentialy: int1, int2, ..., obj1, obj2, ..., double1/long1, double2/long2, ...
       // In each type, this class instance fields go first and non-private Inherited fields go LAST.
       c->objOfs = totalI32 * 4;
-      c->v64Ofs = totalI32 * 4 + totalObj * PTRSIZE;
+      c->v64Ofs = totalI32 * 4 + totalObj * TSIZE;
 
       // create a matrix of Fields so it can be easily accessed given the register type
       c->instanceFields[RegI] = c->i32InstanceFields;

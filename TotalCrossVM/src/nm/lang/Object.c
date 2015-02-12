@@ -42,7 +42,7 @@ TC_API void jlO_getClass(NMParams p) // java/lang/Object native public final Cla
    TCObject thisObj, classObj, ptrObj;
 
    p->retO = classObj = createObject(p->currentContext, "java.lang.Class");
-   if (classObj != null && (Class_nativeStruct(classObj) = ptrObj = createByteArray(p->currentContext, PTRSIZE)) != null)
+   if (classObj != null && (Class_nativeStruct(classObj) = ptrObj = createByteArray(p->currentContext, TSIZE)) != null)
    {
       thisObj = p->obj[0];
       c = OBJ_CLASS(thisObj);

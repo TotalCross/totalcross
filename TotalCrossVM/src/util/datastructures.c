@@ -33,8 +33,8 @@ TC_API Hashtable htNew(int32 count, Heap heap)
 
    iht.size = 0;
    iht.heap = heap;
-   iht.items = heap ? (HtEntry**)heapAlloc(heap, count*PTRSIZE) : (HtEntry**)xmalloc(count*PTRSIZE);
-   // already done in xmalloc - xmemzero(iht.items,count*PTRSIZE);
+   iht.items = heap ? (HtEntry**)heapAlloc(heap, count*TSIZE) : (HtEntry**)xmalloc(count*TSIZE);
+   // already done in xmalloc - xmemzero(iht.items,count*TSIZE);
    iht.hash  = count-1;
    iht.threshold = count;// * 75 / 100;
    return iht;
@@ -84,7 +84,7 @@ static bool htRehash(Hashtable *table)
       int32 oldCapacity = table->hash+1, i, index;
       HtEntry **oldTable = table->items, *e, *old;
       int32 newCapacity = oldCapacity << 1; // in C: for faster hashes, we must always double the hashtable. (((oldCapacity << 1) + oldCapacity) >> 1) + 1;
-      HtEntry **newTable = (HtEntry **)xmalloc(PTRSIZE*newCapacity);
+      HtEntry **newTable = (HtEntry **)xmalloc(TSIZE*newCapacity);
       //xmemzero(newTable,4*newCapacity);
 
       if (!newTable)
