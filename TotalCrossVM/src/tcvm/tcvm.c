@@ -107,7 +107,7 @@ bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 co
 // macros used in this function
 #define ARRAYCHECK(target)                                                                                \
    if (regO[target##_ar.base] == null)                                                                    \
-      goto throwNullPointerException;                                                                     \
+      {exceptionMsg = "When checking array object"; goto throwNullPointerException;}                      \
    if (regI[target##_ar.idx] < 0 || regI[target##_ar.idx] >= (int32)ARRAYOBJ_LEN(regO[target##_ar.base])) \
    {                                                                                                      \
       tcvmCreateException(context, ArrayIndexOutOfBoundsException, (int32)(code-method->code), 0, "%d must be >= 0 and < %d", \
@@ -147,7 +147,7 @@ bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 co
          }                                                                    \
       }                                                                       \
    }                                                                          \
-   else goto throwNullPointerException;
+   else {exceptionMsg = "Getting instance field"; goto throwNullPointerException;}
 
 #ifdef DIRECT_JUMP // use a direct jump if supported
 uint32 *_address[OPCODE_LENGTH];
@@ -177,6 +177,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    int32 i,len;
    UInt16Array sym;
    bool originalClassIsInterface,directNativeCall=false;
+   CharP exceptionMsg = null;
    TCObject o=null;
    Method newMethod=null;
    uint16 retv;
@@ -264,7 +265,10 @@ TC_API TValue executeMethod(Context context, Method method, ...)
        ((context->regO  + method->oCount)   >= context->regOEnd      && !contextIncreaseRegO(context, &regO))   ||
        ((context->reg64 + method->v64Count) >= context->reg64End     && !contextIncreaseReg64(context, &reg64)) ||
        ((context->callStack+2)              >= context->callStackEnd && !contextIncreaseCallStack(context)))
+   {
+      exceptionMsg = "On context's stack expansion 1";
       goto throwOutOfMemoryError;
+   }
 
 #ifndef ENABLE_TEST_SUITE
    *regO = null;
@@ -367,7 +371,7 @@ mainLoop:
       OPCODE(MOV_regI_aru)        regI[code->reg_ar.reg]  = ((int32*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_regI_sym)        regI[code->reg_sym.reg] = cp->i32[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_regI_s18)        regI[code->s18_reg.reg] = (int32)code->s18_reg.s18; NEXT_OP
-      OPCODE(MOV_regI_arlen)      if (regO[code->reg_ar.base] == null) goto throwNullPointerException; regI[code->reg_ar.reg]  = ARRAYOBJ_LEN(regO[code->reg_ar.base]); NEXT_OP
+      OPCODE(MOV_regI_arlen)      if (regO[code->reg_ar.base] == null) {exceptionMsg = "On array's length object"; goto throwNullPointerException;} regI[code->reg_ar.reg]  = ARRAYOBJ_LEN(regO[code->reg_ar.base]); NEXT_OP
       OPCODE(MOV_regO_regO)       regO[code->reg_reg.reg0] = regO[code->reg_reg.reg1]; NEXT_OP
       OPCODE(MOV_regO_null)       regO[code->reg.reg] = 0; NEXT_OP
       OPCODE(MOV_regO_arc)        ARRAYCHECK(code->reg)
@@ -489,7 +493,10 @@ mainLoop:
             goto notYetLinked;
       OPCODE(CALL_virtual) // 66% of the calls
          if (regO[code->mtd.this_] == null)
+         {
+            exceptionMsg = "On 'this' when calling a method";
             goto throwNullPointerException;
+         }
          thisClass = OBJ_CLASS(regO[code->mtd.this_]);
          if ((macArray = cp->boundVirtualMethod[code->mtd.sym]) != null && // was the method ever linked?
             (mac = macArray[thisClass->hash&15]) != null &&                // map to the hash position
@@ -515,6 +522,7 @@ contCall:
                context->regO  -= newMethod->oCount;
                context->reg64 -= newMethod->v64Count;
                context->callStack -= 2;
+               exceptionMsg = "On context's stack expansion 2";
                goto throwOutOfMemoryError;
             }
 
@@ -714,7 +722,8 @@ popStackFrame:
             if (macArray == null) // have to create the array?
             {
                IF_HEAP_ERROR(cp->heap)
-               {
+               {                            
+                  exceptionMsg = "When expanding MAC array";
                   goto throwOutOfMemoryError;
                }
                macArray = cp->boundVirtualMethod[code->mtd.sym] = (MethodAndClass*)heapAlloc(cp->heap, TSIZE*16);
@@ -773,7 +782,10 @@ notYetLinked:
                {
                   originalClassIsInterface = true;
                   if (regO[code->mtd.this_] == null)
+                  {
+                     exceptionMsg = "Calling an interface's method";
                      goto throwNullPointerException;
+                  }
                   c = OBJ_CLASS(regO[code->mtd.this_]);
                }
             }
@@ -900,10 +912,10 @@ resumePreviousMethod:
          }
          NEXT_OP0
       }
-      OPCODE(NEWARRAY_len)   if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims)) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
-      OPCODE(NEWARRAY_regI)  if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], regI[code->newarray.lenOrRegIOrDims])) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
-      OPCODE(NEWARRAY_multi) if ((regO[code->newarray.regO] = createArrayObjectMulti(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims, (uint8*)(code+1), regI)) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->newarray.regO], UNLOCKED); code += (code->newarray.lenOrRegIOrDims+3)>>2; NEXT_OP
-      OPCODE(NEWOBJ)         if ((regO[code->reg_sym.reg]   = createObjectWithoutCallingDefaultConstructor(context, cp->cls[code->reg_sym.sym])) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->reg_sym.reg], UNLOCKED); NEXT_OP // do not call default constructor
+      OPCODE(NEWARRAY_len)   if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims)) == null) {exceptionMsg = "When creating array with length"; goto throwOutOfMemoryError;} setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
+      OPCODE(NEWARRAY_regI)  if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], regI[code->newarray.lenOrRegIOrDims])) == null) {exceptionMsg = "When creating array with register"; goto throwOutOfMemoryError;} setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
+      OPCODE(NEWARRAY_multi) if ((regO[code->newarray.regO] = createArrayObjectMulti(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims, (uint8*)(code+1), regI)) == null) {exceptionMsg = "When creating multiple arrays"; goto throwOutOfMemoryError;} setObjectLock(regO[code->newarray.regO], UNLOCKED); code += (code->newarray.lenOrRegIOrDims+3)>>2; NEXT_OP
+      OPCODE(NEWOBJ)         if ((regO[code->reg_sym.reg]   = createObjectWithoutCallingDefaultConstructor(context, cp->cls[code->reg_sym.sym])) == null) {exceptionMsg = "When creating object"; goto throwOutOfMemoryError;} setObjectLock(regO[code->reg_sym.reg], UNLOCKED); NEXT_OP // do not call default constructor
       OPCODE(THROW)
          context->thrownException = regO[code->reg_reg.reg0];
 #ifdef ENABLE_TRACE
@@ -962,7 +974,7 @@ handleException:
          }
          NEXT_OP
       }
-      OPCODE(TEST_regO) if (regO[code->reg.reg] == null) goto throwNullPointerException; NEXT_OP
+      OPCODE(TEST_regO) if (regO[code->reg.reg] == null) {exceptionMsg = "Testing object."; goto throwNullPointerException;} NEXT_OP
       OPCODE(INC_regI)  regI[code->inc.reg] += (int32)code->inc.s16; NEXT_OP
       OPCODE(MONITOR_Enter)
       OPCODE(MONITOR_Enter2)
@@ -972,11 +984,14 @@ handleException:
             o = regO[code->reg_reg.reg0];
          else
             o = cp->str[code->reg_reg.reg0];
-         if (o == null) goto throwNullPointerException;
+         if (o == null) {exceptionMsg = "On synchronized object's enter"; goto throwNullPointerException;}
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
          {            
             if (!lockMutex((int32)o))
-               goto throwOutOfMemoryError;              
+            {
+               exceptionMsg = "When locking mutex";
+               goto throwOutOfMemoryError;         
+            }     
          }
          else
          {
@@ -994,7 +1009,7 @@ handleException:
             o = regO[code->reg_reg.reg0];
          else
             o = cp->str[code->reg_reg.reg0];
-         if (o == null) goto throwNullPointerException;
+         if (o == null) {exceptionMsg = "On synchronized object's exit"; goto throwNullPointerException;}
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
             unlockMutex((int32)o);
          else
@@ -1021,14 +1036,14 @@ throwArithmeticException:
    tcvmCreateException(context, ArithmeticException, (int32)(code-method->code), 0, null);
    goto handleException;
 throwNullPointerException:
-   tcvmCreateException(context, NullPointerException, (int32)(code-method->code), 0, null);
+   tcvmCreateException(context, NullPointerException, (int32)(code-method->code), 0, exceptionMsg);
    goto handleException;
 throwClassNotFoundException:
    tcvmCreateException(context, ClassNotFoundException, (int32)(code-method->code), 0, className);
    goto handleException;
 throwOutOfMemoryError:
    if (context->thrownException == null)
-      tcvmCreateException(context, OutOfMemoryError, (int32)(code-method->code), 0, null);
+      tcvmCreateException(context, OutOfMemoryError, (int32)(code-method->code), 0, exceptionMsg);
    goto handleException;
 throwNoSuchFieldError:
    tcvmCreateException(context, NoSuchFieldError, (int32)(code-method->code), 0, "%s %s. The current VM may not be compatible with this program.", className, fieldName);
