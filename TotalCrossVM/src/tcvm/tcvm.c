@@ -1037,13 +1037,17 @@ throwArithmeticException:
    goto handleException;
 throwNullPointerException:
    tcvmCreateException(context, NullPointerException, (int32)(code-method->code), 0, exceptionMsg);
+   exceptionMsg = null;
    goto handleException;
 throwClassNotFoundException:
    tcvmCreateException(context, ClassNotFoundException, (int32)(code-method->code), 0, className);
    goto handleException;
 throwOutOfMemoryError:
    if (context->thrownException == null)
+   {
       tcvmCreateException(context, OutOfMemoryError, (int32)(code-method->code), 0, exceptionMsg);
+      exceptionMsg = null;
+   }
    goto handleException;
 throwNoSuchFieldError:
    tcvmCreateException(context, NoSuchFieldError, (int32)(code-method->code), 0, "%s %s. The current VM may not be compatible with this program.", className, fieldName);
