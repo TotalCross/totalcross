@@ -23,6 +23,9 @@
 #endif
 
 void vmVibrate(int32 ms);
+#ifdef darwin
+int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait);
+#endif
 
 CompatibilityResult areArraysCompatible(Context currentContext, TCObject array, CharP ident)
 {
