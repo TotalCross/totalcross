@@ -661,48 +661,46 @@ public class Control extends GfxSurface
          if (Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported)
          {
             // non-dependant width
+            if (width < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;}
-            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;} else
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;} 
             tempW = width;
             // non-dependant height
+            if (height < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;}
+            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;} else
             if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
             // x
-            if (x > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x = parent.lastX + parent.lastW +(x-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
-               if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x = parent.lastX - width +(x-BEFORE)*fmH/100; else
-               if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x = parent.lastX +(x-SAME)*fmH/100; else
-               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x = cli.x +(x-LEFT)*fmH/100; else
-               if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x = cli.x + cli.width-width +(x-RIGHT)*fmH/100; else
-               if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x = cli.x + ((cli.width-width) >> 1) +(x-CENTER)*fmH/100; else
-               if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x = parent.lastX + (parent.lastW - width)/2 +(x-CENTER_OF)*fmH/100; else // guich@tc110_88
-               if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x = parent.lastX + (parent.lastW - width) +(x-RIGHT_OF)*fmH/100; // guich@tc110_97
-            }
+            if (x < MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x = parent.lastX + parent.lastW +(x-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x = parent.lastX - width +(x-BEFORE)*fmH/100; else
+            if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x = parent.lastX +(x-SAME)*fmH/100; else
+            if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x = cli.x +(x-LEFT)*fmH/100; else
+            if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x = cli.x + cli.width-width +(x-RIGHT)*fmH/100; else
+            if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x = cli.x + ((cli.width-width) >> 1) +(x-CENTER)*fmH/100; else
+            if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x = parent.lastX + (parent.lastW - width)/2 +(x-CENTER_OF)*fmH/100; else // guich@tc110_88
+            if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x = parent.lastX + (parent.lastW - width) +(x-RIGHT_OF)*fmH/100; // guich@tc110_97
             // y
-            if (y > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y = parent.lastY + parent.lastH +(y-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
-               if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y = parent.lastY - height +(y-BEFORE)*fmH/100; else
-               if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y = parent.lastY +(y-SAME)*fmH/100; else
-               if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y = cli.y +(y-TOP)*fmH/100; else
-               if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y = cli.y + cli.height-height +(y-BOTTOM)*fmH/100; else
-               if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y = cli.y + ((cli.height-height) >> 1) +(y-CENTER)*fmH/100; else
-               if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y = parent.lastY + (parent.lastH - height)/2 +(y-CENTER_OF)*fmH/100; else // guich@tc110_88
-               if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y = parent.lastY + (parent.lastH - height) +(y-BOTTOM_OF)*fmH/100; // guich@tc110_97
-            }
+            if (y <= MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y = parent.lastY + parent.lastH +(y-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y = parent.lastY - height +(y-BEFORE)*fmH/100; else
+            if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y = parent.lastY +(y-SAME)*fmH/100; else
+            if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y = cli.y +(y-TOP)*fmH/100; else
+            if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y = cli.y + cli.height-height +(y-BOTTOM)*fmH/100; else
+            if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y = cli.y + ((cli.height-height) >> 1) +(y-CENTER)*fmH/100; else
+            if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y = parent.lastY + (parent.lastH - height)/2 +(y-CENTER_OF)*fmH/100; else // guich@tc110_88
+            if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y = parent.lastY + (parent.lastH - height) +(y-BOTTOM_OF)*fmH/100; // guich@tc110_97
             // width that depends on x
             if (width > MAXABSOLUTECOORD)
             {
@@ -720,48 +718,46 @@ public class Control extends GfxSurface
          else
          {
             // non-dependant width
+            if (width < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;}
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;} else
             if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
             tempW = width;
             // non-dependant height
+            if (height < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
             if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;}
+            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;} else
             if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
             // x
-            if (x > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
-               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
-               if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
-               if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
-               if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
-               if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
-               if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
-               if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
-            }
+            if (x < MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
+            if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
+            if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
+            if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
+            if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
+            if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
+            if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
+            if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
             // y
-            if (y > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
-               if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
-               if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
-               if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
-               if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
-               if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
-               if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
-               if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
-            }
+            if (y <= MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
+            if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
+            if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
+            if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
+            if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
+            if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
+            if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
             // width that depends on x
             if (width > MAXABSOLUTECOORD)
             {
@@ -780,7 +776,8 @@ public class Control extends GfxSurface
          // quick check to see if all bounds were set.
          if (Settings.onJavaSE) // guich@450_36: do these checks only if running on desktop
          {
-            if (cli.width == 0 || cli.height == 0) throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
+            if (cli.width == 0 || cli.height == 0) 
+               throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
             else
 	         if (x+y+width+height > RANGE)
 	         {
