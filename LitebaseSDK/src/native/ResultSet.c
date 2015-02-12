@@ -679,7 +679,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
 			   matrixEntry = (TCObject*)ARRAYOBJ_START(params->retO);
             if (!(matrix = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
 				   return;
-			   xmemmove(ARRAYOBJ_START(matrix), matrixEntry, PTRSIZE * validRecords); 
+			   xmemmove(ARRAYOBJ_START(matrix), matrixEntry, TSIZE * validRecords); 
 			   TC_setObjectLock(params->retO = matrix, UNLOCKED);
 		   }
       }

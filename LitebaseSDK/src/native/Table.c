@@ -439,9 +439,9 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    columnHashes = table->columnHashes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    columnTypes = table->columnTypes = (int8*)TC_heapAlloc(heap, columnCount);
    columnSizes = table->columnSizes = (int32*)TC_heapAlloc(heap, columnCount << 2);
-   table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
+   table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * TSIZE);
    columnAttrs = table->columnAttrs = (uint8*)TC_heapAlloc(heap, columnCount);
-   defaultValues = table->defaultValues = (SQLValue**)TC_heapAlloc(heap, columnCount * PTRSIZE); 
+   defaultValues = table->defaultValues = (SQLValue**)TC_heapAlloc(heap, columnCount * TSIZE);
    table->storeNulls = (uint8*)TC_heapAlloc(heap, NUMBEROFBYTES(columnCount)); 
 
    xmemmove(columnAttrs, ptr, columnCount); // Reads the column attributes.
@@ -901,7 +901,7 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
 	   table->numberComposedPKCols = composedPKColsSize;
 	   table->composedPrimaryKeyCols = composedPKCols;
 
-      table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE); // Initializes the indices.
+      table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * TSIZE); // Initializes the indices.
       return tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves the metadata after everything was set.
    }
    return true;
@@ -1046,7 +1046,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
 
    // Cleans the <code>storeNulls</code>.
    xmemzero(tableStoreNulls, NUMBEROFBYTES(count));
-   xmemzero(outRecord, (MAXIMUMS + 1) * PTRSIZE); // juliana@225_5.
+   xmemzero(outRecord, (MAXIMUMS + 1) * TSIZE); // juliana@225_5.
    
    // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
    // Finds the index of the field on the table and reorders the record.
@@ -1065,7 +1065,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
    }
    *nValues = count;
 
-   xmemmove(record, outRecord, count * PTRSIZE); // Saves the ordered record.
+   xmemmove(record, outRecord, count * TSIZE); // Saves the ordered record.
 	return true;
 }
 
@@ -1388,7 +1388,7 @@ void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp) /
       }
    }
    if (temp != source) // If the final sorted array is not at the source, copies to it.
-      xmemmove(source, temp, length * PTRSIZE);
+      xmemmove(source, temp, length * TSIZE);
 } 
 
 /**
@@ -1893,9 +1893,9 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
          columns = composedIndex->columns;
 		
       // Allocates the records for the sorting.
-      values = (SQLValue***)TC_heapAlloc(heap, PTRSIZE * rows);
+      values = (SQLValue***)TC_heapAlloc(heap, TSIZE * rows);
 	   while (--j >= 0)
-		   values[j] = (SQLValue**)TC_heapAlloc(heap, PTRSIZE * indexCount);
+		   values[j] = (SQLValue**)TC_heapAlloc(heap, TSIZE * indexCount);
 
 		while (++i < n)
 		{
@@ -1963,7 +1963,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
          // A radix sort is done for integer types. It is much more efficient than quick sort.
 			if (indexSize == 1 && (type == SHORT_TYPE || type == INT_TYPE || type == LONG_TYPE || type == DATE_TYPE))
 			{
-				SQLValue*** tempValues = (SQLValue***)TC_heapAlloc(heap, rows * PTRSIZE);
+				SQLValue*** tempValues = (SQLValue***)TC_heapAlloc(heap, rows * TSIZE);
 				radixSort(values, rows, type, tempValues);
 			}
 			else
@@ -2269,7 +2269,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          vOlds[i] = values[composedPrimaryKeyCols[i]];
       if (!checkPrimaryKey(context, table, vOlds, recPos, addingNewRecord, heap))
          return false; // guich@564_18: changed from -1 to 0.
-      xmemzero(vOlds,  columnCount * PTRSIZE);
+      xmemzero(vOlds,  columnCount * TSIZE);
    }
 
    if (addingNewRecord) // Adding a record?
@@ -3169,7 +3169,7 @@ uint8* readStringArray(uint8* buffer, CharP** strings, int32 count, Heap heap)
    int32 i = -1;
 
    buffer += 2;
-   *strings = (CharP*)TC_heapAlloc(heap, count * PTRSIZE);
+   *strings = (CharP*)TC_heapAlloc(heap, count * TSIZE);
    while (++i < count)
       buffer = readString(buffer, &((*strings)[i]), heap);
    return buffer;

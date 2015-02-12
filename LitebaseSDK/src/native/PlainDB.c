@@ -594,7 +594,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                int32 size;
                XFile* dbo = &plainDB->dbo;
 
-               if ((dbo->finalPos + (size = PTRSIZE + 4)) > (int32)dbo->size 
+               if ((dbo->finalPos + (size = TSIZE + 4)) > (int32)dbo->size
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
 					    return false;
 
@@ -603,7 +603,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 
                // Saves the .dbo position and the physical plainDB pointer. 
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
-                || !plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, PTRSIZE))
+                || !plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, TSIZE))
 			         return false;
                dbo->finalPos = dbo->position;
                return true;
@@ -695,7 +695,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 			   {
                // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
                // If the .dbo is full, grows it. 
-				   if ((dbo->finalPos + (size = PTRSIZE + 4)) > (int32)dbo->size 
+				   if ((dbo->finalPos + (size = TSIZE + 4)) > (int32)dbo->size
                 && !plainDB->growTo(context, dbo, dbo->size + size * MAX(16, plainDB->rowInc))) 
 					    return false;
 
@@ -704,7 +704,7 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 
                // Saves the .dbo position and the physical plainDB pointer. 
 				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
-                || !plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, PTRSIZE))
+                || !plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, TSIZE))
 			         return false;
                dbo->finalPos = dbo->position;
 			   }

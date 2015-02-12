@@ -1298,7 +1298,7 @@ bool createListResultSetForSelect(Context context, SQLResultSetTable** tableList
    int32 i = -1;
    bool hasComposedIndex = false;
 
-   xmemzero(rsList, size * PTRSIZE);
+   xmemzero(rsList, size * TSIZE);
    while (++i < size)
    {
       resultSet = createResultSet((table = tableList[i]->table), whereClause, heap);
@@ -2048,7 +2048,7 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
          return false;
       }
 
-      table->columnNames = (CharP*)TC_heapAlloc(heap, fieldsCount * PTRSIZE);
+      table->columnNames = (CharP*)TC_heapAlloc(heap, fieldsCount * TSIZE);
    
       while (--fieldsCount >= 0)
       {
@@ -2081,7 +2081,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
 {
    TRACE("writeResultSetToTable")
    int32 count = table->columnCount;
-   SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
+   SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * TSIZE);
    ResultSet* resultSet = *list;
    PlainDB* tempDB = &table->db;
    PlainDB* selectDB = &(*selectClause->tableList)->table->db;
@@ -2109,7 +2109,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    j = table->columnCount;
    while (--j >= 0)
       if (sizes[j])
-         size += 4 + PTRSIZE;  
+         size += 4 + TSIZE;  
  
    // juliana@223_14: solved possible memory problems.
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.

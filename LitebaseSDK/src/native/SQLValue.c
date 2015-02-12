@@ -27,7 +27,7 @@ SQLValue** newSQLValues(int32 count, Heap heap)
 	TRACE("newSQLValues")
    SQLValue** values;
 
-   values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
+   values = (SQLValue**)TC_heapAlloc(heap, count * TSIZE);
    while (--count >= 0)
       values[count] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
    return values;

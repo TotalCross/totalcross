@@ -47,8 +47,8 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, Lit
 	if (isPrepared) // Some structures from the parser does not need to be reallocated when not using prepared statements.
 	{
 		updateStmt->rsTable = initSQLResultSetTable((*parser->tableList)->tableName, (*parser->tableList)->aliasTableName, heap);
-      fields = updateStmt->fields = (CharP*)TC_heapAlloc(heap, i * PTRSIZE);
-	   xmemmove(updateStmt->fields, parser->fieldNames, i * PTRSIZE);
+      fields = updateStmt->fields = (CharP*)TC_heapAlloc(heap, i * TSIZE);
+	   xmemmove(updateStmt->fields, parser->fieldNames, i * TSIZE);
 		if (whereClause)
 		{
 			whereClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, whereClause->fieldsCount << 2);
@@ -73,7 +73,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, Lit
 		return null;
 
 	// Alocates space for the record and the nulls.
-	updateStmt->record = (SQLValue**)TC_heapAlloc(heap, i = table->columnCount * PTRSIZE);
+	updateStmt->record = (SQLValue**)TC_heapAlloc(heap, i = table->columnCount * TSIZE);
 	updateStmt->storeNulls = (uint8*)TC_heapAlloc(heap, NUMBEROFBYTES(i));
 
 	// Allocates space for the list of the parameters. Worst case: all fields are parameters.

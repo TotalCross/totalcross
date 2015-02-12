@@ -77,7 +77,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    index->heap = heap;
    
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
-   index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
+   index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * TSIZE); // Creates the first index level. 
    
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.

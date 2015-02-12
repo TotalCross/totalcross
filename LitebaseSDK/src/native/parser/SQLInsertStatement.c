@@ -51,7 +51,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, TCObject driver, Lit
    if (((LitebaseParser*)parser)->fieldNamesSize) // Checks if it is not using the default order.
 	{
 		// Gets the fields and stores them.
-		CharP* fields = insertStmt->fields = (CharP*)TC_heapAlloc(heap, i * PTRSIZE);
+		CharP* fields = insertStmt->fields = (CharP*)TC_heapAlloc(heap, i * TSIZE);
       CharP* fieldNames = parser->fieldNames;
 		
       *fields = null;
@@ -69,7 +69,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, TCObject driver, Lit
 		xmemset(insertStmt->storeNulls = table->storeNulls, false, NUMBEROFBYTES(table->columnCount));
 
 	// Allocates the record: number of fields + rowid.
-	record = insertStmt->record = (SQLValue**)TC_heapAlloc(heap, (i = table->columnCount) * PTRSIZE);
+	record = insertStmt->record = (SQLValue**)TC_heapAlloc(heap, (i = table->columnCount) * TSIZE);
     
    // Allocates space for the list of the parameters. Worst case: all fields are parameters.
 	insertStmt->paramIndexes = (uint8*)TC_heapAlloc(heap, i);

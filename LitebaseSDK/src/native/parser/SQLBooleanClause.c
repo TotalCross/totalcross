@@ -124,7 +124,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                {
                   originalTree = curTree;
                   count = 0;
-                  xmemzero(indexesValueTree, fieldsCount * PTRSIZE);
+                  xmemzero(indexesValueTree, fieldsCount * TSIZE);
                   xmemzero(columns, fieldsCount);
                   xmemzero(operators, fieldsCount);
 

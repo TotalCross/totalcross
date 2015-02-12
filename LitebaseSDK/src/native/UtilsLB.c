@@ -885,7 +885,7 @@ MemoryUsageHT muNew(int32 count)
    MemoryUsageHT table;
    
    table.size = 0;
-   table.items = (MemoryUsageEntry**)xmalloc(count * PTRSIZE);
+   table.items = (MemoryUsageEntry**)xmalloc(count * TSIZE);
    table.hash  = (table.threshold = count) - 1;
    
    return table;
@@ -934,7 +934,7 @@ bool muRehash(MemoryUsageHT* table)
          index,
          newCapacity = oldCapacity << 1; 
    MemoryUsageEntry** oldTable = table->items;
-   MemoryUsageEntry** newTable = (MemoryUsageEntry **)xmalloc(PTRSIZE * newCapacity);
+   MemoryUsageEntry** newTable = (MemoryUsageEntry **)xmalloc(TSIZE * newCapacity);
    MemoryUsageEntry* entry;
    MemoryUsageEntry* old;
   

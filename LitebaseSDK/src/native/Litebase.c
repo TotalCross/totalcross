@@ -468,7 +468,7 @@ error:
       types = (int8*)TC_heapAlloc(heap, count);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
       names = (CharP*)TC_heapAlloc(heap, count << 2);
-      defaultValues = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
+      defaultValues = (SQLValue**)TC_heapAlloc(heap, count * TSIZE);
       columnAttrs = (uint8*)TC_heapAlloc(heap, count);
 
       // Creates column 0 (rowid).
