@@ -52,8 +52,6 @@
 		0F8C8C8C1549CFC700E0967F /* demo.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A381549CFC700E0967F /* demo.h */; };
 		0F8C8C8D1549CFC700E0967F /* globals.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A391549CFC700E0967F /* globals.c */; };
 		0F8C8C8E1549CFC700E0967F /* globals.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A3A1549CFC700E0967F /* globals.h */; };
-		0F8C8C911549CFC700E0967F /* noras.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A3E1549CFC700E0967F /* noras.inc */; };
-		0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A401549CFC700E0967F /* noras_274.inc */; };
 		0F8C8C981549CFC700E0967F /* settings_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A471549CFC700E0967F /* settings_c.h */; };
 		0F8C8C991549CFC700E0967F /* startup_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8A481549CFC700E0967F /* startup_c.h */; };
 		0F8C8C9A1549CFC700E0967F /* settings.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8A491549CFC700E0967F /* settings.c */; };
@@ -340,9 +338,6 @@
 		0F8C8DF21549CFC700E0967F /* tcvm.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C031549CFC700E0967F /* tcvm.h */; };
 		0F8C8DF31549CFC700E0967F /* tcvm_test.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C041549CFC700E0967F /* tcvm_test.h */; };
 		0F8C8DF41549CFC700E0967F /* tcthread_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C061549CFC700E0967F /* tcthread_c.h */; };
-		0F8C8DF51549CFC700E0967F /* GenTestCalls.java in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8C0D1549CFC700E0967F /* GenTestCalls.java */; };
-		0F8C8DF61549CFC700E0967F /* TestExt.java in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8C111549CFC700E0967F /* TestExt.java */; };
-		0F8C8DF71549CFC700E0967F /* TestTypes.java in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8C121549CFC700E0967F /* TestTypes.java */; };
 		0F8C8DF81549CFC700E0967F /* tc_tests.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8C131549CFC700E0967F /* tc_tests.c */; };
 		0F8C8DF91549CFC700E0967F /* tc_testsuite.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F8C8C141549CFC700E0967F /* tc_testsuite.c */; };
 		0F8C8DFA1549CFC700E0967F /* tc_testsuite.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F8C8C151549CFC700E0967F /* tc_testsuite.h */; };
@@ -462,11 +457,6 @@
 		0F8C8A381549CFC700E0967F /* demo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = demo.h; sourceTree = "<group>"; };
 		0F8C8A391549CFC700E0967F /* globals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = globals.c; sourceTree = "<group>"; };
 		0F8C8A3A1549CFC700E0967F /* globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = globals.h; sourceTree = "<group>"; };
-		0F8C8A3E1549CFC700E0967F /* noras.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras.inc; sourceTree = "<group>"; };
-		0F8C8A3F1549CFC700E0967F /* noras_20.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras_20.inc; sourceTree = "<group>"; };
-		0F8C8A401549CFC700E0967F /* noras_274.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras_274.inc; sourceTree = "<group>"; };
-		0F8C8A411549CFC700E0967F /* noras_338.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras_338.inc; sourceTree = "<group>"; };
-		0F8C8A421549CFC700E0967F /* noras_none.inc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.pascal; path = noras_none.inc; sourceTree = "<group>"; };
 		0F8C8A471549CFC700E0967F /* settings_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = settings_c.h; sourceTree = "<group>"; };
 		0F8C8A481549CFC700E0967F /* startup_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = startup_c.h; sourceTree = "<group>"; };
 		0F8C8A491549CFC700E0967F /* settings.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = settings.c; sourceTree = "<group>"; };
@@ -756,16 +746,6 @@
 		0F8C8C031549CFC700E0967F /* tcvm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcvm.h; sourceTree = "<group>"; };
 		0F8C8C041549CFC700E0967F /* tcvm_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcvm_test.h; sourceTree = "<group>"; };
 		0F8C8C061549CFC700E0967F /* tcthread_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcthread_c.h; sourceTree = "<group>"; };
-		0F8C8C091549CFC700E0967F /* barbara.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = barbara.jpg; sourceTree = "<group>"; };
-		0F8C8C0A1549CFC700E0967F /* gen.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gen.bat; sourceTree = "<group>"; };
-		0F8C8C0B1549CFC700E0967F /* GenTestCalls$TestCase.class */ = {isa = PBXFileReference; lastKnownFileType = compiled.javaclass; path = GenTestCalls$TestCase.class; sourceTree = "<group>"; };
-		0F8C8C0C1549CFC700E0967F /* GenTestCalls.class */ = {isa = PBXFileReference; lastKnownFileType = compiled.javaclass; path = GenTestCalls.class; sourceTree = "<group>"; };
-		0F8C8C0D1549CFC700E0967F /* GenTestCalls.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = GenTestCalls.java; sourceTree = "<group>"; };
-		0F8C8C0E1549CFC700E0967F /* makejtests.bat */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = makejtests.bat; sourceTree = "<group>"; };
-		0F8C8C0F1549CFC700E0967F /* pal685.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pal685.png; sourceTree = "<group>"; };
-		0F8C8C101549CFC700E0967F /* test.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = test.wav; sourceTree = "<group>"; };
-		0F8C8C111549CFC700E0967F /* TestExt.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TestExt.java; sourceTree = "<group>"; };
-		0F8C8C121549CFC700E0967F /* TestTypes.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TestTypes.java; sourceTree = "<group>"; };
 		0F8C8C131549CFC700E0967F /* tc_tests.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tc_tests.c; sourceTree = "<group>"; };
 		0F8C8C141549CFC700E0967F /* tc_testsuite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tc_testsuite.c; sourceTree = "<group>"; };
 		0F8C8C151549CFC700E0967F /* tc_testsuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tc_testsuite.h; sourceTree = "<group>"; };
@@ -970,7 +950,6 @@
 				0F8C8A381549CFC700E0967F /* demo.h */,
 				0F8C8A391549CFC700E0967F /* globals.c */,
 				0F8C8A3A1549CFC700E0967F /* globals.h */,
-				0F8C8A3D1549CFC700E0967F /* noras_ids */,
 				0F8C8A461549CFC700E0967F /* posix */,
 				0F8C8A491549CFC700E0967F /* settings.c */,
 				0F8C8A4A1549CFC700E0967F /* settings.h */,
@@ -988,18 +967,6 @@
 				0F8C8A361549CFC700E0967F /* startup_c.m */,
 			);
 			path = darwin;
-			sourceTree = "<group>";
-		};
-		0F8C8A3D1549CFC700E0967F /* noras_ids */ = {
-			isa = PBXGroup;
-			children = (
-				0F8C8A3E1549CFC700E0967F /* noras.inc */,
-				0F8C8A3F1549CFC700E0967F /* noras_20.inc */,
-				0F8C8A401549CFC700E0967F /* noras_274.inc */,
-				0F8C8A411549CFC700E0967F /* noras_338.inc */,
-				0F8C8A421549CFC700E0967F /* noras_none.inc */,
-			);
-			path = noras_ids;
 			sourceTree = "<group>";
 		};
 		0F8C8A461549CFC700E0967F /* posix */ = {
@@ -1737,29 +1704,11 @@
 		0F8C8C071549CFC700E0967F /* tests */ = {
 			isa = PBXGroup;
 			children = (
-				0F8C8C081549CFC700E0967F /* java */,
 				0F8C8C131549CFC700E0967F /* tc_tests.c */,
 				0F8C8C141549CFC700E0967F /* tc_testsuite.c */,
 				0F8C8C151549CFC700E0967F /* tc_testsuite.h */,
 			);
 			path = tests;
-			sourceTree = "<group>";
-		};
-		0F8C8C081549CFC700E0967F /* java */ = {
-			isa = PBXGroup;
-			children = (
-				0F8C8C091549CFC700E0967F /* barbara.jpg */,
-				0F8C8C0A1549CFC700E0967F /* gen.bat */,
-				0F8C8C0B1549CFC700E0967F /* GenTestCalls$TestCase.class */,
-				0F8C8C0C1549CFC700E0967F /* GenTestCalls.class */,
-				0F8C8C0D1549CFC700E0967F /* GenTestCalls.java */,
-				0F8C8C0E1549CFC700E0967F /* makejtests.bat */,
-				0F8C8C0F1549CFC700E0967F /* pal685.png */,
-				0F8C8C101549CFC700E0967F /* test.wav */,
-				0F8C8C111549CFC700E0967F /* TestExt.java */,
-				0F8C8C121549CFC700E0967F /* TestTypes.java */,
-			);
-			path = java;
 			sourceTree = "<group>";
 		};
 		0F8C8C161549CFC700E0967F /* util */ = {
@@ -2173,8 +2122,6 @@
 				0F8C8C8A1549CFC700E0967F /* startup_c.m in Sources */,
 				0F8C8C8B1549CFC700E0967F /* demo.c in Sources */,
 				0F8C8C8D1549CFC700E0967F /* globals.c in Sources */,
-				0F8C8C911549CFC700E0967F /* noras.inc in Sources */,
-				0F8C8C931549CFC700E0967F /* noras_274.inc in Sources */,
 				0F8C8C9A1549CFC700E0967F /* settings.c in Sources */,
 				0F8C8C9C1549CFC700E0967F /* startup.c in Sources */,
 				0F8C8CA21549CFC700E0967F /* jcapimin.c in Sources */,
@@ -2306,9 +2253,6 @@
 				0F8C8DED1549CFC700E0967F /* tcmethod.c in Sources */,
 				0F8C8DEF1549CFC700E0967F /* tcthread.c in Sources */,
 				0F8C8DF11549CFC700E0967F /* tcvm.c in Sources */,
-				0F8C8DF51549CFC700E0967F /* GenTestCalls.java in Sources */,
-				0F8C8DF61549CFC700E0967F /* TestExt.java in Sources */,
-				0F8C8DF71549CFC700E0967F /* TestTypes.java in Sources */,
 				0F8C8DF81549CFC700E0967F /* tc_tests.c in Sources */,
 				0F8C8DF91549CFC700E0967F /* tc_testsuite.c in Sources */,
 				0F8C8DFC1549CFC700E0967F /* debug_c.m in Sources */,
