@@ -154,7 +154,7 @@ void threadCreateJava(Context currentContext, TCObject this_);
 void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used when exiting the application or the thread itself
 void threadDestroyAll(); // destroy all threads
 
-void freeMutex(int32 hash, MUTEX_TYPE* mutex);
+void freeMutex(int32 hash, VoidP mutex);
 bool lockMutex(int32 address);
 void unlockMutex(int32 address);
 

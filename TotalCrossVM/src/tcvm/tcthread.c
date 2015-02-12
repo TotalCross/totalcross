@@ -89,8 +89,9 @@ void threadDestroyAll()
       }
 }
 
-void freeMutex(int32 hash, MUTEX_TYPE* mutex)
+void freeMutex(int32 hash, VoidP pmutex)
 {
+   MUTEX_TYPE* mutex = (MUTEX_TYPE*)pmutex;
    UNUSED(hash);
    DESTROY_MUTEX_VAR(*mutex);
    xfree(mutex);
