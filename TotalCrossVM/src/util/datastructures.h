@@ -250,13 +250,14 @@ DeclareList(VoidP); // VoidPs
 #define newArray(sizeofElem,len,mp) privateNewArray(sizeofElem,len,mp,__FILE__,__LINE__)
 void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, int line);
 
-#define freeArray(p) do {if (p) {uint8* b = ((uint8*)p)-4; xfree(b); p = null;}} while (0)
-#define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*)p)-4; heapFree(heap, b); p = null;}} while (0)
+#define freeArray(p) do {if (p) {uint8* b = ((uint8*)p)-TSIZE; xfree(b); p = null;}} while (0)
+#define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*)p)-TSIZE; heapFree(heap, b); p = null;}} while (0)
 
 #define newArrayOf(type, len, heap) (type)newArray(sizeof(T##type), len, heap)
 #define newPtrArrayOf(type, len, heap) (type##Array)newArray(sizeof(type), len, heap) // used for primitive types, TCObject and (J)CharP arrays
 
-#define ARRAYLEN(x) (((uint32*)x)[-1])
+#define SET_ARRAYLEN(x) (((size_t*)x)[-1])
+#define ARRAYLEN(x) ((int32)(((size_t*)x)[-1]))
 #define ARRAYLENV(x) ((x)?ARRAYLEN(x):0) // checks if x is null, returning 0 if yes
 
 ///////////////////////////////////////////////////////////////////////////

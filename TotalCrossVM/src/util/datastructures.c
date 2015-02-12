@@ -342,12 +342,12 @@ void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, in
 {
    if (len)
    {
-      int32 size = (len*sizeofElem)+4;
+      int32 size = (len*sizeofElem)+TSIZE;
       uint8* p = mp ? heapAlloc(mp, size) : xmalloc(size);
       if (p)
       {
-         p += 4;
-         ARRAYLEN(p) = len;
+         p += TSIZE;
+         SET_ARRAYLEN(p) = len;
          return p;
       }
       else
