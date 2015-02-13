@@ -146,6 +146,7 @@ public class MainMenu extends BaseContainer
    
    String[] utilItems =
    {
+      "PDF writer",
       "Zip",
       "Zlib",
    };
@@ -262,6 +263,7 @@ public class MainMenu extends BaseContainer
    };     
    Class[] utilClasses =
    {      
+      PDFWriterSample.class,
       ZipSample.class,
       ZLibSample.class,
    };     
