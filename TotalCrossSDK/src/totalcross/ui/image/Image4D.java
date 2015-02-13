@@ -335,7 +335,7 @@ public class Image4D extends GfxSurface
       }
    }
 
-   native protected void getPixelRow(byte []fillIn, int y);
+   native public void getPixelRow(byte []fillIn, int y);
 
    private static final int SCALED_INSTANCE = 0;
    private static final int SMOOTH_SCALED_INSTANCE = 1;
