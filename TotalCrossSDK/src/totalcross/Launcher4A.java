@@ -1525,7 +1525,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static boolean sendToUser,bugreportStarted,bugreportFinished;
    private static void createBugreport() 
    {
-      if (Settings4A.buildNumber == 0) return; // dont use when debugging
       if (!bugreportStarted)
       {
          bugreportStarted = true;
@@ -1588,6 +1587,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static int bugreportSending;
    private static void sendBugreport(final String toAddr, final String appVersion, final boolean alwaysSend) // called from here
    {
+      if (Settings4A.buildNumber != 0) // dont use when debugging
       new Thread()
       {
          public void run()
