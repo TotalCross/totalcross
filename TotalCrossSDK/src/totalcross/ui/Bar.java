@@ -104,7 +104,7 @@ public class Bar extends Container
                {
                   leftIcon = null;
                   leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH);
-               } catch (ImageException e) {icon = icon0;}
+               } catch (Exception e) {icon = icon0;}
          }
          else
          try
@@ -112,7 +112,7 @@ public class Bar extends Container
             icon = null;
             if (icon0 != null)
                icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH);
-         } catch (ImageException e) {icon = icon0;}
+         } catch (Exception e) {icon = icon0;}
       }
       
       public void onBoundsChanged(boolean b)
