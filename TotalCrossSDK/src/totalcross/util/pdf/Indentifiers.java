@@ -43,7 +43,14 @@ public class Indentifiers
       int dts_h = m / 60;
       int dts_m = m % 60;
       String sign = m > 0 ? "+" : "-";
-      return String.format("(D:%40d%20d%20d%20d%20d%s%20d'%20d')", date.year, date.month, date.day, date.hour, date.minute, sign, dts_h, dts_m);
+      return "(D:"+
+            Convert.spacePad(Convert.toString(date.year),40,true)+
+            Convert.spacePad(Convert.toString(date.month),20,true)+
+            Convert.spacePad(Convert.toString(date.day),20,true)+
+            Convert.spacePad(Convert.toString(date.hour),20,true)+
+            Convert.spacePad(Convert.toString(date.minute),20,true)+sign+
+            Convert.spacePad(Convert.toString(dts_h),20,true)+"'"+
+            Convert.spacePad(Convert.toString(dts_m),20,true)+"')";
    }
 
    public static String generateId()

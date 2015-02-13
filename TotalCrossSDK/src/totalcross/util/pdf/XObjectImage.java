@@ -45,8 +45,8 @@ public class XObjectImage
       mIndirectObject = mDocument.newIndirectObject();
       mDocument.includeIndirectObject(mIndirectObject);
       mIndirectObject.addDictionaryContent(" /Type /XObject\n" + " /Subtype /Image\n" + " /Filter [/ASCII85Decode /FlateDecode]\n" + " /Width " + mWidth + "\n"
-            + " /Height " + mHeight + "\n" + " /BitsPerComponent " + Integer.toString(BITSPERCOMPONENT) + "\n" + " /Interpolate "
-            + Boolean.toString(INTERPOLATION) + "\n" + " /ColorSpace " + DEVICE_RGB + "\n" + " /Length " + mProcessedImage.length() + "\n");
+            + " /Height " + mHeight + "\n" + " /BitsPerComponent " + String.valueOf(BITSPERCOMPONENT) + "\n" + " /Interpolate "
+            + String.valueOf(INTERPOLATION) + "\n" + " /ColorSpace " + DEVICE_RGB + "\n" + " /Length " + mProcessedImage.length() + "\n");
       mIndirectObject.addStreamContent(mProcessedImage);
    }
 

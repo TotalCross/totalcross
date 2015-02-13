@@ -7,6 +7,8 @@
 
 package totalcross.util.pdf;
 
+import totalcross.sys.*;
+
 public class CrossReferenceTable extends List
 {
 
@@ -36,9 +38,9 @@ public class CrossReferenceTable extends List
    public void addObjectXRefInfo(int ByteOffset, int Generation, boolean InUse)
    {
       StringBuilder sb = new StringBuilder();
-      sb.append(String.format("%010d", ByteOffset));
+      sb.append(Convert.zeroPad(ByteOffset,10));
       sb.append(" ");
-      sb.append(String.format("%05d", Generation));
+      sb.append(Convert.zeroPad(5, Generation));
       if (InUse)
       {
          sb.append(" n ");

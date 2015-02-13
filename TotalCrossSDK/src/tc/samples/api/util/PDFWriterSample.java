@@ -67,7 +67,7 @@ public class PDFWriterSample extends BaseContainer
          }
 
          String s = mPDFWriter.asString();
-         String name = Settings.appPath+"test.pdf";
+         final String name = Settings.appPath+"test.pdf";
          File f = new File(name,File.CREATE_EMPTY);
          f.writeBytes(s.getBytes());
          f.close();
