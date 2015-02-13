@@ -493,7 +493,7 @@ mainLoop:
             goto notYetLinked;
       OPCODE(CALL_virtual) // 66% of the calls
          if (regO[code->mtd.this_] == null)
-         {
+         {     
             exceptionMsg = "On 'this' when calling a method";
             goto throwNullPointerException;
          }
@@ -537,11 +537,7 @@ contCall:
             context->depth++;
 #else
             if (traceOn)
-            {
                debug("T %08d %X %s - %s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
-               if (strEq(newMethod->name,"get"))
-                  traceOn = 1;
-            }
 #endif
             if (!newMethod->flags.isStatic)
             {
