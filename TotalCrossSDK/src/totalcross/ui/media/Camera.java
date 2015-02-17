@@ -137,6 +137,9 @@ public class Camera
    /** Used in the captureMode member. */
    public static final int CAMERACAPTURE_VIDEOTYPE_MESSAGING = 2;
 
+   /** The default title when used in desktop */
+   public static String fcbTitle = "Select a photo";
+   
    public Camera()
    {
    }
@@ -150,7 +153,8 @@ public class Camera
     */
    public String click() throws IOException
    {
-      FileChooserBox fcb = new FileChooserBox("Select a photo",FileChooserBox.defaultButtonCaptions,null);
+      FileChooserBox fcb = new FileChooserBox(fcbTitle,FileChooserBox.defaultButtonCaptions,null);
+      fcb.showPreview = true;
       fcb.popup();
       return fcb.getAnswer();
    }

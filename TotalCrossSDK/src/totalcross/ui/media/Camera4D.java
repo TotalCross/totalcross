@@ -41,6 +41,7 @@ public class Camera4D
    public boolean allowRotation;
 
    public int cameraType;
+   public static String fcbTitle = "Select a photo";
 
    public static final int CAMERA_CUSTOM = 0;
    public static final int CAMERA_NATIVE = 1;
