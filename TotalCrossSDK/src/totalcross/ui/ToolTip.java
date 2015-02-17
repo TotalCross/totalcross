@@ -89,6 +89,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
    /** The border color. By default, it is -1 and no border is shown */
    public int borderColor = -1; // the color around the rect
 
+   private String msg0, msg0lines[];
    /**
     * Constructor
     * @param control the control which supports the tip. 
@@ -99,6 +100,8 @@ public class ToolTip extends Label implements PenListener, MouseListener
    public ToolTip(Control control, String message)
    {
       super(message==null?"":message, LEFT);
+      msg0 = super.text;
+      if (msg0.indexOf('\n') != -1) msg0lines = Convert.tokenizeString(msg0,'\n');
       setVisible(false);
       this.control = control;
       setBackForeColors(UIColors.tooltipBack,UIColors.tooltipFore);
@@ -129,6 +132,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
     * </pre>
     * Make sure that fm will be the font's FontMetrics (if you plan to change the font 
     * after calling the constructor).
+    * @deprecated The split is done automatically
     * @since TotalCross 1.2
     */
    public static String split(String msg, FontMetrics fm)
@@ -149,7 +153,12 @@ public class ToolTip extends Label implements PenListener, MouseListener
       w.add(this); // guich@tc100b4_19: must always be (re)added to the parent container to make sure we will be the last control that will be painted
       Coord size = w.getSize();
 
-      int ww = getMaxTextWidth()+ insideGap; // guich@tc120_2: moved to after w.add(this)
+      int ww = msg0lines != null ? fm.getMaxWidth(msg0lines,0,msg0lines.length) : fm.stringWidth(msg0); // guich@tc120_2: moved to after w.add(this)
+      if (ww > Settings.screenWidth)
+      {
+         super.setText(Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, fm, msg0));
+         ww = super.getMaxTextWidth();
+      }
       int hh = getPreferredHeight()+ insideGap;
       
       // can we place it below the control?
@@ -164,7 +173,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
       else
          xx = r.x + distX - w.x; // guich@tc126_48: decrease window's x
 
-      setRect(xx,yy,ww+fmH,hh,null,false); // careful: xx,yy are relative to window position, but the control's rect passed as parameter is ABSOLUTE
+      setRect(xx,yy,ww+(super.lines.length == 1 ? insideGap : fmH),hh,null,false); // careful: xx,yy are relative to window position, but the control's rect passed as parameter is ABSOLUTE
    }
 
    public void onEvent(Event e)
