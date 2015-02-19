@@ -69,7 +69,8 @@ struct TUserFont
    // used only when drawing on images
    VoidPs* charSizeCache[256];
    int32 tempbufssize;
-   uint8* tempbufs;
+   uint8* tempbufs;          
+   bool isDefaultFont;
 };
 
 int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch);
