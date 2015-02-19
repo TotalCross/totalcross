@@ -461,27 +461,27 @@ public final class Settings
     */
    public static String appVersion;
 
-   /** Set it at the application's static initializer. Defines the company's information, which is used in some installations.
+   /** Set it at the application's static initializer. Defines the company's information, which is used in iOS, Windows CE and WP8.
     * @since TotalCross 1.0
     */
    public static String companyInfo;
 
-   /** Set it at the application's static initializer. Defines the user's or company's contact email, which is used in some installations.
+   /** Set it at the application's static initializer. Defines the user's or company's contact email, which is used in WP8.
     * @since TotalCross 1.0
     */
    public static String companyContact;
 
-   /** Set it at the application's static initializer. Defines the application's description, which is used in some installations.
+   /** Set it at the application's static initializer. Defines the application's description, which is used in WP8.
     * @since TotalCross 1.0
     */
    public static String appDescription;
 
-   /** Set it at the application's static initializer. Defines the application's location, which is used in some installations.
+   /** @deprecated No longer used.
     * @since TotalCross 1.0
     */
    public static String appLocation;
 
-   /** Set it at the application's static initializer. Defines the application's category, which is used in some installations.
+   /** @deprecated No longer used.
     * @since TotalCross 1.0
     */
    public static String appCategory;

@@ -102,9 +102,10 @@ public class Deployer4WP8
       String wmAppManifest = new String(baos.toByteArray(), "UTF-8");
       wmAppManifest = wmAppManifest.replace("<Title>PhoneDirect3DXamlAppInterop</Title>", "<Title>" + DeploySettings.appTitle + "</Title>");
       wmAppManifest = wmAppManifest.replace("Title=\"PhoneDirect3DXamlAppInterop\"", "Title=\"" + DeploySettings.appTitle + "\"");
-      wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + DeploySettings.appVersion + "\"");
-      wmAppManifest = wmAppManifest.replace("Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyInfo + "\"");
-      wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
+      wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
+      if (DeploySettings.companyContact != null) wmAppManifest = wmAppManifest.replace("Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyContact + "\"");
+      if (DeploySettings.companyInfo != null) wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
+      if (totalcross.sys.Settings.appDescription != null) wmAppManifest.replace("Description=\"Sample description\"","Description=\""+totalcross.sys.Settings.appDescription+"\""); 
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
 
       // close template and final output files      
