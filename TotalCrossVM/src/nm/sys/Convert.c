@@ -90,6 +90,9 @@ TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public s
    if (!string)
       throwNullArgumentException(p->currentContext, "s");
    else
+   if (String_charsLen(string) == 0)
+      throwException(p->currentContext, InvalidNumberException, "Error: argument s cannot an empty value.");
+   else
    if (String_charsLen(string) >= sizeof(buffer)) // guich@tc123_2: check if argument fits in buffer
       throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer); // guich@tc123_9
    else

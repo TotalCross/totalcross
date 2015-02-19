@@ -586,6 +586,7 @@ tryAgain:
       uf->fontP.descent = size - uf->fontP.ascent;
       uf->fontP.maxWidth = ubase->fontP.maxWidth   * size / ubaseH;
       uf->fontP.spaceWidth = ubase->fontP.spaceWidth * size / ubaseH;
+      uf->isDefaultFont = strEq(ff->name, "tcfont");           
       // uf->rowWidthInBytes  = 0; - dont change this field since it will use the base texture
       htPutPtr(&htUF, hash, uf);
       goto end;
@@ -708,7 +709,7 @@ int32 getJCharWidth(Context currentContext, TCObject fontObj, JChar ch)
       return ch == ' ' ? 0 : getJCharWidth(currentContext, fontObj, ' ');
    if (uf->fontP.firstChar <= ch && ch <= uf->fontP.lastChar)
    {
-      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch] - (uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP);
+      int32 r = uf->bitIndexTable[ch + 1] - uf->bitIndexTable[ch] - (uf->ubase && uf->isDefaultFont);
       if (uf->ubase != null) // an inherited font?
          r = r * uf->fontP.maxHeight / uf->ubase->fontP.maxHeight;
       return r;
