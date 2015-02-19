@@ -105,7 +105,10 @@ public class Deployer4WP8
       wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
       if (DeploySettings.companyContact != null) wmAppManifest = wmAppManifest.replace("Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyContact + "\"");
       if (DeploySettings.companyInfo != null) wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
-      if (totalcross.sys.Settings.appDescription != null) wmAppManifest.replace("Description=\"Sample description\"","Description=\""+totalcross.sys.Settings.appDescription+"\""); 
+      if (totalcross.sys.Settings.appDescription != null) wmAppManifest = wmAppManifest.replace("Description=\"Sample description\"","Description=\""+totalcross.sys.Settings.appDescription+"\"");
+      // fixes problem that prevent more than one TC program in device
+      wmAppManifest = wmAppManifest.replace("f0dcbb57357d", Convert.bytesToHexString((DeploySettings.applicationId+"tc").getBytes()));
+      
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
 
       // close template and final output files      
