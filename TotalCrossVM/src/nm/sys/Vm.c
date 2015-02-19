@@ -74,7 +74,7 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    else
    {
       TCClass c = OBJ_CLASS(srcArray);
-      uint32 s = ARRAYSIZE(c, 1);
+      uint32 s = TC_ARRAYSIZE(c, 1);
       length *= s; // convert array units into byte units
       dstStart *= s;
       srcStart *= s;

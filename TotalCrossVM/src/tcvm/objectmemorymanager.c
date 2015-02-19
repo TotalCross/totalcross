@@ -547,7 +547,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    c = loadClass(currentContext, type, true);
    if (!c)
       goto end;
-   arraySize = ARRAYSIZE(c,len);
+   arraySize = TC_ARRAYSIZE(c,len);
    if (!strEq(type,CHAR_ARRAY))
       arraySize += 0;
    objectSize = TSIZE + arraySize; // there's a single instance field in the Array class: length
