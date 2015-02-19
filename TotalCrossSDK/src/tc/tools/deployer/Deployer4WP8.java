@@ -86,7 +86,7 @@ public class Deployer4WP8
          }
 
       // add icons
-      sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));
+      sz.putEntry("Assets/ApplicationIcon.png", readIcon(99, 99));
       sz.putEntry("Assets/Tiles/FlipCycleTileLarge.png", readIcon(691, 336));
       sz.putEntry("Assets/Tiles/FlipCycleTileMedium.png", readIcon(336, 336));
       sz.putEntry("Assets/Tiles/FlipCycleTileSmall.png", readIcon(159, 159));
