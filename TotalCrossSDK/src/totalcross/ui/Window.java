@@ -744,7 +744,7 @@ public class Window extends Container
                {
                   sc.scrollContent(0, inc, false);
                   repaintNow();
-                  Vm.sleep(1);
+                  if (!Settings.onJavaSE) Vm.sleep(1);
                }
             else
             if (kx != 0)
@@ -752,7 +752,7 @@ public class Window extends Container
                {
                   sc.scrollContent(inc, 0, false);
                   repaintNow();
-                  Vm.sleep(1);
+                  if (!Settings.onJavaSE) Vm.sleep(1);
                }
             return;
          }
