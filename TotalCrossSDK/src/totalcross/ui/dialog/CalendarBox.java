@@ -437,5 +437,6 @@ public class CalendarBox extends Window
    {
       if (!canceled) // guich@580_27
          postPressedEvent();
+      sentDay = 0;
    }
 }
