@@ -78,6 +78,7 @@ public class ScrollContainer extends Container implements Scrollable
    public boolean shrink2size;
    private boolean isScrolling;
    private boolean scScrolled;
+   private Object lastScrolled;
 
    /** Automatically scrolls the container when an item is clicked.
     * @see #hsIgnoreAutoScroll 
@@ -483,9 +484,10 @@ public class ScrollContainer extends Container implements Scrollable
             break;
          case PenEvent.PEN_UP:
             isScrolling = false;
-            if (autoScroll && event.target instanceof Control && !hsIgnoreAutoScroll.contains(event.target.getClass()) && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
+            if (autoScroll && event.target instanceof Control && event.target != lastScrolled && !hsIgnoreAutoScroll.contains(event.target.getClass()) && ((Control)event.target).isChildOf(this) && !((Control)event.target).hadParentScrolled())
             {
                Control c = (Control)event.target;
+               lastScrolled = c;
                Rect r = c.getAbsoluteRect();
                boolean scrolled = false;
                if (sbV != null)

@@ -53,7 +53,7 @@ public class Label extends Control
    /** Set to false if you want to scroll the text a line at a time instead of a page at a time. */
    public boolean pageScroll = true;
    static final String[] emptyStringArray = {""};
-   private String []lines = emptyStringArray;
+   protected String []lines = emptyStringArray;
    private int []linesW;
    private int linesPerPage,currentLine;
    private boolean invert;

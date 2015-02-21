@@ -86,7 +86,7 @@ public class Deployer4WP8
          }
 
       // add icons
-      sz.putEntry("Assets/ApplicationIcon.png", readIcon(100, 100));
+      sz.putEntry("Assets/ApplicationIcon.png", readIcon(99, 99));
       sz.putEntry("Assets/Tiles/FlipCycleTileLarge.png", readIcon(691, 336));
       sz.putEntry("Assets/Tiles/FlipCycleTileMedium.png", readIcon(336, 336));
       sz.putEntry("Assets/Tiles/FlipCycleTileSmall.png", readIcon(159, 159));
@@ -102,9 +102,13 @@ public class Deployer4WP8
       String wmAppManifest = new String(baos.toByteArray(), "UTF-8");
       wmAppManifest = wmAppManifest.replace("<Title>PhoneDirect3DXamlAppInterop</Title>", "<Title>" + DeploySettings.appTitle + "</Title>");
       wmAppManifest = wmAppManifest.replace("Title=\"PhoneDirect3DXamlAppInterop\"", "Title=\"" + DeploySettings.appTitle + "\"");
-      wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + DeploySettings.appVersion + "\"");
-      wmAppManifest = wmAppManifest.replace("Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyInfo + "\"");
-      wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
+      wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
+      if (DeploySettings.companyContact != null) wmAppManifest = wmAppManifest.replace("Author=\"PhoneDirect3DXamlAppInterop author\"", "Author=\"" + DeploySettings.companyContact + "\"");
+      if (DeploySettings.companyInfo != null) wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
+      if (totalcross.sys.Settings.appDescription != null) wmAppManifest = wmAppManifest.replace("Description=\"Sample description\"","Description=\""+totalcross.sys.Settings.appDescription+"\"");
+      // fixes problem that prevent more than one TC program in device
+      wmAppManifest = wmAppManifest.replace("f0dcbb57357d", Convert.bytesToHexString((DeploySettings.applicationId+"tc").getBytes()));
+      
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
 
       // close template and final output files      

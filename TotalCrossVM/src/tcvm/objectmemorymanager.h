@@ -122,8 +122,7 @@ typedef uint8* Chunk;
 #define ARRAYOBJ_START(o) (((uint8*)(o))+TSIZE)
 
 // Gets the size in bytes of an array. Added to support 64-bit without needing to change tcz structure
-#undef ARRAYSIZE
-#define ARRAYSIZE(c, len) (c->flags.isObjectArray ? len * TSIZE : len << c->flags.bits2shift)
+#define TC_ARRAYSIZE(c, len) (c->flags.isObjectArray ? len * TSIZE : len << c->flags.bits2shift)
 
 #ifdef __cplusplus
 }

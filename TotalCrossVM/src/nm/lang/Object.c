@@ -70,7 +70,7 @@ TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object cl
       // Array.clone().
       if (!(p->retO = cloneObj = createArrayObject(p->currentContext, thisClass->name, length = ARRAYOBJ_LEN(thisObj))))
          return;
-      xmemmove(ARRAYOBJ_START(cloneObj), ARRAYOBJ_START(thisObj), ARRAYSIZE(thisClass, length));
+      xmemmove(ARRAYOBJ_START(cloneObj), ARRAYOBJ_START(thisObj), TC_ARRAYSIZE(thisClass, length));
       setObjectLock(cloneObj, UNLOCKED);
    }
    else if ((p->retO = cloneObj = createObject(p->currentContext, thisClass->name)) != null)
