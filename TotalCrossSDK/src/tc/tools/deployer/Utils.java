@@ -912,6 +912,8 @@ public class Utils
       for (int i = 0; i < kv.length; i++)
       {
          String []s = kv[i].split("=");
+         if (s.length == 1)
+            s = new String[]{s[0],""};
          ret.put(s[0],s[1]);
       }
       return ret;
