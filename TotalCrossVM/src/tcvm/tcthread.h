@@ -155,8 +155,8 @@ void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used
 void threadDestroyAll(); // destroy all threads
 
 void freeMutex(int32 hash, VoidP mutex);
-bool lockMutex(int32 address);
-void unlockMutex(int32 address);
+bool lockMutex(size_t address);
+void unlockMutex(size_t address);
 
 #define ThreadArgsFromObject(o) ((ThreadArgs)ARRAYOBJ_START(Thread_taskID(o)))
 #define ThreadHandleFromObject(o) ThreadArgsFromObject(o)->h
