@@ -41,6 +41,7 @@
 TC_API int32 hashCode(CharP s)
 {
    int32 hash=0;
+   if (s)
    while (*s)
       hash = (hash<<5) - hash + (int32)*s++;
    return hash;
