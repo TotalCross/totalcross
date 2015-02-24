@@ -13,7 +13,6 @@
 
 package tc.tools.deployer;
 
-import java.net.*;
 import java.util.zip.*;
 
 import totalcross.io.*;
@@ -869,29 +868,6 @@ public class Utils
       int m = c.get(java.util.Calendar.MONTH) + 1;
       int d = c.get(java.util.Calendar.DAY_OF_MONTH);
       return y * 10000 + m * 100 + d;
-   }
-   /////////////////////////////////////////////////////////////////////////////////////
-   public static String getMAC()
-   {
-      try
-      {
-         InetAddress ip = InetAddress.getLocalHost();
-         NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-         byte[] mac = network.getHardwareAddress();
-         StringBuilder sb = new StringBuilder();
-         for (int i = 0; i < mac.length; i++)
-         {
-            int h = mac[i] & 0xFF;
-            if (i > 0) sb.append('-');
-            if (h <= 0x0F) sb.append('0');
-            sb.append(Integer.toHexString(h));
-         }
-         return sb.toString().toUpperCase();
-      }
-      catch (Exception e)
-      {
-         return "";
-      }
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static String pipeConcat(String... kv)

@@ -22,7 +22,7 @@ public final class RegisterSDK
    private static final int INVALID_COMPANY          = -1005;
    private static final int CONTRACT_DEACTIVATED     = -1006;
 
-   private String mac, user, home, key;
+   private String user, home, key;
    private int today;
    private File flicense;
    
@@ -37,7 +37,6 @@ public final class RegisterSDK
       if (key.length() != 24)
          throw new RegisterSDKException("The key is incorrect");
       today = Utils.getToday();
-      mac = Utils.getMAC();
       user = System.getProperty("user.name");
       home = System.getProperty("user.home");
       flicense = new File(home+"/tc_license.dat");
@@ -115,7 +114,6 @@ public final class RegisterSDK
          // read the rest of stored data and compare with current values
          String skv = ds.readUTF();
          HashMap<String,String> kv = Utils.pipeSplit(skv);
-         String storedMac  = kv.get("mac");
          String storedUser = kv.get("user");
          String storedFolder = kv.get("home");
          int iexp = ds.readInt();
@@ -127,17 +125,9 @@ public final class RegisterSDK
             throw new RegisterSDKException("The computer's time is invalid.");
          boolean expired = today >= iexp;
          
-         int diffM = storedMac.equals(mac) ? 0 : 1;
-         int diffU = storedUser.equals(user) ? 0 : 2;
-         int diffF = storedFolder.equals(home) ? 0 : 4;
-         int diff = diffM | diffU | diffF;
-         // if changed mac but same user and home, ok
-         if (diff == 1)
-            diff = 0;
-         
-         //if (diffM != 0) System.out.println("mac: "+storedMac+" / "+mac);
-         //if (diffU != 0) System.out.println("user: "+storedUser+" / "+user);
-         //if (diffF != 0) System.out.println("user home: "+storedFolder+" / "+home);
+         int diffU = storedUser.equals(user) ? 0 : 1;
+         int diffF = storedFolder.equals(home) ? 0 : 2;
+         int diff = diffU | diffF;
          
          if (diff != 0)
             System.out.println("The license parameters have changed (#"+diff+"). A new license will be requested");
@@ -180,7 +170,7 @@ public final class RegisterSDK
             ds.write(xdata);
             // write important data
             ds.writeUTF(MAGIC);
-            ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
+            ds.writeUTF(Utils.pipeConcat("home",home,"user",user)); // MUST BE ALPHABETHICAL ORDER!
             ds.writeInt(expdate);
             ds.writeLong(System.currentTimeMillis());
             // write fake data at end
@@ -212,7 +202,7 @@ public final class RegisterSDK
       DeflaterOutputStream def = new DeflaterOutputStream(bas, dd);
       DataOutputStream ds = new DataOutputStream(def);
       ds.writeUTF(key);
-      ds.writeUTF(Utils.pipeConcat("home",home,"mac",mac,"user",user)); // MUST BE ALPHABETHICAL ORDER!
+      ds.writeUTF(Utils.pipeConcat("home",home,"user",user)); // MUST BE ALPHABETHICAL ORDER!
       ds.writeInt(today);
       def.finish();
       dd.end();
