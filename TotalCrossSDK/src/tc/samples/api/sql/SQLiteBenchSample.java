@@ -75,7 +75,6 @@ public class SQLiteBenchSample extends BaseContainer
    private void createTable() throws Exception
    {
       driver = DriverManager.getConnection("jdbc:sqlite:" + Convert.appendPath(Settings.appPath, "person.db"));
-      driver.setAutoCommit(false);
       
       log("Creating tables...",false);
       (statement = driver.createStatement()).executeUpdate("drop table if exists person");
@@ -352,12 +351,15 @@ public class SQLiteBenchSample extends BaseContainer
       {
          createTable();
    
+         driver.setAutoCommit(false);
+
          pbTotal.setValue(1);
          int time1 = insertWithPS();
          pbTotal.setValue(2);
          int time2 = insertNormal();           
          
          driver.commit();
+         driver.setAutoCommit(true);
          
          pbTotal.setValue(3);   int time3 = selectBeforeLast();        
          pbTotal.setValue(4);   int time4 = selectLikeA9();            
