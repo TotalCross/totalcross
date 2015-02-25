@@ -454,7 +454,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    xmemmove(columnSizes, ptr, columnCount << 2); // Reads the column sizes.
 
    // Reads the column names.
-   ptr = readStringArray(ptr += columnCount << 2, &table->columnNames, columnCount, heap);
+   ptr = readStringArray(ptr += (columnCount << 2), &table->columnNames, columnCount, heap);
    columnNames = table->columnNames;
 
    i = -1;
@@ -770,7 +770,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                while (++i < n) // Stores the column types.
                   *ptr++ = (uint8)columnTypes[i];
                xmemmove(ptr, columnSizes, n << 2); // Stores the column sizes.
-               ptr = writeStringArray(ptr += n << 2, table->columnNames, table->columnCount); // Stores the column names.
+               ptr = writeStringArray(ptr += (n << 2), table->columnNames, table->columnCount); // Stores the column names.
 
                i = 0;
                while (++i < n) // Saves the default values.
@@ -1153,7 +1153,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          rowSize = plainDB->rowSize;
    uint32 size = 2,
          columnSize;
-   StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
+   StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high * TSIZE);
    StringArray* tempStringArray;
 
    while (--high >= 0)
@@ -2947,7 +2947,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
                htPS = getLitebaseHtPS(OBJ_PreparedStatementDriver(obj));
 				   sqlObj = OBJ_PreparedStatementSqlExpression(obj);
                TC_htRemove(htPS, TC_JCharPHashCode(String_charsStart(sqlObj), String_charsLen(sqlObj)));
-               freePreparedStatement(obj);
+               freePreparedStatement(0, obj);
             }
 			   list = TC_TCObjectsRemove(list, obj);
 			   list = list->next;

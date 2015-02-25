@@ -503,7 +503,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits
                return false;
          }
       }
-      index->nodes[index->nodesArrayCount++] = (int32)curr;
+      index->nodes[index->nodesArrayCount++] = (size_t)curr;
    }
    return true;
 }

@@ -67,21 +67,21 @@
 #define OBJ_LitebaseAppCrid(o)      FIELD_I32(o, 4)					// LitebaseConnection.appCrid
 
 // LitebaseConnection.htTables
-#define getLitebaseHtTables(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))
-#define setLitebaseHtTables(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (intptr_t)v)
+#define getLitebaseHtTables(o)    ((Hashtable*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 0))
+#define setLitebaseHtTables(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (size_t)v)
 
 // LitebaseConnection.sourcePath
-#define getLitebaseSourcePath(o)    ((TCHARP)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 1))
-#define setLitebaseSourcePath(o, v) (FIELD_I64(o, OBJ_CLASS(o), 1) = (intptr_t)v)
+#define getLitebaseSourcePath(o)    ((TCHARP)(size_t)FIELD_I64(o, OBJ_CLASS(o), 1))
+#define setLitebaseSourcePath(o, v) (FIELD_I64(o, OBJ_CLASS(o), 1) = (size_t)v)
 
 // LitebaseConnection.htPS // juliana@226_16
-#define getLitebaseHtPS(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
-#define setLitebaseHtPS(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (intptr_t)v)
+#define getLitebaseHtPS(o)    ((Hashtable*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 2))
+#define setLitebaseHtPS(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (size_t)v)
 
 // juliana@noidr_1: removed .idr files from all indices and changed its format.
 // LitebaseConnection.nodes 
-#define getLitebaseNodes(o)    ((int32*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 3))
-#define setLitebaseNodes(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (intptr_t)v)
+#define getLitebaseNodes(o)    ((int32*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 3))
+#define setLitebaseNodes(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (size_t)v)
 
 // PreparedStatement
 #define OBJ_PreparedStatementType(o)          FIELD_I32(o, 0)               // PreparedStatement.type  
@@ -92,27 +92,27 @@
 #define OBJ_PreparedStatementObjParams(o)     FIELD_OBJ(o, OBJ_CLASS(o), 2) // PreparedStatement.ObjParams // juliana@222_8
 
 // PreparedStatement.paramsAsStrs
-#define getPreparedStatementParamsAsStrs(o)    ((JCharP*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))
-#define setPreparedStatementParamsAsStrs(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (intptr_t)v)
+#define getPreparedStatementParamsAsStrs(o)    ((JCharP*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 0))
+#define setPreparedStatementParamsAsStrs(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (size_t)v)
 
 // PreparedStatement.paramsPos
-#define getPreparedStatementParamsPos(o)    ((int16*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 1))
-#define setPreparedStatementParamsPos(o, v) (FIELD_I64(o, OBJ_CLASS(o), 1) = (intptr_t)v)
+#define getPreparedStatementParamsPos(o)    ((int16*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 1))
+#define setPreparedStatementParamsPos(o, v) (FIELD_I64(o, OBJ_CLASS(o), 1) = (size_t)v)
 
 // PreparedStatement.paramsLength
-#define getPreparedStatementParamsLength(o)    ((int16*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
-#define setPreparedStatementParamsLength(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (intptr_t)v)
+#define getPreparedStatementParamsLength(o)    ((int16*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 2))
+#define setPreparedStatementParamsLength(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (size_t)v)
 
 // PreparedStatement.statement
-#define getPreparedStatementStatement(o)    ((intptr_t)FIELD_I64(o, OBJ_CLASS(o), 3))
-#define setPreparedStatementStatement(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (intptr_t)v)
+#define getPreparedStatementStatement(o)    ((size_t)FIELD_I64(o, OBJ_CLASS(o), 3))
+#define setPreparedStatementStatement(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (size_t)v)
 
 // ResultSet
 #define OBJ_ResultSetDontFinalize(o) FIELD_I32(o, 0) // ResultSet.dontFinalize
 
 // ResultSet.bag
-#define getResultSetBag(o)    ((ResultSet*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))
-#define setResultSetBag(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (intptr_t)v)
+#define getResultSetBag(o)    ((ResultSet*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 0))
+#define setResultSetBag(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (size_t)v)
 
 // ResultSetMetaData
 #define OBJ_ResultSetMetaData_ResultSet(o) FIELD_OBJ(o, OBJ_CLASS(o), 0) // ResultSetMetaData.resultSet
@@ -123,8 +123,8 @@
 #define OBJ_RowIteratorRowNumber(o) FIELD_I32(o, 2) // RowIterator.rowNumber
 
 // RowIterator.table
-#define getRowIteratorTable(o)    ((Table*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))
-#define setRowIteratorTable(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (intptr_t)v)
+#define getRowIteratorTable(o)    ((Table*)(size_t)FIELD_I64(o, OBJ_CLASS(o), 0))
+#define setRowIteratorTable(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (size_t)v)
 
 #define OBJ_RowIteratorData(o)   FIELD_OBJ(o, OBJ_CLASS(o), 0) // RowIterator.data    
 #define OBJ_RowIteratorDriver(o) FIELD_OBJ(o, OBJ_CLASS(o), 1) // RowIterator.driver   

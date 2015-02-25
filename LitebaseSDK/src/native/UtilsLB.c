@@ -649,7 +649,7 @@ void getFullFileName(CharP fileName, TCHARP sourcePath, TCHARP buffer)
    // juliana@223_6: Corrected a bug that would create spourious paths if they had a stress on Windows CE. 
    tcscpy(buffer, sourcePath);
    if (sourcePath[endChar] != PATH_SEPARATOR && sourcePath[endChar] != NO_PATH_SEPARATOR)
-      tcscat(buffer, TEXT("\\"));
+      tcscat(buffer, TEXT("/"));
    TC_CharP2TCHARPBuf(fileName, &buffer[tcslen(buffer)]);
 }
 

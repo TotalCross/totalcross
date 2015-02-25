@@ -7,6 +7,7 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_next"), &lRI_next);
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_nextNotSynced"), &lRI_nextNotSynced);
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_setSynced"), &lRI_setSynced);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRI_setNotSynced"), &lRI_setNotSynced);
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_close"), &lRI_close);
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_reset"), &lRI_reset);
    htPutPtr(&htNativeProcAddresses, hashCode("lRI_getShort_i"), &lRI_getShort_i);
@@ -86,6 +87,7 @@ void fillNativeProcAddressesLB()
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_getRowCount"), &lRS_getRowCount);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_isNull_i"), &lRS_isNull_i);
    htPutPtr(&htNativeProcAddresses, hashCode("lRS_isNull_s"), &lRS_isNull_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("lRS_rowToString"), &lRS_rowToString);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getColumnCount"), &lRSMD_getColumnCount);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getColumnDisplaySize_i"), &lRSMD_getColumnDisplaySize_i);
    htPutPtr(&htNativeProcAddresses, hashCode("lRSMD_getColumnLabel_i"), &lRSMD_getColumnLabel_i);

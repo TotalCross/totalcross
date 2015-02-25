@@ -956,7 +956,7 @@ free:
       TC_setObjectLock(OBJ_PreparedStatementObjParams(prepStmt), UNLOCKED);
       
       // If the statement is to be used as a prepared statement, it is possible to use log.
-      if (getPreparedStatementStatement(prepStmt) && logger)
+      if (getPreparedStatementStatement(prepStmt) && logger) 
       {
          int16* paramsPos;
          int16* paramsLength;
@@ -965,7 +965,7 @@ free:
          if (numParams > 0)
          {
             // Creates the array of parameters.
-            setPreparedStatementParamsAsStrs(prepStmt, (paramsAsStrs = (JCharP*)TC_heapAlloc(heapParser, numParams << 2)));
+            setPreparedStatementParamsAsStrs(prepStmt, (paramsAsStrs = (JCharP*)TC_heapAlloc(heapParser, numParams * TSIZE)));
             
             // Creates the array of the parameters length
             setPreparedStatementParamsLength(prepStmt, (paramsLength = (int16*)TC_heapAlloc(heapParser, numParams << 1)));
@@ -1002,7 +1002,7 @@ finish: ;
 
       // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
       if (context->thrownException && prepStmt)
-         freePreparedStatement(prepStmt);
+         freePreparedStatement(0, prepStmt);
    }
    
    MEMORY_TEST_END
@@ -1320,7 +1320,7 @@ LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public nativ
 	   }
 
 finish: // juliana@214_7: must free Litebase even if the log string creation fails.
-      freeLitebase(context, (int32)driver);
+      freeLitebase(context, (size_t)driver);
       xfree(context->litebasePtr);	   
    }
    	
@@ -1985,7 +1985,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
          // closeAll() command.
          else if (JCharPEqualsCharP(sqlStr, "closeAll", sqlLen, 8, true))
 		   {
-            freeLitebase(context, (int32)driver);
+            freeLitebase(context, (size_t)driver);
 			   p->retO = driver = null;
 		   }
 
@@ -5533,7 +5533,7 @@ LB_API void lPS_close(NMParams p) // litebase/PreparedStatement public native vo
       TCObject sqlExpression = OBJ_PreparedStatementSqlExpression(statement);
       int32 hashCode = TC_JCharPHashCode(String_charsStart(sqlExpression), String_charsLen(sqlExpression));
       TC_htRemove(htPS, hashCode);
-      freePreparedStatement(statement);
+      freePreparedStatement(0, statement);
    }
    MEMORY_TEST_END
 }

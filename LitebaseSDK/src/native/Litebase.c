@@ -305,7 +305,7 @@ error:
       if (!(setLitebaseSourcePath(driver, xmalloc(sizeof(TCHAR) * (tcslen(sourcePath) + 1)))))
 		{
 error1:
-		   freeLitebase(context, (int32)driver);
+		   freeLitebase(context, (size_t)driver);
 		   TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
@@ -467,7 +467,7 @@ error:
       hashes = (int32*)TC_heapAlloc(heap, count << 2);
       types = (int8*)TC_heapAlloc(heap, count);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
-      names = (CharP*)TC_heapAlloc(heap, count << 2);
+      names = (CharP*)TC_heapAlloc(heap, count * TSIZE);
       defaultValues = (SQLValue**)TC_heapAlloc(heap, count * TSIZE);
       columnAttrs = (uint8*)TC_heapAlloc(heap, count);
 
@@ -1174,11 +1174,11 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
             uint16* newOffsets = TC_heapAlloc(heap, (newCount + 1) << 1);
             int32* newHashes = (int32*)TC_heapAlloc(heap, newCount << 2);
             int32* newSizes = (int32*)TC_heapAlloc(heap, newCount << 2);          
-            CharP* newNames = (CharP*)TC_heapAlloc(heap, newCount << 2);         
-            SQLValue** newDefaultValues = (SQLValue**)TC_heapAlloc(heap, newCount << 2);
-            SQLValue** record = (SQLValue**)TC_heapAlloc(parserHeap, newCount << 2);
+            CharP* newNames = (CharP*)TC_heapAlloc(heap, newCount * TSIZE);
+            SQLValue** newDefaultValues = (SQLValue**)TC_heapAlloc(heap, newCount * TSIZE);
+            SQLValue** record = (SQLValue**)TC_heapAlloc(parserHeap, newCount * TSIZE);
             SQLValue* newDefaultValue = null;
-            Index** newIndices = (Index**)TC_heapAlloc(heap, newCount << 2);
+            Index** newIndices = (Index**)TC_heapAlloc(heap, newCount * TSIZE);
             JCharP defaultValue = field->defaultValue;
             int32 type = field->fieldType;
             PlainDB newDB,
@@ -1227,12 +1227,12 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
             (table->columnSizes = newSizes)[oldCount] = field->fieldSize;
             
             // Column names.
-            xmemmove(newNames, table->columnNames, oldCount << 2);
+            xmemmove(newNames, table->columnNames, oldCount * TSIZE);
             (table->columnNames = newNames)[oldCount] = TC_heapAlloc(heap, i = (xstrlen(field->fieldName) + 1));
             xmemmove(newNames[oldCount], field->fieldName, i);  
             
             // Default values.
-            xmemmove(newDefaultValues, table->defaultValues, oldCount << 2);            
+            xmemmove(newDefaultValues, table->defaultValues, oldCount * TSIZE);
             table->defaultValues = newDefaultValues;            
             if (defaultValue) // Sets the new default value if it exists.
             {   
@@ -1281,7 +1281,7 @@ void litebaseExecuteAlter(Context context, TCObject driver, LitebaseParser* pars
             }
             
             // Column indices.
-            xmemmove(newIndices, table->columnIndexes, oldCount << 2);
+            xmemmove(newIndices, table->columnIndexes, oldCount * TSIZE);
             table->columnIndexes = newIndices;
             
             // Sets the new plain db.

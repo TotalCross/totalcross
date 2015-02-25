@@ -19,9 +19,10 @@
 /**
  * Frees a prepared statement.
  *
+ * @param unused Parameter for htFree().
  * @param statement The prepared statement to be freed.
  */
-void freePreparedStatement(TCObject statement);
+void freePreparedStatement(int32 unused, TCObject statement);
 
 /**
  * Sets numeric parameters in a prepared statement.

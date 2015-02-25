@@ -18,11 +18,13 @@
 /**
  * Frees a prepared statement.
  *
+ * @param unused Parameter for htFree().
  * @param statement The prepared statement to be freed.
  */
-void freePreparedStatement(TCObject statement)
+void freePreparedStatement(int32 unused, TCObject statement)
 {
 	TRACE("freePreparedStatement")
+   UNUSED(unused)
 
    // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
    if (!OBJ_PreparedStatementDontFinalize(statement)) // The prepared statement shouldn't be finalized twice.

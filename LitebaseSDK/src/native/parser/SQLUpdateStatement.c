@@ -51,10 +51,10 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, TCObject driver, Lit
 	   xmemmove(updateStmt->fields, parser->fieldNames, i * TSIZE);
 		if (whereClause)
 		{
-			whereClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, whereClause->fieldsCount << 2);
-			xmemmove(whereClause->fieldList, parser->whereFieldList, whereClause->fieldsCount << 2);
-			whereClause->paramList = (SQLBooleanClauseTree**)TC_heapAlloc(heap, whereClause->paramCount << 2);
-			xmemmove(whereClause->paramList, parser->whereParamList, whereClause->paramCount << 2);
+			whereClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, whereClause->fieldsCount * TSIZE);
+			xmemmove(whereClause->fieldList, parser->whereFieldList, whereClause->fieldsCount * TSIZE);
+			whereClause->paramList = (SQLBooleanClauseTree**)TC_heapAlloc(heap, whereClause->paramCount * TSIZE);
+			xmemmove(whereClause->paramList, parser->whereParamList, whereClause->paramCount * TSIZE);
 		}
 	}
 	else

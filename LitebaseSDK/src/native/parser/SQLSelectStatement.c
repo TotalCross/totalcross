@@ -40,9 +40,9 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	parser->select.htName2index = TC_htNew(MAXIMUMS << 1, heap);
    selectClause = selectStmt->selectClause = (SQLSelectClause*)TC_heapAlloc(heap, sizeof(SQLSelectClause));
 	xmemmove(selectClause, &parser->select, sizeof(SQLSelectClause));
-	selectClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = ((selectClause->fieldsCount? selectClause->fieldsCount : MAXIMUMS) << 2));
+	selectClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = ((selectClause->fieldsCount? selectClause->fieldsCount : MAXIMUMS) * TSIZE));
 	xmemmove(selectClause->fieldList, parser->selectFieldList, count);
-   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->select.tableListSize << 2));
+   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->select.tableListSize * TSIZE));
 	xmemmove(selectClause->tableList, parser->tableList, count);
 
    if (isPrepared) // It is only necessary to re-allocate the parser structures if the statement is from a prepared statement.
@@ -51,7 +51,7 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 		{
 			listClause = selectStmt->groupByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
 			xmemmove(listClause, &parser->groupBy, sizeof(SQLColumnListClause));
-			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->groupBy.fieldsCount << 2));
+			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->groupBy.fieldsCount * TSIZE));
 		   xmemmove(listClause->fieldList, parser->groupByfieldList, count);
 		}
 
@@ -59,23 +59,23 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 		{
 			listClause = selectStmt->orderByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
 			xmemmove(listClause, &parser->orderBy, sizeof(SQLColumnListClause));
-		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->orderBy.fieldsCount << 2));
+		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->orderBy.fieldsCount * TSIZE));
 		   xmemmove(listClause->fieldList, parser->orderByfieldList, count);
 		}
 
 		if (whereClause)
 		{
-         whereClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (whereClause->fieldsCount << 2));
+         whereClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (whereClause->fieldsCount * TSIZE));
 			xmemmove(whereClause->fieldList, parser->whereFieldList, count);
-			whereClause->paramList = (SQLBooleanClauseTree**)TC_heapAlloc(heap, count = (whereClause->paramCount << 2));
+			whereClause->paramList = (SQLBooleanClauseTree**)TC_heapAlloc(heap, count = (whereClause->paramCount * TSIZE));
 			xmemmove(whereClause->paramList, parser->whereParamList, count);
 		}
 
 		if (havingClause)
 		{
-         havingClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (havingClause->fieldsCount << 2));
+         havingClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (havingClause->fieldsCount * TSIZE));
 			xmemmove(havingClause->fieldList, parser->havingFieldList, count);
-			havingClause->paramList = (SQLBooleanClauseTree**)TC_heapAlloc(heap, count = (havingClause->paramCount << 2));
+			havingClause->paramList = (SQLBooleanClauseTree**)TC_heapAlloc(heap, count = (havingClause->paramCount * TSIZE));
 			xmemmove(havingClause->paramList, parser->havingParamList, count);
 		}
 	}
@@ -729,7 +729,7 @@ Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStateme
             columnTypes[size] = param->dataType;
             columnHashes[size] = field->aliasHashCode;
             columnIndexes[size] = param->tableColIndex;
-            columnIndexesTables[size++] = (int32)field->table;
+            columnIndexesTables[size++] = (size_t)field->table;
 
             // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
             TC_htPut32(&colHashesTable, param->aliasHashCode, 1);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
@@ -747,7 +747,7 @@ Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStateme
          columnTypes[size] = field->dataType;
          columnHashes[size] = field->tableColHashCode;
          columnIndexes[size] = field->tableColIndex;
-         columnIndexesTables[size++] = (int32)field->table;
+         columnIndexesTables[size++] = (size_t)field->table;
          
          // juliana@270_24: corrected a possible application crash or exception when using order/group by with join.
          TC_htPut32(&colHashesTable, field->aliasHashCode, 0);  // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
@@ -777,7 +777,7 @@ Table* generateResultSetTable(Context context, TCObject driver, SQLSelectStateme
          columnTypes[size] = field->dataType;
          columnSizes[size] = field->size;
          columnHashes[size] = field->tableColHashCode;
-         columnIndexesTables[size] = (int32)field->table;
+         columnIndexesTables[size] = (size_t)field->table;
          columnIndexes[size++] = field->tableColIndex;
       }
    }
