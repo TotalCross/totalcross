@@ -2329,4 +2329,12 @@ public class Image extends GfxSurface
          e.printStackTrace();
       }
    }
+
+   /** Gets a copy of this image; if the image is multi-framed, returns a copy of the first frame.
+    * @since TotalCross 3.1
+    */
+   public Image getCopy() throws ImageException
+   {
+      return getFrameInstance(0);
+   }
 }

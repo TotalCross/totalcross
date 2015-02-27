@@ -617,4 +617,9 @@ public class Image4D extends GfxSurface
    }   
 
    native public void applyFade(int fadeValue);
+   
+   public Image4D getCopy() throws ImageException
+   {
+      return getFrameInstance(0);
+   }
 }
