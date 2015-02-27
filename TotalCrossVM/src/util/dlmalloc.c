@@ -1331,6 +1331,9 @@ int mspace_mallopt(int, int);
 #endif /* LACKS_ERRNO_H */
 #if FOOTERS || DEBUG
 #ifndef WINCE
+#ifdef darwin
+ #define _POSIX_C_SOURCE 200809L
+#endif
 #include <time.h>        /* for magic initialization */
 #endif
 #endif /* FOOTERS */
