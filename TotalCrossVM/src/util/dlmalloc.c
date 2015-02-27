@@ -1332,7 +1332,7 @@ int mspace_mallopt(int, int);
 #if FOOTERS || DEBUG
 #ifndef WINCE
 #ifdef darwin
- #define _POSIX_C_SOURCE 200809L
+#define _XOPEN_SOURCE 700
 #endif
 #include <time.h>        /* for magic initialization */
 #endif
