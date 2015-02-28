@@ -15,6 +15,26 @@
 #include "../ui/PalmFont.h"
 
 //////////////////////////////////////////////////////////////////////////
+TC_API void tsC_equals_BB(NMParams p) // totalcross/sys/Convert native public static boolean equals(byte []b1, byte []b2);
+{
+   TCObject b1 = p->obj[0];
+   TCObject b2 = p->obj[1];
+   bool ret = true;
+   if (b1 != null && b2 != null && ARRAYOBJ_LEN(b1) == ARRAYOBJ_LEN(b2))
+   {
+      uint8* a1 = (uint8*)ARRAYOBJ_START(b1);
+      uint8* a2 = (uint8*)ARRAYOBJ_START(b2);
+      int32 len = ARRAYOBJ_LEN(b1);
+      while (--len >= 0)
+         if (*a1++ != *a2++)
+         {
+            ret = false;
+            break;
+         }
+   } else ret = b1 == b2;
+   p->retI = ret;
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tsC_toInt_s(NMParams p) // totalcross/sys/Convert native public static int toInt(String s);
 {
    TCObject string = p->obj[0];

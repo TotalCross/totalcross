@@ -2394,7 +2394,19 @@ public final class Convert
       return changed ? new String(chars) : s;
    }
    
+   public static boolean equals(byte[] b1, byte[] b2)
+   {
+      if (b1 != null && b2 != null && b1.length == b2.length)
+      {
+         for (int i = b1.length; --i >= 0;)
+            if (b1[i] != b2[i])
+               return false;
+      }
+      return b1 == b2;
+   }
+   
    //////// Native methods for device
+   native public static boolean equals4D(byte[] b1, byte[] b2);
    native public static String dup4D(char c, int count);
    native public static String spacePad4D(String what, int count, boolean before);
    native public static int toInt4D(String s) throws InvalidNumberException;

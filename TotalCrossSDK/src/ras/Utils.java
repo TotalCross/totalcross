@@ -132,17 +132,11 @@ public final class Utils
          return def;
       }
    }
-   
+
+   /** @deprecated Use Convert.equals(byte[], byte[]) */
    public static boolean byteArrayEquals(byte[] b1, byte[] b2)
    {
-      if (b1.length != b2.length)
-         return false;
-      
-      for (int i = b1.length - 1; i >= 0; i--)
-         if (b1[i] != b2[i])
-            return false;
-      
-      return true;
+      return Convert.equals(b1,b2);
    }
    
    public static int[] bytesToInts(byte[] bytes)

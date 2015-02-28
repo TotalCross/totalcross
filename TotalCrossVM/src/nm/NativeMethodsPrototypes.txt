@@ -64,7 +64,7 @@ TC_API void jlrF_setLong_ol(NMParams p);
 TC_API void jlrF_setFloat_od(NMParams p);
 TC_API void jlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
-TC_API void tmGM_showRoute_sssb(NMParams p);
+TC_API void tmGM_showRoute_sssi(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);
@@ -185,6 +185,7 @@ TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
 TC_API void tsUTF8CC_chars2bytes_Cii(NMParams p);
+TC_API void tsC_equals_BB(NMParams p);
 TC_API void tsC_toInt_s(NMParams p);
 TC_API void tsC_toString_c(NMParams p);
 TC_API void tsC_doubleToIntBits_d(NMParams p);
@@ -794,7 +795,7 @@ TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tmGM_showRoute_sssb(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, boolean showSatellitePhotos);
+TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1278,6 +1279,10 @@ TC_API void tsUTF8CC_chars2bytes_Cii(NMParams p) // totalcross/sys/UTF8Character
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tsC_equals_BB(NMParams p) // totalcross/sys/Convert native public static boolean equals(byte []b1, byte []b2);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tsC_toInt_s(NMParams p) // totalcross/sys/Convert native public static int toInt(String s);
 {
 }
@@ -1530,8 +1535,7 @@ TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-
-TC_API void tsV_identityHashCode_o(NMParams p) // totalcross/sys/Vm native public static int identityHashCode(Object object);
+TC_API void tsV_identityHashCode_o(NMParams p) // totalcross/sys/Vm native public static int identityHashCode(Object o);
 {
 }
 //////////////////////////////////////////////////////////////////////////
