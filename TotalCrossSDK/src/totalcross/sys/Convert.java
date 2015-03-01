@@ -2401,6 +2401,7 @@ public final class Convert
          for (int i = b1.length; --i >= 0;)
             if (b1[i] != b2[i])
                return false;
+         return true;
       }
       return b1 == b2;
    }
