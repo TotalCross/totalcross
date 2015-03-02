@@ -202,6 +202,7 @@ TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
 TC_API void tsUTF8CC_chars2bytes_Cii(NMParams p);
+TC_API void tsC_equals_BB(NMParams p);
 TC_API void tsC_toInt_s(NMParams p);
 TC_API void tsC_toString_c(NMParams p);
 TC_API void tsC_doubleToIntBits_d(NMParams p);

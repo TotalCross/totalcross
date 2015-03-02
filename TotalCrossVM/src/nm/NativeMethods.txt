@@ -184,6 +184,7 @@ totalcross/sys/CharacterConverter|native public char[]bytes2chars(byte []bytes, 
 totalcross/sys/CharacterConverter|native public byte[] chars2bytes(char []chars, int offset, int length);
 totalcross/sys/UTF8CharacterConverter|native public char[]bytes2chars(byte []bytes, int offset, int length);
 totalcross/sys/UTF8CharacterConverter|native public byte[] chars2bytes(char []chars, int offset, int length);
+totalcross/sys/Convert|native public static boolean equals(byte []b1, byte []b2);
 totalcross/sys/Convert|native public static int toInt(String s);
 totalcross/sys/Convert|native public static String toString(char c);
 totalcross/sys/Convert|native public static int doubleToIntBits(double d);
