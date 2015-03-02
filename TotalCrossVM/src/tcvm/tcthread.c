@@ -97,7 +97,7 @@ void freeMutex(int32 hash, VoidP pmutex)
    xfree(mutex);
 }
 
-bool lockMutex(int32 address)
+bool lockMutex(size_t address)
 {
    MUTEX_TYPE* mutex;
 
@@ -123,7 +123,7 @@ bool lockMutex(int32 address)
    return true;
 }
 
-void unlockMutex(int32 address)
+void unlockMutex(size_t address)
 {
    MUTEX_TYPE* mutex = htGetPtr(&htMutexes, address);
    RELEASE_MUTEX_VAR(*mutex);

@@ -18,33 +18,31 @@
 CharP throwableTrace;
 #endif
 
+void printStackTraceFromObj(TCObject traceObj)
+{
+   if (traceObj)
+   {
+      CharP throwableTrace = String2CharP(traceObj);
+      #ifndef ENABLE_TEST_SUITE
+      if (throwableTrace)
+         debug(throwableTrace);
+      xfree(throwableTrace);
+      #endif
+   }
+   else
+   {
+      #ifndef ENABLE_TEST_SUITE
+      debug("No trace available");
+      #endif
+   }
+}
 TC_API void jlT_printStackTraceNative(NMParams p) // java/lang/Throwable native private void printStackTraceNative();
 {
    TCObject ex,traceObj;
-#ifndef ENABLE_TEST_SUITE
-   CharP throwableTrace;
-#endif
 
    ex = p->obj[0];
-   if (ex != null)
-   {
-      traceObj = *Throwable_trace(ex);
-      if (traceObj)
-      {
-         throwableTrace = String2CharP(traceObj);
-#ifndef ENABLE_TEST_SUITE
-         if (throwableTrace)
-            debug(throwableTrace);
-         xfree(throwableTrace);
-#endif
-      }
-      else
-      {
-#ifndef ENABLE_TEST_SUITE
-         debug("No trace available");
-#endif
-      }
-   }
+   if (ex != null)  
+      printStackTraceFromObj(*Throwable_trace(ex));
 }
 
 #ifdef ENABLE_TEST_SUITE

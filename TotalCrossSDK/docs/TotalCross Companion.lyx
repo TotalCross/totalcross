@@ -739,36 +739,22 @@ synchronized
 \family default
  keyword.
  The support for synchronized is limited: it does not support synchronized
- methods, neither classes, neither standard objects.
- You must use the 
+ methods.
+ So, you must use the 
 \family typewriter
 synchronized(object)
 \family default
-, and the only object type that can be used as parameter is the 
+, and it is more efficient to use it with 
 \family typewriter
 totalcross.util.concurrent.Lock
 \family default
 .
- If you use 
+ Using the
 \family typewriter
-synchronized(this)
-\family default
-, the 
-\family typewriter
-tc.Deploy
-\family default
- will abort during deploy; if you use synchronized with an object from any
- other class besides the 
-\family typewriter
-Lock
-\family default
- class, a 
-\family typewriter
-RuntimeException
-\family default
- will be thrown when your program runs in the TotalCross virtual machine.
- Moreover, using the 
-\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
 synchronized
 \family default
  keyword before a method will be useless: it will be ignored by the VM.
@@ -6536,7 +6522,7 @@ the keyword
 \family typewriter
 synchronized
 \family default
- now works with methods and objects that are not 
+ now works with objects that are not 
 \family typewriter
 Lock
 \family default

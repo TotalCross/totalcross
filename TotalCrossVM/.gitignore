@@ -1,0 +1,10 @@
+builders/buildroot.bat
+builders/liblitebase.so
+builders/libtcvm.so
+builders/out.kml
+builders/uedit.GUICH.TOTALCROSS.pui
+builders/uedit.GUINAK-PC.g.pui
+builders/uedit.LARDOCELAR.Guilherme.pui
+builders/uedit.prj
+builders/chime.mp3
+src/launchers/android/lint.xml

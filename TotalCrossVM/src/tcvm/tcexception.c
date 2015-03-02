@@ -12,7 +12,9 @@
 
 
 #include "tcvm.h"
-
+                      
+void printStackTraceFromObj(TCObject traceObj);
+                      
 TC_API void throwException(Context currentContext, Throwable t, CharP message, ...) // throw an exception based on the Throwable enumeration
 {
    TCObject exception;
@@ -26,6 +28,8 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
+      debug("invalidating exception due to OutOfMemory (1). Stack trace:");
+      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -61,6 +65,8 @@ TC_API TCObject createException(Context currentContext, Throwable t, bool fillSt
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
+      debug("invalidating exception due to OutOfMemory (2). Stack trace:");
+      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -94,6 +100,8 @@ TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
+      debug("invalidating exception due to OutOfMemory (3). Stack trace:");
+      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -208,7 +216,8 @@ int32 locateLine(Method m, int32 pc)
 void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidPArray callStack)
 {
    Method m=null;
-   int32 line,im;
+   int32 line;
+   size_t im;
    char *c0 =currentContext->exmsg; 
    char *c=c0;
    bool first = true;
@@ -219,8 +228,12 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
       callStack -= 2;
       //int2hex((int32)callStack, 6, c); c += 6; *c++ = ' '; - used when debugging
       m = (Method)callStack[0];  
-      im = (int)m;
-      if (im < 1000 || (im & 3) != 0) break; // trying to handle crash on addresses 0x33 and 0x36 and odd addresses
+      im = (size_t)m;
+      if (im < 1000 || (im & 3) != 0) 
+      {
+         debug("breaking fillStackTrace due to invalid memory addresses");
+         break; // trying to handle crash on addresses 0x33 and 0x36 and odd addresses
+      }
       oldpc = (Code)callStack[1];
       line = (m->lineNumberLine != null) ? locateLine(m, first ? pc0 : ((int32)(oldpc - m->code))) : -1;
       c = dumpMethodInfo(c, m, line, c0 + sizeof(currentContext->exmsg) - 2);

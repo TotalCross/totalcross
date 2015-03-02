@@ -13,7 +13,6 @@
 
 package tc.tools.deployer;
 
-import java.net.*;
 import java.util.zip.*;
 
 import totalcross.io.*;
@@ -871,29 +870,6 @@ public class Utils
       return y * 10000 + m * 100 + d;
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   public static String getMAC()
-   {
-      try
-      {
-         InetAddress ip = InetAddress.getLocalHost();
-         NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-         byte[] mac = network.getHardwareAddress();
-         StringBuilder sb = new StringBuilder();
-         for (int i = 0; i < mac.length; i++)
-         {
-            int h = mac[i] & 0xFF;
-            if (i > 0) sb.append('-');
-            if (h <= 0x0F) sb.append('0');
-            sb.append(Integer.toHexString(h));
-         }
-         return sb.toString().toUpperCase();
-      }
-      catch (Exception e)
-      {
-         return "";
-      }
-   }
-   /////////////////////////////////////////////////////////////////////////////////////
    public static String pipeConcat(String... kv)
    {
       StringBuilder sb = new StringBuilder(256);
@@ -912,6 +888,8 @@ public class Utils
       for (int i = 0; i < kv.length; i++)
       {
          String []s = kv[i].split("=");
+         if (s.length == 1)
+            s = new String[]{s[0],""};
          ret.put(s[0],s[1]);
       }
       return ret;

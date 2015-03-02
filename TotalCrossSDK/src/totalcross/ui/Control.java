@@ -227,7 +227,7 @@ public class Control extends GfxSurface
    protected boolean focusLess;
 
    protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
-   boolean eventsEnabled = true;
+   public boolean eventsEnabled = true;
 
    static Rect cli = new Rect();
    /** Specifies if this device is a tablet, computing the number of text lines.

@@ -52,7 +52,7 @@ TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native 
 {
    TCObject addrI = p->obj[0];
    TCObject addrF = p->obj[1];
-   if (!addrI || !addrF)
+   if (!addrI)
    {
       p->retI = false;
       return;

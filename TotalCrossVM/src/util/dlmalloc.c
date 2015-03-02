@@ -2994,6 +2994,7 @@ static size_t traverse_and_check(mstate m);
 #endif /* !FOOTERS */
 
 /* ---------------------------- setting mparams -------------------------- */
+time_t time(time_t *timer); //flsobral: adding the freaking prototype here
 
 /* Initialize mparams */
 static int init_mparams(void) {

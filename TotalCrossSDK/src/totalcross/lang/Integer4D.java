@@ -73,4 +73,8 @@ public class Integer4D
    {
      return Convert.unsigned2hex(i, 4);
    }
+   public static String toString(int v)
+   {
+      return String.valueOf(v);
+   }
 }

@@ -110,7 +110,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/Release"
+			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossSDK/dist/vm/wince"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(PlatformName)/Dolphin/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"

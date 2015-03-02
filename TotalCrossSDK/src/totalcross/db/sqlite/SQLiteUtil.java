@@ -216,7 +216,11 @@ public class SQLiteUtil
 
    public int getInt(String sql) throws SQLException
    {
-      ResultSet rs = executeQuery(sql);
+      return getInt(executeQuery(sql));
+   }
+
+   public int getInt(ResultSet rs) throws SQLException
+   {
       int ret = rs.next() ? rs.getInt(1) : 0;
       close(rs);
       return ret;

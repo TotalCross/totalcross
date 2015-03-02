@@ -960,7 +960,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
    uf = loadUserFontFromFontObj(currentContext, fontObj, ' ');
    if (uf == null) return;
-   diffW = uf->ubase && uf->ubase->fontP.antialiased == AA_8BPP;
+   diffW = uf->ubase && uf->isDefaultFont;
    rowWIB = uf->rowWidthInBytes;
    bitIndexTable = uf->bitIndexTable;
    bitmapTable = uf->bitmapTable;
