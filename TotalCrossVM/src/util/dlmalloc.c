@@ -1332,7 +1332,6 @@ int mspace_mallopt(int, int);
 #if FOOTERS || DEBUG
 #ifndef WINCE
 #include <time.h>        /* for magic initialization */
-time_t time(time_t *timer);
 #endif
 #endif /* FOOTERS */
 #ifndef LACKS_STDLIB_H
@@ -2995,6 +2994,7 @@ static size_t traverse_and_check(mstate m);
 #endif /* !FOOTERS */
 
 /* ---------------------------- setting mparams -------------------------- */
+time_t time(time_t *timer); //flsobral: adding the freaking prototype here
 
 /* Initialize mparams */
 static int init_mparams(void) {
