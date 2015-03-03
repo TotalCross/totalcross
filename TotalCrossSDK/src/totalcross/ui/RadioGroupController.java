@@ -18,6 +18,7 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -134,18 +135,26 @@ public class RadioGroupController
      */
    public void setSelectedIndex(int i) // guich@421_32
    {
+      setSelectedIndex(i, Settings.sendPressEventOnChange);
+   }
+   
+   /** Selects the given radio and deselects the other one.
+    * @param i the zero-based index of the radio to be set, or -1 to disable all.
+    */
+   public void setSelectedIndex(int i, boolean sendPressEvent) // guich@421_32
+   {
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressEvent);
       if (i < 0) // guich@tc100
          last = null;
       else
       if (i < members.size())
       {
          last = (Radio)members.items[i];
-         last.setChecked(true);
+         last.setChecked(true,sendPressEvent);
       }
    }
-   
+  
    /** Returns the Radio at the given index.
     * @since TotalCross 1.5 
     */
