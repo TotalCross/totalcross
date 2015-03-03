@@ -149,7 +149,7 @@ jclass androidFindClass(JNIEnv* env, CharP className)
    jclass c = (*env)->FindClass(env, getTotalCrossAndroidClass(className));
    (*env)->ExceptionClear(env);
    if (c)
-      c = (jclass)(*env)->NewGlobalRef(env, c);
+      MAKE_GLOBAL_REFERENCE(c,jclass);
    return c;
 }
 
