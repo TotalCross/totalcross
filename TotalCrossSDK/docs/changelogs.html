@@ -1,4 +1,43 @@
 <h2>TotalCross 3.1</h2>             
+<h1>build </h1>
+* fixed support for android 5. updated adb to android 5<br>
+* fixed totalcross on 64-bit iOS, required for deploying on appstore<br>
+* now tc.Deploy use a appicon.png (256x256) to generate all icons. now Android has new icons sizes for better resolutions. deprecated appicon.gif<br>
+* added a simple PDFWritter to TotalCross and created a sample at TotalCrossAPI / util / PDF. thanks to Javier Santo Domingo<br>
+. now GoogleMaps will throw a NotInstalledException when waze is not found. still have to implement it<br>
+. now if you use USE_WAZE and waze is not installed, an NotInstalledException is thrown.<br>
+. Now Toast.show already splits the text using Convert.insertLineBreakBalanced.<br>
+. changed TotalCrossAPI to let the user choose if he want to use the native camera from TotalCrossAPI<br>
+. added new icons to ios 7. removed deprecated artwork<br>
+. updated sqlite-jdbc to 3.8.7<br>
+. caution when using multiple exceptions in a single statement!<br>
+. changed compatibility to java 1.7<br>
+. prevent a bug on TotalCrossAPI when you press back with the Calendar open and the main menu opens inside the Calendar<br>
+. added Convert.removeAccentuation (valid for unicode range <= 255). GoogleMaps.showRoute must not have accentuation chars on its address.<br>
+. fixes green screen that occurs when the keyboard is open and the user turns off the device<br>
+. fixed crash when trying to run a class without extending MainWindow nor MainClass<br>
+. fixed /i android since adb no longer supports adb install *.apk<br>
+. fixed Radio when the height was greater than the preferred height, the text would be drawn over the ball<br>
+. added TabbedContainer.setCaptions<br>
+. improved Time to correctly parse a time if it has less parameters than expected<br>
+. added BACKGROUND_SHADED_INV to Container's backgroundStyle<br>
+. added Button.fillWhenPressedOnTransparentBackground<br>
+. added Container.setPressedColor, isPressed, setPressed.<br>
+. added some explanation messages when throwing NullPointerException and OutOfMemoryError at tcvm<br>
+. Image.getPixelRow is now public<br>
+. now Control.eventsEnabled is public<br>
+. fixed ToolTip's unaligned text. now it auto-splits the text without \n<br>
+. fixed Camera's click on desktop not using image preview on FileChooserBox. added fcbTitle so you can customize the FCB's title<br>
+. now Convert.toDouble(String) throws an exception if the string is empty, as in Java SE<br>
+. fixed interchar spacing for custom fonts<br>
+. deprecated some Settings.app* stuff. improved comments telling which platforms use the remaining values.<br>
+. fixed problem that prevents more than one TotalCross app on WP8<br>
+. fixed CalendarBox with a pressed value when it was being reused<br>
+. added SQLiteUtil.getInt(ResultSet)<br>
+. fixed wince scanner dlls not being packaged. now in release they are outputted to the dist/vm/wince folder<br>
+. added Image.getCopy<br>
+. added Convert.equals(byte[], byte[])<br>
+. added RadioGroupController.setSelectedIndex(index, sendPressEvent)<br>
 <h1>build 2511</h1>
 . removed many outdated Fn functions that were still mapping to Palm OS. now F11 takes a screenshot and saves to disk. Note that /scale does not affect the screenshot.<br>
 <h1>build 2509</h1>
