@@ -190,6 +190,7 @@ public class SQLiteUtil
       }
       String[][] ss = new String[v.size()][];
       v.copyInto(ss);
+      close(rs);
       return ss;
    }
 
@@ -202,7 +203,7 @@ public class SQLiteUtil
    {
       ResultSet rs = executeQuery(sql);
       String[][] ret = getStrings(rs, new Vector(vectorInitialSize));
-      rs.close();
+      close(rs);
       return ret;
    }
    
