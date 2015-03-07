@@ -9,7 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
+#if !defined(WINCE) && !defined(WP8)
+#include <tlhelp32.h>
+#endif
 
 static void vmSetTime(TCObject time)
 {
@@ -47,6 +49,7 @@ void rebootDevice()
    SetSystemPowerState(null, 0x00800000, 4096);*/
 #endif
 }
+
 
 typedef HANDLE (__stdcall *RegisterServiceProc)(LPCWSTR lpszType,  DWORD dwIndex,  LPCWSTR lpszLib,  DWORD dwInfo);
 typedef BOOL (__stdcall *DeregisterServiceProc)(HANDLE hDevice);
@@ -99,6 +102,21 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    //XXX all below should be reworked
 #if !defined WP8
 #ifndef WINCE
+   if (strEq(szCommand,"running process"))
+   {
+    bool exists = false;
+    PROCESSENTRY32 entry;
+	HANDLE snapshot;
+    entry.dwSize = sizeof(PROCESSENTRY32);
+    snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (Process32First(snapshot, &entry))
+       while (!exists && Process32Next(snapshot, &entry))
+          if (lstrcmpi(entry.szExeFile, szArgs) == 0)
+             exists = true;
+    CloseHandle(snapshot);
+    return exists;
+   }
+   else
    if (strEq(szCommand,"viewer") || strEq(szCommand,"url"))
    {
 	  ShellExecute(NULL, "open", szArgs, NULL, NULL, SW_SHOWNORMAL);

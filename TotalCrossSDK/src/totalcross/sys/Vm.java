@@ -238,6 +238,10 @@ public final class Vm
     * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
     * <li> Vm.exec("viewer","c:\\handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and other registered extensions.
     * </ul>
+    * In Win32 you can find if a program is running by using "running process", and passing the exe's filename (case insensitive):
+    * <ul>
+    * <li> int ret = Vm.exec("running process", "explorer.exe",0,false) == 1;
+    * </ul>
     * 
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
