@@ -38,7 +38,7 @@ void printStackTraceFromObj(TCObject traceObj)
 }
 TC_API void jlT_printStackTraceNative(NMParams p) // java/lang/Throwable native private void printStackTraceNative();
 {
-   TCObject ex,traceObj;
+   TCObject ex;
 
    ex = p->obj[0];
    if (ex != null)  
