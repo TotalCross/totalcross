@@ -17,8 +17,10 @@ public class Toast
    public static int posX = Control.CENTER;
    /** Y position of the toast. Defaults to BOTTOM - fmH. */
    public static int posY = Control.BOTTOM - Font.NORMAL_SIZE;
-   /** Width of the toast. Defaults to PREFERRED + fmH * 4. */
-   public static int width = Control.PREFERRED + Font.NORMAL_SIZE * 4;
+   /** Extra width of the toast in font's height multiples. Defaults to 2. */
+   public static int extraW = 2;
+   /** Width of the toast. Defaults to PREFERRED. */
+   public static int width = Control.PREFERRED;
    /** Height of the toast. Defaults to PREFERRED. */
    public static int height = Control.PREFERRED;
    /** The stopping fade value, used on transparency. Defaults to 200. */
@@ -73,7 +75,7 @@ public class Toast
                btn.setBorder(Button.BORDER_ROUND);
                btn.setBackForeColors(backColor, foreColor);
                btn.setFont(font);
-               parent.add(btn, posX, posY, width, height);
+               parent.add(btn, posX, posY, width + extraW * (parent.uiAdjustmentsBasedOnFontHeightIsSupported ? 100 : btn.fmH), height);
                if (delay != INFINITE_NOANIM)
                {
                   FadeAnimation.maxFade = fade;
