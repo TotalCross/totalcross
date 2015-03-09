@@ -277,6 +277,28 @@ public final class Vm
             status = 0;
          }
          else
+         if (command.equals("running process"))
+         {
+            int ret = 0;
+            try
+            {
+               String line;
+               Process p =Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
+               java.io.BufferedReader input =  new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+   
+               args = args.toLowerCase();
+               while ((line = input.readLine()) != null) 
+                  if (line.toLowerCase().startsWith(args))
+                  {
+                     ret = 1;
+                     break;
+                  }
+   
+               input.close();
+            }
+            catch (Exception e) {e.printStackTrace();}
+            return ret;
+         }
          if (command.equals("viewer"))
          {
             java.awt.Desktop.getDesktop().browse(new java.net.URI(args.replace(' ','+')));
