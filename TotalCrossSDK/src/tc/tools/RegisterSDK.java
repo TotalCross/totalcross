@@ -39,7 +39,7 @@ public final class RegisterSDK
       today = Utils.getToday();
       user = System.getProperty("user.name");
       home = System.getProperty("user.home");
-      flicense = new File(home+"/tc_license.dat");
+      flicense = new File(home+"/"+key+".key");
       if (force || !flicense.exists()) 
          updateLicense();
       int ret = checkLicense();

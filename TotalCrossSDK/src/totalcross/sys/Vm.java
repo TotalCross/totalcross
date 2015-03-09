@@ -238,6 +238,10 @@ public final class Vm
     * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
     * <li> Vm.exec("viewer","c:\\handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and other registered extensions.
     * </ul>
+    * In Win32 you can find if a program is running by using "running process", and passing the exe's filename (case insensitive):
+    * <ul>
+    * <li> int ret = Vm.exec("running process", "explorer.exe",0,false) == 1;
+    * </ul>
     * 
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
@@ -273,6 +277,28 @@ public final class Vm
             status = 0;
          }
          else
+         if (command.equals("running process"))
+         {
+            int ret = 0;
+            try
+            {
+               String line;
+               Process p =Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
+               java.io.BufferedReader input =  new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+   
+               args = args.toLowerCase();
+               while ((line = input.readLine()) != null) 
+                  if (line.toLowerCase().startsWith(args))
+                  {
+                     ret = 1;
+                     break;
+                  }
+   
+               input.close();
+            }
+            catch (Exception e) {e.printStackTrace();}
+            return ret;
+         }
          if (command.equals("viewer"))
          {
             java.awt.Desktop.getDesktop().browse(new java.net.URI(args.replace(' ','+')));

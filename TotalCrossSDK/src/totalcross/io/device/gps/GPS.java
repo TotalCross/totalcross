@@ -106,7 +106,7 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
+   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE);
    private static boolean isOpen;
    boolean dontFinalize;
    

@@ -464,7 +464,7 @@ public class HttpStream extends Stream
    /** Returns true if the response code represents an error. */
    public boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
-   private CharacterConverter cc;
+   private CharacterConverter cc = new CharacterConverter();
 
    public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {

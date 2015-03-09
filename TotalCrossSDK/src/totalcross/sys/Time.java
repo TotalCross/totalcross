@@ -219,13 +219,13 @@ public final class Time
          }
          else
          {
-            if (hasYear  && parts.length < idx) year  = Convert.toInt(parts[idx++]);
-            if (hasMonth && parts.length < idx) month = Convert.toInt(parts[idx++]);
-            if (hasDay   && parts.length < idx) day   = Convert.toInt(parts[idx++]);
+            if (hasYear  && idx < parts.length) year  = Convert.toInt(parts[idx++]);
+            if (hasMonth && idx < parts.length) month = Convert.toInt(parts[idx++]);
+            if (hasDay   && idx < parts.length) day   = Convert.toInt(parts[idx++]);
          }
-         if (hasHour    && parts.length < idx) hour += Convert.toInt(parts[idx++]);
-         if (hasMinute  && parts.length < idx) minute = Convert.toInt(parts[idx++]);
-         if (hasSeconds && parts.length < idx) second = Convert.toInt(parts[idx++]);
+         if (hasHour    && idx < parts.length) hour += Convert.toInt(parts[idx++]);
+         if (hasMinute  && idx < parts.length) minute = Convert.toInt(parts[idx++]);
+         if (hasSeconds && idx < parts.length) second = Convert.toInt(parts[idx++]);
       }
       catch (InvalidNumberException ine) {}
    }

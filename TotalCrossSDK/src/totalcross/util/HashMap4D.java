@@ -297,6 +297,14 @@ public class HashMap4D<K, V> extends AbstractMap4D<K, V>
     return null;
   }
 
+  public V getOrDefault(Object key, V def)
+  {
+     V ret = get(key);
+     if (ret == null)
+        ret = def;
+     return ret;
+  }
+
   /**
    * Returns true if the supplied object <code>equals()</code> a key
    * in this HashMap.
