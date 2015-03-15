@@ -2380,6 +2380,7 @@ public final class Convert
    /** Returns the given string without accentuation characters, using the unicode range 0-255 */
    public static String removeAccentuation(String s)
    {
+      if (s == null) return null;
       char[] chars = s.toCharArray();
       boolean changed = false;
       for (int i = chars.length; --i >= 0;)
