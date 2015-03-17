@@ -2,6 +2,7 @@ package tc.tools.deployer.ipa;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Stack;
 
 public class ElephantMemoryReader extends ByteArrayInputStream implements ElephantMemoryStream
@@ -11,6 +12,11 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
    public ElephantMemoryReader(byte[] data)
    {
       super(data);
+   }
+
+   public byte[] copy(int from, int to)
+   {
+      return Arrays.copyOfRange(super.buf, from, to);
    }
 
    public long readUnsignedInt() throws IOException
@@ -25,6 +31,13 @@ public class ElephantMemoryReader extends ByteArrayInputStream implements Elepha
       byte[] b = new byte[4];
       read(b);
       return ((((long) (b[3] & 0xFF)) << 24) | (((long) (b[2] & 0xFF)) << 16) | ((b[1] & 0xFF) << 8) | (b[0] & 0xFF));
+   }
+
+   public long readUnsignedLongLE() throws IOException
+   {
+      long l1 = (long) readUnsignedIntLE() & 0xFFFFFFFFL;
+      long l2 = (long) readUnsignedIntLE() & 0xFFFFFFFFL;
+      return (l2 << 32) | l1;
    }
 
    public String readString(int maxLength) throws IOException

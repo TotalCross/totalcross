@@ -1,10 +1,22 @@
 package tc.tools;
 
-import java.io.*;
-import java.security.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.digests.GeneralDigest;
@@ -12,9 +24,12 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
-import tc.tools.deployer.ipa.*;
-import tc.tools.deployer.ipa.blob.*;
-import com.dd.plist.*;
+import tc.tools.deployer.ipa.MachObjectFile;
+import tc.tools.deployer.ipa.MobileProvision;
+import tc.tools.deployer.ipa.MyNSObjectSerializer;
+import com.dd.plist.NSData;
+import com.dd.plist.NSDictionary;
+import com.dd.plist.PropertyListParser;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
 
@@ -164,31 +179,8 @@ public class InvalidateIPA
       executable.output(appStream);
 
       MachObjectFile file = new MachObjectFile(appStream.toByteArray());
-      EmbeddedSignature originalSignature = file.getEmbeddedSignature();
-
-      // create a new codeDirectory with the new identifier, but keeping the same codeLimit
-      CodeDirectory codeDirectory = new CodeDirectory(bundleIdentifier, originalSignature.codeDirectory.codeLimit);
-      // now create brand new entitlements and requirements
-      Entitlements entitlements = new Entitlements(Provision.GetEntitlementsString().getBytes("UTF-8"));
-      Requirements requirements = new Requirements();
-
-      // now create the blob wrapper
-      BlobWrapper blobWrapper = new BlobWrapper(ks, certStore, codeDirectory);
-
-      // finally create the template of our new signature
-      EmbeddedSignature newSignature = new EmbeddedSignature(codeDirectory, entitlements, requirements, blobWrapper);
-
-      // add the new signature to the file
-      file.setEmbeddedSignature(newSignature);
-
-      // recalculate hashes
-      codeDirectory.setSpecialSlotsHashes(updatedInfoPlist, requirements.getBytes(), sourceData, null, entitlements.getBytes());
-      codeDirectory.setCodeSlotsHashes(file.data);
-
-      file.resign();
-
       // executable
-      executable.input(new ByteArrayInputStream(file.data));
+      executable.input(new ByteArrayInputStream(file.resign(ks, certStore, bundleIdentifier, Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
 
       TVFS.umount(targetZip);
 
