@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.crypto.digests.GeneralDigest;
@@ -24,12 +25,15 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509Store;
-import tc.tools.deployer.ipa.MachObjectFile;
+
+import tc.tools.deployer.ipa.AppleBinary;
 import tc.tools.deployer.ipa.MobileProvision;
 import tc.tools.deployer.ipa.MyNSObjectSerializer;
+
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.PropertyListParser;
+
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
 
@@ -178,7 +182,7 @@ public class InvalidateIPA
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
 
-      MachObjectFile file = new MachObjectFile(appStream.toByteArray());
+      AppleBinary file = AppleBinary.create(appStream.toByteArray());
       // executable
       executable.input(new ByteArrayInputStream(file.resign(ks, certStore, bundleIdentifier, Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
 
