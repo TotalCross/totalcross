@@ -2331,7 +2331,7 @@
 					"$(PROJECT_DIR)/../../src/nm/**",
 					"$(PROJECT_DIR)/../../src/tcvm/**",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2370,7 +2370,7 @@
 					"$(PROJECT_DIR)/../../src/nm/**",
 					"$(PROJECT_DIR)/../../src/tcvm/**",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LD_DYLIB_INSTALL_NAME = "lib$(PROJECT_NAME).dylib";
 				MACH_O_TYPE = staticlib;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
