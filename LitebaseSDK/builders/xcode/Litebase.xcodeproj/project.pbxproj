@@ -427,7 +427,7 @@
 					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/io",
 					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/lang",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
 				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "-ObjC";
@@ -462,7 +462,7 @@
 					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/io",
 					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/lang",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
 				MACH_O_TYPE = staticlib;
 				OTHER_LDFLAGS = "-ObjC";
