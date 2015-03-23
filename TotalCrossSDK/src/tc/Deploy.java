@@ -66,8 +66,7 @@ public class Deploy
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
          int options = parseOptions(args);
-         if (activationKey != null) // for DEMO vm, dont try to activate
-            new RegisterSDK(activationKey);
+         new RegisterSDK(activationKey);
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
@@ -252,6 +251,7 @@ public class Deploy
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("wp8"    .hashCode(), BUILD_WP8);
       iht.put("all"    .hashCode(), BUILD_ALL);
+      int blockedPlatsOnFree = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX;
 
       // parse the parameters
       for (int i = 1; i < args.length; i++)
@@ -346,6 +346,7 @@ public class Deploy
                             throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX");
                          activationKey = key;
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
+                         DeploySettings.isFreeSDK = new String(DeploySettings.rasKey,0,4).equals("TCST");
                          System.out.println("The application was signed with the given registration key.");
                          break;
                case 't': DeploySettings.testClass = true; 
@@ -366,6 +367,11 @@ public class Deploy
                default:  throw new DeployerException("Invalid option: "+op);
             }
       }
+      if (activationKey == null)
+         throw new DeployerException("You must provide a registration key!");
+      else
+      if (DeploySettings.isFreeSDK && (options & blockedPlatsOnFree) != 0)
+         throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
       return options;
    }
 
