@@ -217,9 +217,10 @@ public class GPS
          {
             startGPS();
          }
-         finally
+         catch (IOException e)
          {
             isOpen = false;
+            throw e;
          }
    }
 
