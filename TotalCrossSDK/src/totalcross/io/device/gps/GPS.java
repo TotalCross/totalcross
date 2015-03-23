@@ -213,7 +213,14 @@ public class GPS
          this.sp = sp;
       else 
       if (nativeAPI)
-         startGPS();
+         try
+         {
+            startGPS();
+         }
+         finally
+         {
+            isOpen = false;
+         }
    }
 
    private boolean startGPS() throws IOException {return false;}
