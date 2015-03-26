@@ -97,7 +97,10 @@ public class Throwable4D
     {
        if (msg == null)
           return super.toString();
-       return super.toString() + " - " + msg;
+       String ret = super.toString() + " - " + msg;
+       if (cause != null)
+          ret += "caused by "+cause.toString();
+       return ret;
     }
 
     /**
@@ -107,9 +110,24 @@ public class Throwable4D
     {
        totalcross.sys.Vm.warning(toString());
        printStackTraceNative();
+       if (cause != null)
+       {
+          totalcross.sys.Vm.warning("Caused by "+cause);
+          cause.printStackTraceNative();
+       }
     }
 
     native private void printStackTraceNative();
 
     public void printStackTrace(Object o) {} // guich@582_6: just a place-holder to let it build-device
+    
+    public Throwable4D getCause()
+    {
+       return cause;
+    }
+    public Throwable4D initCause(Throwable4D cause)
+    {
+       this.cause = cause;
+       return this;
+    }
 }
