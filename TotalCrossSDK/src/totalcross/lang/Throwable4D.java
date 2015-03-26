@@ -112,8 +112,8 @@ public class Throwable4D
        printStackTraceNative();
        if (cause != null)
        {
-          totalcross.sys.Vm.warning("Caused by "+cause);
-          cause.printStackTraceNative();
+          totalcross.sys.Vm.warning("Caused by ");
+          cause.printStackTrace(); // allows recursion
        }
     }
 
