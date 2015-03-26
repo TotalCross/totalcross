@@ -421,7 +421,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
       }
       catch (InvalidDateException e)
       {
-         throw new SQLException("Invalid date from time "+t.getTimeLong()+"."+initCause(e));
+         throw new SQLException("Invalid date from time "+t.getTimeLong(),e);
       }
     }
 
@@ -505,11 +505,6 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
         return getString(findColumn(col));
     }
     
-    static String initCause(Throwable e)
-    {
-       return " Cause: "+e.getMessage()+"\n trace: "+Vm.getStackTrace(e);
-    }
-
     /**
      * @see java.sql.ResultSet#getTime(int)
      */
@@ -521,29 +516,11 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
           case SQLITE_TEXT:
              try 
              {
-                String time = db.column_text(stmt.pointer, markCol(col));
-                StringBuffer seps = new StringBuffer(1); // guich@sqlite: accept any kind of separator
-                for (int i = 0, n = time.length(); i < n; i++)
-                {
-                   char ch = time.charAt(i);
-                   if (!('0' <= ch && ch <= '9'))
-                      seps.append(ch);
-                }
-                String[] parts = Convert.tokenizeString(time, seps.toString().toCharArray());
-                int l = parts.length;
-                Time t = new Time(0L);
-                if (l >= 1) t.year = Convert.toInt(parts[0]);
-                if (l >= 2) t.month = Convert.toInt(parts[1]);
-                if (l >= 3) t.day = Convert.toInt(parts[2]);
-                if (l >= 4) t.hour += Convert.toInt(parts[3]);
-                if (l >= 5) t.minute = Convert.toInt(parts[4]);
-                if (l >= 6) t.second = Convert.toInt(parts[5]);
-                if (l >= 7) t.millis = Convert.toInt(parts[6]);
-                return t;
+                return new Time(db.column_text(stmt.pointer, markCol(col)).toCharArray());
              }
              catch (Exception e)
              {
-                throw new SQLException("Error parsing date"+initCause(e));
+                throw new SQLException("Error parsing date",e);
              }
           default:
              // guich: always store as long
@@ -889,7 +866,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
             }
             catch (InvalidNumberException ine)
             {
-               throw new SQLException("Invalid precision."+initCause(ine));
+               throw new SQLException("Invalid precision.",ine);
             }
         }
 
@@ -925,7 +902,7 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
                    }
                    catch (InvalidNumberException ine)
                    {
-                      throw new SQLException("Invalid scale."+initCause(ine));
+                      throw new SQLException("Invalid scale.",ine);
                    }
                 }
             }
