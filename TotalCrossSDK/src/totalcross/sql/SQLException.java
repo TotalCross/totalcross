@@ -33,6 +33,12 @@ public class SQLException extends Exception
    {
       this(reason, sqlState, 0);
    }
+   
+   public SQLException(String reason, Throwable cause)
+   {
+      this(reason,null,0);
+      initCause(cause);
+   }
 
    public SQLException(String reason)
    {
