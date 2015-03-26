@@ -58,6 +58,7 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
    private static boolean syncWarned;
+   
 
    public J2TC(JavaClass jc) throws IOException,Exception
    {

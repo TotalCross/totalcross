@@ -133,6 +133,47 @@ public final class Time
       second = Convert.toInt(new String(chars, 15, 2));
    }
    
+   /** Creates a Time object from an SQL String. It accepts any character as separator and also with less fields,
+    * based that the sequence is always YY-MM-DD hh:mm:ss.mmm.
+    * @since TotalCross 3.1
+    */
+   public Time(char[] sqlTime) throws InvalidDateException
+   {
+      try
+      {
+         int[] parts = new int[7];
+         int[] pow = {10000,1000,100,10,1};
+         int nr = 0,p=0,ni=4;
+         for (int i = sqlTime.length; --i >= 0;)
+         {
+            char ch = sqlTime[i];
+            boolean isNumber = '0' <= ch && ch <= '9';
+            if (isNumber)
+               nr += (ch-'0') * pow[ni--];
+            if (i == 0 || (!isNumber && ni != 4))
+            {
+               parts[p++] = nr;
+               ni = 4;
+               nr = 0;
+            }
+         }
+         
+         if (--p >= 0) this.year   = parts[p];
+         if (--p >= 0) this.month  = parts[p];
+         if (--p >= 0) this.day    = parts[p];
+         if (--p >= 0) this.hour   = parts[p];
+         if (--p >= 0) this.minute = parts[p];
+         if (--p >= 0) this.second = parts[p];
+         if (--p >= 0) this.millis = parts[p];
+      }
+      catch (Exception e)
+      {
+         InvalidDateException ide = new InvalidDateException("Invalid date: \""+new String(sqlTime)+"\"");
+         ide.initCause(e);
+         throw ide;
+      }
+   }
+   
    /** Creates a time in the SQL' format. 
     * @param time Number of millis since 1/1/1970
     * @param b Here only to differ from the other constructor that receives a long and its ignored.

@@ -128,7 +128,7 @@ public class SQLiteConnection implements Connection
             db = new NativeDB();
         }
         catch (Exception e) {
-            throw new SQLException("Error opening connection"+RS.initCause(e));
+            throw new SQLException("Error opening connection", e);
         }
 
         db.open(this, fileName, openModeFlags);

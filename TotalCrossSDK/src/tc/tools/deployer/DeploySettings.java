@@ -91,6 +91,8 @@ public class DeploySettings
    public static final String TCAPP_PROP = "tcapp.prop";
    public static int appBuildNumber=-1;
 
+   public static boolean isFreeSDK;
+
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
    {
