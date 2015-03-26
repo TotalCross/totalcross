@@ -13,6 +13,7 @@
 
 package tc.tools.converter;
 
+import tc.*;
 import tc.tools.deployer.*;
 
 import totalcross.io.*;
@@ -397,8 +398,8 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       if (DeploySettings.rasKey == null && value.indexOf('.') != -1)
       {
          String pkg = value.substring(0,value.lastIndexOf('.'));
-         if (J2TC.EXCLUDED_STARTER_CLASSES.indexOf(pkg+",") != -1)
-            throw new DeployerException("The class "+value+" is not allowed in the FREE SDK. The excluded classes are: "+J2TC.EXCLUDED_STARTER_CLASSES);
+         if (Deploy.STARTER_EXCLUDED_CLASSES.indexOf(pkg+",") != -1)
+            throw new DeployerException("The class "+value+" is not allowed in the FREE SDK. The excluded classes are: "+Deploy.STARTER_EXCLUDED_CLASSES);
       }
       
       if (htCls.exists(value))

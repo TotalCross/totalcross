@@ -35,7 +35,6 @@ import totalcross.util.zip.*;
 
 public final class J2TC implements JConstants, TCConstants
 {
-   public static final String EXCLUDED_STARTER_CLASSES = "totalcross.json,litebase,totalcross.map,totalcross.util.pdf,totalcross.io.device.gps,totalcross.io.device.bluetooth,";
    public static Hashtable htAddedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    public static Hashtable htExcludedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    private static Hashtable htValidExtensions = new Hashtable(0xF);
@@ -59,6 +58,7 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
    private static boolean syncWarned;
+   
 
    public J2TC(JavaClass jc) throws IOException,Exception
    {

@@ -46,7 +46,10 @@ public class Deploy
    public static final int BUILD_WINMO   = 512; // guich@tc125_17
    public static final int BUILD_WP8     = 1024; // guich@tc125_17
    public static final int BUILD_ALL     = 0xFFFF;
-   
+
+   private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX | BUILD_WP8;
+   public static final String STARTER_EXCLUDED_CLASSES = "totalcross.json,litebase,totalcross.map,totalcross.util.pdf,";
+
    private boolean waitIfError; // guich@tc111_24
    private String activationKey;
    
@@ -251,12 +254,12 @@ public class Deploy
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("wp8"    .hashCode(), BUILD_WP8);
       iht.put("all"    .hashCode(), BUILD_ALL);
-      int blockedPlatsOnFree = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX;
 
       // parse the parameters
       for (int i = 1; i < args.length; i++)
       {
          String op = args[i].toLowerCase();
+         System.out.println("*** parsing "+i+" "+op);
          char first = op.charAt(0);
          if (first == '-' || first == 8211)
          {
@@ -345,6 +348,7 @@ public class Deploy
                          if (key.length() != 24)
                             throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX");
                          activationKey = key;
+                         System.out.println("*** key: "+key);
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
                          DeploySettings.isFreeSDK = new String(DeploySettings.rasKey,0,4).equals("TCST");
                          System.out.println("The application was signed with the given registration key.");
@@ -370,7 +374,7 @@ public class Deploy
       if (activationKey == null)
          throw new DeployerException("You must provide a registration key!");
       else
-      if (DeploySettings.isFreeSDK && (options & blockedPlatsOnFree) != 0)
+      if (DeploySettings.isFreeSDK && (options & FREE_BLOCKED_PLATFORMS) != 0)
          throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
       return options;
    }
