@@ -299,7 +299,7 @@ public class SOAP // guich@570_34
    /** The suffix string used when sending requests. */
    public static String suffix = "</soapenv:Body>" + "</soapenv:Envelope>";
 
-   protected static StringBuffer sbuf = new StringBuffer(1024);
+   protected StringBuffer sbuf = new StringBuffer(1024);
 
    /**
     * Constructs a SOAP request with the given parameters. The default namespace
