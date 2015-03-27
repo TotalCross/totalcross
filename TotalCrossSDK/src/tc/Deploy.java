@@ -259,7 +259,6 @@ public class Deploy
       for (int i = 1; i < args.length; i++)
       {
          String op = args[i].toLowerCase();
-         System.out.println("*** parsing "+i+" "+op);
          char first = op.charAt(0);
          if (first == '-' || first == 8211)
          {
@@ -348,7 +347,6 @@ public class Deploy
                          if (key.length() != 24)
                             throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX");
                          activationKey = key;
-                         System.out.println("*** key: "+key);
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
                          DeploySettings.isFreeSDK = new String(DeploySettings.rasKey,0,4).equals("TCST");
                          System.out.println("The application was signed with the given registration key.");
