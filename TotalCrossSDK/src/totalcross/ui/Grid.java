@@ -335,6 +335,16 @@ public class Grid extends Container implements Scrollable
     */
    public boolean titleMayBeClipped;
    
+   /** A way to mix Images and Strings at the caption. The array's length must be the same of the caption's
+    * passed in the constructor, but the indices that are an image will have it drawn. For example:
+    * <pre>
+    * String[] tits = {"","Add","Minus",""};
+    * captionImages = {img1, null,null, img2};
+    * </pre>
+    * @since TotalCross 3.1
+    */
+   public Image[] captionImages;
+   
    // private members
    private Hashtable htImages;
    private int checkedCount;
@@ -1131,11 +1141,16 @@ public class Grid extends Container implements Scrollable
             if (i > 0 || !this.checkEnabled)
             {
                int yy = (lineH-fmH)/2;
-               int capw = captionWidths[i];
-               boolean greater = capw > w;
-               if (greater) g.setClip(kx+2,yy,w-4,fmH);
-               g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
-               if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
+               if (captionImages != null && captionImages[i] != null)
+                  g.drawImage(captionImages[i],kx+(w-captionImages[i].getWidth())/2,yy);
+               else
+               {
+                  int capw = captionWidths[i];
+                  boolean greater = capw > w;
+                  if (greater) g.setClip(kx+2,yy,w-4,fmH);
+                  g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
+                  if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
+               }
             }
 
             kx += w;
