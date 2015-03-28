@@ -1295,14 +1295,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          int n = is.read(b,offset,length);
          if (n > 0)
             pos += n;
-         AndroidUtils.debug("read("+length+"): "+n);
          return n;
       }
       
       public int read() throws IOException
       {
          int n = read(b,0,1);
-         AndroidUtils.debug("read "+n+": "+b[0]);
          if (n == 1) {pos += n; return b[0] & 0xFF;}
          return -1;
       }
@@ -1353,7 +1351,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   e.ofs = sis.pos; // note: this offset is just a guess (upper limit), since the stream is read in steps. later we'll find the correct offset
                   e.len = tcze.getSize();
                   tczs.add(e);
-                  AndroidUtils.debug(e.name+" ("+e.len+" bytes) - temp pos: "+e.ofs);
+                  //AndroidUtils.debug(e.name+" ("+e.len+" bytes) - temp pos: "+e.ofs);
                }
                tcz.close();
                zis.close();
@@ -1385,7 +1383,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      else
                      {
                         a.ofs = pos + realOfs + what.length; // the data comes after the name
-                        AndroidUtils.debug(a.name+" - real pos: "+a.ofs);
+                        //AndroidUtils.debug(a.name+" - real pos: "+a.ofs);
                         break;
                      }
                   }
