@@ -2832,11 +2832,16 @@ tc.samples.api.TotalCrossAPI
 When running the application, the emulator shows some function keys that
  can be used to emulate a device key.
  For example, F6 opens the application menu, F9 tests the screen rotation
- using the launcher and F11 opens the keyboard (or calendar) in an 
+ using the launcher, F11 opens the keyboard (or calendar) in an 
 \family typewriter
 Edit
 \family default
- field.
+ field, and the F2 key saves a screen shot of the application.
+ Note that in the last case using 
+\family typewriter
+/scale 0.5
+\family default
+ (or any other value) does not affect the final screen shot.
 \end_layout
 
 \begin_layout Chapter
@@ -4682,6 +4687,18 @@ splash.png
  image whose size must be 640x1136.
  The image should be with this size and name.
  This image Otherwise, Apple will reject your application.
+\end_layout
+
+\begin_layout Standard
+For more information, read 
+\begin_inset CommandInset href
+LatexCommand href
+name "iTunes Connect Developer Guide"
+target "https://developer.apple.com/library/ios/documentation/LanguagesUtilities/Conceptual/iTunesConnect_Guide/Appendices/Properties.html"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
