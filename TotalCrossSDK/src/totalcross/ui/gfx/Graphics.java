@@ -1442,7 +1442,6 @@ public final class Graphics
 
 
    private static Hashtable ht3dColors = new Hashtable(83);
-   private static StringBuffer sbc = new StringBuffer(30);
    /** Prior to use draw3dRect, you must compute the colors. This must be done
      * everytime you change the enabled state or the fore/back colors. This can
      * be easily achieved if you extend the onColorsChanged method
@@ -1452,7 +1451,7 @@ public final class Graphics
    {
       if (backColor < 0 || foreColor < 0)
          return;
-      sbc.setLength(0);
+      StringBuffer sbc = new StringBuffer(20);
       String key = sbc.append(enabled).append(backColor).append(',').append(foreColor).toString();
       int four[] = (int[])ht3dColors.get(key);
       if (four == null)

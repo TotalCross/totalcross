@@ -25,9 +25,6 @@ import totalcross.util.*;
  */
 public class EscapeHtml // guich@571_10
 {
-   /** The temporary buffer used by the convertion methods. */
-   public static StringBuffer sbuf = new StringBuffer(1000);
-   
    /** When passing the escaped string to a SOAP service, you must change this to 
     * <pre>
     * EscapeHtml.amp = "&amp;";
@@ -42,8 +39,7 @@ public class EscapeHtml // guich@571_10
    {
       if (amp == null)
          amp = "&";
-      StringBuffer sb = sbuf;
-      sbuf.setLength(0);
+      StringBuffer sb = new StringBuffer(s.length()*12/10);
       for (int i = 0, n = s.length(); i < n; i++)
       {
          char c = s.charAt(i);
@@ -268,8 +264,7 @@ public class EscapeHtml // guich@571_10
    {
       //totalcross.sys.Vm.debug("coll: "+ht.collisions);
       char []chars = escaped.toCharArray();
-      StringBuffer sb = sbuf;
-      sbuf.setLength(0);
+      StringBuffer sb = new StringBuffer(chars.length);
       int last =0;
       int i = 0;
       while (true)

@@ -81,7 +81,7 @@ public class ProgressBar extends Control
    public boolean vertical; // guich@tc115_67
    
    /** Used for String concatenations */
-	private static StringBuffer sb = new StringBuffer(10);
+	private StringBuffer sb = new StringBuffer(10);
 	
 	private boolean endless;
 	
@@ -290,7 +290,7 @@ public class ProgressBar extends Control
       // draw the text
       if (drawText)
       {
-         StringBuffer sb = ProgressBar.sb; // get a local reference
+         StringBuffer sb = this.sb; // get a local reference
          sb.setLength(0);
          sb.append(prefix);
          if (!endless && drawValue)
