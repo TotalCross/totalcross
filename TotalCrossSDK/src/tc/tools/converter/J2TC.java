@@ -15,6 +15,7 @@ package tc.tools.converter;
 
 import java.util.*;
 import java.util.zip.*;
+import tc.*;
 import tc.tools.converter.bytecode.*;
 import tc.tools.converter.ir.*;
 import tc.tools.converter.ir.Instruction.*;
@@ -58,7 +59,7 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
    private static boolean syncWarned;
-   private static int allowedBytes = 100000;
+   private static int allowedBytes = Deploy.FREE_MAX_SIZE;
    
 
    public J2TC(JavaClass jc) throws IOException,Exception
