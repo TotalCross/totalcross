@@ -48,7 +48,7 @@ public class Deploy
    public static final int BUILD_ALL     = 0xFFFF;
 
    private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX | BUILD_WP8;
-   public static final String STARTER_EXCLUDED_CLASSES = "totalcross.json,litebase,totalcross.map,totalcross.util.pdf,";
+   public static final String FREE_EXCLUDED_CLASSES = "totalcross.json,litebase,totalcross.map,totalcross.util.pdf,";
 
    private boolean waitIfError; // guich@tc111_24
    private String activationKey;

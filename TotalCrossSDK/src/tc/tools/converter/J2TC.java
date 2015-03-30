@@ -58,6 +58,7 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
    private static boolean syncWarned;
+   private static int allowedBytes = 100000;
    
 
    public J2TC(JavaClass jc) throws IOException,Exception
@@ -75,6 +76,9 @@ public final class J2TC implements JConstants, TCConstants
          tcbasz.reset();
          converted.write(new DataStreamLE(tcbas));
          origSize = tcbas.getPos();
+         allowedBytes -= origSize;
+         if (DeploySettings.isFreeSDK && allowedBytes < 0)
+            throw new DeployerException("The free SDK allows only 100k of code.");
          //if (dump) {System.out.println(jc.className); byte[] bytes = tcbas.toByteArray(); System.out.println(TCZ.toString(bytes,0,bytes.length));}
          tc.tools.converter.Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
          bytes = tcbasz.toByteArray();
