@@ -58,7 +58,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    private TimerEvent startTimer;
    static MainWindow mainWindowInstance;
    private static int lastMinInterval;
-   private boolean restoreRegistry,initUICalled;
+   private boolean initUICalled;
    private static int timeAvailable;
 
    static Font defaultFont;
@@ -389,12 +389,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
          onExit(); // guich@200b4_85
-      if (restoreRegistry) // guich@tc115_90
-         try
-         {
-            Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\System\\ErrorReporting\\DumpSettings", "UploadClient", "\\Windows\\Dw.exe");
-         }
-         catch (Exception e) {} 
    }
 
    /**
@@ -439,35 +433,6 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
    }
    
-   private static class DemoBox extends MessageBox
-   {
-      private static String tit,msg;
-      
-      DemoBox()
-      {
-         super(tit = " TotalCross Virtual Machine "+Settings.versionStr+"."+Settings.buildNumber+" ",
-               msg = "Copyright (c) 2008-2014\nTotalCross Mobile\nGlobal Platform\n\nDEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+Convert.zeroPad(timeAvailable%100,2)+"m"),
-               new String[]{"   Ok   "});
-         Vm.debug(tit);
-         Vm.debug(msg);
-      }
-      public void initUI()
-      {
-         setBackForeColors(timeAvailable == 0 ? Color.RED : Color.BLUE,Color.WHITE);
-         setFont(font.asBold());
-      }
-      public void onPopup()
-      {
-         super.onPopup();
-         needsPaint = false; // guich@210 - prevent an empty white background on startup.
-      }
-      
-      public void postPressedEvent()
-      {
-         // do nothing
-      }
-   }
-   
    private void startProgram()
    {
       initUICalled = Window.needsPaint = true;
@@ -499,16 +464,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          TimerEvent t = startTimer;
          startTimer = null; // removeTimer calls again onTimerTick, so we have to null out this before calling it
          removeTimer(t);
-         if (!Settings.debugging && timeAvailable >= 0) // guich@tc126_46
-         {
-            new DemoBox().popup();
-            if (timeAvailable == 0)
-            {
-               exit(0);
-               return;
-            }
-         }
-         else
          if (timeAvailable >= 0 && Settings.platform.equals(Settings.WIN32) && (Settings.romSerialNumber == null || Settings.romSerialNumber.length() == 0))
          {
             new MessageBox("Fatal Error", "Failed to retrieve a unique device identification to activate the TotalCross VM. Please check your network settings and activate any disabled networks.").popup();
@@ -548,7 +503,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       {
          if (timer.target == null) // aleady removed but still in the queue?
          {
-            Vm.debug("removing timer since target is null");
+            if (Settings.onJavaSE) Vm.debug("removing timer since target is null");
             TimerEvent t = timer.next;
             removeTimer(timer);
             timer = t != null ? t.next : null;

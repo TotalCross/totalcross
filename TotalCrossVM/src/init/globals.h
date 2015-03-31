@@ -47,7 +47,6 @@ extern jmethodID jshowGoogleMaps,jshowRoute;
 #endif
 
 // startup.c
-extern bool isDemo;
 extern bool traceOn;
 extern char commandLine[256];
 extern int32 exitCode;
