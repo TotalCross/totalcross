@@ -204,19 +204,12 @@ static int checkActivation(Context currentContext)
    TCObject rasClientInstance, ret;
    Method m;
    char buf[4];
-   uint8 *allowedKey, *allowedKeysBase = (uint8*)NORAS_KEYS, *signedKey;
+   uint8 *allowedKey, *allowedKeysBase = (uint8*)NORAS_KEYS, *signedKey, *retb;
 
    // load ActivationClient
    c = loadClass(currentContext, "ras.ActivationClient", true);
    if (currentContext->thrownException)
-   {
-      CharP name = OBJ_CLASS(currentContext->thrownException)->name;
-      if (xstrstr(name,"NoKeyException"))
-         return ISNOTSIGNED;
-      if (xstrstr(name,"FreeSDKException"))
-         return ISFREE;
       return ISFAILED;
-   }
    m = getMethod(c, true, "getInstance", 0);
    rasClientInstance = executeMethod(currentContext, m).asObj;
    if (!rasClientInstance || currentContext->thrownException)
@@ -225,14 +218,21 @@ static int checkActivation(Context currentContext)
    // noras has priority over ras
    m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
    ret = executeMethod(currentContext, m, rasClientInstance).asObj;
+
    // if readKey is null, the application was not signed!
    if (ret == null || currentContext->thrownException)
       return ISFAILED;
+   retb = (uint8*)ARRAYOBJ_START(ret);
+
+   // check if free sdk
+   if (strEqn(retb, "TCST",4))
+	  return ISFREE;
+
    // check the key
    for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) 
    {
-      uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
-      for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
+      uint8 *signedKeyEnd = retb + ARRAYOBJ_LEN(ret);
+      for (signedKey = retb; signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
       {
          int2hex(*signedKey, 2, buf);
          if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
@@ -261,7 +261,7 @@ TC_API int32 startProgram(Context currentContext)
       case ISNOTSIGNED: return exitProgram(120);
       case ISFAILED   : return exitProgram(121);
 #if defined(WIN32) || defined(WP8) || defined(linux)
-      case ISFREE     : return exitProgram(122);
+	  case ISFREE     : return exitProgram(122); // exit silently
 #endif
    }
         

@@ -26,21 +26,6 @@ import totalcross.util.*;
 
 final class ActivationClientImpl extends ActivationClient
 {
-   private class NoKeyException extends ActivationException
-   {
-      public NoKeyException(String s)
-      {
-         super(s);
-      }
-   }
-   private class FreeSDKException extends ActivationException
-   {
-      public FreeSDKException(String ss)
-      {
-         super(ss);
-      }
-   }
-
    private AESKey aesKey;
    private AESCipher aesCipher;
    private RSAPublicKey rsaPubKey;
@@ -151,14 +136,11 @@ final class ActivationClientImpl extends ActivationClient
    private void baseChecks(byte[] key) throws ActivationException
    {
       if (key == null)
-         throw new NoKeyException("This application was not signed with a registration key");
+         throw new ActivationException("This application was not signed with a registration key");
 
       logger.info("Validating registration key");
       if (!isValidKey(key))
          throw new ActivationException("The registration key is not valid");
-
-      if (new String(key,0,4).equals("TCST"))
-         throw new FreeSDKException("");
    }
    
    public boolean isActivated() throws ActivationException
