@@ -1261,7 +1261,7 @@ public final class J2TC implements JConstants, TCConstants
             byte[] enc = bas.toByteArray();
             vin.addElement(new TCZ.Entry(enc, "tckey.bin", enc.length));
          }
-         if (DeploySettings.mainClassName != null) //flsobral@tc126: test for mainClassName instead of mainClassDir. The later is always null when deploy is used with a zip/jar file. This fixes third-party server activation when the application is deployed from a jar file.
+         if (DeploySettings.mainClassName != null && !DeploySettings.isTotalCrossJarDeploy) //flsobral@tc126: test for mainClassName instead of mainClassDir. The later is always null when deploy is used with a zip/jar file. This fixes third-party server activation when the application is deployed from a jar file.
 			{
 				Hashtable htVmParams = new Hashtable(4);
 				if (totalcross.sys.Settings.activationServerURI != null) // server URI was specified
