@@ -46,7 +46,11 @@ public class Deploy
    public static final int BUILD_WINMO   = 512; // guich@tc125_17
    public static final int BUILD_WP8     = 1024; // guich@tc125_17
    public static final int BUILD_ALL     = 0xFFFF;
-   
+
+   private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX | BUILD_WP8;
+   public static final String FREE_EXCLUDED_CLASSES = "totalcross.io.device.gps,litebase,totalcross.map,";
+   public static final int FREE_MAX_SIZE = 150000;
+
    private boolean waitIfError; // guich@tc111_24
    private String activationKey;
    
@@ -251,7 +255,6 @@ public class Deploy
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("wp8"    .hashCode(), BUILD_WP8);
       iht.put("all"    .hashCode(), BUILD_ALL);
-      int blockedPlatsOnFree = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX;
 
       // parse the parameters
       for (int i = 1; i < args.length; i++)
@@ -370,7 +373,7 @@ public class Deploy
       if (activationKey == null)
          throw new DeployerException("You must provide a registration key!");
       else
-      if (DeploySettings.isFreeSDK && (options & blockedPlatsOnFree) != 0)
+      if (DeploySettings.isFreeSDK && (options & FREE_BLOCKED_PLATFORMS) != 0)
          throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
       return options;
    }

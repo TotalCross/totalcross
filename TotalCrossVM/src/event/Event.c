@@ -45,7 +45,6 @@ static void checkTimer(Context currentContext)
    }
 }
 
-static int32 demoTick;
 extern bool wokeUp();
 
 static bool pumpEvent(Context currentContext)
@@ -59,11 +58,6 @@ static bool pumpEvent(Context currentContext)
    if (privateIsEventAvailable())
       privatePumpEvent(currentContext);
    checkTimer(currentContext);
-   if (isDemo)
-   {
-      int32 cur = getTimeStamp();
-      if ((cur-demoTick) > 15000) { demoTick = cur; updateDemoTime(); } // update after 15 seconds
-   }
 sleep:
 #ifndef darwin   
    Sleep(1); // avoid 100% cpu - important on Android!
@@ -135,8 +129,6 @@ bool initEvent()
 
 void destroyEvent()
 {
-   if (isDemo)
-      updateDemoTime();
    if (oldAutoOffValue != 0) // if user changed the state, restore the old value of the auto-off timer
       vmSetAutoOff(true);
    privateDestroyEvent();

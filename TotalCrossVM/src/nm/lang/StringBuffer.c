@@ -24,6 +24,9 @@ static bool ensureCapacity(Context currentContext, TCObject obj, int32 minimumCa
       return false;
    len = StringBuffer_count(obj);
    maxCapacity = ARRAYOBJ_LEN(charArrayObjSrc);
+   if (max32(minimumCapacity,len) <= maxCapacity)
+      return true;
+
    newCapacity = (maxCapacity + 1) * 3 / 2; // grow at 50%
    if (minimumCapacity > newCapacity)
       newCapacity = minimumCapacity;

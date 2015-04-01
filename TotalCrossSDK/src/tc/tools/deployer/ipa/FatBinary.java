@@ -47,6 +47,12 @@ public class FatBinary extends AppleBinary
          fatBinaryEntry.resign(writer, ks, certStore, bundleIdentifier, entitlementsBytes, info, sourceData);
       }
 
+      writer.moveTo(8);
+      for (FatBinaryEntry fatBinaryEntry : entries)
+      {
+         fatBinaryEntry.writeHeader(writer);
+      }
+
       return writer.buffer;
    }
 }

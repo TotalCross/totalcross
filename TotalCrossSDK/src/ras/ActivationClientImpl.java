@@ -133,6 +133,16 @@ final class ActivationClientImpl extends ActivationClient
       }
    }
 
+   private void baseChecks(byte[] key) throws ActivationException
+   {
+      if (key == null)
+         throw new ActivationException("This application was not signed with a registration key");
+
+      logger.info("Validating registration key");
+      if (!isValidKey(key))
+         throw new ActivationException("The registration key is not valid");
+   }
+   
    public boolean isActivated() throws ActivationException
    {
       activatedProductId = null;
@@ -149,10 +159,8 @@ final class ActivationClientImpl extends ActivationClient
       {
          //flsobral@tc125: fill the field Settings.activationId
          byte[] key = readKey();
-         if (key == null)
-            throw new Exception("This application was not signed with a registration key");
-         if (!isValidKey(key))
-            throw new Exception("The registration key is not valid");
+         baseChecks(key);
+
          litebaseAllowed = key[2] == 'L' && key[3] == 'B';
          Settings.activationId = Convert.bytesToHexString(generateActivationCode(key, Convert.hexStringToBytes((String) deviceInfo.get("HASH"))));
 
@@ -257,13 +265,8 @@ final class ActivationClientImpl extends ActivationClient
       {
          logger.info("Retrieving registration key");
          byte[] key = readKey();
-         if (key == null)
-            throw new Exception("This application was not signed with a registration key");
-
-         logger.info("Validating registration key");
-         if (!isValidKey(key))
-            throw new Exception("The registration key is not valid");
-
+         baseChecks(key);
+            
          logger.info("Generating activation code");
          byte[] activationCode = generateActivationCode(key, Convert.hexStringToBytes((String) deviceInfo.get("HASH")));
 

@@ -160,12 +160,11 @@ public final class Graphics4D
    }
    ////////////////////////////////////////////////////////////////////////////////
    private static Hashtable ht3dColors = new Hashtable(83);
-   private static StringBuffer sbc = new StringBuffer(30);
    public static void compute3dColors(boolean enabled, int backColor, int foreColor, int fourColors[])
    {
       if (backColor < 0 || foreColor < 0)
          return;
-      sbc.setLength(0);
+      StringBuffer sbc = new StringBuffer(20);
       String key = sbc.append(enabled).append(backColor).append(',').append(foreColor).toString();
       int four[] = (int[])ht3dColors.get(key);
       if (four == null)

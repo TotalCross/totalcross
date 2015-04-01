@@ -15,6 +15,7 @@ package tc.tools.converter;
 
 import java.util.*;
 import java.util.zip.*;
+import tc.*;
 import tc.tools.converter.bytecode.*;
 import tc.tools.converter.ir.*;
 import tc.tools.converter.ir.Instruction.*;
@@ -35,7 +36,6 @@ import totalcross.util.zip.*;
 
 public final class J2TC implements JConstants, TCConstants
 {
-   public static final String EXCLUDED_STARTER_CLASSES = "totalcross.json,litebase,totalcross.map,totalcross.util.pdf,totalcross.io.device.gps,totalcross.io.device.bluetooth,";
    public static Hashtable htAddedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    public static Hashtable htExcludedClasses = new Hashtable(0xFF); // will also be used to check if there are files ending with 4D
    private static Hashtable htValidExtensions = new Hashtable(0xF);
@@ -59,6 +59,8 @@ public final class J2TC implements JConstants, TCConstants
    private static int nextRegDStatic = 0;
    private static int nextRegOStatic = 0;
    private static boolean syncWarned;
+   private static int allowedBytes = Deploy.FREE_MAX_SIZE;
+   
 
    public J2TC(JavaClass jc) throws IOException,Exception
    {
@@ -75,6 +77,9 @@ public final class J2TC implements JConstants, TCConstants
          tcbasz.reset();
          converted.write(new DataStreamLE(tcbas));
          origSize = tcbas.getPos();
+         allowedBytes -= origSize;
+         if (DeploySettings.isFreeSDK && allowedBytes < 0)
+            throw new DeployerException("The free SDK allows only 100k of code.");
          //if (dump) {System.out.println(jc.className); byte[] bytes = tcbas.toByteArray(); System.out.println(TCZ.toString(bytes,0,bytes.length));}
          tc.tools.converter.Storage.compressAndWrite(tcbas, new DataStream(tcbasz));
          bytes = tcbasz.toByteArray();
@@ -1236,7 +1241,7 @@ public final class J2TC implements JConstants, TCConstants
          }
          if (DeploySettings.currentDir == null)
             DeploySettings.currentDir = "./";
-         if (DeploySettings.rasKey != null) // registration key was specified
+         if (DeploySettings.rasKey != null && !DeploySettings.isTotalCrossJarDeploy && DeploySettings.isMainWindow) // registration key was specified - guich@tc310: only if not deploying the sdk and if its not a library
          {
             AESCipher cipher = new AESCipher();
             AESKey key = new AESKey(new byte[] { (byte)0x06, (byte)0x05, (byte)0xF4, (byte)0xF0, (byte)0xF4, (byte)0x08, (byte)0x01, (byte)0x09, (byte)0xF7, (byte)0x09, (byte)0xFE, (byte)0xFC, (byte)0xF5, (byte)0x04, (byte)0x00, (byte)0x0B });
@@ -1256,7 +1261,7 @@ public final class J2TC implements JConstants, TCConstants
             byte[] enc = bas.toByteArray();
             vin.addElement(new TCZ.Entry(enc, "tckey.bin", enc.length));
          }
-         if (DeploySettings.mainClassName != null) //flsobral@tc126: test for mainClassName instead of mainClassDir. The later is always null when deploy is used with a zip/jar file. This fixes third-party server activation when the application is deployed from a jar file.
+         if (DeploySettings.mainClassName != null && !DeploySettings.isTotalCrossJarDeploy && DeploySettings.isMainWindow) //flsobral@tc126: test for mainClassName instead of mainClassDir. The later is always null when deploy is used with a zip/jar file. This fixes third-party server activation when the application is deployed from a jar file. - guich@tc310 only if not deploying the sdk and if its not a library
 			{
 				Hashtable htVmParams = new Hashtable(4);
 				if (totalcross.sys.Settings.activationServerURI != null) // server URI was specified

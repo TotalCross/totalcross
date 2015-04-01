@@ -14,10 +14,6 @@
 package tc.tools;
 
 import totalcross.io.*;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
@@ -608,56 +604,6 @@ public class FontGenerator
       {
          int index = ch - firstChar;
          return index < 0 || index > lastChar ? spaceWidth : bitIndexTable[index+1] - bitIndexTable[index];
-      }
-   }
-   public static class TestFont extends MainWindow
-   {
-      private Button btn;
-
-      public TestFont()
-      {
-         super("", TAB_ONLY_BORDER);
-         setUIStyle(Settings.Vista);
-      }
-      public void initUI()
-      {
-         Label l;
-         String fontName = getCommandLine();
-         setTitle("Test Font - "+fontName);
-         if (fontName == null || fontName.length() == 0)
-            exit(1);
-
-         String tit = "__ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678890`~!@#$%^&*()_+=-{}\\][:;\"'<,>./?�������";
-         if (sizes.size() == 0) // occurs when the user call the TestFont directly
-         {
-            for (int i = Font.MIN_FONT_SIZE; i <= Font.MAX_FONT_SIZE; i++)
-               sizes.addElement(i);
-         }
-         for (int ii = 0; ii < sizes.size(); ii++)
-         {
-            int i = sizes.items[ii];
-            // how only the fonts that match this name.
-            Font ff = Font.getFont(fontName, false, i);
-            if (ff.name.equals(fontName))
-            {
-               l = new Label(i+" "+tit);
-               l.setFont(ff);
-               add(l,LEFT,AFTER);
-            }
-            ff = Font.getFont(fontName, true, i);
-            if (ff.name.equals(fontName))
-            {
-               l = new Label(i+" "+tit);
-               l.setFont(ff);
-               add(l,LEFT,AFTER);
-            }
-         }
-         add(btn = new Button("Exit"), RIGHT,0);
-      }
-      public void onEvent(Event e)
-      {
-         if (e.type == ControlEvent.PRESSED && e.target == btn)
-            exit(0);
       }
    }
 }

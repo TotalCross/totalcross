@@ -36,6 +36,17 @@ public class FatBinaryEntry
          CMSException
    {
       writer.align((int) offset);
-      writer.write(file.resign(ks, certStore, bundleIdentifier, entitlementsBytes, info, sourceData));
+      byte[] resignedFile = file.resign(ks, certStore, bundleIdentifier, entitlementsBytes, info, sourceData);
+      size = resignedFile.length;
+      writer.write(resignedFile);
+   }
+
+   public void writeHeader(ElephantMemoryWriter writer) throws IOException
+   {
+      writer.writeUnsignedInt(cputype);
+      writer.writeUnsignedInt(cpusubtype);
+      writer.writeUnsignedInt(offset);
+      writer.writeUnsignedInt(size);
+      writer.writeUnsignedInt(alignment);
    }
 }

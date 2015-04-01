@@ -42,6 +42,7 @@
 "5443444B3A9A87F69105E0ED" /* 753 - REDES DESENVOLVIMENTO DE SISTEMAS LTDA        */ \
 "5443444B02241DAF804DA85D" /* 361 - SG Sistemas de Automacao Ltda                 */ \
 "5443444B33FD96C6DC39D92E" /* 660 - SINOPSYS  Consultoria e Informatica Ltda      */ \
+"5443444B5A17A93356CB0074" /* 163 - SoftSite Tecnologia LTDA                      */ \
 "5443444B0CB80FB53841B2D5" /* 185 - Sovis Servicos em TI Ltda                     */ \
 "5443444B425B64821C7DE8DA" /* 283 - TEKANN                                        */ \
 "5443444B8C98E3C05F3F32D9" /* 362 - TGA SISTEMAS DE INFORMATICA LTDA              */ \
