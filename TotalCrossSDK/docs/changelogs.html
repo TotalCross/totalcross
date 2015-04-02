@@ -1,5 +1,5 @@
 <h2>TotalCross 3.1</h2>             
-<h1>build 2585</h1>
+<h1>build 2588</h1>
 * fixed support for android 5. updated adb to android 5<br>
 * fixed totalcross on 64-bit iOS, required for deploying on appstore<br>
 * now tc.Deploy use a appicon.png (256x256) to generate all icons. now Android has new icons sizes for better resolutions. deprecated appicon.gif<br>
@@ -55,6 +55,7 @@
 . removed static StringBuffers to fix concurrency problems in the API<br>
 . added Grid.captionImages, to mix image and string<br>
 . removed TestFont from FontGenerator<br>
+. fixed JSONObject throwing class not found for java.io.Serializable<br>
 <h1>build 2511</h1>
 . removed many outdated Fn functions that were still mapping to Palm OS. now F11 takes a screenshot and saves to disk. Note that /scale does not affect the screenshot.<br>
 <h1>build 2509</h1>
