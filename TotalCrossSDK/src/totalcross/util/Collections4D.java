@@ -109,7 +109,7 @@ public class Collections4D
 
   /**
    * An immutable, serializable, empty Set.
-   * @see Serializable
+   * 
    */
   public static final Set EMPTY_SET = new EmptySet();
 
@@ -270,7 +270,7 @@ public class Collections4D
 
   /**
    * An immutable, serializable, empty List, which implements RandomAccess.
-   * @see Serializable
+   * 
    * @see RandomAccess
    */
   public static final List EMPTY_LIST = new EmptyList();
@@ -458,7 +458,7 @@ public class Collections4D
 
   /**
    * An immutable, serializable, empty Map.
-   * @see Serializable
+   * 
    */
   public static final Map EMPTY_MAP = new EmptyMap();
 
@@ -984,7 +984,7 @@ public class Collections4D
    * @return a List consisting of n copies of o
    * @throws IllegalArgumentException if n &lt; 0
    * @see List#addAll(Collection)
-   * @see Serializable
+   * 
    * @see RandomAccess
    */
   public static <T> List<T> nCopies(final int n, final T o)
@@ -1188,7 +1188,7 @@ public class Collections4D
    * @param c the comparator to invert
    * @return a comparator that imposes reverse ordering
    * @see Comparable
-   * @see Serializable
+   * 
    *
    * @since 1.5
    */
@@ -1214,7 +1214,7 @@ public class Collections4D
    *
    * @return a comparator that imposes reverse natural ordering
    * @see Comparable
-   * @see Serializable
+   * 
    */
   public static <T> Comparator<T> reverseOrder()
   {
@@ -1518,7 +1518,7 @@ public class Collections4D
    *
    * @param o the single element
    * @return an immutable Set containing only o
-   * @see Serializable
+   * 
    */
   public static <T> Set<T> singleton(T o)
   {
@@ -1683,7 +1683,7 @@ public class Collections4D
    *
    * @param o the single element
    * @return an immutable List containing only o
-   * @see Serializable
+   * 
    * @see RandomAccess
    * @since 1.3
    */
@@ -1855,7 +1855,7 @@ public class Collections4D
    * @param key the single key
    * @param value the single value
    * @return an immutable Map containing only the single key-value pair
-   * @see Serializable
+   * 
    * @since 1.3
    */
   public static <K, V> Map<K, V> singletonMap(K key, V value)
@@ -2120,7 +2120,7 @@ public class Collections4D
    *
    * @param c the collection to wrap
    * @return a synchronized view of the collection
-   * @see Serializable
+   * 
    */
   public static <T> Collection<T> synchronizedCollection(Collection<T> c)
   {
@@ -2564,7 +2564,7 @@ public class Collections4D
    *
    * @param l the list to wrap
    * @return a synchronized view of the list
-   * @see Serializable
+   * 
    * @see RandomAccess
    */
   public static <T> List<T> synchronizedList(List<T> l)
@@ -3108,7 +3108,7 @@ public class Collections4D
    *
    * @param m the map to wrap
    * @return a synchronized view of the map
-   * @see Serializable
+   * 
    */
   public static <K, V> Map<K, V> synchronizedMap(Map<K, V> m)
   {
@@ -3632,7 +3632,7 @@ public class Collections4D
    *
    * @param s the set to wrap
    * @return a synchronized view of the set
-   * @see Serializable
+   * 
    */
   public static <T> Set<T> synchronizedSet(Set<T> s)
   {
@@ -3733,7 +3733,7 @@ public class Collections4D
    *
    * @param m the sorted map to wrap
    * @return a synchronized view of the sorted map
-   * @see Serializable
+   * 
    */
   public static <K, V> SortedMap<K, V> synchronizedSortedMap(SortedMap<K, V> m)
   {
@@ -3926,7 +3926,7 @@ public class Collections4D
    *
    * @param s the sorted set to wrap
    * @return a synchronized view of the sorted set
-   * @see Serializable
+   * 
    */
   public static <T> SortedSet<T> synchronizedSortedSet(SortedSet<T> s)
   {
@@ -4115,7 +4115,7 @@ public class Collections4D
    *
    * @param c the collection to wrap
    * @return a read-only view of the collection
-   * @see Serializable
+   * 
    */
   public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> c)
   {
@@ -4424,7 +4424,7 @@ public class Collections4D
    *
    * @param l the list to wrap
    * @return a read-only view of the list
-   * @see Serializable
+   * 
    * @see RandomAccess
    */
   public static <T> List<T> unmodifiableList(List<? extends T> l)
@@ -4783,7 +4783,7 @@ public class Collections4D
    *
    * @param m the map to wrap
    * @return a read-only view of the map
-   * @see Serializable
+   * 
    */
   public static <K, V> Map<K, V> unmodifiableMap(Map<? extends K,
                                                  ? extends V> m)
@@ -5215,7 +5215,7 @@ public class Collections4D
    *
    * @param s the set to wrap
    * @return a read-only view of the set
-   * @see Serializable
+   * 
    */
   public static <T> Set<T> unmodifiableSet(Set<? extends T> s)
   {
@@ -5279,7 +5279,7 @@ public class Collections4D
    *
    * @param m the map to wrap
    * @return a read-only view of the map
-   * @see Serializable
+   * 
    */
   public static <K, V> SortedMap<K, V> unmodifiableSortedMap(SortedMap<K,
                                                              ? extends V> m)
@@ -5449,7 +5449,7 @@ public class Collections4D
    *
    * @param s the set to wrap
    * @return a read-only view of the set
-   * @see Serializable
+   * 
    */
   public static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> s)
   {
@@ -5633,7 +5633,7 @@ public class Collections4D
    * @param c the collection to wrap in a dynamically typesafe wrapper
    * @param type the type of elements the collection should hold.
    * @return a dynamically typesafe view of the collection.
-   * @see Serializable
+   * 
    * @since 1.5
    */
   public static <E> Collection<E> checkedCollection(Collection<E> c,
@@ -5976,7 +5976,7 @@ public class Collections4D
    * @param l the list to wrap
    * @param type the type of the elements within the checked list.
    * @return a dynamically typesafe view of the list
-   * @see Serializable
+   * 
    * @see RandomAccess
    */
   public static <E> List<E> checkedList(List<E> l, Class<E> type)
@@ -6364,7 +6364,7 @@ public class Collections4D
    * @param keyType the dynamic type of the map's keys.
    * @param valueType the dynamic type of the map's values.
    * @return a dynamically typesafe view of the map
-   * @see Serializable
+   * 
    */
   public static <K, V> Map<K, V> checkedMap(Map<K, V> m, Class<K> keyType,
                                             Class<V> valueType)
@@ -6838,7 +6838,7 @@ public class Collections4D
    * @param s the set to wrap.
    * @param type the type of the elements within the checked list.
    * @return a dynamically typesafe view of the set
-   * @see Serializable
+   * 
    */
   public static <E> Set<E> checkedSet(Set<E> s, Class<E> type)
   {
@@ -6916,7 +6916,7 @@ public class Collections4D
    * @param keyType the dynamic type of the map's keys.
    * @param valueType the dynamic type of the map's values.
    * @return a dynamically typesafe view of the map
-   * @see Serializable
+   * 
    */
   public static <K, V> SortedMap<K, V> checkedSortedMap(SortedMap<K, V> m,
                                                         Class<K> keyType,
@@ -7111,7 +7111,7 @@ public class Collections4D
    * @param s the set to wrap.
    * @param type the type of the set's elements.
    * @return a dynamically typesafe view of the set
-   * @see Serializable
+   * 
    */
   public static <E> SortedSet<E> checkedSortedSet(SortedSet<E> s,
                                                   Class<E> type)
