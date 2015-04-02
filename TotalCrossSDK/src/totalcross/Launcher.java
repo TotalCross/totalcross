@@ -600,7 +600,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       Settings.dataPath = newDataPath;
       if (activationKey == null || activationKey.length() != 24)
       {
-         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
+         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments! If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a FREE user, the key was sent to the email that you used to download the SDK.");
          System.exit(0);
          return;
       }
