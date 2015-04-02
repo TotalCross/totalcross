@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package totalcross.lang;
 
-import java.io.Serializable;
 
 /**
  * Number is a generic superclass of all the numeric classes, including
@@ -55,7 +54,7 @@ import java.io.Serializable;
  * @since 1.0
  * @status updated to 1.4
  */
-public abstract class Number4D implements Serializable
+public abstract class Number4D 
 {
   /**
    * Compatible with JDK 1.1+.
