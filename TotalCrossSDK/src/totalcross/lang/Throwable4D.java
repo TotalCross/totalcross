@@ -95,11 +95,11 @@ public class Throwable4D
 
     public String toString()
     {
-       if (msg == null)
-          return super.toString();
-       String ret = super.toString() + " - " + msg;
-       if (cause != null)
-          ret += "caused by "+cause.toString();
+       String ret = getClass().getName()+"@"+hashCode();
+       if (msg != null)
+          ret += " - " + msg;
+       if (cause != null && cause != this)
+          ret += " caused by "+cause.toString();
        return ret;
     }
 
@@ -110,7 +110,7 @@ public class Throwable4D
     {
        totalcross.sys.Vm.warning(toString());
        printStackTraceNative();
-       if (cause != null)
+       if (cause != null && cause != this)
        {
           totalcross.sys.Vm.warning("Caused by ");
           cause.printStackTrace(); // allows recursion
