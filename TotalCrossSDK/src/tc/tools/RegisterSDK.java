@@ -56,7 +56,7 @@ public final class RegisterSDK
    public static void main(String[] args)
    {
       if (args.length != 1)
-         System.out.println("Format: tc.tools.RegisterSDK <activation key>");
+         System.out.println("Format: tc.tools.RegisterSDK <registration key>");
       else
          try
          {
@@ -157,7 +157,7 @@ public final class RegisterSDK
                case INVALID_REGISTRATION_KEY: throw new RegisterSDKException("The registration key is invalid.");
                case EXPIRED_CONTRACT        : throw new RegisterSDKException("The contract is EXPIRED.");
                case NO_MORE_DEVELOPERS      : throw new RegisterSDKException("The number of active developers has been reached.");
-               case CONTRACT_NOT_ACTIVE     : throw new RegisterSDKException("This contract is not yet active. Please send email to renato@totalcross.com with your activation key.");
+               case CONTRACT_NOT_ACTIVE     : throw new RegisterSDKException("This contract is not yet active. Please send email to renato@totalcross.com with your registration key.");
                case INVALID_COMPANY         : throw new RegisterSDKException("Invalid company");
                case CONTRACT_DEACTIVATED    : throw new RegisterSDKException("The contract is suspended due to payment reasons. Please contact renato@totalcross.com.");
             }
