@@ -63,6 +63,7 @@ public class Deploy
             usage();
             return;
          }
+         System.out.println("Command line: "+Utils.toString(args));
          DeploySettings.init();
 
          checkClasspath();
