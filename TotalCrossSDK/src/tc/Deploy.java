@@ -258,7 +258,7 @@ public class Deploy
       iht.put("all"    .hashCode(), BUILD_ALL);
 
       // parse the parameters
-      for (int i = 1; i < args.length; i++)
+      for (int i = 0; i < args.length; i++)
       {
          String op = args[i].toLowerCase();
          char first = op.charAt(0);
