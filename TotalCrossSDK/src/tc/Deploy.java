@@ -238,6 +238,10 @@ public class Deploy
 
    private int parseOptions(String[] args) throws Exception
    {
+      String arg0 = args[0];
+      if (arg0.startsWith("-") || arg0.startsWith("/"))
+         throw new DeployerException("The first parameter must be the class or package name!");
+      
       int options = 0;
       IntHashtable iht = new IntHashtable(17);
       iht.put("palm"   .hashCode(), 0);
@@ -258,7 +262,7 @@ public class Deploy
       iht.put("all"    .hashCode(), BUILD_ALL);
 
       // parse the parameters
-      for (int i = 0; i < args.length; i++)
+      for (int i = 1; i < args.length; i++)
       {
          String op = args[i].toLowerCase();
          char first = op.charAt(0);
@@ -383,7 +387,7 @@ public class Deploy
    {
       System.out.println(
             "\n"+
-            "Format: tc.Deploy <what to deploy> <platforms to deploy>\n"+
+            "Format: tc.Deploy <what to deploy> <platforms to deploy> <options>\n"+
             "\n"+
             "<what to deploy> is the path to search for class files, or a class that\n"+
             "extends MainWindow or implements MainClass, or a jar file containing all files to package (the name of the jar must match the MainWindow's name).\n"+
