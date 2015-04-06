@@ -95,13 +95,6 @@ public abstract class Number4D
   /**
    * Return the value of this <code>Number</code> as a <code>float</code>.
    *
-   * @return the float value
-   */
-  public abstract float floatValue();
-
-  /**
-   * Return the value of this <code>Number</code> as a <code>float</code>.
-   *
    * @return the double value
    */
   public abstract double doubleValue();

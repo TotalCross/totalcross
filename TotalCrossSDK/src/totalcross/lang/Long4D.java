@@ -2,7 +2,7 @@ package totalcross.lang;
 
 import totalcross.sys.*;
 
-public class Long4D
+public class Long4D extends Number4D
 {
    public static final Class<Long> TYPE = Long.class;
    long v;
@@ -64,5 +64,9 @@ public class Long4D
    public int intValue()
    {
      return (int) v;
+   }
+   public double doubleValue()
+   {
+      return (double)v;
    }
 }

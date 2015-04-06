@@ -2,7 +2,7 @@ package totalcross.lang;
 
 import totalcross.sys.*;
 
-public class Integer4D
+public class Integer4D extends Number4D
 {
    public static final Class<Integer> TYPE = Integer.class;
    int v;
@@ -76,5 +76,13 @@ public class Integer4D
    public static String toString(int v)
    {
       return String.valueOf(v);
+   }
+   public long longValue()
+   {
+      return v;
+   }
+   public double doubleValue()
+   {
+      return v;
    }
 }
