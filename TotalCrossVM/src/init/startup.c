@@ -221,7 +221,13 @@ static int checkActivation(Context currentContext)
 
    // if readKey is null, the application was not signed!
    if (ret == null || currentContext->thrownException)
+   {
+#ifdef DEBUG // let debug on IDEs
+      return ISACTIVATED;
+#else
       return ISFAILED;
+#endif
+   }
    retb = (uint8*)ARRAYOBJ_START(ret);
 
    // check if free sdk
