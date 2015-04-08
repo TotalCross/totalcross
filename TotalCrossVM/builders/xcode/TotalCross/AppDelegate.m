@@ -17,7 +17,7 @@
 @implementation AppDelegate
 
 #ifdef DEBUG
-#define TCZNAME "AllTests"
+#define TCZNAME "TotalCrossAPI"
 #endif
 
 -(void) initApp
