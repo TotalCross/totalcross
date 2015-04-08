@@ -525,6 +525,7 @@ public final class Settings
     *  You must provide a way to terminate the application by calling the exit method.
     *  @see totalcross.ui.MainWindow#exit(int)
     *  @since TotalCross 1.0
+    *  @deprecated Not used in any platform
     */
    public static boolean dontCloseApplication;
 
