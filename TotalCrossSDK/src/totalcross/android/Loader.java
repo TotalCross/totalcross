@@ -81,14 +81,22 @@ public class Loader extends Activity implements BarcodeReadListener
    
    public String getImagePath(Uri uri) 
    {
-       String[] projection = { MediaStore.Images.Media.DATA };
-       Cursor cursor = managedQuery(uri, projection, null, null, null);
-       if (cursor == null) return null;
-       int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-       cursor.moveToFirst();
-       String s=cursor.getString(column_index);
-       cursor.close();
-       return s;
+      try
+      {
+         String[] projection = { MediaStore.Images.Media.DATA };
+         Cursor cursor = managedQuery(uri, projection, null, null, null);
+         if (cursor == null) return null;
+         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+         cursor.moveToFirst();
+         String s=cursor.getString(column_index);
+//         cursor.close(); - cant close cursors! or the vm will stall on second try
+         return s;
+      }
+      catch (Throwable t)
+      {
+         AndroidUtils.handleException(t,false);
+         return null;
+      }
    }
    
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -98,9 +106,12 @@ public class Loader extends Activity implements BarcodeReadListener
          case SELECT_PICTURE:
             if (resultCode == RESULT_OK)
             {
-               Uri selectedImageUri = data.getData();           
+               Uri selectedImageUri = data.getData();
                String selectedImagePath = getImagePath(selectedImageUri);
-               AndroidUtils.copyFile(selectedImagePath,imageFN,false);
+               if (selectedImagePath == null)
+                  resultCode = RESULT_OK+1;
+               else
+                  AndroidUtils.copyFile(selectedImagePath,imageFN,false);
             }
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
@@ -229,7 +240,7 @@ public class Loader extends Activity implements BarcodeReadListener
             Intent i = new Intent();
             i.setType("image/*");
             i.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(i,"Select Picture"), SELECT_PICTURE);
+            startActivityForResult(i, SELECT_PICTURE);
          }
          else
          if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY)
