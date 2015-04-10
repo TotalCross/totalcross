@@ -739,21 +739,8 @@ public class Window extends Container
                   case DragEvent.LEFT : kx =  k; break;
                   case DragEvent.RIGHT: kx = -k; break;
                }
-            if (ky != 0)
-               for (int i = 0,n=ky>0?ky:-ky, inc=ky>0?1:-1; i < n; i++)
-               {
-                  sc.scrollContent(0, inc, false);
-                  repaintNow();
-                  if (!Settings.onJavaSE) Vm.sleep(1);
-               }
-            else
-            if (kx != 0)
-               for (int i = 0,n=kx>0?kx:-kx, inc=kx>0?1:-1; i < n; i++)
-               {
-                  sc.scrollContent(inc, 0, false);
-                  repaintNow();
-                  if (!Settings.onJavaSE) Vm.sleep(1);
-               }
+            if ((ky != 0 && sc.scrollContent(0, ky, false)) || (kx != 0 && sc.scrollContent(kx, 0, false)))
+               repaintNow();
             return;
          }
       }
