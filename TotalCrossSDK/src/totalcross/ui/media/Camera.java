@@ -113,7 +113,9 @@ public class Camera
    public static final int CAMERA_NATIVE = 1;
    /** The native camera application; the original image is deleted and a copy of it is returned. */
    public static final int CAMERA_NATIVE_NOCOPY = 2;
-   
+   /** Take the picture from the gallery. */
+   public static final int CAMERA_FROM_GALLERY = 3;
+
    /** Used in the cameraMode member. */
    public static final int CAMERACAPTURE_MODE_STILL = 0;
    /** Used in the cameraMode member. */

@@ -46,6 +46,7 @@ public class Camera4D
    public static final int CAMERA_CUSTOM = 0;
    public static final int CAMERA_NATIVE = 1;
    public static final int CAMERA_NATIVE_NOCOPY = 2;
+   public static final int CAMERA_FROM_GALLERY = 3;
 
    public static final int CAMERACAPTURE_MODE_STILL = 0;
    public static final int CAMERACAPTURE_MODE_VIDEOONLY = 1;

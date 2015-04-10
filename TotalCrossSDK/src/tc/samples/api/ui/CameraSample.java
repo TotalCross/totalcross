@@ -32,9 +32,9 @@ public class CameraSample extends BaseContainer
    Button btnFilm, btnPhoto, btnRotate;
    Label l;
    ComboBox cbRes;
-   Check chNat;
    ImageControl ic;
    Camera camera;
+   RadioGroupController rg;
    
    public void initUI()
    {
@@ -48,7 +48,12 @@ public class CameraSample extends BaseContainer
       add(cbRes = new ComboBox(Camera.getSupportedResolutions()),AFTER+gap,SAME,FILL-gap,SAME,btnRotate); // guich@tc126_24
       cbRes.setSelectedIndex(0);
       btnRotate.setEnabled(false);
-      add(chNat = new Check("Use native camera's application"), LEFT+gap, BEFORE-gap);
+      rg = new RadioGroupController();
+      Radio r;
+      add(r = new Radio("Custom viewer",rg), LEFT+gap, BEFORE-gap, PARENTSIZE+30,PREFERRED); r.leftJustify = true;
+      add(r = new Radio("Native viewer",rg), AFTER, SAME, PARENTSIZE+30,PREFERRED); r.leftJustify = true;
+      add(r = new Radio("From gallery",rg), AFTER, SAME, FILL,PREFERRED); r.leftJustify = true;
+      rg.setSelectedIndex(0,false);
       add(ic = new ImageControl(), LEFT+gap, TOP+gap, FILL-gap, FIT-gap);
       ic.setEventsEnabled(true);
       camera = new Camera();
@@ -85,7 +90,8 @@ public class CameraSample extends BaseContainer
                l.setText("Starting camera...");
                l.repaintNow();
                camera.defaultFileName = "picture.jpg";
-               camera.cameraType = chNat.isChecked() ? Camera.CAMERA_NATIVE_NOCOPY : Camera.CAMERA_CUSTOM;
+               int sel = rg.getSelectedIndex();
+               camera.cameraType = sel == 0 ? Camera.CAMERA_CUSTOM : sel == 1 ? Camera.CAMERA_NATIVE_NOCOPY : Camera.CAMERA_FROM_GALLERY;
                String ret = camera.click();
                if (ret != null)
                {

@@ -44,6 +44,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int MAP_RETURN = 1234324332;
    private static final int ZXING_RETURN = 1234324333;
    private static final int EXTCAMERA_RETURN = 1234324334;
+   private static final int SELECT_PICTURE = 1234324335;
    private static final int CAMERA_PIC_REQUEST = 1337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
@@ -78,10 +79,31 @@ public class Loader extends Activity implements BarcodeReadListener
       super.onRestart();
    }
    
+   public String getImagePath(Uri uri) 
+   {
+       String[] projection = { MediaStore.Images.Media.DATA };
+       Cursor cursor = managedQuery(uri, projection, null, null, null);
+       if (cursor == null) return null;
+       int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+       cursor.moveToFirst();
+       String s=cursor.getString(column_index);
+       cursor.close();
+       return s;
+   }
+   
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
       switch (requestCode)
       {
+         case SELECT_PICTURE:
+            if (resultCode == RESULT_OK)
+            {
+               Uri selectedImageUri = data.getData();           
+               String selectedImagePath = getImagePath(selectedImageUri);
+               AndroidUtils.copyFile(selectedImagePath,imageFN,false);
+            }
+            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            break;
          case Level5.BT_MAKE_DISCOVERABLE:
             Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED,null);
             break;
@@ -193,6 +215,7 @@ public class Loader extends Activity implements BarcodeReadListener
    //private static final int CAMERA_CUSTOM = 0;
    private static final int CAMERA_NATIVE = 1;
    private static final int CAMERA_NATIVE_NOCOPY = 2;
+   private static final int FROM_GALLERY = 3;
    private int cameraType;
    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType)
    {
@@ -201,6 +224,14 @@ public class Loader extends Activity implements BarcodeReadListener
          imageFN = s;
          this.cameraType = cameraType;
          String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+         if (cameraType == FROM_GALLERY)
+         {
+            Intent i = new Intent();
+            i.setType("image/*");
+            i.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(i,"Select Picture"), SELECT_PICTURE);
+         }
+         else
          if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY)
          {
             ContentValues values = new ContentValues();
