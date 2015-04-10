@@ -145,7 +145,12 @@ public class Loader extends Activity implements BarcodeReadListener
                resultCode = RESULT_OK+1; // error
             else
             if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
-               try{ getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);} catch (Exception e) {AndroidUtils.handleException(e,false);}
+               try
+               { 
+                  getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);
+                  AndroidUtils.debug("Deleting "+capturedImageFilePath);
+                  new File(capturedImageFilePath).delete(); // on android 2.3 the code above does not work, so we just ensure that we delete the file
+               } catch (Exception e) {AndroidUtils.handleException(e,false);}
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
       }
