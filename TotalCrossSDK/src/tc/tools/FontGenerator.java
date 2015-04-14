@@ -151,6 +151,7 @@ public class FontGenerator
       // write the file
       try {new File(outName).delete();} catch (Exception e) {} // delete if it exists
       new TCZ(v, outName, (short)0);
+      System.out.println("\nFile "+outName+".tcz created.");
    }
 
    private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
@@ -487,7 +488,10 @@ public class FontGenerator
             } catch (java.io.IOException ie) {}
          }
          else
+         {
             new FontGenerator(args[0],args);
+            System.exit(0);
+         }
       }
       catch (Exception e)
       {
