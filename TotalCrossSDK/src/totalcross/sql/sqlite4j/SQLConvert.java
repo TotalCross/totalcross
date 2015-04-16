@@ -25,7 +25,7 @@ class SQLConvert
    {
       try
       {
-         return x == null ? null : new Time(x, true,true,true,true,true,true, Settings.DATE_YMD);
+         return x == null || x.isEmpty() ? null : new Time(x, true,true,true,true,true,true, Settings.DATE_YMD);
       }
       catch (Exception e)
       {
