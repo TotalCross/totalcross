@@ -33,17 +33,23 @@ bool initGLES(ScreenSurface screen)
    CGRect rect = [[UIScreen mainScreen] bounds];
    window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
-   window.autoresizesSubviews = NO;
+   window.autoresizesSubviews = YES; // IOS 8 - make didLayoutSubviews be called
    [window makeKeyAndVisible];
    [DEVICE_CTX->_childview setScreenValues: screen];
    [DEVICE_CTX->_childview createGLcontext];
    return true;
 }
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (BOOL)shouldAutorotate // ios 6
 {
-   [UIView setAnimationsEnabled:NO];
+// [UIView setAnimationsEnabled:NO];
    [self destroySIP];
+   [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationNone];
    return YES;
+}
+
+- (NSUInteger)supportedInterfaceOrientations // ios 6
+{
+   return UIInterfaceOrientationMaskAll;
 }
 
 - (void) setFirstOrientation
@@ -59,6 +65,7 @@ bool iosLowMemory;
 
 - (void)viewDidLayoutSubviews
 {
+   //NSLog(@"*** view will layout subviews");
    int orientation = [child_view getOrientation];
    if (orientation != lastOrientationSentToVM)
    {

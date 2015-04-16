@@ -81,15 +81,17 @@ void graphicsSetupIOS()
    {
       case UIDeviceOrientationLandscapeLeft:
       case UIDeviceOrientationLandscapeRight:
-         s = CGSizeMake(h * iosScale, (w - taskbarHeight) * iosScale);
+         s = CGSizeMake((w - taskbarHeight) * iosScale, h * iosScale);
          break;
       default:
          s = CGSizeMake(w * iosScale, (h - taskbarHeight) * iosScale);
          break;
    }
-   //debug("getRes: %dx%d", (int)s.width, (int)s.height);
+   //NSLog(@"getRes: %dx%d", (int)s.width, (int)s.height);
    return s;
 }
+
+extern bool isIpad;
 
 - (CGRect)getBounds
 {
@@ -109,12 +111,12 @@ void graphicsSetupIOS()
             r.size.height -= taskbarHeight;
             break;
          case UIDeviceOrientationLandscapeLeft:
-            r.origin.x = 0;
-            r.size.width  -= taskbarHeight;
+            r.origin.y = taskbarHeight;
+            r.size.height -= taskbarHeight;
             break;
          case UIDeviceOrientationLandscapeRight:
-            r.origin.x = taskbarHeight;
-            r.size.width  -= taskbarHeight;
+            r.origin.y = taskbarHeight;
+            r.size.height -= taskbarHeight;
             break;
          default: // UIDeviceOrientationPortrait and others
             r.origin.y = taskbarHeight;
@@ -122,7 +124,7 @@ void graphicsSetupIOS()
             break;
       }
    }
-   //debug("bounds: %d,%d,%d,%d",(int)r.origin.x,(int)r.origin.y,(int)r.size.width,(int)r.size.height);
+   //NSLog(@"bounds: %d,%d,%d,%d",(int)r.origin.x,(int)r.origin.y,(int)r.size.width,(int)r.size.height);
    return r;
 }
 
