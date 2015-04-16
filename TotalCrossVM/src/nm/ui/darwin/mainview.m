@@ -60,6 +60,7 @@ bool initGLES(ScreenSurface screen)
 bool iosLowMemory;
 - (void)didReceiveMemoryWarning
 {
+   [super didReceiveMemoryWarning];
    iosLowMemory = true;
 }
 
