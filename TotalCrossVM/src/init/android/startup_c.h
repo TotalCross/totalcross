@@ -117,7 +117,7 @@ void keepCrash()
 }
 void updateSettingsFromStaticInitializer()
 {
-   if (*tcSettings.bugreportEmail != null && String_charsLen(*tcSettings.bugreportEmail) >= 6) // a@a.br
+   if (tcSettings.bugreportEmail != null && *tcSettings.bugreportEmail != null && String_charsLen(*tcSettings.bugreportEmail) >= 6) // a@a.br
    {
       char* str = JCharP2CharP(String_charsStart(*tcSettings.bugreportEmail), String_charsLen(*tcSettings.bugreportEmail));
       char* appVersion = *tcSettings.appVersion == null ? "" : JCharP2CharP(String_charsStart(*tcSettings.appVersion), String_charsLen(*tcSettings.appVersion));
