@@ -215,7 +215,7 @@ bool iosLowMemory;
 
 static bool callingCamera;
 
--(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
+-(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t
 {
    callingCamera = true;
    imageFileName = fileName;
@@ -224,7 +224,7 @@ static bool callingCamera;
    dispatch_sync(dispatch_get_main_queue(), ^
    {
       imagePicker = [[UIImagePickerController alloc] init];
-      if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
       else
          [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
@@ -410,10 +410,10 @@ void iphone_dialNumber(char* number)
    [DEVICE_CTX->_mainview dialNumber:string];
 }
 
-int iphone_cameraClick(int w, int h, char* fileName)
+int iphone_cameraClick(int w, int h, int t, char* fileName)
 {
    NSString* string = [NSString stringWithFormat:@"%s", fileName];
-   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
+   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h type:t];
 }
 
 int iphone_gpsStart()

@@ -56,7 +56,7 @@
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
-- (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
+- (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t;
 - (void) updateLayout;
 - (void) dialNumber:(NSString*) number;
 - (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;
