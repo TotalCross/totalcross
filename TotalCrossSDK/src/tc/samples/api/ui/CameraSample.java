@@ -61,7 +61,18 @@ public class CameraSample extends BaseContainer
       if (Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE))
          btnFilm.setVisible(false);
    }
+   
+   public void onRemove()
+   {
+      releaseMemory();
+   }
 
+   private void releaseMemory()
+   {
+      ic.setImage(null);
+      Vm.gc();
+   }
+   
    public void onEvent(Event event)
    {
       try
@@ -92,9 +103,12 @@ public class CameraSample extends BaseContainer
                camera.defaultFileName = "picture.jpg";
                int sel = rg.getSelectedIndex();
                camera.cameraType = sel == 0 ? Camera.CAMERA_CUSTOM : sel == 1 ? Camera.CAMERA_NATIVE_NOCOPY : Camera.CAMERA_FROM_GALLERY;
+               releaseMemory();
                String ret = camera.click();
                if (ret != null)
                {
+                  l.setText("Loading photo...");
+                  l.repaintNow();
                   File f = new File(ret, File.READ_ONLY);
                   int s = f.getSize();
                   Image img = null;

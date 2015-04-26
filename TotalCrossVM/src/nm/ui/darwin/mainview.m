@@ -226,11 +226,14 @@ static bool callingCamera;
    {
       imagePicker = [[UIImagePickerController alloc] init];
       if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      {
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+         imagePicker.allowsEditing = NO;
+      }
       else
          [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
       [imagePicker setDelegate:self];
-      [self presentModalViewController:imagePicker animated:YES];
+      [self presentModalViewController:imagePicker animated:NO];
    });
    while (callingCamera)
       Sleep(100);
@@ -242,7 +245,7 @@ static bool callingCamera;
 
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-   [self->imagePicker dismissModalViewControllerAnimated:YES];
+   [self->imagePicker dismissModalViewControllerAnimated:NO];
    imageFileName = null;
    callingCamera = false;
 }
@@ -273,7 +276,7 @@ static bool callingCamera;
       NSData* data = UIImageJPEGRepresentation(finalImage, 0.8);
       [data writeToFile:imageFileName atomically:NO];
    }
-   [self dismissModalViewControllerAnimated:YES];
+   [self dismissModalViewControllerAnimated:NO];
    callingCamera = false;
 }
 

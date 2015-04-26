@@ -548,8 +548,6 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
    if (!c)
       goto end;
    arraySize = TC_ARRAYSIZE(c,len);
-   if (!strEq(type,CHAR_ARRAY))
-      arraySize += 0;
    objectSize = TSIZE + arraySize; // there's a single instance field in the Array class: length
    o = allocObject(currentContext, objectSize);
    if (!o)
