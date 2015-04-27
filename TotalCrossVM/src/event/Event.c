@@ -30,10 +30,11 @@ void vmSetAutoOff(bool enable); // vm_c.h
 
 static Method onMinimize;
 static Method onRestore;
+static bool isMinimized;
 
 static void checkTimer(Context currentContext)
 {
-   if (nextTimerTick != 0)
+   if (nextTimerTick != 0 && !isMinimized)
    {
       int32 now = getTimeStamp();
 
@@ -116,8 +117,9 @@ void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 
    }
 }
 
-void postOnMinimizeOrRestore(bool isMinimized)
-{
+void postOnMinimizeOrRestore(bool minimized)
+{                                  
+   isMinimized = minimized;
    if (mainClass != null)
       executeMethod(lifeContext, (isMinimized ? onMinimize : onRestore), mainClass); // events are always posted to the main execution line
 }
