@@ -9,16 +9,33 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #include "media_Sound.h"
-
-
 
 static void soundPlay(CharP filename)
 {
 #ifdef WP8
    nativeSoundPlayCPP(filename);
+#elif !defined(WINCE) // not sure if this works on wince
+   char mcidata[129]; // Data is returned by some MCI requests
+   int32  mcidatalen=sizeof(mcidata)-1;
+   char mcicmd[129];
+   int32 rc;
+   int32 millis;
+   char* c;
+   while ((c = xstrchr(filename, '/')) != 0) // replace / by \
+	   *c = '\\';
+
+   sprintf(mcicmd,"open \"%s\" alias MEDIAFILE",filename);
+   rc = mciSendString(mcicmd,mcidata,mcidatalen,NULL);
+   if (rc != 0) //mciGetErrorString(rc,mcimsg,mcimsglen);
+      return;
+   mciSendString("status MEDIAFILE length",mcidata,mcidatalen,NULL);
+   millis = atoi(mcidata);
+   rc = mciSendString("play MEDIAFILE",NULL,0,NULL);
+   if (rc == 0)
+      Sleep(millis);
+   mciSendString("stop MEDIAFILE",NULL,0,NULL);
+   mciSendString("close MEDIAFILE",NULL,0,NULL);
 #endif
 }
 

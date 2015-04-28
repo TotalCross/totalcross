@@ -20,7 +20,7 @@
 package totalcross.ui.media;
 
 /**
- * Sound is used to play sounds such as beeps and tones.
+ * Sound is used to play sounds such as beeps and tones and mp3.
  * <p>
  * Playing beeps is supported under all platforms but tones are only supported
  * where the underlying platform supports generating tones. Tones aren't supported
@@ -102,7 +102,7 @@ public final class Sound
    }
    
    /** Plays the given short wav or mp3 file. Make sure that the sounds are enabled, or you will not hear it!
-    * Works on Android and iOS, but does not work on JavaSE since Java does not support MP3 files.
+    * Works on Android, iOS, WP8 and Win32, but does not work on JavaSE nor on WinCE.
     * 
     * The file must be located in the file system.
     * If you store a mp3 file in the TCZ, you can get it out using this code:
@@ -114,7 +114,7 @@ public final class Sound
     * Sound.play("device/mysound.mp3");
     * </pre>
     * The last sound is cached, so playing it again is fast. If you want to unload it, just call <code>Sound.play("");</code>,
-    * but this is not needed since small mp3/wav files consumes just a few memory.
+    * but this is not needed since small mp3/wav files consumes just a few memory. Cache is not done in Win32.
     */
    public static void play(String filename)
    {
