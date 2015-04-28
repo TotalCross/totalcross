@@ -1,4 +1,11 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2611</h1>
+. fixed memory problems on camera sample<br>
+. trying to bypass ios 8.x known bug when using camera zoom and flash<br>
+. added Control.keepEnabled<br>
+. now when the application is minimized, we don't run any timers at all. This prevents a problem in Android when you open an Edit, place the cursor, and minimize the application, the memory was being increased until the application crashes. If you want to update the application while it is minimized, use a thread instead of a timer.<br>
+. trying to solve unusable exception error codes on SQLite<br>
+. added support for playing MP3 on Win32 using Sound.play<br>
 <h1>build 2609</h1>
 . on ZLib's EOF return -1 to prevent infinite loop in DataStream.readBytesInternal<br>
 . deprecated Settings.dontCloseApplication<br>
