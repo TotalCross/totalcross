@@ -51,4 +51,5 @@
 "5443444B07845F9F7A5DADF9" /* 98  - Vector Informatica Ltda                       */ \
 "5443444B070E137AB081AD6C" /* 412 - VVS Sistemas                                  */ \
 "5443444B5141A1D3BF21F715" /* 270 - WMW Systems LTDA                              */ \
-"5443444B091A810EB8EFAF30" /* 205 - xuxu software ltda                            */ 
+"5443444B091A810EB8EFAF30" /* 205 - xuxu software ltda                            */ \
+"5443444BADD4E9F3B30553E8" /* 850 */
