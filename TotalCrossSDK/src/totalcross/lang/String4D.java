@@ -195,7 +195,7 @@ public final class String4D implements Comparable<String4D>
    public static String valueOf(Object obj)
    {
       // this method is called for EVERY string literal in the applicaiton
-      return obj != null ? obj.toString() : "null";
+      return obj != null ? obj instanceof String ? (String)obj : obj.toString() : "null";
    }
 
    /**
