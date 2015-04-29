@@ -122,25 +122,25 @@ public final class Settings
    public static int romVersion = 0x02000000;
    
    /** Underlying platform is Java. To be used with the <code>platform</code> member. */
-   public static String JAVA          = "Java";
+   public static final String JAVA          = "Java";
    /** Underlying platform is Windows CE. To be used with the <code>platform</code> member. */
-   public static String WINDOWSCE     = "WindowsCE";
+   public static final String WINDOWSCE     = "WindowsCE";
    /** Underlying platform is Pocket PC. To be used with the <code>platform</code> member. */
-   public static String POCKETPC      = "PocketPC";
+   public static final String POCKETPC      = "PocketPC";
    /** Underlying platform is Windows Mobile. To be used with the <code>platform</code> member. */
-   public static String WINDOWSMOBILE = "WindowsMobile";
+   public static final String WINDOWSMOBILE = "WindowsMobile";
    /** Underlying platform is desktop Windows. To be used with the <code>platform</code> member. */
-   public static String WIN32         = "Win32";
+   public static final String WIN32         = "Win32";
    /** Underlying platform is Windows Phone. To be used with the <code>platform</code> member. */
-   public static String WINDOWSPHONE  = "WindowsPhone";
+   public static final String WINDOWSPHONE  = "WindowsPhone";
    /** Underlying platform is Linux. To be used with the <code>platform</code> member. */
-   public static String LINUX         = "Linux";
+   public static final String LINUX         = "Linux";
    /** Underlying platform is iPhone. To be used with the <code>platform</code> member. */
-   public static String IPHONE        = "iPhone";
+   public static final String IPHONE        = "iPhone";
    /** Underlying platform is Android. To be used with the <code>platform</code> member. */
-   public static String ANDROID       = "Android";
+   public static final String ANDROID       = "Android";
    /** Underlying platform is iPad. To be used with the <code>platform</code> member. */   
-   public static String IPAD          = "iPad";
+   public static final String IPAD          = "iPad";
    
    /** Field that returns the current platform name.
     * The possible return values are the constants described below.
