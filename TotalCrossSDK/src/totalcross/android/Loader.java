@@ -28,6 +28,7 @@ import android.view.*;
 import android.view.inputmethod.*;
 import com.intermec.aidc.*;
 import java.io.*;
+import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -139,7 +140,7 @@ public class Loader extends Activity implements BarcodeReadListener
             Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null); 
             int dataIdx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             int idIdx   = cursor.getColumnIndexOrThrow(BaseColumns._ID);
-            cursor.moveToFirst(); 
+            cursor.moveToFirst();
             String capturedImageFilePath = cursor.getString(dataIdx);
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
@@ -148,14 +149,50 @@ public class Loader extends Activity implements BarcodeReadListener
                try
                { 
                   getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);
-                  AndroidUtils.debug("Deleting "+capturedImageFilePath);
+                  AndroidUtils.debug("Deleting: "+capturedImageFilePath);
                   new File(capturedImageFilePath).delete(); // on android 2.3 the code above does not work, so we just ensure that we delete the file
+                  deleteExtraImageName(capturedImageFilePath);
                } catch (Exception e) {AndroidUtils.handleException(e,false);}
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
       }
    }
    
+   // android creates 2 filenames, one /mnt/sdcard/DCIM/Camera/1430730665103.jpg, and the other 2015-05-04 10.17.45.jpg
+   // worst: there's a difference in millis from one date to another, so we have to search the files to find the correct one
+   private void deleteExtraImageName(String orig)
+   {
+      try
+      {
+         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
+         int idx = orig.lastIndexOf('/')+1;
+         String path = orig.substring(0,idx);
+         String name = orig.substring(idx, orig.lastIndexOf('.'));
+         long ms0 = Long.valueOf(name);
+         String dt = sdf.format(new Date(ms0));
+         String dt0 = dt.substring(0,11);
+         
+         for (String s: new File(path).list())
+            if (s.endsWith(".jpg") && s.startsWith(dt0))
+            {
+               name = s.substring(0, s.lastIndexOf('.'));
+               Date date = sdf.parse(name);
+               long ms1 = date.getTime();
+               long dif = ms1 - ms0;
+               if (dif > 0 && dif < 15000) // 15 seconds diff
+               {
+                  AndroidUtils.debug("Deleting extra file "+s+" ("+dt+")");
+                  new File(path+s).delete();
+                  break;
+               }
+            }
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e, false);
+      }      
+   }
+
    private static final int SHOW_SATELLITE_PHOTOS = 1;
    public static final int USE_WAZE = 2;
 
@@ -280,6 +317,7 @@ public class Loader extends Activity implements BarcodeReadListener
       catch (Throwable e)
       {
          AndroidUtils.handleException(e,false);
+         Launcher4A.pictureTaken(1);
       }
    }
    
