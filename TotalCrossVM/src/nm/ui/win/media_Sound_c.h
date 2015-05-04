@@ -22,13 +22,17 @@ static void soundPlay(CharP filename)
    int32 rc;
    int32 millis;
    char* c;
-   while ((c = xstrchr(filename, '/')) != 0) // replace / by \
+   while ((c = xstrchr(filename, '/')) != 0) // replace slashes
 	   *c = '\\';
 
    sprintf(mcicmd,"open \"%s\" alias MEDIAFILE",filename);
    rc = mciSendString(mcicmd,mcidata,mcidatalen,NULL);
-   if (rc != 0) //mciGetErrorString(rc,mcimsg,mcimsglen);
+   if (rc != 0) 
+   {
+	  mciGetErrorString(rc,mcidata,mcidatalen);
+	  debug("Error when loading media: %s (%d)",mcidata, rc);
       return;
+   }
    mciSendString("status MEDIAFILE length",mcidata,mcidatalen,NULL);
    millis = atoi(mcidata);
    rc = mciSendString("play MEDIAFILE",NULL,0,NULL);
