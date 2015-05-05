@@ -20,6 +20,8 @@ import android.app.*;
 import android.content.*;
 import android.content.res.*;
 import android.database.*;
+import android.graphics.*;
+import android.media.*;
 import android.net.*;
 import android.os.*;
 import android.provider.*;
@@ -145,19 +147,58 @@ public class Loader extends Activity implements BarcodeReadListener
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
             else
-            if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
-               try
-               { 
-                  getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);
-                  AndroidUtils.debug("Deleting: "+capturedImageFilePath);
-                  new File(capturedImageFilePath).delete(); // on android 2.3 the code above does not work, so we just ensure that we delete the file
-                  deleteExtraImageName(capturedImageFilePath);
-               } catch (Exception e) {AndroidUtils.handleException(e,false);}
+            {
+               autoRotatePhoto(imageFN);
+               if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
+                  try
+                  { 
+                     getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);
+                     AndroidUtils.debug("Deleting: "+capturedImageFilePath);
+                     new File(capturedImageFilePath).delete(); // on android 2.3 the code above does not work, so we just ensure that we delete the file
+                     deleteExtraImageName(capturedImageFilePath);
+                  } catch (Exception e) {AndroidUtils.handleException(e,false);}
+            }
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
       }
    }
    
+   public static void autoRotatePhoto(String imagePath)
+   {
+      try
+      {
+         File f = new File(imagePath);
+         ExifInterface exif = new ExifInterface(f.getPath());
+         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+         AndroidUtils.debug(imagePath+" -> "+orientation);
+   
+         int angle = 0;
+         switch (orientation)
+         {
+            case ExifInterface.ORIENTATION_ROTATE_90: angle  = 90;  break;
+            case ExifInterface.ORIENTATION_ROTATE_180: angle = 180; break;
+            case ExifInterface.ORIENTATION_ROTATE_270: angle = 270; break;
+            default: return;
+         }
+   
+         Matrix mat = new Matrix();
+         mat.postRotate(angle);
+         BitmapFactory.Options options = new BitmapFactory.Options();
+         options.inSampleSize = 2;
+   
+         Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+         Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
+         FileOutputStream out = new FileOutputStream(f);
+         bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
+         out.close();
+         AndroidUtils.debug("auto-rotated "+imagePath);
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e, false);
+      }
+   }
+
    // android creates 2 filenames, one /mnt/sdcard/DCIM/Camera/1430730665103.jpg, and the other 2015-05-04 10.17.45.jpg
    // worst: there's a difference in millis from one date to another, so we have to search the files to find the correct one
    private void deleteExtraImageName(String orig)
