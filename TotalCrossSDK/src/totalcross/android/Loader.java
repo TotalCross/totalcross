@@ -30,7 +30,6 @@ import android.view.*;
 import android.view.inputmethod.*;
 import com.intermec.aidc.*;
 import java.io.*;
-import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 
