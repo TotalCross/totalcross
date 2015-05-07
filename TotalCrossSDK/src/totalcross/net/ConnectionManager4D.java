@@ -27,7 +27,7 @@ public class ConnectionManager4D
    static Object connRef;
 
    /** keep track of all open connections */
-   static Hashtable openConnections = new Hashtable(16);
+   volatile static Hashtable openConnections = new Hashtable(16);
    
    static ConnectionManager4D CmInstance = new ConnectionManager4D();
 
