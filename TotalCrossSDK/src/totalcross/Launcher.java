@@ -1827,7 +1827,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          
          if (uf != null)
          {
-            if (totalcross.ui.font.Font.baseChar == ' ')
+            if (uf.bitmapTable != null) // totalcross.ui.font.Font.baseChar == ' ') - fixes trying to print "D\u0101" (where the font does not have \u0101 available)
                htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
             f.name = uf.fontName; // update the name, the font may have been replaced.
          }
