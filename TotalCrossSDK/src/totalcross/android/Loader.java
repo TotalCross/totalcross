@@ -137,12 +137,12 @@ public class Loader extends Activity implements BarcodeReadListener
             Launcher4A.callingZXing = false;
             break;
          case EXTCAMERA_RETURN:
-            String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID}; 
+            String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED}; 
             Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null); 
-            int dataIdx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            int idIdx   = cursor.getColumnIndexOrThrow(BaseColumns._ID);
+            
             cursor.moveToFirst();
-            String capturedImageFilePath = cursor.getString(dataIdx);
+            String capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+            long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
             else
@@ -151,41 +151,30 @@ public class Loader extends Activity implements BarcodeReadListener
                if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
                   try
                   { 
-                     AndroidUtils.debug("Deleting: "+capturedImageFilePath);
-                     getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);
+                     getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)), null);
                      try {new File(capturedImageFilePath).delete();} catch (Exception e) {} // on android 2.3 the code above does not work, so we just ensure that we delete the file
-                     removeLastImageFromGallery();
+                     removeLastImageFromGallery(date);
                   } catch (Exception e) {AndroidUtils.handleException(e,false);}
             }
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
       }
    }
-   
-   private void removeLastImageFromGallery()
+
+   private void removeLastImageFromGallery(long orig)
    {
       try
       {
-         // create a file so we can query its last modified time to compare with the one in the gallery. note that we have no permission to do that with the capturedImageFilePath one
-         File f = File.createTempFile("what","time",getCacheDir());
-         long tim = f.lastModified();
-         try {f.delete();} catch (Exception e) {}
-         
-         final String[] imageColumns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA };
+         final String[] imageColumns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_ADDED };
          final String imageOrderBy = MediaStore.Images.Media._ID+" DESC";
          Cursor imageCursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageColumns, null, null, imageOrderBy);
          if (imageCursor.moveToFirst())
          {
+            long last = imageCursor.getLong(imageCursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
             int id = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
-            String fullPath = imageCursor.getString(imageCursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            long last = new File(fullPath).lastModified();
-            long dif = tim > last ? tim - last : last - tim;
-            if (dif < 10000) // 10 seconds
-            {
-               AndroidUtils.debug("Removing last image from gallery: " + fullPath+" - "+dif+"ms");
+            long dif = Math.abs(orig-last);
+            if (dif < 1000) // 1 second - usually is less than 10ms
                getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaStore.Images.Media._ID + "=?", new String[]{ Long.toString(id) } );
-            }
-            else AndroidUtils.debug("Not removing last image from gallery because the time difference is too big: "+dif+" ms");
          }
       }
       catch (Exception e)
