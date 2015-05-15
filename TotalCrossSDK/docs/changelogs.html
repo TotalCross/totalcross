@@ -1,4 +1,11 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2630</h1>
+. added photo auto-rotation for Camera. works best with native camera.<br>
+. definitive fix for photo duplication, if the user don't press Cancel. works on all android versions<br>
+. fixes trying to print "D\u0101" (where the font does not have \u0101 available)<br>
+. removed adding the Socket to ConnectionManager array, since this was used only for Palm OS. it was causing a NPE when opening lots of sockets in multiple threads<br>
+. fixed GPS crashing on WP<br>
+. fixed black screen on WP8<br>
 <h1>build 2623</h1>
 . the platform fields must be final otherwise the compiler will not put them into a single value and therefore the Settings.fullScreenPlatforms will not work<br>
 . fixed Camera.NOCOPY not working on Android 2.3<br>
