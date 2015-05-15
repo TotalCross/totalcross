@@ -45,9 +45,9 @@ public class Deploy
    public static final int BUILD_ANDROID = 256;
    public static final int BUILD_WINMO   = 512; // guich@tc125_17
    public static final int BUILD_WP8     = 1024; // guich@tc125_17
+   private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_LINUX | BUILD_WP8;
    public static final int BUILD_ALL     = 0xFFFF;
 
-   private static int FREE_BLOCKED_PLATFORMS = BUILD_WINCE | BUILD_WINMO | BUILD_WIN32 | BUILD_LINUX | BUILD_WP8;
    public static final String FREE_EXCLUDED_CLASSES = "totalcross.io.device.gps,litebase,totalcross.map,";
    public static final int FREE_MAX_SIZE = 150000;
 
@@ -378,8 +378,14 @@ public class Deploy
       if (activationKey == null)
          throw new DeployerException("You must provide a registration key! If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a FREE user, the key was sent to the email that you used to download the SDK.");
       else
-      if (DeploySettings.isFreeSDK && (options & FREE_BLOCKED_PLATFORMS) != 0)
-         throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
+      if (DeploySettings.isFreeSDK)
+      {
+         if (options == BUILD_ALL)
+            options &= ~FREE_BLOCKED_PLATFORMS;
+         else
+         if ((options & FREE_BLOCKED_PLATFORMS) != 0)
+            throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
+      }
       return options;
    }
 
