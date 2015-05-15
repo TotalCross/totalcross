@@ -394,7 +394,7 @@ namespace PhoneDirect3DXamlAppInterop
       public int getMinute()        {return minute;}
       public int getSecond()        {return second;}
       public int getMilliSecond()   {return milliSecond;}
-      public double getPdop()       {return (double)pdop;}
+      public double getPdop()       {return pdop == null ? 0 : (double)pdop;}
 
       public String getMessageReceived()  {return messageReceived;}
       public String getLowSignalReason() {return lowSignalReason;}
