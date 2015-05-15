@@ -268,6 +268,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
       std::thread([this]() {startProgram(localContext); }).detach(); // this will block until the application ends         
    vmStarted = true;
    preRender();
+   PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame(); // fixes black screen that appeared run % 2
 }
 
 void Direct3DBase::setColor(int color, int alphaMask)
