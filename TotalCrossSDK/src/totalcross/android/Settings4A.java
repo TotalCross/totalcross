@@ -271,9 +271,8 @@ public final class Settings4A
    {
       java.util.TimeZone tz = java.util.TimeZone.getDefault();
       Calendar cal = Calendar.getInstance();
-      int caldstsavings = cal.get(Calendar.DST_OFFSET);
-      AndroidUtils.debug(tz.getDSTSavings()+" / "+caldstsavings);
-      daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      int dls = cal.get(Calendar.DST_OFFSET);
+      daylightSavingsMinutes = dls / 60000;
       daylightSavings = daylightSavingsMinutes != 0;
       timeZone = tz.getRawOffset() / (60*60000);
       timeZoneMinutes = tz.getRawOffset() / 60000;
