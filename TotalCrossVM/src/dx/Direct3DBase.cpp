@@ -98,7 +98,7 @@ void Direct3DBase::updateScreenMatrix()
 void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
 {
    while (!isLoadCompleted())
-      Sleep(0);
+      Sleep(100);
 
    // create the D3DDevice
    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
