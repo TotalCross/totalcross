@@ -179,13 +179,19 @@ public class SpinList extends Control
    }
 
    /** Sets the selected item; -1 is NOT accepted. */
-	public void setSelectedIndex(int i)
+   public void setSelectedIndex(int i)
+   {
+      setSelectedIndex(i, Settings.sendPressEventOnChange);
+   }
+   
+   /** Sets the selected item; -1 is NOT accepted. */
+	public void setSelectedIndex(int i, boolean sendPress)
 	{
   	   if (0 <= i && i < choicesLen && selected != i)
   	   {
 		   selected = i;
 		   Window.needsPaint = true;
-	      if (Settings.sendPressEventOnChange)
+	      if (sendPress)
 	         postPressedEvent();
 		}
 	}
@@ -195,6 +201,12 @@ public class SpinList extends Control
 	{
 	   setSelectedIndex(indexOf(item));
 	}
+   
+   /** Selects the given item. If the item is not found, the selected index remains unchanged. */
+   public void setSelectedItem(String item, boolean sendPress)
+   {
+      setSelectedIndex(indexOf(item), sendPress);
+   }
    
    /** Removes the item at the given index. */
 	public String removeAt(int index)
