@@ -190,6 +190,10 @@ public final class RegisterSDK
       {
          throw rse;
       }
+      catch (UnknownHostException uhe)
+      {
+         System.out.println("INTERNET NOT AVAILABLE! TotalCross requires activation of the SDK. Once the date below is reached, the SDK will block.");
+      }
       catch (Throwable e)
       {
          System.out.println("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
