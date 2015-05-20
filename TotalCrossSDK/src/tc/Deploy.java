@@ -376,7 +376,7 @@ public class Deploy
             }
       }
       if (activationKey == null)
-         throw new DeployerException("You must provide a registration key! If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a FREE user, the key was sent to the email that you used to download the SDK.");
+         throw new DeployerException("You must provide a registration key! If you're a PROFESSIONAL or ENTERPRISE, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a STARTER, the key was sent to the email that you used to download the SDK.");
       else
       if (DeploySettings.isFreeSDK)
       {
