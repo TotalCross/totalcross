@@ -40,6 +40,9 @@ public class Ruler extends Control
     */
    public boolean invert;
    
+   /** Set to true to draw a dotted line instead of a filled line. */
+   public boolean dots;
+   
    private int c1,c2;
    private boolean isHoriz, is3d;
    
@@ -92,7 +95,10 @@ public class Ruler extends Control
       {
          int yy = (this.height - n) / 2;
          g.foreColor = invert ? c2 : c1;
-         g.drawLine(0,yy,width,yy);
+         if (dots)
+            g.drawDots(0,yy,width,yy);
+         else
+            g.drawLine(0,yy,width,yy);
          if (is3d)
          {
             g.foreColor = invert ? c1 : c2;
@@ -103,7 +109,10 @@ public class Ruler extends Control
       {
          int xx = (this.width - n) / 2;
          g.foreColor = invert ? c2 : c1;
-         g.drawLine(xx,0,xx,height);
+         if (dots)
+            g.drawDots(xx,0,xx,height);
+         else
+            g.drawLine(xx,0,xx,height);
          if (is3d)
          {
             g.foreColor = invert ? c1 : c2;
