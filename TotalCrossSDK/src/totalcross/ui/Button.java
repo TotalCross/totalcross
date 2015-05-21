@@ -105,6 +105,9 @@ public class Button extends Control
 
    /** The current frame in a multi-frame image. */
    public int currentFrame; // defaults to 0
+   
+   /** Set to false to disable the button's shift when its pressed. */
+   public boolean shiftOnPress = true;
 
    // guich@tc122_46: added auto-repeat for button
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
@@ -544,7 +547,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && !isAndroidStyle && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && !isAndroidStyle && shiftOnPress && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
