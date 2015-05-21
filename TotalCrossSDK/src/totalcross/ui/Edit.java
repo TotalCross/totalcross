@@ -87,7 +87,7 @@ public class Edit extends Control
    private static int xMins[] = {4,1,3,3,4};
    public static final int prefH = uiAndroid ? 4 : 2;
 
-   private boolean hasFocus;
+   protected boolean hasFocus;
    private boolean cursorShowing;
    /** Specifies if the control accepts input from the user.
     * Note: do not change this directly; use the setEditable method instead.
