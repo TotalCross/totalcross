@@ -31,6 +31,8 @@ class Content extends Container
       add(linfo, SAME,AFTER);
       
       add(new Label(text),LEFT+50, AFTER+50);
+      
+      // Like Comment Share
    }
    
    public int getPreferredWidth()
