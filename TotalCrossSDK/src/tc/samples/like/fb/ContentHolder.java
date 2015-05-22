@@ -12,7 +12,8 @@ class ContentHolder extends ScrollContainer implements FBConstants
    
    public void initUI()
    {
-      setInsets(fmH/2,fmH/2,2,2);
-      add(new Content(),LEFT,AFTER);
+      setInsets(2,2,2,2);
+      add(new Content("Sponge Bob", "March 25, 2015 at 09:21 am", "I'm a very funny cartoon!","img/user.png"),CENTER,AFTER,PARENTSIZE+96,PREFERRED);
+      add(new Content("Patrick Star", "March 25, 2015 at 09:31 am", "I'm your best pal!","img/user2.png"),CENTER,AFTER+25,PARENTSIZE+96,PREFERRED);
    }
 }
