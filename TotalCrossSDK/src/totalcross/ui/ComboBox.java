@@ -712,4 +712,23 @@ public class ComboBox extends Container
       pop = lb;
       setSelectedIndex(-1);
    }
+   
+   public boolean equals(Object o)
+   {
+      if (o != null && o instanceof String[])
+      {
+         String[] s = (String[])o;
+         Vector v = pop.lb.items;
+         if (v.size() != s.length)
+            return false;
+         else
+         {
+            for (int i = s.length; --i >= 0;)
+               if (!s[i].equals(v.items[i]))
+                  return false;
+            return true;
+         }
+      }
+      return super.equals(o);
+   }
 }
