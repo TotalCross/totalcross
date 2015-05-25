@@ -4,9 +4,11 @@ import totalcross.ui.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.util.*;
 
 class Content extends Container implements FBConstants
 {
+   private static Random rand = new Random();
    String name, info, text, iconName;
    
    public Content(String name, String info, String text, String iconName)
@@ -41,7 +43,11 @@ class Content extends Container implements FBConstants
       linfo.setFont(Font.getFont(false, fmH*8/10));
       add(linfo, SAME,AFTER);
       
-      add(new Label(text),LEFT+50, AFTER+50);
+      add(new Label(text),LEFT+50, AFTER+25);
+      
+      Label llikes = new Label(rand.between(2,10)+" likes, "+rand.between(2,10)+" shares");
+      llikes.setFont(Font.getFont(false, fmH*8/10));
+      add(llikes,LEFT+50,AFTER+25);
 
       add(create("Like", FBImages.like),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
       add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
@@ -71,6 +77,6 @@ class Content extends Container implements FBConstants
    
    public int getPreferredHeight()
    {
-      return fmH*6;
+      return fmH*7;
    }
 }
