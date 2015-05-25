@@ -34,11 +34,11 @@ class Content extends Container implements FBConstants
          add(c,LEFT+50,TOP+50,fmH*2,fmH*2);
       }
       Label lname = new Label(name);
-      lname.setFont(Font.getFont(true, fmH*2/3));
+      lname.setFont(Font.getFont(true, fmH*8/10));
       add(lname, AFTER+50,SAME);
       
       Label linfo = new Label(info);
-      linfo.setFont(Font.getFont(false, fmH*2/3));
+      linfo.setFont(Font.getFont(false, fmH*8/10));
       add(linfo, SAME,AFTER);
       
       add(new Label(text),LEFT+50, AFTER+50);
@@ -63,7 +63,8 @@ class Content extends Container implements FBConstants
    private Button create(String s, Image i)
    {
       Button b = new Button(s, i, RIGHT, fmH);
-      b.setFont(Font.getFont(false,fmH*3/4));
+      b.setFont(Font.getFont(true,fmH*8/10));
+      b.setForeColor(0x9B9EA3);
       b.setBorder(Button.BORDER_NONE);
       return b;
    }
