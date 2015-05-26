@@ -43,7 +43,7 @@ public class RadioGroupController
    private Vector members = new Vector();
    
    /** Set to false to disable sending PRESSED events to the previous control. */
-   public boolean sendPressOnLast=true;
+   public boolean sendPressOnLast=Settings.sendPressEventOnChange;
 
    /** Adds a new Radio to the list of Radios this controller handles. 
     * This method is called by the Radio's constructor.
