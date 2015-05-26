@@ -41,6 +41,9 @@ public class RadioGroupController
 {
    private Radio last; // guich@402_21
    private Vector members = new Vector();
+   
+   /** Set to false to disable sending PRESSED events to the previous control. */
+   public boolean sendPressOnLast=Settings.sendPressEventOnChange;
 
    /** Adds a new Radio to the list of Radios this controller handles. 
     * This method is called by the Radio's constructor.
@@ -64,7 +67,7 @@ public class RadioGroupController
    public void setSelectedItem(Radio who)
    {
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressOnLast);
       (last = who).setChecked(true);
    }
    
@@ -72,7 +75,7 @@ public class RadioGroupController
    public void setSelectedItem(String text)
    {
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressOnLast);
       for (int i = 0, n = members.size(); i < n; i++)
       {
          Radio r = (Radio)members.items[i];
@@ -89,7 +92,7 @@ public class RadioGroupController
    {
       if (caseInsensitive) text = text.toLowerCase();
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressOnLast);
       for (int i = 0, n = members.size(); i < n; i++)
       {
          Radio r = (Radio)members.items[i];

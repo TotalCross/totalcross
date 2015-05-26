@@ -5,7 +5,7 @@ import totalcross.ui.image.*;
 public class FBImages
 {
    public static Image chat, content, friends, group, menu, message, news, online, search;
-   public static Image comment, like, share;
+   public static Image comment, like, share, status, photo, checkin;
    
    public static void load(int fmH) throws Exception
    {
@@ -25,5 +25,9 @@ public class FBImages
       comment = new Image("img/comment.png").smoothScaledFixedAspectRatio(fmH,true);
       like    = new Image("img/like.png").smoothScaledFixedAspectRatio(fmH,true);
       share   = new Image("img/share.png").smoothScaledFixedAspectRatio(fmH,true);
+      
+      status  = new Image("img/status.png").smoothScaledFixedAspectRatio(fmH,true);
+      photo   = new Image("img/photo.png").smoothScaledFixedAspectRatio(fmH,true);
+      checkin = new Image("img/checkin.png").smoothScaledFixedAspectRatio(fmH,true);
    }
 }

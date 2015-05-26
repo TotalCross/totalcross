@@ -504,7 +504,7 @@ public class Button extends Control
          boolean eus = Window.enableUpdateScreen;
          Window.enableUpdateScreen = false;
          skipPaint = true;
-         parent.repaintNow();
+         if (parent != null) parent.repaintNow();
          skipPaint = false;
          Window.enableUpdateScreen = eus;
       }
