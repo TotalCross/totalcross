@@ -107,7 +107,14 @@ public class Deployer4WP8
       if (DeploySettings.companyInfo != null) wmAppManifest = wmAppManifest.replace("Publisher=\"PhoneDirect3DXamlAppInterop\"", "Publisher=\"" + DeploySettings.companyInfo + "\"");
       if (totalcross.sys.Settings.appDescription != null) wmAppManifest = wmAppManifest.replace("Description=\"Sample description\"","Description=\""+totalcross.sys.Settings.appDescription+"\"");
       // fixes problem that prevent more than one TC program in device
-      wmAppManifest = wmAppManifest.replace("f0dcbb57357d", Convert.bytesToHexString((DeploySettings.applicationId+"tc").getBytes()));
+      String appmagic = Convert.bytesToHexString((DeploySettings.applicationId+"tc").getBytes());
+      wmAppManifest = wmAppManifest.replace("f0dcbb57357d", appmagic.toLowerCase());
+      if (!DeploySettings.quiet) // ProductID="{7db428c2-4514-466c-b1aa-f0dcbb57357d}"
+      {
+         int i0 = wmAppManifest.indexOf("ProductID=")+12;
+         int i1 = wmAppManifest.indexOf("\"",i0+1)-1;
+         Utils.println("Windows Phone application's folder id: "+wmAppManifest.substring(i0,i1));
+      }
       
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
 
