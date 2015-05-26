@@ -113,7 +113,7 @@ public class Deployer4WP8
       {
          int i0 = wmAppManifest.indexOf("ProductID=")+12;
          int i1 = wmAppManifest.indexOf("\"",i0+1)-1;
-         Utils.println("Windows Phone application's folder id to be used with ISETool.exe: "+wmAppManifest.substring(i0,i1));
+         Utils.println("Windows Phone folder id to be used with ISETool.exe: "+wmAppManifest.substring(i0,i1));
       }
       
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
