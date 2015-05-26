@@ -12,7 +12,7 @@ class TopBar extends Container implements FBConstants
       setBackColor(TOPBAR);
       add(btSearch = FaceBookUI.noborder(FBImages.search), LEFT+100,CENTER);
       add(btOnline = FaceBookUI.noborder(FBImages.online), RIGHT-100,CENTER);
-      Edit ed = new MyEdit("Search");
+      Edit ed = new FBEdit("Search");
       ed.setForeColor(Color.WHITE);
       add(ed, AFTER,SAME,FIT,PREFERRED,btSearch);
       Ruler r = new Ruler();

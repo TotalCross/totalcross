@@ -3,10 +3,10 @@ package tc.samples.like.fb;
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-class MyEdit extends Edit
+class FBEdit extends Edit
 {
    String tip;
-   public MyEdit(String tip)
+   public FBEdit(String tip)
    {
       this.tip = tip;
       transparentBackground = true;

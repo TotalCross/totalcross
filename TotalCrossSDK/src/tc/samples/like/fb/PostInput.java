@@ -5,13 +5,15 @@ import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-class ContentStatus extends Container implements FBConstants
+class PostInput extends Container implements FBConstants
 {
-   String iconName;
+   public static Image defaultPhoto;
+   public static String defaultUser;
    
-   public ContentStatus(String iconName)
+   public FBEdit med;
+   
+   public PostInput()
    {
-      this.iconName = iconName;
    }
    
    public void initUI()
@@ -22,7 +24,7 @@ class ContentStatus extends Container implements FBConstants
       
       try
       {
-         add(new ImageControl(new Image(iconName).smoothScaledFixedAspectRatio(fmH*2,true)),LEFT+50,TOP+50);         
+         add(new ImageControl(defaultPhoto.smoothScaledFixedAspectRatio(fmH*2,true)),LEFT+50,TOP+50);         
       }
       catch (Exception e)
       {
@@ -30,8 +32,7 @@ class ContentStatus extends Container implements FBConstants
          c.setBackColor(CNT_BACK);
          add(c,LEFT+50,TOP+50,fmH*2,fmH*2);
       }
-      MyEdit med = new MyEdit("What are you thinking?");
-      //med.setFont(Font.getFont(true, fmH*8/10));
+      med = new FBEdit("What's on your mind?");
       add(med, AFTER+50,SAME,FILL-100,PREFERRED);
       
       add(create("STATUS", FBImages.status),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
