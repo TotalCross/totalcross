@@ -549,7 +549,7 @@ void Direct3DBase::updateScreen()
    d3dcontext->FinishCommandList(FALSE, &d3dCommandList); // 0ms
    updateScreenWaiting = true;
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame();
-   while (updateScreenWaiting) Sleep(0); // 16ms
+   while (updateScreenWaiting) Sleep(1); // 16ms
    preRender();
 }
 
