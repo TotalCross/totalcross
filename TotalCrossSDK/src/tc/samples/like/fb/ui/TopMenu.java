@@ -1,11 +1,13 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
+
+import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-class TopMenu extends Container implements PressListener, FBConstants
+public class TopMenu extends Container implements PressListener, FBConstants
 {
    Button[] btns = new Button[5];
    int last;

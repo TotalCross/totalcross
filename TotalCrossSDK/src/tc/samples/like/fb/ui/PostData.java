@@ -1,4 +1,6 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
+
+import tc.samples.like.fb.*;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
@@ -7,7 +9,7 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 
-class PostData extends Container implements FBConstants
+public class PostData extends Container implements FBConstants
 {
    public String name, text;
    public int likes;

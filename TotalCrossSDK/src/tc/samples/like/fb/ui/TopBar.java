@@ -1,9 +1,11 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
+
+import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-class TopBar extends Container implements FBConstants
+public class TopBar extends Container implements FBConstants
 {
    Button btSearch, btOnline;
    

@@ -1,5 +1,7 @@
 package tc.samples.like.fb;
 
+import tc.samples.like.fb.ui.*;
+
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -7,7 +9,7 @@ import totalcross.ui.image.*;
 
 public class FaceBookUI extends MainWindow
 {
-   static Button noborder(Image img)
+   public static Button noborder(Image img)
    {
       Button b = new Button(img);
       b.setBorder(Button.BORDER_NONE);
@@ -26,8 +28,8 @@ public class FaceBookUI extends MainWindow
       {
          FBImages.load(fmH);
          add(new TopBar(), LEFT,TOP,FILL,fmH*5/2);
-         add(new TopMenu(), LEFT,AFTER,FILL,SAME);
-         add(h = new ContentHolder(),LEFT,AFTER,FILL,FILL); 
+         add(new tc.samples.like.fb.ui.TopMenu(), LEFT,AFTER,FILL,SAME);
+         add(h = new PostsContainer(),LEFT,AFTER,FILL,FILL); 
       }
       catch (Exception ee)
       {
@@ -36,5 +38,5 @@ public class FaceBookUI extends MainWindow
       }
    }
    
-   ContentHolder h;
+   PostsContainer h;
 }

@@ -1,4 +1,4 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
 
 import totalcross.ui.image.*;
 

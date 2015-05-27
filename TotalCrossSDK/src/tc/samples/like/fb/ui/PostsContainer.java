@@ -1,10 +1,12 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
+
+import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
 
-class ContentHolder extends ScrollContainer implements FBConstants
+public class PostsContainer extends ScrollContainer implements FBConstants
 {
-   public ContentHolder()
+   public PostsContainer()
    {
       super(false,true);
       setBackColor(CONTENTH);         

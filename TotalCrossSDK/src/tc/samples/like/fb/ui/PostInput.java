@@ -1,11 +1,13 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
+
+import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-class PostInput extends Container implements FBConstants
+public class PostInput extends Container implements FBConstants
 {
    public static Image defaultPhoto;
    public static String defaultUser;
