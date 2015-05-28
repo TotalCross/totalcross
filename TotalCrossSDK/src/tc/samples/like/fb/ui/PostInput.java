@@ -3,7 +3,6 @@ package tc.samples.like.fb.ui;
 import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
-import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
@@ -37,28 +36,11 @@ public class PostInput extends Container implements FBConstants
       med = new FBEdit("What's on your mind?");
       add(med, AFTER+50,SAME,FILL-100,PREFERRED);
       
-      add(create("STATUS", FBImages.status),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(create("PHOTO", FBImages.photo),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(create("CHECK-IN", FBImages.checkin),AFTER,BOTTOM,FILL,fmH*3/2);
+      add(FBUtils.createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+      add(FBUtils.createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
+      add(FBUtils.createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
       
-      add(createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
-   }
-   
-   private Ruler createRuler(int type)
-   {
-      Ruler r = new Ruler(type,false);
-      r.setForeColor(BORDER);
-      r.ignoreInsets = true;
-      return r;
-   }
-   
-   private Button create(String s, Image i)
-   {
-      Button b = new Button(s, i, RIGHT, fmH);
-      b.setFont(Font.getFont(true,fmH*8/10));
-      b.setForeColor(0x9B9EA3);
-      b.setBorder(Button.BORDER_NONE);
-      return b;
+      add(FBUtils.createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
    }
    
    public int getPreferredHeight()

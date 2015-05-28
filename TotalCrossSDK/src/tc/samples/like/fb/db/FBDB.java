@@ -6,7 +6,6 @@ import tc.samples.like.fb.*;
 import tc.samples.like.fb.ui.*;
 
 import totalcross.db.sqlite.*;
-import totalcross.io.*;
 import totalcross.sql.PreparedStatement;
 import totalcross.sql.ResultSet;
 import totalcross.sql.Statement;
@@ -18,7 +17,7 @@ public class FBDB
 {
    public static FBDB db = new FBDB();
    private SQLiteUtil util;
-   private PreparedStatement psText, psImage;
+   private PreparedStatement psText, psImage, psUser;
    
    private FBDB()
    {
@@ -36,11 +35,12 @@ public class FBDB
    private void createTables() throws SQLException
    {
       Statement st = util.con().createStatement();
-      st.execute("create table if not exists users (name varchar, photo blob)");
+      st.execute("create table if not exists users (name varchar, photo blob, int current)");
       st.execute("create table if not exists posts (name varchar, text varchar, image blob, likes int, dt datetime)");
       st.close();
       psText  = util.prepareStatement("insert into posts (name, text, datetime) values (?,?,?)");
       psImage = util.prepareStatement("insert into posts (name, image, datetime) values (?,?,?)");
+      psUser  = util.prepareStatement("insert into users values (?,?,?)");
    }
    
    public PostData[] getNews()
@@ -79,10 +79,16 @@ public class FBDB
    public void addPost(Image img) throws Exception
    {
       psImage.setString(1, PostInput.defaultUser);
-      ByteArrayStream bas = new ByteArrayStream(20*1024);
-      img.createJpg(bas, 85);
-      psImage.setBytes(2, bas.toByteArray());
+      psImage.setBytes(2, FBUtils.jpegBytes(img));
       psImage.setTime(3, new Time());
       psImage.executeUpdate();
+   }
+   
+   public void addUser(String name, Image img, boolean current) throws Exception
+   {
+      psUser.setString(1, name);
+      psUser.setBytes(2, FBUtils.jpegBytes(img));
+      psUser.setInt(3, current ? 1 : 0);
+      psUser.executeUpdate();
    }
 }

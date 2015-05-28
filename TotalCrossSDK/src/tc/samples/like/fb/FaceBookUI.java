@@ -5,16 +5,14 @@ import tc.samples.like.fb.ui.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
-import totalcross.ui.image.*;
+import totalcross.ui.event.*;
 
-public class FaceBookUI extends MainWindow
+public class FaceBookUI extends MainWindow implements FBConstants
 {
-   public static Button noborder(Image img)
-   {
-      Button b = new Button(img);
-      b.setBorder(Button.BORDER_NONE);
-      return b;
-   }
+   public static FBPosts posts;
+   public static FBNewUser user;
+   public static FBTopBar bar;
+   public static TabbedContainer tc;
    
    public FaceBookUI()
    {
@@ -27,9 +25,16 @@ public class FaceBookUI extends MainWindow
       try
       {
          FBImages.load(fmH);
-         add(new TopBar(), LEFT,TOP,FILL,fmH*5/2);
-         add(new tc.samples.like.fb.ui.TopMenu(), LEFT,AFTER,FILL,SAME);
-         add(h = new PostsContainer(),LEFT,AFTER,FILL,FILL); 
+         add(new FBTitleBar(), LEFT,TOP,FILL,fmH*5/2);
+         add(bar = new FBTopBar(), LEFT,AFTER,FILL,SAME);
+         String[] tits = {"1","2","3","4","5"};
+         tc = new TabbedContainer(tits);
+         tc.setType(TabbedContainer.TABS_NONE);
+         add(tc,LEFT,AFTER,FILL,FILL);
+         tc.setContainer(0, posts = new FBPosts());
+         Container c = tc.getContainer(1);
+         c.setBackColor(CONTENTH);
+         c.add(user = new FBNewUser(),LEFT+25,TOP+25,FILL-25,PREFERRED);
       }
       catch (Exception ee)
       {
@@ -38,5 +43,16 @@ public class FaceBookUI extends MainWindow
       }
    }
    
-   PostsContainer h;
+   public void onEvent(Event e)
+   {
+      switch (e.type)
+      {
+         case ControlEvent.PRESSED:
+            if (e.target == tc)
+               bar.setPressed(tc.getActiveTab());
+            else
+            if (e.target == bar)
+               tc.setActiveTab(bar.last);
+      }
+   }
 }

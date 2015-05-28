@@ -57,35 +57,18 @@ public class PostData extends Container implements FBConstants
          llikes.setFont(Font.getFont(false, fmH*8/10));
          add(llikes,LEFT+50,AFTER+25);
    
-         add(create("Like", FBImages.like),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-         add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
-         add(create("Comment", FBImages.comment),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
-         add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
-         add(create("Share", FBImages.share),AFTER,BOTTOM,FILL,fmH*3/2);
+         add(FBUtils.createButton("Like", FBImages.like, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(FBUtils.createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
+         add(FBUtils.createButton("Comment", FBImages.comment, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(FBUtils.createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
+         add(FBUtils.createButton("Share", FBImages.share, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
          
-         add(createRuler(Ruler.HORIZONTAL),0,BEFORE,PARENTSIZE+100,1);
+         add(FBUtils.createRuler(Ruler.HORIZONTAL),0,BEFORE,PARENTSIZE+100,1);
       }
       catch (Exception e)
       {
          FBUtils.logException(e);
       }
-   }
-   
-   private Ruler createRuler(int type)
-   {
-      Ruler r = new Ruler(type,false);
-      r.setForeColor(BORDER);
-      r.ignoreInsets = true;
-      return r;
-   }
-   
-   private Button create(String s, Image i)
-   {
-      Button b = new Button(s, i, RIGHT, fmH);
-      b.setFont(Font.getFont(true,fmH*8/10));
-      b.setForeColor(0x9B9EA3);
-      b.setBorder(Button.BORDER_NONE);
-      return b;
    }
    
    public int getPreferredHeight()

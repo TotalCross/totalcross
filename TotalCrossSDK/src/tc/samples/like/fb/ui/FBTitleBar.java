@@ -5,15 +5,15 @@ import tc.samples.like.fb.*;
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-public class TopBar extends Container implements FBConstants
+public class FBTitleBar extends Container implements FBConstants
 {
    Button btSearch, btOnline;
    
    public void initUI()
    {
       setBackColor(TOPBAR);
-      add(btSearch = FaceBookUI.noborder(FBImages.search), LEFT+100,CENTER);
-      add(btOnline = FaceBookUI.noborder(FBImages.online), RIGHT-100,CENTER);
+      add(btSearch = FBUtils.noborder(FBImages.search), LEFT+100,CENTER);
+      add(btOnline = FBUtils.noborder(FBImages.online), RIGHT-100,CENTER);
       Edit ed = new FBEdit("Search");
       ed.setForeColor(Color.WHITE);
       add(ed, AFTER,SAME,FIT,PREFERRED,btSearch);
