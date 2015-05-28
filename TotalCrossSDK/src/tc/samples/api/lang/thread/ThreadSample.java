@@ -39,7 +39,6 @@ public class ThreadSample extends BaseContainer implements Runnable
    int direction = Settings.platform.equals(Settings.JAVA) || Settings.platform.equals(Settings.WIN32) ? 1 : 4;  //      moving right
    Thread slideThread;
    boolean running,finished;
-   Label lmem;
 
    public void initUI()
    {
@@ -55,7 +54,6 @@ public class ThreadSample extends BaseContainer implements Runnable
       add(pauseButton = new Button("Pause"),CENTER,SAME);
       add(unpauseButton = new Button("Unpause"),CENTER,SAME);
       unpauseButton.setVisible(false);
-      add(lmem = new Label("",RIGHT),AFTER,SAME);
       Button.commonGap = 0;
 
       for (int i = 0; i < containers.length; i++)
@@ -133,7 +131,6 @@ public class ThreadSample extends BaseContainer implements Runnable
             {
                for (int i = 0; i < containers.length; i++)
                   containers[i].incX(direction);
-               lmem.setText(Convert.toString(Vm.getFreeMemory()));
                //try {repaintNow();} catch (Throwable t) {t.printStackTrace();}
             }
             Vm.sleep(5); // without this, scroll does not work
