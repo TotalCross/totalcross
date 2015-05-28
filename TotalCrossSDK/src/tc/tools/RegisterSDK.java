@@ -137,6 +137,10 @@ public final class RegisterSDK
             System.out.println("Next SDK expiration date: "+showDate(iexp));
          return diff != 0 ? INVALID : expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
       }
+      catch (FileNotFoundException fnfe)
+      {
+         throw new RegisterSDKException("License not found! Check if this computer's internet is available.");
+      }
       catch (javax.crypto.BadPaddingException bpe)
       {
          System.out.println("This license key does not correspond to the stored key! Requesting new license with current key...");
@@ -192,11 +196,11 @@ public final class RegisterSDK
       }
       catch (UnknownHostException uhe)
       {
-         throw new RegisterSDKException("INTERNET NOT AVAILABLE! TotalCross requires activation of the SDK. Once the date below is reached, the SDK will block.");
+         System.out.println("INTERNET NOT AVAILABLE! TotalCross requires activation of the SDK. Once the date below is reached, the SDK will block.");
       }
       catch (Throwable e)
       {
-         throw new RegisterSDKException("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
+         System.out.println("Exception during license update: "+e.getClass().getSimpleName()+" - "+e.getMessage());
       }
    }
    
