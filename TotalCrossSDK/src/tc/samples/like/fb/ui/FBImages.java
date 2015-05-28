@@ -31,7 +31,7 @@ public class FBImages
       photo   = new Image("img/photo.png").smoothScaledFixedAspectRatio(fmH,true);
       checkin = new Image("img/checkin.png").smoothScaledFixedAspectRatio(fmH,true);
       
-      regPhoto= new Image("img/reg_photo.png").smoothScaledFixedAspectRatio(top,true);
+      regPhoto= new Image("img/reg_photo.png").smoothScaledFixedAspectRatio(fmH*2,true);
       regUser = new Image("img/reg_user.png").smoothScaledFixedAspectRatio(fmH,true);
       regPass = new Image("img/reg_pass.png").smoothScaledFixedAspectRatio(fmH,true);
    }

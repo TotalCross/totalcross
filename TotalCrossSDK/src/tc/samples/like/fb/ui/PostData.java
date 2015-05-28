@@ -37,7 +37,7 @@ public class PostData extends Container implements FBConstants
          {
             add(new ImageControl(icon.hwScaledFixedAspectRatio(fmH*2,true)),LEFT+50,TOP+50);         
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
             Container c = new Container();
             c.setBackColor(CNT_BACK);
@@ -65,7 +65,7 @@ public class PostData extends Container implements FBConstants
          
          add(FBUtils.createRuler(Ruler.HORIZONTAL),0,BEFORE,PARENTSIZE+100,1);
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          FBUtils.logException(e);
       }

@@ -26,7 +26,7 @@ public class FBDB
          util = new SQLiteUtil(Settings.appPath,"fb.db");
          createTables();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          throw new RuntimeException(e);
       }
@@ -61,7 +61,7 @@ public class FBDB
          }
          rs.close();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          FBUtils.logException(e);
       }
@@ -70,7 +70,7 @@ public class FBDB
    
    public void addPost(String text) throws SQLException
    {
-      psText.setString(1, PostInput.defaultUser);
+      psText.setString(1, FaceBookUI.defaultUser);
       psText.setString(2, text);
       psText.setTime(3, new Time());
       psText.executeUpdate();
@@ -78,7 +78,7 @@ public class FBDB
 
    public void addPost(Image img) throws Exception
    {
-      psImage.setString(1, PostInput.defaultUser);
+      psImage.setString(1, FaceBookUI.defaultUser);
       psImage.setBytes(2, FBUtils.jpegBytes(img));
       psImage.setTime(3, new Time());
       psImage.executeUpdate();

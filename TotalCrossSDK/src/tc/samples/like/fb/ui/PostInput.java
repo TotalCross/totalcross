@@ -4,13 +4,9 @@ import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
 
 public class PostInput extends Container implements FBConstants
 {
-   public static Image defaultPhoto;
-   public static String defaultUser;
-   
    public FBEdit med;
    
    public PostInput()
@@ -25,9 +21,9 @@ public class PostInput extends Container implements FBConstants
       
       try
       {
-         add(new ImageControl(defaultPhoto.smoothScaledFixedAspectRatio(fmH*2,true)),LEFT+50,TOP+50);         
+         add(new ImageControl(FaceBookUI.defaultPhoto.smoothScaledFixedAspectRatio(fmH*2,true)),LEFT+50,TOP+50);         
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          Container c = new Container();
          c.setBackColor(CNT_BACK);

@@ -5,6 +5,7 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.font.*;
 import totalcross.ui.image.*;
+import totalcross.ui.media.*;
 
 public class FBUtils implements FBConstants
 {
@@ -26,7 +27,7 @@ public class FBUtils implements FBConstants
             f.writeBytes(s);
             f.close();
          }
-         catch (Exception e)
+         catch (Throwable e)
          {
             e.printStackTrace();
          }
@@ -57,7 +58,7 @@ public class FBUtils implements FBConstants
          img.createJpg(bas, 85);
          return bas.toByteArray();
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          logException(e);
          return null;
@@ -69,5 +70,27 @@ public class FBUtils implements FBConstants
       Button b = new Button(img);
       b.setBorder(Button.BORDER_NONE);
       return b;
+   }
+
+   public static Image takePhoto()
+   {
+      Image ret = null;
+      try
+      {
+         Camera c = new Camera();
+         c.cameraType = Camera.CAMERA_NATIVE_NOCOPY;
+         c.resolutionWidth  = 640;
+         c.resolutionHeight = 480;
+         String name = c.click();
+         File f = new File(name,File.READ_WRITE);
+         ret = new Image(f);
+         ret = ret.smoothScaledFixedAspectRatio(480,true);
+         f.delete();
+      }
+      catch (Throwable e)
+      {
+         logException(e);
+      }
+      return ret;
    }
 }
