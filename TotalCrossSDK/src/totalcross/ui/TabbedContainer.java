@@ -163,7 +163,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public static final byte TABS_TOP = 0;
    /** To be used on the setType method: specifies that the tabs will be placed on the bottom. */
    public static final byte TABS_BOTTOM = 1;
-   /** To be used on the setType method: specifies that the tabs will be hidden. */
+   /** To be used on the setType method: specifies that the tabs will be hidden and you will be responsible to change them. */
    public static final byte TABS_NONE = 2;
    
    /** Set the color when the user clicks on the tab. 
