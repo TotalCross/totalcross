@@ -40,6 +40,10 @@ namespace PhoneDirect3DXamlAppInterop
                MainPage.instance.onResume();
         }
 
+        // Called when the application is launched by the user
+        private void Application_Launching(object sender, LaunchingEventArgs e)
+        {
+        }
         // Code to execute when the application is deactivated (sent to background)
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)

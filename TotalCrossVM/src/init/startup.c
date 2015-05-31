@@ -266,7 +266,7 @@ TC_API int32 startProgram(Context currentContext)
    {
       case ISNOTSIGNED: return exitProgram(120);
       case ISFAILED   : return exitProgram(121);
-#if defined(WINCE) || defined(WP8) || defined(linux) // win32 is allowed
+#if defined(WINCE) || defined(WP8) || (defined(linux) && !defined(ANDROID) && !defined(darwin)) // win32 is allowed
 	  case ISFREE     : return exitProgram(122); // exit silently
 #endif
    }

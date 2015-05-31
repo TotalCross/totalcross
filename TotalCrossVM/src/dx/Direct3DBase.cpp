@@ -269,6 +269,7 @@ void Direct3DBase::updateDevice(IDrawingSurfaceRuntimeHostNative* host)
    vmStarted = true;
    preRender();
    PhoneDirect3DXamlAppComponent::Direct3DBackground::GetInstance()->RequestNewFrame(); // fixes black screen that appeared run % 2
+   eventQueuePush(PENEVENT_PEN_DOWN, 0, 0, -1, -1);  // fixes black screen when resuming from wp8 if the screen was not pressed before
 }
 
 void Direct3DBase::setColor(int color, int alphaMask)

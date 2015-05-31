@@ -1,4 +1,26 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2647</h1>
+. fixed bug in Android that was returning an invalid value on Settings.daylightSavingsMinutes.<br>
+. fixed some problems when resuming a Windows Phone application<br>
+. added a better message to tc.Deploy when no internet is available<br>
+. added SpinList.setSelectedItem(index, sendPress)<br>
+. new FaceBook-like sample (under development)<br>
+. added Button.shiftOnPress<br>
+. made Edit.hasFocus protected<br>
+. added Ruler.dots<br>
+. added ComboBox.equals(String[]) which returns true if the contents match<br>
+. added RadioGroupController.sendPressOnLast<br>
+. added ComboBox.setSelectedItem(Object name, boolean sendPress)<br>
+. prevent NPE in Button.press if button was not added to parent<br>
+. definitive fix for: fixes trying to print "D\u0101" (where the font does not have \u0101 available)<br>
+. shows the application's id for Windows Phone when deploying<br>
+. fixed FileNotFound that was occuring after a failed registration<br>
+. added back Settings.bugreportEmail<br>
+. added TabbedContainer.TABS_NONE<br>
+. removed mem info from ThreadSample<br>
+. fixed crash on activation on iOS 8.x (64-bit vm)<br>
+. fixed inverted background when using light theme in WP8 <br>
+. fixed problem of free version not running on ios and android<br>
 <h1>build 2636</h1>
 . added photo auto-rotation for Camera. works best with native camera.<br>
 . definitive fix for photo duplication, if the user don't press Cancel. works on all android versions<br>
