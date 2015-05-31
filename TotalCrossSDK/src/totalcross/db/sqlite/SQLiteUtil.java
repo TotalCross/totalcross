@@ -30,7 +30,7 @@ public class SQLiteUtil
 {
    private Connection con;
    public int vectorInitialSize = 50;
-   private String fullPath;
+   public String fullPath;
 
    /** Open a connection at the given table */
    public SQLiteUtil(String table) throws SQLException

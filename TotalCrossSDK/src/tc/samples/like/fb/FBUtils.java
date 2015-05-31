@@ -1,6 +1,7 @@
 package tc.samples.like.fb;
 
 import totalcross.io.*;
+import totalcross.io.device.gps.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.font.*;
@@ -27,9 +28,9 @@ public class FBUtils implements FBConstants
             f.writeBytes(s);
             f.close();
          }
-         catch (Throwable e)
+         catch (Throwable tt)
          {
-            e.printStackTrace();
+            tt.printStackTrace();
          }
    }
 
@@ -58,9 +59,9 @@ public class FBUtils implements FBConstants
          img.createJpg(bas, 85);
          return bas.toByteArray();
       }
-      catch (Throwable e)
+      catch (Throwable t)
       {
-         logException(e);
+         logException(t);
          return null;
       }
    }
@@ -82,15 +83,54 @@ public class FBUtils implements FBConstants
          c.resolutionWidth  = 640;
          c.resolutionHeight = 480;
          String name = c.click();
-         File f = new File(name,File.READ_WRITE);
-         ret = new Image(f);
-         ret = ret.smoothScaledFixedAspectRatio(480,true);
-         f.delete();
+         if (name != null)
+         {
+            File f = new File(name,File.READ_WRITE);
+            ret = new Image(f);
+            ret = ret.smoothScaledFixedAspectRatio(480,true);
+            if (!Settings.onJavaSE)
+               f.delete();
+         }
       }
-      catch (Throwable e)
+      catch (Throwable t)
       {
-         logException(e);
+         logException(t);
       }
       return ret;
+   }
+   
+   public static String getCoords()
+   {
+      String ret = null;
+      try 
+      {
+         GPS gps = new GPS();
+         Toast.show("Gettings GPS coordinates...",Toast.INFINITE_NOANIM);
+         int endTime = Vm.getTimeStamp() + 60000;
+         do
+         {
+            if (gps.retrieveGPSData())
+               ret = "Lat: "+getGMS(gps.getLatitude(),true)+"\nLon: "+getGMS(gps.getLongitude(),false);
+            else
+               Vm.sleep(50);
+         }
+         while (ret == null && Vm.getTimeStamp() < endTime);
+         gps.stop();
+      } 
+      catch (Exception e) 
+      {
+      }
+      Toast.show(null,0);
+      return ret;
+   }   
+
+   public static String getGMS(double d, boolean isLat) // vem do gps assim
+   {
+      double absoluteLon = d < 0 ? -d : d;
+      int gr = (int) absoluteLon;
+      int mi = (int) ((absoluteLon - gr) * 60);
+      int se = (int) ((((absoluteLon - gr) * 60) - mi) * 60 * 100);
+      
+      return gr+"\" "+mi+"' "+(se/100)+"."+(se%100)+" "+(d >= 0 ? isLat ? "E" : "N" : isLat ? "W" : "S");
    }
 }

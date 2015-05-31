@@ -19,7 +19,7 @@ public class FBTopBar extends Container implements PressListener, FBConstants
       {
          b.pressedImage = img.getCopy();
          b.pressedImage.applyColor2(TOPBAR);
-      } catch (Throwable e) {}
+      } catch (Throwable t) {}
       b.shiftOnPress = false;
       b.isSticky = true;
       b.addPressListener(this);

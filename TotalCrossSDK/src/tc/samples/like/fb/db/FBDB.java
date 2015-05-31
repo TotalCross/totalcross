@@ -17,30 +17,35 @@ public class FBDB
 {
    public static FBDB db = new FBDB();
    private SQLiteUtil util;
-   private PreparedStatement psText, psImage, psUser;
+   private PreparedStatement psAddText, psAddImage, psAddUser, psGetUser, psGetPosts, psGetPhoto;
+   private HashMap<String,Image> hsPhotos = new HashMap<String,Image>(5);
    
    private FBDB()
    {
       try
       {
          util = new SQLiteUtil(Settings.appPath,"fb.db");
+         Vm.debug(util.fullPath);
          createTables();
       }
-      catch (Throwable e)
+      catch (Throwable t)
       {
-         throw new RuntimeException(e);
+         throw new RuntimeException(t);
       }
    }
    
    private void createTables() throws SQLException
    {
       Statement st = util.con().createStatement();
-      st.execute("create table if not exists users (name varchar, photo blob, int current)");
+      st.execute("create table if not exists users (name varchar, photo blob, active int)");
       st.execute("create table if not exists posts (name varchar, text varchar, image blob, likes int, dt datetime)");
       st.close();
-      psText  = util.prepareStatement("insert into posts (name, text, datetime) values (?,?,?)");
-      psImage = util.prepareStatement("insert into posts (name, image, datetime) values (?,?,?)");
-      psUser  = util.prepareStatement("insert into users values (?,?,?)");
+      psAddText  = util.prepareStatement("insert into posts (name, text, dt) values (?,?,?)");
+      psAddImage = util.prepareStatement("insert into posts (name, image, dt) values (?,?,?)");
+      psAddUser  = util.prepareStatement("insert into users values (?,?,?)");
+      psGetUser  = util.prepareStatement("select * from users where active=?");
+      psGetPosts = util.prepareStatement("select * from posts order by dt desc");
+      psGetPhoto = util.prepareStatement("select photo from users where name=?");
    }
    
    public PostData[] getNews()
@@ -61,34 +66,100 @@ public class FBDB
          }
          rs.close();
       }
-      catch (Throwable e)
+      catch (Throwable t)
       {
-         FBUtils.logException(e);
+         FBUtils.logException(t);
       }
       return l.toArray(new PostData[l.size()]);
    }
    
-   public void addPost(String text) throws SQLException
+   public boolean addPost(String text) throws SQLException
    {
-      psText.setString(1, FaceBookUI.defaultUser);
-      psText.setString(2, text);
-      psText.setTime(3, new Time());
-      psText.executeUpdate();
+      psAddText.setString(1, FaceBookUI.defaultUser);
+      psAddText.setString(2, text);
+      psAddText.setTime(3, new Time());
+      psAddText.executeUpdate();
+      return true;
    }
 
-   public void addPost(Image img) throws Exception
+   public boolean addPost(Image img) throws Exception
    {
-      psImage.setString(1, FaceBookUI.defaultUser);
-      psImage.setBytes(2, FBUtils.jpegBytes(img));
-      psImage.setTime(3, new Time());
-      psImage.executeUpdate();
+      psAddImage.setString(1, FaceBookUI.defaultUser);
+      psAddImage.setBytes(2, FBUtils.jpegBytes(img));
+      psAddImage.setTime(3, new Time());
+      psAddImage.executeUpdate();
+      return true;
    }
    
-   public void addUser(String name, Image img, boolean current) throws Exception
+   public boolean addUser(String name, Image img, boolean active) throws Exception
    {
-      psUser.setString(1, name);
-      psUser.setBytes(2, FBUtils.jpegBytes(img));
-      psUser.setInt(3, current ? 1 : 0);
-      psUser.executeUpdate();
+      if (active) // dont allow duplicate active users
+         try {util.con().createStatement().executeUpdate("delete from users where active = 1");} catch (Throwable t) {FBUtils.logException(t);}
+      psAddUser.setString(1, name);
+      psAddUser.setBytes(2, img == null ? null : FBUtils.jpegBytes(img));
+      psAddUser.setInt(3, active ? 1 : 0);
+      psAddUser.executeUpdate();
+      if (active)
+      {
+         FaceBookUI.defaultPhoto = img;
+         FaceBookUI.defaultUser = name;
+      }
+      return true;
+   }
+   
+   public void loadActiveUser() throws Exception
+   {
+      psGetUser.setInt(1,1);
+      ResultSet rs = psGetUser.executeQuery();
+      if (rs.next())
+      {
+         FaceBookUI.defaultPhoto = createPhoto(rs.getBytes("photo"));
+         FaceBookUI.defaultUser = rs.getString("name");
+      }
+      rs.close();
+   }
+   
+   public ArrayList<PostData> getPosts() throws Exception
+   {
+      ArrayList<PostData> l = new ArrayList<PostData>(10);
+      ResultSet rs = psGetPosts.executeQuery();
+      while (rs.next())
+         l.add(new PostData(rs.getString(1), rs.getString(2), createPhoto(rs.getBytes(3)), rs.getInt(4), rs.getTime(5)));
+      rs.close();
+      return l;
+   }
+   
+   private Image createPhoto(byte[] bytes) throws Exception
+   {
+      return bytes == null ? null : new Image(bytes);
+   }
+
+   public Image getPhoto(String name) throws Exception
+   {
+      Image photo = hsPhotos.get(name);
+      if (photo == null)
+      {
+         psGetPhoto.setString(1,name);
+         ResultSet rs = psGetPhoto.executeQuery();
+         if (rs.next() && (photo = createPhoto(rs.getBytes(1))) != null)
+            hsPhotos.put(name, photo);
+         rs.close();
+      }
+      return photo;
+   }
+
+   public void dropTables()
+   {
+      try
+      {
+         Statement st = util.con().createStatement();
+         st.executeUpdate("drop table users");
+         st.executeUpdate("drop table posts");
+         st.close();
+      }
+      catch (Throwable t)
+      {
+         FBUtils.logException(t);
+      }
    }
 }

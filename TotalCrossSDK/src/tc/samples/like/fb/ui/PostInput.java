@@ -1,16 +1,22 @@
 package tc.samples.like.fb.ui;
 
 import tc.samples.like.fb.*;
+import tc.samples.like.fb.db.*;
 
 import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 public class PostInput extends Container implements FBConstants
 {
-   public FBEdit med;
+   private FBEdit med;
+   private Button btStat, btPhot, btChIn;
+   private FBPosts posts;
    
-   public PostInput()
+   public PostInput(FBPosts posts)
    {
+      this.posts = posts;
    }
    
    public void initUI()
@@ -23,7 +29,7 @@ public class PostInput extends Container implements FBConstants
       {
          add(new ImageControl(FaceBookUI.defaultPhoto.smoothScaledFixedAspectRatio(fmH*2,true)),LEFT+50,TOP+50);         
       }
-      catch (Throwable e)
+      catch (Throwable t)
       {
          Container c = new Container();
          c.setBackColor(CNT_BACK);
@@ -32,9 +38,9 @@ public class PostInput extends Container implements FBConstants
       med = new FBEdit("What's on your mind?");
       add(med, AFTER+50,SAME,FILL-100,PREFERRED);
       
-      add(FBUtils.createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(FBUtils.createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(FBUtils.createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
+      add(btStat = FBUtils.createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+      add(btPhot = FBUtils.createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
+      add(btChIn = FBUtils.createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
       
       add(FBUtils.createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
    }
@@ -42,5 +48,43 @@ public class PostInput extends Container implements FBConstants
    public int getPreferredHeight()
    {
       return fmH*9/2;
+   }
+   
+   public void onEvent(Event e)
+   {
+      try
+      {
+         switch (e.type)
+         {
+            case ControlEvent.PRESSED:
+               if (e.target == btStat)
+               {
+                  if (med.getTrimmedLength() == 0)
+                     Toast.show("Fill what's on your mind and press this button to post",2000);
+                  else
+                  if (FBDB.db.addPost(med.getText()))
+                     posts.reload();
+               }
+               else
+               if (e.target == btPhot)
+               {
+                  Image photo = FBUtils.takePhoto();
+                  if (photo != null && FBDB.db.addPost(photo))
+                     posts.reload();
+               }
+               else
+               if (e.target == btChIn)
+               {
+                  String coords = FBUtils.getCoords();
+                  if (coords != null && FBDB.db.addPost(coords))
+                     posts.reload();
+               }
+               break;
+         }
+      }
+      catch (Throwable t)
+      {
+         FBUtils.logException(t);
+      }
    }
 }

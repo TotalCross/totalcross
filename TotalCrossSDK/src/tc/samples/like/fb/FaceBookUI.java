@@ -1,19 +1,20 @@
 package tc.samples.like.fb;
 
+import tc.samples.like.fb.db.*;
 import tc.samples.like.fb.ui.*;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
 public class FaceBookUI extends MainWindow implements FBConstants
 {
-   public static FBPosts posts;
-   public static FBNewUser user;
-   public static FBTopBar bar;
-   public static TabbedContainer tc;
+   private static FBPosts posts;
+   private static FBTopBar bar;
+   private static TabbedContainer tc;
    
    public static Image defaultPhoto;
    public static String defaultUser;
@@ -22,13 +23,18 @@ public class FaceBookUI extends MainWindow implements FBConstants
    {
       Settings.uiAdjustmentsBasedOnFontHeight = true;
       setUIStyle(Settings.Android);
+      setBackColor(CONTENTH);
    }
 
    public void initUI()
    {
       try
       {
+         Toast.backColor = Color.YELLOW;
+         Toast.foreColor = Color.BLACK;
+         
          FBImages.load(fmH);
+         FBDB.db.loadActiveUser();
          add(new FBTitleBar(), LEFT,TOP,FILL,fmH*5/2);
          add(bar = new FBTopBar(), LEFT,AFTER,FILL,SAME);
          String[] tits = {"1","2","3","4","5"};
@@ -37,12 +43,16 @@ public class FaceBookUI extends MainWindow implements FBConstants
          tc.setType(TabbedContainer.TABS_NONE);
          add(tc,LEFT,AFTER,FILL,FILL);
          tc.setContainer(0, posts = new FBPosts());
+         tc.setContainer(4, new FBMenu());
          Container c = tc.getContainer(1);
-         c.add(user = new FBNewUser(),CENTER,AFTER+25,PARENTSIZE+96,PREFERRED);
+         c.add(new FBNewUser(posts),CENTER,AFTER+25,PARENTSIZE+96,PREFERRED);
+         
+         if (defaultUser == null)
+            tc.setActiveTab(1);
       }
-      catch (Throwable ee)
+      catch (Throwable t)
       {
-         MessageBox.showException(ee,true);
+         MessageBox.showException(t,true);
          exit(0);
       }
    }

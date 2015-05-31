@@ -3,6 +3,7 @@ package tc.samples.like.fb.ui;
 import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
 public class FBTitleBar extends Container implements FBConstants
@@ -22,4 +23,25 @@ public class FBTitleBar extends Container implements FBConstants
       add(r, SAME,AFTER,SAME-100,1);
    }
    
+   public void onEvent(Event e)
+   {
+      try
+      {
+         switch (e.type)
+         {
+            case ControlEvent.PRESSED:
+               if (e.target == btOnline && FaceBookUI.defaultUser != null)
+               {
+                  TopMenu.Item it = new TopMenu.Item(new Label(FaceBookUI.defaultUser), FaceBookUI.defaultPhoto);
+                  TopMenu top = new TopMenu(new Control[]{it},RIGHT);
+                  top.popup();
+               }
+               break;
+         }
+      }
+      catch (Throwable t)
+      {
+         FBUtils.logException(t);
+      }
+   }
 }
