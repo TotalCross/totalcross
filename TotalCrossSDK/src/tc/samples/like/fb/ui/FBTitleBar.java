@@ -32,8 +32,10 @@ public class FBTitleBar extends Container implements FBConstants
             case ControlEvent.PRESSED:
                if (e.target == btOnline && FaceBookUI.defaultUser != null)
                {
+                  TopMenu.Item it0 = new TopMenu.Item(new Label("Users"), null);
                   TopMenu.Item it = new TopMenu.Item(new Label(FaceBookUI.defaultUser), FaceBookUI.defaultPhoto);
-                  TopMenu top = new TopMenu(new Control[]{it},RIGHT);
+                  TopMenu top = new TopMenu(new Control[]{it0,it},RIGHT);
+                  top.totalTime = 500;
                   top.popup();
                }
                break;

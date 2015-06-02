@@ -59,7 +59,7 @@ public class PostData extends Container implements FBConstants
          {
             ImageControl ic = new ImageControl(photo);
             ic.scaleToFit = true;
-            add(ic, LEFT+50,AFTER+25,FILL-50,fmH*4);
+            add(ic, LEFT+50,AFTER+25,FILL-50,fmH*8);
          }
          
          Label llikes = new Label(likes+" likes");
@@ -82,6 +82,6 @@ public class PostData extends Container implements FBConstants
    
    public int getPreferredHeight()
    {
-      return photo == null ? fmH*6+ltext.getPreferredHeight() : fmH*10;
+      return photo == null ? fmH*6+ltext.getPreferredHeight() : fmH*14;
    }
 }

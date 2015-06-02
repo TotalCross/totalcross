@@ -12,8 +12,13 @@ public class FBMenu extends Container
    Button btExit, btDrop;
    public void initUI()
    {
-      add(btExit = new Button("Exit"), LEFT+50,AFTER+50,FILL-50,PREFERRED+100);
-      add(btDrop = new Button("Drop database"), LEFT+50,AFTER+50,FILL-50,PREFERRED+100);
+      btExit = new Button("Exit");
+      btExit.setBackColor(0xEEEEEE);
+      add(btExit, LEFT+50,AFTER+50,FILL-50,PREFERRED+100);
+      
+      btDrop = new Button("Drop database");
+      btDrop.setBackColor(0xEEEEEE);
+      add(btDrop, LEFT+50,AFTER+50,FILL-50,PREFERRED+100);
    }
    
    public void onEvent(Event e)
