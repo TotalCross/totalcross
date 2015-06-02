@@ -21,6 +21,7 @@ public final class RegisterSDK
    private static final int CONTRACT_NOT_ACTIVE      = -1004;
    private static final int INVALID_COMPANY          = -1005;
    private static final int CONTRACT_DEACTIVATED     = -1006;
+   private static final int DEVICE_DISABLED          = -1007;
 
    private String user, home, key;
    private int today;
@@ -164,6 +165,7 @@ public final class RegisterSDK
                case CONTRACT_NOT_ACTIVE     : throw new RegisterSDKException("This contract is not yet active. Please send email to renato@totalcross.com with your registration key.");
                case INVALID_COMPANY         : throw new RegisterSDKException("Invalid company");
                case CONTRACT_DEACTIVATED    : throw new RegisterSDKException("The contract is suspended due to payment reasons. Please contact renato@totalcross.com.");
+               case DEVICE_DISABLED         : throw new RegisterSDKException("This device is disabled.");
             }
          else
          {
