@@ -54,4 +54,5 @@
 "5443444B091A810EB8EFAF30" /* 205 - xuxu software ltda                            */ \
 "5443444BADD4E9F3B30553E8" /* 850 - Enerfocus - Eficiência Energética e Comércio  */ \
 "5443444B0D1A9DDA2D21B3DF" /* 459 - Industria e Comercio Copas SA                 */ \
-"5443444B24C6CDAB9F53CAB0" /* 796 - Sysbase Informatica Ltda                      */ 
+"5443444B24C6CDAB9F53CAB0" /* 796 - Sysbase Informatica Ltda                      */ \
+"5443444B13959C9A4D63B99B" /* 930 */
