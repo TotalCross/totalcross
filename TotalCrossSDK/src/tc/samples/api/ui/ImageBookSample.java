@@ -89,7 +89,7 @@ public class ImageBookSample extends BaseContainer
          {
             while (lastcur == current)
                Vm.sleep(10);
-            int range = max/2;
+            int range = perpage * 2;
             lastcur = current;
             int lastMinIdx = lastcur - range; if (lastMinIdx < 0) lastMinIdx = 0; 
             int lastMaxIdx = lastcur + range; if (lastMaxIdx >= arqs.length) lastMaxIdx = arqs.length-1;
