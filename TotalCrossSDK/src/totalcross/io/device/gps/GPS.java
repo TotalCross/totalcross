@@ -176,7 +176,7 @@ public class GPS
    public GPS() throws IOException
    {
       checkOpen();
-      if (!nativeAPI || !startGPS())
+      if (!nativeAPI || !testStartGPS())
       {
          String com;
          if ("PIDION".equals(Settings.deviceId)) // guich@586_7
@@ -213,7 +213,20 @@ public class GPS
          this.sp = sp;
       else 
       if (nativeAPI)
-         startGPS();
+         testStartGPS();
+   }
+
+   private boolean testStartGPS() throws IOException
+   {
+      try
+      {
+         return startGPS();
+      }
+      catch (IOException e)
+      {
+         isOpen = false;
+         throw e;
+      }
    }
 
    private boolean startGPS() throws IOException {return false;}

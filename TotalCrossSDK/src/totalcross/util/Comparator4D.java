@@ -67,7 +67,6 @@ package totalcross.util;
  * @see SortedMap
  * @see SortedSet
  * @see Arrays#sort(Object[], Comparator)
- * @see java.io.Serializable
  * @since 1.2
  * @status updated to 1.4
  */

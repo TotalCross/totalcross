@@ -191,38 +191,48 @@ static void checkFullScreenPlatform() // guich@tc120_59
 }
 
 #include "noras_ids/noras.inc"
-#define ISDEMO 0
-#define ISNOTACTIVATED -1
-#define ISACTIVATED -2
-#define ISNORAS -3
+
+#define ISNOTSIGNED 0
+#define ISFREE 1
+#define ISFAILED 2
+#define ISWILLACTIVATE 3
+#define ISACTIVATED 4
+#define ISNORAS 5
 static int checkActivation(Context currentContext)
 {
    TCClass c;
    TCObject rasClientInstance, ret;
    Method m;
    char buf[4];
-   uint8 *allowedKey, *allowedKeysBase = (uint8*)NORAS_KEYS, *signedKey;
+   uint8 *allowedKey, *allowedKeysBase = (uint8*)NORAS_KEYS, *signedKey, *retb;
 
    // load ActivationClient
    c = loadClass(currentContext, "ras.ActivationClient", true);
    if (currentContext->thrownException)
-      return ISDEMO;
+      return ISFAILED;
    m = getMethod(c, true, "getInstance", 0);
    rasClientInstance = executeMethod(currentContext, m).asObj;
    if (!rasClientInstance || currentContext->thrownException)
-      return ISDEMO;
+      return ISFAILED;
    
    // noras has priority over ras
    m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
    ret = executeMethod(currentContext, m, rasClientInstance).asObj;
+
    // if readKey is null, the application was not signed!
    if (ret == null || currentContext->thrownException)
-      return ISDEMO;
+      return ISFAILED;
+   retb = (uint8*)ARRAYOBJ_START(ret);
+
+   // check if free sdk
+   if (strEqn(retb, "TCST",4))
+	  return ISFREE;
+
    // check the key
    for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) 
    {
-      uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
-      for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
+      uint8 *signedKeyEnd = retb + ARRAYOBJ_LEN(ret);
+      for (signedKey = retb; signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
       {
          int2hex(*signedKey, 2, buf);
          if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
@@ -233,7 +243,7 @@ static int checkActivation(Context currentContext)
    }
    // could not activate noras, try ras
    m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
-   return executeMethod(currentContext, m, rasClientInstance).asInt32 == 1 ? ISACTIVATED : ISNOTACTIVATED;
+   return executeMethod(currentContext, m, rasClientInstance).asInt32 == 1 ? ISACTIVATED : ISWILLACTIVATE;
 }
 
 TC_API int32 startProgram(Context currentContext)
@@ -246,7 +256,14 @@ TC_API int32 startProgram(Context currentContext)
       return exitProgram(115);
    
    retc = checkActivation(currentContext);
-   isDemo = retc == ISDEMO;
+   switch (retc)
+   {
+      case ISNOTSIGNED: return exitProgram(120);
+      case ISFAILED   : return exitProgram(121);
+#if defined(WIN32) || defined(WP8) || defined(linux)
+	  case ISFREE     : return exitProgram(122); // exit silently
+#endif
+   }
         
 #if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
    {
@@ -284,9 +301,9 @@ TC_API int32 startProgram(Context currentContext)
       // 6. call appStarting
       Method mainMtd = getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN);
       if (!mainMtd) return exitProgram(117);
-      if (!isDemo && isMainWindow) waitUntilStarted(); // guich@tc115_27 - guich@tc120_7: only if MainWindow - in demo mode, the MessageBox already does what waitUntilStarted does. Calling this in demo mode blocks the vm.
+      if (isMainWindow) waitUntilStarted();
       executeMethod(currentContext, mainMtd, mainClass, 
-         retc == ISNORAS ? -999998 : retc == ISACTIVATED ? -1 : retc == ISNOTACTIVATED ? -999999 : checkDemo());
+         retc == ISNORAS ? -999998 : retc == ISACTIVATED ? -1 : retc == ISWILLACTIVATE ? -999999 : 0);
       // 7. call the main event loop
       if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding

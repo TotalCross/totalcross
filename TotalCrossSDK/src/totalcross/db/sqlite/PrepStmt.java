@@ -300,7 +300,7 @@ final class PrepStmt extends Stmt implements PreparedStatement, ParameterMetaDat
         } 
         catch (IOException cause)
         {
-           throw new SQLException("Error reading stream."+RS.initCause(cause));
+           throw new SQLException("Error reading stream.",cause);
         }
     }
 

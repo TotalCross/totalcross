@@ -2323,7 +2323,6 @@ public class Arrays4D
    * @return a fixed-size list, changes to which "write through" to the array
    *
    * @throws NullPointerException if <code>a</code> is <code>null</code>.
-   * @see Serializable
    * @see RandomAccess
    * @see Arrays.ArrayList
    */

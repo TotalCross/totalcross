@@ -14,10 +14,6 @@
 package tc.tools;
 
 import totalcross.io.*;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
@@ -131,7 +127,7 @@ public class FontGenerator
          System.exit(1);
       }
       // create fonts
-      println("FontGenerator - Copyright (c) SuperWaba 2002-2012. Processing...");
+      println("FontGenerator - Copyright (c) SuperWaba 2002-2015. Processing...");
       if (sizesArg != null)
       {
          String[] ss = totalcross.sys.Convert.tokenizeString(sizesArg, ',');
@@ -155,8 +151,6 @@ public class FontGenerator
       // write the file
       try {new File(outName).delete();} catch (Exception e) {} // delete if it exists
       new TCZ(v, outName, (short)0);
-      // test fonts
-      runTestFont(outName);
    }
 
    private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
@@ -453,22 +447,6 @@ public class FontGenerator
       System.out.println(s);
    }
 
-   public static void runTestFont(String fontName)
-   {
-      if (true)
-      {
-         totalcross.Launcher.main(new String[]
-         {
-            "/scr",      "800x600x24",
-            "/scale",    "1",
-            "/cmdLine",  fontName,
-            "tc.tools.FontGenerator$TestFont"
-         }); // guich@503_6: fixed package name
-         while (true)
-            totalcross.sys.Vm.sleep(100);
-      }
-      else System.exit(0);
-   }
    public static void main(String args[])
    {
       try
@@ -498,9 +476,6 @@ public class FontGenerator
             println("When creating unicode fonts of a wide range, using options /nobold");
             println("will create a file 1/4 of the original size.");
             println("");
-            println("Alternative format: java FontGenerator test <font name>");
-            println("This will open a TotalCross app to test the font");
-            println("");
             println("Copyright (c) SuperWaba 2002-2012");
             println("Must use JDK 1.3 or higher!");
             println("\nPress enter to list the available fonts, or q+enter to stop.");
@@ -511,9 +486,6 @@ public class FontGenerator
                      println(" "+fonts[i].getName());
             } catch (java.io.IOException ie) {}
          }
-         else
-         if (args[0].equalsIgnoreCase("test"))
-            runTestFont(args[1]);
          else
             new FontGenerator(args[0],args);
       }
@@ -608,56 +580,6 @@ public class FontGenerator
       {
          int index = ch - firstChar;
          return index < 0 || index > lastChar ? spaceWidth : bitIndexTable[index+1] - bitIndexTable[index];
-      }
-   }
-   public static class TestFont extends MainWindow
-   {
-      private Button btn;
-
-      public TestFont()
-      {
-         super("", TAB_ONLY_BORDER);
-         setUIStyle(Settings.Vista);
-      }
-      public void initUI()
-      {
-         Label l;
-         String fontName = getCommandLine();
-         setTitle("Test Font - "+fontName);
-         if (fontName == null || fontName.length() == 0)
-            exit(1);
-
-         String tit = "__ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678890`~!@#$%^&*()_+=-{}\\][:;\"'<,>./?�������";
-         if (sizes.size() == 0) // occurs when the user call the TestFont directly
-         {
-            for (int i = Font.MIN_FONT_SIZE; i <= Font.MAX_FONT_SIZE; i++)
-               sizes.addElement(i);
-         }
-         for (int ii = 0; ii < sizes.size(); ii++)
-         {
-            int i = sizes.items[ii];
-            // how only the fonts that match this name.
-            Font ff = Font.getFont(fontName, false, i);
-            if (ff.name.equals(fontName))
-            {
-               l = new Label(i+" "+tit);
-               l.setFont(ff);
-               add(l,LEFT,AFTER);
-            }
-            ff = Font.getFont(fontName, true, i);
-            if (ff.name.equals(fontName))
-            {
-               l = new Label(i+" "+tit);
-               l.setFont(ff);
-               add(l,LEFT,AFTER);
-            }
-         }
-         add(btn = new Button("Exit"), RIGHT,0);
-      }
-      public void onEvent(Event e)
-      {
-         if (e.type == ControlEvent.PRESSED && e.target == btn)
-            exit(0);
       }
    }
 }

@@ -24,7 +24,6 @@ package totalcross.json;
  SOFTWARE.
  */
 
-import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
@@ -1195,14 +1194,14 @@ public class JSONObject {
         //synchronized (sw.getBuffer()) {
             try {
                 return quote(string, sw).toString();
-            } catch (IOException ignored) {
+            } catch (java.io.IOException ignored) {
                 // will never happen - we are writing to a string writer
                 return "";
             }
         //}
     }
 
-    public static StringBuffer quote(String string, StringBuffer w) throws IOException {
+    public static StringBuffer quote(String string, StringBuffer w) throws java.io.IOException {
         if (string == null || string.length() == 0) {
             w.append("\"\"");
             return w;
@@ -1575,7 +1574,7 @@ public class JSONObject {
     }
 
     static final StringBuffer writeValue(StringBuffer writer, Object value,
-            int indentFactor, int indent) throws JSONException, IOException {
+            int indentFactor, int indent) throws JSONException, java.io.IOException {
         if (value == null || value.equals(null)) {
             writer.append("null");
         } else if (value instanceof JSONObject) {
@@ -1607,7 +1606,7 @@ public class JSONObject {
         return writer;
     }
 
-    static final void indent(StringBuffer writer, int indent) throws IOException {
+    static final void indent(StringBuffer writer, int indent) throws java.io.IOException {
         for (int i = 0; i < indent; i += 1) {
             writer.append(' ');
         }
@@ -1664,7 +1663,7 @@ public class JSONObject {
             }
             writer.append('}');
             return writer;
-        } catch (IOException exception) {
+        } catch (java.io.IOException exception) {
             throw new JSONException(exception);
         }
     }

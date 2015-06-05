@@ -26,10 +26,10 @@ public class ConnectionManager4D
 {
    static Object connRef;
 
-   static ConnectionManager4D CmInstance = new ConnectionManager4D();
-
    /** keep track of all open connections */
-   static Hashtable openConnections;
+   static Hashtable openConnections = new Hashtable(16);
+   
+   static ConnectionManager4D CmInstance = new ConnectionManager4D();
 
    public static final int CRADLE = 1;
    public static final int WIFI = 2;
@@ -38,7 +38,6 @@ public class ConnectionManager4D
 
    private ConnectionManager4D()
    {
-      ConnectionManager4D.openConnections = new Hashtable(16);
       loadResources();
    }
 

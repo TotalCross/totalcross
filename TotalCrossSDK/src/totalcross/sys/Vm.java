@@ -748,6 +748,12 @@ public final class Vm
          stacktrace = Convert.replace(stacktrace, Convert.CRLF, "\n").replace("\tat ","");
       return stacktrace;
    }
+   
+   /** A shortcut for <code>try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}</code> */
+   public static String getStackTrace()
+   {
+      try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}      
+   }
 
    /**
     * Set to true to popup an alert for each key pressed. This is useful for you to discover key codes that may be
