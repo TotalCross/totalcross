@@ -112,14 +112,15 @@ EXP_FUNC void STDCALL RNG_initialize(const uint8_t *seed_buf, int size)
         /* help seed with the user's private key - this is a number that 
            should be hard to find, due to the fact that it relies on knowing 
            the private key */
-if (!tweakSSL)           
-   {
-        int i;  
-
-        for (i = 0; i < size/(int)sizeof(uint64_t); i++)
-            rng_num ^= *((uint64_t *)&seed_buf[i*sizeof(uint64_t)]);
-
-        srand((int)seed_buf);  /* use the stack ptr as another rnd seed */
+      if (!tweakSSL)           
+      {
+           int i;  
+   
+           for (i = 0; i < size/(int)sizeof(uint64_t); i++)
+               rng_num ^= *((uint64_t *)&seed_buf[i*sizeof(uint64_t)]);
+   
+           srand((int)seed_buf);  /* use the stack ptr as another rnd seed */
+      }
 #endif
     }
 
