@@ -1051,7 +1051,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    {
       lastControl = null;
       int sel = ((pe.y - 4) / lineH) + offset;
-      if (sel < itemCount)
+      if (sel < itemCount && sel >= 0)
       {
          if (multipleSelection && pe.x < imgPlusSize+2)
             checkClicked(sel);

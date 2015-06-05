@@ -1,4 +1,57 @@
-<h2>TotalCross 3.1</h2>             
+<h2>TotalCross 3.1</h2>
+<h1>build 2647</h1>
+. fixed bug in Android that was returning an invalid value on Settings.daylightSavingsMinutes.<br>
+. fixed some problems when resuming a Windows Phone application<br>
+. added a better message to tc.Deploy when no internet is available<br>
+. added SpinList.setSelectedItem(index, sendPress)<br>
+. new FaceBook-like sample (under development)<br>
+. added Button.shiftOnPress<br>
+. made Edit.hasFocus protected<br>
+. added Ruler.dots<br>
+. added ComboBox.equals(String[]) which returns true if the contents match<br>
+. added RadioGroupController.sendPressOnLast<br>
+. added ComboBox.setSelectedItem(Object name, boolean sendPress)<br>
+. prevent NPE in Button.press if button was not added to parent<br>
+. definitive fix for: fixes trying to print "D\u0101" (where the font does not have \u0101 available)<br>
+. shows the application's id for Windows Phone when deploying<br>
+. fixed FileNotFound that was occuring after a failed registration<br>
+. added back Settings.bugreportEmail<br>
+. added TabbedContainer.TABS_NONE<br>
+. removed mem info from ThreadSample<br>
+. fixed crash on activation on iOS 8.x (64-bit vm)<br>
+. fixed inverted background when using light theme in WP8 <br>
+. fixed problem of free version not running on ios and android<br>
+<h1>build 2636</h1>
+. added photo auto-rotation for Camera. works best with native camera.<br>
+. definitive fix for photo duplication, if the user don't press Cancel. works on all android versions<br>
+. fixes trying to print "D\u0101" (where the font does not have \u0101 available)<br>
+. removed adding the Socket to ConnectionManager array, since this was used only for Palm OS. it was causing a NPE when opening lots of sockets in multiple threads<br>
+. fixed GPS crashing on WP<br>
+. fixed black screen on WP8<br>
+<h1>build 2623</h1>
+. the platform fields must be final otherwise the compiler will not put them into a single value and therefore the Settings.fullScreenPlatforms will not work<br>
+. fixed Camera.NOCOPY not working on Android 2.3<br>
+<h1>build 2611</h1>
+. fixed memory problems on camera sample<br>
+. trying to bypass ios 8.x known bug when using camera zoom and flash<br>
+. added Control.keepEnabled<br>
+. now when the application is minimized, we don't run any timers at all. This prevents a problem in Android when you open an Edit, place the cursor, and minimize the application, the memory was being increased until the application crashes. If you want to update the application while it is minimized, use a thread instead of a timer.<br>
+. trying to solve unusable exception error codes on SQLite<br>
+. added support for playing MP3 on Win32 using Sound.play<br>
+<h1>build 2609</h1>
+. on ZLib's EOF return -1 to prevent infinite loop in DataStream.readBytesInternal<br>
+. deprecated Settings.dontCloseApplication<br>
+. added (currently for Android and iOS) a way to take photo from the gallery. Use cameraType = CAMERA_FROM_GALLERY. changed TotalCrossAPI to use it.<br>
+. on android 2.3 the code to delete the image from gallery does not work, so we just ensure that we delete the file<br>
+. removed animation during mouse wheel scrolling<br>
+. fixed ResultSet error when reading an empty time<br>
+. fixed FontGenerator's interchar spacing.<br>
+<h1>build 2591</h1>
+. fixed inifinte recursion in Throwable<br>
+. added a meaningful message if user passed a wrong registration key<br>
+. now showing the command line on Deploy<br>
+. now checking if user passed the class name in wrong order in tc.Deploy<br>
+. fixed primitive types not extending Number. This fixes problems on Json<br>
 <h1>build 2588</h1>
 * fixed support for android 5. updated adb to android 5<br>
 * fixed totalcross on 64-bit iOS, required for deploying on appstore<br>
@@ -59,7 +112,6 @@
 <h1>build 2511</h1>
 . removed many outdated Fn functions that were still mapping to Palm OS. now F11 takes a screenshot and saves to disk. Note that /scale does not affect the screenshot.<br>
 <h1>build 2509</h1>
-. added Settings.bugreportEmail. With this you can receive automatic bug reports when your application exits by an unhandled exception. read the javadocs for more information.<br>
 . Fixed ScrollContainer: if we're scrolled in a rotation but we don't need scroll, move to origin instead of keeping it scrolled<br>
 . Now if you use a Control in Tree's Node.userObject, it will draw the control instead of drawing a String<br>
 . Now the ComboBox's popup uses the same font of the ComboBox.<br>
@@ -180,7 +232,7 @@
 . now tc.Deploy throws an exception if Settings.versionStr contains non-digit nor dot.<br>
 . added Graphics.drawThickLine<br>
 . decreased default distance of selected pie<br>
-. improved drawThickLine. now using on LineChart<br>                                                                                                   
+. improved drawThickLine. now using on LineChart<br>
 . fixed OutOfMemory errors on Windows Phone when dealing with images<br>
 . fixed fade animation on wp8<br>
 . added support for playing mp3 on wp8. changed sample.mp3 to something smaller (300 -> 30kb). changed MediaSample to always write the mp3 file. changed tc.Deploy to include referenced mp3 files. note that the mp3 file was not actually played on our nokia 520 phone, but the mp3 was correctly loaded (seen that Track contains a 2 seconds mp3 file)<br>
@@ -581,7 +633,7 @@
 . improving performance of Chart<br>
 . fixed infinite loop if GridContainer has rows=cols=1. still buggy with rows=2 / cols=1 and vice versa<br>
 . improved ImageBook sample to let the user resize the image<br>
-. added Control.isObscured, to check if a control is underneath a window. used by ClippedContainer to prevent painting obscured cells. 
+. added Control.isObscured, to check if a control is underneath a window. used by ClippedContainer to prevent painting obscured cells.
 . fixed isVisibleAndInside using a bound greater than needed<br>
 . fixed definetively rotation problems in ios 7<br>
 . updated adb to version 1.0.31<br>

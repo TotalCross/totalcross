@@ -325,11 +325,17 @@ TC_API void tsV_getRemainingBattery(NMParams p) // totalcross/sys/Vm native publ
    p->retI = vmGetRemainingBattery();
 }
 //////////////////////////////////////////////////////////////////////////
+int tweakSSL;
+
 TC_API void tsV_tweak_ib(NMParams p) // totalcross/sys/Vm native public static void tweak(int param, boolean set);
 {
    int32 param = p->i32[0];
    int32 bit = param - 1;
    int32 on = p->i32[1];
+   
+   if (bit == -999) // temporary for Tekann only
+      tweakSSL = on;
+   else   
    if (on)
       vmTweaks |=  (1<<bit);
    else

@@ -37,7 +37,6 @@
 </condition>
 <property name="rootpath"      value="p:"/> <!-- MUST BE ABSOLUTE PATH -->
 <property file="${rootpath}/userpaths.properties"/>
-<fail unless="msvc.path" message="Cannot find file ${rootpath}/userpaths.properties!"/>
 
 <!-- javac settings -->
 <property name="compile.listfiles"       value="no"/>

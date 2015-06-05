@@ -508,7 +508,7 @@ public class JSONObject {
                     : Double.parseDouble((String) object);
         } catch (Exception e) {
             throw new JSONException("JSONObject[" + quote(key)
-                    + "] is not a number.");
+                    + "] is not a number.",e);
         }
     }
 
@@ -529,7 +529,7 @@ public class JSONObject {
                     : Integer.parseInt((String) object);
         } catch (Exception e) {
             throw new JSONException("JSONObject[" + quote(key)
-                    + "] is not an int.");
+                    + "] is not an int.",e);
         }
     }
 
@@ -586,7 +586,7 @@ public class JSONObject {
                     : Long.parseLong((String) object);
         } catch (Exception e) {
             throw new JSONException("JSONObject[" + quote(key)
-                    + "] is not a long.");
+                    + "] is not a long.",e);
         }
     }
 

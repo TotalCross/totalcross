@@ -320,6 +320,7 @@ public class CameraViewer extends Activity // guich@tc126_34
             FileOutputStream outStream = new FileOutputStream(fileName); 
             outStream.write(data);
             outStream.close();
+            Loader.autoRotatePhoto(fileName);
             setResult(RESULT_OK);
             finish();
          }

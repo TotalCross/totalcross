@@ -232,7 +232,7 @@ public class JSONArray {
             return object instanceof Number ? ((Number) object).doubleValue()
                     : Double.parseDouble((String) object);
         } catch (Exception e) {
-            throw new JSONException("JSONArray[" + index + "] is not a number.");
+            throw new JSONException("JSONArray[" + index + "] is not a number.", e);
         }
     }
 
@@ -251,7 +251,7 @@ public class JSONArray {
             return object instanceof Number ? ((Number) object).intValue()
                     : Integer.parseInt((String) object);
         } catch (Exception e) {
-            throw new JSONException("JSONArray[" + index + "] is not a number.");
+            throw new JSONException("JSONArray[" + index + "] is not a number.", e);
         }
     }
 
@@ -307,7 +307,7 @@ public class JSONArray {
             return object instanceof Number ? ((Number) object).longValue()
                     : Long.parseLong((String) object);
         } catch (Exception e) {
-            throw new JSONException("JSONArray[" + index + "] is not a number.");
+            throw new JSONException("JSONArray[" + index + "] is not a number.",e);
         }
     }
 

@@ -286,6 +286,9 @@ public class Control extends GfxSurface
    /** Keep the control disabled even if enabled is true. */
    public boolean keepDisabled;
    
+   /** Keep the control enabled even if enabled is false. */
+   public boolean keepEnabled;
+   
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
@@ -1164,7 +1167,7 @@ public class Control extends GfxSurface
    /** Returns if this control can or not accept events */
    public boolean isEnabled()
    {
-      return this.enabled && !keepDisabled;
+      return keepEnabled || (this.enabled && !keepDisabled);
    }
 
    /**

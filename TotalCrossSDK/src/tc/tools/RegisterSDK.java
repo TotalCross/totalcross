@@ -21,6 +21,7 @@ public final class RegisterSDK
    private static final int CONTRACT_NOT_ACTIVE      = -1004;
    private static final int INVALID_COMPANY          = -1005;
    private static final int CONTRACT_DEACTIVATED     = -1006;
+   private static final int DEVICE_DISABLED          = -1007;
 
    private String user, home, key;
    private int today;
@@ -51,12 +52,14 @@ public final class RegisterSDK
          if (checkLicense() == EXPIRED) // only throw exception if expired
             throw new RegisterSDKException("The license is expired");
       }         
+      if (giexp != -1) // show only once
+         System.out.println("Next SDK expiration date: "+showDate(giexp));
    }
    
    public static void main(String[] args)
    {
       if (args.length != 1)
-         System.out.println("Format: tc.tools.RegisterSDK <activation key>");
+         System.out.println("Format: tc.tools.RegisterSDK <registration key>");
       else
          try
          {
@@ -85,6 +88,8 @@ public final class RegisterSDK
    private static final int OLD = -1;
    private static final int VALID = -2;
    private static final int INVALID = -3;
+   
+   private int giexp = -1;
    
    private int checkLicense() throws Exception
    {
@@ -134,8 +139,12 @@ public final class RegisterSDK
          if (diff != 0)
             System.out.println("The license parameters have changed (#"+diff+"). A new license will be requested");
          else
-            System.out.println("Next SDK expiration date: "+showDate(iexp));
+            giexp = iexp;
          return diff != 0 ? INVALID : expired ? EXPIRED : hoursElapsed > 12 ? OLD : VALID;
+      }
+      catch (FileNotFoundException fnfe)
+      {
+         throw new RegisterSDKException("License not found! Check if this computer's internet is available.");
       }
       catch (javax.crypto.BadPaddingException bpe)
       {
@@ -157,9 +166,10 @@ public final class RegisterSDK
                case INVALID_REGISTRATION_KEY: throw new RegisterSDKException("The registration key is invalid.");
                case EXPIRED_CONTRACT        : throw new RegisterSDKException("The contract is EXPIRED.");
                case NO_MORE_DEVELOPERS      : throw new RegisterSDKException("The number of active developers has been reached.");
-               case CONTRACT_NOT_ACTIVE     : throw new RegisterSDKException("This contract is not yet active. Please send email to renato@totalcross.com with your activation key.");
+               case CONTRACT_NOT_ACTIVE     : throw new RegisterSDKException("This contract is not yet active. Please send email to renato@totalcross.com with your registration key.");
                case INVALID_COMPANY         : throw new RegisterSDKException("Invalid company");
                case CONTRACT_DEACTIVATED    : throw new RegisterSDKException("The contract is suspended due to payment reasons. Please contact renato@totalcross.com.");
+               case DEVICE_DISABLED         : throw new RegisterSDKException("This device is disabled.");
             }
          else
          {
@@ -189,6 +199,10 @@ public final class RegisterSDK
       catch (RegisterSDKException rse)
       {
          throw rse;
+      }
+      catch (UnknownHostException uhe)
+      {
+         System.out.println("INTERNET NOT AVAILABLE! TotalCross requires activation of the SDK. Once the date below is reached, the SDK will block.");
       }
       catch (Throwable e)
       {

@@ -29,7 +29,7 @@ import totalcross.ui.gfx.*;
 
 public class GpsSample extends BaseContainer
 {
-   private static final int SECONDS = 30;
+   private static int SECONDS = Settings.platform.equals(Settings.WINDOWSPHONE) ? 60 : 30;
    
    static class GpsThread implements Runnable 
    {

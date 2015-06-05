@@ -280,9 +280,20 @@ public class ComboBox extends Container
     */
    public void setSelectedItem(Object name) // guich@401_25
    {
+      setSelectedItem(name, Settings.sendPressEventOnChange);
+   }
+   
+   /**
+    * Selects an item. If the name is not found, the currently selected item is
+    * not changed.
+    *
+    * @since SuperWaba 4.01
+    */
+   public void setSelectedItem(Object name, boolean sendPress) // guich@401_25
+   {
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedItem(name);
-      if (Settings.sendPressEventOnChange && pop.lb.selectedIndex != idx)
+      if (sendPress && pop.lb.selectedIndex != idx)
          postPressedEvent();
       Window.needsPaint = true;
    }
@@ -711,5 +722,24 @@ public class ComboBox extends Container
    {
       pop = lb;
       setSelectedIndex(-1);
+   }
+   
+   public boolean equals(Object o)
+   {
+      if (o != null && o instanceof String[])
+      {
+         String[] s = (String[])o;
+         Vector v = pop.lb.items;
+         if (v.size() != s.length)
+            return false;
+         else
+         {
+            for (int i = s.length; --i >= 0;)
+               if (!s[i].equals(v.items[i]))
+                  return false;
+            return true;
+         }
+      }
+      return super.equals(o);
    }
 }

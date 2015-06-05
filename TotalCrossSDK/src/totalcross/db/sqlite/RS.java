@@ -516,7 +516,8 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
           case SQLITE_TEXT:
              try 
              {
-                return new Time(db.column_text(stmt.pointer, markCol(col)).toCharArray());
+                String ss = db.column_text(stmt.pointer, markCol(col));
+                return ss != null && !ss.isEmpty() ? new Time(ss.toCharArray()) : null;
              }
              catch (Exception e)
              {

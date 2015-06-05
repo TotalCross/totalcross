@@ -119,4 +119,9 @@ public final class Vm4D
    {
       arrayCopy(src,srcPos,dest,destPos,length);
    }
+
+   public static String getStackTrace()
+   {
+      try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}      
+   }
 }

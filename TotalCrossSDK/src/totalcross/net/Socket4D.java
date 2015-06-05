@@ -77,7 +77,6 @@ public class Socket4D extends Stream
       this.port = port;
 
       socketCreate(host, port, timeout, noLinger);
-      ConnectionManager4D.openConnections.put(this, this); //flsobral@tc123_20: register the newly created connection.
    }
 
    public void close() throws totalcross.io.IOException
@@ -85,7 +84,6 @@ public class Socket4D extends Stream
       if (socketRef == null)
          throw new totalcross.io.IOException("The socket is already closed.");
       nativeClose();
-      ConnectionManager4D.openConnections.remove(this); //flsobral@tc123_20: unregister the connection after closing it.
    }
 
    public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException

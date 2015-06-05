@@ -20,6 +20,8 @@ import android.app.*;
 import android.content.*;
 import android.content.res.*;
 import android.database.*;
+import android.graphics.*;
+import android.media.*;
 import android.net.*;
 import android.os.*;
 import android.provider.*;
@@ -44,6 +46,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int MAP_RETURN = 1234324332;
    private static final int ZXING_RETURN = 1234324333;
    private static final int EXTCAMERA_RETURN = 1234324334;
+   private static final int SELECT_PICTURE = 1234324335;
    private static final int CAMERA_PIC_REQUEST = 1337;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
@@ -78,10 +81,42 @@ public class Loader extends Activity implements BarcodeReadListener
       super.onRestart();
    }
    
+   public String getImagePath(Uri uri) 
+   {
+      try
+      {
+         String[] projection = { MediaStore.Images.Media.DATA };
+         Cursor cursor = managedQuery(uri, projection, null, null, null);
+         if (cursor == null) return null;
+         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+         cursor.moveToFirst();
+         String s=cursor.getString(column_index);
+//         cursor.close(); - cant close cursors! or the vm will stall on second try
+         return s;
+      }
+      catch (Throwable t)
+      {
+         AndroidUtils.handleException(t,false);
+         return null;
+      }
+   }
+   
    protected void onActivityResult(int requestCode, int resultCode, Intent data)
    {
       switch (requestCode)
       {
+         case SELECT_PICTURE:
+            if (resultCode == RESULT_OK)
+            {
+               Uri selectedImageUri = data.getData();
+               String selectedImagePath = getImagePath(selectedImageUri);
+               if (selectedImagePath == null)
+                  resultCode = RESULT_OK+1;
+               else
+                  AndroidUtils.copyFile(selectedImagePath,imageFN,false);
+            }
+            Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            break;
          case Level5.BT_MAKE_DISCOVERABLE:
             Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED,null);
             break;
@@ -102,22 +137,88 @@ public class Loader extends Activity implements BarcodeReadListener
             Launcher4A.callingZXing = false;
             break;
          case EXTCAMERA_RETURN:
-            String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID}; 
+            String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED}; 
             Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null); 
-            int dataIdx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            int idIdx   = cursor.getColumnIndexOrThrow(BaseColumns._ID);
-            cursor.moveToFirst(); 
-            String capturedImageFilePath = cursor.getString(dataIdx);
+            
+            cursor.moveToFirst();
+            String capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+            long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
             else
-            if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
-               try{ getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(idIdx), null);} catch (Exception e) {AndroidUtils.handleException(e,false);}
+            {
+               autoRotatePhoto(imageFN);
+               if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
+                  try
+                  { 
+                     getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)), null);
+                     try {new File(capturedImageFilePath).delete();} catch (Exception e) {} // on android 2.3 the code above does not work, so we just ensure that we delete the file
+                     removeLastImageFromGallery(date);
+                  } catch (Exception e) {AndroidUtils.handleException(e,false);}
+            }
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
       }
    }
+
+   private void removeLastImageFromGallery(long orig)
+   {
+      try
+      {
+         final String[] imageColumns = { MediaStore.Images.Media._ID, MediaStore.Images.Media.DATE_ADDED };
+         final String imageOrderBy = MediaStore.Images.Media._ID+" DESC";
+         Cursor imageCursor = managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageColumns, null, null, imageOrderBy);
+         if (imageCursor.moveToFirst())
+         {
+            long last = imageCursor.getLong(imageCursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+            int id = imageCursor.getInt(imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
+            long dif = Math.abs(orig-last);
+            if (dif < 1000) // 1 second - usually is less than 10ms
+               getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaStore.Images.Media._ID + "=?", new String[]{ Long.toString(id) } );
+         }
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e, false);
+      }
+  }
    
+   public static void autoRotatePhoto(String imagePath)
+   {
+      try
+      {
+         File f = new File(imagePath);
+         ExifInterface exif = new ExifInterface(f.getPath());
+         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+         AndroidUtils.debug(imagePath+" -> "+orientation);
+   
+         int angle = 0;
+         switch (orientation)
+         {
+            case ExifInterface.ORIENTATION_ROTATE_90: angle  = 90;  break;
+            case ExifInterface.ORIENTATION_ROTATE_180: angle = 180; break;
+            case ExifInterface.ORIENTATION_ROTATE_270: angle = 270; break;
+            default: return;
+         }
+   
+         Matrix mat = new Matrix();
+         mat.postRotate(angle);
+         BitmapFactory.Options options = new BitmapFactory.Options();
+         options.inSampleSize = 2;
+   
+         Bitmap bmp = BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+         Bitmap bitmap = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
+         FileOutputStream out = new FileOutputStream(f);
+         bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
+         out.close();
+         AndroidUtils.debug("auto-rotated "+imagePath);
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e, false);
+      }
+   }
+
    private static final int SHOW_SATELLITE_PHOTOS = 1;
    public static final int USE_WAZE = 2;
 
@@ -193,6 +294,7 @@ public class Loader extends Activity implements BarcodeReadListener
    //private static final int CAMERA_CUSTOM = 0;
    private static final int CAMERA_NATIVE = 1;
    private static final int CAMERA_NATIVE_NOCOPY = 2;
+   private static final int FROM_GALLERY = 3;
    private int cameraType;
    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType)
    {
@@ -201,10 +303,19 @@ public class Loader extends Activity implements BarcodeReadListener
          imageFN = s;
          this.cameraType = cameraType;
          String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+         if (cameraType == FROM_GALLERY)
+         {
+            Intent i = new Intent();
+            i.setType("image/*");
+            i.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(i, SELECT_PICTURE);
+         }
+         else
          if (cameraType == CAMERA_NATIVE || cameraType == CAMERA_NATIVE_NOCOPY)
          {
             ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");  
+            values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
+            values.put (MediaStore.Images.Media.IS_PRIVATE, 1);
             capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);  
             intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);  
@@ -233,6 +344,7 @@ public class Loader extends Activity implements BarcodeReadListener
       catch (Throwable e)
       {
          AndroidUtils.handleException(e,false);
+         Launcher4A.pictureTaken(1);
       }
    }
    
@@ -254,6 +366,7 @@ public class Loader extends Activity implements BarcodeReadListener
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
+   public static boolean dontSendBugreports;
    
    public boolean isSingleApk()
    {
@@ -278,6 +391,11 @@ public class Loader extends Activity implements BarcodeReadListener
             tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
             totalcrossPKG = "totalcross."+tczname;
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
+            if (tczname.endsWith("hmg4") || tczname.endsWith("detm"))
+            {
+               AndroidUtils.debug("Disabling bug reports");
+               dontSendBugreports = true;
+            }
             isSingleAPK = true;
          }
       }

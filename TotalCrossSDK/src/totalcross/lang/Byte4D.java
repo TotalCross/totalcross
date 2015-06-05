@@ -2,7 +2,7 @@ package totalcross.lang;
 
 import totalcross.sys.*;
 
-public class Byte4D
+public class Byte4D extends Number4D
 {
    public static final Class<Byte> TYPE = Byte.class;
    byte v;
@@ -41,5 +41,17 @@ public class Byte4D
       {
          throw new NumberFormatException(ine.getMessage());
       }
+   }
+   public int intValue()
+   {
+      return v;
+   }
+   public long longValue()
+   {
+      return v;
+   }
+   public double doubleValue()
+   {
+      return v;
    }
 }

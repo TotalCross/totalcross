@@ -18,17 +18,12 @@
 
 package totalcross.net;
 
-import totalcross.io.IOException;
-import totalcross.util.Hashtable;
-import totalcross.util.Vector;
+import totalcross.io.*;
 
 public class ConnectionManager4D
 {
    static Object connRef;
 
-   /** keep track of all open connections */
-   static Hashtable openConnections = new Hashtable(16);
-   
    static ConnectionManager4D CmInstance = new ConnectionManager4D();
 
    public static final int CRADLE = 1;
@@ -81,16 +76,6 @@ public class ConnectionManager4D
     */
    public static void close() throws IOException
    {
-      if (openConnections.size() > 0)
-      {
-         Vector values = openConnections.getValues();
-         for (int i = values.size() - 1; i >= 0; i--)
-         {
-            Socket connection = ((Socket) values.items[i]);
-            connection.close();
-            openConnections.remove(connection);
-         }
-      }
       nativeClose();
    }
 

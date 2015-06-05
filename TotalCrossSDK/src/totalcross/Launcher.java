@@ -600,7 +600,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       Settings.dataPath = newDataPath;
       if (activationKey == null || activationKey.length() != 24)
       {
-         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
+         if (activationKey != null)
+            System.out.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
+         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments! If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a FREE user, the key was sent to the email that you used to download the SDK.");
          System.exit(0);
          return;
       }
@@ -1969,6 +1971,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       
       private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
       {
+         if (bitmapTable == null && ubase != null) // fixes trying to print "D\u0101" (where the font does not have \u0101 available)
+            return ubase.getBaseCharImage(index);
          int offset = bitIndexTable[index];
          int width = bitIndexTable[index+1] - offset - minusW;
          totalcross.ui.image.Image img = new totalcross.ui.image.Image(width,maxHeight);

@@ -321,7 +321,7 @@ public class Radio extends Control
       if (uiAndroid)
          try 
          {
-            int hh = Math.min(width - (textW+2), height); 
+            int hh = Math.max(fmH,Math.min(width - (textW+2), height)); 
             Image ret = isEnabled() ? Resources.radioBkg.getNormalInstance(hh,hh,foreColor) : Resources.radioBkg.getDisabledInstance(hh, hh, foreColor);
             yy = (height - hh) / 2;
             g.drawImage(ret,0,yy);

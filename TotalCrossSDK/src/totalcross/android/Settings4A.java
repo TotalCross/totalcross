@@ -25,6 +25,7 @@ import android.os.*;
 import android.provider.*;
 import android.telephony.*;
 import java.lang.reflect.*;
+import java.util.*;
 
 import totalcross.*;
 
@@ -269,7 +270,9 @@ public final class Settings4A
    public static void settingsRefresh()
    {
       java.util.TimeZone tz = java.util.TimeZone.getDefault();
-      daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      Calendar cal = Calendar.getInstance();
+      int dls = cal.get(Calendar.DST_OFFSET);
+      daylightSavingsMinutes = dls / 60000;
       daylightSavings = daylightSavingsMinutes != 0;
       timeZone = tz.getRawOffset() / (60*60000);
       timeZoneMinutes = tz.getRawOffset() / 60000;

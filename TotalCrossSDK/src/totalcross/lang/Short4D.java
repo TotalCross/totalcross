@@ -2,7 +2,7 @@ package totalcross.lang;
 
 import totalcross.sys.*;
 
-public class Short4D
+public class Short4D extends Number4D
 {
    public static final Class<Short> TYPE = Short.class;
    short v;
@@ -41,5 +41,17 @@ public class Short4D
       {
          throw new NumberFormatException(ine.getMessage());
       }
+   }
+   public int intValue()
+   {
+      return v;
+   }
+   public long longValue()
+   {
+      return v;
+   }
+   public double doubleValue()
+   {
+      return v;
    }
 }

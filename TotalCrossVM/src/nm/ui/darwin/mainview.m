@@ -33,17 +33,23 @@ bool initGLES(ScreenSurface screen)
    CGRect rect = [[UIScreen mainScreen] bounds];
    window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
-   window.autoresizesSubviews = NO;
+   window.autoresizesSubviews = YES; // IOS 8 - make didLayoutSubviews be called
    [window makeKeyAndVisible];
    [DEVICE_CTX->_childview setScreenValues: screen];
    [DEVICE_CTX->_childview createGLcontext];
    return true;
 }
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (BOOL)shouldAutorotate // ios 6
 {
-   [UIView setAnimationsEnabled:NO];
+// [UIView setAnimationsEnabled:NO];
    [self destroySIP];
+   [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationNone];
    return YES;
+}
+
+- (NSUInteger)supportedInterfaceOrientations // ios 6
+{
+   return UIInterfaceOrientationMaskAll;
 }
 
 - (void) setFirstOrientation
@@ -54,11 +60,13 @@ bool initGLES(ScreenSurface screen)
 bool iosLowMemory;
 - (void)didReceiveMemoryWarning
 {
+   [super didReceiveMemoryWarning];
    iosLowMemory = true;
 }
 
 - (void)viewDidLayoutSubviews
 {
+   //NSLog(@"*** view will layout subviews");
    int orientation = [child_view getOrientation];
    if (orientation != lastOrientationSentToVM)
    {
@@ -208,7 +216,7 @@ bool iosLowMemory;
 
 static bool callingCamera;
 
--(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
+-(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t
 {
    callingCamera = true;
    imageFileName = fileName;
@@ -217,12 +225,15 @@ static bool callingCamera;
    dispatch_sync(dispatch_get_main_queue(), ^
    {
       imagePicker = [[UIImagePickerController alloc] init];
-      if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      {
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+         imagePicker.allowsEditing = NO;
+      }
       else
          [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
       [imagePicker setDelegate:self];
-      [self presentModalViewController:imagePicker animated:YES];
+      [self presentModalViewController:imagePicker animated:NO];
    });
    while (callingCamera)
       Sleep(100);
@@ -234,7 +245,7 @@ static bool callingCamera;
 
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-   [self->imagePicker dismissModalViewControllerAnimated:YES];
+   [self->imagePicker dismissModalViewControllerAnimated:NO];
    imageFileName = null;
    callingCamera = false;
 }
@@ -265,7 +276,7 @@ static bool callingCamera;
       NSData* data = UIImageJPEGRepresentation(finalImage, 0.8);
       [data writeToFile:imageFileName atomically:NO];
    }
-   [self dismissModalViewControllerAnimated:YES];
+   [self dismissModalViewControllerAnimated:NO];
    callingCamera = false;
 }
 
@@ -403,10 +414,10 @@ void iphone_dialNumber(char* number)
    [DEVICE_CTX->_mainview dialNumber:string];
 }
 
-int iphone_cameraClick(int w, int h, char* fileName)
+int iphone_cameraClick(int w, int h, int t, char* fileName)
 {
    NSString* string = [NSString stringWithFormat:@"%s", fileName];
-   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
+   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h type:t];
 }
 
 int iphone_gpsStart()

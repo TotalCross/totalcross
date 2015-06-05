@@ -221,7 +221,13 @@ static int checkActivation(Context currentContext)
 
    // if readKey is null, the application was not signed!
    if (ret == null || currentContext->thrownException)
+   {
+#ifdef DEBUG // let debug on IDEs
+      return ISACTIVATED;
+#else
       return ISFAILED;
+#endif
+   }
    retb = (uint8*)ARRAYOBJ_START(ret);
 
    // check if free sdk
@@ -260,7 +266,7 @@ TC_API int32 startProgram(Context currentContext)
    {
       case ISNOTSIGNED: return exitProgram(120);
       case ISFAILED   : return exitProgram(121);
-#if defined(WIN32) || defined(WP8) || defined(linux)
+#if defined(WINCE) || defined(WP8) || (defined(linux) && !defined(ANDROID) && !defined(darwin)) // win32 is allowed
 	  case ISFREE     : return exitProgram(122); // exit silently
 #endif
    }

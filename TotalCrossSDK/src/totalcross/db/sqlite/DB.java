@@ -129,14 +129,15 @@ abstract class DB implements Codes
         long pointer = 0;
         try {
             pointer = prepare(sql);
-            switch (step(pointer)) {
+            int ret = step(pointer);
+            switch (ret) {
             case SQLITE_DONE:
                 ensureAutoCommit();
                 return;
             case SQLITE_ROW:
                 return;
             default:
-                throwex();
+                throwex(ret);
             }
         }
         finally {
@@ -741,11 +742,12 @@ abstract class DB implements Codes
         int[] changes = new int[count];
 
         try {
+           int ret;
             for (int i = 0; i < count; i++) {
                 reset(stmt);
                 for (int j = 0; j < params; j++) {
-                    if (sqlbind(stmt, j, vals[(i * params) + j]) != SQLITE_OK) {
-                        throwex();
+                    if ((ret=sqlbind(stmt, j, vals[(i * params) + j])) != SQLITE_OK) {
+                        throwex(ret);
                     }
                 }
 
@@ -755,7 +757,7 @@ abstract class DB implements Codes
                     if (rc == SQLITE_ROW) {
                         throw new BatchUpdateException("batch entry " + i + ": query returns results", changes);
                     }
-                    throwex();
+                    throwex(rc);
                 }
 
                 changes[i] = changes();
@@ -784,9 +786,10 @@ abstract class DB implements Codes
                         + ")");
             }
 
+            int ret;
             for (int i = 0; i < params; i++) {
-                if (sqlbind(stmt.pointer, i, vals[i]) != SQLITE_OK) {
-                    throwex();
+                if ((ret=sqlbind(stmt.pointer, i, vals[i])) != SQLITE_OK) {
+                    throwex(ret);
                 }
             }
         }
@@ -948,9 +951,10 @@ abstract class DB implements Codes
              {
                 return; // assume we are in a transaction
             }
-            if (step(commit) != SQLITE_DONE) {
+            int ret;
+            if ((ret=step(commit)) != SQLITE_DONE) {
                 reset(commit);
-                throwex();
+                throwex(ret);
             }
             //throw new SQLException("unable to auto-commit");
         }

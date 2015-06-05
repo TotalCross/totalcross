@@ -9,7 +9,33 @@
  *                                                                               *
  *********************************************************************************/
 
+/*
+         String fontName = "SansSerif";
+         String tit = "__ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678890`~!@#$%^&*()_+=-{}\\][:;\"'<,>./?�������";
+         Label l;
+         ScrollContainer sc = new ScrollContainer();
+         add(sc,LEFT,TOP,FILL,FILL);
+         for (int i = 10; i < 80; i++)
+         {
+            // how only the fonts that match this name.
+            Font ff = Font.getFont(fontName, false, i);
+            if (ff.name.equals(fontName))
+            {
+               l = new Label(i+" "+tit);
+               l.setFont(ff);
+               sc.add(l,LEFT,AFTER);
+            }
+            ff = Font.getFont(fontName, true, i);
+            if (ff.name.equals(fontName))
+            {
+               l = new Label(i+" "+tit);
+               l.setFont(ff);
+               sc.add(l,LEFT,AFTER);
+            }
+         }
+         sc.resize();
 
+ */
 
 package tc.tools;
 
@@ -151,6 +177,7 @@ public class FontGenerator
       // write the file
       try {new File(outName).delete();} catch (Exception e) {} // delete if it exists
       new TCZ(v, outName, (short)0);
+      System.out.println("\nFile "+outName+".tcz created.");
    }
 
    private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
@@ -212,7 +239,7 @@ public class FontGenerator
             }
             else
             {
-               int w = r.width+1; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
+               int w = r.width+r.height/5; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
                
                // guich@tc126_44: skip chars above normal
                if (wW == 0 && ch == 'W')
@@ -487,7 +514,10 @@ public class FontGenerator
             } catch (java.io.IOException ie) {}
          }
          else
+         {
             new FontGenerator(args[0],args);
+            System.exit(0);
+         }
       }
       catch (Exception e)
       {
