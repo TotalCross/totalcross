@@ -83,6 +83,8 @@ namespace PhoneDirect3DXamlAppInterop
       public CSWrapper(Grid g)
       {
           this.root = g;
+          g.Background = new SolidColorBrush(Colors.Black); // fixes inverted background when using light theme
+
           // used to get input from keyboard
           tbox = new TextBox();
           root.Children.Add(tbox);

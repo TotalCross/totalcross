@@ -25,7 +25,7 @@ HRESULT Direct3DContentProvider::Connect(_In_ IDrawingSurfaceRuntimeHostNative* 
 
 void Direct3DContentProvider::Disconnect()
 {
-	m_host = nullptr;
+   m_host = nullptr;
    m_controller->renderer->syncTex = nullptr;
 }
 

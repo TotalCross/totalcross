@@ -1,23 +1,25 @@
-package tc.samples.like.fb;
+package tc.samples.like.fb.ui;
+
+import tc.samples.like.fb.*;
 
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-class TopMenu extends Container implements PressListener, FBConstants
+public class FBTopBar extends Container implements PressListener, FBConstants
 {
    Button[] btns = new Button[5];
-   int last;
+   public int last;
    
    private Button create(int i, Image img)
    {
-      Button b = FaceBookUI.noborder(img);
+      Button b = FBUtils.noborder(img);
       try 
       {
          b.pressedImage = img.getCopy();
          b.pressedImage.applyColor2(TOPBAR);
-      } catch (Exception e) {}
+      } catch (Throwable t) {}
       b.shiftOnPress = false;
       b.isSticky = true;
       b.addPressListener(this);
@@ -39,11 +41,21 @@ class TopMenu extends Container implements PressListener, FBConstants
 
    public void controlPressed(ControlEvent e)
    {
-      int cur = ((Button)e.target).appId;
+      setPressed(((Button)e.target).appId,true);
+   }
+
+   public void setPressed(int cur)
+   {
+      setPressed(cur, false);
+   }
+
+   private void setPressed(int cur, boolean post)
+   {
       if (cur != last)
       {
          btns[last].press(false);
          btns[last=cur].press(true);
+         postPressedEvent();
       }
    }
 }

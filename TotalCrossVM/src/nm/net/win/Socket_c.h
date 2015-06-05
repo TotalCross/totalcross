@@ -211,7 +211,7 @@ static Err socketReadWriteBytes(SOCKET socketHandle, int32 timeoutMillis, CharP 
       else
          result = send(socketHandle, buf + start + *retCount, count - *retCount, 0); //Write
       *retCount += result; // update the number of bytes write/read
-      Sleep(0); // guich@tc122_5: tell the system that we're alive
+      Sleep(1); // guich@tc122_5: tell the system that we're alive
    } while (result == SOCKET_ERROR && (err = WSAGetLastError()) == WSAEWOULDBLOCK && (getTimeStamp() - timestamp < timeoutMillis));
    
    if (result == SOCKET_ERROR && err != WSAEWOULDBLOCK)
