@@ -744,7 +744,19 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
    {
       p = verifyMemMarks(ptr, "xrealloc", &oldSize, false, file, line);
       if (p)
-         p = dlrealloc(p, size);
+      {   
+         void* pp = dlrealloc(p, size);
+         if (!pp)
+         {
+            pp = dlmalloc(size);
+            if (pp)
+            {                                              
+               xmemmove(pp, p, size);
+               xfree(ptr);
+            }
+         }
+         p = pp;
+      }
    }
    if (!p)
    {
