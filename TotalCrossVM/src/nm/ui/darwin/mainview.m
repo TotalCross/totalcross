@@ -42,7 +42,7 @@ bool initGLES(ScreenSurface screen)
 - (BOOL)shouldAutorotate // ios 6
 {
 // [UIView setAnimationsEnabled:NO];
-   [self destroySIP];
+ //  [self destroySIP]; - commented out because its the reason why the keyboard wont close on app launch
    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationNone];
    return YES;
 }
