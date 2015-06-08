@@ -115,7 +115,7 @@ extern TCObjectArray usedList; // the array with lists of used objects (allocate
 extern TCObjectArray lockList; // locked objects list
 extern uint32 markedAsUsed; // starts as 1
 extern uint32 objCreated,skippedGC,objLocked; // a few counters
-extern int32 lastGC;
+extern int32 lastGC, markedImages;
 extern Heap ommHeap;
 extern Heap chunksHeap;
 extern Stack objStack;

@@ -105,7 +105,16 @@ void mainEventLoop(Context currentContext)
       throwException(currentContext, RuntimeException, "Can't find event methods.");
    else
       while (keepRunning)
+      {
+#ifdef __gl2_h_
+         if (markedImages > 0) // if another thread asked for a gc, then trigger another one now to dispose the images
+         {
+            lastGC = markedImages = 0;
+            gc(currentContext);
+         }
+#endif         
          pumpEvent(currentContext);
+      }
 }
 
 void postEvent(Context currentContext, TotalCrossUiEvent type, int32 key, int32 x, int32 y, int32 mods)

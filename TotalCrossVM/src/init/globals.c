@@ -135,7 +135,7 @@ uint32 markedAsUsed = 1; // starts as 1
 uint32 objCreated = 0;
 uint32 skippedGC = 0;
 uint32 objLocked = 0; // a few counters
-int32 lastGC = 0;
+int32 lastGC = 0, markedImages = 0;
 Heap ommHeap = NULL;
 Heap chunksHeap = NULL;
 Stack objStack = NULL;
