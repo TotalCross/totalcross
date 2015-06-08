@@ -169,7 +169,12 @@ public class Utils
          tpath = ss[1];
       }            
       if (!new File(s).exists())
+      {
+         String s0 = s;
          s = Utils.findPath(s,true);
+         if (s == null)
+            throw new DeployerException("File not found: "+s0);
+      }
       String to = Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s)));
       try {new File(getParent(to)).createDir();} catch (Exception e) {} // try to create target dir      
       Utils.copyFile(s, to, false);
