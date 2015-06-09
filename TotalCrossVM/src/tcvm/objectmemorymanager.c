@@ -930,6 +930,27 @@ void finalizeObject(TCObject o, TCClass c)
    }
 }
 
+static void markAllImages() // visits all images
+{
+   TCObjectArray freeL;
+   TCObject o,next=null;
+   int32 i;
+   markedImages = 0;
+
+   for (i = 0, freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
+      if (*freeL)
+         for (o=OBJ_PROPERTIES(*freeL)->next; o != null;)
+         {
+            next = OBJ_PROPERTIES(o)->next; // the markObjects below may break the loop
+            if (OBJ_CLASS(o) == imageClass)
+            {
+               markedImages++;
+               markObjects(o, false);
+            }
+            o = next;
+         }
+}
+
 void visitImages(VisitElementFunc onImage, int32 param) // visits all images
 {
    TCObjectArray usedL;
@@ -1010,7 +1031,6 @@ static void dumpDif(HTKey key, int32 i32, VoidP ptr)
       debug("% 3d %30s: %d -> %d (%d)",++indp,cc->name, conta1, conta2, conta2-conta1);
 }
 
-
 void gc(Context currentContext)
 {
    int32 i;
@@ -1085,7 +1105,11 @@ heaperror:
       int lockCount=0;
       if (traceLockedObjs) htCount = htNew(511,null); else htCount.items = 0;
       // 2. go through all the reachable objects and move them back to the used list
-      // 2a. static fields of loaded classes
+      // 2a. static fields of loaded classes  
+#ifdef __gl2_h_
+      if (currentContext != mainContext) // in opengl, an image can only be freed in the main context, otherwise the texture will not be released
+         markAllImages(); // marking all images
+#endif         
       if (CANTRAVERSE)
          htTraverse(&htLoadedClasses, markClass);
       // 2b. mark the locked objects
