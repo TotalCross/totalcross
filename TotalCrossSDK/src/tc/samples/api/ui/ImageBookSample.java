@@ -89,7 +89,7 @@ public class ImageBookSample extends BaseContainer
          {
             while (lastcur == current)
                Vm.sleep(10);
-            int range = max/2;
+            int range = perpage * 2;
             lastcur = current;
             int lastMinIdx = lastcur - range; if (lastMinIdx < 0) lastMinIdx = 0; 
             int lastMaxIdx = lastcur + range; if (lastMaxIdx >= arqs.length) lastMaxIdx = arqs.length-1;
@@ -97,15 +97,16 @@ public class ImageBookSample extends BaseContainer
             {
                for (int i = lastIni; i < lastMinIdx; i++) loaded[i] = null;
                for (int i = lastMaxIdx+1; i <= lastEnd; i++) loaded[i] = null;
+               Vm.gc(); // very important: keep memory usage low
             }
             lastIni = lastMinIdx;
             lastEnd = lastMaxIdx;
             ex = null;
-            Vm.tweak(Vm.TWEAK_DISABLE_GC,true);
+            //Vm.tweak(Vm.TWEAK_DISABLE_GC,true); -- uncommenting these lines will load faster but will take much more memory
             for (int i = lastMinIdx; i <= lastMaxIdx && lastcur == current; i++)
                if (loaded[i] == null)
                   loaded[i] = loadImage(i);
-            Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
+            //Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
          }
       }
       
