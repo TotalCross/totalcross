@@ -89,7 +89,7 @@ public class RASConnectionSOAP extends RASConnection
          }
          catch (SOAPException firstException) // on wince, if the first execute fails, check for proxy configuration and try again.
          {
-            if (Settings.isWindowsDevice()) //flsobral@tc126: check for proxy availability
+            if (Settings.isWindowsCE()) //flsobral@tc126: check for proxy availability
             {
                try
                {

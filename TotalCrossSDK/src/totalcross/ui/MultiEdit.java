@@ -524,7 +524,7 @@ public class MultiEdit extends Container implements Scrollable
 
    private void focusOut()
    {
-      if (Settings.virtualKeyboard && Settings.isWindowsDevice() && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+      if (Settings.virtualKeyboard && Settings.isWindowsCE() && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
       {
          Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);
@@ -601,7 +601,7 @@ public class MultiEdit extends Container implements Scrollable
                {
                   KeyEvent ke = (KeyEvent) event;
                   if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
-                  if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
+                  if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsCE() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
                      ke.key = SpecialKeys.ENTER;
                   if ((ke.key == SpecialKeys.ACTION || ke.key == SpecialKeys.ESCAPE) && !improvedGeographicalFocus)
                   {
@@ -1140,7 +1140,7 @@ public class MultiEdit extends Container implements Scrollable
          int sbl = Settings.SIPBottomLimit;
          if (sbl == -1) sbl = Settings.screenHeight / 2;
          boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
-         if (!Window.isSipShown || Settings.isWindowsDevice())
+         if (!Window.isSipShown || Settings.isWindowsCE())
          {
             Window.isSipShown = true;
             Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
