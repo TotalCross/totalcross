@@ -340,6 +340,8 @@ static bool callingCamera;
          locationManager = [[CLLocationManager alloc] init];
          locationManager.delegate = self;
          locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+         if ([locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])
+            [locationManager requestWhenInUseAuthorization];
          [locationManager startUpdatingLocation];
          locationCount = 0;
       });
