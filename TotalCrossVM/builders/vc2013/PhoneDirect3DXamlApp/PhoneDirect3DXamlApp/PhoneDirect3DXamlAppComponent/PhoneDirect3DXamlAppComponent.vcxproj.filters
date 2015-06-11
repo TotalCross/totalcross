@@ -156,9 +156,6 @@
     <ClCompile Include="..\..\..\..\..\src\tcvm\tcvm.c">
       <Filter>TCVM\VM Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\src\tcvm\wp8\ThreadEmulation.cpp">
-      <Filter>TCVM\VM Files\wp8</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\..\src\nm\io\device_PortConnector.c">
       <Filter>TCVM\Native methods\io</Filter>
     </ClCompile>

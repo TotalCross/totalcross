@@ -201,7 +201,7 @@ public class File4D extends RandomAccessStream
 
    public static File getCardVolume() throws totalcross.io.IOException
    {
-      if (Settings.isWindowsDevice()) //flsobral@tc112_10: Fixed to also work on devices recognized as WindowsMobile.
+      if (Settings.isWindowsCE()) //flsobral@tc112_10: Fixed to also work on devices recognized as WindowsMobile.
       {
          String cardName = null;
          try

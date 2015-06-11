@@ -163,7 +163,7 @@ public class FileChooserBox extends Window
       this.ff = ff;
       this.buttonCaptions = buttonCaptions;
       tmodel = new TreeModel();
-      if (Settings.isWindowsDevice() || isAndroid || Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
+      if (Settings.isWindowsCE() || isAndroid || Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
          cbRoot = new ComboBox(listRoots());
    }
 	

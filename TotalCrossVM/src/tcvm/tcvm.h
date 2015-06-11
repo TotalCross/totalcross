@@ -80,7 +80,7 @@
 #if defined WP8
 
 #include "cppwrapper.h"
-#include "ThreadEmulation.h"
+//#include "ThreadEmulation.h"
 #include <winsock2.h>
 
 #define GetSystemInfo(a) GetNativeSystemInfo(a)

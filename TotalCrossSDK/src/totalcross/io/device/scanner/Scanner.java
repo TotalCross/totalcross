@@ -77,7 +77,7 @@ public class Scanner
 
    static
    {
-      if (Settings.isWindowsDevice())
+      if (Settings.isWindowsCE())
       {
          driverLoaded = Vm.attachNativeLibrary("Motorola") || 
                         Vm.attachNativeLibrary("Dolphin") || 

@@ -32,6 +32,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    /** The width in pixels instead of percentage of screen's width. */
    public int widthInPixels;
    
+   /** Insets used to place the ScrollContainer. */
+   public Insets scInsets = new Insets(2,1,2,1);
+   
    public static class Item extends Container
    {
       Control tit;
@@ -134,7 +137,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height-4) : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
-      add(sc = new ScrollContainer(false,true),LEFT+1,TOP+2,FILL-1,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-2);
+      add(sc = new ScrollContainer(false,true),LEFT+scInsets.left,TOP+scInsets.top,FILL-scInsets.right,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-scInsets.bottom);
       sc.setBackColor(backColor);
       for (int i = 0;; i++)
       {

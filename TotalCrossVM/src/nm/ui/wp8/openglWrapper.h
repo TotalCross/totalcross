@@ -9,7 +9,7 @@
 #ifdef __cplusplus
 
 #if (_MSC_VER >= 1800)
-#include <d3d11_2.h>
+#include "C:\Program Files (x86)\Windows Phone Kits\8.1\Include\D3D11_2.h" //<d3d11_2.h>
 #else
 #include <d3d11_1.h>
 #endif

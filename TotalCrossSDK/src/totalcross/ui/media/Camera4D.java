@@ -66,7 +66,7 @@ public class Camera4D
 
    public String click() throws IOException
    {
-      if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
+      if (Settings.isWindowsCE() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
       {
          if (initialDir != null) try {new File(initialDir).createDir();} catch (Exception e) {}
          return this.nativeClick();
@@ -98,7 +98,7 @@ public class Camera4D
             ret = sortResolutions(Convert.tokenizeString(s,','));
       }
       else
-      if (Settings.isWindowsDevice())
+      if (Settings.isWindowsCE())
       {
          Vector v = new Vector(10);
          String dir = "Software\\Microsoft\\Pictures\\Camera\\OEM\\PictureResolution";
