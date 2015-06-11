@@ -1,4 +1,17 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2664</h1>
+. fixed black screen on wp 8.1<br>
+. shows SDK's expiration date message only once<br>
+. fixed ImageLoader (from ImageBook) to release memory since some messages are being held in memory<br>
+. fixed memory leak when you try to free the image when not in the main thread.<br>
+. fixed keyboard not closing on first click on iOS<br>
+. added Settings.isWindowsCE, which excludes WINDOWS_PHONE. Changed all api to use isWindowsCE. This fixes the font of WP which was being set incorrectly<br>
+. added TopMenu.scInsets<br>
+. fixed font sizes on wp 8.1<br>
+. migrated to wp 8.1<br>
+. added totalcross.ui.chart.Velocimeter gauge (sample at TotalCrossAPI)<br>
+. fixed GPS and Camera no longer working on iOS 8<br>
+. You must install GoogleMaps on iOS 8 to let TotalCross' map work.<br>
 <h1>build 2647</h1>
 . fixed bug in Android that was returning an invalid value on Settings.daylightSavingsMinutes.<br>
 . fixed some problems when resuming a Windows Phone application<br>
