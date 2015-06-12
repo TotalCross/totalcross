@@ -215,7 +215,7 @@ public class Bar extends Container
                   if (repeatTimer != null)
                      removeTimer(repeatTimer);
                   if (!fired)
-                     parent.postPressedEvent();
+                     postPressedEvent();
                }
                else 
                {
@@ -239,7 +239,7 @@ public class Bar extends Container
             case KeyEvent.ACTION_KEY_PRESS:
                selected = appId;
                if (selected > 1000) selected -= 1000;
-               parent.postPressedEvent();
+               postPressedEvent();
                break;
          }
       }
