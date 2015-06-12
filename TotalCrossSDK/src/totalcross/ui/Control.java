@@ -262,7 +262,7 @@ public class Control extends GfxSurface
    /** To be used in the setTextShadowColor method. */
    public static final int DARKER_BACKGROUND = -3;
 
-   private Vector listeners;
+   Vector listeners;
    private static boolean callingUpdScr,callingRepNow;
 
    /** Set the background to be transparent, by not filling the control's area with the background color.
