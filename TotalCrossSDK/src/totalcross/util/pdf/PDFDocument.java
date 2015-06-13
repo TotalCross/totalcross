@@ -9,6 +9,7 @@ package totalcross.util.pdf;
 
 public class PDFDocument extends Base
 {
+   public static boolean ignoreXRef = true;
    private Header mHeader;
    private Body mBody;
    private CrossReferenceTable mCRT;
@@ -74,7 +75,10 @@ public class PDFDocument extends Base
       mTrailer.setObjectsCount(mBody.getObjectsCount());
       mTrailer.setCrossReferenceTableByteOffset(sb.length());
       mTrailer.setId(Indentifiers.generateId());
-      return sb.toString() + mCRT.toPDFString() + mTrailer.toPDFString();
+      if (ignoreXRef)
+         return sb.toString() + mTrailer.toPDFString();
+      else
+         return sb.toString() + mCRT.toPDFString() + mTrailer.toPDFString();
    }
 
    public void clear()

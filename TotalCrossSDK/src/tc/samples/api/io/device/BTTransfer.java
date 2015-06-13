@@ -173,7 +173,7 @@ public class BTTransfer extends BaseContainer
          else
          {
             Button.commonGap = fmH/4;
-            add(btHost = new Button("host"),RIGHT,TOP+fmH/4);
+            add(btHost = new Button("host"),RIGHT,TOP+5);
             add(btClient = new Button("client"),BEFORE-5,SAME);
             add(btListP = new Button("paired"),LEFT,SAME);
             add(btListNP = new Button("!paired"),AFTER+5,SAME);
@@ -181,8 +181,9 @@ public class BTTransfer extends BaseContainer
             add(edClient = new Edit(),LEFT,AFTER+5);
             Button.commonGap = 0;
             addLog(LEFT,AFTER+5,FILL,FILL,null);
+            Button.commonGap = 0;
             btSend.setEnabled(false);
-            log("Instructions: You must have two devices, one HOST and one CLIENT. In the HOST device, press HOST button and wait. In the CLIENT device, press the paired and not paired buttons, then select the bluetooth device you want to connect to, and press CLIENT. Then type something and press SEND.");
+            log("Instructions: You must have two devices, one HOST and one CLIENT. In the HOST device, press HOST button and wait. In the CLIENT device, press the paired and not paired buttons, then select the bluetooth device you want to connect to, and press CLIENT. Then type something and press SEND. To close the connection, go back to the Menu.");
          }
       }
       catch (Exception ee)

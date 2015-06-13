@@ -46,21 +46,28 @@ static Err btsppClientReadWrite(bool isRead, NATIVE_HANDLE* nativeHandle, uint8*
    jstring jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
    //int i1 = debug("r/w: %d, %s",isRead,nativeHandle);
    jbyteArray jbytesP = (*env)->NewByteArray(env, count-offset); // !!! temporary byte array has length: count-offset
-   jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
+   jbyte* jbytes;
    int32 ret;
 
    if (jconnectTo == 0) loadFunctions(); // create may not be called if this is a bt server socket!
                                                                  
    if (!isRead)
-      xmemmove(jbytes, byteArrayP+offset, count);
+   {
+      jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
+      xmemmove(jbytes, byteArrayP+offset, count);            
+      (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
+   }
    
    ret = (*env)->CallStaticIntMethod(env, jBluetooth4A, isRead ? jread : jwrite, jaddress, jbytesP, 0, (jint)count);
    
    if (isRead && ret > 0)
+   {
+      jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
       xmemmove(byteArrayP+offset, jbytes, ret);
+      (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
+   }
    
    (*env)->DeleteLocalRef(env, jaddress);
-   (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
    (*env)->DeleteLocalRef(env, jbytesP);
    if (ret >= -1)
    {
