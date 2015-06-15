@@ -203,7 +203,7 @@ public class NinePatch
       if (color != -1)
       {
          if (Settings.uiStyle == Settings.Holo)
-            ret.applyColor2(color);
+            ret.applyColor(color);
          else
             ret.applyColor2(color);
       }
