@@ -61,6 +61,10 @@ public class NinePatch
    
    private NinePatch()
    {
+      if (Settings.uiStyle == Settings.Holo)
+         parts = partsHolo;
+      else
+         parts = partsAndroid;
    }
    
    public class Parts
@@ -71,10 +75,26 @@ public class NinePatch
    
    private Lock imageLock = new Lock();
    
-   private Parts []parts = 
+   private Parts [] parts;
+   
+   private Parts [] partsAndroid = 
    {
       load(Resources.button,7,1), 
       load(Resources.edit,5,3), 
+      load(Resources.combobox,5,2),
+      load(Resources.listbox,5,3),
+      load(Resources.multiedit,9,4), 
+      load(Resources.progressbarv,9,4),
+      load(Resources.scrollposh,3,2),
+      load(Resources.scrollposv,3,2),
+      load(Resources.tab,10,4),
+      load(Resources.grid,5,3),
+   };
+   
+   private Parts [] partsHolo = 
+   {
+      load(Resources.button,7,4), 
+      load(Resources.edit,16,2), 
       load(Resources.combobox,5,2),
       load(Resources.listbox,5,3),
       load(Resources.multiedit,9,4), 
@@ -181,7 +201,12 @@ public class NinePatch
       if (Settings.screenBPP == 16)
          ret.getGraphics().dither(0,0,ret.getWidth(),ret.getHeight());
       if (color != -1)
-         ret.applyColor2(color);
+      {
+         if (Settings.uiStyle == Settings.Holo)
+            ret.applyColor2(color);
+         else
+            ret.applyColor2(color);
+      }
       if (rotate)
          ret = ret.getRotatedScaledInstance(100,180,-1);
       return ret;

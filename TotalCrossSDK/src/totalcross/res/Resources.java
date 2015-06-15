@@ -60,28 +60,27 @@ public class Resources
    
    private static void loadImages(String folder) throws ImageException, IOException
    {
-      progressHandle = new Image(folder+"progressHandle.png");
-      warning  = new Image(folder+"warning.png");
-      button   = new Image(folder+"button.png");
-      edit     = new Image(folder+"edit.png");
-      combobox = new Image(folder+"combobox.png");
-      listbox  = new Image(folder+"listbox.png");
-      multiedit= new Image(folder+"multiedit.png");
-      progressbarv= new Image(folder+"progressbarV.png");
-      scrollposh = new Image(folder+"scrollposH.png");
-      scrollposv = new Image(folder+"scrollposV.png");
-      tab      = new Image(folder+"tab.png");
-      grid     = new Image(folder+"grid.png");
-      exit     = new Image(folder+"exit.png");
-      back     = new Image(folder+"back.png");
-      menu     = new Image(folder+"menu.png");
-      comboArrow  = new Image(folder+"comboArrow.png");
-      comboArrow2 = new Image(folder+"comboArrow2.png");
-      
-      checkBkg = new TristateImage(folder+"checkBkg.png");
-      checkSel = new TristateImage(folder+"checkSel.png");
-      radioBkg = new TristateImage(folder+"radioBkg.png");
-      radioSel = new TristateImage(folder+"radioSel.png");
+      if (progressHandle == null) try {progressHandle = new Image(folder+"progressHandle.png");  } catch (ImageException e) {}
+      if (warning        == null) try {warning        = new Image(folder+"warning.png");         } catch (ImageException e) {}
+      if (button         == null) try {button         = new Image(folder+"button.png");          } catch (ImageException e) {}
+      if (edit           == null) try {edit           = new Image(folder+"edit.png");            } catch (ImageException e) {}
+      if (combobox       == null) try {combobox       = new Image(folder+"combobox.png");        } catch (ImageException e) {}
+      if (listbox        == null) try {listbox        = new Image(folder+"listbox.png");         } catch (ImageException e) {}
+      if (multiedit      == null) try {multiedit      = new Image(folder+"multiedit.png");       } catch (ImageException e) {}
+      if (progressbarv   == null) try {progressbarv   = new Image(folder+"progressbarV.png");    } catch (ImageException e) {}
+      if (scrollposh     == null) try {scrollposh     = new Image(folder+"scrollposH.png");      } catch (ImageException e) {}
+      if (scrollposv     == null) try {scrollposv     = new Image(folder+"scrollposV.png");      } catch (ImageException e) {}
+      if (tab            == null) try {tab            = new Image(folder+"tab.png");             } catch (ImageException e) {}
+      if (grid           == null) try {grid           = new Image(folder+"grid.png");            } catch (ImageException e) {}
+      if (exit           == null) try {exit           = new Image(folder+"exit.png");            } catch (ImageException e) {}
+      if (back           == null) try {back           = new Image(folder+"back.png");            } catch (ImageException e) {}
+      if (menu           == null) try {menu           = new Image(folder+"menu.png");            } catch (ImageException e) {}
+      if (comboArrow     == null) try {comboArrow     = new Image(folder+"comboArrow.png");      } catch (ImageException e) {}
+      if (comboArrow2    == null) try {comboArrow2    = new Image(folder+"comboArrow2.png");     } catch (ImageException e) {}
+      if (checkBkg       == null) try {checkBkg       = new TristateImage(folder+"checkBkg.png");} catch (ImageException e) {}
+      if (checkSel       == null) try {checkSel       = new TristateImage(folder+"checkSel.png");} catch (ImageException e) {}
+      if (radioBkg       == null) try {radioBkg       = new TristateImage(folder+"radioBkg.png");} catch (ImageException e) {}
+      if (radioSel       == null) try {radioSel       = new TristateImage(folder+"radioSel.png");} catch (ImageException e) {}
    }
    
    public static void uiStyleChanged()
@@ -90,6 +89,10 @@ public class Resources
       {
          switch (Settings.uiStyle)
          {
+            case Settings.Holo:
+               loadImages("totalcross/res/holo/");
+               loadImages("totalcross/res/android/");
+               break;
             case Settings.Android:
                loadImages("totalcross/res/android/");
                break;
