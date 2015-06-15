@@ -256,7 +256,11 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Android = 4; // guich@tc130
-
+   /** Defines an Holo user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Holo = 5; // guich@tc130
+   
    /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
     * @see #Flat
