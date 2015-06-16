@@ -102,8 +102,13 @@ public class Edit extends Control
     */
    public int alignment=LEFT;
 
-   /** The caption to draw when this Edit is empty. */
+   /** The caption to draw when this Edit is empty.
+    * @see #captionColor 
+    */
    public String caption;
+   
+   /** The caption's color. */
+   public int captionColor = -1;
    
    /** @see CalculatorBox#rangeCheck */
    public CalculatorBox.RangeCheck rangeCheck;
@@ -844,7 +849,7 @@ public class Edit extends Control
             default:
                if (drawCaption)
                {
-                  g.foreColor = this.foreColor;
+                  g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
                   g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
                }
                else
