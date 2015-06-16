@@ -110,6 +110,9 @@ public class Edit extends Control
    /** The caption's color. */
    public int captionColor = -1;
    
+   /** An optional caption's icon */
+   public Image captionIcon;
+   
    /** @see CalculatorBox#rangeCheck */
    public CalculatorBox.RangeCheck rangeCheck;
 
@@ -525,21 +528,22 @@ public class Edit extends Control
 
    protected int charPos2x(int n)
    {
+      int extra = captionIcon == null ? 0 : captionIcon.getWidth() + fmH;
       if (!isMaskedEdit)
       {
          if (n == 0) // start of string?
-            return xOffset;
+            return extra + xOffset;
          if (n >= chars.length()) // end or beyond end of string?
-            return xOffset + getTotalCharWidth();
+            return extra + xOffset + getTotalCharWidth();
       }
       else
       if (n > chars.length()) n = chars.length();
       switch (mode)
       {
          case PASSWORD_ALL:
-            return xOffset + wildW * n;
+            return extra + xOffset + wildW * n;
          case PASSWORD:
-            return xOffset + wildW * (n-1) + fm.charWidth(chars, chars.length()-1);
+            return extra + xOffset + wildW * (n-1) + fm.charWidth(chars, chars.length()-1);
          case CURRENCY:
             if (isMaskedEdit) // in currency, we go from right to left
             {
@@ -552,7 +556,7 @@ public class Edit extends Control
                   if ('0' <= c && c <= '9') // update the position at the main string only when a numeric value is represented
                      i--;
                }
-               return xx;
+               return extra + xx;
             }
             else break;
          default://case DATE:
@@ -566,10 +570,10 @@ public class Edit extends Control
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
-               return xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
+               return extra + xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
             }
       }
-      return xOffset + fm.sbWidth(chars, 0, n);
+      return extra + xOffset + fm.sbWidth(chars, 0, n);
    }
 
    /** Returns the text displayed in the edit control. If masking is enabled, the text with the mask is returned;
@@ -775,11 +779,6 @@ public class Edit extends Control
       }
    }
 
-/*   protected void draw(Graphics g, boolean cursorOnly)
-   {
-      draw(g);
-   }
-*/   
    protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
@@ -809,7 +808,7 @@ public class Edit extends Control
       // draw the text and/or the selection
       int len = chars.length();
       boolean drawCaption = caption != null && !hasFocus && len == 0;
-      if (len > 0 || drawCaption)
+      if (len > 0 || drawCaption || captionIcon != null)
       {
          if (startSelectPos != -1 && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
          {
@@ -828,6 +827,12 @@ public class Edit extends Control
 
          g.foreColor = fColor;
          int xx = xOffset;
+         if (captionIcon != null)
+         {
+            xx += captionIcon.getWidth() + fmH;
+            g.drawImage(captionIcon, fmH, y);
+         }
+            
          if (!hasFocus) // guich@503_2: align the edit after it looses focus
             switch (alignment)
             {
