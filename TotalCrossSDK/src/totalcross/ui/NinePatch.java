@@ -197,12 +197,7 @@ public class NinePatch
       if (Settings.screenBPP == 16)
          ret.getGraphics().dither(0,0,ret.getWidth(),ret.getHeight());
       if (color != -1)
-      {
-         if (Settings.uiStyle == Settings.Holo)
-            ret.applyColor(color);
-         else
-            ret.applyColor2(color);
-      }
+         ret.applyColor2(color);
       if (rotate)
          ret = ret.getRotatedScaledInstance(100,180,-1);
       return ret;
