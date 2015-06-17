@@ -830,7 +830,7 @@ public class Edit extends Control
          if (captionIcon != null)
          {
             xx += captionIcon.getWidth() + fmH;
-            g.drawImage(captionIcon, fmH, y);
+            g.drawImage(captionIcon, fmH, (height-captionIcon.getHeight())/2);
          }
             
          if (!hasFocus) // guich@503_2: align the edit after it looses focus
