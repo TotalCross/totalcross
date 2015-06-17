@@ -21,7 +21,7 @@
     </SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
-    <XapFilename>PhoneDirect3DXamlApp_$(Configuration)_$(Platform).xap</XapFilename>
+    <XapFilename>TotalCross.xap</XapFilename>
     <SilverlightManifestTemplate>Properties\AppManifest.xml</SilverlightManifestTemplate>
     <SilverlightAppEntry>PhoneDirect3DXamlAppInterop.App</SilverlightAppEntry>
     <ValidateXaml>true</ValidateXaml>
