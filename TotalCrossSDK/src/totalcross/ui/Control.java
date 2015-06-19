@@ -114,7 +114,8 @@ public class Control extends GfxSurface
     * @since TotalCross 1.14
     */
    public static final int KEEP       = 16*UICONST; // guich@tc114_68
-   /** Constant used in param width (will use parent's width) and height (will use parent's height) in setRect. 
+   /** Constant used in param width (will use parent's width) and height (will use parent's height) in setRect.
+    * It can also be used in X or Y, representing the position where to draw it. 
     * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
     * There are two ways to use it:<br>
     * 1. PARENTSIZE + constant: it will use as a PERCENTAGE of the parent's size. For example, PARENTSIZE+20 in width will result in 20% of parent's size.<br>
@@ -691,6 +692,7 @@ public class Control extends GfxSurface
             if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x = parent.lastX +(x-SAME)*fmH/100; else
             if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x = cli.x +(x-LEFT)*fmH/100; else
             if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x = cli.x + cli.width-width +(x-RIGHT)*fmH/100; else
+            if ((PARENTSIZE-RANGE) <= x && x  <= (PARENTSIZE+RANGE)) {x -= PARENTSIZE; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100;} else
             if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x = cli.x + ((cli.width-width) >> 1) +(x-CENTER)*fmH/100; else
             if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x = parent.lastX + (parent.lastW - width)/2 +(x-CENTER_OF)*fmH/100; else // guich@tc110_88
             if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x = parent.lastX + (parent.lastW - width) +(x-RIGHT_OF)*fmH/100; // guich@tc110_97
@@ -701,6 +703,7 @@ public class Control extends GfxSurface
             if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y = parent.lastY +(y-SAME)*fmH/100; else
             if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y = cli.y +(y-TOP)*fmH/100; else
             if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y = cli.y + cli.height-height +(y-BOTTOM)*fmH/100; else
+            if ((PARENTSIZE-RANGE) <= y && y  <= (PARENTSIZE+RANGE)) {y -= PARENTSIZE; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100;} else
             if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y = cli.y + ((cli.height-height) >> 1) +(y-CENTER)*fmH/100; else
             if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y = parent.lastY + (parent.lastH - height)/2 +(y-CENTER_OF)*fmH/100; else // guich@tc110_88
             if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y = parent.lastY + (parent.lastH - height) +(y-BOTTOM_OF)*fmH/100; // guich@tc110_97
@@ -748,6 +751,7 @@ public class Control extends GfxSurface
             if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
             if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
             if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
+            if ((PARENTSIZE-RANGE) <= x && x  <= (PARENTSIZE+RANGE)) {x -= PARENTSIZE; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100;} else
             if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
             if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
             if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
@@ -758,6 +762,7 @@ public class Control extends GfxSurface
             if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
             if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
             if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
+            if ((PARENTSIZE-RANGE) <= y && y  <= (PARENTSIZE+RANGE)) {y -= PARENTSIZE; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100;} else
             if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
             if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
             if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
