@@ -69,7 +69,7 @@ public class Control extends GfxSurface
    /** Default value when calling clear. When the control will use a numeric value or a String, depends on the type of control. Defaults to zero. */
    public int clearValueInt; // guich@572_19
    public static final int RANGE = 10000000;
-   private static final int UICONST = RANGE*2+1000000;
+   public static final int UICONST = RANGE*2+1000000;
    /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
    public static final int PREFERRED = 1*UICONST;
    /** Constant used in param x in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: LEFT+2 or LEFT-1. */
@@ -789,9 +789,23 @@ public class Control extends GfxSurface
             else
 	         if (x+y+width+height > RANGE)
 	         {
-	            x=y=0;
-	            width=height=10;
-               throw new RuntimeException("To use AFTER/BEFORE/SAME you must add first the control "+toString()+" to the parent container.");
+	            String error = "";
+	            if (isOnlyForSize(x) || isOnlyForY(x))
+	               error += "x,";
+	            if (isOnlyForSize(y) || isOnlyForX(y))
+	               error += "y,";
+	            if (isOnlyForPos(width))
+	               error += "width,";
+	            if (isOnlyForPos(height))
+	               error += "height,";
+	            
+               x=y=0;
+               width=height=10;
+               
+	            if (!error.isEmpty())
+	               throw new RuntimeException("You are using constant positions "+error.substring(0,error.length()-1)+" in a wrong place for control "+toString()); 
+	            else   
+                  throw new RuntimeException("To use AFTER/BEFORE/SAME you must add first the control "+toString()+" to the parent container.");
 	         } else
 	         if (x+y < -RANGE) // guich@300_27
 	         {
@@ -825,6 +839,48 @@ public class Control extends GfxSurface
       }
    }
    
+   private boolean isOnlyForSize(int k)
+   {
+      return 
+         ((SCREENSIZEMIN-RANGE) <= k && k <= (SCREENSIZEMIN+RANGE)) ||
+         ((SCREENSIZEMAX-RANGE) <= k && k <= (SCREENSIZEMAX+RANGE)) |
+         ((PARENTSIZEMIN-RANGE) <= k && k <= (PARENTSIZEMIN+RANGE)) ||
+         ((PARENTSIZEMAX-RANGE) <= k && k <= (PARENTSIZEMAX+RANGE)) || 
+         ((FILL-RANGE)          <= k && k <= (FILL+RANGE)) ||
+         ((FIT -RANGE)          <= k && k <= (FIT +RANGE));
+   }
+   
+   private boolean isOnlyForPos(int k)
+   {
+      return 
+         ((AFTER  -RANGE) <= k && k <= (AFTER  +RANGE)) ||
+         ((BEFORE -RANGE) <= k && k <= (BEFORE +RANGE)) ||
+         ((TOP    -RANGE) <= k && k <= (TOP   +RANGE)) ||
+         ((BOTTOM -RANGE) <= k && k <= (BOTTOM  +RANGE)) ||
+         ((LEFT   -RANGE) <= k && k <= (LEFT   +RANGE)) ||
+         ((RIGHT  -RANGE) <= k && k <= (RIGHT  +RANGE)) ||
+         ((CENTER -RANGE) <= k && k <= (CENTER +RANGE)) ||
+         ((CENTER_OF-RANGE) <= k && k <= (CENTER_OF+RANGE)) ||
+         ((BOTTOM_OF-RANGE) <= k && k <= (BOTTOM_OF+RANGE)) ||
+         ((RIGHT_OF-RANGE)  <= k && k <= (RIGHT_OF+RANGE));
+   }
+
+   private boolean isOnlyForX(int k)
+   {
+      return 
+         ((LEFT   -RANGE) <= k && k <= (LEFT   +RANGE)) ||
+         ((RIGHT  -RANGE) <= k && k <= (RIGHT  +RANGE)) ||
+         ((RIGHT_OF-RANGE)  <= k && k <= (RIGHT_OF+RANGE));
+   }
+
+   private boolean isOnlyForY(int k)
+   {
+      return 
+         ((TOP   -RANGE) <= k && k <= (TOP   +RANGE)) ||
+         ((BOTTOM  -RANGE) <= k && k <= (BOTTOM  +RANGE)) ||
+         ((BOTTOM_OF-RANGE)  <= k && k <= (BOTTOM_OF+RANGE));
+   }
+
    /** Resets the original points that are set by the first setRect, so if you call setRect again, the 
     * old positions are replaced by the new ones. The set positions are used when a rotation occurs.
     * @since TotalCross 1.25
