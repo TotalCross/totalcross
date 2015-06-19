@@ -56,6 +56,8 @@ public final class Time
 
    /** Milliseconds in the range of 0 to 999. */
    public int millis;
+   
+   private Date date;
 
    public static final int SECONDS_PER_DAY = 24 * 3600;
    
@@ -437,8 +439,9 @@ public final class Time
       return 0 <= hour && hour <= 23 && 0 <= minute && minute <= 59 && 0 <= second && second <= 59 && 0 <= millis && millis <= 999;
    }
    
-   /** Increments or decrements the fields below. Note that this method does NOT update the 
-    * day/month/year fields. 
+   /** Increments or decrements the fields below. Note that this method DOES update the 
+    * day/month/year fields, constructing a Date object and manipulating it; consider reusing a Time object
+    * if you use this method.
     * <br><br>Parameters can be positive (to increment), zero (to keep it), or negative (to decrement).
     * @since TotalCross 1.24
     */
@@ -448,6 +451,7 @@ public final class Time
       int is = seconds + minutes * 60 + hours * 3600;
       int ts = this.second + this.minute * 60 + this.hour * 3600;
       int s = ts + is;
+      int days = is / SECONDS_PER_DAY; // dont use s!
       if (s > SECONDS_PER_DAY) // above a single day?
          s %= SECONDS_PER_DAY;
       else
@@ -456,6 +460,22 @@ public final class Time
       this.second = s % 60; s = s / 60;
       this.minute = s % 60; s = s / 60;
       this.hour   = s;
+      if (days != 0)
+      {
+         if (date == null) date = new Date();
+         try
+         {
+            date.set(this.day, this.month, this.year);
+            date.advance(days);
+            this.day = date.getDay();
+            this.month = date.getMonth();
+            this.year = date.getYear();
+         }
+         catch (InvalidDateException e)
+         {
+            e.printStackTrace();
+         }
+      }
    }
    
 }
