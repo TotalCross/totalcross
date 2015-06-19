@@ -143,7 +143,7 @@ public class Bar extends Container
             g.fillShadedRect(0,0,w,h,true,false,fc,pcolor,30);
          
          // draw borders
-         if (!uiHolo)
+         if (uiAndroid || uiVista || uiFlat)
          {
             g.foreColor = c1; g.drawLine(0,0,w,0);
             g.foreColor = c3; g.drawLine(w-1,0,w-1,h);
