@@ -1955,6 +1955,8 @@ public class Grid extends Container implements Scrollable
                Event.clearQueue(PenEvent.PEN_DRAG);
                int px = ((PenEvent) e).x;
                int dx = px - resizingDx - resizingRealX - xOffset;
+               if (dx > width/2)
+                  dx = width/2;
                widths[rl] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
                setWidths(widths);
                Window.needsPaint = true;

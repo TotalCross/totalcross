@@ -84,7 +84,7 @@ import totalcross.util.*;
 public class Edit extends Control
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
-   private static int xMins[] = {4,1,3,3,4};
+   private static int xMins[] = {4,1,3,3,4,4};
    public static final int prefH = uiAndroid ? 4 : 2;
 
    protected boolean hasFocus;
@@ -101,6 +101,17 @@ public class Edit extends Control
     *  @since SuperWaba 5.03
     */
    public int alignment=LEFT;
+
+   /** The caption to draw when this Edit is empty.
+    * @see #captionColor 
+    */
+   public String caption;
+   
+   /** The caption's color. */
+   public int captionColor = -1;
+   
+   /** An optional caption's icon */
+   public Image captionIcon;
    
    /** @see CalculatorBox#rangeCheck */
    public CalculatorBox.RangeCheck rangeCheck;
@@ -517,21 +528,22 @@ public class Edit extends Control
 
    protected int charPos2x(int n)
    {
+      int extra = captionIcon == null ? 0 : captionIcon.getWidth() + fmH;
       if (!isMaskedEdit)
       {
          if (n == 0) // start of string?
-            return xOffset;
+            return extra + xOffset;
          if (n >= chars.length()) // end or beyond end of string?
-            return xOffset + getTotalCharWidth();
+            return extra + xOffset + getTotalCharWidth();
       }
       else
       if (n > chars.length()) n = chars.length();
       switch (mode)
       {
          case PASSWORD_ALL:
-            return xOffset + wildW * n;
+            return extra + xOffset + wildW * n;
          case PASSWORD:
-            return xOffset + wildW * (n-1) + fm.charWidth(chars, chars.length()-1);
+            return extra + xOffset + wildW * (n-1) + fm.charWidth(chars, chars.length()-1);
          case CURRENCY:
             if (isMaskedEdit) // in currency, we go from right to left
             {
@@ -544,7 +556,7 @@ public class Edit extends Control
                   if ('0' <= c && c <= '9') // update the position at the main string only when a numeric value is represented
                      i--;
                }
-               return xx;
+               return extra + xx;
             }
             else break;
          default://case DATE:
@@ -558,10 +570,10 @@ public class Edit extends Control
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
-               return xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
+               return extra + xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
             }
       }
-      return xOffset + fm.sbWidth(chars, 0, n);
+      return extra + xOffset + fm.sbWidth(chars, 0, n);
    }
 
    /** Returns the text displayed in the edit control. If masking is enabled, the text with the mask is returned;
@@ -767,88 +779,95 @@ public class Edit extends Control
       }
    }
 
-/*   protected void draw(Graphics g, boolean cursorOnly)
-   {
-      draw(g);
-   }
-*/   
    protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
       int y = this.height - fmH - gap;
       if (uiAndroid) y -= 1;
+      if (uiHolo) // no else here!
+         y = (height-fmH - gap) / 2;
 
-      //if (!cursorOnly) // guich@200b4_23: optimized when cursorOnly
+      g.backColor = back0;
+      if (!transparentBackground)
       {
-         g.backColor = back0;
-         if (!transparentBackground)
+         int gg = gap;
+         if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
+         if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+         if (hasBorder && uiAndroid)
          {
-            int gg = gap;
-            if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
-            if (hasBorder && uiAndroid)
+            try
             {
-               try
-               {
-                  if (npback == null || focusColor != -1)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
-               }
-               catch (ImageException e) {e.printStackTrace();}
-               NinePatch.tryDrawImage(g,npback,0,0);
+               if (npback == null || focusColor != -1)
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
             }
+            catch (ImageException e) {e.printStackTrace();}
+            NinePatch.tryDrawImage(g,npback,0,0);
          }
-         // draw the text and/or the selection
-         int len = chars.length();
-         if (len > 0)
-         {
-            if (startSelectPos != -1 && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
-            {
-               // character regions are:
-               // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char
-               int sel1 = Math.min(startSelectPos,insertPos);
-               int sel2 = Math.max(startSelectPos,insertPos);
-               int sel1X = charPos2x(sel1);
-               int sel2X = charPos2x(sel2);
-
-               int old = g.backColor;
-               g.backColor = back1;
-               g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
-               g.backColor = old;
-            }
-
-            g.foreColor = fColor;
-            int xx = xOffset;
-            if (!hasFocus) // guich@503_2: align the edit after it looses focus
-               switch (alignment)
-               {
-                  case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
-                  case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
-               }
-            if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
-            switch (mode)
-            {
-               case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
-                  g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
-                  break;
-               case PASSWORD_ALL:
-                  g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
-                  break;
-               case CURRENCY:
-                  if (isMaskedEdit)
-                     xx = this.width-getTotalCharWidth()-xOffset-1;
-               default:
-                  if (masked.length() > 0)
-                     g.drawText(masked, 0, masked.length(), xx, y, textShadowColor != -1, textShadowColor);
-                  else
-                     g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
-            }
-            if (hasBorder) g.clearClip();
-         }
-         if (hasBorder && !uiAndroid)
-            g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
-         cursorX = charPos2x(insertPos);
       }
+      // draw the text and/or the selection
+      int len = chars.length();
+      boolean drawCaption = caption != null && !hasFocus && len == 0;
+      if (len > 0 || drawCaption || captionIcon != null)
+      {
+         if (startSelectPos != -1 && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
+         {
+            // character regions are:
+            // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char
+            int sel1 = Math.min(startSelectPos,insertPos);
+            int sel2 = Math.max(startSelectPos,insertPos);
+            int sel1X = charPos2x(sel1);
+            int sel2X = charPos2x(sel2);
+
+            int old = g.backColor;
+            g.backColor = back1;
+            g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
+            g.backColor = old;
+         }
+
+         g.foreColor = fColor;
+         int xx = xOffset;
+         if (captionIcon != null)
+         {
+            xx += captionIcon.getWidth() + fmH;
+            g.drawImage(captionIcon, fmH, (height-captionIcon.getHeight())/2);
+         }
+            
+         if (!hasFocus) // guich@503_2: align the edit after it looses focus
+            switch (alignment)
+            {
+               case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
+               case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
+            }
+         if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
+         switch (mode)
+         {
+            case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
+               g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
+               break;
+            case PASSWORD_ALL:
+               g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
+               break;
+            case CURRENCY:
+               if (isMaskedEdit)
+                  xx = this.width-getTotalCharWidth()-xOffset-1;
+            default:
+               if (drawCaption)
+               {
+                  g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
+                  g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
+               }
+               else
+               if (masked.length() > 0)
+                  g.drawText(masked, 0, masked.length(), xx, y, textShadowColor != -1, textShadowColor);
+               else
+                  g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
+         }
+         if (hasBorder) g.clearClip();
+      }
+      if (hasBorder && !uiAndroid)
+         g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
+      cursorX = charPos2x(insertPos);
       if (hasFocus && isEnabled() && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
       {
          // draw cursor
@@ -1092,7 +1111,7 @@ public class Edit extends Control
 
    private void focusOut()
    {
-      if (Settings.isWindowsDevice() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+      if (Settings.isWindowsCE() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
          hideSip();
       hasFocus = false;
       clearPosState();

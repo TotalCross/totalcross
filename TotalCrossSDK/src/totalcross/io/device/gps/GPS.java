@@ -106,7 +106,7 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE);
+   private static boolean nativeAPI = Settings.isWindowsCE() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE);
    private static boolean isOpen;
    boolean dontFinalize;
    
@@ -181,7 +181,7 @@ public class GPS
          String com;
          if ("PIDION".equals(Settings.deviceId)) // guich@586_7
             sp = new PortConnector(Convert.chars2int("COM4"), 9600, 7, PortConnector.PARITY_EVEN, 1);
-         else if (Settings.isWindowsDevice() && (com = getWinCEGPSCom()) != null)
+         else if (Settings.isWindowsCE() && (com = getWinCEGPSCom()) != null)
             sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
          else
             sp = new PortConnector(0, 9600);

@@ -78,6 +78,7 @@ public class MainMenu extends BaseContainer
       "Signature",
       "TabbedContainer",
       "TopMenu",
+      "Velocimeter",
       "Other controls",
    };
    
@@ -203,6 +204,7 @@ public class MainMenu extends BaseContainer
       SignatureSample.class,      
       TabbedContainerSample.class,
       TopMenuSample.class,
+      VelocimeterSample.class,
       OtherControlsSample.class,
    };
    

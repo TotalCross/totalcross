@@ -76,6 +76,8 @@ public class GoogleMapsSample extends BaseContainer
          sc.add(new Ruler(),LEFT+g,AFTER+g,FILL-g,PREFERRED);
          sc.add(chSat = new Check("Show satellite images"),LEFT+g,AFTER+2*g,FILL,PREFERRED);
          sc.add(btnShow = new Button("Show map"),CENTER,AFTER+2*g,SCREENSIZE+80,PREFERRED+g);
+         if (Settings.isIOS())
+            sc.add(new Label("You must have GoogleMaps app installed!"),CENTER,AFTER+2*g);
          edLat.setValidChars("+-0123456789.");
          edLon.setValidChars("+-0123456789.");
          edAddr.setText("Av. Sen. Carlos Jereissati 3000, Fortaleza, CE, brazil");

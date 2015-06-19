@@ -143,14 +143,17 @@ public class Bar extends Container
             g.fillShadedRect(0,0,w,h,true,false,fc,pcolor,30);
          
          // draw borders
-         g.foreColor = c1; g.drawLine(0,0,w,0);
-         g.foreColor = c3; g.drawLine(w-1,0,w-1,h);
-         g.foreColor = c4; g.drawLine(0,h-1,w,h-1);
-         g.foreColor = c2; 
-         if (backgroundStyle == BACKGROUND_SHADED) 
-            g.fillShadedRect(0,1,1,h-2,true,false,fc,c2,30); // drawLine causes an unexpected effect on shaded backgrounds
-         else
-            g.drawLine(0,0,0,h); 
+         if (uiAndroid || uiVista || uiFlat)
+         {
+            g.foreColor = c1; g.drawLine(0,0,w,0);
+            g.foreColor = c3; g.drawLine(w-1,0,w-1,h);
+            g.foreColor = c4; g.drawLine(0,h-1,w,h-1);
+            g.foreColor = c2; 
+            if (backgroundStyle == BACKGROUND_SHADED) 
+               g.fillShadedRect(0,1,1,h-2,true,false,fc,c2,30); // drawLine causes an unexpected effect on shaded backgrounds
+            else
+               g.drawLine(0,0,0,h);
+         }
 
          // draw contents
          if (title != null)
@@ -192,6 +195,8 @@ public class Bar extends Container
                   {
                      selected = appId;
                      if (selected > 1000) selected -= 1000;
+                     if (listeners != null)
+                        postPressedEvent();
                      parent.postPressedEvent();
                   }                     
                }
@@ -215,7 +220,11 @@ public class Bar extends Container
                   if (repeatTimer != null)
                      removeTimer(repeatTimer);
                   if (!fired)
+                  {
+                     if (listeners != null)
+                        postPressedEvent();
                      parent.postPressedEvent();
+                  }
                }
                else 
                {

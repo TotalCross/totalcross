@@ -153,7 +153,7 @@ public final class Settings
     * @see #LINUX        
     * @see #IPHONE       
     * @see #ANDROID      
-    * @see #isWindowsDevice()
+    * @see #isWindowsCE()
     * @see #isIOS()
     */
    public static String platform;
@@ -256,7 +256,11 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Android = 4; // guich@tc130
-
+   /** Defines an Holo user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Holo = 5; // guich@tc130
+   
    /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
     * @see #Flat
@@ -663,6 +667,14 @@ public final class Settings
    public static boolean isWindowsDevice()
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform) || WINDOWSPHONE.equals(platform);
+   }
+   
+   /** Returns true if the current platform is Windows Mobile or Windows Phone. Note that Windows Desktop (aka WIN32)
+    * returns false.
+    */
+   public static boolean isWindowsCE()
+   {
+      return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
    }
    
    /** Returns true if this is an iPad or an iPhone.

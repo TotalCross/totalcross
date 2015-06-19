@@ -51,8 +51,8 @@ public class ImageControlSample extends BaseContainer
          ic.centerImage = true;
          add(ic,LEFT,AFTER,FILL,FILL);
          timer = addTimer(25);
-         maxScale = Settings.isWindowsDevice() ? 2 : 5;
-         minScale = Settings.isWindowsDevice() ? 1 : 0.5;
+         maxScale = Settings.isWindowsCE() ? 2 : 5;
+         minScale = Settings.isWindowsCE() ? 1 : 0.5;
       }
       catch (Exception ee)
       {

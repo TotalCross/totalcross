@@ -61,6 +61,34 @@ public class NinePatch
    
    private NinePatch()
    {
+      if (Settings.uiStyle == Settings.Holo)
+         parts = new Parts []
+         {
+            load(Resources.button,7,4), 
+            load(Resources.edit,16,2), 
+            load(Resources.combobox,5,2),
+            load(Resources.listbox,5,3),
+            load(Resources.multiedit,9,4), 
+            load(Resources.progressbarv,9,4),
+            load(Resources.scrollposh,3,2),
+            load(Resources.scrollposv,3,2),
+            load(Resources.tab,10,4),
+            load(Resources.grid,5,3),
+         };
+      else
+         parts = new Parts [] 
+         {
+            load(Resources.button,7,1), 
+            load(Resources.edit,5,3), 
+            load(Resources.combobox,5,2),
+            load(Resources.listbox,5,3),
+            load(Resources.multiedit,9,4), 
+            load(Resources.progressbarv,9,4),
+            load(Resources.scrollposh,3,2),
+            load(Resources.scrollposv,3,2),
+            load(Resources.tab,10,4),
+            load(Resources.grid,5,3),
+         };
    }
    
    public class Parts
@@ -71,19 +99,7 @@ public class NinePatch
    
    private Lock imageLock = new Lock();
    
-   private Parts []parts = 
-   {
-      load(Resources.button,7,1), 
-      load(Resources.edit,5,3), 
-      load(Resources.combobox,5,2),
-      load(Resources.listbox,5,3),
-      load(Resources.multiedit,9,4), 
-      load(Resources.progressbarv,9,4),
-      load(Resources.scrollposh,3,2),
-      load(Resources.scrollposv,3,2),
-      load(Resources.tab,10,4),
-      load(Resources.grid,5,3),
-   };
+   private Parts [] parts;
    
    private Hashtable htBtn = new Hashtable(100); 
    private Hashtable htPressBtn = new Hashtable(100); 

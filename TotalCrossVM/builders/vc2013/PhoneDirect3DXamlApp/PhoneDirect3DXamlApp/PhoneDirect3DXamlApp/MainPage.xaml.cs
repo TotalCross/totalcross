@@ -91,7 +91,7 @@ namespace PhoneDirect3DXamlAppInterop
           tbox.Visibility = Visibility.Collapsed;
           tbox.LostFocus += tbox_LostFocus;
           // get native font size
-          fontHeight = tbox.FontSize;
+          fontHeight = tbox.FontSize * (int)Windows.Graphics.Display.DisplayProperties.ResolutionScale / 100;
           ReadSettings().Wait();
           tbox.Margin = isSipSet()
             ? new Thickness(0, 0, 0, MainPage.instance.ActualHeight * 10) // to top

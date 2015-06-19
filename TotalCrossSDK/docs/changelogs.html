@@ -1,4 +1,31 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2676</h1>
+. larger buttons on BTTransfer<br>
+. added a way to ignore the cross-reference in PDFWritter, which seems to be buggy in some pdfs.<br>
+. now Bar.Button sends the press event to itself so you can add a press listener to it instead of capturing at the Bar level.<br>
+. starting to create the new user interface flavor: Holo(graphic) from Android 5<br>
+. added Edit.captionColor and simplified FBEdit<br>
+. dont let the grid grow too much when resizing the column<br>
+. Added Button.roundBorderFactor<br>
+. added Edit.captionIcon<br>
+. adding new sample TC Product Store<br>
+. fixed deployment in wp 8.1<br>
+. now Time.inc also changes the day/month/year fields if change occurs above 1 day<br>
+<h1>build 2670</h1>
+. fixed bluetooth on Android 5.<br>
+<h1>build 2665</h1>
+. fixed black screen on wp 8.1<br>
+. shows SDK's expiration date message only once<br>
+. fixed ImageLoader (from ImageBook) to release memory since some messages are being held in memory<br>
+. fixed memory leak when you try to free the image when not in the main thread.<br>
+. fixed keyboard not closing on first click on iOS<br>
+. added Settings.isWindowsCE, which excludes WINDOWS_PHONE. Changed all api to use isWindowsCE. This fixes the font of WP which was being set incorrectly<br>
+. added TopMenu.scInsets<br>
+. fixed font sizes on wp 8.1<br>
+. migrated to wp 8.1<br>
+. added totalcross.ui.chart.Velocimeter gauge (sample at TotalCrossAPI)<br>
+. fixed GPS and Camera no longer working on iOS 8<br>
+. You must install GoogleMaps on iOS 8 to let TotalCross' map work.<br>
 <h1>build 2647</h1>
 . fixed bug in Android that was returning an invalid value on Settings.daylightSavingsMinutes.<br>
 . fixed some problems when resuming a Windows Phone application<br>

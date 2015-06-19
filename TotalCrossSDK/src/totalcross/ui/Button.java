@@ -94,6 +94,7 @@ public class Button extends Control
     */
    public static final byte BORDER_GRAY_IMAGE = 5; // guich@tc112_25
    /** Specifies a rounded border for this button. Used in the setBorder method. Note that you MUST use PREFERRED when specifying button's height.
+    * @see #roundBorderFactor
     * @since TotalCross 3.04 
     */
    public static final byte BORDER_ROUND = 6;
@@ -108,6 +109,11 @@ public class Button extends Control
    
    /** Set to false to disable the button's shift when its pressed. */
    public boolean shiftOnPress = true;
+   
+   /** The factor by which the height will be divided to find the round border radius. Used when
+    * border is set to BORDER_ROUND.
+    */
+   public int roundBorderFactor = 2;
 
    // guich@tc122_46: added auto-repeat for button
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
@@ -533,7 +539,7 @@ public class Button extends Control
       if (isRound)
       {
          g.backColor = backColor;
-         g.fillRoundRect(0,0,width,height,height/2);
+         g.fillRoundRect(0,0,width,height,height/roundBorderFactor);
       }
       else
       if (isAndroidStyle)

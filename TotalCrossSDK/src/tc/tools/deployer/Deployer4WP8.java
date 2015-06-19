@@ -94,12 +94,19 @@ public class Deployer4WP8
       sz.putEntry("Assets/Tiles/IconicTileSmall.png", readIcon(71, 110));
 
       // copy files from the template and get the WMAppManifest
-      TFile wmAppManifestFile = templateZip.listFiles(new CopyZipFilter(sz, null))[0]; // must return exactly ONE result, in case of failure, check the filter!
+      TFile[] tfs = templateZip.listFiles(new CopyZipFilter(sz, null));
+      TFile wmAppManifestFile = tfs[indexOf(tfs, "WMAppManifest.xml")];
+      TFile appxManifestFile  = tfs[indexOf(tfs, "AppxManifest.xml")];
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       wmAppManifestFile.output(baos);
+      String wmAppManifest = new String(baos.toByteArray(), "UTF-8");
+      baos.reset();
+      // new on 8.1 - AppxManifest.xml
+      appxManifestFile.output(baos);
+      String appxManifest = new String(baos.toByteArray(), "UTF-8");
+      appxManifest = appxManifest.replace("<DisplayName>PhoneDirect3DXamlApp</DisplayName>","<DisplayName>" + DeploySettings.appTitle + "</DisplayName>");
 
       // overwrite properties on the manifest, like application title, version numbers, etc
-      String wmAppManifest = new String(baos.toByteArray(), "UTF-8");
       wmAppManifest = wmAppManifest.replace("<Title>PhoneDirect3DXamlAppInterop</Title>", "<Title>" + DeploySettings.appTitle + "</Title>");
       wmAppManifest = wmAppManifest.replace("Title=\"PhoneDirect3DXamlAppInterop\"", "Title=\"" + DeploySettings.appTitle + "\"");
       wmAppManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
@@ -109,6 +116,7 @@ public class Deployer4WP8
       // fixes problem that prevent more than one TC program in device
       String appmagic = Convert.bytesToHexString((DeploySettings.applicationId+"tc").getBytes());
       wmAppManifest = wmAppManifest.replace("f0dcbb57357d", appmagic.toLowerCase());
+      appxManifest  = appxManifest .replace("f0dcbb57357d", appmagic.toLowerCase());
       if (!DeploySettings.quiet) // ProductID="{7db428c2-4514-466c-b1aa-f0dcbb57357d}"
       {
          int i0 = wmAppManifest.indexOf("ProductID=")+12;
@@ -117,6 +125,7 @@ public class Deployer4WP8
       }
       
       sz.putEntry("WMAppManifest.xml", wmAppManifest.getBytes("UTF-8"));
+      sz.putEntry("AppxManifest.xml",  appxManifest.getBytes("UTF-8"));
 
       // close template and final output files      
       TVFS.umount(templateZip);
@@ -129,6 +138,14 @@ public class Deployer4WP8
             inst = " (Installed)";
          } catch (Exception e) {inst = " (Error: "+e.getMessage()+")";}
       System.out.println("... Files written to folder "+ targetDir + inst);
+   }
+
+   private int indexOf(TFile[] tfs, String name)
+   {
+      for (int i = 0; i < tfs.length; i++)
+         if (tfs[i].getName().equals(name))
+            return i;
+      return -1; // error
    }
 
    private byte[] readIcon(int width, int height) throws ImageException, IOException
@@ -168,7 +185,7 @@ public class Deployer4WP8
             f.listFiles(new CopyZipFilter(zip, baseDir == null ? f.getName() : Convert.appendPath(baseDir, f.getName())));
          else
          {
-            if ("WMAppManifest.xml".equals(name))
+            if ("WMAppManifest.xml".equals(name) || "AppxManifest.xml".equals(name))
                return true;
 
             try

@@ -281,7 +281,7 @@ public class ImageBookSample extends BaseContainer
          super.initUI();
          setTitle("Image Book");
          
-         if (Settings.isIOS() || Settings.isWindowsDevice()) // hack for ios: extract the files and write into the folder
+         if (Settings.isIOS() || Settings.isWindowsCE()) // hack for ios: extract the files and write into the folder
          {
             File dir = new File("device/books");
             if (!dir.exists())
