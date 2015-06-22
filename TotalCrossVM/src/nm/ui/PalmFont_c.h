@@ -433,7 +433,7 @@ Cleanup: /* CLEANUP */
 
 #ifdef __gl2_h_
 bool lowmemDevice;
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 static int32 getMax(int32* values, int32 ret, int32 len)
 {
    for (; --len >= 0; values++)
@@ -486,11 +486,12 @@ static bool buildFontTexture(Context currentContext, UserFont uf)
 }
 bool getCharPosInTexture(Context currentContext, UserFont uf, JChar ch, int32* ret)
 {
+   bool b = true;
    if (uf->textureId[0] == 0 && (uf->maxW != 0 || buildFontTexture(currentContext, uf)))
-      glLoadTexture(currentContext, null, uf->textureId, (Pixel*)uf->textureAlphas, uf->maxW, uf->maxH, true);
+      b = glLoadTexture(currentContext, null, uf->textureId, (Pixel*)uf->textureAlphas, uf->maxW, uf->maxH, true);
    ret[0] = uf->charX[ch - uf->fontP.firstChar];
    ret[1] = uf->charY[ch - uf->fontP.firstChar];
-   return uf->textureId[0] != 0;
+   return b && uf->textureId[0] != 0;
 }
 
 void glDeleteTexture(TCObject img, int32* textureId);
