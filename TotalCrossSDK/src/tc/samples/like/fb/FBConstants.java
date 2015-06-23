@@ -8,4 +8,5 @@ public interface FBConstants
    public static final int BORDER    = 0xBFC0C5;
    public static final int CNT_BACK  = 0xDDDDDD;
    public static final int SIDEMENU  = 0x32394A;
+   public static final int MENUBACK  = 0xEEEEEE;
 }

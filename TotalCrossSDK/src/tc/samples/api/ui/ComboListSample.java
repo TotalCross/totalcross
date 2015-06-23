@@ -71,6 +71,13 @@ public class ComboListSample extends BaseContainer
          htf.put(1,Color.GREEN);
          htf.put(2,Color.BLUE);
          lbox.ihtForeColors = htf;
+
+         // image list
+         sc.add(new Label("ImageList"),LEFT,AFTER+gap);
+         Image[] images = new Image[ImageBookSample.images.length];
+         for (int i = 0; i < images.length; i++)
+            images[i] = new Image(ImageBookSample.images[i]).smoothScaledFixedAspectRatio(fmH*2,true);
+         sc.add(new ComboBox(new ImageList(images)),LEFT+2,AFTER+gap,PREFERRED+gap,PREFERRED);
          
          final Button btn1 = new Button(" Popup menu ",new Image("totalcross/res/android/comboArrow.png"), LEFT, fmH/2);
          sc.add(btn1,LEFT,AFTER+gap);

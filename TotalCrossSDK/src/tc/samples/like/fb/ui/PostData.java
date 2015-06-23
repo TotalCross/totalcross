@@ -10,7 +10,7 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 
-public class PostData extends Container implements FBConstants
+public class PostData extends FBContainer
 {
    private String name;
    private Label ltext;
@@ -66,13 +66,13 @@ public class PostData extends Container implements FBConstants
          llikes.setFont(Font.getFont(false, fmH*8/10));
          add(llikes,LEFT+50,AFTER+25);
    
-         add(FBUtils.createButton("Like", FBImages.like, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-         add(FBUtils.createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
-         add(FBUtils.createButton("Comment", FBImages.comment, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
-         add(FBUtils.createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
-         add(FBUtils.createButton("Share", FBImages.share, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
+         add(createButton("Like", FBImages.like, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
+         add(createButton("Comment", FBImages.comment, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
+         add(createButton("Share", FBImages.share, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
          
-         add(FBUtils.createRuler(Ruler.HORIZONTAL),0,BEFORE,PARENTSIZE+100,1);
+         add(createRuler(Ruler.HORIZONTAL),0,BEFORE,PARENTSIZE+100,1);
       }
       catch (Throwable t)
       {

@@ -4,7 +4,6 @@ import totalcross.io.*;
 import totalcross.io.device.gps.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.font.*;
 import totalcross.ui.image.*;
 import totalcross.ui.media.*;
 
@@ -33,23 +32,6 @@ public class FBUtils implements FBConstants
             tt.printStackTrace();
          }
    }
-
-   public static Ruler createRuler(int type)
-   {
-      Ruler r = new Ruler(type,false);
-      r.setForeColor(BORDER);
-      r.ignoreInsets = true;
-      return r;
-   }
-   
-   public static Button createButton(String s, Image i, int fmH)
-   {
-      Button b = new Button(s, i, Control.RIGHT, fmH);
-      b.setFont(Font.getFont(true,fmH*8/10));
-      b.setForeColor(0x9B9EA3);
-      b.setBorder(Button.BORDER_NONE);
-      return b;
-   }
    
    public static byte[] jpegBytes(Image img)
    {
@@ -64,13 +46,6 @@ public class FBUtils implements FBConstants
          logException(t);
          return null;
       }
-   }
-
-   public static Button noborder(Image img)
-   {
-      Button b = new Button(img);
-      b.setBorder(Button.BORDER_NONE);
-      return b;
    }
 
    public static Image takePhoto()

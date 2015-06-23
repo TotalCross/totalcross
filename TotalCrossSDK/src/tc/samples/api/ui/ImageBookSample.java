@@ -31,7 +31,7 @@ public class ImageBookSample extends BaseContainer
    GridContainer gc;
    static boolean isVert;
    RadioGroupController rg;
-   String[] images = 
+   public static String[] images = 
    {
       "tc/samples/api/ui/books/book1.png",
       "tc/samples/api/ui/books/book2.png",

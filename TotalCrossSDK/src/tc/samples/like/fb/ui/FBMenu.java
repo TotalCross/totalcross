@@ -7,17 +7,17 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 
-public class FBMenu extends Container
+public class FBMenu extends FBContainer
 {
    Button btExit, btDrop;
    public void initUI()
    {
       btExit = new Button("Exit");
-      btExit.setBackColor(0xEEEEEE);
+      btExit.setBackColor(MENUBACK);
       add(btExit, LEFT+50,AFTER+50,FILL-50,PREFERRED+100);
       
       btDrop = new Button("Drop database");
-      btDrop.setBackColor(0xEEEEEE);
+      btDrop.setBackColor(MENUBACK);
       add(btDrop, LEFT+50,AFTER+50,FILL-50,PREFERRED+100);
    }
    

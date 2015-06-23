@@ -8,9 +8,9 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-public class PostInput extends Container implements FBConstants
+public class PostInput extends FBContainer 
 {
-   private FBEdit med;
+   private Edit med;
    private Button btStat, btPhot, btChIn;
    private FBPosts posts;
    
@@ -35,14 +35,14 @@ public class PostInput extends Container implements FBConstants
          c.setBackColor(CNT_BACK);
          add(c,LEFT+50,TOP+50,fmH*2,fmH*2);
       }
-      med = new FBEdit("What's on your mind?");
+      med = createEdit("What's on your mind?");
       add(med, AFTER+50,SAME,FILL-100,PREFERRED);
       
-      add(btStat = FBUtils.createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(btPhot = FBUtils.createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(btChIn = FBUtils.createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
+      add(btStat = createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+      add(btPhot = createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
+      add(btChIn = createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
       
-      add(FBUtils.createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
+      add(createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
    }
    
    public int getPreferredHeight()

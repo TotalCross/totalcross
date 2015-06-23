@@ -6,16 +6,16 @@ import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
-public class FBTitleBar extends Container implements FBConstants
+public class FBTitleBar extends FBContainer
 {
    Button btSearch, btOnline;
    
    public void initUI()
    {
       setBackColor(TOPBAR);
-      add(btSearch = FBUtils.noborder(FBImages.search), LEFT+100,CENTER);
-      add(btOnline = FBUtils.noborder(FBImages.online), RIGHT-100,CENTER);
-      Edit ed = new FBEdit("Search");
+      add(btSearch = noborder(FBImages.search), LEFT+100,CENTER);
+      add(btOnline = noborder(FBImages.online), RIGHT-100,CENTER);
+      Edit ed = createEdit("Search");
       ed.setForeColor(Color.WHITE);
       add(ed, AFTER,SAME,FIT,PREFERRED,btSearch);
       Ruler r = new Ruler();

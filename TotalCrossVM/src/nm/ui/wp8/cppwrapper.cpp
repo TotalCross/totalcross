@@ -241,9 +241,9 @@ int32 dxGetScreenSize()
    return Direct3DBase::getLastInstance()->csharp->getScreenSize();
 }
 
-void dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
+bool dxLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
-   Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
+   return Direct3DBase::getLastInstance()->loadTexture(currentContext, img, textureId, pixels, width, height, onlyAlpha);
 }
 
 void dxDeleteTexture(TCObject img, int32* textureId)

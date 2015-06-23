@@ -8,9 +8,9 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
-public class FBNewUser extends Container implements FBConstants
+public class FBNewUser extends FBContainer 
 {
-   private FBEdit edMed;
+   private Edit edMed;
    private Button btSave,btPhoto;
    private Image photo;
 
@@ -29,10 +29,10 @@ public class FBNewUser extends Container implements FBConstants
          setBorderStyle(BORDER_SIMPLE);
          borderColor = BORDER;
          
-         add(btPhoto = FBUtils.createButton(null,FBImages.regPhoto,fmH),LEFT+50,TOP+50);         
-         add(edMed = new FBEdit("Please type your username"), AFTER+50,SAME,FILL-100,PREFERRED);         
-         add(btSave = FBUtils.createButton("SAVE", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-         add(FBUtils.createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
+         add(btPhoto = createButton(null,FBImages.regPhoto,fmH),LEFT+50,TOP+50);         
+         add(edMed = createEdit("Please type your username"), AFTER+50,SAME,FILL-100,PREFERRED);         
+         add(btSave = createButton("SAVE", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
       }
       catch (Throwable t)
       {

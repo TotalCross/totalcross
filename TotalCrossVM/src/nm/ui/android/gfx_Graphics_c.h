@@ -495,9 +495,10 @@ void initTexture()
    glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    int32 i;
+   bool ret = true;
    PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
@@ -510,7 +511,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       if (!pt)
       {
          throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
-         return;
+         return false;
       }
    }
    if (!textureAlreadyCreated)
@@ -524,7 +525,7 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          if (err)
          {
             throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
-            return;
+            return false;
          }
       }
    }
@@ -553,11 +554,13 @@ void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
          glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
          *textureId = 0;
          throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
+         ret = false;
       }
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
    if (!onlyAlpha) xfree(pt0);
+   return ret;
 }
 
 void glDeleteTexture(TCObject img, int32* textureId)

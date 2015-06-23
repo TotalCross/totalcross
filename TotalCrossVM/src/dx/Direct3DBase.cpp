@@ -602,9 +602,10 @@ void Direct3DBase::setProgram(whichProgram p)
    d3dcontext->VSSetConstantBuffers(0, 1, &constantBuffer);
 }
 
-void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
+bool Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
-   if (minimized) return;
+   if (minimized) return false;
+   bool ret = true;
    int32 i;
    PixelConv* pf = (PixelConv*)pixels;
    PixelConv ptemp;
@@ -622,7 +623,10 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    textureSubresourceData.pSysMem = pixels;
    textureSubresourceData.SysMemPitch = textureDesc.Width * (onlyAlpha ? 1 : 4); // Specify the size of a row in bytes
    if (FAILED(d3dDevice->CreateTexture2D(&textureDesc, &textureSubresourceData, &texture)))
+   {
+      ret = false;
       throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d", width, height);
+   }
    else
    {
       ID3D11ShaderResourceView* textureView;
@@ -637,6 +641,7 @@ void Direct3DBase::loadTexture(Context currentContext, TCObject img, int32* text
    }
    if (!onlyAlpha)
       for (pf = (PixelConv*)pixels, i = width*height; --i >= 0; pf++) { ptemp.pixel = pf->pixel; pf->a = ptemp.r; pf->b = ptemp.g; pf->g = ptemp.b; pf->r = ptemp.a; }
+   return ret;
 }
 
 void Direct3DBase::deleteTexture(TCObject img, int32* textureId)
