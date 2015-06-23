@@ -698,11 +698,12 @@ void setTransparentColor(TCObject obj, Pixel color)
 }
 
 #ifdef __gl2_h_                         
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 void applyChanges(Context currentContext, TCObject obj)
 {
    int32 frameCount = Image_frameCount(obj);
    TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   bool doReset = true;
    if (pixelsObj)
    {     
       Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
@@ -711,10 +712,10 @@ void applyChanges(Context currentContext, TCObject obj)
 #ifdef WP8
       glDeleteTexture(obj, Image_textureId(obj));
 #endif
-      glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
+      doReset = glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
       Image_lastAccess(obj) = getTimeStamp();
    }
-   Image_changed(obj) = false;
+   Image_changed(obj) = !doReset;
 }
 void glDeleteTexture(TCObject img, int32* textureId);
 void freeTexture(TCObject img)

@@ -29,7 +29,7 @@ void glDrawPixels(int32 n, int32 rgb);
 void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill);
 int32 glGetPixel(int32 x, int32 y);
 void glDeleteTexture(TCObject img, int32* textureId);
-void glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
 void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
 void applyChanges(Context currentContext, TCObject obj);
 void freeTexture(TCObject obj);
