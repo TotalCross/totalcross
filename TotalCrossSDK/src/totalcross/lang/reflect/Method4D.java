@@ -86,6 +86,12 @@ public class Method4D implements Member4D
    {
       return parameterTypes;
    }
+   
+   public int getParameterCount()
+   {
+      return parameterTypes == null ? 0 : parameterTypes.length;
+   }
+   
    public Class<?>[] getExceptionTypes()
    {
       return exceptionTypes;
