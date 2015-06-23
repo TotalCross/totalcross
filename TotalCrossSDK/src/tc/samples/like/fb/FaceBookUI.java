@@ -13,7 +13,7 @@ import totalcross.ui.image.*;
 public class FaceBookUI extends MainWindow implements FBConstants
 {
    private static FBPosts posts;
-   private static FBTopBar bar;
+   private static FBButtonBar bar;
    private static TabbedContainer tc;
    
    public static Image defaultPhoto;
@@ -36,7 +36,7 @@ public class FaceBookUI extends MainWindow implements FBConstants
          FBImages.load(fmH);
          FBDB.db.loadActiveUser();
          add(new FBTitleBar(), LEFT,TOP,FILL,fmH*5/2);
-         add(bar = new FBTopBar(), LEFT,AFTER,FILL,SAME);
+         add(bar = new FBButtonBar(), LEFT,AFTER,FILL,SAME);
          String[] tits = {"1","2","3","4","5"};
          tc = new TabbedContainer(tits);
          tc.setBackColor(CONTENTH);
