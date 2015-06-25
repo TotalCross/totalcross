@@ -29,7 +29,7 @@ class SQLConvert
       }
       catch (Exception e)
       {
-         if (Settings.onJavaSE) e.printStackTrace();
+         if (Settings.onJavaSE) {Vm.debug("Error converting time: \""+x+"\""); e.printStackTrace();}
          return null;
       }
    }
