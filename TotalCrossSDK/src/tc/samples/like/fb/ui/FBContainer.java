@@ -6,10 +6,11 @@ import totalcross.ui.*;
 import totalcross.ui.font.*;
 import totalcross.ui.image.*;
 
-public class FBContainer extends Container implements FBConstants
+public class FBContainer extends ScrollContainer implements FBConstants
 {
    public FBContainer()
    {
+      super(false,true);
    }
    
    // Utility methods
