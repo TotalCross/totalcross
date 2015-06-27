@@ -43,7 +43,7 @@ import totalcross.ui.gfx.*;
  * </pre>
  */
 
-public class Label extends Control
+public class Label extends Control implements TextControl
 {
    /** The String with the full text (not splitted) */
    protected String text;

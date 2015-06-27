@@ -49,7 +49,7 @@ import totalcross.ui.image.*;
  * </pre>
  */
 
-public class Check extends Control
+public class Check extends Control implements TextControl
 {
    private String text;
    private boolean checked;

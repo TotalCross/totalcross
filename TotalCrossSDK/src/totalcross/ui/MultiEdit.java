@@ -56,7 +56,7 @@ import totalcross.util.*;
  */
 
 
-public class MultiEdit extends Container implements Scrollable
+public class MultiEdit extends Container implements Scrollable, TextControl
 {
    private static final char ENTER = '\n';
    private static final char LINEFEED = '\r';

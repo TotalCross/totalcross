@@ -53,7 +53,7 @@ import totalcross.util.Hashtable;
  * </pre>
  */
 
-public class Button extends Control
+public class Button extends Control implements TextControl
 {
    /** Specifies no border for this button. Used in the setBorder method. */
    public static final byte BORDER_NONE = 0;

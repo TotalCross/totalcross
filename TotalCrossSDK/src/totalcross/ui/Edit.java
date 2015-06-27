@@ -81,7 +81,7 @@ import totalcross.util.*;
  * @see #clipboardDelay
  */
 
-public class Edit extends Control
+public class Edit extends Control implements TextControl
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
    private static int xMins[] = {4,1,3,3,4,4};

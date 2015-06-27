@@ -55,7 +55,7 @@ import totalcross.sys.*;
  * @see totalcross.ui.RadioGroupController
  */
 
-public class Radio extends Control
+public class Radio extends Control implements TextControl
 {
    private String text;
    private boolean checked;
