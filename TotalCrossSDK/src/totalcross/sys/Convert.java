@@ -78,8 +78,6 @@ public final class Convert
          h2b[i] = (byte)j;
    }
 
-   private static byte[] buffer = new byte[32];
-
    /** The bytes are converted to char and vice-versa using the CharacterConverter associated in this charConverter member.
     * @see totalcross.sys.Convert#setDefaultConverter(String)
     * @see totalcross.sys.CharacterConverter
@@ -848,9 +846,6 @@ public final class Convert
       return as;
    }
 
-   private static Vector vtok = new Vector(); // used below
-   private static IntHashtable ihttok = new IntHashtable(10);
-
    /**
     * Tokenize the given input string. If there's no delim chars in input, returns the input string. The delim parameter
     * is not a set of possible single characters: it is a whole string that is searched inside the given input.<br>
@@ -867,7 +862,7 @@ public final class Convert
          throw new java.lang.NullPointerException("Argument 'input' cannot have a null value");
       if (delim == null)
          throw new java.lang.NullPointerException("Argument 'delim' cannot have a null value");
-      vtok.removeAllElements(); // here we use a vector bc the indexOf(string,string) is slower
+      Vector vtok = new Vector();
       int inc = delim.length();
       if (inc == 0 || input.length() == 0) return new String[]{input}; // guich@566_21
       int position = 0;
@@ -884,9 +879,7 @@ public final class Convert
             vtok.addElement(input.substring(position, newPosition));
          position = newPosition + inc;
       }
-      String[] ret = (String[])vtok.toObjectArray();
-      vtok.removeAllElements(); // guich@tc100: clear the strings to allow gc if needed.
-      return ret;
+      return (String[])vtok.toObjectArray();
    }
 
    /**
@@ -907,25 +900,24 @@ public final class Convert
       if (delims.length == 1) // use a faster algorithm if there's a single letter
          return tokenizeString(input, delims[0]);
 
+      Vector vtok = new Vector(10); // used below
+
       int inputLen = input.length();
       int start = 0;
       char[] inputChars = input.toCharArray();
-      ihttok.clear();
-      for (int i = delims.length; --i >= 0;)
-         ihttok.put(delims[i], 1);
 
-      vtok.removeAllElements();
       for (int i = 0; i < inputLen; i++)
-         if (ihttok.exists(inputChars[i]))
-         {
-            if (i - start >= 0)
-               vtok.addElement(new String(inputChars, start, i - start));
-            start = i + 1;
-         }
+         for (char t: delims) // guich@310: for small arrays, a loop is faster than IntHashTable
+            if (t == inputChars[i])
+            {
+               if (i - start >= 0)
+                  vtok.addElement(new String(inputChars, start, i - start));
+               start = i + 1;
+               break;
+            }
       if (start > 0 && start <= inputLen)
          vtok.addElement(new String(inputChars, start, inputLen - start));
       String[] ret = (String[]) vtok.toObjectArray();
-      vtok.removeAllElements();
       return ret == null ? new String[] { input } : ret;
    }
 
@@ -1611,10 +1603,7 @@ public final class Convert
       char[] chars = s.toCharArray();
       int count = chars.length;
 
-      if (buffer.length < count)
-         buffer = new byte[count + 32];
-
-      byte[] buf = buffer;
+      byte[] buf = new byte[count];
       boolean firstChar = true;
       int pos = 0;
       byte b, invalid = h2bInvalid;
