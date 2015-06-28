@@ -862,7 +862,7 @@ public final class Convert
          throw new java.lang.NullPointerException("Argument 'input' cannot have a null value");
       if (delim == null)
          throw new java.lang.NullPointerException("Argument 'delim' cannot have a null value");
-      Vector vtok = new Vector();
+      Vector vtok = new Vector(10);
       int inc = delim.length();
       if (inc == 0 || input.length() == 0) return new String[]{input}; // guich@566_21
       int position = 0;

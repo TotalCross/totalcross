@@ -239,7 +239,7 @@ public final class Time
          
       try
       {
-         StringBuffer seps = new StringBuffer(1); // guich@sqlite: accept any kind of separator
+         StringBuffer seps = new StringBuffer(2); // guich@sqlite: accept any kind of separator
          for (int i = 0, n = time.length(); i < n; i++)
          {
             char ch = time.charAt(i);
