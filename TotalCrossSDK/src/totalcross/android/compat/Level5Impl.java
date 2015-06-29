@@ -108,14 +108,12 @@ public class Level5Impl extends Level5
    
    private void btReadWrite(boolean isRead, String btc, byte[] byteArray, int ofs, int count) throws Exception
    {
-      AndroidUtils.debug("btReadWrite("+isRead+","+btc+","+ofs+","+count);
       BluetoothSocket sock = htbt.get(btc);
       if (sock == null)
          throw new IOException("socket for device "+btc+" not found on hashtable");
       if (isRead)
       {
          InputStream is = sock.getInputStream();
-         AndroidUtils.debug("read.is: "+is);
          if (is == null)
             setResponse(ERROR,null);
          else
