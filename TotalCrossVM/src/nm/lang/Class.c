@@ -507,24 +507,23 @@ TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Cl
    xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
    if (target->flags.isArray)
    {
-      CharP name = target->name;
-      Type to = type2javaType(++name);
-      switch (to)
-      {
-         case Type_Void:    p->retO = *voidTYPE; break;
-         case Type_Byte:    p->retO = *byteTYPE; break;
-         case Type_Boolean: p->retO = *booleanTYPE; break;
-         case Type_Short:   p->retO = *shortTYPE; break;
-         case Type_Char:    p->retO = *charTYPE; break;
-         case Type_Int:     p->retO = *intTYPE; break;
-         case Type_Long:    p->retO = *longTYPE; break;
-         case Type_Float:   p->retO = *floatTYPE; break;
-         case Type_Double:  p->retO = *doubleTYPE; break;
-         default: 
-            createClassObject(p->currentContext, name, Type_Null, &p->retO,null);
-            if (p->currentContext->thrownException != null)
-               p->retO = p->currentContext->thrownException = null;
-      }
+      CharP name = target->name + 1; // skip [
+	  if (*name == '&') // primitive array?
+         switch (*++name)
+         {
+	        case 'I': p->retO = *intTYPE; return;
+		    case 'B': p->retO = *byteTYPE; return;
+		    case 'S': p->retO = *shortTYPE; return;
+		    case 'C': p->retO = *charTYPE; return;
+		    case 'b': p->retO = *booleanTYPE; return;
+		    case 'L': p->retO = *longTYPE; return;
+		    case 'D': p->retO = *doubleTYPE; return;
+		    case 'F': p->retO = *floatTYPE; return;
+	     }
+
+     createClassObject(p->currentContext, name, Type_Null, &p->retO,null);
+     if (p->currentContext->thrownException != null)
+        p->retO = p->currentContext->thrownException = null;
    }
 }
 //////////////////////////////////////////////////////////////////////////
