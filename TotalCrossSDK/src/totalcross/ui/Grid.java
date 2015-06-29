@@ -2004,6 +2004,8 @@ public class Grid extends Container implements Scrollable
                   int dx = px - resizingDx - resizingRealX - xOffset;
                   if (dx == 0 && rl == widths.length - 1) // the last row cannot have its size increased by the user, so we expand it
                      dx = resizingOrigWidth/3;
+                  if (dx > this.width) 
+                     dx = this.width;
                   widths[rl] = resizingOrigWidth + dx;
                   setWidths(widths);
                   e.consumed = Window.needsPaint = true;
