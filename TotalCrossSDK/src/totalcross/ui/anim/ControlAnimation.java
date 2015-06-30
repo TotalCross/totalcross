@@ -23,6 +23,9 @@ public abstract class ControlAnimation implements TimerListener
    /** A delay issued right after the animation finishes */
    public int delayAfterFinish;
    
+   /** Use or not the offscreen. */
+   public boolean useOffscreen = true;
+   
    public static interface AnimationFinished
    {
       public void onAnimationFinished(ControlAnimation anim);
@@ -54,7 +57,7 @@ public abstract class ControlAnimation implements TimerListener
             teFrame = c.addTimer(frameRate);
             c.addTimerListener(this);
          }
-         if (c.offscreen == null)
+         if (useOffscreen && c.offscreen == null)
          {
             Window.enableUpdateScreen = false; // removes flick when clicking outside the TopMenu
             c.takeScreenShot();
