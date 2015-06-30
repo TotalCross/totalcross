@@ -12,6 +12,13 @@ public class PathAnimation extends ControlAnimation
    private int xf,yf,x,y;
    private int dir;
    
+   public static interface SetPosition
+   {
+      public void setPos(int x, int y);
+   }
+   
+   public SetPosition setpos;
+   
    private PathAnimation(Control c, AnimationFinished animFinish, int totalTime)
    {
       super(c,animFinish,totalTime);
@@ -28,13 +35,17 @@ public class PathAnimation extends ControlAnimation
    protected void animate()
    {
       update();
-      c.setRect(x,y,Control.KEEP,Control.KEEP);
+      if (setpos != null)
+         setpos.setPos(x,y);
+      else
+         c.setRect(x,y,Control.KEEP,Control.KEEP);
       Window.needsPaint = true;
    }
    
    public void stop(boolean abort)
    {
       super.stop(abort);
+      if (setpos == null)
       switch (dir)
       {
          case Control.LEFT:   c.setSet(Control.LEFT,Control.TOP); break;
