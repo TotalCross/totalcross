@@ -15,7 +15,12 @@ public class TCProductStore extends MainWindow
    
    public void initUI()
    {
+      checkImages();
       new PSlogin().swapToTopmostWindow();
    }
 
+   private void checkImages()
+   {
+      
+   }
 }
