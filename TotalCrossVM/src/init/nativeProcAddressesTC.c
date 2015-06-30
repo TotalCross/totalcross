@@ -167,6 +167,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawText_siiiiibi"), &tugG_drawText_siiiiibi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawText_siibi"), &tugG_drawText_siibi);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawText_siiibi"), &tugG_drawText_siiibi);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawThickLine_iiiii"), &tugG_drawThickLine_iiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tufF_fontCreate"), &tufF_fontCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_fontMetricsCreate"), &tufFM_fontMetricsCreate);
    htPutPtr(&htNativeProcAddresses, hashCode("tufFM_charWidth_c"), &tufFM_charWidth_c);
@@ -189,6 +190,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tsCC_chars2bytes_Cii"), &tsCC_chars2bytes_Cii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsUTF8CC_bytes2chars_Bii"), &tsUTF8CC_bytes2chars_Bii);
    htPutPtr(&htNativeProcAddresses, hashCode("tsUTF8CC_chars2bytes_Cii"), &tsUTF8CC_chars2bytes_Cii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tsC_equals_BB"), &tsC_equals_BB);
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_toInt_s"), &tsC_toInt_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_toString_c"), &tsC_toString_c);
    htPutPtr(&htNativeProcAddresses, hashCode("tsC_doubleToIntBits_d"), &tsC_doubleToIntBits_d);
@@ -323,6 +325,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("jlO_toStringNative"), &jlO_toStringNative);
    htPutPtr(&htNativeProcAddresses, hashCode("jlO_nativeHashCode"), &jlO_nativeHashCode);
    htPutPtr(&htNativeProcAddresses, hashCode("jlO_getClass"), &jlO_getClass);
+   htPutPtr(&htNativeProcAddresses, hashCode("jlO_clone"), &jlO_clone);
    htPutPtr(&htNativeProcAddresses, hashCode("jlS_toUpperCase"), &jlS_toUpperCase);
    htPutPtr(&htNativeProcAddresses, hashCode("jlS_toLowerCase"), &jlS_toLowerCase);
    htPutPtr(&htNativeProcAddresses, hashCode("jlS_valueOf_d"), &jlS_valueOf_d);
