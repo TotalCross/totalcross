@@ -15,6 +15,13 @@
 
 TC_API void jlC_forName_s(NMParams p);
 
+static TCClass getTargetClass(TCObject o)
+{
+   TCClass ret = o ? OBJ_CLASS(o) : null;
+   if (ret && strEq(ret->name, "java.lang.Class"))
+	  xmoveptr(&ret, ARRAYOBJ_START(Class_nativeStruct(o)));
+   return ret;
+}
 static void createClassObject(Context currentContext, CharP className, Type type, TCObject* ret, bool* isNew)
 {
    TCObject ptrObj=null;
@@ -157,7 +164,7 @@ static void getFieldByName(NMParams p, bool onlyPublic)
       throwException(p->currentContext, OutOfMemoryError, null);
    else
    {
-      xmoveptr(&o, ARRAYOBJ_START(Class_nativeStruct(me)));
+      o = getTargetClass(me);
       for (ff = o->i32InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
       for (ff = o->objInstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
       for (ff = o->v64InstanceFields, i=ARRAYLENV(ff), ff += i-1; --i >= 0; --ff) if (((onlyPublic && ff->flags.isPublic) || (!onlyPublic && !ff->flags.isInherited)) && strEq(ff->name,name)) {found = ff; goto cont;}
@@ -196,7 +203,7 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
    int32 i,j,n;
    int32 nparams = classesObj == null ? 0 : ARRAYOBJ_LEN(classesObj);
    TCObject* classes = classesObj == null ? null : (TCObject*)ARRAYOBJ_START(classesObj);
-   xmoveptr(&c, ARRAYOBJ_START(Class_nativeStruct(me)));
+   c = getTargetClass(me);
    do
    {
       n = ARRAYLENV(c->methods);
@@ -222,10 +229,10 @@ static void getMCbyName(NMParams p, CharP methodName, bool isConstructor, bool o
                   params.currentContext = p->currentContext;
                   params.obj = &classes[j];
                   jlC_forName_s(&params);
-                  xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(params.retO)));
+                  target = getTargetClass(params.retO);
                }
                else
-                  xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(classes[j])));
+                  target = getTargetClass(classes[j]);
                pt = target->name;
                po = getParameterType(c,mm->cpParams[j]);
                if (!strEq(pt,po))
@@ -251,7 +258,7 @@ static void getFields(NMParams p, bool onlyPublic)
    TCClass o;
    int32 count=0,i;
    FieldArray ff;
-   xmoveptr(&o, ARRAYOBJ_START(Class_nativeStruct(cls)));
+   o = getTargetClass(cls);
 
    // fields array already include the ones from superclasses, so we don't need to crawl the hierarchy
    if (o->flags.isInterface)
@@ -297,7 +304,7 @@ static void getMCarray(NMParams p, bool isConstructor, bool onlyPublic)
    TCClass c, o;
    int32 count=0,n;
    MethodArray ff;
-   xmoveptr(&c, ARRAYOBJ_START(Class_nativeStruct(me)));
+   c = getTargetClass(me);
    // count how many PUBLIC fields have in this class and super classes
    for (o = c; o != null; o = o->superClass)
    {
@@ -404,7 +411,7 @@ TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object 
    TCClass target;
    TCObject me = p->obj[0];
 
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    if (target->flags.isInterface || target->flags.isAbstract || target->flags.isArray)
       throwException(p->currentContext, InstantiationException, target->name);
    else
@@ -427,7 +434,7 @@ TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolea
 {
    TCClass target;
    TCObject me = p->obj[0],other;
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    other = p->obj[1];
 
    if (other == null)
@@ -441,19 +448,21 @@ TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native 
    TCClass metarget,clstarget;
    TCObject me = p->obj[0];
    TCObject cls = p->obj[1];
-   xmoveptr(&metarget, ARRAYOBJ_START(Class_nativeStruct(me)));
-   if (cls != null) xmoveptr(&clstarget, ARRAYOBJ_START(Class_nativeStruct(cls)));
    if (cls == null)
       throwException(p->currentContext, NullPointerException, "Argument cls");
    else
+   {
+      clstarget = getTargetClass(cls);
+	  metarget = getTargetClass(me);
       p->retI = areClassesCompatible(p->currentContext, clstarget, metarget->name) == COMPATIBLE;
+   }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
 {
    TCClass target;
    TCObject me = p->obj[0];
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    p->retI = target->flags.isInterface;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -461,7 +470,7 @@ TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isA
 {
    TCClass target;
    TCObject me = p->obj[0];
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    p->retI = target->flags.isArray;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -479,7 +488,7 @@ TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class
 {
    TCClass target;
    TCObject me = p->obj[0];
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    if (target->superClass != null && !target->flags.isInterface && !isPrimitive(me))
       createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO,null);
 }
@@ -489,7 +498,7 @@ TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.
    TCClass target;
    TCObject me = p->obj[0], ret;
    int32 n,i;
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    n = ARRAYLENV(target->interfaces);
    if ((ret = createArrayObject(p->currentContext, "[java.lang.Class", n)) != null)
    {
@@ -504,7 +513,7 @@ TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Cl
 {
    TCClass target;
    TCObject me = p->obj[0];
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    if (target->flags.isArray)
    {
       CharP name = target->name + 1; // skip [
@@ -533,7 +542,7 @@ TC_API void jlC_getModifiers(NMParams p) // java/lang/Class public native int ge
    TCObject me = p->obj[0];
    ClassFlags f;
    int32 ret = 0;
-   xmoveptr(&target, ARRAYOBJ_START(Class_nativeStruct(me)));
+   target = getTargetClass(me);
    f = target->flags;
    if (f.isPublic   ) ret |= JFLAG_PUBLIC;
    if (f.isStatic   ) ret |= JFLAG_STATIC;
