@@ -18,6 +18,8 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
+import totalcross.ui.anim.*;
+import totalcross.ui.anim.ControlAnimation.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -81,9 +83,10 @@ import totalcross.util.*;
  * Otherwise, the flick and drag will not work and your container will be positioned incorrectly.
  */
 
-public class TabbedContainer extends ClippedContainer implements Scrollable
+public class TabbedContainer extends ClippedContainer implements Scrollable, AnimationFinished
 {
    private int activeIndex=-1;
+   private boolean firstTabChange;
    private String []strCaptions;
    private Image []imgCaptions,imgDis, imgCaptions0;
    private Image activeIcon, activeIcon0;
@@ -200,6 +203,9 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
     * </pre>
     */
    public static boolean allowFlick = Settings.fingerTouch;
+   
+   /** Animation time when you click in the tab. Set to 0 to disable animation. */
+   public int animationTime = 250;
    
    private TabbedContainer(int count)
    {
@@ -425,30 +431,73 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    }
 
    /**
-    * Sets the currently active tab. A PRESSED event will be posted to
+    * Sets the currently active tab, animating it. A PRESSED event will be posted to
     * the given tab if it is not the currently active tab; then, the containers will be switched.
     */
    public void setActiveTab(int tab)
    {
+      setActiveTab(tab, true);
+   }
+   
+   /**
+    * Sets the currently active tab. A PRESSED event will be posted to
+    * the given tab if it is not the currently active tab; then, the containers will be switched.
+    * The animation is optional and can also be defined with @see
+    */
+   public void setActiveTab(int tab, boolean animate)
+   {
       if (tab != activeIndex && tab >= 0)
       {
-         boolean firstTabChange = activeIndex == -1;
+         firstTabChange = activeIndex == -1;
+         int dif = firstTabChange ? 0 : activeIndex - tab;
          if (!firstTabChange && flick == null) 
             remove(containers[activeIndex]);
          lastActiveTab = activeIndex; // guich@402_4
          activeIndex = tab;
-         if (flick != null)
-            for (int xx = -activeIndex * width + clientRect.x, i = 0; i < containers.length; i++, xx += width)
-               containers[i].x = xx;
-         else
+         if (flick == null)
             add(containers[activeIndex]);
-         tabOrder.removeAllElements(); // don't let the cursor keys get into our container
-         computeTabsRect();
-         scrollTab(activeIndex);
-         Window.needsPaint = true;
-         if (!firstTabChange) // guich@200b4_87
-            postPressedEvent();
+         else
+         {
+            if (!firstTabChange && animationTime > 0 && animate)
+               try
+               {
+                  PathAnimation p = PathAnimation.create(this, 0,0, dif * width , 0, this, animationTime);
+                  p.useOffscreen = false;
+                  p.setpos = new PathAnimation.SetPosition() 
+                  {
+                     int last;
+                     public void setPos(int x, int y)
+                     {
+                        int dx = x-last;
+                        last = x;
+                        for (int i = 0; i < containers.length; i++)
+                           containers[i].x += dx;
+                        Window.needsPaint = true;
+                     }
+                  };
+                  p.start();
+                  return;
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+               }
+            else
+               for (int xx = -activeIndex * width + clientRect.x, i = 0; i < containers.length; i++, xx += width)
+                  containers[i].x = xx;
+         }
+         onAnimationFinished(null);
       }
+   }
+   
+   public void onAnimationFinished(ControlAnimation anim)
+   {
+       tabOrder.removeAllElements(); // don't let the cursor keys get into our container
+       computeTabsRect();
+       scrollTab(activeIndex);
+       Window.needsPaint = true;
+       if (!firstTabChange) // guich@200b4_87
+          postPressedEvent();
    }
 
    /** Returns the index of the selected tab */
@@ -564,7 +613,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       }
       if (flick != null)
          flick.setScrollDistance(width);
-      if (activeIndex == -1) setActiveTab(nextEnabled(-1,true)); // fvincent@340_40
+      if (activeIndex == -1) setActiveTab(nextEnabled(-1,true),false); // fvincent@340_40
       addArrows();
    }
 
@@ -964,7 +1013,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       if (event.target != this)
       {
          if (event.type == ControlEvent.PRESSED && (event.target == btnLeft || event.target == btnRight))
-            setActiveTab(nextEnabled(activeIndex,event.target == btnRight));
+            setActiveTab(nextEnabled(activeIndex,event.target == btnRight),true);
          if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP)))
             return;
       }
@@ -973,7 +1022,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       {
          case PenEvent.PEN_UP:
             if (tempSelected != -1)
-               setActiveTab(tempSelected);
+               setActiveTab(tempSelected,true);
             tempSelected = -1;
             if (uiAndroid)
                Window.needsPaint = true;
@@ -1045,7 +1094,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                {
                   tempSelected = sel;
                   if (!uiAndroid)
-                     setActiveTab(sel);
+                     setActiveTab(sel,true);
                }
             }
             break;
@@ -1062,7 +1111,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                if (focusMode == FOCUSMODE_CHANGING_TABS)
                {
                   if (key == SpecialKeys.LEFT || key == SpecialKeys.RIGHT)
-                     setActiveTab(nextEnabled(activeIndex, key == SpecialKeys.RIGHT));
+                     setActiveTab(nextEnabled(activeIndex, key == SpecialKeys.RIGHT),true);
                   else
                   if (ke.isUpKey() || ke.isDownKey())
                   {
@@ -1148,7 +1197,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       {
          int tab = activeIndex;
          activeIndex = -1;
-         setActiveTab(tab);
+         setActiveTab(tab,false);
       }
    }
 
@@ -1225,7 +1274,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public void flickEnded(boolean atPenDown)
    {
       int tab = getPositionedTab(false);
-      setActiveTab(tab);
+      setActiveTab(tab,false);
       releaseScreenShots();
    }
    
