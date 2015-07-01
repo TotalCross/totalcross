@@ -163,6 +163,15 @@ public class Label extends Control implements TextControl
       this("", LEFT);
    }
 
+   /** Creates a label with the given text, alignment, foreground color, and if the font is bold or not. */
+   public Label(String text, int align, int fore, boolean bold)
+   {
+      this(text, align);
+      setForeColor(fore);
+      if (bold)
+         setFont(font.asBold());
+   }
+   
    /**
     * Creates a label displaying the given text. Alignment is set to LEFT by default.<br>
     * Supports inverted text, multiple lines and is scrollable by default.
