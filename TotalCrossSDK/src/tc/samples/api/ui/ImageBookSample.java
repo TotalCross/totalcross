@@ -59,145 +59,11 @@ public class ImageBookSample extends BaseContainer
    
    private static final int GRID_LINES = 3;
    private static final int GRID_COLS = 4;
-   private static final int CACHE_PAGES = 10; // big value = more memory consumed
+   private static final int CACHE_PAGES = 3; // big value = more memory consumed
    private static final int LINES_PER_PAGE = 6; // auto-adjust the font size; if set to 0, the size is unchanged
    
    // thread that loads and unloads the images dynamically
-   ImageLoader imgload;
-   class ImageLoader extends Thread
-   {
-      int max;
-      int perpage;
-      int current=-1;
-      String[] arqs;
-      Image[] loaded;
-      int lastIni,lastEnd;
-      IOException ex;
-      
-      public ImageLoader(int max, int perpage, String[] arqs)
-      {
-         this.max = max;
-         this.perpage = perpage;
-         this.arqs = arqs;
-         loaded = new Image[arqs.length];
-      }
-
-      public void run()
-      {
-         int lastcur = -1;
-         while (true)
-         {
-            while (lastcur == current)
-               Vm.sleep(10);
-            int range = perpage * 2;
-            lastcur = current;
-            int lastMinIdx = lastcur - range; if (lastMinIdx < 0) lastMinIdx = 0; 
-            int lastMaxIdx = lastcur + range; if (lastMaxIdx >= arqs.length) lastMaxIdx = arqs.length-1;
-            if (lastIni != lastEnd)
-            {
-               for (int i = lastIni; i < lastMinIdx; i++) loaded[i] = null;
-               for (int i = lastMaxIdx+1; i <= lastEnd; i++) loaded[i] = null;
-               Vm.gc(); // very important: keep memory usage low
-            }
-            lastIni = lastMinIdx;
-            lastEnd = lastMaxIdx;
-            ex = null;
-            //Vm.tweak(Vm.TWEAK_DISABLE_GC,true); -- uncommenting these lines will load faster but will take much more memory
-            for (int i = lastMinIdx; i <= lastMaxIdx && lastcur == current; i++)
-               if (loaded[i] == null)
-                  loaded[i] = loadImage(i);
-            //Vm.tweak(Vm.TWEAK_DISABLE_GC,false);
-         }
-      }
-      
-      private byte[] buf = new byte[1];
-      private Image loadImage(int i)
-      {
-         Image img = null;
-         try
-         {
-            File f = new File(imageFolder+arqs[i],File.READ_WRITE);
-            int s = f.getSize();
-            if (buf.length < s)
-               buf = new byte[s];
-            f.readBytes(buf,0,s);
-            f.close();
-            img = new Image(buf,s);
-         }
-         catch (IOException ioe)
-         {
-            Vm.debug(ioe.getMessage());
-            ioe.printStackTrace();
-            ex = ioe;
-         }
-         catch (Throwable e)
-         {
-            Vm.alert(e.getMessage()+" "+Vm.getStackTrace(e));
-            e.printStackTrace();
-         }
-         return img;
-      }
-
-      private void setCurrent(int idx)
-      {
-         if (loaded[idx] != null && ((idx % perpage) != 0 || idx == current))
-            return;
-         current = idx;
-      }
-      
-      /** Returns the image in the given size */ 
-      public Image getImage(int idx) throws IOException
-      {
-         if (ex != null)
-            throw ex;
-         try
-         {
-            setCurrent(idx);
-            while (loaded[idx] == null)
-               Vm.sleep(10);
-            return loaded[idx];
-         }
-         catch (Exception e) {e.printStackTrace();}
-         return null;
-      }
-   }
-   
-   // class used to show the Image on screen.
-   class DynImage extends Control
-   {
-      int idx;
-      
-      public DynImage(int idx)
-      {
-         this.idx = idx;
-      }
-      
-      public void onPaint(Graphics g)
-      {
-         Image img = null;
-         try
-         {
-            img = imgload.getImage(idx);
-            if (img != null)
-            {
-               double ratio = Math.min((double)width / img.getWidth(), (double)height / img.getHeight());
-               double oldH = img.hwScaleH, oldW = img.hwScaleW;
-               img.hwScaleH = img.hwScaleW = ratio;
-               g.drawImage(img,(width - img.getWidth())/2,(height - img.getHeight())/2);
-               img.hwScaleH = oldH; img.hwScaleW = oldW;
-            }
-         }
-         catch (Exception ioe) {}
-         if (img == null)
-         {
-            // no memory, draw a rect with a x
-            g.foreColor = Color.BLACK;
-            g.drawRect(0,0,width,height);
-            g.drawLine(0,0,width,height);
-            g.drawLine(width,0,0,height);
-         }
-      }
-   }
+   BulkImageLoader imgload;
    
    // class that represents a Grid's cell
    
@@ -229,7 +95,7 @@ public class ImageBookSample extends BaseContainer
          add(l2,LEFT,BOTTOM,FILL,PREFERRED); l2.reposition();
          try 
          {
-            img = new DynImage(idx);
+            img = imgload.new DynImage(idx);
             if (highQuality)
             {
                Image image = imgload.getImage(idx);
@@ -321,7 +187,7 @@ public class ImageBookSample extends BaseContainer
             imageNames[i] = arqs0[i % arqs0.length];
          // defines orientation
          // starts the ImageLoader
-         imgload = new ImageLoader(GRID_LINES*GRID_COLS*CACHE_PAGES, GRID_LINES*GRID_COLS, imageNames);
+         imgload = new BulkImageLoader(CACHE_PAGES, GRID_LINES*GRID_COLS, imageFolder, imageNames);
          imgload.start();
 
          setBackColor(Color.WHITE);
