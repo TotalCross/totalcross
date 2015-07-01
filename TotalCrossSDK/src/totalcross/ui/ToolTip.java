@@ -154,6 +154,8 @@ public class ToolTip extends Label implements PenListener, MouseListener
       Coord size = w.getSize();
 
       int ww = msg0lines != null ? fm.getMaxWidth(msg0lines,0,msg0lines.length) : fm.stringWidth(msg0); // guich@tc120_2: moved to after w.add(this)
+      if (ww == 0)
+         ww = getMaxTextWidth()+ insideGap;
       if (ww > Settings.screenWidth)
       {
          super.setText(Convert.insertLineBreakBalanced(Settings.screenWidth * 9 / 10, fm, msg0));
