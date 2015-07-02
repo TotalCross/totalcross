@@ -783,6 +783,7 @@ public class Edit extends Control implements TextControl
    {
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
+      boolean uiAndroid = Control.uiAndroid || uiHolo;
       int y = this.height - fmH - gap;
       if (uiAndroid) y -= 1;
       if (uiHolo) // no else here!
@@ -818,11 +819,14 @@ public class Edit extends Control implements TextControl
             int sel2 = Math.max(startSelectPos,insertPos);
             int sel1X = charPos2x(sel1);
             int sel2X = charPos2x(sel2);
-
-            int old = g.backColor;
-            g.backColor = back1;
-            g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
-            g.backColor = old;
+            
+            if (sel1X != sel2X)
+            {
+               int old = g.backColor;
+               g.backColor = back1;
+               g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
+               g.backColor = old;
+            }
          }
 
          g.foreColor = fColor;
