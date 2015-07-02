@@ -50,7 +50,7 @@ public class PSProductList extends Container
       {
          for (int i = 0, n = bil.arqs.length; i < n; )
          {
-            c.add(new PSProduct(bil.new DynImage(i),"Pillow "+i, 100+i),PARENTSIZE+((i&1)==0 ? 25 : 75), AFTER+25, PARENTSIZE+46,PREFERRED);
+            c.add(new PSProduct(bil.new DynImage(i),"Pillow "+i, 100+i),PARENTSIZE+((i&1)==0 ? 25 : 75), AFTER+50, PARENTSIZE+46,PREFERRED);
             i++;
             if (i < n)
                c.add(new PSProduct(bil.new DynImage(i),"Pillow "+i, 100+i),PARENTSIZE+((i&1)==0 ? 25 : 75), SAME, PARENTSIZE+46,PREFERRED);
