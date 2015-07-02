@@ -73,6 +73,7 @@ void flushAll();
 #define Flat         2
 #define Vista        3
 #define Android      4
+#define Holo         5
 
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point
 {
@@ -610,6 +611,7 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
                break;   
          }
          break;
+      case Holo:
       case Android:
       case Vista:
          switch (type)

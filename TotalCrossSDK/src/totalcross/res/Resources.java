@@ -110,7 +110,7 @@ public class Resources
     */
    public static void flush()
    {
-      if (Settings.uiStyle == Settings.Android)
+      if (Settings.uiStyle >= Settings.Android)
       {
          NinePatch.getInstance().flush();
          checkSel.flush();

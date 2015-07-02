@@ -1598,6 +1598,7 @@ public final class Graphics
                   break;
             }
             break;
+         case Settings.Holo:
          case Settings.Android:
          case Settings.Vista:
             foreColor = fourColors[2]|alpha;

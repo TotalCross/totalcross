@@ -381,7 +381,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.out.println("   /pos x,y         : Sets the openning position of the application");
       System.out.println("   /uiStyle Flat    : Flat user interface style");
       System.out.println("*  /uiStyle Vista   : Vista user interface style");
-      System.out.println("   /uiStyle Android : Android user interface style");
+      System.out.println("   /uiStyle Android : Android 4 user interface style");
+      System.out.println("   /uiStyle Holo    : Android 5 user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
@@ -506,6 +507,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                else
                if (next.equalsIgnoreCase("Android")) // guich@580_33
                   toUI = Settings.Android;
+               else
+               if (next.equalsIgnoreCase("Holo")) // guich@580_33
+                  toUI = Settings.Holo;
                else
                   throw new Exception();
                System.out.println("UI style is "+toUI);

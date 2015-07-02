@@ -175,12 +175,13 @@ public class MainWindow extends Window implements totalcross.MainClass
     * @see totalcross.sys.Settings#Flat
     * @see totalcross.sys.Settings#Vista
     * @see totalcross.sys.Settings#Android
+    * @see totalcross.sys.Settings#Holo
     * @since SuperWaba 5.05
     */
    public void setUIStyle(byte style)
    {
       Settings.uiStyle = style;
-      if (style == Settings.Android)
+      if (style >= Settings.Android)
          Settings.fingerTouch = true;
       Control.uiStyleChanged();
       Resources.uiStyleChanged();

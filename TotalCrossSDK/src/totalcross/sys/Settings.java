@@ -266,6 +266,7 @@ public final class Settings
     * @see #Flat
     * @see #Vista
     * @see #Android
+    * @see #Holo
     */
    public static byte uiStyle = Vista;
    

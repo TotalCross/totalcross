@@ -702,6 +702,7 @@ public class Button extends Control implements TextControl
                g.fillRect(0,0,width,height);
                break;
             case Settings.Android:
+            case Settings.Holo:
             case Settings.Vista: // guich@573_6
             {
                if (border == BORDER_NONE && flatBackground) // guich@582_14

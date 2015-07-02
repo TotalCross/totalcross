@@ -387,6 +387,7 @@ public class ComboBox extends Container
       btnW = btn.getPreferredWidth();
       switch (Settings.uiStyle)
       {
+         case Settings.Holo:
          case Settings.Android:
             btn.setImage(getArrowImage());
             if (arrowStyle == ARROWSTYLE_PAGEFLIP)
