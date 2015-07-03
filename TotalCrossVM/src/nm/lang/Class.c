@@ -38,7 +38,19 @@ static void createClassObject(Context currentContext, CharP className, Type type
       case Type_Float:   *ret = *floatTYPE;   return;
       case Type_Double:  *ret = *doubleTYPE;  return;
       default: break;
-   }
+   }                                   
+   if (*ret == null && strEqn(className, "java.lang.", 10))
+   {
+      char *p = className+10;            
+      if (strEq(p, "Byte"))      {*ret = *byteTYPE;    return;}
+      if (strEq(p, "Boolean"))   {*ret = *booleanTYPE; return;}
+      if (strEq(p, "Short"))     {*ret = *shortTYPE;   return;}
+      if (strEq(p, "Character")) {*ret = *charTYPE;    return;}
+      if (strEq(p, "Integer"))   {*ret = *intTYPE;     return;}
+      if (strEq(p, "Long"))      {*ret = *longTYPE;    return;}
+      if (strEq(p, "Float"))     {*ret = *floatTYPE;   return;}
+      if (strEq(p, "Double"))    {*ret = *doubleTYPE;  return;}
+   }      
    if (*ret == null)
    {
       c = loadClass(currentContext, className, true);
@@ -489,7 +501,7 @@ TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class
    TCClass target;
    TCObject me = p->obj[0];
    target = getTargetClass(me);
-   if (target->superClass != null && !target->flags.isInterface && !isPrimitive(me))
+   if (target->superClass != null && !target->flags.isInterface && !(me))
       createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO,null);
 }
 //////////////////////////////////////////////////////////////////////////
