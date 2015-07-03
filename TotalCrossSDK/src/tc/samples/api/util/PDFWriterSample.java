@@ -42,9 +42,9 @@ public class PDFWriterSample extends BaseContainer
          mPDFWriter.setFont(StandardFonts.SUBTYPE, StandardFonts.TIMES_ROMAN);
          mPDFWriter.addRawContent("1 0 0 rg\n");
          mPDFWriter.addTextAsHex(70, 50, 12, "68656c6c6f20776f726c6420286173206865782921");
-         mPDFWriter.setFont(StandardFonts.SUBTYPE, StandardFonts.COURIER, StandardFonts.WIN_ANSI_ENCODING);
+         mPDFWriter.setFont(StandardFonts.SUBTYPE, StandardFonts.COURIER, "UTF");
          mPDFWriter.addRawContent("0 0 0 rg\n");
-         mPDFWriter.addText(30, 90, 10, "© CRL", Transformation.DEGREES_270_ROTATION);
+         mPDFWriter.addText(30, 90, 10, "© CRL Calção", Transformation.DEGREES_270_ROTATION);
 
          mPDFWriter.newPage();
          mPDFWriter.addRawContent("[] 0 d\n");
@@ -81,7 +81,7 @@ public class PDFWriterSample extends BaseContainer
          {
             public void controlPressed(ControlEvent e)
             {
-               Vm.exec("viewer",name,0,true);
+               Vm.exec("viewer",Convert.normalizePath(name),0,true);
             }
          });
       }
