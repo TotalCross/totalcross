@@ -3,6 +3,7 @@ package tc.samples.app.store;
 import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
@@ -61,5 +62,11 @@ public class PSProductList extends Container
       {
          t.printStackTrace();
       }
+   }
+   
+   public void onEvent(Event e)
+   {
+      if (e.type == ControlEvent.PRESSED && e.target == bar)
+         new PSlogin().swapToTopmostWindow();         
    }
 }
