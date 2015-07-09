@@ -201,10 +201,7 @@ public class SQLiteUtil
    
    public String[][] getStrings(String sql) throws SQLException
    {
-      ResultSet rs = executeQuery(sql);
-      String[][] ret = getStrings(rs, new Vector(vectorInitialSize));
-      close(rs);
-      return ret;
+      return getStrings(executeQuery(sql), new Vector(vectorInitialSize));
    }
    
    public String getString(String sql) throws SQLException
