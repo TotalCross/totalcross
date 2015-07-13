@@ -7,16 +7,20 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
+/**
+ * This is a sample of a Login page with a list of products. Very simple.
+ */
 
-public class TCProductStore extends MainWindow
+public class TCProductStore extends MainWindow implements PSConstants
 {
+   /** The path where the images are stored. */
    public static String imagePath;
 
    public TCProductStore()
    {
-      setUIStyle(Settings.Holo);
-      setBackColor(0x004000);
-      Settings.uiAdjustmentsBasedOnFontHeight = true;
+      setUIStyle(Settings.Holo); // change the user interface style
+      setBackColor(MW_BACKCOLOR);
+      Settings.uiAdjustmentsBasedOnFontHeight = true; // enable adjustments based on font, not pixels
    }
    
    public void initUI()
@@ -41,10 +45,12 @@ public class TCProductStore extends MainWindow
          f = new File(imagePath+"almof00.png");
          if (!f.exists())
          {
+            // show UI
             l = new Label("Preparing sample images...");
             l.setForeColor(Color.WHITE);
             add(l,CENTER,CENTER);
             repaintNow();
+            // create and same images
             Random r = new Random();
             Image orig = new Image("img/almof.png").getSmoothScaledInstance(fmH*3,fmH*3);
             ByteArrayStream bas = new ByteArrayStream(40*1024);

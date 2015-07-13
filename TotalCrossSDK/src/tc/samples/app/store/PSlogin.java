@@ -6,16 +6,21 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
+/** Login page */
+
 public class PSlogin extends Container
 {
    private Button btEnter;
+   private Edit edPass, edLogin;
    
    public void initUI()
    {
       try
       {
+         // add the logo at top
          add(new ImageControl(new Image("img/logo.png").smoothScaledFixedAspectRatio(width*2/3,false)),CENTER,TOP+300);
          
+         // add button at bottom
          Button b = btEnter = new Button("ENTER");
          b.setBorder(Button.BORDER_ROUND);
          b.setBackForeColors(Color.WHITE,Color.BLACK);
@@ -24,13 +29,14 @@ public class PSlogin extends Container
          
          Edit ed;
          
-         ed = new Edit();
+         // add edits before button
+         edPass = ed = new Edit();
          ed.caption = "Password";
          ed.captionIcon = new Image("img/pass.png").smoothScaledFixedAspectRatio(fmH*2,true);
          ed.setBackForeColors(Color.WHITE,Color.WHITE);
          add(ed,CENTER,BEFORE-100,PARENTSIZE+90,fmH*3);
    
-         ed = new Edit();
+         edLogin = ed = new Edit();
          ed.caption = "Login";
          ed.captionIcon = new Image("img/login.png").smoothScaledFixedAspectRatio(fmH*2,true);
          ed.setBackForeColors(Color.WHITE,Color.WHITE);
@@ -48,7 +54,19 @@ public class PSlogin extends Container
       {
          case ControlEvent.PRESSED:
             if (e.target == btEnter)
-               new PSProductList().swapToTopmostWindow();
+            {
+               // check if the edits are filled
+               if (edPass.getLength() == 0 || edLogin.getLength() == 0)
+                  Toast.show("Please type the login and password!",2000);
+               else
+               {
+                  String p = edPass.getText(), l = edLogin.getText();
+                  // TODO validate the login and password
+                  
+                  // here we just go to the products list screen
+                  new PSProductList().swapToTopmostWindow();
+               }
+            }
             break;
       }
    }
