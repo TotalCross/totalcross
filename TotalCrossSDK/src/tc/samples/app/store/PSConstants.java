@@ -2,6 +2,8 @@ package tc.samples.app.store;
 
 import totalcross.ui.gfx.*;
 
+/** Color constants for the Product Store sample. */
+
 public interface PSConstants
 {
    public static final int MW_BACKCOLOR = 0x004000;
