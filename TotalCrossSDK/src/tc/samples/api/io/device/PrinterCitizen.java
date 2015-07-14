@@ -70,7 +70,7 @@ public class PrinterCitizen extends BaseContainer
          // print a png file.
          try
          {
-            cp.print(new MonoImage("barbara.png"),CitizenPrinter.IMAGE_MODE_24_DOUBLE);
+            cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"),CitizenPrinter.IMAGE_MODE_24_DOUBLE);
             cp.newLine();
          }
          catch (OutOfMemoryError oome) {add(new Label("No memory to load image"),CENTER,AFTER);}

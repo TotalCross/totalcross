@@ -265,7 +265,7 @@ public class PrinterZebra extends BaseContainer
       g.drawRect(0,0,w,h);
       
       // draw a sample image
-      Image baby = new Image("barbara.png");
+      Image baby = new Image("tc/samples/api/io/device/barbara.png");
       g.drawImage(baby, (w-baby.getWidth())/2,y); y += baby.getHeight();
       
       // draw some text
