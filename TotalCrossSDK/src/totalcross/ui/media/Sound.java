@@ -102,7 +102,7 @@ public final class Sound
    }
    
    /** Plays the given short wav or mp3 file. Make sure that the sounds are enabled, or you will not hear it!
-    * Works on Android, iOS, WP8 and Win32, but does not work on JavaSE nor on WinCE.
+    * Works on Android, iOS, WP8 and Win32, but does not work on JavaSE. On WinCE, supports playing only WAV files.
     * 
     * The file must be located in the file system.
     * If you store a mp3 file in the TCZ, you can get it out using this code:

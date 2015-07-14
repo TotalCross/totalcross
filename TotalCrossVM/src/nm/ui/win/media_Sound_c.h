@@ -40,6 +40,13 @@ static void soundPlay(CharP filename)
       Sleep(millis);
    mciSendString("stop MEDIAFILE",NULL,0,NULL);
    mciSendString("close MEDIAFILE",NULL,0,NULL);
+#elif defined(WINCE)
+   TCHAR fn[MAX_PATHNAME];
+   char* c; int rc;
+   while ((c = xstrchr(filename, '/')) != 0) // replace slashes
+	   *c = '\\';
+   CharP2TCHARPBuf(filename, fn);
+   PlaySound(fn, NULL, SND_ASYNC | SND_FILENAME);
 #endif
 }
 

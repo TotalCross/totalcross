@@ -32,15 +32,13 @@ public class MediaSample extends BaseContainer
       try
       {
          super.initUI();
-         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID) && !Settings.isIOS() && !Settings.platform.equals(Settings.WINDOWSPHONE))
-         {
-            add(new Label("This sample runs only on the\nAndroid, iOS and Windows Phone platforms",CENTER),CENTER,CENTER);
-            return;
-         }
          // you may write the file only once; here we write always because it is pretty small, just 29k
-         new File("device/sample.mp3", File.CREATE_EMPTY).writeAndClose(Vm.getFile("tc/samples/api/sample.mp3"));
+         final boolean isWAV = Settings.isWindowsCE() || Settings.platform.equals(Settings.WIN32);
+         final String ext = isWAV ? "wav" : "mp3";
+         // note: we're using ext concatenation here to prevent the wav/mp3 files being added twice to the TCZ
+         new File("device/sample."+ext, File.CREATE_EMPTY).writeAndClose(Vm.getFile(isWAV ? "tc/samples/api/sample.wav" : "tc/samples/api/sample.mp3"));
          
-         final Button b = new Button("Play MP3 sample");
+         final Button b = new Button(isWAV ? "Play WAV sample" : "Play MP3 sample");
          add(b, CENTER,CENTER);
          b.addPressListener(new PressListener() 
          {
@@ -48,7 +46,7 @@ public class MediaSample extends BaseContainer
             {
                try
                {
-                  Sound.play("device/sample.mp3");
+                  Sound.play("device/sample."+ext);
                }
                catch (Exception ee)
                {
