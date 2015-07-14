@@ -42,7 +42,7 @@ static void soundPlay(CharP filename)
    mciSendString("close MEDIAFILE",NULL,0,NULL);
 #elif defined(WINCE)
    TCHAR fn[MAX_PATHNAME];
-   char* c; int rc;
+   char* c;
    while ((c = xstrchr(filename, '/')) != 0) // replace slashes
 	   *c = '\\';
    CharP2TCHARPBuf(filename, fn);
