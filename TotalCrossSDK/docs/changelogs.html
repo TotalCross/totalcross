@@ -1,4 +1,27 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2694</h1>
+. added Method.getParameterCount()<br>
+. added Class.cast<br>
+. added interface TextControl for controls that have setText/getText<br>
+. optimized Convert.tokenizeString(String,char[]) - for small arrays, a loop is faster than IntHashTable. removed global variables used on both tokenizeString<br>
+. trying to limit the size of grid's column resize<br>
+. fixed getComponentType not working correctly for Objects<br>
+. removed debugs from bluetooth<br>
+. updated iOS native methods table<br>
+. added an interface to PathAnimation to let you set the position of the control<br>
+. added animation to TabbedContainer when the user clicks on the tab. can be disabled using animationTime field<br>
+. fixed some problems in reflection<br>
+. moved ImageBookSample.ImageLoader to a class BulkImageLoader. The DynImage was also moved to inside BuldImageLoader.<br>
+. fixed ToolTip not working for dynamic tips<br>
+. added a constructor to Label to let specify the fore color and if font is bold.<br>
+. changed positioning of X and Y when using PARENSIZE: now it centers the control at the given position. also added PARENTSIZEMIN (place control at left) and PARENTSIZEMAX (place control at right)<br>
+. improved TCProductStore<br>
+. fixed small glytch when using Holo in an Edit<br>
+. fixed opening pdf on desktop on PDFWriterSample<br>
+. removed extra resultset close from SQLiteUtil<br>
+. Now external viewers sample works on all platforms Added Vm.exec(viewer/url) support for wp8<br>
+. now Sound.play works also for Windows CE (wav)<br>
+. fixed "device/" not working for wince<br>
 <h1>build 2678</h1>
 . fixed Bar lines<br>
 . now PARENTSIZE can be used to specify X/Y, E.G., PARENTSIZE+25 will place at 1/4 parent's width (or height)<br>
