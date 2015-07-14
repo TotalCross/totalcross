@@ -21,11 +21,6 @@ public class ExternalViewersSample extends BaseContainer
       super.initUI();
       try
       {
-         if (!Settings.onJavaSE && !isAndroid && !Settings.isIOS())
-         {
-            add(new Label("This program runs on the\nAndroid and iOS platforms only",CENTER),CENTER,CENTER);
-            return;
-         }
          if (Settings.isIOS())
             sdcardPath = Settings.appPath+"/";
          

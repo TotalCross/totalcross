@@ -55,6 +55,7 @@ typedef HANDLE (__stdcall *RegisterServiceProc)(LPCWSTR lpszType,  DWORD dwIndex
 typedef BOOL (__stdcall *DeregisterServiceProc)(HANDLE hDevice);
 typedef HANDLE (__stdcall *GetServiceHandleProc)(LPWSTR szPrefix, LPWSTR szDllName, DWORD pdwDllBuf);
 
+#ifndef WP8 // defined in cppwrapper
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
    VoidP startInfo = null;
@@ -228,6 +229,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
 #endif
    return ret;
 }
+#endif
 
 void vmSetAutoOff(bool enable)
 {

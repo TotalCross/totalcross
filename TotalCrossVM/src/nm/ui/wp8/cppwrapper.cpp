@@ -120,6 +120,15 @@ DWORD32 getRemainingBatery()
    return Battery::GetDefault()->RemainingChargePercent;
 }
 
+int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
+{
+   Platform::String^ comm = ref new Platform::String((wchar_t*)szCommand);
+   Platform::String^ args = ref new Platform::String((wchar_t*)szArgs);
+   if (comm->Equals("url") || comm->Equals("viewer"))
+      Windows::System::Launcher::LaunchUriAsync(ref new Windows::Foundation::Uri(args));
+   return 1;
+}
+
 void vibrate(DWORD32 milliseconds)
 {
    VibrationDevice^ vib = VibrationDevice::GetDefault();
