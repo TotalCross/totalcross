@@ -16,6 +16,13 @@
 
 package tc.samples.api;
 
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+
 import tc.samples.api.crypto.*;
 import tc.samples.api.io.*;
 import tc.samples.api.io.device.*;
@@ -32,13 +39,6 @@ import tc.samples.api.ui.*;
 import tc.samples.api.ui.SignatureSample;
 import tc.samples.api.util.*;
 import tc.samples.api.xml.*;
-
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
 
 @SuppressWarnings("rawtypes")
 public class MainMenu extends BaseContainer
@@ -95,6 +95,7 @@ public class MainMenu extends BaseContainer
       "File",
       "PDBFile",
       "Bluetooth Print (Citizen)",
+      "Bluetooth Print (MPT)",
       "Bluetooth Print (Zebra)",
       "Bluetooth Transfer",
       "GPS",
@@ -219,8 +220,9 @@ public class MainMenu extends BaseContainer
    {
       FileSample.class,
       PDBFileSample.class,
-      PrinterCitizen.class,
-      PrinterZebra.class,
+      PrinterSampleCitizen.class,
+      PrinterSampleMPT.class,
+      PrinterSampleZebra.class,
       BTTransfer.class,
       GpsSample.class,
       ScannerInternal.class,

@@ -40,7 +40,7 @@ public class BluetoothPrinter
 {
    static final byte ESC = 27;
    private static final byte[] ENTER = {(byte)'\n'};
-   PortConnector con;
+   Stream con;
    
    public static final byte IMAGE_MODE_8_SINGLE  = (byte)0;
    public static final byte IMAGE_MODE_8_DOUBLE  = (byte)1;
@@ -58,7 +58,7 @@ public class BluetoothPrinter
     * Note that PortConnector can use any port (including infrared), however, it is not guaranteed 
     * that it will work with that port. For example, IR does not work on Palm OS devices.
     */
-   public BluetoothPrinter(PortConnector con) throws IOException
+   public BluetoothPrinter(Stream con) throws IOException
    {
       this.con = con;
    }

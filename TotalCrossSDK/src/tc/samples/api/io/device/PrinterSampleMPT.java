@@ -18,29 +18,20 @@
 
 package tc.samples.api.io.device;
 
-import tc.samples.api.*;
-
+import totalcross.io.*;
 import totalcross.io.device.printer.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 
-public class PrinterCitizen extends BaseContainer
+public class PrinterSampleMPT extends PrinterSampleBase
 {
-   public void initUI()
+   protected void printSample(Stream s) throws Exception
    {
-      super.initUI();
-      CitizenPrinter cp = null;
+      MPTPrinter cp = null;
       try
       {
-         if (!ask("This test works with a Citizen printer only. Do you have one attached?"))
-         {
-            back();
-            return;
-         }
-         add(new Label("Printing..."),CENTER,CENTER);
-
-         cp = new CitizenPrinter();
+         cp = new MPTPrinter(s);
          // change the font and print something
          cp.setFont(false, false, false, false, false);
          cp.print("Bárbara Hazan\n\nDaddy loves you!\n");

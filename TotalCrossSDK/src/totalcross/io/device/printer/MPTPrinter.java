@@ -34,11 +34,11 @@ import totalcross.io.device.*;
  * </ol>
  */
 
-public class CitizenPrinter extends BluetoothPrinter
+public class MPTPrinter extends BluetoothPrinter
 {
    /** Creates a new CitizenPrinter instance, using PortConnector.BLUETOOTH port at 57600 baud rate.
     */
-   public CitizenPrinter() throws IOException
+   public MPTPrinter() throws IOException
    {
       super();
    }
@@ -47,16 +47,22 @@ public class CitizenPrinter extends BluetoothPrinter
     * Note that PortConnector can use any port (including infrared), however, it is not guaranteed 
     * that it will work with that port. For example, IR does not work on Palm OS devices.
     */
-   public CitizenPrinter(PortConnector con) throws IOException
+   public MPTPrinter(PortConnector con) throws IOException
    {
       super(con);
    }
    
    /** Creates a new CitizenPrinter instance, using the given Stream as bridge to the printer.
     */
-   public CitizenPrinter(Stream con) throws IOException
+   public MPTPrinter(Stream con) throws IOException
    {
       super(con);
+   }
+   
+   /** Resets the printer, canceling previous font and line spacing */
+   public void reset() throws IOException
+   {
+      escape('@');
    }
    
    /** Sets the current font based on the given attributes. */
