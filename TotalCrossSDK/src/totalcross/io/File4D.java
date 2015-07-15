@@ -348,9 +348,14 @@ public class File4D extends RandomAccessStream
 
    public byte[] readAndClose() throws IOException
    {
-      byte[] ret = read();
-      close();
-      return ret;
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         close();
+      }
    }
    
    public byte[] read() throws IOException
@@ -363,7 +368,13 @@ public class File4D extends RandomAccessStream
    
    public void writeAndClose(byte[] bytes) throws IOException
    {
-      writeBytes(bytes, 0, bytes.length);
-      close();
+      try
+      {
+         writeBytes(bytes, 0, bytes.length);
+      }
+      finally
+      {
+         close();
+      }
    }
 }

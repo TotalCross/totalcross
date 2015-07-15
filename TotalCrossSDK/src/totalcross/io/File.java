@@ -1363,9 +1363,14 @@ public class File extends RandomAccessStream
     */
    public byte[] readAndClose() throws IOException
    {
-      byte[] ret = read();
-      close();
-      return ret;
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         close();
+      }
    }
 
    /** Writes byte array to this file and closes itself. A handy method that can be used like this:
@@ -1377,8 +1382,14 @@ public class File extends RandomAccessStream
     */
    public void writeAndClose(byte[] bytes) throws IOException
    {
-      writeBytes(bytes, 0, bytes.length);
-      close();
+      try
+      {
+         writeBytes(bytes, 0, bytes.length);
+      }
+      finally
+      {
+         close();
+      }
    }
 
    /** Reads the file and returns a byte array with its contents.
