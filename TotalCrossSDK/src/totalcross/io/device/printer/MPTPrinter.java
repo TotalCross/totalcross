@@ -21,17 +21,9 @@ package totalcross.io.device.printer;
 import totalcross.io.*;
 import totalcross.io.device.*;
 
-/** This class extends BluetoothPrinter to send special Citizen-like commands to the printer.
- * Tested with Citizen CMP-10 thermal printer.
- * <p>Instructions of how to setup the devices to work with the printer.
- * <ol> 
- * <li>First, run the self-test: turning the printer off, and pressing the LF + ON button at the same time and then releasing the LF button.
- * <li>Write down the last 2 bytes (4 letters) of the ADDRESS (e.g.: A4 08)
- * <li>Discover the "Citizen Systems" printer with the PDA.
- * <li>When asked for the PIN (password), write the last 4 letters of the address in UPPER CASE (e.g.: A408); if it fails,
- * write it in lower case (e.g.: a408).
- * <li>That's it. On some devices, you can choose to always use this printer as default Bluetooth device.
- * </ol>
+/** This class extends BluetoothPrinter to send special MTP commands to the printer.
+ * 
+ * Reference: http://www.rego.ro/down/REGO-MPT-TM.pdf
  */
 
 public class MPTPrinter extends BluetoothPrinter
@@ -66,9 +58,15 @@ public class MPTPrinter extends BluetoothPrinter
    }
    
    /** Sets the current font based on the given attributes. */
-   public void setFont(boolean fontA, boolean bold, boolean doubleWidth, boolean doubleHeight, boolean underline) throws IOException
+   public void setFont(boolean bold, boolean doubleWidth, boolean doubleHeight, boolean underline) throws IOException
    {
-      escape('!', (fontA ? 0 : 1) | (bold ? (1 << 3) : 0) | (doubleHeight ? (1 << 4) : 0) | (doubleWidth ? (1 << 5) : 0) | (underline ? (1 << 7) : 0));
+      escape('!', (bold ? (1 << 3) : 0) | (doubleHeight ? (1 << 4) : 0) | (doubleWidth ? (1 << 5) : 0) | (underline ? (1 << 7) : 0));
+   }
+   
+   /** Sets the character size */
+   public void setCharSize(boolean doubleW, boolean doubleH) throws IOException
+   {
+      gs('!', (doubleH ? 1 : 0) | (doubleW ? (1<<4) : 0));
    }
    
    /** Sets the space character width, between 0 and 32. */
@@ -89,16 +87,10 @@ public class MPTPrinter extends BluetoothPrinter
       escape('+');
    }
 
-   /** Double-space line height. */
-   public void doubleLineHeight() throws IOException
-   {
-      escape('2');
-   }
-   
    /** Single-space line height. */
    public void singleLineHeight() throws IOException
    {
-      escape('3',0);
+      escape('2');
    }
    
    /** User-defined line height (n / 203 inches height). */
