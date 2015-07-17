@@ -1050,31 +1050,42 @@ public class Container extends Control
     */
    public Control moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
    {
+      if (control.nextTabControl != null && changeTo(control.nextTabControl))
+         return control.nextTabControl;
+         
       Vector v = tabOrder;
       int idx = v.indexOf(control);
       int n = v.size();
-      if (idx >= 0 && n > 1)
+      if ((idx == -1 && n >= 0) || n > 1)
       {
+         if (idx == -1 && !forward) idx = n;
          for (int i = n-1; i >= 0; i--)
          {
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
-            {
-               c.requestFocus();
-               if (Settings.virtualKeyboard)
-               {
-                  if (c instanceof Edit)
-                     ((Edit)c).popupKCC();
-                  else
-                     ((MultiEdit)c).popupKCC();
-               }
+            if (changeTo(c))
                return c;
-            }
          }
       }
-      return null;
+      return parent != null ? parent.moveFocusToNextEditable(control, forward) : null;
+   }
+
+   private boolean changeTo(Control c)
+   {
+      if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
+      {
+         c.requestFocus();
+         if (Settings.virtualKeyboard)
+         {
+            if (c instanceof Edit)
+               ((Edit)c).popupKCC();
+            else
+               ((MultiEdit)c).popupKCC();
+         }
+         return true;
+      }
+      return false;
    }
 
    /** Moves the focus to the next control, which can be an Edit, a MultiEdit, or another control type.

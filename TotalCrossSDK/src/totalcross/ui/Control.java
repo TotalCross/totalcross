@@ -68,6 +68,8 @@ public class Control extends GfxSurface
    public String clearValueStr = ""; // guich@572_19
    /** Default value when calling clear. When the control will use a numeric value or a String, depends on the type of control. Defaults to zero. */
    public int clearValueInt; // guich@572_19
+   /** The next control that will receive focus when tab is hit. */
+   public Control nextTabControl;
    public static final int RANGE = 10000000;
    public static final int UICONST = RANGE*2+1000000;
    /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
