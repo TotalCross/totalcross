@@ -911,7 +911,7 @@ public final class Settings
     * so if your application crashes too early, the report will halt the exit process until its effectively
     * sent, and a black screen will appear in the meanwhile.
     * 
-    * You must set this in your application's static initializer, perferrably at the first line. E.G.:
+    * You must set this in your application's static initializer, preferrably at the first line. E.G.:
     * <pre>
     * static
     * {
