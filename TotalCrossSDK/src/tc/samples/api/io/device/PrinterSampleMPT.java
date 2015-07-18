@@ -33,7 +33,7 @@ public class PrinterSampleMPT extends PrinterSampleBase
       {
          cp = new MPTPrinter(s);
          // change the font and print something
-         cp.setFont(false, false, false, false, false);
+         cp.setFont(false, false, false, false);
          cp.print("Bárbara Hazan\n\nDaddy loves you!\n");
          cp.newLine();
 
@@ -44,37 +44,41 @@ public class PrinterSampleMPT extends PrinterSampleBase
          g.backColor = Color.WHITE;
          g.fillRect(0,0,k,k);
          g.foreColor = Color.BLACK;
-         g.drawRect(0,0,k,k);
+         g.drawRect(0,0,k-1,k-1);
          g.drawLine(0,0,k,k);
          g.drawLine(k,0,0,k);
 
          // ...and print it in several resolutions
+         cp.setLineHeight(8);
          cp.print(img, CitizenPrinter.IMAGE_MODE_8_SINGLE);        cp.newLine();
+         cp.setLineHeight(24);
          cp.print(img, CitizenPrinter.IMAGE_MODE_24_SINGLE);       cp.newLine();
+         cp.setLineHeight(8);
          cp.print(img, CitizenPrinter.IMAGE_MODE_8_DOUBLE);        cp.newLine();
+         cp.setLineHeight(24);
          cp.print(img, CitizenPrinter.IMAGE_MODE_24_DOUBLE);       cp.newLine();
 
+         cp.reset();
          // change the font to a big one
-         cp.setFont(true, true, true, false, true);
+         cp.setFont(true, true, false, true);
          cp.print("*** Barbara ***\n");
 
          // print a png file.
          try
          {
+            cp.setLineHeight(24);
             cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"),CitizenPrinter.IMAGE_MODE_24_DOUBLE);
             cp.newLine();
          }
          catch (OutOfMemoryError oome) {add(new Label("No memory to load image"),CENTER,AFTER);}
 
+         cp.newLine(6);
+         
          add(new Label("Done"),CENTER,AFTER);
       }
       catch (Exception e)
       {
          MessageBox.showException(e,true);
-      }
-      finally
-      {
-         try {cp.close();} catch (Exception e) {}
       }
    }
 }

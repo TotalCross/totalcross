@@ -56,6 +56,7 @@ public abstract class PrinterSampleBase extends BaseContainer
          super.initUI();
          instance = this;
          int gap = fmH/2;
+         Button.commonGap = fmH/2;
          add(new Label("This sample assumes you know which printer is near by!"),LEFT,TOP+2);
          add(btnRadioOn = new Button("set radio on"),LEFT,AFTER+gap);
          add(btnRadioOff = new Button("set radio off"),AFTER+gap,SAME);
@@ -64,6 +65,7 @@ public abstract class PrinterSampleBase extends BaseContainer
          add(btnListUnpaired = new Button("list unpaired"), AFTER+gap,SAME);
          add(btnConnect = new Button("connect to selected device"), LEFT,AFTER+gap);
          add(chUnsec = new Check("Unsecure connection"),LEFT,AFTER+gap,FILL,SAME);
+         Button.commonGap = 0;
          btnConnect.setEnabled(false);
          add(lstatus = new Label("",CENTER),LEFT,BOTTOM);
          addLog(LEFT,AFTER+gap,FILL,FIT,chUnsec);

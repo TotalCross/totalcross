@@ -1523,6 +1523,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    private static boolean sendToUser,bugreportStarted,bugreportFinished;
+   private static long bugreportSize;
    private static void createBugreport() 
    {
       if (!bugreportStarted)
@@ -1552,29 +1553,35 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                l2 = f.length();
                if (l1 == l2)
                   break;
-            }            
-            long end = System.currentTimeMillis();
-            AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/"+bugreportfn+" in "+(end-ini)+"ms with "+l2+" bytes");
-            // zip the bugreport
-            ini = System.currentTimeMillis();
-            FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
-            ZipOutputStream zout = new ZipOutputStream(fout);
-            File ff = new File("/sdcard/IssueReport/"+bugreportfn);
-            FileInputStream fin = new FileInputStream(ff);
-            zout.putNextEntry(new ZipEntry("bugreport.txt"));
-            byte[] buf = new byte[8192];
-            for (int n; (n = fin.read(buf)) > 0;)
-            {
-               sendToUser = sendToUser || new String(buf,0,n).indexOf("Unhandled exception") >= 0;
-               zout.write(buf,0,n);
             }
-            AndroidUtils.debug("send to user ? "+sendToUser);
-            zout.closeEntry();
-            zout.close();
-            fin.close();
-            ff.delete();
-            end = System.currentTimeMillis();
-            AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
+            bugreportSize = l2;
+            if (l2 <= 256)   // ignore small reports
+               f.delete();
+            else
+            {
+               long end = System.currentTimeMillis();
+               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/"+bugreportfn+" in "+(end-ini)+"ms with "+l2+" bytes");
+               // zip the bugreport
+               ini = System.currentTimeMillis();
+               FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
+               ZipOutputStream zout = new ZipOutputStream(fout);
+               File ff = new File("/sdcard/IssueReport/"+bugreportfn);
+               FileInputStream fin = new FileInputStream(ff);
+               zout.putNextEntry(new ZipEntry("bugreport.txt"));
+               byte[] buf = new byte[8192];
+               for (int n; (n = fin.read(buf)) > 0;)
+               {
+                  sendToUser = sendToUser || new String(buf,0,n).indexOf("Unhandled exception") >= 0;
+                  zout.write(buf,0,n);
+               }
+               AndroidUtils.debug("send to user ? "+sendToUser);
+               zout.closeEntry();
+               zout.close();
+               fin.close();
+               ff.delete();
+               end = System.currentTimeMillis();
+               AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
+            }
          }
          catch (Exception e) 
          {
@@ -1585,7 +1592,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    private static int bugreportSending;
-   private static void sendBugreport(final String toAddr, final String appVersion, final boolean alwaysSend) // called from here
+   private static void sendBugreport(final String toAddr, final String appVersion, final boolean alwaysSend) // called also from updateSettingsFromStaticInitializer
    {
       if (Settings4A.buildNumber != 0) // dont use when debugging
       new Thread()
@@ -1593,13 +1600,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          public void run()
          {
             bugreportSending++;
+            boolean isValid = false;
             if (!bugreportFinished)
             {
+               bugreportSize = 0;
                createBugreport();
                while (!bugreportFinished)
                   try {Thread.sleep(250);} catch (Exception e) {}
+               isValid = bugreportSize >= 256;
             }
-            if (sendToUser || alwaysSend)
+            if (isValid && (sendToUser || alwaysSend))
                try
                {
                   String[] addr = new String[]{toAddr};

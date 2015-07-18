@@ -38,15 +38,17 @@ import totalcross.ui.image.*;
 
 public class BluetoothPrinter
 {
-   static final byte ESC = 27;
+   public static final byte ESC = 27;
+   public static final byte GS = 29;
+   
    private static final byte[] ENTER = {(byte)'\n'};
-   Stream con;
    
    public static final byte IMAGE_MODE_8_SINGLE  = (byte)0;
    public static final byte IMAGE_MODE_8_DOUBLE  = (byte)1;
    public static final byte IMAGE_MODE_24_SINGLE = (byte)0x20;
    public static final byte IMAGE_MODE_24_DOUBLE = (byte)0x21;
    
+   Stream con;
    /** Creates a new BluetoothPrinter instance, using PortConnector.BLUETOOTH port at 57600 baud rate.
     */
    public BluetoothPrinter() throws IOException
@@ -87,6 +89,18 @@ public class BluetoothPrinter
       write(new byte[]{ESC, (byte)command, (byte)value1, (byte)value2});
    }
    
+   /** Sends a GS command to the printer. */
+   public void gs(int command, int value1) throws IOException
+   {
+      write(new byte[]{GS, (byte)command, (byte)value1});
+   }
+   
+   /** Sends an escape command to the printer. */
+   public void gs(int command, int value1, int value2) throws IOException
+   {
+      write(new byte[]{GS, (byte)command, (byte)value1, (byte)value2});
+   }
+
    /** Prints the given String. */
    public void print(String str) throws IOException
    {
@@ -127,7 +141,14 @@ public class BluetoothPrinter
    {
       write(ENTER);
    }
-   
+
+   /** Sends a number of new lines to the printer. */
+   public void newLine(int count) throws IOException
+   {
+      while (--count >= 0)
+         write(ENTER);
+   }
+
    public void close() throws IOException
    {
       con.close();

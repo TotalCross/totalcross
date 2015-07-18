@@ -86,7 +86,7 @@ public class MonoImage extends Image
             {
                pad.write(rowOut);
                pad.newLine();
-               for (int i = rowOut.length-1; i >= 0; i--)
+               for (int i = rowOut.length; --i >= 0;)
                   rowOut[i] = 0;
             }
             pad.write(new byte[]{BluetoothPrinter.ESC, (byte)'*', imageMode, (byte)(rowW % 256), (byte)(rowW / 256)});
@@ -94,7 +94,7 @@ public class MonoImage extends Image
          }
             
          getPixelRow(rowIn,y);
-         for (int x =0,ry8 = ry/8, i=0; x < rowW; x++,i+=3)
+         for (int x =0,ry8 = ry/8, i=0; x < rowW; x++,i+=4)
             if (rowIn[i] == 0)
                rowOut[x*bytes+ry8] |= bits[ry];
       }
