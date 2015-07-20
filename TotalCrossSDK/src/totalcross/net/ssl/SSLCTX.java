@@ -358,6 +358,7 @@ public class SSLCTX
          ssl_socket = (SSLSocket)sf.createSocket(ns, inet.getHostName(), inet.getPort(), false);
          if (ssl_socket != null)
          {
+            ssl_socket.setSoTimeout(socket.readTimeout < 0 ? 0 : socket.readTimeout);
             SSL ssl = new SSL(ssl_socket, socket);
             ssl._trustMgrs = trustMgrs;
             ssl_socket.setUseClientMode(true);
@@ -384,6 +385,7 @@ public class SSLCTX
          ssl_socket = (SSLSocket)sf.createSocket(ns, inet.getHostName(), inet.getPort(), false);
          if (ssl_socket != null)
          {
+            ssl_socket.setSoTimeout(socket.readTimeout < 0 ? 0 : socket.readTimeout);
             SSL ssl = new SSL(ssl_socket, socket);
             ssl._trustMgrs = trustMgrs;
             ssl_socket.setUseClientMode(false);
