@@ -92,7 +92,6 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jsoundEnable      = (*env)->GetStaticMethodID(env, applicationClass, "soundEnable", "(Z)V");
    jcellinfoUpdate   = (*env)->GetStaticMethodID(env, applicationClass, "cellinfoUpdate", "()[I");
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
-   jkeepCrash        = (*env)->GetStaticFieldID (env, applicationClass, "keepCrash", "Z");
    jgetHeight        = (*env)->GetStaticMethodID(env, applicationClass, "getAppHeight", "()I");
    jsipVisible       = (*env)->GetStaticFieldID (env, applicationClass, "sipVisible", "Z");
    jappTitleH        = (*env)->GetStaticFieldID (env, applicationClass, "appTitleH", "I");
@@ -102,7 +101,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    jlistTCZs         = (*env)->GetStaticMethodID(env, applicationClass, "listTCZs", "()Ljava/lang/String;");
    jgetFreeMemory    = (*env)->GetStaticMethodID(env, applicationClass, "getFreeMemory", "()I");
-   jsendBugreport    = (*env)->GetStaticMethodID(env, applicationClass, "sendBugreport", "(Ljava/lang/String;Ljava/lang/String;Z)V");
+   jsendBugreport    = (*env)->GetStaticMethodID(env, applicationClass, "sendBugreport", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
@@ -110,26 +109,25 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
 }
 
-void keepCrash()
+static void sendBugReport()
 {
+   char* email = tcSettings.bugreportEmail != null && *tcSettings.bugreportEmail != null && String_charsLen(*tcSettings.bugreportEmail) >= 6 ? JCharP2CharP(String_charsStart(*tcSettings.bugreportEmail), String_charsLen(*tcSettings.bugreportEmail)) : "";
+   char* appv  = *tcSettings.appVersion == null ? "" : JCharP2CharP(String_charsStart(*tcSettings.appVersion), String_charsLen(*tcSettings.appVersion));
+   char* appid = applicationIdStr;
    JNIEnv *env = getJNIEnv();
-   (*env)->SetStaticBooleanField(env, applicationClass, jkeepCrash, true);
+   jstring jemail = (*env)->NewStringUTF(env, email); 
+   jstring jappv = (*env)->NewStringUTF(env, appv); 
+   jstring jappid = (*env)->NewStringUTF(env, appid); 
+   // must check if the alert is already being show (maybe by the system itself) prior to calling another alert
+   (*env)->CallStaticVoidMethod(env, applicationClass, jsendBugreport, jemail, jappv, jappid);
+   (*env)->DeleteLocalRef(env, jemail);
+   (*env)->DeleteLocalRef(env, jappv);
+   (*env)->DeleteLocalRef(env, jappid);
+   xfree(email);
 }
 void updateSettingsFromStaticInitializer()
 {
-   if (tcSettings.bugreportEmail != null && *tcSettings.bugreportEmail != null && String_charsLen(*tcSettings.bugreportEmail) >= 6) // a@a.br
-   {
-      char* str = JCharP2CharP(String_charsStart(*tcSettings.bugreportEmail), String_charsLen(*tcSettings.bugreportEmail));
-      char* appVersion = *tcSettings.appVersion == null ? "" : JCharP2CharP(String_charsStart(*tcSettings.appVersion), String_charsLen(*tcSettings.appVersion));
-      JNIEnv *env = getJNIEnv();
-      jstring jstr = (*env)->NewStringUTF(env, str); 
-      jstring jappv = (*env)->NewStringUTF(env, appVersion); 
-      // must check if the alert is already being show (maybe by the system itself) prior to calling another alert
-      (*env)->CallStaticVoidMethod(env, applicationClass, jsendBugreport, jstr, jappv, false);
-      (*env)->DeleteLocalRef(env, jstr);
-      (*env)->DeleteLocalRef(env, jappv);
-      xfree(str);
-   }   
+   sendBugReport();
 }
 
 char* getTotalCrossAndroidClass(CharP className)

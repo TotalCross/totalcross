@@ -18,8 +18,11 @@
 
 package totalcross;
 
+import totalcross.android.*;
+import totalcross.android.Loader;
+
 import android.app.*;
-import android.app.ActivityManager.MemoryInfo;
+import android.app.ActivityManager.*;
 import android.content.*;
 import android.content.pm.*;
 import android.content.res.*;
@@ -35,16 +38,13 @@ import android.telephony.gsm.*;
 import android.text.*;
 import android.util.*;
 import android.view.*;
-import android.view.View.OnKeyListener;
+import android.view.View.*;
 import android.view.inputmethod.*;
 import android.widget.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.zip.*;
-
-import totalcross.android.*;
-import totalcross.android.Loader;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener, GpsStatus.Listener
 {
@@ -159,9 +159,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       String vmPath = context.getApplicationInfo().dataDir;
-      if (hadCrash() && !Loader.dontSendBugreports) // note: if the crash occurs too early, the report may not be sent by the thread. and we cannot remove it from a thread or Android will shout.
-         sendBugreport("guich@totalcross.com","",true);
-      createCrash();
       initializeVM(context, tczname, appPath, vmPath, cmdline);
       if (GENERATE_FONT)
       {
@@ -536,7 +533,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       else
       {
          if (eventThread != null) eventThread.running = false;
-         while (bugreportSending > 0) // if sending bugreport, wait until finish
+         while (bugreportSending) // if sending bugreport, wait until finish
             try {Thread.sleep(250);} catch (Exception e) {}
          loader.finish();
          //if (!loader.isSingleApk())
@@ -1224,7 +1221,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appPaused()
    {
-      deleteCrash();
       appPaused = true;
       instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
@@ -1236,7 +1232,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void appResumed()
    {
-      createCrash();
       appPaused = false;
       instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
@@ -1505,112 +1500,87 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return mi.availMem > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) mi.availMem;
    }
    ///////////////// crash controller //////////////////////
-   private static void createCrash()
-   {
-      try {new FileOutputStream(appPath+"/crash.txt").close();} catch (Exception e) {}
-   }
-   public static boolean keepCrash; // called when an unhandled exception occurs
-   private static void deleteCrash()
-   {
-      if (!keepCrash)
-         try {new File(appPath+"/crash.txt").delete();} catch (Exception e) {}
-   }
-   private static boolean hadCrash()
-   {
-      boolean b = false;
-      try {b = new File(appPath+"/crash.txt").exists(); deleteCrash();} catch (Exception e) {}
-      return b;
-   }
    
-   private static boolean sendToUser,bugreportStarted,bugreportFinished;
-   private static long bugreportSize;
-   private static void createBugreport() 
+   private static boolean createBugreport() 
    {
-      if (!bugreportStarted)
+      boolean containsUsefulInformation = false;
+      long l2 = 0;
+      try 
       {
-         bugreportStarted = true;
-         try 
-         {
-            // generate the bugreport
-            AndroidUtils.debug("Generating bugreport");
-            long ini = System.currentTimeMillis();
-            try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
-            String bugreportfn = "bugreport"+((int)(Math.random()*10000))+".txt";
-            String[] commands =
-               {
-                  "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/"+bugreportfn+" \n",
-               };
-            java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
-            DataOutputStream os = new DataOutputStream(p.getOutputStream());
-            for (String tmpCmd : commands) 
-               os.writeBytes(tmpCmd);
-            File f = new File("/sdcard/IssueReport/"+bugreportfn); // takes 33 seconds on a s3 mini
-            long l2 = 0;
-            while (true)
+         // generate the bugreport
+         AndroidUtils.debug("Generating bugreport");
+         long ini = System.currentTimeMillis();
+         try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
+         String bugreportfn = "bugreport"+((int)(Math.random()*10000))+".txt";
+         String[] commands =
             {
-               long l1 = f.length();
-               Thread.sleep(1000);
-               l2 = f.length();
-               if (l1 == l2)
-                  break;
+               "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/"+bugreportfn+" \n",
+            };
+         java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+         DataOutputStream os = new DataOutputStream(p.getOutputStream());
+         for (String tmpCmd : commands) 
+            os.writeBytes(tmpCmd);
+         File f = new File("/sdcard/IssueReport/"+bugreportfn); // takes 33 seconds on a s3 mini
+         while (true)
+         {
+            long l1 = f.length();
+            Thread.sleep(1000);
+            l2 = f.length();
+            if (l1 == l2)
+               break;
+         }
+         if (l2 <= 512)   // ignore small reports
+            f.delete();
+         else
+         {
+            long end = System.currentTimeMillis();
+            AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/"+bugreportfn+" in "+(end-ini)+"ms with "+l2+" bytes");
+            // zip the bugreport
+            final String bugreportZip = "/sdcard/IssueReport/bugreport.zip";
+            ini = System.currentTimeMillis();
+            FileOutputStream fout = new FileOutputStream(bugreportZip);
+            ZipOutputStream zout = new ZipOutputStream(fout);
+            File ff = new File("/sdcard/IssueReport/"+bugreportfn);
+            FileInputStream fin = new FileInputStream(ff);
+            zout.putNextEntry(new ZipEntry("bugreport.txt"));
+            byte[] buf = new byte[8192];
+            for (int n; (n = fin.read(buf)) > 0;)
+            {
+               if (!containsUsefulInformation)
+                  containsUsefulInformation = containsUsefulInformation(new String(buf,0,n));
+               zout.write(buf,0,n);
             }
-            bugreportSize = l2;
-            if (l2 <= 256)   // ignore small reports
-               f.delete();
+            zout.closeEntry();
+            zout.close();
+            fout.close();
+            fin.close();
+            ff.delete();
+            end = System.currentTimeMillis();
+            if (!containsUsefulInformation)
+               new File(bugreportZip).delete();
             else
-            {
-               long end = System.currentTimeMillis();
-               AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/"+bugreportfn+" in "+(end-ini)+"ms with "+l2+" bytes");
-               // zip the bugreport
-               ini = System.currentTimeMillis();
-               FileOutputStream fout = new FileOutputStream("/sdcard/IssueReport/bugreport.zip");
-               ZipOutputStream zout = new ZipOutputStream(fout);
-               File ff = new File("/sdcard/IssueReport/"+bugreportfn);
-               FileInputStream fin = new FileInputStream(ff);
-               zout.putNextEntry(new ZipEntry("bugreport.txt"));
-               byte[] buf = new byte[8192];
-               for (int n; (n = fin.read(buf)) > 0;)
-               {
-                  sendToUser = sendToUser || new String(buf,0,n).indexOf("Unhandled exception") >= 0;
-                  zout.write(buf,0,n);
-               }
-               AndroidUtils.debug("send to user ? "+sendToUser);
-               zout.closeEntry();
-               zout.close();
-               fin.close();
-               ff.delete();
-               end = System.currentTimeMillis();
-               AndroidUtils.debug("Ziped bugreport at /sdcard/IssueReport/bugreport.zip in "+(end-ini)+"ms");
-            }
+               AndroidUtils.debug("Ziped bugreport at "+bugreportZip+" in "+(end-ini)+"ms");
          }
-         catch (Exception e) 
-         {
-            AndroidUtils.handleException(e,false);
-         }
-         bugreportFinished = true;
       }
+      catch (Exception e) 
+      {
+         AndroidUtils.handleException(e,false);
+      }
+      return containsUsefulInformation; // will be false if file is small
    }
 
-   private static int bugreportSending;
-   private static void sendBugreport(final String toAddr, final String appVersion, final boolean alwaysSend) // called also from updateSettingsFromStaticInitializer
+   private static boolean bugreportSending;
+   static void sendBugreport(final String toAddr, final String appVersion, final String appid) // called from updateSettingsFromStaticInitializer
    {
-      if (Settings4A.buildNumber != 0) // dont use when debugging
+      if (Settings4A.buildNumber != 0 && !Loader.dontSendBugreports) // dont use when debugging
       new Thread()
       {
          public void run()
          {
-            bugreportSending++;
-            boolean isValid = false;
-            if (!bugreportFinished)
+            try
             {
-               bugreportSize = 0;
-               createBugreport();
-               while (!bugreportFinished)
-                  try {Thread.sleep(250);} catch (Exception e) {}
-               isValid = bugreportSize >= 256;
-            }
-            if (isValid && (sendToUser || alwaysSend))
-               try
+               bugreportSending = true;
+               if (createBugreport())
                {
                   String[] addr = new String[]{toAddr};
                   WindowManager wm = (WindowManager) loader.getSystemService(Context.WINDOW_SERVICE);
@@ -1623,6 +1593,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      subj += ", app version: "+appVersion;
                   m.setSubject(subj); 
                   m.setBody(
+                        "Email: "+toAddr+"\n"+
+                        "App version: "+appVersion+"\n"+
+                        "App id: "+appid+"\n"+
                         "Imei: "+Settings4A.imei+"\n"+
                         "Serial: "+Settings4A.serialNumber+"\n"+
                         "Device id: "+Settings4A.deviceId+"\n"+
@@ -1630,20 +1603,43 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                         "Processor: "+System.getProperty("os.arch")+"\n"+
                         "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
                         "Font: "+deviceFontHeight+"\n"
-                  ); 
+                  );
                   m.addAttachment("/sdcard/IssueReport/bugreport.zip");
                   m.send();
                   AndroidUtils.debug("Bugreport mail sent to "+addr[0]+"!");
                }
-               catch (Exception e) 
-               {
-                  AndroidUtils.handleException(e,false);
-               }
-            bugreportSending--;
+            }
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+            bugreportSending = false;
          }
       }.start();
    }
    
+   private static boolean containsUsefulInformation(String s)
+   {
+      s = s.toLowerCase();
+      if (s.indexOf("totalcross") >= 0)
+         return true;
+      // TODO see if the tests below won't discard useful information
+//      if (s.indexOf(">>> totalcross") >= 0)
+//         return true;
+//      if (s.indexOf("OutOfMemoryError") != -1 || s.indexOf("(tns") != -1 || s.indexOf("(tnS_") != -1)
+//         return true;
+//      if (s.indexOf("fontDestroy") != -1 || s.indexOf("Unhandled exception") != -1)
+//         return true;
+//      if (s.indexOf("#00") >= 0)
+//      {            
+//         if (s.indexOf("(dlfree)") != -1)
+//            return true;
+//         if (s.matches(".*(\\(strcmp\\))$")) // #00  pc 0000e108  /system/lib/libc.so (strcmp)
+//            return true;
+//      }
+      return false;
+   }
+
    private static SoundPool player;
    private static String lastSound;
    private static int lastSoundID;
