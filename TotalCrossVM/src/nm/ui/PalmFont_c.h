@@ -32,7 +32,7 @@ bool fontInit(Context currentContext)
       minfs = getStaticFieldInt(c, "MIN_FONT_SIZE");
       normal = getStaticFieldInt(c, "NORMAL_SIZE");
       tabSizeField = getStaticFieldInt(c, "TAB_SIZE");
-      defaultFontNameObj = getStaticFieldObject(c, "DEFAULT");
+      defaultFontNameObj = getStaticFieldObject(currentContext,c, "DEFAULT");
    }
    if (!maxfs || !minfs || !normal || !tabSizeField || !defaultFontNameObj)
       return false;

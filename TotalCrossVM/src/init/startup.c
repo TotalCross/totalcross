@@ -492,15 +492,15 @@ jumpArgument:
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
    loadExceptionClasses(currentContext); // guich@tc112_18
-   voidTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Void",      false), "TYPE");
-   booleanTYPE = getStaticFieldObject(loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
-   byteTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
-   shortTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Short",     false), "TYPE");
-   intTYPE     = getStaticFieldObject(loadClass(currentContext, "java.lang.Integer",   false), "TYPE");
-   longTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Long",      false), "TYPE");
-   floatTYPE   = getStaticFieldObject(loadClass(currentContext, "java.lang.Float",     false), "TYPE");
-   doubleTYPE  = getStaticFieldObject(loadClass(currentContext, "java.lang.Double",    false), "TYPE");
-   charTYPE    = getStaticFieldObject(loadClass(currentContext, "java.lang.Character", false), "TYPE");
+   voidTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Void",      false), "TYPE");
+   booleanTYPE = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
+   byteTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
+   shortTYPE   = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Short",     false), "TYPE");
+   intTYPE     = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Integer",   false), "TYPE");
+   longTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Long",      false), "TYPE");
+   floatTYPE   = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Float",     false), "TYPE");
+   doubleTYPE  = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Double",    false), "TYPE");
+   charTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Character", false), "TYPE");
 
    cloneable = loadClass(currentContext, "java.lang.Cloneable", false); // Loads the Cloneable interface.
 

@@ -128,11 +128,13 @@ public final class Class4D<T>
       return s.substring(s.lastIndexOf('.')+1);
    }
    
-   public T cast(Object obj) {
+   public T cast(Object obj) 
+   {
       if (obj != null && !isInstance(obj))
           throw new ClassCastException("Can't cast "+obj);
       return (T) obj;
-  }
+   }
+   
    public native boolean isAssignableFrom(Class<?> cls);
    public native boolean isInterface();
    public native boolean isArray();

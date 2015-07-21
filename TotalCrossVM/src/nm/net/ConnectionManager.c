@@ -20,7 +20,7 @@
 #endif
 
 // static fields
-#define ConnectionManager_connRef(c)      getStaticFieldObject(c, "connRef")
+#define ConnectionManager_connRef(c)      getStaticFieldObject(null, c, "connRef")
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_loadResources(NMParams p) // totalcross/net/ConnectionManager native private void loadResources();

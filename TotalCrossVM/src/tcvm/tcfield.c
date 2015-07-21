@@ -52,10 +52,27 @@ int64* getStaticFieldLong(TCClass c, CharP fieldName)
    return idx >= 0 ? (int64*)&c->v64StaticValues[idx] : null;
 }
 
-TCObject* getStaticFieldObject(TCClass c, CharP fieldName)
+TC_API void jlC_forName_s(NMParams p);
+
+TCObject* getStaticFieldObject(Context context, TCClass c, CharP fieldName)
 {
    int32 idx = getStaticFieldIndex(fieldName, c->objStaticFields);
-   return idx >= 0 ? &c->objStaticValues[idx] : null;
+   if (idx >= 0)
+   {
+      TCObject* ret = &c->objStaticValues[idx];
+      Field f = &c->objStaticFields[idx];
+      if (strEq(f->targetClassName, "java.lang.Class") && OBJ_CLASS(*ret)->flags.isString)
+      {
+         TNMParams params;
+         tzero(params);
+         params.currentContext = context;
+         params.obj = ret;
+         jlC_forName_s(&params);
+         c->objStaticValues[idx] = params.retO;
+      }
+      return &c->objStaticValues[idx];
+   }
+   return null;
 }
 
 //////////

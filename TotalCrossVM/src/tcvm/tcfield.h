@@ -37,8 +37,8 @@ typedef double* (*getStaticFieldDoubleFunc)(TCClass c, CharP fieldName);
 TC_API int64* getStaticFieldLong(TCClass c, CharP fieldName);
 typedef int64* (*getStaticFieldLongFunc)(TCClass c, CharP fieldName);
 /// Returns a reference to a static field of the given Java type.
-TC_API TCObject* getStaticFieldObject(TCClass c, CharP fieldName);
-typedef TCObject* (*getStaticFieldObjectFunc)(TCClass c, CharP fieldName);
+TC_API TCObject* getStaticFieldObject(Context context, TCClass c, CharP fieldName);
+typedef TCObject* (*getStaticFieldObjectFunc)(Context context, TCClass c, CharP fieldName);
 /** Returns a reference to an instance field of the given Java type.  Class name is the class where
     the field is declared, or null if from current class. It may be necessary to pass it if there's
     more than one field with the same name in the class hierarchy. */

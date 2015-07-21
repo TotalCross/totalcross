@@ -42,14 +42,15 @@ static void createClassObject(Context currentContext, CharP className, Type type
    if (*ret == null && strEqn(className, "java.lang.", 10))
    {
       char *p = className+10;            
-      if (strEq(p, "Byte"))      {*ret = *byteTYPE;    return;}
-      if (strEq(p, "Boolean"))   {*ret = *booleanTYPE; return;}
-      if (strEq(p, "Short"))     {*ret = *shortTYPE;   return;}
-      if (strEq(p, "Character")) {*ret = *charTYPE;    return;}
-      if (strEq(p, "Integer"))   {*ret = *intTYPE;     return;}
-      if (strEq(p, "Long"))      {*ret = *longTYPE;    return;}
-      if (strEq(p, "Float"))     {*ret = *floatTYPE;   return;}
-      if (strEq(p, "Double"))    {*ret = *doubleTYPE;  return;}
+      if (strEq(p, "Void")      && voidTYPE    != null) {*ret = *voidTYPE;    return;}
+      if (strEq(p, "Byte")      && byteTYPE    != null) {*ret = *byteTYPE;    return;}
+      if (strEq(p, "Boolean")   && booleanTYPE != null) {*ret = *booleanTYPE; return;}
+      if (strEq(p, "Short")     && shortTYPE   != null) {*ret = *shortTYPE;   return;}
+      if (strEq(p, "Character") && charTYPE    != null) {*ret = *charTYPE;    return;}
+      if (strEq(p, "Integer")   && intTYPE     != null) {*ret = *intTYPE;     return;}
+      if (strEq(p, "Long")      && longTYPE    != null) {*ret = *longTYPE;    return;}
+      if (strEq(p, "Float")     && floatTYPE   != null) {*ret = *floatTYPE;   return;}
+      if (strEq(p, "Double")    && doubleTYPE  != null) {*ret = *doubleTYPE;  return;}
    }      
    if (*ret == null)
    {

@@ -113,7 +113,7 @@ debugFunc procDebug;
          int2hex(var[i],2,s);
       *s = 0;
       settingsClass = loadClass(scannerContext, "totalcross.sys.Settings", true);
-      setObjectLock(*getStaticFieldObject(settingsClass, "romSerialNumber") = createStringObjectFromCharP(scannerContext, serial, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(null,settingsClass, "romSerialNumber") = createStringObjectFromCharP(scannerContext, serial, -1), UNLOCKED);
    }
 }*/
 

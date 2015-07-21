@@ -72,24 +72,24 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.gcCount                     = getStaticFieldInt(settingsClass, "gcCount");
    tcSettings.gcTime                      = getStaticFieldInt(settingsClass, "gcTime");
    tcSettings.chunksCreated               = getStaticFieldInt(settingsClass, "chunksCreated");    *tcSettings.chunksCreated = 3;
-   tcSettings.appSettingsPtr              = getStaticFieldObject(settingsClass, "appSettings");
-   tcSettings.appSecretKeyPtr             = getStaticFieldObject(settingsClass, "appSecretKey");
-   tcSettings.appSettingsBinPtr           = getStaticFieldObject(settingsClass, "appSettingsBin");
+   tcSettings.appSettingsPtr              = getStaticFieldObject(currentContext,settingsClass, "appSettings");
+   tcSettings.appSecretKeyPtr             = getStaticFieldObject(currentContext,settingsClass, "appSecretKey");
+   tcSettings.appSettingsBinPtr           = getStaticFieldObject(currentContext,settingsClass, "appSettingsBin");
    tcSettings.showMemoryMessagesAtExit    = getStaticFieldInt(settingsClass, "showMemoryMessagesAtExit");
-   tcSettings.timeZoneStrPtr              = getStaticFieldObject(settingsClass, "timeZoneStr");
+   tcSettings.timeZoneStrPtr              = getStaticFieldObject(currentContext,settingsClass, "timeZoneStr");
    tcSettings.fingerTouchPtr              = getStaticFieldInt(settingsClass, "fingerTouch");
    tcSettings.disableDebug                = getStaticFieldInt(loadClass(currentContext, "totalcross.sys.Vm", true), "disableDebug");
-   tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(settingsClass, "fullScreenPlatforms");
+   tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(currentContext,settingsClass, "fullScreenPlatforms");
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
    tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
-   tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
+   tcSettings.iccidPtr                    = getStaticFieldObject(currentContext,settingsClass, "iccid");
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
    tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
-   tcSettings.lineNumber                  = getStaticFieldObject(settingsClass, "lineNumber");
+   tcSettings.lineNumber                  = getStaticFieldObject(currentContext,settingsClass, "lineNumber");
    tcSettings.unmovableSIP                = getStaticFieldInt(settingsClass, "unmovableSIP");
-   tcSettings.bugreportEmail              = getStaticFieldObject(settingsClass, "bugreportEmail");
-   tcSettings.appVersion                  = getStaticFieldObject(settingsClass, "appVersion");
+   tcSettings.bugreportEmail              = getStaticFieldObject(currentContext,settingsClass, "bugreportEmail");
+   tcSettings.appVersion                  = getStaticFieldObject(currentContext,settingsClass, "appVersion");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
@@ -173,18 +173,18 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    getDefaultCrid(mainClassName, applicationIdStr);
    applicationId = *((int32*)applicationIdStr);
 
-   setObjectLock(*getStaticFieldObject(settingsClass, "applicationId")   = createStringObjectFromCharP(currentContext, applicationIdStr, -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "applicationId")   = createStringObjectFromCharP(currentContext, applicationIdStr, -1), UNLOCKED);
 #if !defined darwin
-   setObjectLock(*getStaticFieldObject(settingsClass, "platform")        = createStringObjectFromCharP(currentContext, platform        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "platform")        = createStringObjectFromCharP(currentContext, platform        , -1), UNLOCKED);
 #endif
-   setObjectLock(*getStaticFieldObject(settingsClass, "userName")        = createStringObjectFromCharP(currentContext, userName        , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "romSerialNumber") = createStringObjectFromCharP(currentContext, romSerialNumber , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "deviceId")        = createStringObjectFromCharP(currentContext, deviceId        , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "imei")            = createStringObjectFromCharP(currentContext, imei            , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "appPath")         = createStringObjectFromCharP(currentContext, appPath         , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "dataPath")        = createStringObjectFromCharP(currentContext, dataPath        , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "vmPath")          = createStringObjectFromCharP(currentContext, vmPath          , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "iccid")           = createStringObjectFromCharP(currentContext, iccid           , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "userName")        = createStringObjectFromCharP(currentContext, userName        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "romSerialNumber") = createStringObjectFromCharP(currentContext, romSerialNumber , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "deviceId")        = createStringObjectFromCharP(currentContext, deviceId        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "imei")            = createStringObjectFromCharP(currentContext, imei            , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "appPath")         = createStringObjectFromCharP(currentContext, appPath         , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "dataPath")        = createStringObjectFromCharP(currentContext, dataPath        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "vmPath")          = createStringObjectFromCharP(currentContext, vmPath          , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "iccid")           = createStringObjectFromCharP(currentContext, iccid           , -1), UNLOCKED);
 
    return true;
 }
@@ -192,7 +192,7 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
 void updateSettingsFromStaticInitializer(); // android/startup_c.h
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 {
-   TCObject appId = *getStaticFieldObject(settingsClass, "applicationId");
+   TCObject appId = *getStaticFieldObject(currentContext,settingsClass, "applicationId");
    JCharP c = String_charsStart(appId);
 
    applicationIdStr[0] = (char)c[0];
@@ -214,7 +214,7 @@ void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 
 static void updateEntry(char *name, uint32 crtr, bool bin, bool isHKLM)
 {
-   TCObject obj = *getStaticFieldObject(settingsClass, name);
+   TCObject obj = *getStaticFieldObject(mainContext,settingsClass, name);
    if (obj == NULL || ARRAYOBJ_LEN(obj) == 0) // if string null, delete it - guich@240_3: first condition added.
       deleteAppSettings(crtr,bin,isHKLM);      
    else                                      
@@ -254,7 +254,7 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
 
 TC_API bool getDataPath(CharP storeInto)
 {
-   TCObject dataPathObj = *getStaticFieldObject(settingsClass, "dataPath");
+   TCObject dataPathObj = *getStaticFieldObject(null,settingsClass, "dataPath");
    if (dataPathObj == null)
       return false;
    String2CharPBuf(dataPathObj, storeInto);

@@ -175,7 +175,7 @@ TCObject chars2bytes(Context currentContext, JCharP chars, int32 length)
       TCClass c = loadClass(currentContext, "totalcross.sys.Convert", true);
       if (c == null)
          return null;
-      charConverterPtr = getStaticFieldObject(c, "charConverter");
+      charConverterPtr = getStaticFieldObject(currentContext, c, "charConverter");
       if (charConverterPtr == null)
          return null;
       ISO88591CharacterConverter = loadClass(currentContext, "totalcross.sys.CharacterConverter", true);

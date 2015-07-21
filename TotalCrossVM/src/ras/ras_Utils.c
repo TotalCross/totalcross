@@ -201,7 +201,7 @@ TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static tota
    putInfo(p->currentContext, info, "COMPILATION_DATE", int2str(getCompilationDate() ^ COMPILATION_MASK, buf));
 
    //flsobral@tc125: added more info on v2
-   if ((strObj = *getStaticFieldObject(settingsClass, "versionStr")) != null)
+   if ((strObj = *getStaticFieldObject(p->currentContext, settingsClass, "versionStr")) != null)
       putInfo(p->currentContext, info, "VERSAO_VM", String2CharPBuf(strObj, buffer));
 
    p->retO = info;
@@ -234,7 +234,7 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
       case NO_ERROR:
       {
          info = createInfo(p->currentContext);
-         if (putInfoObj(p->currentContext, info, "PLATFORM", *getStaticFieldObject(settingsClass, "platform")) &&
+         if (putInfoObj(p->currentContext, info, "PLATFORM", *getStaticFieldObject(p->currentContext, settingsClass, "platform")) &&
              putInfo(p->currentContext, info, "ID", deviceId) &&
              putInfo(p->currentContext, info, "HASH", deviceHash) &&
              putInfo(p->currentContext, info, "VERSAO_ROM", int2str(*settings->romVersionPtr, buf))) //flsobral@tc125: added more info on v2
@@ -242,7 +242,7 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
             //flsobral@tc138: v3 info
             if (putInfo(p->currentContext, info, "IMEI", imei) && putInfo(p->currentContext, info, "SERIAL", serial))
             {
-               if ((strObj = *getStaticFieldObject(settingsClass, "activationId")) != null)
+               if ((strObj = *getStaticFieldObject(p->currentContext,settingsClass, "activationId")) != null)
                   putInfoObj(p->currentContext, info, "COD_ATIVACAO" , strObj);
             }
          }

@@ -761,7 +761,8 @@ notYetLinked:
                   params.currentContext = context;
                   params.obj = &regO[code->mtd.this_];
                   jlC_forName_s(&params);
-                  c = OBJ_CLASS(regO[code->mtd.this_] = params.retO);
+                  regO[code->mtd.this_] = params.retO;
+                  c = OBJ_CLASS(params.retO);
                }
             }
             else

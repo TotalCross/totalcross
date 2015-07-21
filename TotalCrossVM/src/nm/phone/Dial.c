@@ -50,7 +50,7 @@ static void statusChange(CharP msg)
       TCClass dial = loadClass(currentContext, "totalcross.phone.Dial", true); //flsobral@tc114_75: fixed Dial's full qualified name.
       if (dial == null) // exception already thrown
          return;
-      listener = getStaticFieldObject(dial, "listener");
+      listener = getStaticFieldObject(null, dial, "listener");
       if (listener == null)
       {
          throwException(currentContext, NoSuchFieldError, "Can't find Dial.listener static field.");

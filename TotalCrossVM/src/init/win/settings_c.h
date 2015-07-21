@@ -854,7 +854,7 @@ void updateDaylightSavings(Context currentContext)
       JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
    else
       JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
-   setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
 }
 
 bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx

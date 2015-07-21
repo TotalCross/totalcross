@@ -291,7 +291,7 @@ bool fillSettings(Context currentContext)
    {
       jstring2CharP(jStringField, strTemp);
       (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
    // date format
@@ -355,7 +355,7 @@ bool fillSettings(Context currentContext)
    {
       jstring2CharP(jStringField, strTemp);
       (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
    // identification
@@ -389,7 +389,7 @@ bool fillSettings(Context currentContext)
    {
       jstring2CharP(jStringField, strTemp);
       (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "esn") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "esn") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
    // device capabilities
@@ -453,7 +453,7 @@ bool fillSettings(Context currentContext)
 // platform, touch screen and virtual keyboard settings
 #if defined darwin
    platform = strCaseEqn(deviceId, "ipad", 4) ? "IPAD" : "IPHONE";
-   *getStaticFieldObject(settingsClass, "platform") = *getStaticFieldObject(settingsClass, platform); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
+   *getStaticFieldObject(currentContext, settingsClass, "platform") = *getStaticFieldObject(currentContext, settingsClass, platform); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
    *tcSettings.virtualKeyboardPtr = *tcSettings.fingerTouchPtr = 1;
 #elif defined linux
    platform = "Linux";

@@ -25,12 +25,12 @@
 
 // static fields
 static TCClass cellInfoClass;
-#define ConnectionManager_connRef(c)      getStaticFieldObject(c, "connRef")
+#define ConnectionManager_connRef(c)      getStaticFieldObject(null,c, "connRef")
 
-#define CellInfo_cellId(c)                *getStaticFieldObject(c, "cellId")
-#define CellInfo_mnc(c)                   *getStaticFieldObject(c, "mnc")
-#define CellInfo_mcc(c)                   *getStaticFieldObject(c, "mcc")
-#define CellInfo_lac(c)                   *getStaticFieldObject(c, "lac")
+#define CellInfo_cellId(c)                *getStaticFieldObject(null,c, "cellId")
+#define CellInfo_mnc(c)                   *getStaticFieldObject(null,c, "mnc")
+#define CellInfo_mcc(c)                   *getStaticFieldObject(null,c, "mcc")
+#define CellInfo_lac(c)                   *getStaticFieldObject(null,c, "lac")
 #define CellInfo_signal(c)                *getStaticFieldInt(c, "signal")
 
 //////////////////////////////////////////////////////////////////////////

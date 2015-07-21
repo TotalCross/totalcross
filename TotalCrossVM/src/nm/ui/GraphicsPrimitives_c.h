@@ -3285,7 +3285,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
    if (graphicsCreateScreenSurface(&screen))
    {
       TCObject *screenObj;
-      screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
+      screenObj = getStaticFieldObject(currentContext,loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
       if (controlEnableUpdateScreenPtr == null)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
