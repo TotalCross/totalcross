@@ -91,12 +91,9 @@ public class Resources
          {
             case Settings.Holo:
                loadImages("totalcross/res/holo/");
-               loadImages("totalcross/res/android/");
-               break;
-            case Settings.Android:
-               loadImages("totalcross/res/android/");
                break;
          }
+         loadImages("totalcross/res/android/"); // always load android UI
          try {if (!new File("device/chime.mp3").exists()) new File("device/chime.mp3",File.CREATE_EMPTY).writeAndClose(Vm.getFile("totalcross/res/mp3/chime.mp3"));} catch (Exception e) {if (!Settings.onJavaSE) e.printStackTrace();}
       }
       catch (Throwable t)
