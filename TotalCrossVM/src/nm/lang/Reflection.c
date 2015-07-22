@@ -401,24 +401,35 @@ TC_API void jlrA_getFloat_oi(NMParams p) // totalcross/lang/reflect/Array public
 TC_API void jlrA_set_oio(NMParams p) // totalcross/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
 {
    TCObject array = p->obj[0];
-   int32 index = p->i32[0];
    TCObject value = p->obj[1];
-   if (value == null)
-      throwException(p->currentContext, IllegalArgumentException, "Value is null");
+   if (array == null)
+      throwException(p->currentContext, IllegalArgumentException, "Array is null");
    else
-      switch (checkPrimitiveArray(p, Type_Null, false))
+   {
+      int32 index = p->i32[0];
+      TCClass c = OBJ_CLASS(array);
+      if (c->name[1] != '&') // object array? - note: we assume that it is valid to set the object array with a null value
       {
-         case Type_Byte:    ((int8  *)ARRAYOBJ_START(array))[index] = (int8)  Byte_v     (value); break;
-         case Type_Boolean: ((int8  *)ARRAYOBJ_START(array))[index] = (int8)  Boolean_v  (value); break;
-         case Type_Short:   ((int16 *)ARRAYOBJ_START(array))[index] = (int16) Short_v    (value); break;
-         case Type_Char:    ((int16 *)ARRAYOBJ_START(array))[index] = (int16) Character_v(value); break;
-         case Type_Int:     ((int32 *)ARRAYOBJ_START(array))[index] = (int32) Integer_v  (value); break;
-         case Type_Long:    ((int64 *)ARRAYOBJ_START(array))[index] = (int64) Long_v     (value); break;
-         case Type_Float:   ((double*)ARRAYOBJ_START(array))[index] = (double)Float_v    (value); break;
-         case Type_Double:  ((double*)ARRAYOBJ_START(array))[index] = (double)Double_v   (value); break;
-         case Type_Null:    break;
-         default:           ((TCObject*)ARRAYOBJ_START(array))[index] = value;                      break;
+         if (checkArrayRange(p->currentContext, array, 0, index))
+            ((TCObject*)ARRAYOBJ_START(array))[index] = value;
       }
+      else // primitive array
+      if (value == null)
+         throwException(p->currentContext, IllegalArgumentException, "Value is null");
+      else
+         switch (checkPrimitiveArray(p, Type_Null, false))
+         {
+            case Type_Byte:    ((int8  *)ARRAYOBJ_START(array))[index] = (int8)  Byte_v     (value); break;
+            case Type_Boolean: ((int8  *)ARRAYOBJ_START(array))[index] = (int8)  Boolean_v  (value); break;
+            case Type_Short:   ((int16 *)ARRAYOBJ_START(array))[index] = (int16) Short_v    (value); break;
+            case Type_Char:    ((int16 *)ARRAYOBJ_START(array))[index] = (int16) Character_v(value); break;
+            case Type_Int:     ((int32 *)ARRAYOBJ_START(array))[index] = (int32) Integer_v  (value); break;
+            case Type_Long:    ((int64 *)ARRAYOBJ_START(array))[index] = (int64) Long_v     (value); break;
+            case Type_Float:   ((double*)ARRAYOBJ_START(array))[index] = (double)Float_v    (value); break;
+            case Type_Double:  ((double*)ARRAYOBJ_START(array))[index] = (double)Double_v   (value); break;
+            default:           break;
+         }
+   }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlrA_setBoolean_oib(NMParams p) // totalcross/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
