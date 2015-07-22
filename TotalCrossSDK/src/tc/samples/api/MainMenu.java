@@ -28,6 +28,7 @@ import tc.samples.api.io.*;
 import tc.samples.api.io.device.*;
 import tc.samples.api.lang.reflection.*;
 import tc.samples.api.lang.thread.*;
+import tc.samples.api.json.*;
 import tc.samples.api.map.*;
 import tc.samples.api.media.*;
 import tc.samples.api.net.*;
@@ -109,7 +110,12 @@ public class MainMenu extends BaseContainer
       "Reflection",
       "Thread",
    };
-   
+
+   String[] jsonItems =
+   {
+      "JSon parser",
+   };   
+
    String[] mapItems = 
    {
       "GoogleMaps",
@@ -126,7 +132,7 @@ public class MainMenu extends BaseContainer
       "FTP",
       "Server socket",
       "Socket Http",
-      "Socket Https",
+      //"Socket Https",
    };
    
    String[] phoneItems =
@@ -163,6 +169,7 @@ public class MainMenu extends BaseContainer
       "ui",
       "crypto",
       "io",
+      "json",
       "lang",
       "map",
       "media",
@@ -230,11 +237,15 @@ public class MainMenu extends BaseContainer
       PortConnectorSample.class,
    };
    
+   Class[] jsonClasses = 
+   {
+      JSONSample.class,
+   };
    Class[] langClasses = 
    {      
       ReflectionSample.class,
       ThreadSample.class,
-   };     
+   };
    Class[] mapClasses = 
    {      
       GoogleMapsSample.class,
@@ -288,6 +299,7 @@ public class MainMenu extends BaseContainer
       uiItems,
       cryptoItems,
       ioItems,
+      jsonItems,
       langItems, 
       mapItems, 
       mediaItems,
@@ -304,6 +316,7 @@ public class MainMenu extends BaseContainer
       uiClasses,
       cryptoClasses,
       ioClasses,
+      jsonClasses,
       langClasses, 
       mapClasses,
       mediaClasses,
