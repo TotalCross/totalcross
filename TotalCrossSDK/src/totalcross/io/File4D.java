@@ -358,6 +358,18 @@ public class File4D extends RandomAccessStream
       }
    }
    
+   public byte[] readAndDelete() throws IOException
+   {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         delete();
+      }
+   }
+   
    public byte[] read() throws IOException
    {
       int len = getSize();
