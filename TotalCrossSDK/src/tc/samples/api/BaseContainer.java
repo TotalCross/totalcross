@@ -208,8 +208,12 @@ public class BaseContainer extends Container
    protected static ListBox lblog;
    public void addLog(int x, int y, int w, int h, Control rel)
    {
+      addLog(this,x,y,w,h,rel);
+   }
+   public void addLog(Container parent, int x, int y, int w, int h, Control rel)
+   {
       ListBox.itemHeightFactor = 1;
-      add(lblog = new ListBox(),x,y,w,h,rel);
+      parent.add(lblog = new ListBox(),x,y,w,h,rel);
       ListBox.itemHeightFactor = ListBox.DEFAULT_ITEM_HEIGHT_FACTOR;
    }
 

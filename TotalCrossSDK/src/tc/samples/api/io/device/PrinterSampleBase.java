@@ -54,21 +54,23 @@ public abstract class PrinterSampleBase extends BaseContainer
       try
       {
          super.initUI();
+         ScrollContainer sc = new ScrollContainer(false,true);
+         add(sc,LEFT,TOP,FILL,FILL);
          instance = this;
          int gap = fmH/2;
          Button.commonGap = fmH/2;
-         add(new Label("This sample assumes you know which printer is near by!"),LEFT,TOP+2);
-         add(btnRadioOn = new Button("set radio on"),LEFT,AFTER+gap);
-         add(btnRadioOff = new Button("set radio off"),AFTER+gap,SAME);
-         add(btnDiscOn = new Button("temporarily discoverable"), LEFT,AFTER+gap);
-         add(btnListPaired = new Button("list paired"), LEFT,AFTER+gap);
-         add(btnListUnpaired = new Button("list unpaired"), AFTER+gap,SAME);
-         add(btnConnect = new Button("connect to selected device"), LEFT,AFTER+gap);
-         add(chUnsec = new Check("Unsecure connection"),LEFT,AFTER+gap,FILL,SAME);
+         sc.add(new Label("This sample assumes you know which printer is near by!"),LEFT,TOP+2);
+         sc.add(btnRadioOn = new Button("set radio on"),LEFT,AFTER+gap);
+         sc.add(btnRadioOff = new Button("set radio off"),AFTER+gap,SAME);
+         sc.add(btnDiscOn = new Button("temporarily discoverable"), LEFT,AFTER+gap);
+         sc.add(btnListPaired = new Button("list paired"), LEFT,AFTER+gap);
+         sc.add(btnListUnpaired = new Button("list unpaired"), AFTER+gap,SAME);
+         sc.add(btnConnect = new Button("connect to selected device"), LEFT,AFTER+gap);
+         sc.add(chUnsec = new Check("Unsecure connection"),LEFT,AFTER+gap,FILL,SAME);
          Button.commonGap = 0;
          btnConnect.setEnabled(false);
-         add(lstatus = new Label("",CENTER),LEFT,BOTTOM);
-         addLog(LEFT,AFTER+gap,FILL,FIT,chUnsec);
+         addLog(sc,LEFT,AFTER+gap,FILL,PARENTSIZE+50,null);
+         sc.add(lstatus = new Label("",CENTER),LEFT,AFTER);
          lblog.ihtBackColors = new IntHashtable(30);
          timer = addTimer(200);
          updateButtonState(false,false);
