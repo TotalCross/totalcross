@@ -11,7 +11,7 @@
     G:\TotalCross\TotalCrossVM\builders\android\apps\singleapk\AndroidManifest.xml -->
 
     <application android:icon="@drawable/icon" android:label="Stub" android:debuggable="false"
-         android:theme="@style/CustomActivityTheme" >
+         android:theme="@style/TCThemeNS" >
         <activity android:name=".Loader"
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"

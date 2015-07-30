@@ -11,7 +11,7 @@
     P:\gitrepo\TotalCross\TotalCrossVM\builders\android\apps\tcvm\AndroidManifest.xml -->
 
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
-         android:theme="@style/CustomActivityTheme" android:debuggable="false">
+         android:theme="@style/TCThemeNS" android:debuggable="false">
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"

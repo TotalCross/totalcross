@@ -491,14 +491,14 @@ public class Deployer4Android
       int props = Utils.version2int(newVersion);
       dsbas.writeInt(props);
       
-      // if is full screen, search and replace Theme.Black.NoTitleBar by Theme.Black.NoTitleBar.Fullscreen
+      // if is full screen, search and replace TCThemeNC by TCThemeFS
       if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
       {
-         byte[] themeMark = {(byte)0x09,(byte)0x00,(byte)0x03,(byte)0x01};
+         byte[] themeMark = {(byte)0x00,(byte)0x00,(byte)0x0b,(byte)0x7f,(byte)0x11};
          ofs = Utils.indexOf(res, themeMark, false);
          if (ofs == -1)
             throw new DeployerException("Error: could not find position for theme");
-         res[ofs] = (byte)0xA; // set Fullscreen attribute
+         res[ofs] = 1; // set Fullscreen attribute: TCThemeNC -> TCThemeFS
       }
       
       // now, change the names accordingly

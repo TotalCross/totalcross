@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
    
-    <style name="CustomActivityTheme" parent="@android:style/Theme.Black">
+    <style name="TCThemeNS" parent="@android:style/Theme.Black">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <style name="TCThemeFS" parent="@android:style/Theme.Black">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
     </style>
 
 </resources>
