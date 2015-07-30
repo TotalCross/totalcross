@@ -19,7 +19,7 @@
 package totalcross.lang;
 
 /** 
- * Thrown when a abstract class or an interface is trying to be Class.newInstance'd. 
+ * I have no idea of what this exception is, but it is in the structure of ReflecticeOperaciontException.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -31,17 +31,19 @@ package totalcross.lang;
  * that has no correspondence with totalcross.lang will make the tc.Deploy program to abort, informing
  * where the problem occured. A good idea is to always refer to this javadoc to know what is and what isn't
  * available.
+ * 
+ * @author jeffque
  */
 
-public class InstantiationException4D extends ReflectiveOperationException
+public class InvocationTargetException4D extends ReflectiveOperationException
 {
    /** Constructs an empty Exception. */
-   public InstantiationException4D()
+   public InvocationTargetException4D()
    {
    }
 
    /** Constructs an exception with the given message. */
-   public InstantiationException4D(String msg)
+   public InvocationTargetException4D(String msg)
    {
 	   super(msg);
    }

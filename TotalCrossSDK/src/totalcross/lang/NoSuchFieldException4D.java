@@ -33,7 +33,7 @@ package totalcross.lang;
  * available.
  */
 
-public class NoSuchFieldException4D extends Error
+public class NoSuchFieldException4D extends ReflectiveOperationException
 {
    /** Constructs an empty Exception. */
    public NoSuchFieldException4D()
