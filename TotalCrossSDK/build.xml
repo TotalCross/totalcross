@@ -477,7 +477,7 @@ target: javadoc
 
   <exec dir="${java.home}/bin" executable="javadoc">
     <arg line="-sourcepath ${output}/javadoc"/>
-    <arg line="-windowtitle 'TotalCross SDK ${versionStr}'"/>
+    <arg line="-windowtitle 'TotalCross SDK ${versionStr}.${buildNumber}'"/>
     <arg line="-d ${docs}/html"/>
     <arg line="-doctitle 'Please read the changelogs &lt;a href=changelogs.html _target=blank &gt;here&lt;/a&gt;.'"/>
     <arg line="-source 1.7"/>
