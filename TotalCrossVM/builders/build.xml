@@ -176,6 +176,7 @@ target: createSkeleton - Create the folders from scratch
       </copy>
    <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
+   <replaceregexp file="${target.sdk.path}/src/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
