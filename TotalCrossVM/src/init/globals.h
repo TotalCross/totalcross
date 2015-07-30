@@ -60,7 +60,7 @@ extern jobject applicationObj, applicationContext;
 extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 extern jfieldID jsipVisible,jappTitleH;
-extern jmethodID jgetHeight,jsendBugreport;
+extern jmethodID jgetHeight;
 #elif defined WIN32 || defined linux
 extern TCHAR exeName[MAX_PATHNAME];
 #endif

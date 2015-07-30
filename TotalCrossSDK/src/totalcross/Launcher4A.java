@@ -533,8 +533,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       else
       {
          if (eventThread != null) eventThread.running = false;
-         while (bugreportSending) // if sending bugreport, wait until finish
-            try {Thread.sleep(250);} catch (Exception e) {}
          loader.finish();
          //if (!loader.isSingleApk())
             System.exit(3);
@@ -891,6 +889,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int vmExec(String command, String args, int launchCode, boolean wait)
    {
+      if (command.equals("bugreport"))
+         return createBugreport() ? 1 : 0;
       if (command.equals("viewer"))
       {
          if (args == null)
@@ -1501,46 +1501,45 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    ///////////////// crash controller //////////////////////
    
-   private static boolean createBugreport() 
+   static boolean createBugreport() // called by MainWindow using Vm.exec 
    {
       boolean containsUsefulInformation = false;
       long l2 = 0;
       try 
       {
          // generate the bugreport
-         AndroidUtils.debug("Generating bugreport");
-         long ini = System.currentTimeMillis();
+         AndroidUtils.debug("a");
          try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
-         String bugreportfn = "bugreport"+((int)(Math.random()*10000))+".txt";
+         String bugreportfn = "/sdcard/IssueReport/bugreport"+((int)(Math.random()*10000))+".txt";
          String[] commands =
             {
-               "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >/sdcard/IssueReport/"+bugreportfn+" \n",
+               "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >"+bugreportfn+" \n",
             };
          java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
          DataOutputStream os = new DataOutputStream(p.getOutputStream());
          for (String tmpCmd : commands) 
             os.writeBytes(tmpCmd);
-         File f = new File("/sdcard/IssueReport/"+bugreportfn); // takes 33 seconds on a s3 mini
+         File f = new File(bugreportfn); // takes 33 seconds on a s3 mini
          while (true)
          {
             long l1 = f.length();
-            Thread.sleep(1000);
+            Thread.sleep(250);
             l2 = f.length();
             if (l1 == l2)
                break;
          }
          if (l2 <= 512)   // ignore small reports
+         {
+            AndroidUtils.debug("b "+l2);
             f.delete();
+         }
          else
          {
-            long end = System.currentTimeMillis();
-            AndroidUtils.debug("Generated bugreport at /sdcard/IssueReport/"+bugreportfn+" in "+(end-ini)+"ms with "+l2+" bytes");
             // zip the bugreport
             final String bugreportZip = "/sdcard/IssueReport/bugreport.zip";
-            ini = System.currentTimeMillis();
             FileOutputStream fout = new FileOutputStream(bugreportZip);
             ZipOutputStream zout = new ZipOutputStream(fout);
-            File ff = new File("/sdcard/IssueReport/"+bugreportfn);
+            File ff = new File(bugreportfn);
             FileInputStream fin = new FileInputStream(ff);
             zout.putNextEntry(new ZipEntry("bugreport.txt"));
             byte[] buf = new byte[8192];
@@ -1555,11 +1554,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             fout.close();
             fin.close();
             ff.delete();
-            end = System.currentTimeMillis();
             if (!containsUsefulInformation)
                new File(bugreportZip).delete();
-            else
-               AndroidUtils.debug("Ziped bugreport at "+bugreportZip+" in "+(end-ini)+"ms");
          }
       }
       catch (Exception e) 
@@ -1569,55 +1565,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return containsUsefulInformation; // will be false if file is small
    }
 
-   private static boolean bugreportSending;
-   static void sendBugreport(final String toAddr, final String appVersion, final String appid) // called from updateSettingsFromStaticInitializer
-   {
-      if (Settings4A.buildNumber != 0 && !Loader.dontSendBugreports) // dont use when debugging
-      new Thread()
-      {
-         public void run()
-         {
-            try
-            {
-               bugreportSending = true;
-               if (createBugreport())
-               {
-                  String[] addr = new String[]{toAddr};
-                  WindowManager wm = (WindowManager) loader.getSystemService(Context.WINDOW_SERVICE);
-                  Display display = wm.getDefaultDisplay();
-                  final Mail m = new Mail("totalcross", "t0t4lcr0ss"); 
-                  m.setTo(addr);
-                  m.setFrom("registro@totalcross.com"); 
-                  String subj = "Bugreport TotalCross build #"+Settings4A.buildNumber;
-                  if (appVersion.length() > 0)
-                     subj += ", app version: "+appVersion;
-                  m.setSubject(subj); 
-                  m.setBody(
-                        "Email: "+toAddr+"\n"+
-                        "App version: "+appVersion+"\n"+
-                        "App id: "+appid+"\n"+
-                        "Imei: "+Settings4A.imei+"\n"+
-                        "Serial: "+Settings4A.serialNumber+"\n"+
-                        "Device id: "+Settings4A.deviceId+"\n"+
-                        "OS version: "+Settings4A.romVersion+"\n"+
-                        "Processor: "+System.getProperty("os.arch")+"\n"+
-                        "Screen: "+display.getWidth()+"x"+display.getHeight()+"\n"+
-                        "Font: "+deviceFontHeight+"\n"
-                  );
-                  m.addAttachment("/sdcard/IssueReport/bugreport.zip");
-                  m.send();
-                  AndroidUtils.debug("Bugreport mail sent to "+addr[0]+"!");
-               }
-            }
-            catch (Exception e) 
-            {
-               AndroidUtils.handleException(e,false);
-            }
-            bugreportSending = false;
-         }
-      }.start();
-   }
-   
    private static boolean containsUsefulInformation(String s)
    {
       s = s.toLowerCase();
