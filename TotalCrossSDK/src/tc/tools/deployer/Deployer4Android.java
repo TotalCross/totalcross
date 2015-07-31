@@ -492,9 +492,9 @@ public class Deployer4Android
       dsbas.writeInt(props);
       
       // if is full screen, search and replace TCThemeNC by TCThemeFS
-      if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
+      if (singleApk && DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59  - TODO edit TotalCrossVM/src/launchers/android/src/AndroidManifest.xml and add the styles TCThemeFS/NS (currently support full screen just for single apk)
       {
-         byte[] themeMark = {(byte)0x00,(byte)0x00,(byte)0x0b,(byte)0x7f,(byte)0x11};
+         byte[] themeMark = {(byte)0x00,(byte)0x00,(byte)0x0b,(byte)0x7f};
          ofs = Utils.indexOf(res, themeMark, false);
          if (ofs == -1)
             throw new DeployerException("Error: could not find position for theme");
