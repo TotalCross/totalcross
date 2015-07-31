@@ -478,7 +478,7 @@ target: javadoc
   <exec dir="${java.home}/bin" executable="javadoc">
     <arg line="-sourcepath ${output}/javadoc"/>
     <arg line="-d ${docs}/html"/>
-    <arg line="-doctitle 'TotalCross SDK ${versionStr}.${buildNumber}<br>Please read the changelogs &lt;a href=changelogs.html _target=blank &gt;here&lt;/a&gt;.'"/>
+    <arg line="-doctitle 'TotalCross SDK ${versionStr}.${buildNumber} (&lt;a href=changelogs.html _target=blank &gt;changelogs&lt;/a&gt;).'"/>
     <arg line="-source 1.7"/>
     <arg line="-subpackages litebase -subpackages totalcross"/>
   </exec>
