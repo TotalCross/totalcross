@@ -1,6 +1,6 @@
 package totalcross.lang.reflect;
 
-public class InvocationTargetException4D extends Exception
+public class InvocationTargetException4D extends ReflectiveOperationException
 {
    public InvocationTargetException4D()
    {

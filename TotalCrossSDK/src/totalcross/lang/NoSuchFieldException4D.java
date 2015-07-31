@@ -19,7 +19,7 @@
 package totalcross.lang;
 
 /** 
- * Thrown when a method was not found. 
+ * Thrown when a field was not found. 
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -33,7 +33,7 @@ package totalcross.lang;
  * available.
  */
 
-public class NoSuchFieldException4D extends Error
+public class NoSuchFieldException4D extends ReflectiveOperationException
 {
    /** Constructs an empty Exception. */
    public NoSuchFieldException4D()

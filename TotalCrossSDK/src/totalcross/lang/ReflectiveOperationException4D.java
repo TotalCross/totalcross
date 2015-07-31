@@ -19,7 +19,7 @@
 package totalcross.lang;
 
 /** 
- * Thrown when a abstract class or an interface is trying to be Class.newInstance'd. 
+ * Umbrella exception for exceptions when using reflection.
  * <br><br>
  * IMPORTANT: the totalcross.lang package is the java.lang that will be used in the device.
  * You CANNOT use nor import totalcross.lang package in desktop. When tc.Deploy is called,
@@ -33,16 +33,17 @@ package totalcross.lang;
  * available.
  */
 
-public class InstantiationException4D extends ReflectiveOperationException
+public class ReflectiveOperationException4D extends Exception
 {
-   /** Constructs an empty Exception. */
-   public InstantiationException4D()
-   {
-   }
+	   /** Constructs an empty Exception. */
+	   public ReflectiveOperationException4D()
+	   {
+	   }
 
-   /** Constructs an exception with the given message. */
-   public InstantiationException4D(String msg)
-   {
-	   super(msg);
-   }
+	   /** Constructs an exception with the given message. */
+	   public ReflectiveOperationException4D(String msg)
+	   {
+		   super(msg);
+	   }
+
 }
