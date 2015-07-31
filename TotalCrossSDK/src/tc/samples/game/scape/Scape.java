@@ -158,14 +158,14 @@ public class Scape extends GameEngine implements ProdConfig
       // this is the hunted object
       try {ball = new Ball();} catch (ImageException e) {} catch (IOException e) {}
 
-      try
-      {
-         lostClip = new MediaClip(new ByteArrayStream(Vm.getFile("tc/samples/game/scape/lost.wav")));
-      }
-      catch (IOException e)
-      {
-         MessageBox.showException(e, true);
-      }
+//      try
+//      {
+//         lostClip = new MediaClip(new ByteArrayStream(Vm.getFile("tc/samples/game/scape/lost.wav")));
+//      }
+//      catch (IOException e)
+//      {
+//         MessageBox.showException(e, true);
+//      }
 
       showIntroduction();
    }
