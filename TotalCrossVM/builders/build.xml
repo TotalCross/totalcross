@@ -291,7 +291,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <!-- update readme files -->
   <copy file="SDK_sfx.diz" toDir="${rootpath}/">
     <filterset>
-      <filter token="VERSION" value="${tc.version}"/>
+      <filter token="VERSION" value="${tc.version}.${buildNumber}"/>
     </filterset>
   </copy>
 
