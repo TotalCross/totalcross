@@ -283,7 +283,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   
   <antcall target="createTotalCross3" />
 
-  <property name="target.file"  value="${target.sdk.path}/../TotalCross3"/>
+  <property name="target.file"  value="${target.sdk.path}/../../../TotalCross3"/>
 
   <!-- delete old files -->
   <delete file="${target.file}" />
@@ -299,9 +299,9 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
      <arg line='a -sfx -y -ep1 -m5 -md64m -ma5 -r -s -idq -zSDK_sfx.diz ${target.file}.exe ${target.sdk3.path}\*.*'/>
   </exec>
-  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+  <!--exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
      <arg line='a -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file}.rar ${target.sdk3.path}\*.*'/>
-  </exec>
+  </exec-->
 
   <!-- delete temp files -->
   <delete file="${rootpath}/SDK_sfx.diz"/>
