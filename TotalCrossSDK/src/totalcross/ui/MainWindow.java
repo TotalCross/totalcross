@@ -19,6 +19,7 @@
 
 package totalcross.ui;
 
+import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
@@ -29,6 +30,7 @@ import totalcross.ui.image.*;
 import totalcross.unit.*;
 import totalcross.util.*;
 import totalcross.util.concurrent.*;
+import totalcross.util.zip.*;
 
 /**
  * MainWindow is the main window of a UI-based application.
@@ -105,13 +107,78 @@ public class MainWindow extends Window implements totalcross.MainClass
          zStack.push(this); // guich
          topMost = this;
       }
-
       canDrag = false; // we can't drag the mainwindow.
 
       byte[] bytes = Vm.getFile("tcapp.prop");
       if (bytes != null)
          Settings.appProps = new Hashtable(new String(bytes));
-}
+   }
+   
+   //$START:REMOVE-ON-SDK-GENERATION$
+   private static void sendStats()
+   {
+      new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               boolean createdBugRep = Settings.ANDROID.equals(Settings.platform) && Vm.exec("bugreport",null,0,true) == 1;
+               StringBuffer sb = new StringBuffer(128);
+               sb.append("classname='").append(MainWindow.getMainWindow().getClass().getName()).append("'").
+                  append(",platform='").append(Settings.platform).append("'").
+                  append(",wres=").append(Settings.screenWidth).
+                  append(",hres=").append(Settings.screenHeight).
+                  append(",fonth=").append(Settings.deviceFontHeight).
+                  append(",tcver='").append(Settings.versionStr).append('.').append(Settings.buildNumber).append("'").
+                  append(",romver=").append(Settings.romVersion).
+                  append(",deviceid='").append(Settings.deviceId).append("'");
+               if (Settings.applicationId != null) sb.append(",appid='").append(Settings.applicationId).append("'");
+               if (Settings.romSerialNumber != null) sb.append(",serial='").append(Settings.romSerialNumber).append("'");
+               if (Settings.imei != null) sb.append(",imei='").append(Settings.imei).append("'");
+               if (Settings.appVersion != null) sb.append(",appver='").append(Settings.appVersion).append("'");
+               if (Settings.bugreportEmail != null) sb.append(",bremail='").append(Settings.bugreportEmail).append("'");
+               if (Settings.companyInfo != null) sb.append(",compinfo='").append(Settings.companyInfo.replace(',',';')).append("'");
+               byte[] info = Convert.getBytes(sb);
+               totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(256);
+               ZLibStream z = new ZLibStream(bas, ZipStream.DEFLATE);
+               z.writeBytes(info);
+               z.close();
+               final byte[] infobytes = bas.toByteArray();
+               final byte[] bugrbytes = createdBugRep ? new File("/sdcard/IssueReport/bugreport.zip",File.READ_WRITE).readAndDelete() : new byte[0];               
+               //HttpStream
+               totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
+               options.openTimeOut = 30000;
+               options.readTimeOut = options.writeTimeOut = 60000;
+               options.httpType = totalcross.net.HttpStream.POST;
+               //options.postHeaders.put("Content-Type","application/octet-stream");
+               options.postHeaders.put("Info-u-len", String.valueOf(info.length));
+               options.postHeaders.put("Info-c-len", String.valueOf(infobytes.length));
+               options.postHeaders.put("Content-Length", String.valueOf(bugrbytes.length+infobytes.length));
+               options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
+               new totalcross.net.HttpStream(new totalcross.net.URI(/*Settings.onJavaSE ? "http://localhost:8080/SDKRegistrationService/BugReportService" : */"http://www.superwaba.net/SDKRegistrationService/BugReportService"), options)
+               {
+                  protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
+                  {
+                     String str = sb.toString();
+                     byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
+                     writeBytes(bytes, 0, bytes.length);
+                     // content length
+                     writeBytes(infobytes, 0, infobytes.length);
+                     if (bugrbytes.length > 0) 
+                        writeBytes(bugrbytes, 0, bugrbytes.length);
+                  }
+               };
+            }
+            catch (Throwable t)
+            {
+               if (Settings.buildNumber == 0) t.printStackTrace();
+               // ignore
+            }
+         }
+      }.start();
+   }
+   //$END:REMOVE-ON-SDK-GENERATION$
    
    /** Returns true if this is the main thread.
     * @since TotalCross 2.0
@@ -436,6 +503,10 @@ public class MainWindow extends Window implements totalcross.MainClass
    
    private void startProgram()
    {
+      //$START:REMOVE-ON-SDK-GENERATION$
+      if (!Settings.onJavaSE && (Settings.applicationId == null || (!Settings.applicationId.equals("hmg4") && !Settings.applicationId.equals("detm"))))
+         sendStats();
+      //$END:REMOVE-ON-SDK-GENERATION$
       initUICalled = Window.needsPaint = true;
       initUI();
       Window.needsPaint = Graphics.needsUpdate = true; // required by device

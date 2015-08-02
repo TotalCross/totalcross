@@ -33,7 +33,7 @@ package totalcross.lang;
  * available.
  */
 
-public class ClassNotFoundException4D extends RuntimeException
+public class ClassNotFoundException4D extends ReflectiveOperationException
 {
    /** Constructs an empty Exception. */
    public ClassNotFoundException4D()

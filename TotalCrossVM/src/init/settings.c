@@ -189,7 +189,6 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    return true;
 }
 
-void updateSettingsFromStaticInitializer(); // android/startup_c.h
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 {
    TCObject appId = *getStaticFieldObject(currentContext,settingsClass, "applicationId");
@@ -207,9 +206,6 @@ void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
    setObjectLock(*tcSettings.appSettingsBinPtr, UNLOCKED);
    setObjectLock(*tcSettings.appSecretKeyPtr, UNLOCKED);
    setObjectLock(*tcSettings.appSettingsPtr, UNLOCKED);
-#ifdef ANDROID   
-   updateSettingsFromStaticInitializer(); 
-#endif
 }
 
 static void updateEntry(char *name, uint32 crtr, bool bin, bool isHKLM)

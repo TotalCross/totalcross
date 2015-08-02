@@ -161,8 +161,6 @@ public class Deployer4IPhoneIPA
 
       // add all the iphone icons
       addIcons(appFolder, rootDict);
-      // itunes metadata
-      addMetadata(targetZip);
       
       // update the application name
       rootDict.put("CFBundleName", DeploySettings.filePrefix);
@@ -245,22 +243,6 @@ public class Deployer4IPhoneIPA
       System.out.println("... Files written to folder "+ Convert.appendPath(DeploySettings.targetDir, "/ios/"));
    }
    
-   private void addMetadata(TFile targetZip) throws Exception
-   {
-      NSDictionary metadata = new NSDictionary();
-      metadata.put("product-type", "ios-app");
-      metadata.put("genre", "Business");
-      metadata.put("genreId", "6000");
-      metadata.put("itemName", DeploySettings.appTitle);
-      if (DeploySettings.companyInfo != null)
-         metadata.put("artistName", DeploySettings.companyInfo);
-      if (DeploySettings.appVersion != null)
-         metadata.put("bundleVersion", DeploySettings.appVersion);
-
-      TFile iTunesMetadata = new TFile(targetZip, "iTunesMetadata.plist");
-      iTunesMetadata.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(metadata)));
-   }
-
    private void addIcons(TFile appFolder, NSDictionary rootDict) throws IOException
    {
       NSString[] icons = new NSString[Bitmaps.IOS_ICONS.length];

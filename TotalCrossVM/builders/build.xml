@@ -37,6 +37,7 @@
 </condition>
 <property name="rootpath"      value="p:"/> <!-- MUST BE ABSOLUTE PATH -->
 <property file="${rootpath}/userpaths.properties"/>
+<property name="buildNumber" value="-1" /> <!-- set by jenkins -->
 
 <!-- javac settings -->
 <property name="compile.listfiles"       value="no"/>
@@ -156,7 +157,6 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
    <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
 
-    <property name="buildNumber" value="-1" />
    <replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
    <replace file="${source.sdk.path}/src/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
@@ -176,6 +176,7 @@ target: createSkeleton - Create the folders from scratch
       </copy>
    <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
+   <replaceregexp file="${target.sdk.path}/src/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -188,7 +189,7 @@ target: buildSkeleton - Build the folders
       <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
       </delete>
 
-   <echo message="Building TotalCross SDK"/>
+   <echo message="Building TotalCross SDK build ${buildNumber}"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false">
@@ -282,7 +283,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   
   <antcall target="createTotalCross3" />
 
-  <property name="target.file"  value="${target.sdk.path}/../TotalCross3"/>
+  <property name="target.file"  value="${target.sdk.path}/../../../TotalCross3"/>
 
   <!-- delete old files -->
   <delete file="${target.file}" />
@@ -298,9 +299,9 @@ target: buildInstalls - run installshield to create the SDK and Samples
   <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
      <arg line='a -sfx -y -ep1 -m5 -md64m -ma5 -r -s -idq -zSDK_sfx.diz ${target.file}.exe ${target.sdk3.path}\*.*'/>
   </exec>
-  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+  <!--exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
      <arg line='a -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file}.rar ${target.sdk3.path}\*.*'/>
-  </exec>
+  </exec-->
 
   <!-- delete temp files -->
   <delete file="${rootpath}/SDK_sfx.diz"/>

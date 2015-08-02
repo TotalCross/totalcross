@@ -1371,6 +1371,25 @@ public class File extends RandomAccessStream
       }
    }
 
+   /** Reads the entire file into a byte array and DELETES itself. A handy method that can be used like this:
+    * <pre>
+    * byte[] bytes = new File(...,File.READ_ONLY).readAndDelete();
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public byte[] readAndDelete() throws IOException
+   {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         delete();
+      }
+   }
+
    /** Writes byte array to this file and closes itself. A handy method that can be used like this:
     * <pre>
     * new File(...,File.CREATE_EMPTY).writeAndClose(Vm.getFile("myfile.txt"));
@@ -1397,6 +1416,7 @@ public class File extends RandomAccessStream
    {
       int len = getSize();
       byte[] ret = new byte[len];
+      setPos(0);
       readBytes(ret,0,len);
       return ret;
    }
