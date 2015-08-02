@@ -1192,8 +1192,6 @@ public class File extends RandomAccessStream
     */
    public void copyTo(File dest) throws IOException // guich@tc126_8
    {
-      try {setPos(0);} catch (IOException ioe) {}
-      try {dest.setPos(0);} catch (IOException ioe) {}
       byte[] buf = new byte[4096];
       int n = 0;
       while ((n=readBytes(buf, 0, buf.length)) > 0)
