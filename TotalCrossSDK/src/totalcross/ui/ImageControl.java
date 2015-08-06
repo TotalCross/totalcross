@@ -212,6 +212,9 @@ public class ImageControl extends Control
       if (scaleToFit)
          try
          {
+            if (img0 == null)
+               this.img = null;
+            else
             if (width < height)
                this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
             else
