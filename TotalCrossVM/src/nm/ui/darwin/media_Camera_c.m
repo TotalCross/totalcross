@@ -15,9 +15,11 @@ typedef id Context;
 #include "event.h"
 #undef Class
 
+/* not used!
 int iphone_cameraClick(int w, int h, char* fileName)
 {
     NSString* string = [NSString stringWithFormat:@"%s", fileName];
     int ret = [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
     return ret;
 }
+*/
