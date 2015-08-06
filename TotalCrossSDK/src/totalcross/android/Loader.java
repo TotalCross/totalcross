@@ -138,15 +138,16 @@ public class Loader extends Activity implements BarcodeReadListener
             break;
          case EXTCAMERA_RETURN:
             String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED}; 
-            Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null); 
+            Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null);
             
-            cursor.moveToFirst();
-            String capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-            long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+            String capturedImageFilePath = null;
+            if (cursor.moveToFirst())
+               capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
                resultCode = RESULT_OK+1; // error
             else
             {
+               long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
                autoRotatePhoto(imageFN);
                if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
                   try
