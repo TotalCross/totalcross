@@ -155,7 +155,7 @@ public abstract class PrinterSampleBase extends BaseContainer
                      log("Connected!");
                      if (s != null && printIt)
                         printSample(s);
-                     s.close();
+                     try {s.close();} catch (Throwable t) {} // ignore any errors on close
                      log("Finished.");
                   }
                }
