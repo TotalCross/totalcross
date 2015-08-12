@@ -651,38 +651,38 @@ static void invoke(NMParams p, TCObject m, TCObject obj, TCObject args)
          {
             TCClass oic;
             TCObject oi = argObjs[i];
-            CharP targetClass = getParameterType(c, target->cpParams[i]);
             if (oi == null)
-            {
-               throwException(p->currentContext, IllegalArgumentException, "Argument %d can't be null",i);
-               break;
-            }
-            oic = OBJ_CLASS(oi);
-            from = target->cpParams[i];
-            if (TYPE_IS_PRIMITIVE(from))
-            {
-               to = checkPrimitiveType(p, oic, from, true);
-               if (to == Type_Null)
-                  break;
-            }
+               aargs[i].asObj = null;
             else
-            if (areClassesCompatible(p->currentContext, oic, targetClass) != COMPATIBLE)
             {
-               throwException(p->currentContext, /*IllegalArgumentException*/InvocationTargetException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
-               break;
-            }
-            switch (from)
-            {
-               case Type_Byte:    aargs[i].asInt32 = Byte_v     (oi); break;
-               case Type_Boolean: aargs[i].asInt32 = Boolean_v  (oi); break;
-               case Type_Short:   aargs[i].asInt32 = Short_v    (oi); break;
-               case Type_Char:    aargs[i].asInt32 = Character_v(oi); break;
-               case Type_Int:     aargs[i].asInt32 = Integer_v  (oi); break;
-               case Type_Long:    aargs[i].asInt64 = Long_v     (oi); break;
-               case Type_Float:   aargs[i].asDouble = Float_v   (oi); break;
-               case Type_Double:  aargs[i].asDouble = Double_v  (oi); break;
-               case Type_Null:    break;
-               default:           aargs[i].asObj = oi;                break;
+               CharP targetClass = getParameterType(c, target->cpParams[i]);
+               oic = OBJ_CLASS(oi);
+               from = target->cpParams[i];
+               if (TYPE_IS_PRIMITIVE(from))
+               {
+                  to = checkPrimitiveType(p, oic, from, true);
+                  if (to == Type_Null)
+                     break;
+               }
+               else
+               if (areClassesCompatible(p->currentContext, oic, targetClass) != COMPATIBLE)
+               {
+                  throwException(p->currentContext, /*IllegalArgumentException*/InvocationTargetException, "Incompatible classes: %s and %s", OBJ_CLASS(oi)->name, targetClass);
+                  break;
+               }
+               switch (from)
+               {
+                  case Type_Byte:    aargs[i].asInt32 = Byte_v     (oi); break;
+                  case Type_Boolean: aargs[i].asInt32 = Boolean_v  (oi); break;
+                  case Type_Short:   aargs[i].asInt32 = Short_v    (oi); break;
+                  case Type_Char:    aargs[i].asInt32 = Character_v(oi); break;
+                  case Type_Int:     aargs[i].asInt32 = Integer_v  (oi); break;
+                  case Type_Long:    aargs[i].asInt64 = Long_v     (oi); break;
+                  case Type_Float:   aargs[i].asDouble = Float_v   (oi); break;
+                  case Type_Double:  aargs[i].asDouble = Double_v  (oi); break;
+                  case Type_Null:    break;
+                  default:           aargs[i].asObj = oi;                break;
+               }
             }
          }
          if (p->currentContext->thrownException == null)
