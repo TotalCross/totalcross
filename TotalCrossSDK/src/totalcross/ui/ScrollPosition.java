@@ -47,6 +47,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    private Image npback,handle;
    private TimerEvent timer;
    private int visibleCount;
+   private boolean neverShow;
    
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
@@ -96,9 +97,16 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       tempShow();
    }
    
+   /** Call this to never show the ScrollPosition */
+   public void setNeverShow()
+   {
+      neverShow = true;
+      visible = false;
+   }
+
    public void tempShow()
    {
-      visible = true;//!autoHide;
+      visible = !neverShow;//!autoHide;
       if (autoHide) 
       {
          visibleCount = VISIBLE_COUNT;
@@ -277,7 +285,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public boolean flickStarted()
    {
       if (!visible && autoHide && verticalBar == verticalScroll)
-         super.setVisible(true);
+         super.setVisible(!neverShow);
       
       return true;
    }
@@ -337,7 +345,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    {
       verticalScroll = e.direction == DragEvent.DOWN || e.direction == DragEvent.UP;
       if (autoHide && !visible && verticalBar == verticalScroll)
-         super.setVisible(true);
+         super.setVisible(!neverShow);
    }
 
    public void penDragStart(DragEvent e)

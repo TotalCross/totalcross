@@ -294,7 +294,7 @@ public class Window extends Container
       foreColor = UIColors.controlsFore; // assign the default colors
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
-      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
+      titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -332,7 +332,7 @@ public class Window extends Container
    public void setTitleFont(Font titleFont)
    {
       this.titleFont = titleFont;
-      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
+      titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
       rTitle = null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1086,7 +1086,7 @@ public class Window extends Container
    protected void getClientRect(Rect r) // guich@450_36
    {
       int m = borderGaps[borderStyle];
-      boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
+      boolean onlyBorder = title == null || title.isEmpty() || borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid);
       r.x = m;
       r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1);
       switch (borderStyle)
@@ -1182,10 +1182,13 @@ public class Window extends Container
             gg.foreColor = titleColor == -1 ? f : titleColor;
             gg.backColor = b;
          }
-         gg.setFont(titleFont);
-         gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
-         gg.setFont(font);
-         if (rTitle == null)
+         if (borderStyle != NO_BORDER && tit != null && !tit.isEmpty())
+         {
+            gg.setFont(titleFont);
+            gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
+            gg.setFont(font);
+         }
+         if (rTitle == null && borderStyle != NO_BORDER)
             rTitle = new Rect(xx-2,0,ww+4,hh==0 && tit.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
