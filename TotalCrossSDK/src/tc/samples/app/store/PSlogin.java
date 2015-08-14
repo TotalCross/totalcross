@@ -18,29 +18,32 @@ public class PSlogin extends Container
       try
       {
          // add the logo at top
-         add(new ImageControl(new Image("img/logo.png").smoothScaledFixedAspectRatio(width*2/3,false)),CENTER,TOP+300);
-         
-         // add button at bottom
-         Button b = btEnter = new Button("ENTER");
-         b.setBorder(Button.BORDER_ROUND);
-         b.setBackForeColors(Color.WHITE,Color.BLACK);
-         b.roundBorderFactor = 3;
-         add(b,CENTER,BOTTOM-100,PARENTSIZE+80,fmH*3);
+         ImageControl ic = new ImageControl(new Image("img/logo.png"));
+         ic.scaleToFit = ic.centerImage = true;
+         add(ic,LEFT,PARENTSIZE+12,FILL,PARENTSIZE+20);
          
          Edit ed;
          
          // add edits before button
-         edPass = ed = new Edit();
-         ed.caption = "Password";
-         ed.captionIcon = new Image("img/pass.png").smoothScaledFixedAspectRatio(fmH*2,true);
-         ed.setBackForeColors(Color.WHITE,Color.WHITE);
-         add(ed,CENTER,BEFORE-100,PARENTSIZE+90,fmH*3);
    
          edLogin = ed = new Edit();
          ed.caption = "Login";
          ed.captionIcon = new Image("img/login.png").smoothScaledFixedAspectRatio(fmH*2,true);
          ed.setBackForeColors(Color.WHITE,Color.WHITE);
-         add(ed,CENTER,BEFORE-100,PARENTSIZE+90,fmH*3);
+         add(ed,CENTER,PARENTSIZE+37,PARENTSIZE+90,PARENTSIZE+20);
+
+         edPass = ed = new Edit();
+         ed.caption = "Password";
+         ed.captionIcon = new Image("img/pass.png").smoothScaledFixedAspectRatio(fmH*2,true);
+         ed.setBackForeColors(Color.WHITE,Color.WHITE);
+         add(ed,CENTER,PARENTSIZE+62,PARENTSIZE+90,PARENTSIZE+20);
+
+         // add button at bottom
+         Button b = btEnter = new Button("ENTER");
+         b.setBorder(Button.BORDER_ROUND);
+         b.setBackForeColors(Color.WHITE,Color.BLACK);
+         b.roundBorderFactor = 3;
+         add(b,CENTER,PARENTSIZE+87,PARENTSIZE+80,PARENTSIZEMIN+20);
       }
       catch (Exception ee)
       {
