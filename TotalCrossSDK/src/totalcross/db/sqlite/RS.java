@@ -514,14 +514,15 @@ final class RS extends Unused implements ResultSet, ResultSetMetaData, Codes
           case SQLITE_NULL:
               return null;
           case SQLITE_TEXT:
+             String ss = "";
              try 
              {
-                String ss = db.column_text(stmt.pointer, markCol(col));
+                ss = db.column_text(stmt.pointer, markCol(col));
                 return ss != null && !ss.isEmpty() ? new Time(ss.toCharArray()) : null;
              }
              catch (Exception e)
              {
-                throw new SQLException("Error parsing date",e);
+                throw new SQLException("Error parsing date '"+ss+"'",e);
              }
           default:
              // guich: always store as long
