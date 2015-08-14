@@ -112,7 +112,7 @@
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: makeNativeHT - updates the native methods hash table.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="makeNativeHT" >
+<target name="makeNativeHT" description = "Build the native hashtable for ios" >
    <property name="path.to.prototypeGenerator" value="${base.temp.path}/nmPrototypeGenerator" />
    <mkdir dir="${path.to.prototypeGenerator}" />
 

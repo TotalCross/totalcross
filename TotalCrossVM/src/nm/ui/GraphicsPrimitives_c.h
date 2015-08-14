@@ -1973,34 +1973,121 @@ static void drawRoundRect(Context currentContext, TCObject g, int32 x, int32 y, 
    }
 }
 ////////////////////////////////////////////////////////////////////////////
-static void fillRoundRect(Context currentContext, TCObject g, int32 x, int32 y, int32 width, int32 height, int32 r, Pixel c)
+static void setPixelA(Context currentContext, TCObject g, int32 x, int32 y, PixelConv color, int32 alpha);
+static void drawCircleAA(Context currentContext, TCObject g, int32 xm, int32 ym, int32 r, bool fill, bool tl, bool tr, bool bl, bool br, int32 c)
 {
-   int32 x1, y1, x2, y2, xx, yy, dec;
+   int32 x = -r, y = 0;
+   int32 i, x2, e2, err = 2 - 2 * r;
+   PixelConv color;
+   color.pixel = c;
+
+   r = 1 - err;
+   do
+   {
+      i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;
+      if (fill)
+      {
+         drawLine(currentContext, g, xm-x-1,ym-y,xm+x+1,ym-y,c);
+         drawLine(currentContext, g, xm-x-1,ym+y,xm+x+1,ym+y,c);
+      }
+      if (i < 256 && i > 0)
+      {
+         if (br) setPixelA(currentContext, g, xm - x, ym + y, color, i);
+         if (bl) setPixelA(currentContext, g, xm - y, ym - x, color, i);
+         if (tl) setPixelA(currentContext, g, xm + x, ym - y, color, i);
+         if (tr) setPixelA(currentContext, g, xm + y, ym + x, color, i);
+      }
+      e2 = err;
+      x2 = x;
+      if (err + y > 0)
+      {
+         i = 255 - 255 * (err - 2 * x - 1) / r;
+         if (i < 256 && i > 0)
+         {
+            if (br) setPixelA(currentContext, g, xm - x, ym + y + 1, color, i);
+            if (bl) setPixelA(currentContext, g, xm - y - 1, ym - x, color, i);
+            if (tl) setPixelA(currentContext, g, xm + x, ym - y - 1, color, i);
+            if (tr) setPixelA(currentContext, g, xm + y + 1, ym + x, color, i);
+         }
+         err += ++x * 2 + 1;
+      }
+      if (e2 + x2 <= 0)
+      {
+         i = 255 - 255 * (2 * y + 3 - e2) / r;
+         if (i < 256 && i > 0)
+         {
+            if (br) setPixelA(currentContext, g, xm - x2 - 1, ym + y, color, i);
+            if (bl) setPixelA(currentContext, g, xm - y, ym - x2 - 1, color, i);
+            if (tl) setPixelA(currentContext, g, xm + x2 + 1, ym - y, color, i);
+            if (tr) setPixelA(currentContext, g, xm + y, ym + x2 + 1, color, i);
+         }
+         err += ++y * 2 + 1;
+      }
+   } while (x < 0);
+}
+////////////////////////////////////////////////////////////////////////////
+static void fillRoundRect(Context currentContext, TCObject g, int32 xx, int32 yy, int32 width, int32 height, int32 r, Pixel c)
+{
+   int32 px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;
+   PixelConv color;
    if (r > (width/2) || r > (height/2)) r = min32(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
 
-   x1 = x+r;
-   y1=y+r;
-   x2=x+width-r-1;
-   y2=y+height-r-1;
-   dec = 3-2*r;
+   x = -r;
+   err = 2 - 2 * r;
+   color.pixel = c;
+
+   px1 = xx+r;
+   py1 = yy+r;
+   px2 = xx+width-r-1;
+   py2 = yy+height-r-1;
 
    height -= 2*r;
-   y += r;
+   yy += r;
    while (height--)
-      drawHLine(currentContext, g,x, y++, width, c, c);
-   // fill the round rectangles
-   for (xx = 0, yy = r; xx <= yy; xx++)
+      drawHLine(currentContext, g,xx, yy++, width, c, c);
+
+   r = 1 - err;
+   do
    {
-      drawLine(currentContext, g,x1-xx, y1-yy, x2+xx, y1-yy, c);
-      drawLine(currentContext, g,x1-xx, y2+yy, x2+xx, y2+yy, c);
+      i = 255 - 255 * abs(err - 2 * (x + y) - 2) / r;
 
-      drawLine(currentContext, g,x1-yy, y1-xx, x2+yy, y1-xx, c);
-      drawLine(currentContext, g,x1-yy, y2+xx, x2+yy, y2+xx, c);
+      drawLine(currentContext, g, px1+x+1,py1-y,px2-x-1,py1-y,c);
+      drawLine(currentContext, g, px1+x+1,py2+y,px2-x-1,py2+y,c);
 
-      if (dec >= 0)
-         dec += -4*(yy--)+4;
-      dec += 4*xx+6;
-   }
+      if (i < 256 && i > 0)
+      {
+         xm = px2; ym = py2; setPixelA(currentContext, g, xm - x, ym + y, color, i); // br
+         xm = px1; ym = py2; setPixelA(currentContext, g, xm - y, ym - x, color, i); // bl
+         xm = px1; ym = py1; setPixelA(currentContext, g, xm + x, ym - y, color, i); // tl
+         xm = px2; ym = py1; setPixelA(currentContext, g, xm + y, ym + x, color, i); // tr
+      }
+      e2 = err;
+      x2 = x;
+      if (err + y > 0)
+      {
+         i = 255 - 255 * (err - 2 * x - 1) / r;
+         if (i < 256 && i > 0)
+         {
+            xm = px2; ym = py2; setPixelA(currentContext, g, xm - x, ym + y + 1, color, i);
+            xm = px1; ym = py2; setPixelA(currentContext, g, xm - y - 1, ym - x, color, i);
+            xm = px1; ym = py1; setPixelA(currentContext, g, xm + x, ym - y - 1, color, i);
+            xm = px2; ym = py1; setPixelA(currentContext, g, xm + y + 1, ym + x, color, i);
+         }
+         err += ++x * 2 + 1;
+      }
+      if (e2 + x2 <= 0)
+      {
+         i = 255 - 255 * (2 * y + 3 - e2) / r;
+         if (i < 256 && i > 0)
+         {
+            xm = px2; ym = py2; setPixelA(currentContext, g, xm - x2 - 1, ym + y, color, i);
+            xm = px1; ym = py2; setPixelA(currentContext, g, xm - y, ym - x2 - 1, color, i);
+            xm = px1; ym = py1; setPixelA(currentContext, g, xm + x2 + 1, ym - y, color, i);
+            xm = px2; ym = py1; setPixelA(currentContext, g, xm + y, ym + x2 + 1, color, i);
+         }
+         err += ++y * 2 + 1;
+      }
+   } while (x < 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////

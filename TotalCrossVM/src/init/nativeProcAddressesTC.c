@@ -108,9 +108,10 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyChanges"), &tuiI_applyChanges);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_freeTexture"), &tuiI_freeTexture);
    htPutPtr(&htNativeProcAddresses, hashCode("tuiI_applyFade_i"), &tuiI_applyFade_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
+   htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCircleAA_iiibbbbb"), &tugG_drawCircleAA_iiibbbbb);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_fillShadedRect_iiiibbiii"), &tugG_fillShadedRect_iiiibbiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_dither_iiii"), &tugG_dither_iiii);
-   htPutPtr(&htNativeProcAddresses, hashCode("tuiI_createJpg_si"), &tuiI_createJpg_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawCylindricShade_iiiiii"), &tugG_drawCylindricShade_iiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_drawWindowBorder_iiiiiiiiii"), &tugG_drawWindowBorder_iiiiiiiiii);
    htPutPtr(&htNativeProcAddresses, hashCode("tugG_create_g"), &tugG_create_g);

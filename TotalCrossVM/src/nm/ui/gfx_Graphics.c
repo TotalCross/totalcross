@@ -771,6 +771,12 @@ TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics n
    }
    fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false);
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p) // totalcross/ui/gfx/Graphics native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
+{
+   TCObject g = p->obj[0];
+   drawCircleAA(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7], Graphics_forePixel(g));
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "gfx_Graphics_test.h"

@@ -103,9 +103,10 @@ TC_API void tuiI_setTransparentColor_i(NMParams p);
 TC_API void tuiI_applyChanges(NMParams p);
 TC_API void tuiI_freeTexture(NMParams p);
 TC_API void tuiI_applyFade_i(NMParams p);
+TC_API void tuiI_createJpg_si(NMParams p);
+TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p);
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
 TC_API void tugG_dither_iiii(NMParams p);
-TC_API void tuiI_createJpg_si(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
@@ -951,15 +952,19 @@ TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native pub
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p) // totalcross/ui/gfx/Graphics native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
 {
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
 {
 }
 //////////////////////////////////////////////////////////////////////////

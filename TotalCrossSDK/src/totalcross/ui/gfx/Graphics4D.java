@@ -283,6 +283,7 @@ public final class Graphics4D
    native public void dither(int x, int y, int w, int h);
    native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
    native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
+   native public void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
    
    /** Dumb method to keep compilation compatibility with TC 1 */
    public void eraseRect(int x, int y, int w, int h)

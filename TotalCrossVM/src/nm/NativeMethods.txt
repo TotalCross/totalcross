@@ -102,9 +102,10 @@ totalcross/ui/image/Image|native public totalcross.ui.image.Image setTransparent
 totalcross/ui/image/Image|native public void applyChanges();
 totalcross/ui/image/Image|native private void freeTexture();
 totalcross/ui/image/Image|native public void applyFade(int fadeValue);
+totalcross/ui/image/Image|native public void createJpg(totalcross.io.Stream s, int quality);
+totalcross/ui/gfx/Graphics|native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
 totalcross/ui/gfx/Graphics|native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
 totalcross/ui/gfx/Graphics|native public void dither(int x, int y, int w, int h);
-totalcross/ui/image/Image|native public void createJpg(totalcross.io.Stream s, int quality);
 totalcross/ui/gfx/Graphics|native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 totalcross/ui/gfx/Graphics|native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
 totalcross/ui/gfx/Graphics|native protected void create(totalcross.ui.gfx.GfxSurface surface);
