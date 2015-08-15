@@ -426,6 +426,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case KeyEvent.ACTION_DOWN:
             htPressedKeys.put(String.valueOf(keyCode), "");
             int state = event.getMetaState();
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) 
+            {
+               eventThread.pushEvent(KEY_PRESS, 0, keyCode == KeyEvent.KEYCODE_VOLUME_UP ? -1000 : -1001,0,event.getMetaState(),0);
+               return true;
+            }
             if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT)
             {
                altNext = true;
