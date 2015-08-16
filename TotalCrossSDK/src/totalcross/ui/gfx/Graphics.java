@@ -1117,10 +1117,12 @@ public final class Graphics
             dec += -4 * (yy--) + 4;
          dec += 4 * xx + 6;
       }
+      int f = foreColor; foreColor = backColor;
       drawCircleAA(x1,y1,r,false,true,false,false,false);
       drawCircleAA(x2,y1,r,false,false,true,false,false);
       drawCircleAA(x1,y2,r,false,false,false,true,false);
       drawCircleAA(x2,y2,r,false,false,false,false,true);
+      foreColor = f;
    }
 
    /**
