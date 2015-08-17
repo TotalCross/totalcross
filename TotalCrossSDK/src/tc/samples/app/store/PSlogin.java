@@ -30,13 +30,13 @@ public class PSlogin extends Container
          ed.caption = "Login";
          ed.captionIcon = new Image("img/login.png").smoothScaledFixedAspectRatio(fmH*2,true);
          ed.setBackForeColors(Color.WHITE,Color.WHITE);
-         add(ed,CENTER,PARENTSIZE+37,PARENTSIZE+90,PARENTSIZE+20);
+         add(ed,CENTER,PARENTSIZE+37,PARENTSIZE+90,PARENTSIZE+15);
 
          edPass = ed = new Edit();
          ed.caption = "Password";
          ed.captionIcon = new Image("img/pass.png").smoothScaledFixedAspectRatio(fmH*2,true);
          ed.setBackForeColors(Color.WHITE,Color.WHITE);
-         add(ed,CENTER,PARENTSIZE+62,PARENTSIZE+90,PARENTSIZE+20);
+         add(ed,CENTER,PARENTSIZE+62,PARENTSIZE+90,PARENTSIZE+15);
 
          // add button at bottom
          Button b = btEnter = new Button("ENTER");
