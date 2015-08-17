@@ -68,8 +68,11 @@ public class MultiListBox extends ListBox
     */
    public boolean unselectFirstWhenMaxIsReached;
 
-   /** Suffix used to display the number of items in a ComboBox. Defaults to " items". */
+   /** Global suffix used to display the number of items in a ComboBox. Defaults to " items". */
    public static String itemsText = " items";
+   
+   /** Local suffix to display the number of items in a ComboBox. Defaults to " items". */
+   public String localItemsText = " items";
 
    /** Constructs an empty MultiListBox. */
    public MultiListBox()
@@ -340,7 +343,7 @@ public class MultiListBox extends ListBox
    }
 
    /** Returns the String with the selected item (if single) or a string with the number of selected items.
-    * You can change the suffix itemsText to another one.
+    * You can change the suffix itemsText or localItemsText to another one.
     * If order is important, returns the last selected item.
     */
    public String getText()
@@ -349,7 +352,7 @@ public class MultiListBox extends ListBox
       if (size <= 1) return super.getText();
       if (order != null)
          return getLastSelectedItem().toString();
-      return Convert.toString(size)+itemsText;
+      return Convert.toString(size)+(localItemsText != null ? localItemsText : itemsText);
    }
 
    public void onEvent(Event e)
