@@ -480,7 +480,15 @@ public final class Settings
     * @since TotalCross 1.0
     */
    public static String appDescription;
-
+   
+   /** Set it at the application's static initializer. Defines the application's package identifier, which is used in WP8.
+    */
+   public static String appPackageIdentifier;
+   
+   /** Set it at the application's static initializer. Defines the application's package publisher, which is used in WP8.
+    */
+   public static String appPackagePublisher;
+   
    /** @deprecated No longer used.
     * @since TotalCross 1.0
     */

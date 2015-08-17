@@ -286,6 +286,12 @@ public final class J2TC implements JConstants, TCConstants
                      if (field.equals("appCategory"))
                         totalcross.sys.Settings.appCategory = value;
                      else
+                     if (field.equals("appPackageIdentifier"))
+                        totalcross.sys.Settings.appPackageIdentifier = value;
+                     else
+                     if (field.equals("appPackagePublisher"))
+                        totalcross.sys.Settings.appPackagePublisher = value;
+                     else
                      if (field.equals("appLocation"))
                         totalcross.sys.Settings.appLocation = value;
                      else
