@@ -736,7 +736,7 @@ public class ComboBox extends Container
          else
          {
             for (int i = s.length; --i >= 0;)
-               if (!s[i].equals(v.items[i]))
+               if ((s[i] == null && s[i] != v.items[i]) || (s[i] != null && !s[i].equals(v.items[i])))
                   return false;
             return true;
          }

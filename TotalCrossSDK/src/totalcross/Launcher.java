@@ -96,6 +96,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    private boolean isMainClass;
    private boolean isDemo;
    private String activationKey;
+   private boolean fastScale;
 
    @SuppressWarnings("deprecation")
    public Launcher()
@@ -394,6 +395,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M colors)");
       System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M colors without transparency)");
       System.out.println("   /scale <0.1 to 8>: scales the screen, magnifying the contents using a smooth scale.");
+      System.out.println("   /fastscale <0.1 to 8>: scales the screen, magnifying the contents using a fast scale.");
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
       System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
@@ -553,8 +555,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                System.out.println("Bpp is "+toBpp);
             }
             else
-            if (args[i].equalsIgnoreCase("/scale"))
+            if (args[i].equalsIgnoreCase("/scale") || args[i].equalsIgnoreCase("/fastscale"))
             {
+               fastScale = args[i].equalsIgnoreCase("/fastscale");
                toScale = toDouble(args[++i]); // guich@tc126_74: use a 
                if (toScale < 0 || toScale > 8)
                   throw new Exception();
@@ -1084,7 +1087,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
          else
          {
-            Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+            Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale && !fastScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
             g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
             img.flush();
          }
