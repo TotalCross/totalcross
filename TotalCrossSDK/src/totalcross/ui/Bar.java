@@ -431,6 +431,9 @@ public class Bar extends Container
       {
          for (int i = n; --i > 0;)
             add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, width/n, FILL);
+         if (n == 1) // surely is a BarButton, otherwise would fall on first test above
+            add((Control)icons.items[0], RIGHT, TOP,PREFERRED,FILL);
+         else
          if (n > 0)
             add((Control)icons.items[0], LEFT, TOP, n == 1 ? FILL : FIT, FILL);
       }
