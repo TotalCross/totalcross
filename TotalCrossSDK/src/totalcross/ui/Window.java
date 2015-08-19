@@ -1086,7 +1086,8 @@ public class Window extends Container
    protected void getClientRect(Rect r) // guich@450_36
    {
       int m = borderGaps[borderStyle];
-      boolean onlyBorder = title == null || title.isEmpty() || borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid);
+      boolean onlyBorder = borderStyle == NO_BORDER || ((title == null || title.isEmpty()) && (borderStyle == ROUND_BORDER && uiAndroid));
+
       r.x = m;
       r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1);
       switch (borderStyle)
