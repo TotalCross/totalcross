@@ -55,6 +55,8 @@ public class Resources
    public static Image menu;
    public static Image comboArrow;
    public static Image comboArrow2;
+   // SWITCH
+   public static Image switchBackAnd,switchBackIos,switchBtnAnd,switchBtnIos,switchBrdIos;
    
    public static String chimeMP3 = "device/chime.mp3";
    
@@ -77,6 +79,11 @@ public class Resources
       if (menu           == null) try {menu           = new Image(folder+"menu.png");            } catch (ImageException e) {}
       if (comboArrow     == null) try {comboArrow     = new Image(folder+"comboArrow.png");      } catch (ImageException e) {}
       if (comboArrow2    == null) try {comboArrow2    = new Image(folder+"comboArrow2.png");     } catch (ImageException e) {}
+      if (switchBackAnd  == null) try {switchBackAnd  = new Image(folder+"switch_bck_and.png");  } catch (ImageException e) {}
+      if (switchBackIos  == null) try {switchBackIos  = new Image(folder+"switch_bck_ios.png");  } catch (ImageException e) {}
+      if (switchBtnAnd   == null) try {switchBtnAnd   = new Image(folder+"switch_btn_and.png");  } catch (ImageException e) {}
+      if (switchBtnIos   == null) try {switchBtnIos   = new Image(folder+"switch_btn_ios.png");  } catch (ImageException e) {}
+      if (switchBrdIos   == null) try {switchBrdIos   = new Image(folder+"switch_brd_ios.png");  } catch (ImageException e) {}
       if (checkBkg       == null) try {checkBkg       = new TristateImage(folder+"checkBkg.png");} catch (ImageException e) {}
       if (checkSel       == null) try {checkSel       = new TristateImage(folder+"checkSel.png");} catch (ImageException e) {}
       if (radioBkg       == null) try {radioBkg       = new TristateImage(folder+"radioBkg.png");} catch (ImageException e) {}
