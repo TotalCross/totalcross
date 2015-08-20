@@ -880,7 +880,7 @@ public final class J2TC implements JConstants, TCConstants
          {
             // if the name is a path, exit.
             String name = zEntry.getName();
-            if (name.endsWith("/") || name.toLowerCase().startsWith("meta-inf")) // a path or a manifest file?
+            if (name.endsWith("/") || name.toLowerCase().startsWith("meta-inf") || name.endsWith(".java")) // a path or a manifest file?
                continue;
    
             // replace by the system path separator so that the file can be open.
