@@ -104,6 +104,7 @@ public class Switch extends Control implements AnimationFinished
       g.drawImage(btn,dragBarPos,0);
    }
    
+   private boolean dragged;
    public void onEvent(Event event)
    {
       switch (event.type)
@@ -114,20 +115,24 @@ public class Switch extends Control implements AnimationFinished
          case PenEvent.PEN_DRAG:
             if (startDragPos != -1)
             {
-               dragBarPos = ((PenEvent)event).x - startDragPos;
-               if (dragBarPos < dragBarMin) dragBarPos = dragBarMin; else
-               if (dragBarPos > dragBarMax) dragBarPos = dragBarMax;
-               Window.needsPaint = true;
+               int newDragBarPos = getPos(event);
+               if (newDragBarPos != dragBarPos)
+               {
+                  dragged = true;
+                  dragBarPos = newDragBarPos;
+                  Window.needsPaint = true;
+               }
             }
             break;
          case PenEvent.PEN_DOWN:
-            startDragPos = ((PenEvent)event).x - dragBarPos;
+            dragged = false;
+            startDragPos = getPos(event);
             break;
          case PenEvent.PEN_UP:
             Window.needsPaint = true;
-            if (!hadParentScrolled())
+            if (dragged && !hadParentScrolled())
             {
-               dragBarPos = ((PenEvent)event).x - startDragPos;
+               dragBarPos = getPos(event);
                boolean nowAtMidLeft = dragBarPos+dragBarSize/2 < width/2;
                moveSwitch(nowAtMidLeft);
             }
@@ -136,6 +141,14 @@ public class Switch extends Control implements AnimationFinished
       }
    }
    
+   private int getPos(Event event)
+   {
+      int newDragBarPos = ((PenEvent)event).x - startDragPos;
+      if (newDragBarPos < dragBarMin) newDragBarPos = dragBarMin; else
+      if (newDragBarPos > dragBarMax) newDragBarPos = dragBarMax;
+      return newDragBarPos;
+   }
+
    public int getPreferredHeight()
    {
       return fmH + Edit.prefH;
