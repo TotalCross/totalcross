@@ -26,9 +26,9 @@ import totalcross.ui.gfx.*;
 import tc.samples.api.crypto.*;
 import tc.samples.api.io.*;
 import tc.samples.api.io.device.*;
+import tc.samples.api.json.*;
 import tc.samples.api.lang.reflection.*;
 import tc.samples.api.lang.thread.*;
-import tc.samples.api.json.*;
 import tc.samples.api.map.*;
 import tc.samples.api.media.*;
 import tc.samples.api.net.*;
@@ -99,7 +99,8 @@ public class MainMenu extends BaseContainer
       "Bluetooth Print (MPT)",
       "Bluetooth Print (Zebra)",
       "Bluetooth Transfer",
-      "GPS",
+      "GPS logger",
+      "GPS velocity",
       "Scanner Internal",
       "Scanner Camera",
       "PortConnector",
@@ -232,6 +233,7 @@ public class MainMenu extends BaseContainer
       PrinterSampleZebra.class,
       BTTransfer.class,
       GpsSample.class,
+      GPSVelocitySample.class,
       ScannerInternal.class,
       ScannerZXing.class,
       PortConnectorSample.class,
