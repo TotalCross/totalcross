@@ -227,6 +227,7 @@ public final class RegisterSDK
       // prepare connection
       URLConnection con = new URL("http://www.superwaba.net/SDKRegistrationService/SDKRegistration").openConnection();
       con.setRequestProperty("Request-Method", "POST");
+      con.setConnectTimeout(5000);
       con.setUseCaches(false);
       con.setDoOutput(true);
       con.setDoInput(true);
