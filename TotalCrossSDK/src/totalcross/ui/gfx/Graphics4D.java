@@ -37,7 +37,7 @@ public final class Graphics4D
    protected int minX, minY, maxX, maxY;
    protected int lastRX,lastRY,lastXC,lastYC,lastSize; // used by arcPiePointDrawAndFill
    protected int pitch;
-   private int alpha;
+   public int alpha;
    public boolean isVerticalText;
    private boolean isControlSurface;
    // instance doubles

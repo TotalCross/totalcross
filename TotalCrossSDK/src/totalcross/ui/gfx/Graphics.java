@@ -108,7 +108,10 @@ public final class Graphics
    /** Defines if the screen has been changed. */
    public static boolean needsUpdate;
    private static int[] acos, asin;
-   private int alpha;
+   /** Alpha value used on operations, shifted by 24 bits left. E.G.: to use an alpha value of 0x80, set this with 0x80000000, or 0x80<<24.
+    * The default value is 0xFF000000 and is used only when drawing on Images. 
+    */
+   public int alpha;
 
    /**
     * Constructs a graphics object which can be used to draw on the given surface.
@@ -1092,37 +1095,68 @@ public final class Graphics
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be
     *           adjusted to the minimum of both values.
     */
-   public void fillRoundRect(int x, int y, int width, int height, int r)
+   public void fillRoundRect(int xx, int yy, int width, int height, int r)
    {
-      if (r > (width >> 1) || r > (height >> 1))
-         r = Math.min(width >> 1, height >> 1); // guich@200b4_6: correct bug that crashed the device.
-      int x1 = x + r, y1 = y + r, x2 = x + width - r - 1, y2 = y + height - r - 1;
-      int dec = 3 - (r << 1), xx, yy;
+      int px1,px2,py1,py2,xm,ym,x,y=0, i, x2, e2, err;
+      if (r > (width/2) || r > (height/2)) r = Math.min(width/2,height/2); // guich@200b4_6: correct bug that crashed the device.
       int c = backColor | alpha;
 
-      height -= (r << 1);
-      y += r;
+      x = -r;
+      err = 2 - 2 * r;
+
+      px1 = xx+r;
+      py1 = yy+r;
+      px2 = xx+width-r-1;
+      py2 = yy+height-r-1;
+
+      // fill area outside round borders
+      height -= 2*r;
+      yy += r;
       while (height-- > 0)
-         drawHLine(x, y++, width, c);
+         drawHLine(xx, yy++, width, c);
 
-      for (xx = 0, yy = r; xx <= yy; xx++)
+      r = 1 - err;
+      do
       {
-         drawLine(x1 - xx, y1 - yy, x2 + xx, y1 - yy, c);
-         drawLine(x1 - xx, y2 + yy, x2 + xx, y2 + yy, c);
+         i = 255 - 255 * Math.abs(err - 2 * (x + y) - 2) / r;
 
-         drawLine(x1 - yy, y1 - xx, x2 + yy, y1 - xx, c);
-         drawLine(x1 - yy, y2 + xx, x2 + yy, y2 + xx, c);
+         drawLine(px1+x+1,py1-y,px2-x-1,py1-y,c);
+         drawLine(px1+x+1,py2+y,px2-x-1,py2+y,c);
 
-         if (dec >= 0)
-            dec += -4 * (yy--) + 4;
-         dec += 4 * xx + 6;
-      }
-      int f = foreColor; foreColor = backColor;
-      drawCircleAA(x1,y1,r,false,true,false,false,false);
-      drawCircleAA(x2,y1,r,false,false,true,false,false);
-      drawCircleAA(x1,y2,r,false,false,false,true,false);
-      drawCircleAA(x2,y2,r,false,false,false,false,true);
-      foreColor = f;
+         if (i < 256 && i > 0)
+         {
+            xm = px2; ym = py2; setPixelAA(xm - x, ym + y, backColor, i); // br
+            xm = px1; ym = py2; setPixelAA(xm - y, ym - x, backColor, i); // bl
+            xm = px1; ym = py1; setPixelAA(xm + x, ym - y, backColor, i); // tl
+            xm = px2; ym = py1; setPixelAA(xm + y, ym + x, backColor, i); // tr
+         }
+         e2 = err;
+         x2 = x;
+         if (err + y > 0)
+         {
+            i = 255 - 255 * (err - 2 * x - 1) / r;
+            if (i < 256 && i > 0)
+            {
+               xm = px2; ym = py2; setPixelAA(xm - x, ym + y + 1, backColor, i);
+               xm = px1; ym = py2; setPixelAA(xm - y - 1, ym - x, backColor, i);
+               xm = px1; ym = py1; setPixelAA(xm + x, ym - y - 1, backColor, i);
+               xm = px2; ym = py1; setPixelAA(xm + y + 1, ym + x, backColor, i);
+            }
+            err += ++x * 2 + 1;
+         }
+         if (e2 + x2 <= 0)
+         {
+            i = 255 - 255 * (2 * y + 3 - e2) / r;
+            if (i < 256 && i > 0)
+            {
+               xm = px2; ym = py2; setPixelAA(xm - x2 - 1, ym + y, backColor, i);
+               xm = px1; ym = py2; setPixelAA(xm - y, ym - x2 - 1, backColor, i);
+               xm = px1; ym = py1; setPixelAA(xm + x2 + 1, ym - y, backColor, i);
+               xm = px2; ym = py1; setPixelAA(xm + y, ym + x2 + 1, backColor, i);
+            }
+            err += ++y * 2 + 1;
+         }
+      } while (x < 0);
    }
 
    /**
@@ -3492,7 +3526,7 @@ public final class Graphics
          int alpha = err - dx + dy;
          if (alpha < 0)
             alpha = -alpha;
-         setPixelAA(x0, y0, alpha >> 16);
+         setPixelAA(x0, y0, foreColor, alpha >> 16);
          e2 = err;
          x2 = x0;
          if (2 * e2 >= -dx)
@@ -3500,7 +3534,7 @@ public final class Graphics
             if (x0 == x1)
                break;
             if (e2 + dy < 0xff0000)
-               setPixelAA(x0, y0 + sy, (e2 + dy) >> 16);
+               setPixelAA(x0, y0 + sy, foreColor, (e2 + dy) >> 16);
             err -= dy;
             x0 += sx;
          }
@@ -3517,9 +3551,9 @@ public final class Graphics
       }
    }
 
-   private void setPixelAA(int x, int y, int alpha)
+   private void setPixelAA(int x, int y, int color, int alpha)
    {
-      setPixel(x, y, 0xFF000000 | (interpolate(Color.getRed(foreColor), Color.getGreen(foreColor), Color.getBlue(foreColor), getPixel(x, y), 255 - alpha)));
+      setPixel(x, y, (alpha<<24) | color);
    }
 
    // http://members.chello.at/easyfilter/bresenham.c
@@ -3536,10 +3570,10 @@ public final class Graphics
             drawLine(xm-x-1,ym-y,xm+x+1,ym-y);
             drawLine(xm-x-1,ym+y,xm+x+1,ym+y);
          }
-         if (br) setPixelAA(xm - x, ym + y, i);
-         if (bl) setPixelAA(xm - y, ym - x, i);
-         if (tl) setPixelAA(xm + x, ym - y, i);
-         if (tr) setPixelAA(xm + y, ym + x, i);
+         if (br) setPixelAA(xm - x, ym + y, foreColor, i);
+         if (bl) setPixelAA(xm - y, ym - x, foreColor, i);
+         if (tl) setPixelAA(xm + x, ym - y, foreColor, i);
+         if (tr) setPixelAA(xm + y, ym + x, foreColor, i);
          e2 = err;
          x2 = x;
          if (err + y > 0)
@@ -3547,10 +3581,10 @@ public final class Graphics
             i = 255 * (err - 2 * x - 1) / r;
             if (i < 256)
             {
-               if (br) setPixelAA(xm - x, ym + y + 1, i);
-               if (bl) setPixelAA(xm - y - 1, ym - x, i);
-               if (tl) setPixelAA(xm + x, ym - y - 1, i);
-               if (tr) setPixelAA(xm + y + 1, ym + x, i);
+               if (br) setPixelAA(xm - x, ym + y + 1, foreColor, i);
+               if (bl) setPixelAA(xm - y - 1, ym - x, foreColor, i);
+               if (tl) setPixelAA(xm + x, ym - y - 1, foreColor, i);
+               if (tr) setPixelAA(xm + y + 1, ym + x, foreColor, i);
             }
             err += ++x * 2 + 1;
          }
@@ -3559,10 +3593,10 @@ public final class Graphics
             i = 255 * (2 * y + 3 - e2) / r;
             if (i < 256)
             {
-               if (br) setPixelAA(xm - x2 - 1, ym + y, i);
-               if (bl) setPixelAA(xm - y, ym - x2 - 1, i);
-               if (tl) setPixelAA(xm + x2 + 1, ym - y, i);
-               if (tr) setPixelAA(xm + y, ym + x2 + 1, i);
+               if (br) setPixelAA(xm - x2 - 1, ym + y, foreColor, i);
+               if (bl) setPixelAA(xm - y, ym - x2 - 1, foreColor, i);
+               if (tl) setPixelAA(xm + x2 + 1, ym - y, foreColor, i);
+               if (tr) setPixelAA(xm + y, ym + x2 + 1, foreColor, i);
             }
             err += ++y * 2 + 1;
          }
