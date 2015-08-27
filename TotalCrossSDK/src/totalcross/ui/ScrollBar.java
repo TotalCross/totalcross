@@ -440,7 +440,8 @@ public class ScrollBar extends Container
             else
             if (ke.isActionKey())
             {
-               parent.requestFocus();
+               if (parent != null)
+                  parent.requestFocus();
                isHighlighting = true;
             }
             break;
