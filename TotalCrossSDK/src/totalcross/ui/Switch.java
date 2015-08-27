@@ -75,6 +75,9 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
             if (Settings.onJavaSE) ee.printStackTrace();
             dragBarPos = destPos;
          }
+      else
+      if (isOn() != wasChecked)
+         postPressedEvent();
    }
    
    /** Used by animation */
@@ -100,7 +103,9 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
                back = Resources.switchBackAnd.getSmoothScaledInstance(width+1,height);
                back.applyColor2(getBackColor());
             }
+            back.alphaMask = alphaValue;
             g.drawImage(back,0,0);
+            back.alphaMask = 255;            
          }
          else
          {
@@ -111,6 +116,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
                back.applyColor2(getBackColor());
                backLR.applyColor2(getBackColor());
             }
+            back.alphaMask = backLR.alphaMask = alphaValue;
             g.drawImage(back,height/2,0);
             // draw left
             g.setClip(0,0,height/2,height);
@@ -119,6 +125,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
             g.setClip(width-height/2-1,0,height+1,height);
             g.drawImage(backLR,width-height,0);
             g.clearClip();
+            back.alphaMask = backLR.alphaMask = 255;
          }               
          if (isOn())
          {
