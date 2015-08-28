@@ -220,6 +220,11 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    {
       return fmH + Edit.prefH;
    }
+   
+   public int getPreferredWidth()
+   {
+      return (fmH+Edit.prefH)*2;
+   }
 
    public void onAnimationFinished(ControlAnimation anim)
    {
