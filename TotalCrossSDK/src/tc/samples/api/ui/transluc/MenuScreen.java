@@ -1,5 +1,6 @@
 package tc.samples.api.ui.transluc;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -42,6 +43,7 @@ public class MenuScreen extends TranslucentBaseContainer
          t.addPressListener(new PressListener() {public void controlPressed(ControlEvent e) {ViewScreen.getInstance().show();}});
 
          Button t1 = createTransBarButton("ui/images/bt_info.png");
+         t1.addPressListener(new PressListener() {public void controlPressed(ControlEvent e) {MessageBox mb = new MessageBox(null,"Sample with translucent controls.",null); mb.popupNonBlocking(); Vm.sleep(3000); mb.unpop();}});
          Button t2 = createTransBarButton("ui/images/bt_home.png");
          t2.addPressListener(new PressListener() {public void controlPressed(ControlEvent e) {
             base.back();}});
