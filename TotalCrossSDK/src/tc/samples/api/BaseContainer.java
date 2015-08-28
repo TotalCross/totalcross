@@ -183,7 +183,7 @@ public class BaseContainer extends Container
    
    public void back()
    {
-      if (!(this instanceof MainMenu) && getParentWindow() == Window.getTopMost())
+      if (parent == null || (!(this instanceof MainMenu) && getParentWindow() == Window.getTopMost())) // parent is null in TranslucentUISample
          try
          {
             setInfo(MainMenu.DEFAULT_INFO);

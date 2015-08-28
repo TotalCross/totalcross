@@ -38,6 +38,7 @@ import tc.samples.api.sql.*;
 import tc.samples.api.sys.*;
 import tc.samples.api.ui.*;
 import tc.samples.api.ui.SignatureSample;
+import tc.samples.api.ui.transluc.*;
 import tc.samples.api.util.*;
 import tc.samples.api.xml.*;
 
@@ -82,6 +83,7 @@ public class MainMenu extends BaseContainer
       "TopMenu",
       "Velocimeter",
       "Other controls",
+      "Translucent UI",
    };
    
 
@@ -217,6 +219,7 @@ public class MainMenu extends BaseContainer
       TopMenuSample.class,
       VelocimeterSample.class,
       OtherControlsSample.class,
+      TranslucentUISample.class,
    };
    
    Class[] cryptoClasses =

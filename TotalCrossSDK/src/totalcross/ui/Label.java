@@ -512,6 +512,9 @@ public class Label extends Control implements TextControl
          g.backColor = backColor;
       }
       // guich@200b4_126: repaint the background always.
+      if (drawTranslucentBackground(g, alphaValue))
+         ;
+      else
       if (!transparentBackground)
       {
          if (backgroundType == SOLID_BACKGROUND || !isEnabled()) // guich@tc115_78: use solid or gradient backgrounds

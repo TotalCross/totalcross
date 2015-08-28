@@ -204,7 +204,10 @@ public class Check extends Control implements TextControl
       if (uiAndroid)
          try 
          {
-            NinePatch.tryDrawImage(g, enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor),0,0);
+            Image img = enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor);
+            img.alphaMask = alphaValue;
+            NinePatch.tryDrawImage(g, img,0,0);
+            img.alphaMask = 255;
             if (checked)
                NinePatch.tryDrawImage(g,Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}

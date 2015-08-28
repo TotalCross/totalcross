@@ -324,7 +324,9 @@ public class Radio extends Control implements TextControl
             int hh = Math.max(fmH,Math.min(width - (textW+2), height)); 
             Image ret = isEnabled() ? Resources.radioBkg.getNormalInstance(hh,hh,foreColor) : Resources.radioBkg.getDisabledInstance(hh, hh, foreColor);
             yy = (height - hh) / 2;
+            ret.alphaMask = alphaValue;
             g.drawImage(ret,0,yy);
+            ret.alphaMask = 255;
             if (checked)
                g.drawImage(Resources.radioSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled()),0,yy);
          } catch (ImageException ie) {}

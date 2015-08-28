@@ -145,7 +145,7 @@ public class Button extends Control implements TextControl
    private boolean skipPaint;
    private Rect clip;
    private int localCommonGap;
-   
+
    private String []lines;
    private int []linesW;
 
@@ -256,7 +256,7 @@ public class Button extends Control implements TextControl
    {
       this(text,null,0,0);
    }
-
+   
    /** Sets the text that is displayed in the button. */
    public void setText(String text)
    {
@@ -274,7 +274,7 @@ public class Button extends Control implements TextControl
    {
        this(null,img,0,0);
    }
-   
+
    /** Sets the image that is displayed in the button. The
     transparentColor property of the Image must be set before calling this
     method.<br>
@@ -749,11 +749,14 @@ public class Button extends Control implements TextControl
       if (bkg) // only in uiAndroid
          try
          {
-            if (npback == null)
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
-            NinePatch.tryDrawImage(g, enabled ? armed ? 
-                  NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : 
-                  npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false),ix,iy);
+            if (!drawTranslucentBackground(g, armed ? alphaValue >= 80 ? alphaValue/2 : alphaValue*2 : alphaValue))
+            {
+               if (npback == null)
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
+               NinePatch.tryDrawImage(g, enabled ? armed ? 
+                     NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : 
+                     npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false),ix,iy);
+            }
          }
          catch (ImageException ie) {ie.printStackTrace();}
       else

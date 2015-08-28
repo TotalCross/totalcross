@@ -32,6 +32,16 @@ import totalcross.util.*;
 
 public class Control extends GfxSurface
 {
+   /** Used when this button is translucent */
+   public static enum TranslucentShape
+   {
+      NONE,
+      RECT,
+      ROUND,
+      LESS_ROUND,
+      CIRCLE
+   };
+
    /** The type of surface. */
    int surfaceType; // don't move from here! must be at position 0
    /** The control's x location */
@@ -243,7 +253,8 @@ public class Control extends GfxSurface
    protected Control setRel;
    protected boolean repositionAllowed;
    protected int tempW; // used in flowContainer
-   
+   private TranslucentShape translucentShape = TranslucentShape.NONE;
+
    /** The shadow color to be applied to this control. */
    public int textShadowColor; // guich@tc126_26
 
@@ -268,6 +279,9 @@ public class Control extends GfxSurface
    Vector listeners;
    private static boolean callingUpdScr,callingRepNow;
 
+   /** Alpha to be used in some controls, ranging from 0 to 255. */
+   public int alphaValue = 255;
+   
    /** Set the background to be transparent, by not filling the control's area with the background color.
     * @since TotalCross 1.0
     */
@@ -291,6 +305,7 @@ public class Control extends GfxSurface
    
    /** Keep the control enabled even if enabled is false. */
    public boolean keepEnabled;
+   
    
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
@@ -2055,5 +2070,51 @@ public class Control extends GfxSurface
       this.y = y;
       if (w != 0) this.width = w;
       if (h != 0) this.height = h;
+   }
+   
+   /** Make this control a translucent one by setting the desired shape instead of NONE. 
+    * Calling this resets the backColor to BLACK, foreColor to WHITE, and the textShadowColor to 0x444444, but you may change that value later.
+    * You can also change the translucentAlpha value.
+    * Note that a translucent button does not have a visual DISABLED state.
+    */
+   public void setTranslucent(TranslucentShape shape)
+   {
+      translucentShape = shape;
+      transparentBackground = true;
+      backColor = Color.BLACK;
+      foreColor = Color.WHITE;
+      textShadowColor = 0x444444;
+      alphaValue = 0x80;
+   }
+
+   private Image transback;
+   public boolean drawTranslucentBackground(Graphics g, int alphaValue)
+   {
+      if (translucentShape != TranslucentShape.NONE)
+      {
+         if (transback == null || transback.getWidth() != width || transback.getHeight() != height)
+            try
+            {
+               transback = new Image(width,height);
+               Graphics gg = transback.getGraphics();
+               gg.backColor = backColor;
+               switch (translucentShape)
+               {
+                  case NONE: return false;
+                  case RECT: gg.fillRect(0,0,width,height); break;
+                  case LESS_ROUND: gg.fillRoundRect(0,0,width,height,height/8); break;
+                  case ROUND: gg.fillRoundRect(0,0,width,height,height/4); break;
+                  case CIRCLE: gg.fillRoundRect((width-height)/2,0,height,height,height/2); break;
+               }
+            }
+            catch (Throwable t) {}
+         if (transback != null)
+         {
+            transback.alphaMask = alphaValue;
+            g.drawImage(transback,0,0);
+         }
+         return true;
+      }
+      return false;
    }
 }
