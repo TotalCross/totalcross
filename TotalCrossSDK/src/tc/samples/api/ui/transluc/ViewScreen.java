@@ -15,6 +15,18 @@ public class ViewScreen extends TranslucentBaseContainer
       {
          super.initUI();
          setBackgroundImage(4);
+
+         ListBox lb = new ListBox();
+         setTranslucentProps(lb);
+         add(lb, CENTER,PARENTSIZE+20, PARENTSIZE+80, PARENTSIZE+20);
+         lb.add("Item 1");
+         lb.add("Item 2");
+
+         MultiEdit me = new MultiEdit();
+         setTranslucentProps(me);
+         me.transparentBackground = false;
+         add(me, CENTER,PARENTSIZE+50, PARENTSIZE+80, PARENTSIZE+20);
+         
          
          Button t1 = createTransBarButton("ui/images/bt_view.png");
          Button t2 = createTransBarButton("ui/images/bt_back.png");

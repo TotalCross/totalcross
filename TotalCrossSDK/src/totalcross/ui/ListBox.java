@@ -988,6 +988,7 @@ public class ListBox extends Container implements Scrollable
                try
                {
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);
+                  npback.alphaMask = alphaValue;
                }
                catch (ImageException e) {}
             NinePatch.tryDrawImage(g,npback,0,0);
