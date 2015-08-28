@@ -1163,13 +1163,15 @@ public class MultiEdit extends Container implements Scrollable, TextControl
          g.backColor = uiAndroid ? parent.backColor : back0;
          g.clearClip();
          int x2 = this.width - (Settings.fingerTouch ? 0 : sb.getPreferredWidth());
-         g.fillRect(0, 0, x2, this.height);
+         if (alphaValue == 255)
+            g.fillRect(0, 0, x2, this.height);
          if (uiAndroid)
          {
             if (npback == null)
                try
                {
                   npback = NinePatch.getInstance().getNormalInstance(NinePatch.MULTIEDIT, width, height, isEnabled() ? back0 : Color.interpolate(back0 == parent.backColor ? Color.BRIGHT : back0,parent.backColor), false);
+                  npback.alphaMask = alphaValue;
                }
                catch (ImageException e) {}
             NinePatch.tryDrawImage(g,npback,0,0);
