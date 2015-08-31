@@ -502,7 +502,7 @@ TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class
    TCClass target;
    TCObject me = p->obj[0];
    target = getTargetClass(me);
-   if (target->superClass != null && !target->flags.isInterface && !(me))
+   if (target->superClass != null && !target->flags.isInterface && !isPrimitive(me))
       createClassObject(p->currentContext, target->superClass->name, Type_Null, &p->retO,null);
 }
 //////////////////////////////////////////////////////////////////////////
