@@ -51,6 +51,7 @@ public class MainMenu extends BaseContainer
    
    String[] uiItems =
    {
+      "AccordionContainer",
       "AlignedLabelsContainer",
       "Button",
       "ButtonMenu",
@@ -187,6 +188,7 @@ public class MainMenu extends BaseContainer
 
    Class[] uiClasses =
    {
+      AccordionSample.class,
       AlignedLabelsSample.class,
       ButtonSample.class,
       ButtonMenuSample.class,

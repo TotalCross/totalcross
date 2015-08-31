@@ -6,6 +6,8 @@ import totalcross.ui.anim.ControlAnimation.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
+import java.util.*;
+
 /** A Container that can be expanded or collapsed
  * 
  * Sample:
@@ -16,11 +18,38 @@ import totalcross.ui.gfx.*;
  * ac.add(ac.new Caption("Type text"), LEFT,TOP,FILL,PREFERRED);
  * ac.add(new MultiEdit(),LEFT+50,AFTER+50,FILL-50,fmH*7);
  * </pre> 
+ * 
+ * Note that when the container is changing its height, it calls <code>parent.reposition</code> to open space for its growth.
  */
 
 public class AccordionContainer extends Container implements PathAnimation.SetPosition, AnimationFinished
 {
-   public int minH = fmH+Edit.prefH, maxH;
+   public static int ANIMATION_TIME = 300;
+   
+   public static class Group
+   {
+      ArrayList<AccordionContainer> l = new ArrayList<AccordionContainer>(5);
+      
+      public void collapseAll()
+      {
+         for (AccordionContainer a: l)
+            if (a.isExpanded())
+               a.collapse();
+      }
+   }
+   
+   public int minH = fmH + Edit.prefH;
+   private Group group;
+   
+   public AccordionContainer()
+   {
+   }
+   
+   public AccordionContainer(Group g)
+   {
+      g.l.add(this);
+      group = g;
+   }
    
    public class Caption extends Control
    {
@@ -72,7 +101,9 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
    {
       try
       {
-         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, 500);
+         group.collapseAll();
+         int maxH = getMaxHeight();
+         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
          p.useOffscreen = false;
          p.setpos = this;
          p.start();
@@ -87,7 +118,7 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
    {
       try
       {
-         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, minH, this, 500);
+         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, minH, this, ANIMATION_TIME);
          p.useOffscreen = false;
          p.setpos = this;
          p.start();
@@ -106,13 +137,31 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
 
    public void onAnimationFinished(ControlAnimation anim)
    {
-      
    }
-
+   
    public void setPos(int x, int y)
    {
-      this.height = y;
+      this.height = setH = y;
       Window.needsPaint = true;
+      parent.reposition();
    }
 
+   private int getMaxHeight()
+   {
+      int maxH = 0, minH = Convert.MAX_INT_VALUE;
+      for (Control child = children; child != null; child = child.next)
+      {
+         if (child.y < minH)
+            minH = child.y;
+         int yy = child.getY2();
+         if (yy > maxH)
+            maxH = yy;
+      }
+      return maxH + minH; // use the distance of the first container as a gap at bottom  
+   }
+   
+   public int getPreferredHeight()
+   {
+      return minH;
+   }
 }
