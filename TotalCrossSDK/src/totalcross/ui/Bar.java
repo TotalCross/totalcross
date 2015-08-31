@@ -430,7 +430,7 @@ public class Bar extends Container
       if (title == null) // if there's no title, make the icons take the whole size of the container
       {
          for (int i = n; --i > 0;)
-            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, width/n, FILL);
+            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, PARENTSIZE-n, FILL);
          if (n == 1) // surely is a BarButton, otherwise would fall on first test above
             add((Control)icons.items[0], RIGHT, TOP,PREFERRED,FILL);
          else
