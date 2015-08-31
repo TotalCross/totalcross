@@ -46,6 +46,11 @@ public class MultiButton extends Control
       npback = null;
    }
    
+   public void onBoundsChanged(boolean colorsChanged)
+   {
+      npback = null;
+   }
+   
    /** Sets the selected index, or -1 to unset it. Only an enabled index can be selected. */
    public void setSelectedIndex(int sel)
    {
