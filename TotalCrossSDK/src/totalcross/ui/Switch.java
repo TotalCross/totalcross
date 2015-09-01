@@ -26,6 +26,9 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    /** Text color to draw when on background or foreground, and when this switch is on or off */
    public int colorBackOn, colorForeOn, colorBackOff, colorForeOff;
    
+   /** Set to true to center text instead of moving it to left or right */
+   public boolean centerText;
+   
    public Switch(boolean androidType)
    {
       foreColor = 0x05B6EE;
@@ -117,12 +120,13 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
          g.drawImage(backLR,width-lrww,0);
          g.clearClip();
          back.alphaMask = backLR.alphaMask = 255;
-         if (isOn())
+         if (isOn()) // text at left
          {
             if (textBackOn != null)
             {
                g.foreColor = colorBackOn;
-               g.drawText(textBackOn,(width-fm.stringWidth(textBackOn))/2,(height-fmH)/2);
+               int ww = fm.stringWidth(textBackOn);
+               g.drawText(textBackOn,centerText ? (width-ww)/2 : (width-dragBarSize-ww)/2,(height-fmH)/2);
             }
             g.drawImage(btn,dragBarPos,0);
             if (textForeOn != null)
@@ -131,12 +135,13 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
                g.drawText(textForeOn,dragBarPos+(dragBarSize-fm.stringWidth(textForeOn))/2,(height-fmH)/2);
             }
          }
-         else
+         else // text at right
          {
             if (textBackOff != null)
             {
                g.foreColor = colorBackOff;
-               g.drawText(textBackOff,(width-fm.stringWidth(textBackOff))/2,(height-fmH)/2);
+               int ww = fm.stringWidth(textBackOn);
+               g.drawText(textBackOff,centerText ? (width-ww)/2 : (width-dragBarSize-ww)/2+dragBarSize,(height-fmH)/2);
             }
             g.drawImage(btn,dragBarPos,0);
             if (textForeOff != null)
@@ -183,10 +188,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
             if (!hadParentScrolled())
             {
                if (!dragged)
-               {
-                  boolean nowAtMidLeft = ((PenEvent)event).x < width/2;
-                  moveSwitch(nowAtMidLeft);
-               }
+                  moveSwitch(isOn());
                else
                {
                   dragBarPos = getPos(event);
@@ -214,7 +216,9 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    
    public int getPreferredWidth()
    {
-      return (fmH+Edit.prefH)*2;
+      int textW = Math.max(textBackOn == null ? 0 : fm.stringWidth(textBackOn), textBackOff == null ? 0 : fm.stringWidth(textBackOff));
+      int btW = fmH+Edit.prefH;
+      return textW == 0 ? btW * 2 : btW*3/2+textW;
    }
 
    public void onAnimationFinished(ControlAnimation anim)
