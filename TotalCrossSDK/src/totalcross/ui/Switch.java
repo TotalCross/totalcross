@@ -91,42 +91,32 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    {
       try
       {
+         boolean enabled = isEnabled();
          if (btn == null)
          {
             btn = (isIos ? Resources.switchBtnIos : Resources.switchBtnAnd).getSmoothScaledInstance(height,height);
-            btn.applyColor2(getForeColor());
+            btn.applyColor2(!enabled ? backColor : foreColor);
          }
-         if (!isIos) // in iOS
+         if (back == null)
          {
-            if (back == null)
-            {
-               back = Resources.switchBackAnd.getSmoothScaledInstance(width+1,height);
-               back.applyColor2(getBackColor());
-            }
-            back.alphaMask = alphaValue;
-            g.drawImage(back,0,0);
-            back.alphaMask = 255;            
+            backLR = (isIos ? Resources.switchBrdIos : Resources.switchBrdAnd).smoothScaledFixedAspectRatio(height,true); // left/right
+            back = Resources.switchBack.getSmoothScaledInstance(width-backLR.getWidth(),height); // mid
+            int fillB = !enabled ? Color.interpolate(backColor, parent.backColor) : backColor;
+            back.applyColor2(fillB);
+            backLR.applyColor2(fillB);
          }
-         else
-         {
-            if (back == null)
-            {
-               back = Resources.switchBackIos.getSmoothScaledInstance(width-height,height); // mid
-               backLR = Resources.switchBrdIos.getSmoothScaledInstance(height,height); // left/right
-               back.applyColor2(getBackColor());
-               backLR.applyColor2(getBackColor());
-            }
-            back.alphaMask = backLR.alphaMask = alphaValue;
-            g.drawImage(back,height/2,0);
-            // draw left
-            g.setClip(0,0,height/2,height);
-            g.drawImage(backLR,0,0);
-            // draw right
-            g.setClip(width-height/2-1,0,height+1,height);
-            g.drawImage(backLR,width-height,0);
-            g.clearClip();
-            back.alphaMask = backLR.alphaMask = 255;
-         }               
+         int lrww = backLR.getWidth();
+         int lrw = lrww / 2;
+         back.alphaMask = backLR.alphaMask = alphaValue;
+         g.drawImage(back,lrw,0);
+         // draw left
+         g.setClip(0,0,lrw,height);
+         g.drawImage(backLR,0,0);
+         // draw right
+         g.setClip(width-lrw-1,0,height+1,height);
+         g.drawImage(backLR,width-lrww,0);
+         g.clearClip();
+         back.alphaMask = backLR.alphaMask = 255;
          if (isOn())
          {
             if (textBackOn != null)
@@ -165,6 +155,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    
    public void onEvent(Event event)
    {
+      if (isEnabled())
       switch (event.type)
       {
          case PenEvent.PEN_DRAG_START:
