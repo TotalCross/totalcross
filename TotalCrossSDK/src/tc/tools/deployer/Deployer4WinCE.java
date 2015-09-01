@@ -366,7 +366,7 @@ public class Deployer4WinCE
          throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
       // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
       try {new File(Convert.appendPath(targetDir,cabName+".CAB")).delete();} catch (Exception e) {}
-      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName};
+      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/compress"};
       out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 
       // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
