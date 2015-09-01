@@ -221,6 +221,12 @@ public class GoogleMapsSample extends BaseContainer
                               if (gps.location[0] != GPS.INVALID)
                                  addr = "@"+gps.location[0]+","+gps.location[1];
                            }
+                           catch (GPSDisabledException gde)
+                           {
+                              mbgps.unpop();
+                              mbgps = null;
+                              Toast.show("GPS is disabled, please enable it!",2000);
+                           }
                            catch (Exception ioe) 
                            {
                               mbgps.unpop();

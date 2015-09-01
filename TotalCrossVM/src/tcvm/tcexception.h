@@ -56,6 +56,7 @@ typedef enum
    NoSuchMethodException,
    NoSuchFieldException,
    NotInstalledException,
+   GPSDisabledException,
    ThrowableCount,
 } Throwable;
 

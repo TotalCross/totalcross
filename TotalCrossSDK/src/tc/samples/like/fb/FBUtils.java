@@ -92,6 +92,10 @@ public class FBUtils implements FBConstants
          while (ret == null && Vm.getTimeStamp() < endTime);
          gps.stop();
       } 
+      catch (GPSDisabledException gde)
+      {
+         Toast.show("GPS is disabled, please enable it!",2000);
+      }
       catch (Exception e) 
       {
       }

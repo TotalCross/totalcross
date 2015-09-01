@@ -43,6 +43,10 @@ import totalcross.util.*;
  *          {
  *             gps.retrieveGPSData();
  *          }
+ *          catch (GPSDisabledException gde)
+ *          {
+ *             Toast.show("Please enable GPS!",2000);
+ *          }
  *          catch (Exception eee)
  *          {
  *             eee.printStackTrace();
@@ -171,6 +175,7 @@ public class GPS
     * 
     * Under Windows Mobile and Android, uses the internal GPS api.
     * 
+    * @throws GPSDisabledException If GPS is disabled
     * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS() throws IOException

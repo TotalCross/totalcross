@@ -17,6 +17,7 @@
 package tc.samples.api.io.device;
 
 import totalcross.io.device.gps.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.chart.*;
 import totalcross.ui.dialog.*;
@@ -38,7 +39,6 @@ public class GPSVelocitySample extends BaseContainer
       try
       {
          super.initUI();
-         tt = addTimer(50);
          vel = new Velocimeter();
          vel.value = 0;
          vel.max = 120;
@@ -46,6 +46,12 @@ public class GPSVelocitySample extends BaseContainer
          add(vel,CENTER,CENTER,PARENTSIZE+50,PARENTSIZE+50);
          add(l = new Label("",CENTER),LEFT,AFTER+50);
          gps = new GPS();
+         tt = addTimer(50);
+      }
+      catch (GPSDisabledException gde)
+      {
+         Toast.show("GPS is disabled, please enable it!",2000);
+         super.back();
       }
       catch (Exception e)
       {
@@ -57,7 +63,7 @@ public class GPSVelocitySample extends BaseContainer
    public void back()
    {
       super.back();
-      gps.stop();
+      if (gps != null) gps.stop();
    }
    
    public void onEvent(Event e)

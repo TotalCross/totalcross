@@ -325,4 +325,5 @@ void initException()
    throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
    throwableAsCharP[NoSuchFieldException          ] = "java.lang.NoSuchFieldException";
    throwableAsCharP[NotInstalledException         ] = "totalcross.util.NotInstalledException";
+   throwableAsCharP[GPSDisabledException          ] = "totalcross.io.device.gps.GPSDisabledException";
 }
