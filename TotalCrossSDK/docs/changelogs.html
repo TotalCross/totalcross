@@ -1,4 +1,38 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2747</h1>
+. fixed printer samples not loading the test image<br>
+. Added support for MTPPrinter. Changed printer samples to share a base class, PrinterSampleBase. BluetoothPrinter now accepts also a Stream.<br>
+. Fixed File.copy: making sure files are closed, using finally<br>
+. fixed floating menu button on android 5<br>
+. added Control.nextTabControl<br>
+. when making a new java socket for ssl, set its timeout with the same value of the received tc socket.<br>
+. added a method in Random to get the seed<br>
+. Removed itnuesmetadada.plist, which is disallowed<br>
+. fixed reflect.Array.set(Object)<br>
+. added JSONSample to TotalCrossAPI<br>
+. added File.readAndDelete<br>
+. added the build number to the javadoc<br>
+. Using the hierarchy from java 1.7 ReflectiveOperationException<br>
+. added ScrollPosition.setNeverShow<br>
+. Removed gap at top of application when it was calling super("app name", NOR_BORDER).<br>
+. fixed Method.invoke not allowing to use null as a parameter<br>
+. shows the time when parsing the exception on SQLite<br>
+. changed PSLogin to use PARENTSIZE on x/y to let the ui work fine during rotation<br>
+. added drawCircleAA. changed fillRoundRect accordingly.<br>
+. send android's volume up/down keys as page up/down<br>
+. added MultiListBox.localItemsText<br>
+. added option /fastscale to totalcross.Launcher, used to improve scaling speed<br>
+. fixed /storage paths on android being prefixed with Settings.appPath<br>
+. fixed Bar when a single button is added; now the button is placed at right<br>
+. now tc.Deploy excludes java files from tcz when a jar file is used<br>
+. added gps velocity test to TotalCrossAPI<br>
+. implemented the new Switch component. Added sample in TotalCrossAPI<br>
+. improved fillRoundRect. now Graphics.alpha is public so you can set it for the value you want<br>
+. added translucent UI to TotalCross and a sample to TotalCross API. Still have to add translucency to other controls<br>
+. added AccordionContainer and sample<br>
+. fixed MultiButton not resizing on rotation<br>
+. fixed Bar when it is opened in landscape and a rotation occurs<br>
+. fixed Class.getSuperClass not working<br>
 <h1>build 2694</h1>
 . added Method.getParameterCount()<br>
 . added Class.cast<br>
