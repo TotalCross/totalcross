@@ -17,6 +17,8 @@
 package tc.samples.api.ui;
 
 import totalcross.ui.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 import tc.samples.api.*;
 
@@ -34,12 +36,27 @@ public class AccordionSample extends BaseContainer
 
       ac = new AccordionContainer(gr);
       add(ac, LEFT+gap,AFTER+gap,FILL-gap,PREFERRED);
-      ac.add(ac.new Caption("Type text 2"), LEFT,AFTER,FILL,PREFERRED);
+      ac.add(ac.new Caption(new Label("Type text 2"),new Button(" -",Button.BORDER_NONE), new Button(" +",Button.BORDER_NONE)), LEFT,AFTER,FILL,PREFERRED);
       ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
 
       ac = new AccordionContainer(gr);
       add(ac, LEFT+gap,AFTER+gap,FILL-gap,PREFERRED);
-      ac.add(ac.new Caption("Type text 3"), LEFT,AFTER,FILL,PREFERRED);
-      ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
+      
+      try
+      {
+         Image img = new Image("tc/samples/api/ui/images/bt_minus.png").smoothScaledFixedAspectRatio(fmH,true);
+         img.applyColor2(Color.BLACK);
+         Button b1 = new Button(img, Button.BORDER_NONE);
+         img = new Image("tc/samples/api/ui/images/bt_add.png").smoothScaledFixedAspectRatio(fmH,true);
+         img.applyColor2(Color.BLACK);
+         Button b2 = new Button(img, Button.BORDER_NONE);
+         ac.add(ac.new Caption(new Label("Type text 3"),b1,b2), LEFT,AFTER,FILL,PREFERRED);
+         ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         // let sample work without this last one 
+      }
    }
 }

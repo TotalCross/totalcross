@@ -51,33 +51,67 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
       group = g;
    }
    
-   public class Caption extends Control
+   public class Caption extends Container
    {
-      String caption;
+      public Button btExpanded, btCollapsed;
+      public Label lCaption;
       
       public Caption(String caption)
       {
-         this.caption = caption;
+         this.lCaption = new Label(caption);
+      }
+      
+      public Caption(Label lCaption, Button btExpanded, Button btCollapsed)
+      {
+         this.lCaption = lCaption;
+         this.btExpanded = btExpanded;
+         this.btCollapsed = btCollapsed;
+      }
+      
+      public void initUI()
+      {
+         if (btExpanded == null)
+         {
+            btExpanded = new ArrowButton(Graphics.ARROW_DOWN,fmH/2, foreColor);
+            btExpanded.setBorder(Button.BORDER_NONE);
+         }
+         if (btCollapsed == null)
+         {
+            btCollapsed = new ArrowButton(Graphics.ARROW_RIGHT,fmH/2, foreColor);
+            btCollapsed.setBorder(Button.BORDER_NONE);
+         }
+         add(btExpanded, LEFT,TOP,PREFERRED,FILL);
+         add(btCollapsed, SAME,SAME,SAME,SAME);
+         add(lCaption, uiAdjustmentsBasedOnFontHeightIsSupported ? AFTER+50 : AFTER+fmH/2, CENTER);
+         btExpanded.setVisible(false);
       }
       
       public int getPreferredHeight()
       {
          return fmH + Edit.prefH;
       }
-      
-      public void onPaint(Graphics g)
+
+      public void invert()
       {
-         if (!isExpanded())
-            g.drawArrow(fmH/2, 2, height/3, Graphics.ARROW_RIGHT, false, foreColor);
+         postPressedEvent();         
+         if (isExpanded())
+            collapse();
          else
-            g.drawArrow(fmH/2, height/3, height/3, Graphics.ARROW_DOWN, false, foreColor);
-         g.drawText(caption, fmH*2, 0, textShadowColor != -1, textShadowColor);
+            expand();
+         boolean b = isExpanded();
+         btExpanded.setVisible(!b);
+         btCollapsed.setVisible(b);
       }
+      
       public void onEvent(Event e)
       {
          PenEvent pe;
          switch (e.type)
          {
+            case ControlEvent.PRESSED:
+               if (e.target == btExpanded || e.target == btCollapsed)
+                  invert();
+               break;                  
             case PenEvent.PEN_DOWN:
                Window.needsPaint = true;
                break;
@@ -85,13 +119,7 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
                Window.needsPaint = true;
                pe = (PenEvent)e;
                if ((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x,pe.y))
-               {
-                  postPressedEvent();
-                  if (isExpanded())
-                     collapse();
-                  else
-                     expand();
-               }
+                  invert();
                break;
          }
       }
