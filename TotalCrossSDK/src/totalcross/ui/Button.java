@@ -257,6 +257,13 @@ public class Button extends Control implements TextControl
       this(text,null,0,0);
    }
    
+   /** Creates a button displaying the given text and border. */
+   public Button(String text, byte border)
+   {
+      this(text,null,0,0);
+      setBorder(border);
+   }
+   
    /** Sets the text that is displayed in the button. */
    public void setText(String text)
    {
@@ -273,6 +280,14 @@ public class Button extends Control implements TextControl
    public Button(Image img)
    {
        this(null,img,0,0);
+   }
+
+   /** Creates a button with the given image and border. The transparentColor property of
+    * the Image must be set before calling this constructor. */
+   public Button(Image img, byte border)
+   {
+       this(null,img,0,0);
+       setBorder(border);
    }
 
    /** Sets the image that is displayed in the button. The
