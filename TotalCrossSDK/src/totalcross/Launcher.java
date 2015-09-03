@@ -144,7 +144,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    }
 
    @SuppressWarnings("static-access")
-   public void init()
+   final public void init()
    {
       boolean showInstructionsOnError = true;
       appletInitialized = true; // guich@500_1
@@ -164,7 +164,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          }
 
          fillSettings();
-         new RegisterSDK(activationKey);
+         if (isApplication)
+            new RegisterSDK(activationKey);
 
          try
          {
