@@ -386,13 +386,11 @@ public class GlobalConstantPool implements tc.tools.converter.tclass.TClassConst
       
       if (((value.charAt(0) == 'L' && value.charAt(value.length()-1) == ';') || value.charAt(0) == '['))
          System.err.println("*Class is incorrect* "+value);
-            
-      if (value.equals("java.util.Random")) value = "totalcross.util.Random";
-      else
-      if (value.indexOf("StringBuilder") >= 0)
-         value = value.replaceFirst("StringBuilder", "StringBuffer");
-      else
-      if (value.equals("java.lang.CharSequence")) value = "java.lang.String"; // used in the replace method
+
+      // map from java classes to totalcros ones
+      String to = DeploySettings.hmMappedClasses.get(value);
+      if (to != null)
+         value = to;
 
       // free sdk limitation
       if (DeploySettings.rasKey == null && value.indexOf('.') != -1)

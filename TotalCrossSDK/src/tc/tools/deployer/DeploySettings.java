@@ -16,6 +16,10 @@ package tc.tools.deployer;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
+import totalcross.util.Hashtable;
+import totalcross.util.Vector;
+
+import java.util.*;
 
 public class DeploySettings
 {
@@ -80,6 +84,8 @@ public class DeploySettings
    public static boolean isTotalCrossJarDeploy;
 
    public static String installPlatforms = "";
+   
+   public static HashMap<String,String> hmMappedClasses = new HashMap<String,String>(5);
 
    // iOS IPA required files
    public static boolean buildIPA = false;
@@ -117,8 +123,15 @@ public class DeploySettings
       exclusionList.addElement("litebase/");
       exclusionList.addElement("ras/");
       exclusionList.addElement("net/rim/");
+      
+      hmMappedClasses.put("java.math.BigDecimal","totalcross.util.BigDecimal");
+      hmMappedClasses.put("java.math.BigInteger","totalcross.util.BigInteger");
+      hmMappedClasses.put("java.util.Random", "totalcross.util.Random");
+      hmMappedClasses.put("java.lang.StringBuilder", "java.lang.StringBuffer");
+      hmMappedClasses.put("java.lang.CharSequence", "java.lang.String"); // used in the replace method
+      
       appletFontSizes.addElement(12);
-
+      
       currentDir = System.getProperty("user.dir").replace('\\','/');
       // parse the classpath environment variable
       String cp0;
