@@ -129,7 +129,8 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
    {
       try
       {
-         group.collapseAll();
+         if (group != null)
+             group.collapseAll();
          int maxH = getMaxHeight();
          PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
          p.useOffscreen = false;
@@ -165,6 +166,7 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
 
    public void onAnimationFinished(ControlAnimation anim)
    {
+      getParentWindow().reposition();
    }
    
    public void setPos(int x, int y)
