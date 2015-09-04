@@ -42,6 +42,7 @@ import android.view.View.*;
 import android.view.inputmethod.*;
 import android.widget.*;
 import java.io.*;
+import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
 import java.util.zip.*;
@@ -163,7 +164,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (GENERATE_FONT)
       {
          new totalcross.android.fontgen.FontGenerator("tahoma", new String[]{"","/aa","/rename:TCFont"});
-         AndroidUtils.debug("FINISHED");
          exit(0);
       }
    }
@@ -919,7 +919,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static String getSDCardPath()
    {
       java.io.File sd = Environment.getExternalStorageDirectory();
-      return sd.canWrite() ? sd.toString() : null;
+      if (sd.canWrite())
+         return sd.toString();
+      try
+      {
+         Method getExternalFilesDir = Context.class.getMethod("getExternalFilesDirs",  new Class[] { String.class } );
+         File[] ff = (File[])getExternalFilesDir.invoke(loader, new Object[]{null});
+         if (ff != null)
+            for (File f: ff)
+               if (f.canWrite())
+                  return f.toString();
+      }
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+      }      
+      return null;
    }
 
    // gps stuff
@@ -1513,7 +1528,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       try 
       {
          // generate the bugreport
-         AndroidUtils.debug("a");
          try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
          String bugreportfn = "/sdcard/IssueReport/bugreport"+((int)(Math.random()*10000))+".txt";
          String[] commands =
@@ -1535,7 +1549,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          }
          if (l2 <= 512)   // ignore small reports
          {
-            AndroidUtils.debug("b "+l2);
             f.delete();
          }
          else
