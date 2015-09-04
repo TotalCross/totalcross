@@ -22,7 +22,7 @@ import java.util.*;
  * Note that when the container is changing its height, it calls <code>parent.reposition</code> to open space for its growth.
  */
 
-public class AccordionContainer extends Container implements PathAnimation.SetPosition, AnimationFinished
+public class AccordionContainer extends ClippedContainer implements PathAnimation.SetPosition, AnimationFinished
 {
    public static int ANIMATION_TIME = 300;
    
