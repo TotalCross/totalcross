@@ -173,7 +173,7 @@ public class AccordionContainer extends Container implements PathAnimation.SetPo
    {
       this.height = setH = y;
       Window.needsPaint = true;
-      parent.reposition();
+      getParentWindow().reposition();
    }
 
    private int getMaxHeight()

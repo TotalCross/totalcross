@@ -27,23 +27,24 @@ public class AccordionSample extends BaseContainer
    public void initUI()
    {
       super.initUI();
-      AccordionContainer.Group gr = new AccordionContainer.Group();
-      AccordionContainer ac = new AccordionContainer(gr);
+      ScrollContainer sc = new ScrollContainer(false,true);
+      add(sc,LEFT,TOP,FILL,FILL);
+      //AccordionContainer.Group gr = new AccordionContainer.Group();
+      AccordionContainer ac = new AccordionContainer();
       int gap = fmH/2;
-      add(ac, LEFT+gap,TOP+gap,FILL-gap,PREFERRED);
+      sc.add(ac, LEFT+gap,TOP,FILL-gap,PREFERRED);
       ac.add(ac.new Caption("Type text 1"), LEFT,TOP,FILL,PREFERRED);
       ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
 
-      ac = new AccordionContainer(gr);
-      add(ac, LEFT+gap,AFTER+gap,FILL-gap,PREFERRED);
+      ac = new AccordionContainer();
+      sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
       ac.add(ac.new Caption(new Label("Type text 2"),new Button(" -",Button.BORDER_NONE), new Button(" +",Button.BORDER_NONE)), LEFT,AFTER,FILL,PREFERRED);
       ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
-
-      ac = new AccordionContainer(gr);
-      add(ac, LEFT+gap,AFTER+gap,FILL-gap,PREFERRED);
       
       try
       {
+         ac = new AccordionContainer();
+         sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
          Image img = new Image("tc/samples/api/ui/images/bt_minus.png").smoothScaledFixedAspectRatio(fmH,true);
          img.applyColor2(Color.BLACK);
          Button b1 = new Button(img, Button.BORDER_NONE);
