@@ -304,4 +304,36 @@ public class SQLiteUtil
       st.execute("VACUUM;");
       st.close();
    }
+
+   /**
+    * Check if the index with the name exists in this table
+    * 
+    * @param tableName
+    *        to check
+    * @param indexName
+    *        to check
+    * @param connection
+    *        with the database
+    * @return true if the index exists, otherwise false;
+    * @throws SQLException
+    */
+   public static final boolean existsIndex(String tableName, String indexName, Connection connection) throws SQLException
+   {
+      PreparedStatement prepareStatement = null;
+      ResultSet rs = null;
+      try
+      {
+         prepareStatement = connection.prepareStatement("SELECT name FROM sqlite_master WHERE type='index' AND name='" + indexName
+                     + "' AND tbl_name='" + tableName + "';");
+         rs = prepareStatement.executeQuery();
+         return rs.next();
+      }
+      finally
+      {
+         if (rs != null)
+            rs.close();
+         if (prepareStatement != null)
+            prepareStatement.close();
+      }
+   }
 }
