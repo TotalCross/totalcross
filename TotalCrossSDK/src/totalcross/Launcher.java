@@ -20,6 +20,15 @@
 
 package totalcross;
 
+import totalcross.io.*;
+import totalcross.io.IOException;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.event.KeyEvent;
+import totalcross.util.*;
+import totalcross.util.zip.*;
+
 /*
  * Note: Everything that calls TotalCross code in these classes must be
  * synchronized with respect to the Applet uiLock object to allow TotalCross
@@ -42,16 +51,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.*;
 import java.util.zip.*;
-import tc.tools.*;
-
-import totalcross.io.*;
-import totalcross.io.IOException;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.event.KeyEvent;
-import totalcross.util.*;
-import totalcross.util.zip.*;
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
@@ -165,7 +164,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
          fillSettings();
          if (isApplication)
-            new RegisterSDK(activationKey);
+            Class.forName("tc.tools.RegisterSDK").getConstructor(String.class).newInstance(activationKey);
 
          try
          {
@@ -223,13 +222,14 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             exit(-1);
          }
       }
-      catch (RegisterSDKException re)
-      {
-         System.out.println("SDK registration returned: "+re.getMessage());
-         exit(-2);
-      }
       catch (Exception ee)
       {
+         String name = ee.getClass().getSimpleName();
+         if (name.equals("RegisterSDKException"))
+         {
+            System.out.println("SDK registration returned: "+ee.getMessage());
+            exit(-2);
+         }
          if (showInstructionsOnError) showInstructions();
          ee.printStackTrace();
       } // guich@120
@@ -1197,7 +1197,6 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       return getPathOf(main)+"/";
    }
    /** used in some classes so they can correctly open files. now can open jar files. */
-   @SuppressWarnings("resource")
    public InputStream openInputStream(String path)
    {
       String sread = "\nopening for read "+path+"\n";
