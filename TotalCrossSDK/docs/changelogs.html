@@ -1,4 +1,14 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2752</h1>
+. don't use registration when running in a browser, so you don't have to show your key to other users<br>
+. added optional constructor to Button class to let you specify the border<br>
+. improved AccordionContainer's Caption to let you specify a button that will be used as + and -<br>
+. added a standard way to map special classes to totalcross in tc.Deploy. now you can use java.math.BigDecimal/Integer and they will be mapped to totalcross.util.<br>
+. fixed NPE make it work when on a ScrollContainer (calling parentWindows's reposition)<br>
+. fixed AccordionContainer running in a ScrollContainer<br>
+. now in Android, when searching for /sdcard replacement, we search in other folders for one that's writable<br>
+. added SQLiteUtils.existsIndex<br>
+. fixed activation of applications that are MainClass or services.<br>
 <h1>build 2747</h1>
 . fixed printer samples not loading the test image<br>
 . Added support for MTPPrinter. Changed printer samples to share a base class, PrinterSampleBase. BluetoothPrinter now accepts also a Stream.<br>
