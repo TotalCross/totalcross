@@ -129,7 +129,7 @@ public final class J2TC implements JConstants, TCConstants
       if (jc.interfaces != null)
          for (int i =0; i < jc.interfaces.length; i++)
             if (totalcrossMain.equals(jc.interfaces[i]))
-               return true;
+               return DeploySettings.isMainClass = true;
       return false;
    }
 
@@ -1247,7 +1247,7 @@ public final class J2TC implements JConstants, TCConstants
          }
          if (DeploySettings.currentDir == null)
             DeploySettings.currentDir = "./";
-         if (DeploySettings.rasKey != null && !DeploySettings.isTotalCrossJarDeploy && DeploySettings.isMainWindow) // registration key was specified - guich@tc310: only if not deploying the sdk and if its not a library
+         if (DeploySettings.rasKey != null && !DeploySettings.isTotalCrossJarDeploy && (DeploySettings.isMainWindow || DeploySettings.isService || DeploySettings.isMainClass)) // registration key was specified - guich@tc310: only if not deploying the sdk and if its not a library
          {
             AESCipher cipher = new AESCipher();
             AESKey key = new AESKey(new byte[] { (byte)0x06, (byte)0x05, (byte)0xF4, (byte)0xF0, (byte)0xF4, (byte)0x08, (byte)0x01, (byte)0x09, (byte)0xF7, (byte)0x09, (byte)0xFE, (byte)0xFC, (byte)0xF5, (byte)0x04, (byte)0x00, (byte)0x0B });
