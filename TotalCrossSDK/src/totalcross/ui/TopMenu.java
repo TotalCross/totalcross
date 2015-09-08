@@ -18,7 +18,6 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    /** The percentage of the area used for the icon and the caption */
    public static int percIcon = 20, percCap = 80;
    private Control []items;
-   private ScrollContainer sc;
    private int animDir;
    private int selected=-1;
    /** Set to false to disable the close when pressing in a button of the menu. */
@@ -130,13 +129,14 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       }
    }
    
-   final public void initUI()
+   public void initUI()
    {
       int gap = 2;
       int n = items.length;
       int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height-4) : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
+      ScrollContainer sc;
       add(sc = new ScrollContainer(false,true),LEFT+scInsets.left,TOP+scInsets.top,FILL-scInsets.right,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-scInsets.bottom);
       sc.setBackColor(backColor);
       for (int i = 0;; i++)
@@ -187,6 +187,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       removeAll();
       initUI();
       // used for custom containers
+      if (items != null)
       for (int i = 0; i < items.length; i++)
          if (items[i].asContainer != null)
          {
