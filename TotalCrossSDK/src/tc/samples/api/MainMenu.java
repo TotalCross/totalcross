@@ -53,6 +53,7 @@ public class MainMenu extends BaseContainer
    {
       "AccordionContainer",
       "AlignedLabelsContainer",
+      "Awesome Font",
       "Button",
       "ButtonMenu",
       "Camera",
@@ -190,6 +191,7 @@ public class MainMenu extends BaseContainer
    {
       AccordionSample.class,
       AlignedLabelsSample.class,
+      AwesomeFontSample.class,
       ButtonSample.class,
       ButtonMenuSample.class,
       CameraSample.class,
