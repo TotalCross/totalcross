@@ -32,7 +32,7 @@ import totalcross.util.*;
 
 public class Control extends GfxSurface
 {
-   /** Used when this button is translucent */
+   /** Used when this Control is translucent */
    public static enum TranslucentShape
    {
       NONE,
