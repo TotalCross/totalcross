@@ -34,7 +34,7 @@ public class AwesomeFontSample extends BaseContainer
    {
       super.initUI();
       ScrollContainer sc = new ScrollContainer(false,true);
-      add(sc,LEFT,TOP,FILL,FILL);
+      add(sc,LEFT,TOP+fmH/4,FILL,FILL-fmH/4);
       setAwesome(sc, fmH*2);
       int cols = Math.min(Settings.screenWidth, Settings.screenHeight) / (fmH*3);
       for (int i = 0xF000,j=0; i <= 0xF27F; i++,j++)
