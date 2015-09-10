@@ -37,8 +37,13 @@ public class AwesomeFontSample extends BaseContainer
       add(sc,LEFT,TOP+fmH/4,FILL,FILL-fmH/4);
       setAwesome(sc, fmH*2);
       int cols = Math.min(Settings.screenWidth, Settings.screenHeight) / (fmH*3);
+      info = "Hold char to see its unicode value";
       for (int i = 0xF000,j=0; i <= 0xF27F; i++,j++)
-         sc.add(new Label(String.valueOf((char)i),CENTER), (j%cols) == 0 ? LEFT : AFTER, 
+      {
+         Label l = new Label(String.valueOf((char)i),CENTER);
+         new ToolTip(l, "\\u"+Convert.unsigned2hex(i,4));
+         sc.add(l, (j%cols) == 0 ? LEFT : AFTER, 
                (j%cols) == 0 ? AFTER : SAME, PARENTSIZE-cols,fmH*3);
+      }
    }
 }
