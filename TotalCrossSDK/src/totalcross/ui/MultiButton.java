@@ -72,7 +72,7 @@ public class MultiButton extends Control
    public void setEnabled(int idx, boolean enabled)
    {
       if (disabled == null) disabled = new boolean[tits.length];
-      disabled[idx] = !isEnabled();
+      disabled[idx] = !enabled;
       repaint();
    }
    
