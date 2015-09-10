@@ -87,7 +87,7 @@ public class Bar extends Container
       int autoRepeatRate;
       private TimerEvent repeatTimer;
       private int startRepeat;
-      public int buttonTitleAlign;
+      public int buttonTitleAlign=-1;
       public boolean buttonCanSelectTitle;
       public boolean isShadedText;
       
@@ -95,7 +95,6 @@ public class Bar extends Container
       {
          this.title = title;
          this.icon0 = icon;
-         buttonTitleAlign = titleAlign;
          buttonCanSelectTitle = canSelectTitle;
          isShadedText = backgroundStyle != Container.BACKGROUND_SOLID;
       }
@@ -126,7 +125,8 @@ public class Bar extends Container
          onFontChanged();
          if (title != null)
          {
-            px = buttonTitleAlign == LEFT ? gap+1 : buttonTitleAlign == CENTER ? 2+(width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
+            int a = buttonTitleAlign != -1 ? buttonTitleAlign : titleAlign;
+            px = a== LEFT ? gap+1 : a== CENTER ? 2+(width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
             py = (height-fmH)/2;
          }
          else
