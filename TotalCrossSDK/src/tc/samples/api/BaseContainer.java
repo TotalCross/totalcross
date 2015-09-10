@@ -32,7 +32,6 @@ public class BaseContainer extends Container
    public static final int SELCOLOR = 0x829CE2; // Color.brighter(BKGCOLOR,120);
    protected Bar headerBar,footerBar;
    private static Vector containerStack = new Vector(5);
-   private static Image infoImg, timerImg;
    public static String defaultTitle = "TotalCross API";
    protected int gap;
    public boolean isSingleCall;
@@ -49,6 +48,32 @@ public class BaseContainer extends Container
       return null;
    }
    
+   public static Image getAwesomeImage(char c, int height, int color) throws ImageException
+   {
+      Font f = Font.getFont("FontAwesome", false, height*11/10);
+      Image img = new Image(f.fm.charWidth(c),height);
+      Graphics g = img.getGraphics();
+      g.foreColor = color;
+      g.setFont(f);
+      g.drawText(String.valueOf(c), 0,0);
+      return img;
+   }
+   
+   public <T extends Control> T setAwesome(T c, int fmH)
+   {
+      c.setFont(Font.getFont("FontAwesome", false, fmH));
+      return c;
+   }
+   
+   public Bar.BarButton createAwesomeBarButton(String title)
+   {
+      Bar.BarButton b = headerBar.new BarButton(title,null);
+      b.buttonCanSelectTitle = true;
+      b.buttonTitleAlign = CENTER;
+      b.isShadedText = false;
+      return setAwesome(b, font.size * 12/10);
+   }
+   
    public void initUI()
    {
       try
@@ -56,17 +81,16 @@ public class BaseContainer extends Container
          transitionEffect = TRANSITION_OPEN;
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
-         if (infoImg == null)
-            infoImg = new Image("ui/images/ic_dialog_info.png");
-         if (timerImg == null)
-            timerImg = new Image("ui/images/crono.png");
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
-         headerBar.addButton(timerImg);
-         headerBar.addButton(isMainMenu ? infoImg : Resources.back);
+         headerBar.addControl(createAwesomeBarButton("\uf017"));
+         if (isMainMenu)
+            headerBar.addControl(createAwesomeBarButton("\uf05a"));
+         else
+            headerBar.addButton(Resources.back);
          add(headerBar, LEFT,0,FILL,PREFERRED);
          
          footerBar = new Bar("");
@@ -112,7 +136,7 @@ public class BaseContainer extends Container
                            MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
                            mb.transitionEffect = TRANSITION_FADE;
                            mb.footerColor = mb.headerColor = UIColors.messageboxBack;
-                           mb.setIcon(infoImg);
+                           //mb.setIcon(infoImg);
                            mb.popup();
                         }
                         else

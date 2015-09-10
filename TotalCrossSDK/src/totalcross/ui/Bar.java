@@ -87,11 +87,17 @@ public class Bar extends Container
       int autoRepeatRate;
       private TimerEvent repeatTimer;
       private int startRepeat;
+      public int buttonTitleAlign;
+      public boolean buttonCanSelectTitle;
+      public boolean isShadedText;
       
       public BarButton(String title, Image icon) // title or icon
       {
          this.title = title;
          this.icon0 = icon;
+         buttonTitleAlign = titleAlign;
+         buttonCanSelectTitle = canSelectTitle;
+         isShadedText = backgroundStyle != Container.BACKGROUND_SOLID;
       }
       
       public void onFontChanged()
@@ -120,7 +126,7 @@ public class Bar extends Container
          onFontChanged();
          if (title != null)
          {
-            px = titleAlign == LEFT ? gap+1 : titleAlign == CENTER ? (width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
+            px = buttonTitleAlign == LEFT ? gap+1 : buttonTitleAlign == CENTER ? 2+(width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
             py = (height-fmH)/2;
          }
          else
@@ -166,7 +172,7 @@ public class Bar extends Container
                tx += leftIcon.getWidth()+gap;
             }
             
-            if (backgroundStyle != Container.BACKGROUND_SOLID)
+            if (isShadedText)
             {
                g.foreColor = tcolor;
                g.drawText(title, tx+1,py-1);
@@ -183,7 +189,7 @@ public class Bar extends Container
       
       public void onEvent(Event e)
       {
-         if ((!canSelectTitle && title != null) || Flick.currentFlick != null)
+         if ((!buttonCanSelectTitle && title != null) || Flick.currentFlick != null)
             return;
          
          switch (e.type)

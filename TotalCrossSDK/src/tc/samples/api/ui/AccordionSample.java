@@ -29,27 +29,30 @@ public class AccordionSample extends BaseContainer
       super.initUI();
       ScrollContainer sc = new ScrollContainer(false,true);
       add(sc,LEFT,TOP,FILL,FILL);
-      //AccordionContainer.Group gr = new AccordionContainer.Group();
-      AccordionContainer ac = new AccordionContainer();
+      // using default arrows
+      AccordionContainer.Group gr = new AccordionContainer.Group();
+      AccordionContainer ac = new AccordionContainer(gr);
       int gap = fmH/2;
       sc.add(ac, LEFT+gap,TOP,FILL-gap,PREFERRED);
       ac.add(ac.new Caption("Type text 1"), LEFT,TOP,FILL,PREFERRED);
       ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
 
-      ac = new AccordionContainer();
+      // using +- from Awesome font
+      ac = new AccordionContainer(gr);
       sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
-      ac.add(ac.new Caption(new Label("Type text 2"),new Button(" -",Button.BORDER_NONE), new Button(" +",Button.BORDER_NONE)), LEFT,AFTER,FILL,PREFERRED);
+      ac.add(ac.new Caption(new Label("Type text 2"),setAwesome(new Button("\uf146",Button.BORDER_NONE),fmH), setAwesome(new Button("\uf0fe",Button.BORDER_NONE),fmH)), LEFT,AFTER,FILL,PREFERRED);
       ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
       
       try
       {
-         ac = new AccordionContainer();
+         // using colorized images
+         ac = new AccordionContainer(gr);
          sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
          Image img = new Image("tc/samples/api/ui/images/bt_minus.png").smoothScaledFixedAspectRatio(fmH,true);
-         img.applyColor2(Color.BLACK);
+         img.applyColor2(Color.BLUE);
          Button b1 = new Button(img, Button.BORDER_NONE);
          img = new Image("tc/samples/api/ui/images/bt_add.png").smoothScaledFixedAspectRatio(fmH,true);
-         img.applyColor2(Color.BLACK);
+         img.applyColor2(Color.GREEN);
          Button b2 = new Button(img, Button.BORDER_NONE);
          ac.add(ac.new Caption(new Label("Type text 3"),b1,b2), LEFT,AFTER,FILL,PREFERRED);
          ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
