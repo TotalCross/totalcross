@@ -30,7 +30,7 @@ import totalcross.ui.image.*;
 public class ButtonSample extends BaseContainer
 {
    ScrollContainer sc;
-   private int ccount=10;
+   private int ccount=5;
    
    public void initUI()
    {
