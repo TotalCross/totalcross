@@ -50,6 +50,12 @@ public class SQLiteUtil
       this("");
    }
    
+   /** Use the given connection in all operations */
+   public SQLiteUtil(Connection con)
+   {
+      this.con = con;
+   }
+   
    /** Returns the connecton with the parameters passed in the constructor */
    public Connection con() throws SQLException
    {
