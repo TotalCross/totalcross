@@ -357,7 +357,10 @@ public class Label extends Control implements TextControl
    /** Returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return useFillAsPreferred ? FILL : preferredWidthText != null ? fm.stringWidth(preferredWidthText) : (getMaxTextWidth() + (insets==null ? 0 : insets.left+insets.right)) + (borderColor == -1 ? 0 : 4);
+      int ret = useFillAsPreferred ? FILL : preferredWidthText != null ? fm.stringWidth(preferredWidthText) : (getMaxTextWidth() + (insets==null ? 0 : insets.left+insets.right)) + (borderColor == -1 ? 0 : 4);
+      if (highlighted || textShadowColor != 0)
+         ret += 2;
+      return ret;
    }
 
    /** Returns the maximum text width for the lines of this Label. */
