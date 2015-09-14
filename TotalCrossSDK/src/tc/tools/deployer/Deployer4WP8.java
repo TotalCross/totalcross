@@ -36,7 +36,7 @@ public class Deployer4WP8
       if (!f.exists())
          f.mkdirs();
 
-      File tempFile = File.createTempFile(DeploySettings.appTitle+"temp", ".zip");
+      File tempFile = File.createTempFile(DeploySettings.filePrefix+"temp", ".zip");
       tempFile.deleteOnExit();
       // create a copy of the original file
       FileUtils.copyFile(templateFile, tempFile);
@@ -44,11 +44,11 @@ public class Deployer4WP8
       // open new file with truezip
       TFile templateZip = new TFile(tempFile);
 
-      SilverlightZip sz = new SilverlightZip(new File(targetDir, DeploySettings.appTitle + ".xap"));
+      SilverlightZip sz = new SilverlightZip(new File(targetDir, DeploySettings.filePrefix + ".xap"));
       String manifestContent =
             "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n" +
                   "<Deployment>\r\n" +
-                  "\t<App Name=\"" + DeploySettings.filePrefix + "\">\r\n" +
+                  "\t<App Name=\"" + DeploySettings.appTitle + "\">\r\n" +
                   "\t</App>\r\n" +
                   "</Deployment>";
       sz.putEntry("TotalCrossManifest.xml", manifestContent.getBytes("UTF-8"));
