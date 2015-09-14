@@ -72,13 +72,6 @@ public class TranslucentBaseContainer extends Container
       return b;
    }
    
-   protected void setScreen(Container oldc, Container newc)
-   {
-      if (oldc != null)
-         remove(oldc);
-      add(newc, LEFT,TOP,FILL,FILL);
-   }
-   
    protected void goback()
    {
       MenuScreen.getInstance().swapToTopmostWindow();
