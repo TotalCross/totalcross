@@ -218,7 +218,7 @@ TC_API void tnsSSLCTX_create_ii(NMParams p) // totalcross/net/ssl/SSLCTX native 
    int32 options = p->i32[0];
    int32 num_sessions = p->i32[1];
 
-   SSLCTX_ctxRef(sslCtxObj) = (int32) ssl_ctx_new(options, num_sessions);
+   SSLCTX_ctxRef(sslCtxObj) = (int64) ssl_ctx_new(options, num_sessions);
 #else
    p = 0;
 #endif
@@ -400,7 +400,7 @@ TC_API void tnsSSLCTX_newClient_sB(NMParams p) // totalcross/net/ssl/SSLCTX nati
    }
    UNLOCKVAR(htSSL);
 
-   SSL_sslRef(ssl) = (int32)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL);
+   SSL_sslRef(ssl) = (int64)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);      
@@ -444,7 +444,7 @@ TC_API void tnsSSLCTX_newServer_s(NMParams p) // totalcross/net/ssl/SSLCTX nativ
    }
    UNLOCKVAR(htSSL);
 
-   SSL_sslRef(ssl) = (int32)ssl_server_new(ssl_ctx, (int32)*socketHandle);
+   SSL_sslRef(ssl) = (int64)ssl_server_new(ssl_ctx, (int32)*socketHandle);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);
