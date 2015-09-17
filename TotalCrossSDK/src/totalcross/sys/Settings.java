@@ -467,6 +467,7 @@ public final class Settings
    public static String appVersion;
 
    /** Set it at the application's static initializer. Defines the company's information, which is used in iOS, Windows CE and WP8.
+    * In WP8 its used for the PublisherDisplayName property.
     * @since TotalCross 1.0
     */
    public static String companyInfo;
