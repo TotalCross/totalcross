@@ -487,6 +487,7 @@ public final class Settings
    public static String appPackageIdentifier;
    
    /** Set it at the application's static initializer. Defines the application's package publisher, which is used in WP8.
+    * In WP8 its used for the Publisher="CN".
     */
    public static String appPackagePublisher;
    
