@@ -96,6 +96,8 @@ public class Deploy
             JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-file-7.5.1.jar");
             JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-kernel-7.5.1.jar");
             JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-swing-7.5.1.jar");
+            if (DeploySettings.filePrefix == null)
+               throw new DeployerException("Error: MainWindow or library not found!");
             
             if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
