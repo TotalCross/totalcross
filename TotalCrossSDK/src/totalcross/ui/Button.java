@@ -407,6 +407,8 @@ public class Button extends Control implements TextControl
    /** Returns the preffered height of this control. */
    public int getPreferredHeight()
    {
+      if (translucentShape == TranslucentShape.CIRCLE)
+         return getPreferredWidth();
       int border = this.border < 2 ? this.border : 2; // guich@tc112_31
       int prefH;
       int th = text == null ? 0 : ((uiVista?1:0)+fmH*lines.length);

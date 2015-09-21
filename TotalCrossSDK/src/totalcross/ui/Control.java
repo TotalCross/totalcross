@@ -253,7 +253,7 @@ public class Control extends GfxSurface
    protected Control setRel;
    protected boolean repositionAllowed;
    protected int tempW; // used in flowContainer
-   private TranslucentShape translucentShape = TranslucentShape.NONE;
+   protected TranslucentShape translucentShape = TranslucentShape.NONE;
 
    /** The shadow color to be applied to this control. */
    public int textShadowColor; // guich@tc126_26
@@ -2076,6 +2076,7 @@ public class Control extends GfxSurface
     * Calling this resets the backColor to BLACK, foreColor to WHITE, and the textShadowColor to 0x444444, but you may change that value later.
     * You can also change the translucentAlpha value.
     * Note that a translucent button does not have a visual DISABLED state.
+    * It requires the Android or Holo user interface styles.
     */
    public void setTranslucent(TranslucentShape shape)
    {
