@@ -672,7 +672,7 @@ public class Container extends Control
       if (drawTranslucentBackground(g, alphaValue))
          ;
       else
-      if (!transparentBackground && parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground)) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
+      if (!transparentBackground && (asWindow != null || (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground)))) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
       {
          switch (backgroundStyle)
          {
