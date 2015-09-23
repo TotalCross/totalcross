@@ -173,8 +173,9 @@ public class Deployer4IPhoneIPA
       rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
-      if (bundleIdentifier.equals("*"))
-         bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.replace(" ","").trim().toLowerCase();
+      if (bundleIdentifier.endsWith("*"))
+         bundleIdentifier = ("com." + (DeploySettings.companyInfo != null ? DeploySettings.companyInfo : DeploySettings.applicationId) + "." + DeploySettings.appTitle).replace(" ","").trim().toLowerCase();
+      Utils.println("Package suffix id (after last dot): "+bundleIdentifier);
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
       // overwrite updated info.plist inside the zip file
