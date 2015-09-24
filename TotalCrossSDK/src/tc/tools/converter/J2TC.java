@@ -277,6 +277,9 @@ public final class J2TC implements JConstants, TCConstants
                         DeploySettings.appVersion = totalcross.sys.Settings.appVersion = value;
                      }
                      else
+                     if (field.equals("iosCFBundleIdentifier"))
+                        Settings.iosCFBundleIdentifier = value;
+                     else
                      if (field.equals("companyInfo"))
                         DeploySettings.companyInfo = value;
                      else

@@ -34,6 +34,7 @@ public class TotalCrossAPI extends MainWindow
       Settings.companyInfo = "TotalCross";
       Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
       Settings.appPackageIdentifier = "1748TotalCross.TotalCrossAPI";
+      Settings.iosCFBundleIdentifier = "com.totalcross.tcapi";
    }
    
    public TotalCrossAPI()

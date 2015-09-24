@@ -38,7 +38,8 @@ import org.bouncycastle.x509.X509Store;
 import tc.tools.deployer.ipa.AppleBinary;
 import tc.tools.deployer.ipa.MobileProvision;
 import tc.tools.deployer.ipa.MyNSObjectSerializer;
-import totalcross.sys.Convert;
+
+import totalcross.sys.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 import com.dd.plist.NSArray;
@@ -174,7 +175,12 @@ public class Deployer4IPhoneIPA
 
       String bundleIdentifier = this.Provision.bundleIdentifier;
       if (bundleIdentifier.endsWith("*"))
-         bundleIdentifier = ("com." + (DeploySettings.companyInfo != null ? DeploySettings.companyInfo : DeploySettings.applicationId) + "." + DeploySettings.appTitle).replace(" ","").trim().toLowerCase();
+      {
+         if (Settings.iosCFBundleIdentifier != null)
+            bundleIdentifier = Settings.iosCFBundleIdentifier;
+         else
+            bundleIdentifier = ("com." + (DeploySettings.companyInfo != null ? DeploySettings.companyInfo : DeploySettings.applicationId) + "." + DeploySettings.appTitle).replace(" ","").trim().toLowerCase();
+      }
       Utils.println("Package suffix id (after last dot): "+bundleIdentifier);
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
