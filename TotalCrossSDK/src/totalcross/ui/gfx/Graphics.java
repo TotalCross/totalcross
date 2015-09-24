@@ -1088,8 +1088,8 @@ public final class Graphics
    /**
     * Fills a rectangle with rounded corners, using the current background color as the fill color.
     * 
-    * @param x left coordinate of the rectangle
-    * @param y top coordinate of the rectangle
+    * @param xx left coordinate of the rectangle
+    * @param yy top coordinate of the rectangle
     * @param width width of the rectangle. the rectangle is filled from x to x+w-1.
     * @param height height of the rectangle. the rectangle is filled from y to y+h-1.
     * @param r radix of the circle at the corners. If its greater than width/2 or greater than height/2, it will be
