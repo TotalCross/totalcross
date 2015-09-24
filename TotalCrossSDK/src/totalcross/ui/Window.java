@@ -1196,9 +1196,8 @@ public class Window extends Container
    ////////////////////////////////////////////////////////////////////////////////////
    public void paintWindowBackground(Graphics gg)
    {
-      gg.backColor = backColor; // disabled here?
       if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
-         gg.fillRect(0, 0, width, height); // guich@110
+         fillBackground(gg, backColor);
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
       onPaint(gg);

@@ -663,6 +663,26 @@ public class Container extends Control
          Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
+   protected void fillBackground(Graphics g, int b)
+   {
+      switch (backgroundStyle)
+      {
+         case BACKGROUND_SOLID:
+            g.backColor = b;
+            g.fillRect(0,0,width,height);
+            break;
+         case BACKGROUND_SHADED:
+            g.fillShadedRect(0,0,width,height,true,false,foreColor,b,UIColors.shadeFactor);
+            break;
+         case BACKGROUND_SHADED_INV:
+            g.fillShadedRect(0,0,width,height,false,false,foreColor,b,UIColors.shadeFactor);
+            break;
+         case BACKGROUND_CYLINDRIC_SHADED:
+            g.drawCylindricShade(foreColor,b,0,0,width,height);
+            break;
+      }
+   }
+   
    /** Draws the border (if any). If you override this method, be sure to call
      * <code>super.onPaint(g);</code>, or the border will not be drawn.
      */
@@ -672,25 +692,8 @@ public class Container extends Control
       if (drawTranslucentBackground(g, alphaValue))
          ;
       else
-      if (!transparentBackground && (asWindow != null || (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground)))) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
-      {
-         switch (backgroundStyle)
-         {
-            case BACKGROUND_SOLID:
-               g.backColor = b;
-               g.fillRect(0,0,width,height);
-               break;
-            case BACKGROUND_SHADED:
-               g.fillShadedRect(0,0,width,height,true,false,foreColor,b,UIColors.shadeFactor);
-               break;
-            case BACKGROUND_SHADED_INV:
-               g.fillShadedRect(0,0,width,height,false,false,foreColor,b,UIColors.shadeFactor);
-               break;
-            case BACKGROUND_CYLINDRIC_SHADED:
-               g.drawCylindricShade(foreColor,b,0,0,width,height);
-               break;
-         }
-      }
+      if (!transparentBackground && (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground))) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
+         fillBackground(g, b);
       switch (borderStyle)
       {
          case BORDER_NONE:
