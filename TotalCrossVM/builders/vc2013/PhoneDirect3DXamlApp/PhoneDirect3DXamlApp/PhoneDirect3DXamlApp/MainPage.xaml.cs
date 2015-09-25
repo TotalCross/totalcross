@@ -92,7 +92,7 @@ namespace PhoneDirect3DXamlAppInterop
           tbox.LostFocus += tbox_LostFocus;
           // get native font size
           fontHeight = tbox.FontSize * (int)Windows.Graphics.Display.DisplayProperties.ResolutionScale / 100;
-          ReadSettings().Wait();
+          ReadSettings();
           tbox.Margin = isSipSet()
             ? new Thickness(0, 0, 0, MainPage.instance.ActualHeight * 10) // to top
             : new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0);  // to bottom
@@ -183,24 +183,20 @@ namespace PhoneDirect3DXamlAppInterop
 
       public async Task WriteSettings()
       {
-         var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("AppSettings.dat", CreationCollisionOption.ReplaceExisting);
-         using (var s = await file.OpenStreamForWriteAsync())
-         {
-            BinaryWriter bw = new BinaryWriter(s);
-            bw.Write(Settings.landSipH);
-            bw.Write(Settings.portSipH);
-         }
+         var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+         localSettings.Values["landSipH"] = Settings.landSipH;
+         localSettings.Values["portSipH"] = Settings.portSipH;
       }
 
       public async Task ReadSettings()
       {
          try
          {
-            var file = await Windows.Storage.ApplicationData.Current.LocalFolder.OpenStreamForReadAsync("AppSettings.dat");
-            using (var br = new BinaryReader(file))
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            if (localSettings.Values.ContainsKey("landSipH"))
             {
-               Settings.landSipH = br.ReadInt32();
-               Settings.portSipH = br.ReadInt32();
+               Settings.landSipH = (int)localSettings.Values["landSipH"];
+               Settings.portSipH = (int)localSettings.Values["portSipH"];
             }
          }
          catch

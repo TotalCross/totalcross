@@ -466,7 +466,9 @@ public final class Settings
     */
    public static String appVersion;
 
-   /** Set it at the application's static initializer. Defines the company's information, which is used in iOS, Windows CE and WP8.
+   /** Set it at the application's static initializer; should not contain spaces. Defines the company's information, which is used in iOS, Windows CE and WP8.
+    * In WP8 its used for the PublisherDisplayName property.
+    * In iOS is used to form the bundle suffix id. 
     * @since TotalCross 1.0
     */
    public static String companyInfo;
@@ -486,8 +488,12 @@ public final class Settings
    public static String appPackageIdentifier;
    
    /** Set it at the application's static initializer. Defines the application's package publisher, which is used in WP8.
+    * In WP8 its used for the Publisher="CN".
     */
    public static String appPackagePublisher;
+   
+   /** Set it at the application's static initializer. Defines the application's package id, which is used in iOS. */
+   public static String iosCFBundleIdentifier;
    
    /** @deprecated No longer used.
     * @since TotalCross 1.0
@@ -521,6 +527,11 @@ public final class Settings
     * @since TotalCross 1.0
     */
    public static String imei;
+
+   /** Field that represents the smartphone IMEIs; used in phones with more than one line.
+    * @since TotalCross 1.0
+    */
+   public static String[] imeis;
 
    /** Field that represents the smartphone ESN (if this device is a CDMA smartphone) or null if there's none.
     * @since TotalCross 1.0
@@ -861,6 +872,13 @@ public final class Settings
     * @since TotalCross 1.7 / 2.0
     */
    public static String lineNumber;
+   
+   /** Returns the line number of the device, used in phones that have more than one line. Note that if the phone is off it may return null. 
+    * It can be null also if the device uses a non-standard API. Works only on Android, since iOS
+    * does not allow to get it programatically. For dual-sim devices, returns only the first line number.
+    * @since TotalCross 1.7 / 2.0
+    */
+   public static String[] lineNumbers;
    
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()

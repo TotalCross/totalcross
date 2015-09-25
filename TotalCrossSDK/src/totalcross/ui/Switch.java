@@ -117,7 +117,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
          g.drawImage(backLR,0,0);
          // draw right
          g.setClip(width-lrw-1,0,height+1,height);
-         g.drawImage(backLR,width-lrww,0);
+         g.drawImage(backLR,width-lrww-1,0);
          g.clearClip();
          back.alphaMask = backLR.alphaMask = 255;
          if (isOn()) // text at left

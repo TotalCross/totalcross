@@ -504,7 +504,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    private void startProgram()
    {
       //$START:REMOVE-ON-SDK-GENERATION$
-      if (!Settings.onJavaSE && (Settings.applicationId == null || (!Settings.applicationId.equals("hmg4") && !Settings.applicationId.equals("detm"))))
+      if (!Settings.onJavaSE && (Settings.applicationId == null || (!Settings.applicationId.equals("HmG4") && !Settings.applicationId.equals("DetM"))))
          sendStats();
       //$END:REMOVE-ON-SDK-GENERATION$
       initUICalled = Window.needsPaint = true;

@@ -401,7 +401,7 @@ bool fillSettings(Context currentContext)
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
       jstring2CharP(jStringField, romSerialNumber);
-   (*env)->DeleteLocalRef(env, jSettingsClass);
+//    (*env)->DeleteLocalRef(env, jSettingsClass); - this is NOT a local ref. breaks on android 4.2.2
 
    return true;
 }

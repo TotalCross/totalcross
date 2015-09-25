@@ -73,22 +73,7 @@ void graphicsSetupIOS()
 - (CGSize)getResolution
 {
    CGRect r = [[UIScreen mainScreen] bounds];
-   int w = r.size.width;
-   int h = r.size.height;
-   CGSize s;
-   UIDeviceOrientation o = [self getOrientation];
-   switch (o)
-   {
-      case UIDeviceOrientationLandscapeLeft:
-      case UIDeviceOrientationLandscapeRight:
-         s = CGSizeMake((w - taskbarHeight) * iosScale, h * iosScale);
-         break;
-      default:
-         s = CGSizeMake(w * iosScale, (h - taskbarHeight) * iosScale);
-         break;
-   }
-   //NSLog(@"getRes: %dx%d", (int)s.width, (int)s.height);
-   return s;
+   return CGSizeMake(r.size.width * iosScale, (r.size.height - taskbarHeight) * iosScale);
 }
 
 extern bool isIpad;
