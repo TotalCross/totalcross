@@ -173,14 +173,11 @@ public class Deployer4IPhoneIPA
       }
       rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
-      String bundleIdentifier = this.Provision.bundleIdentifier;
-      if (bundleIdentifier.endsWith("*"))
-      {
-         if (Settings.iosCFBundleIdentifier != null)
-            bundleIdentifier = Settings.iosCFBundleIdentifier;
-         else
-            bundleIdentifier = ("com." + (DeploySettings.companyInfo != null ? DeploySettings.companyInfo : DeploySettings.applicationId) + "." + DeploySettings.appTitle).replace(" ","").trim().toLowerCase();
-      }
+      String bundleIdentifier;
+      if (Settings.iosCFBundleIdentifier != null)
+         bundleIdentifier = Settings.iosCFBundleIdentifier;
+      else
+         bundleIdentifier = this.Provision.bundleIdentifier;
       Utils.println("Package suffix id (after last dot): "+bundleIdentifier);
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
