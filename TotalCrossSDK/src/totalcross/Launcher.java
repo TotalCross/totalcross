@@ -370,7 +370,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                 while (mainWindow == null) 
                    Vm.sleep(1); 
                 mainWindow.appStarting(isDemo ? 80 : -1);
-                try {new URL("http://www.superwaba.net/SDKRegistrationService/PingService?CHAVE="+activationKey).openConnection().getInputStream().close();} catch (Throwable e) {} // keep track of TC usage
+                new Thread() {public void run() {try {new URL("http://www.superwaba.net/SDKRegistrationService/PingService?CHAVE="+activationKey).openConnection().getInputStream().close();} catch (Throwable e) {}}}.start(); // keep track of TC usage
              } // guich@200b4_107 - guich@570_3: check if mainWindow is not null to avoid problems when running on Linux. seems that the paint event is being generated before the start one.
            });
          } catch (Throwable e) {e.printStackTrace();}
