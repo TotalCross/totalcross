@@ -114,7 +114,7 @@ TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public s
       throwException(p->currentContext, InvalidNumberException, "Error: argument s cannot an empty value.");
    else
    if (String_charsLen(string) >= sizeof(buffer)) // guich@tc123_2: check if argument fits in buffer
-      throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer); // guich@tc123_9
+      throwException(p->currentContext, InvalidNumberException, "Error (1): %s is not a valid double value (%d > %d).", buffer, String_charsLen(string), sizeof(buffer)); // guich@tc123_9
    else
    {
       bool err = false;
@@ -129,7 +129,7 @@ TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public s
          p->retD = result = strtod(buffer, &endPtr);
          if (*endPtr != 0 || result == HUGE_VAL || result == -HUGE_VAL) // guich: testing for endPtr to see if it stopped in an invalid character
 #endif
-            throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer);
+            throwException(p->currentContext, InvalidNumberException, "Error (2): %s is not a valid double value (%s / %f / %f).", buffer, endPtr, result, HUGE_VAL);
       }
    }
 }
