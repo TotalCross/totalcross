@@ -128,8 +128,10 @@ TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public s
          String2CharPBuf(string, buffer);
          p->retD = result = strtod(buffer, &endPtr);
          if (*endPtr != 0 || result == HUGE_VAL || result == -HUGE_VAL) // guich: testing for endPtr to see if it stopped in an invalid character
-#endif
             throwException(p->currentContext, InvalidNumberException, "Error (2): %s is not a valid double value (%s / %f / %f).", buffer, endPtr, result, HUGE_VAL);
+#else
+            throwException(p->currentContext, InvalidNumberException, "Error (2): %s is not a valid double value.", buffer);
+#endif
       }
    }
 }
