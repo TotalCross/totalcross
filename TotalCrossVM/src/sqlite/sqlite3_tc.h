@@ -62,7 +62,8 @@ int32 lockSqlite3(void* handle)
    if (handle)
    {
       sqlite3* db = (sqlite3*)handle;
-      RESERVE_MUTEX_VAR(db->tcmutex);
+      if (db->tcmutex)
+      {RESERVE_MUTEX_VAR(db->tcmutex);}
    }
    return 0;
 }
@@ -72,7 +73,8 @@ void unlockSqlite3(void* handle)
    if (handle)
    {
       sqlite3* db = (sqlite3*)handle;
-      RELEASE_MUTEX_VAR(db->tcmutex);
+      if (db->tcmutex)
+      {RELEASE_MUTEX_VAR(db->tcmutex);}
    }
 }
 
