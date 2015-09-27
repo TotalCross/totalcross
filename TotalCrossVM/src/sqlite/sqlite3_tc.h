@@ -55,6 +55,7 @@ SQLITE_API int sqlite3_reset(sqlite3_stmt *pStmt){
 struct sqlite3 {
 ...
  MUTEX_TYPE tcmutex;
+ bool validMutex;
 };
 
 int32 lockSqlite3(void* handle)
@@ -62,7 +63,7 @@ int32 lockSqlite3(void* handle)
    if (handle)
    {
       sqlite3* db = (sqlite3*)handle;
-      if (db->tcmutex)
+      if (db->validMutex)
       {RESERVE_MUTEX_VAR(db->tcmutex);}
    }
    return 0;
@@ -73,7 +74,7 @@ void unlockSqlite3(void* handle)
    if (handle)
    {
       sqlite3* db = (sqlite3*)handle;
-      if (db->tcmutex)
+      if (db->validMutex)
       {RELEASE_MUTEX_VAR(db->tcmutex);}
    }
 }
@@ -83,12 +84,14 @@ void initSqlite3Mutex(void* db_)
    sqlite3* db = (sqlite3*)db_;
    SETUP_MUTEX;
    INIT_MUTEX_VAR(db->tcmutex);
+   db->validMutex = true;
 }
 
 void destroySqlite3Mutex(void* db_)
 {
    sqlite3* db = (sqlite3*)db_;
    DESTROY_MUTEX_VAR(db->tcmutex);
+   db->validMutex = false;
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 
