@@ -804,7 +804,20 @@ public final class Vm
          e.printStackTrace();
       }
    }
-   
+
+   /** Prints the stack trace to the debug console file with the given message. */ 
+   public static void printStackTrace(String msg)
+   {
+      try 
+      {
+         throw new Exception(msg);
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+   }
+
    /** This method pre-allocates space for an array of objects with the given length.
     * It can reduce the number of calls to GC when allocating big arrays.
     * If the total size (Object size * length) is small, calling this method is useless
