@@ -64,7 +64,7 @@ public final class Settings4A
    
    // identification
    public static String userName;
-   public static String imei;
+   public static String imei,imei2;
    public static String esn;   
    public static String iccid;
    public static String serialNumber;
@@ -140,6 +140,12 @@ public final class Settings4A
                id2 = (String)m.invoke(telephonyMgr, new Integer(0));
                if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
                   imei = id1;
+               // dual-sim support
+               id1 = (String)m.invoke(telephonyMgr, new Integer(1));
+               id2 = (String)m.invoke(telephonyMgr, new Integer(1));
+               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+                  imei2 = id1;
+
                if (--toFind == 0) break;
             }
             catch (Exception ee)

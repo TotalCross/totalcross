@@ -375,6 +375,14 @@ bool fillSettings(Context currentContext)
       (*env)->DeleteLocalRef(env, jStringField);
    }
 
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "imei2", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, imei2);
+      (*env)->DeleteLocalRef(env, jStringField);
+   }
+
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "iccid", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)

@@ -16,7 +16,7 @@
 static uint32 getSecretKeyCreator(uint32 crtr);
 // made these static to prevent them from being changed by a malicious library. the activation depends on these.
 static char romSerialNumber[128];
-static char imei[64];
+static char imei[64],imei2[64];
 static char iccid[30];
 static char deviceId[128];
 
@@ -161,7 +161,7 @@ static bool inSerialNumberExclusionList() // empties the serial number in device
 }
 
 bool retrieveSettings(Context currentContext, CharP mainClassName)
-{
+{      
    dataPath[0] = 0;
    if (!fillSettings(currentContext)) // platform dependent function
       return false;
@@ -185,6 +185,19 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "dataPath")        = createStringObjectFromCharP(currentContext, dataPath        , -1), UNLOCKED);
    setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "vmPath")          = createStringObjectFromCharP(currentContext, vmPath          , -1), UNLOCKED);
    setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "iccid")           = createStringObjectFromCharP(currentContext, iccid           , -1), UNLOCKED);
+      
+   if (imei[0] || imei2[0])
+   {
+      TCObject *imeisArrayObj = getStaticFieldObject(currentContext,settingsClass, "imeis");
+      *imeisArrayObj = createStringArray(currentContext, imei[0] && imei2[0] ? 2 : 1);
+      if (*imeisArrayObj)
+      {
+         TCObject *imeis = (TCObjectArray) ARRAYOBJ_START(*imeisArrayObj);
+         if (imei [0]) setObjectLock(*imeis++ = createStringObjectFromCharP(currentContext, imei, -1), UNLOCKED);
+         if (imei2[0]) setObjectLock(*imeis++ = createStringObjectFromCharP(currentContext, imei2,-1), UNLOCKED);
+         setObjectLock(*imeisArrayObj, UNLOCKED);
+      }
+   }   
 
    return true;
 }

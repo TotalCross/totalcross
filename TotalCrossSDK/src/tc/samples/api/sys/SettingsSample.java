@@ -33,7 +33,6 @@ public class SettingsSample extends BaseContainer
       log("Build number is "+Settings.buildNumber,false);
       log("Platform is " + Settings.platform,false);
       log("User is " + Settings.userName,false);
-      log("Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),false);
       log("Virtual keyboard is " + Settings.virtualKeyboard,false);
       log("Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,false);
       log("Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,false);
@@ -53,7 +52,13 @@ public class SettingsSample extends BaseContainer
       log("Free memory is at " + Vm.getFreeMemory(),false);
       log("Line number is " + Settings.lineNumber,false);
       log("Rom serial number is " + Settings.romSerialNumber,false);
-      log("IMEI is "+ Settings.imei,false);
+      if (Settings.imeis.length == 1)
+         log("IMEI is "+ Settings.imeis[0],false);
+      else
+      {
+         log("IMEI 1 is "+ Settings.imeis[0],false);
+         log("IMEI 2 is "+ Settings.imeis[1],false);
+      }
       log("ICCID is "+ Settings.iccid,false);
       log("Rom version is " + Settings.romVersion,false);
       log("Device id is " + Settings.deviceId,false);

@@ -873,13 +873,6 @@ public final class Settings
     */
    public static String lineNumber;
    
-   /** Returns the line number of the device, used in phones that have more than one line. Note that if the phone is off it may return null. 
-    * It can be null also if the device uses a non-standard API. Works only on Android, since iOS
-    * does not allow to get it programatically. For dual-sim devices, returns only the first line number.
-    * @since TotalCross 1.7 / 2.0
-    */
-   public static String[] lineNumbers;
-   
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()
    {
