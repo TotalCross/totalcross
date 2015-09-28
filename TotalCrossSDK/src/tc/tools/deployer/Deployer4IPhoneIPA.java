@@ -11,44 +11,23 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.crypto.digests.GeneralDigest;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.x509.X509CollectionStoreParameters;
-import org.bouncycastle.x509.X509Store;
-import tc.tools.deployer.ipa.AppleBinary;
-import tc.tools.deployer.ipa.MobileProvision;
-import tc.tools.deployer.ipa.MyNSObjectSerializer;
-
 import totalcross.sys.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
-import com.dd.plist.NSArray;
-import com.dd.plist.NSData;
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSString;
-import com.dd.plist.PropertyListParser;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TVFS;
+
+import com.dd.plist.*;
+import de.schlichtherle.truezip.file.*;
+import java.io.*;
+import java.security.*;
+import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.util.*;
+import org.apache.commons.io.*;
+import org.bouncycastle.cert.*;
+import org.bouncycastle.crypto.digests.*;
+import org.bouncycastle.jce.provider.*;
+import org.bouncycastle.x509.*;
+import tc.tools.deployer.ipa.*;
 
 /**
  * Generates IPhone application packages.
@@ -173,12 +152,14 @@ public class Deployer4IPhoneIPA
       }
       rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
 
-      String bundleIdentifier;
+      String bundleIdentifier = this.Provision.bundleIdentifier;
       if (Settings.iosCFBundleIdentifier != null)
          bundleIdentifier = Settings.iosCFBundleIdentifier;
       else
-         bundleIdentifier = this.Provision.bundleIdentifier;
-      Utils.println("Package suffix id (after last dot): "+bundleIdentifier);
+      if (bundleIdentifier.equals("*"))
+         bundleIdentifier = "com." + DeploySettings.applicationId + "." + DeploySettings.appTitle.replace(" ","").trim().toLowerCase();
+      Utils.println("Package suffix id (CFBundleIdentifier): "+bundleIdentifier);
+ 
       rootDict.put("CFBundleIdentifier", bundleIdentifier);
 
       // overwrite updated info.plist inside the zip file
