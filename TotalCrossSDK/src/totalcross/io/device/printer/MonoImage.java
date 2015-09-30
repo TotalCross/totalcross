@@ -26,6 +26,10 @@ import totalcross.ui.image.*;
  */
 public class MonoImage extends Image
 {
+   /** If set to false, the image's width is limited to 384 (double density) or 192 (single density).
+    * If true, it will use the real image's width. */
+   public boolean doClip = true;
+   
    /** Makes a copy of the given image. */
    public MonoImage(Image other) throws ImageException
    {
@@ -64,7 +68,7 @@ public class MonoImage extends Image
    {
       // the image must be stored in vertical stripes
       boolean doubleDensity = (imageMode & 1) == 1;
-      int rowW = Math.min(width, doubleDensity ? 384 : 192);
+      int rowW = !doClip ? width : Math.min(width, doubleDensity ? 384 : 192);
       int rowH = imageMode >= BluetoothPrinter.IMAGE_MODE_24_SINGLE ? 24 : 8;
       int bytes = rowH / 8;
 
