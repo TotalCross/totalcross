@@ -19,6 +19,7 @@
 package totalcross.ui;
 
 import totalcross.io.*;
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -107,13 +108,13 @@ public class PopupMenu extends Window
       itemCount = items.length;
       if (multipleSelection)
       {
-         off = new Image("totalcross/res/android/checkBkg.png");
-         ball = new Image("totalcross/res/android/checkSel.png");
+         off = Resources.checkBkg.getCopy();
+         ball = Resources.checkSel.getCopy();
       }
       else
       {
-         off = new Image("totalcross/res/android/radioBkg.png");
-         ball = new Image("totalcross/res/android/radioSel.png");
+         off = Resources.radioBkg.getCopy();
+         ball = Resources.radioSel.getCopy();
       }
    }
    

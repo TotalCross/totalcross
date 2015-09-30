@@ -48,6 +48,11 @@ public class TristateImage
       htDisabled.clear();
    }
    
+   public Image getCopy() throws ImageException
+   {
+      return base.getCopy();
+   }
+   
    public Image getNormalInstance(int width, int height, int backColor) throws ImageException
    {
       return getNormalInstance(width, height, backColor, true);
