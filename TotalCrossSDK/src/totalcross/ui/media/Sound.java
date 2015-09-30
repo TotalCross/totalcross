@@ -53,11 +53,13 @@ public final class Sound
    /**
    * Plays a tone of the specified frequency for the specified
    * duration. Tones will only play under Win32, they won't
-   * play under Java due to underlying platform limitations
-   * (in these cases, use totalcross.ui.media.MediaClip).
+   * play under Java due to underlying platform limitations.
+   * 
+   * Works on Windows CE Hand Held products to play tones, however the tone
+   * is played asynchronously, so you must do a Vm.sleep(ms) for each tone played if you play more than one.
+   * 
    * @param freq frequency in hertz from 32 to 32767
    * @param duration duration in milliseconds
-   * @deprecated Since it only works on Windows 32.
    */
    public static void tone(int freq, int duration)
    {

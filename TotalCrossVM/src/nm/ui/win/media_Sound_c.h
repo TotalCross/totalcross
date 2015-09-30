@@ -11,6 +11,23 @@
 
 #include "media_Sound.h"
 
+#define kFSPDWORD             4
+#define kFSPPBYTE             (PBYTE) 4
+#define kFSPPDWORD            (PDWORD) 4
+#define kFSPSetTone           1
+BOOL WaveBeeperHoneywell(unsigned frequency, unsigned duration)
+{
+	DWORD rc=0;
+
+	HANDLE gFrontSpeakerDriverHandle = CreateFile(L"FSP1:", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
+	if(gFrontSpeakerDriverHandle!=INVALID_HANDLE_VALUE)
+	{
+		rc= DeviceIoControl(gFrontSpeakerDriverHandle , kFSPSetTone, kFSPPBYTE, (DWORD) frequency, kFSPPBYTE, (DWORD) duration, kFSPPDWORD,  NULL);
+		CloseHandle(gFrontSpeakerDriverHandle);
+	}	
+	return rc;
+}
+
 static void soundPlay(CharP filename)
 {
 #ifdef WP8
@@ -213,64 +230,71 @@ static void soundSetEnabled(bool enableSound)
 void soundTone(int32 frequency, int32 duration)
 {
 #if defined (WINCE)
-   WAVEFORMAT_MIDI waveMidi;
-   HANDLE hEvent;
-   HWAVEOUT hWaveOut;
-   WAVEFORMAT_MIDI_MESSAGE midiMessage[2];
-   WAVEHDR waveHdr;
-
-   if (waveOutGetNumDevs() < 1)
-      return;
-
-   // Build a MIDI waveformat header
-   xmemzero(&waveMidi, sizeof(waveMidi));
-
-   waveMidi.wfx.wFormatTag = WAVE_FORMAT_MIDI;
-   waveMidi.wfx.nChannels = 1;
-   waveMidi.wfx.nBlockAlign = sizeof(WAVEFORMAT_MIDI_MESSAGE);
-   waveMidi.wfx.cbSize = WAVEFORMAT_MIDI_EXTRASIZE;
-
-   /// These fields adjust the interpretation of DeltaTicks, and thus the rate of playback
-   // Set to 1 second. Note driver will default to 500000 if set to 0.
-   waveMidi.USecPerQuarterNote = 1000000;
-   // Set to 1000 so duration is expressed in milliseconds. Note driver will default to 96 if set to 0
-   waveMidi.TicksPerQuarterNote = 1000;
-   ///
-
-   hEvent = CreateEvent(null, true, false, null);
-   ResetEvent(hEvent);
-
-   // Open the waveout device
-   if (waveOutOpen(&hWaveOut, WAVE_MAPPER, (LPWAVEFORMATEX) &waveMidi, (DWORD) hEvent, 0, CALLBACK_EVENT) == MMSYSERR_NOERROR)
+   char buf[128];
+   getDeviceId(buf);
+   if (xstrstr(buf,"Hand")) // Hand Held Products
+      WaveBeeperHoneywell(frequency, duration);
+   else
    {
-      midiMessage[0].DeltaTicks = 1;                           // Note on
-      midiMessage[0].MidiMsg = 0x7F0090 | (frequency << 8);    // Wait
-      midiMessage[1].DeltaTicks = duration;                    // Note off
-      midiMessage[1].MidiMsg = 0x7F0080 | (frequency << 8);
+      WAVEFORMAT_MIDI waveMidi;
+      HANDLE hEvent;
+      HWAVEOUT hWaveOut;
+      WAVEFORMAT_MIDI_MESSAGE midiMessage[2];
+      WAVEHDR waveHdr;
 
-      waveHdr.lpData = (LPSTR) midiMessage;
-      waveHdr.dwBufferLength = sizeof(midiMessage);
-      waveHdr.dwFlags = 0;
+      if (waveOutGetNumDevs() < 1)
+         return;
 
-      if (waveOutPrepareHeader(hWaveOut, &waveHdr, sizeof(waveHdr) ) == MMSYSERR_NOERROR)
+      // Build a MIDI waveformat header
+      xmemzero(&waveMidi, sizeof(waveMidi));
+
+      waveMidi.wfx.wFormatTag = WAVE_FORMAT_MIDI;
+      waveMidi.wfx.nChannels = 1;
+      waveMidi.wfx.nBlockAlign = sizeof(WAVEFORMAT_MIDI_MESSAGE);
+      waveMidi.wfx.cbSize = WAVEFORMAT_MIDI_EXTRASIZE;
+
+      /// These fields adjust the interpretation of DeltaTicks, and thus the rate of playback
+      // Set to 1 second. Note driver will default to 500000 if set to 0.
+      waveMidi.USecPerQuarterNote = 1000000;
+      // Set to 1000 so duration is expressed in milliseconds. Note driver will default to 96 if set to 0
+      waveMidi.TicksPerQuarterNote = 1000;
+      ///
+
+      hEvent = CreateEvent(null, true, false, null);
+      ResetEvent(hEvent);
+
+      // Open the waveout device
+      if (waveOutOpen(&hWaveOut, WAVE_MAPPER, (LPWAVEFORMATEX) &waveMidi, (DWORD) hEvent, 0, CALLBACK_EVENT) == MMSYSERR_NOERROR)
       {
-         // Play the data
-         if (waveOutWrite(hWaveOut, &waveHdr, sizeof(waveHdr)) == MMSYSERR_NOERROR)
-         {
-            // Wait for playback to complete
-            if (WaitForSingleObject(hEvent, (uint32)(duration*1.5)) == WAIT_TIMEOUT)
-               waveOutReset(hWaveOut);
-         }
+         midiMessage[0].DeltaTicks = 1;                           // Note on
+         midiMessage[0].MidiMsg = 0x7F0090 | (frequency << 8);    // Wait
+         midiMessage[1].DeltaTicks = duration;                    // Note off
+         midiMessage[1].MidiMsg = 0x7F0080 | (frequency << 8);
 
-         /*
-          * This function complements waveOutPrepareHeader. You must call this function before freeing the buffer.
-          * After passing a buffer to the device driver with the waveOutWrite function, you must wait until
-          * the driver is finished with the buffer before calling waveOutUnprepareHeader.
-          * Unpreparing a buffer that has not been prepared has no effect, and the function returns zero.
-          */
-         waveOutUnprepareHeader(hWaveOut, &waveHdr, sizeof(waveHdr));
+         waveHdr.lpData = (LPSTR) midiMessage;
+         waveHdr.dwBufferLength = sizeof(midiMessage);
+         waveHdr.dwFlags = 0;
+
+         if (waveOutPrepareHeader(hWaveOut, &waveHdr, sizeof(waveHdr) ) == MMSYSERR_NOERROR)
+         {
+            // Play the data
+            if (waveOutWrite(hWaveOut, &waveHdr, sizeof(waveHdr)) == MMSYSERR_NOERROR)
+            {
+               // Wait for playback to complete
+               if (WaitForSingleObject(hEvent, (uint32)(duration*1.5)) == WAIT_TIMEOUT)
+                  waveOutReset(hWaveOut);
+            }
+
+            /*
+             * This function complements waveOutPrepareHeader. You must call this function before freeing the buffer.
+             * After passing a buffer to the device driver with the waveOutWrite function, you must wait until
+             * the driver is finished with the buffer before calling waveOutUnprepareHeader.
+             * Unpreparing a buffer that has not been prepared has no effect, and the function returns zero.
+             */
+            waveOutUnprepareHeader(hWaveOut, &waveHdr, sizeof(waveHdr));
+         }
+         waveOutClose(hWaveOut);
       }
-      waveOutClose(hWaveOut);
    }
 #else
    Beep(frequency, duration);
