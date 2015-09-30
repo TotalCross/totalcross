@@ -1,4 +1,20 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2773</h1>
+. fixed Window not being able to use shaded background<br>
+. fixed Button's getPreferredHeight when translucent shape if CIRCLE<br>
+. downgraded sqlite to 3.8.1 to fix problems in wp8<br>
+. fixed bundle identifier when deploying for ios<br>
+. fixed crash on android 4.2.2 due to (wrong) local ref dealloc<br>
+. added Settings.iosCFBundleIdentifier<br>
+. on new File(String), dont add appPath if path starts with /<br>
+. fixed delay when running on JavaSE<br>
+. added debug messages to Convert.toDouble to help finding errors.<br>
+. fixed deadlock that occurs when sqlite3 closes itself before some ResultSets<br>
+. added Vm.printStackTrace(message)<br>
+. added Settings.imeis, which returns two imeis for dual-sims android devices<br>
+. changed Checkbox images used in PopupMenu to use the ones from Resource (to allow customization)<br>
+. implemented Sound.tone for Hand Held WM devices. removed deprecation<br>
+. added MonoImage.doClip, to enable printing image widths above 384<br>
 <h1>build 2761</h1>
 . removed final from TopMenu.initUI so you can customize it<br>
 . fixed MultiButton.setEnabled<br>
