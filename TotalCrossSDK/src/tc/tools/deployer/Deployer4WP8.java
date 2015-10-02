@@ -107,7 +107,7 @@ public class Deployer4WP8
       appxManifest = appxManifest.replace("<DisplayName>PhoneDirect3DXamlApp</DisplayName>","<DisplayName>" + DeploySettings.appTitle + "</DisplayName>");
       appxManifest = appxManifest.replace("Publisher=\"CN=TOTALCROSS\"","Publisher=\"CN=" + Settings.appPackagePublisher + "\"");
       appxManifest = appxManifest.replace("<PublisherDisplayName>TOTALCROSS</PublisherDisplayName>","<PublisherDisplayName>" + DeploySettings.companyInfo + "</PublisherDisplayName>");
-      appxManifest = wmAppManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
+      appxManifest = appxManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
       if (Settings.appPackageIdentifier != null) appxManifest = appxManifest.replace("c2cad1fa-be21-4474-8fea-ce1b562a41e5", Settings.appPackageIdentifier);
 
       // overwrite properties on the manifest, like application title, version numbers, etc
