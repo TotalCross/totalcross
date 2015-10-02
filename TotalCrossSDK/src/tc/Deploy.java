@@ -352,8 +352,10 @@ public class Deploy
                case 'v': DeploySettings.quiet = false;
                          break;
                case 'r': String key = args[++i].toUpperCase();
-                         if (key.length() != 24)
-                            throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX");
+                         if (key.startsWith("%"))
+                            key = System.getenv(key.substring(1,key.length()-1));
+                         if (key == null || key.length() != 24)
+                            throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX; optionally, you can use %key% to refer to an environment variable");
                          activationKey = key;
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
                          DeploySettings.isFreeSDK = new String(DeploySettings.rasKey,0,4).equals("TCST");

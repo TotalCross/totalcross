@@ -406,7 +406,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
       System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
-      System.out.println("   /r <key>         : specify a registration key to be used to activate TotalCross when required");
+      System.out.println("   /r <key>         : specify a registration key to be used to activate TotalCross when required. You may use %key%, where key is an environment variable");
       System.out.println("The class name that extends MainWindow must always be the last argument");
    }
 
@@ -482,8 +482,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             else
             if (args[i].equalsIgnoreCase("/r"))
             {
-               activationKey = args[++i].toUpperCase(); 
-               if (activationKey.length() != 24)
+               activationKey = args[++i].toUpperCase();
+               if (activationKey.startsWith("%"))
+                  activationKey = System.getenv(activationKey.substring(1,activationKey.length()-1));
+               if (activationKey == null || activationKey.length() != 24)
                   throw new RuntimeException("Invalid registration key");
             }
             else
