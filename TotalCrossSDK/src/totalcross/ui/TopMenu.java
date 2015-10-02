@@ -193,7 +193,10 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          {
             Control []c = items[i].asContainer.getChildren();
             for (int j = c.length; --j >= 0;)
+            {
+               System.out.println("reposicionando "+c[j]);
                c[j].reposition();
+            }
          }
    }
    
@@ -239,6 +242,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       selected = -1;
       try
       {
+         screenResized(); // fix problem when the container is on portrait, then landscape, then closed, then portrait, then open
          if (animDir == CENTER)
          {
             resetSetPositions();
