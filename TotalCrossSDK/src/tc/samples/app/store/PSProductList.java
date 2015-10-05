@@ -2,6 +2,7 @@ package tc.samples.app.store;
 
 import totalcross.io.*;
 import totalcross.res.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.image.*;
@@ -41,6 +42,21 @@ public class PSProductList extends Container implements PSConstants
          bil.start();
          
          reload();
+         
+         Window.keyHook = new KeyListener() 
+         {
+            public void keyPressed(KeyEvent e) {}
+            public void actionkeyPressed(KeyEvent e) {}
+            public void specialkeyPressed(KeyEvent e)
+            {
+               if (e.key == SpecialKeys.ESCAPE)
+               {
+                  e.consumed = true;
+                  back();
+               }
+            }
+         };
+
       }
       catch (Exception e)
       {
@@ -73,6 +89,11 @@ public class PSProductList extends Container implements PSConstants
    {
       // go back to the login page
       if (e.type == ControlEvent.PRESSED && e.target == bar)
-         new PSlogin().swapToTopmostWindow();         
+         back();
+   }
+   
+   private void back()
+   {
+      new PSlogin().swapToTopmostWindow();         
    }
 }

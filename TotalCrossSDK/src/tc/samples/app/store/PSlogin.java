@@ -1,5 +1,6 @@
 package tc.samples.app.store;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -44,6 +45,20 @@ public class PSlogin extends Container
          b.setBackForeColors(Color.WHITE,Color.BLACK);
          b.roundBorderFactor = 3;
          add(b,CENTER,PARENTSIZE+87,PARENTSIZE+80,PARENTSIZEMIN+20);
+
+         Window.keyHook = new KeyListener() 
+         {
+            public void keyPressed(KeyEvent e) {}
+            public void actionkeyPressed(KeyEvent e) {}
+            public void specialkeyPressed(KeyEvent e)
+            {
+               if (e.key == SpecialKeys.ESCAPE)
+               {
+                  e.consumed = true;
+                  MainWindow.exit(0);
+               }
+            }
+         };
       }
       catch (Exception ee)
       {
