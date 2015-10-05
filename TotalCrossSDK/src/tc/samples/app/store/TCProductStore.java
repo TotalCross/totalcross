@@ -13,6 +13,14 @@ import totalcross.util.*;
 
 public class TCProductStore extends MainWindow implements PSConstants
 {
+   static 
+   {
+      Settings.companyInfo = "TotalCross";
+      Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
+      Settings.appPackageIdentifier = "1748TotalCross.ProductStore";
+      Settings.iosCFBundleIdentifier = "com.totalcross.tcps";
+   }
+   
    /** The path where the images are stored. */
    public static String imagePath;
 
