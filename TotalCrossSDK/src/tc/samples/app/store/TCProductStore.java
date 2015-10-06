@@ -19,6 +19,7 @@ public class TCProductStore extends MainWindow implements PSConstants
       Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
       Settings.appPackageIdentifier = "1748TotalCross.ProductStore";
       Settings.iosCFBundleIdentifier = "com.totalcross.tcps";
+      Settings.appVersion = "1.01"; 
    }
    
    /** The path where the images are stored. */
