@@ -905,8 +905,7 @@ public final class Graphics
             }
             continue; // for all other control chars, just skip to next
          }
-         if (ch < font.firstChar || ch > font.lastChar) // guich@tc122_16: if the char is outside the font's range, load
-                                                        // the new font
+         if (ch < font.firstChar || ch > font.lastChar) // guich@tc122_16: if the char is outside the font's range, load the new font
             this.font.hv_UserFont = font = Launcher.instance.getFont(this.font, ch);
          font.setCharBits(ch, bits);
          if (bits.offset == -1)
@@ -1447,9 +1446,7 @@ public final class Graphics
          startY = endY;
          endY = temp;
       }
-      int numSteps = Math.max(1, vertical ? (endY - startY) : (endX - startX)); // guich@tc110_11: support horizontal
-                                                                                // gradient - guich@gc114_41: prevent
-                                                                                // div by 0 if numsteps is 0
+      int numSteps = Math.max(1, vertical ? (endY - startY) : (endX - startX)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
       int startRed = (startColor >> 16) & 0xFF;
       int startGreen = (startColor >> 8) & 0xFF;
       int startBlue = startColor & 0xFF;
@@ -1604,9 +1601,7 @@ public final class Graphics
          if (four[0] == four[1]) // both WHITE?
             four[1] = Color.darker(four[0], Color.LESS_STEP);
          four[0] = Color.darker(four[0], Color.HALF_STEP); // in 16 colors, make the buttons more 3d
-         four[2] = Color.brighter(foreColor, enabled ? Color.LESS_STEP : Color.FULL_STEP); // inside bottomRight - DARK
-                                                                                           // - guich@tc122_48: use
-                                                                                           // full_step if not enabled
+         four[2] = Color.brighter(foreColor, enabled ? Color.LESS_STEP : Color.FULL_STEP); // inside bottomRight - DARK - guich@tc122_48: use full_step if not enabled
          four[3] = foreColor; // outside bottomRight - BLACK
          if (!enabled)
          {
@@ -1772,10 +1767,7 @@ public final class Graphics
                      drawVistaRect(x, y, width, height, fourColors[1], fourColors[1], fourColors[2], fourColors[3]);
                      break;
                   case R3D_LOWERED:
-                     drawVistaRect(x, y, width, height, fourColors[2], fourColors[3], fourColors[1], fourColors[1]); // guich@tc122_10;
-                                                                                                                     // 2113
-                                                                                                                     // ->
-                                                                                                                     // 2311
+                     drawVistaRect(x, y, width, height, fourColors[2], fourColors[3], fourColors[1], fourColors[1]); // guich@tc122_10; 2113 -> 2311
                      break;
                }
                break;
@@ -2073,9 +2065,7 @@ public final class Graphics
 
          int[] dst = getSurfacePixels(surface);
          boolean isSrcScreen = !(srcSurface instanceof Image);
-         int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control,
-                                                                                  // use the real width instead of the
-                                                                                  // control's width
+         int scrPitch = pixels == mainWindowPixels ? Settings.screenWidth : bmpW; // if we're copying from a control, use the real width instead of the control's width
          int psrc = (bmpY + y) * scrPitch + bmpX + x;
          int pdst = dstY * pitch + dstX;
          int alphaMask = srcSurface instanceof Image ? ((Image) srcSurface).alphaMask : 255;
@@ -2798,9 +2788,7 @@ public final class Graphics
    ////////////////////////////////////////////////////////////////////////////
    private int doClipX(int x)
    {
-      return ((x + transX) < clipX1) ? (clipX1 - transX) : ((x + transX) >= clipX2) ? (clipX2 - transX) : x; // guich@401_2:
-                                                                                                             // added
-                                                                                                             // TRANSX/Y
+      return ((x + transX) < clipX1) ? (clipX1 - transX) : ((x + transX) >= clipX2) ? (clipX2 - transX) : x; // guich@401_2: added TRANSX/Y
    }
 
    private int doClipY(int y)
@@ -2844,8 +2832,7 @@ public final class Graphics
       if (startAngle < 0.1 && endAngle > 359.9) // full circle? use the fastest routine instead
       {
          if (fill)
-            ellipseDrawAndFill(xc, yc, rx, ry, c, c2, true, gradient); // guich@201_2: corrected colors. - guich@401_3:
-                                                                       // changed c->c2 and vice versa (line below)
+            ellipseDrawAndFill(xc, yc, rx, ry, c, c2, true, gradient); // guich@201_2: corrected colors. - guich@401_3: changed c->c2 and vice versa (line below)
          ellipseDrawAndFill(xc, yc, rx, ry, c, c, false, gradient);
          return;
       }
@@ -3039,10 +3026,7 @@ public final class Graphics
       {
          int p1 = last - startIndex;
          if (fill)
-            fillPolygon(xPoints, yPoints, startIndex, p1, xPoints, yPoints, endIndex, gradient ? c : c2, c2, gradient); // lower
-                                                                                                                        // half,
-                                                                                                                        // upper
-                                                                                                                        // half
+            fillPolygon(xPoints, yPoints, startIndex, p1, xPoints, yPoints, endIndex, gradient ? c : c2, c2, gradient); // lower half, upper half
          if (!gradient)
             drawPolygon(xPoints, yPoints, startIndex, p1, xPoints, yPoints, endIndex, c);
       }
@@ -3266,10 +3250,7 @@ public final class Graphics
       int startY = results[1];
       int endX = startX + results[2];
       int endY = startY + results[3];
-      int numSteps = Math.max(1, Math.min((endY - startY) / 2, (endX - startX) / 2)); // guich@tc110_11: support
-                                                                                      // horizontal gradient -
-                                                                                      // guich@gc114_41: prevent div by
-                                                                                      // 0 if numsteps is 0
+      int numSteps = Math.max(1, Math.min((endY - startY) / 2, (endX - startX) / 2)); // guich@tc110_11: support horizontal gradient - guich@gc114_41: prevent div by 0 if numsteps is 0
       int startRed = (startColor >> 16) & 0xFF;
       int startGreen = (startColor >> 8) & 0xFF;
       int startBlue = startColor & 0xFF;
