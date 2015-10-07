@@ -76,7 +76,7 @@ public final class Settings
     */
    public static String appBuildNumber()
    {
-      String ret = (String)Settings.appProps.get("build.number");
+      String ret = Settings.appProps == null ? null : (String)Settings.appProps.get("build.number");
       if (ret == null) ret = "0";
       return ret;
    }
