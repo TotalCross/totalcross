@@ -614,7 +614,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (activationKey == null || activationKey.length() != 24)
+      if (isApplication && (activationKey == null || activationKey.length() != 24))
       {
          if (activationKey != null)
             System.out.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
