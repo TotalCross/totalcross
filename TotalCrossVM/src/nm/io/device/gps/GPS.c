@@ -51,7 +51,12 @@ TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS n
    Err err;
 
    if ((err = nativeUpdateLocation(p->currentContext, p->obj[0], &flags)) > 0)
-      throwExceptionWithCode(p->currentContext, IOException, err);
+   {
+      if (err == 2)
+         throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
+      else
+         throwExceptionWithCode(p->currentContext, IOException, err);
+   }
    p->retI = flags;
 #elif defined (WP8)
    p->retI = nativeUpdateLocationCPP(p->currentContext, p->obj[0]);
