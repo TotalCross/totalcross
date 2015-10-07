@@ -39,6 +39,7 @@ public final class Graphics4D
    protected int pitch;
    public int alpha;
    public boolean isVerticalText;
+   protected int lastClipFactor;
    private boolean isControlSurface;
    // instance doubles
    protected double lastPPD; // used by arcPiePointDrawAndFill

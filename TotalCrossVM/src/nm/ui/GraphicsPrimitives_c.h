@@ -1693,6 +1693,8 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
    TCObject *yPointsObj = &Graphics_yPoints(g);
    int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
    int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
+   int32 clipFactor = Graphics_minY(g) * Graphics_maxY(g);
+   bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
 
    if (rx < 0 || ry < 0) // guich@501_13
       return;
@@ -1720,7 +1722,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
 
    // step 0: if possible, use cached results
    sameR = rx == Graphics_lastRX(g) && ry == Graphics_lastRY(g);
-   if (!sameR)
+   if (!sameClipFactor || !sameR)
    {
       // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
       // intermediate terms to speed up loop
@@ -1869,6 +1871,7 @@ static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc,
       Graphics_lastRY(g)   = ry;
       Graphics_lastPPD(g)  = ppd;
       Graphics_lastSize(g) = size;
+      Graphics_lastClipFactor(g) = clipFactor;
    }
    else
    {

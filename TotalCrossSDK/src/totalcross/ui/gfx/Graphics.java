@@ -101,7 +101,7 @@ public final class Graphics
    private int pitch;
    private static int[] pal685;
    private boolean isControlSurface;
-   private int lastXC, lastYC, lastRX, lastRY, lastSize, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[];
+   private int lastXC, lastYC, lastRX, lastRY, lastSize, lastClipFactor, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[];
    private double lastPPD;
    private int[] translateAndClipResults = new int[4];
    private int[] tlx, tly;
@@ -2839,8 +2839,10 @@ public final class Graphics
       int[] xPoints = gxPoints;
       int[] yPoints = gyPoints;
       // step 0: if possible, use cached results
-      boolean sameC = xc == lastXC && yc == lastYC;
-      boolean sameR = rx == lastRX && ry == lastRY;
+      int clipFactor = clipY1 * 10000000 + clipY2;
+      boolean sameClip = clipFactor == lastClipFactor;
+      boolean sameC = sameClip && xc == lastXC && yc == lastYC;
+      boolean sameR = sameClip && rx == lastRX && ry == lastRY;
       if (!sameC || !sameR)
       {
          long t1 = (long) rx * rx, t2 = t1 << 1, t3 = t2 << 1;
@@ -2990,6 +2992,8 @@ public final class Graphics
          lastYC = yc;
          lastRX = rx;
          lastRY = ry;
+         lastClipFactor = clipFactor;
+         System.out.println(clipFactor);
       }
       else
       {
