@@ -2993,7 +2993,6 @@ public final class Graphics
          lastRX = rx;
          lastRY = ry;
          lastClipFactor = clipFactor;
-         System.out.println(clipFactor);
       }
       else
       {
