@@ -16,19 +16,20 @@
 
 package tc.samples.api.ui;
 
-import tc.samples.api.*;
-
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.chart.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
+import tc.samples.api.*;
+
 public class ChartSample extends BaseContainer
 {
    ColumnChart column;
    LineChart line;
    PieChart pie;
+   ArcChart arc;
    Slider sh,sv;
 
    Check is3D,showTitle,showCategories,showHGrids,
@@ -99,7 +100,7 @@ public class ChartSample extends BaseContainer
       isDarker.setVisible(false);
 
       int bg = Color.darker(backColor,16);
-      tp = new TabbedContainer(new String[]{" Column "," Line "," Pie "});
+      tp = new TabbedContainer(new String[]{" Column "," Line "," Pie "," Arc "});
       tp.extraTabHeight = fmH/2;
       sc.add(tp, LEFT,AFTER+gap*2,FILL,PARENTSIZE+90);
 
@@ -129,10 +130,24 @@ public class ChartSample extends BaseContainer
       tp.getContainer(2).add(pie, LEFT,TOP,FILL,FILL);
       pie.setBackColor(bg);
       pie.type = Chart.IS_3D;
+      
+      arc = new ArcChart();
+      arc.series.addElement(new Series("Rice", new double[] {100}, color1));
+      arc.series.addElement(new Series("Beans", new double[] {200}, color2));
+      arc.series.addElement(new Series("Oil", new double[] {80}, color3));
+      arc.selectedSeries = 2;
+      arc.yDecimalPlaces = 1; // 1 decimal place
+      arc.setTitle("Profit Share");
+      arc.legendValueSuffix = "%"; // show % instead of the value in the tooltip
+      tp.getContainer(3).add(arc, LEFT,TOP,FILL,FILL);
+      arc.setBackColor(bg);
+      
       column.xDecimalPlaces = column.yDecimalPlaces = line.yDecimalPlaces = 0;
       line.legendPerspective = pie.legendPerspective = column.legendPerspective = 6;
       tp.activeTabBackColor = Color.ORANGE;
       tp.pressedColor = Color.YELLOW;
+      
+      if (Settings.onJavaSE) tp.setActiveTab(3);
    }
 
    public void onEvent(Event e)
