@@ -1,4 +1,12 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2779</h1>
+. fixed version information on wp8 deploy<br>
+. fix TopMenu problem when the container is on portrait, then landscape, then closed, then portrait, then open<br>
+. now in tc.Deploy you can use "/r %key%" to load key from an environment variable. useful for presentations<br>
+. windows store requires that the back key work on all applications<br>
+. added ArcChart (a pie with a filled circle inside). added sample to TotalCrossAPI / ChartSample<br>
+. fixed drawPie not being correctly drawn when it was first shown in a ScrollContainer with a lower part covered and then it was scrolled up. The cache was not considering the vertical clipping<br>
+. throw GPSDisabledException if the gps is disabled during updateLocation<br>
 <h1>build 2773</h1>
 . fixed Window not being able to use shaded background<br>
 . fixed Button's getPreferredHeight when translucent shape if CIRCLE<br>
