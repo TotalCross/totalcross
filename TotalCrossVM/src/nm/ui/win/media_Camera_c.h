@@ -225,31 +225,19 @@ static void changeArcSoftAPI()
    buf[0] = 0;
    RegQueryValueEx(handle,TEXT("OEMCAMERACAPTUREDLL"),null,null,(uint8*)buf,&size);
    if (wcsicmp(buf,TEXT("\\windows\\oemcameracapture.dll")) == 0)
-   {
       RegSetValueEx(handle, TEXT("OEMCAMERACAPTUREDLL"), 0, REG_SZ, (uint8*)TEXT("\\windows\\_oemcameracapture.dll"),62);
-      debug("changing oem to win");
-   }
    else
    if (wcsicmp(buf,TEXT("\\windows\\_oemcameracapture.dll")) == 0)
-   {
       RegSetValueEx(handle, TEXT("OEMCAMERACAPTUREDLL"), 0, REG_SZ, (uint8*)TEXT("\\windows\\oemcameracapture.dll"),60);
-      debug("changing oem back to arcsoft");
-   }
 
    size = sizeof(buf);
    buf[0] = 0;
    RegQueryValueEx(handle,TEXT("CameraApp"),null,null,(uint8*)buf,&size);
    if (wcsicmp(buf,TEXT("\\windows\\camera.exe")) == 0)
-   {
       RegSetValueEx(handle, TEXT("CameraApp"), 0, REG_SZ, (uint8*)TEXT("\\windows\\pimg.exe"),36);
-      debug("changing app to win");
-   }
    else
    if (wcsicmp(buf,TEXT("\\windows\\pimg.exe")) == 0)
-   {
       RegSetValueEx(handle, TEXT("CameraApp"), 0, REG_SZ, (uint8*)TEXT("\\windows\\camera.exe"),40);
-      debug("changing app back to arcsoft");
-   }
 
    RegCloseKey(handle);
 }
