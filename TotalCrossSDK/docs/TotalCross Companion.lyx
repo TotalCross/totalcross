@@ -130,7 +130,7 @@ enumitem
 \spacing single
 \use_hyperref true
 \pdf_title "TotalCross Companion"
-\pdf_author "SuperWaba"
+\pdf_author "TotalCross"
 \pdf_bookmarks true
 \pdf_bookmarksnumbered false
 \pdf_bookmarksopen false
@@ -1033,28 +1033,13 @@ You should first take a look at the TotalCross changelog
 
 \begin_inset CommandInset href
 LatexCommand href
-name "(http://www.superwaba.com.br/en/changelogs.asp)"
-target "http://www.superwaba.com.br/en/changelogs.asp"
+name "(http://www.totalcross.org/changelogs.html)"
+target "http://www.totalcross.org/changelogs.html"
 
 \end_inset
 
  and check if your bug was already fixed on a later version of the TotalCross
  SDK.
-\end_layout
-
-\begin_layout Standard
-You may then use the forum to report the bug, however, its not guaranteed
- that we will fix the bug.
- If you want the bug fixed in a few days and receive a fixed virtual machine,
- you must purchase a support plan
-\begin_inset CommandInset href
-LatexCommand href
-name " (http://www.superwaba.com.br/en/suporte.asp)"
-target "http://www.superwaba.com.br/en/suporte.asp"
-
-\end_inset
-
- at the site.
 \end_layout
 
 \begin_layout Standard
@@ -8983,7 +8968,7 @@ This converter takes care of about 99% of the problems, remaining only 1%
 (
 \begin_inset CommandInset href
 LatexCommand href
-target "http://www.superwaba.com.br/pt/sw2tc.asp"
+target "http://www.totalcross.org/en/sw2tc.asp"
 
 \end_inset
 
@@ -9023,7 +9008,7 @@ void
 
 \begin_layout Itemize
 Many methods now throw checked exceptions, which must be handled accordingly.
- In SuperWaba, there were almost no validation on the arguments passed to
+ In TotalCross, there were almost no validation on the arguments passed to
  the methods; in TotalCross, nearly all methods perform argument validation,
  throwing the appropriate exception for each case (in the future, this will
  be extended to all arguments and methods).
@@ -57296,26 +57281,26 @@ Locality Name (eg, city) []:Rio de Janeiro
 \begin_layout Plain Layout
 
 \family typewriter
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:SuperWaba Ltda
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:TotalCross MGP Ltda
 \end_layout
 
 \begin_layout Plain Layout
 
 \family typewriter
-Organizational Unit Name (eg, section) []:SuperWaba dev.
+Organizational Unit Name (eg, section) []:TotalCross dev.
  department
 \end_layout
 
 \begin_layout Plain Layout
 
 \family typewriter
-Common Name (eg, YOUR name) []:SuperWaba Sample CA
+Common Name (eg, YOUR name) []:TotalCross Sample CA
 \end_layout
 
 \begin_layout Plain Layout
 
 \family typewriter
-Email Address []:guich@superwaba.com.br
+Email Address []:guich@totalcross.com
 \end_layout
 
 \end_inset
@@ -57333,7 +57318,7 @@ The first entry is the private key password.
 \begin_layout Standard
 Next you will have to fill in X500 attributes describing the certificate
  subject.
- In our case, we enter information describing the SuperWaba CA (Certification
+ In our case, we enter information describing the TotalCross CA (Certification
  Authority).
  Any agent trusting this CA, will authenticate certificates that have been
  signed by it through the CA embedded public key.
