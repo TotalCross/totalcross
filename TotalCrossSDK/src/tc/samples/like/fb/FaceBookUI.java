@@ -49,6 +49,20 @@ public class FaceBookUI extends MainWindow implements FBConstants
          
          if (defaultUser == null)
             tc.setActiveTab(1);
+
+         Window.keyHook = new KeyListener() 
+         {
+            public void keyPressed(KeyEvent e) {}
+            public void actionkeyPressed(KeyEvent e) {}
+            public void specialkeyPressed(KeyEvent e)
+            {
+               if (e.key == SpecialKeys.ESCAPE)
+               {
+                  e.consumed = true;
+                  MainWindow.exit(0);
+               }
+            }
+         };
       }
       catch (Throwable t)
       {
