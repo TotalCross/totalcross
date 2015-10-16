@@ -520,7 +520,7 @@ void resetFontTexture()
 static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int32 size, int32 uIndex)
 {
    char keyStr[64];
-   int32 key;
+   int32 key,i;
    UserFont f = null;
    
    xstrprintf(keyStr, "%d|%d|%s|%d",(int)bold, size, ff->name, uIndex);
@@ -528,14 +528,16 @@ static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int3
    
    f = htGetPtr(&htBaseFonts, key);
    if (f == null)
-   {
-      int32 i;
-      for (i = 0; i < SIZE_LEN-1; i++)
-         if (size <= realSizes[i])
-            break;
-   
+   {          
+      if (!xstrstr(ff->name,"noaa"))
+         for (i = 0; i < SIZE_LEN-1; i++)
+            if (size <= realSizes[i])
+            {                                        
+               size = realSizes[i];
+               break; 
+            }
       useRealFont = true;
-      f = loadUserFont(currentContext, ff, bold, realSizes[i], (JChar)uIndex);
+      f = loadUserFont(currentContext, ff, bold, size, (JChar)uIndex);
       useRealFont = false;
       if (f != null) 
          htPutPtr(&htBaseFonts, key, f); 

@@ -43,6 +43,8 @@ import totalcross.io.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
+import java.awt.*;
+
 /** Converts a Windows true type font to a pdb file that can be used by TotalCross programs
   * (and also by other programs)
   * Must be compiled with JDK 1.2.2 or above.
@@ -72,8 +74,6 @@ public class FontGenerator
    java.awt.Component comp;
    static IntVector sizes = new IntVector(30);
    boolean skipBigChars;
-   int[] fontsizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
-
 
    public FontGenerator(String fontName, String []extraArgs) throws Exception
    {
@@ -162,16 +162,19 @@ public class FontGenerator
          sizes.qsort();
       }
       else
-         for (i = 0; i < fontsizes.length; i++)
-            sizes.addElement(fontsizes[i]);
+      if (antialiased == AA_NO)
+         for (i = 7; i <= 60; i++)
+            sizes.addElement(i);
+      else
+         sizes.addElements(new int[]{7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80});
       Vector v = new Vector(30);
 
       for (i = 0; i < sizes.size(); i++)
       {
          int s = sizes.items[i];
-         convertFont(v, new java.awt.Font(fontName, java.awt.Font.PLAIN, s), outName+"$p"+s, newRanges, isMono);
+         convertFont(v, getFont(fontName, java.awt.Font.PLAIN, s), outName+"$p"+s, newRanges, isMono);
          if (!noBold)
-            convertFont(v, new java.awt.Font(fontName, java.awt.Font.BOLD, s), outName+"$b"+s, newRanges, isMono);
+            convertFont(v, getFont(fontName, java.awt.Font.BOLD, s), outName+"$b"+s, newRanges, isMono);
       }
 
       // write the file
@@ -179,6 +182,21 @@ public class FontGenerator
       new TCZ(v, outName, (short)0);
       System.out.println("\nFile "+outName+".tcz created.");
    }
+
+   private Font getFont(String name, int bold, int s)
+   {
+      int destSize = s;
+      while (s > 0)
+      {
+         Font f = new java.awt.Font(name, bold, s);
+         java.awt.FontMetrics fm = comp.getFontMetrics(f);
+         if (fm.getHeight() <= destSize)
+            return f;
+         s--;
+      }
+      return null;
+   }
+
 
    private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
    {
@@ -214,7 +232,7 @@ public class FontGenerator
       {
          Range rr = (Range)newRanges.items[ri];
          if (detailed == 0)
-            System.out.print(backs+((ri+1)*100/n)+"%");
+            System.out.print(backs+((ri+1)*100/n)+"% ");
          int ini = rr.s;
          int end = rr.e;
          for (i = ini; i <= end; i++)
