@@ -1751,13 +1751,17 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       if (f == null)
       {
          int i;
-         for (i = 0; i < realSizes.length-1; i++)
-            if (size <= realSizes[i])
-               break;
+         if (!name.endsWith("noaa"))
+            for (i = 0; i < realSizes.length-1; i++)
+               if (size <= realSizes[i])
+               {
+                  size = realSizes[i];
+                  break;
+               }
       
          int idx = Integer.parseInt(suffix.substring(suffix.indexOf('u') + 1));
          totalcross.ui.font.Font.baseChar = (char)idx;
-         f = totalcross.ui.font.Font.getFont(name,bold,realSizes[i]);
+         f = totalcross.ui.font.Font.getFont(name,bold,size);
          totalcross.ui.font.Font.baseChar = ' ';
          if (f != null) 
          {
@@ -1773,7 +1777,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    {
       try
       {
-         if (totalcross.ui.font.Font.baseChar == ' ') // test if there's another 8bpp native font.
+         if (totalcross.ui.font.Font.baseChar == ' ' && !fontName.endsWith("noaa")) // test if there's another 8bpp native font.
          {
             boolean bold = suffix.charAt(1) == 'b';
             int size = Integer.parseInt(suffix.substring(2,suffix.indexOf('u')));
