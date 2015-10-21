@@ -26,8 +26,8 @@ import totalcross.ui.image.*;
  */
 public class MonoImage extends Image
 {
-   /** If set to false, the image's width is limited to 384 (double density) or 192 (single density).
-    * If true, it will use the real image's width. */
+   /** If set to true, the image's width is limited to 384 (double density) or 192 (single density).
+    * If false, it will use the actual image's width. */
    public boolean doClip = true;
    
    /** Makes a copy of the given image. */
