@@ -151,8 +151,11 @@ public class Deployer4WP8
       if (DeploySettings.installPlatforms != null && DeploySettings.installPlatforms.toLowerCase().contains("wp8"))
          try
          {
-            Utils.exec(new String[]{DeploySettings.etcDir+"tools\\xap\\XapDeployCmd.exe","/installlaunch",DeploySettings.appTitle + ".xap","/targetdevice:de"},targetDir);
-            inst = " (Installed)";
+            String out = Utils.exec(new String[]{DeploySettings.etcDir+"tools\\xap\\XapDeployCmd.exe","/installlaunch",DeploySettings.filePrefix + ".xap","/targetdevice:de"},targetDir);
+            if (out == null)
+               inst = " (Installed)";
+            else
+               Utils.println(out);
          } catch (Exception e) {inst = " (Error: "+e.getMessage()+")";}
       System.out.println("... Files written to folder "+ targetDir + inst);
    }
