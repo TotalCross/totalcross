@@ -25,7 +25,7 @@ public class TotalCrossAPI extends MainWindow
    static
    {
       Settings.resizableWindow = true;
-      Settings.appVersion = "1.04";
+      Settings.appVersion = "1.05";
       Settings.windowSize = Settings.WINDOWSIZE_480X640;
       Settings.companyContact = "registro@totalcross.com";
       Settings.applicationId = "tapi"; // comentar quando for enviar pra loja Google Play
