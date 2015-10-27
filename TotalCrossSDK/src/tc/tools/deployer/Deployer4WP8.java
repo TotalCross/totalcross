@@ -67,23 +67,36 @@ public class Deployer4WP8
       // add pkg files
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("wp8.pkg", ht);
-      Vector v = new Vector(Utils.joinGlobalWithLocals(ht, null, true));
-      Utils.preprocessPKG(v,true);
-      String[] extras = (String[])v.toObjectArray();
-      if (extras != null && extras.length > 0)
-         for (int i = 0; i < extras.length; i++)
+      
+      Vector vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
+      Vector vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
+      vLocals.addElements(DeploySettings.tczs);
+      if (vGlobals.size() > 0)
+         vLocals.addElements(vGlobals.toObjectArray());
+
+      Utils.preprocessPKG(vLocals,true);
+      for (int i =0, n = vLocals.size(); i < n; i++)
+      {
+         String []pathnames = totalcross.sys.Convert.tokenizeString((String)vLocals.items[i],',');
+         String pathname = pathnames[0];
+         String name = Utils.getFileName(pathname);
+         if (pathnames.length > 1)
          {
-            String pathname = extras[i];
-            File ff = new File(pathname);
-            if (!ff.exists())
-            {
-               ff = new File(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
-               if (!ff.exists())
-                  ff = new File(Utils.findPath(extras[i],true));
-            }
-            if (ff.exists())
-               sz.putEntry(extras[i], ff);
+            name = totalcross.sys.Convert.appendPath(pathnames[1],name);
+            if (name.startsWith("/"))
+               name = name.substring(1);
          }
+         // tcz's name must match the lowercase sharedid
+         File ff = new File(pathname);
+         if (!ff.exists())
+         {
+            ff = new File(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            if (!ff.exists())
+               ff = new File(Utils.findPath(pathname,true));
+         }
+         if (ff.exists())
+            sz.putEntry(name, ff);
+      }
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(99, 99));
