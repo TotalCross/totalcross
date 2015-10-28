@@ -87,16 +87,16 @@ public class Deployer4WP8
                name = name.substring(1);
          }
          // tcz's name must match the lowercase sharedid
-         File ff = new File(pathname);
-         if (!ff.exists())
-         {
-            ff = new File(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+            File ff = new File(pathname);
             if (!ff.exists())
+            {
+               ff = new File(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+               if (!ff.exists())
                ff = new File(Utils.findPath(pathname,true));
-         }
-         if (ff.exists())
+            }
+            if (ff.exists())
             sz.putEntry(name, ff);
-      }
+         }
 
       // add icons
       sz.putEntry("Assets/ApplicationIcon.png", readIcon(99, 99));
@@ -120,7 +120,14 @@ public class Deployer4WP8
       appxManifest = appxManifest.replace("<DisplayName>PhoneDirect3DXamlApp</DisplayName>","<DisplayName>" + DeploySettings.appTitle + "</DisplayName>");
       appxManifest = appxManifest.replace("Publisher=\"CN=TOTALCROSS\"","Publisher=\"CN=" + Settings.appPackagePublisher + "\"");
       appxManifest = appxManifest.replace("<PublisherDisplayName>TOTALCROSS</PublisherDisplayName>","<PublisherDisplayName>" + DeploySettings.companyInfo + "</PublisherDisplayName>");
-      appxManifest = appxManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + (DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0") + "\"");
+      String wp81ver = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
+      switch (Convert.numberOf(wp81ver, '.'))
+      {
+         case 0: wp81ver += ".0.0.0"; break;
+         case 1: wp81ver += ".0.0"; break;
+         case 2: wp81ver += ".0"; break;
+      }
+      appxManifest = appxManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + wp81ver + "\"");
       if (Settings.appPackageIdentifier != null) appxManifest = appxManifest.replace("c2cad1fa-be21-4474-8fea-ce1b562a41e5", Settings.appPackageIdentifier);
 
       // overwrite properties on the manifest, like application title, version numbers, etc
@@ -153,7 +160,7 @@ public class Deployer4WP8
          {
             String out = Utils.exec(new String[]{DeploySettings.etcDir+"tools\\xap\\XapDeployCmd.exe","/installlaunch",DeploySettings.filePrefix + ".xap","/targetdevice:de"},targetDir);
             if (out == null)
-               inst = " (Installed)";
+            inst = " (Installed)";
             else
                Utils.println(out);
          } catch (Exception e) {inst = " (Error: "+e.getMessage()+")";}
