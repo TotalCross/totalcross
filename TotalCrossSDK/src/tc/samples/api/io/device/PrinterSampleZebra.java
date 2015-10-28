@@ -77,7 +77,7 @@ public class PrinterSampleZebra extends PrinterSampleBase
          {
             getPixelRow(rowIn,y);
             for (int x =0; x < width; x++)
-               rowInv[x] = rowIn[x+x+x];
+               rowInv[x] = rowIn[x*4];
             
             for (int x=0; x < width; x+=8) 
             {
