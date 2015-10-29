@@ -542,7 +542,7 @@ public class Button extends Control implements TextControl
       boolean isRound = border == BORDER_ROUND;
       if (isAndroidStyle)
       {
-         if (!Settings.isOpenGL && !Settings.onJavaSE)
+         if (translucentShape == TranslucentShape.NONE && !Settings.isOpenGL && !Settings.onJavaSE)
          {
             g.getClip(clip);
             g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
