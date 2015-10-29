@@ -205,7 +205,7 @@
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
-						DevelopmentTeam = LK44WE8W5A;
+						DevelopmentTeam = W7XZ68AV26;
 					};
 				};
 			};
