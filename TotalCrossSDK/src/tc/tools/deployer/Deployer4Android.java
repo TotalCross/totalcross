@@ -375,14 +375,10 @@ public class Deployer4Android
       if (DeploySettings.bitmaps != null)
       {
          int res;
-         switch (name)
-         {
-            case "res/drawable-xhdpi/icon.png": res = 96; break;
-            case "res/drawable-xxhdpi/icon.png": res = 144; break;
-            case "res/drawable-xxxhdpi/icon.png": res = 192; break;
-            //case "res/drawable-hdpi/icon.png":
-            default: res = 72;
-         }
+         if (name.equals("res/drawable-xhdpi/icon.png"))   res = 96; else
+         if (name.equals("res/drawable-xxhdpi/icon.png"))  res = 144; else
+         if (name.equals("res/drawable-xxxhdpi/icon.png")) res = 192; 
+         else res = 72;
          DeploySettings.bitmaps.saveAndroidIcon(zos,res); // libraries don't have icons
       }
    }
