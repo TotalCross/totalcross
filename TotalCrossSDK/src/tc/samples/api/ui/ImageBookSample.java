@@ -147,7 +147,7 @@ public class ImageBookSample extends BaseContainer
          super.initUI();
          setTitle("Image Book");
          
-         if (Settings.isIOS() || Settings.isWindowsCE()) // hack for ios: extract the files and write into the folder
+         //if (Settings.isIOS() || Settings.isWindowsCE()) // hack for ios: extract the files and write into the folder
          {
             File dir = new File("device/books");
             if (!dir.exists())
@@ -176,8 +176,8 @@ public class ImageBookSample extends BaseContainer
 
          // folder that contains the images. can be "/sdcard", for example
          imageFolder = Settings.appPath;
-         if (Settings.onJavaSE)
-            imageFolder += "/src/tc/samples/api/ui";
+         //if (Settings.onJavaSE)
+         //   imageFolder += "/src/tc/samples/api/ui";
          imageFolder += "/books/";
          // list images in the folder
          String[] arqs0 = new File(imageFolder).listFiles();

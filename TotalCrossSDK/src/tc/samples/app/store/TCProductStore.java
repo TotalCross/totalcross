@@ -20,7 +20,8 @@ public class TCProductStore extends MainWindow implements PSConstants
       Settings.appPackageIdentifier = "1748TotalCross.ProductStore";
       Settings.iosCFBundleIdentifier = "com.totalcross.tcps";
       Settings.appVersion = "1.01"; 
-   }
+      Settings.windowSize = Settings.WINDOWSIZE_480X640;
+  }
    
    /** The path where the images are stored. */
    public static String imagePath;
@@ -30,6 +31,7 @@ public class TCProductStore extends MainWindow implements PSConstants
       setUIStyle(Settings.Holo); // change the user interface style
       setBackColor(MW_BACKCOLOR);
       Settings.uiAdjustmentsBasedOnFontHeight = true; // enable adjustments based on font, not pixels
+      Settings.scrollDistanceOnMouseWheelMove = fmH*10;
    }
    
    public void initUI()

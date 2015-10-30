@@ -34,7 +34,7 @@ public class TotalCrossAPI extends MainWindow
       Settings.companyInfo = "TotalCross";
       Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
       Settings.appPackageIdentifier = "1748TotalCross.TotalCrossAPI";
-      Settings.iosCFBundleIdentifier = "com.totalcross.tcapi";
+      Settings.iosCFBundleIdentifier = "com.totalcross.tcapi2";
    }
    
    public TotalCrossAPI()
@@ -46,6 +46,7 @@ public class TotalCrossAPI extends MainWindow
       Settings.fadeOtherWindows = true;
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
+      Settings.scrollDistanceOnMouseWheelMove = fmH*10;
       Vm.debug(Vm.ALTERNATIVE_DEBUG);
    }
    

@@ -12,6 +12,16 @@ import totalcross.ui.image.*;
 
 public class FaceBookUI extends MainWindow implements FBConstants
 {
+   static
+   {
+      Settings.companyContact = "registro@totalcross.com";
+      Settings.companyInfo = "TotalCross";
+      //Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
+      //Settings.appPackageIdentifier = "1748TotalCross.TotalCrossAPI";
+      Settings.iosCFBundleIdentifier = "com.totalcross.fbui";
+      Settings.windowSize = Settings.WINDOWSIZE_480X640;
+   }
+   
    private static FBPosts posts;
    private static FBButtonBar bar;
    private static TabbedContainer tc;
