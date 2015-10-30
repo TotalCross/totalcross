@@ -120,13 +120,15 @@ public class Deployer4WP8
       appxManifest = appxManifest.replace("<DisplayName>PhoneDirect3DXamlApp</DisplayName>","<DisplayName>" + DeploySettings.appTitle + "</DisplayName>");
       appxManifest = appxManifest.replace("Publisher=\"CN=TOTALCROSS\"","Publisher=\"CN=" + Settings.appPackagePublisher + "\"");
       appxManifest = appxManifest.replace("<PublisherDisplayName>TOTALCROSS</PublisherDisplayName>","<PublisherDisplayName>" + DeploySettings.companyInfo + "</PublisherDisplayName>");
-      String wp81ver = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
-      switch (Convert.numberOf(wp81ver, '.'))
+      // wp8 doesn't like 1.05
+      int[] ver = {1,0,0,0};
+      if (DeploySettings.appVersion != null)
       {
-         case 0: wp81ver += ".0.0.0"; break;
-         case 1: wp81ver += ".0.0"; break;
-         case 2: wp81ver += ".0"; break;
+         int i = 0;
+         for (String s: DeploySettings.appVersion.split("\\."))
+            ver[i++] = Integer.valueOf(s);
       }
+      String wp81ver = ver[0]+"."+ver[1]+"."+ver[2]+"."+ver[3];
       appxManifest = appxManifest.replace("Version=\"1.0.0.0\"", "Version=\"" + wp81ver + "\"");
       if (Settings.appPackageIdentifier != null) appxManifest = appxManifest.replace("c2cad1fa-be21-4474-8fea-ce1b562a41e5", Settings.appPackageIdentifier);
 
