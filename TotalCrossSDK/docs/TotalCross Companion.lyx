@@ -5243,6 +5243,30 @@ tc.Deploy
 \end_layout
 
 \begin_layout Standard
+To install the XAP file without using 
+\family typewriter
+tc.Deploy
+\family default
+, you can run this command: 
+\family typewriter
+
+\begin_inset Newline newline
+\end_inset
+
+
+\backslash
+TotalCross3
+\backslash
+etc
+\backslash
+tools
+\backslash
+xap
+\backslash
+XapDeployCmd.exe /install <xap file> /targetdevice:de
+\end_layout
+
+\begin_layout Standard
 Phones registered for development can only have one TotalCross application
  installed at the same time.
 \end_layout
