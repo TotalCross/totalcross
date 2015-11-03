@@ -528,17 +528,24 @@ static UserFont getBaseFont(Context currentContext, FontFile ff, bool bold, int3
    
    f = htGetPtr(&htBaseFonts, key);
    if (f == null)
-   {          
+   {
       if (!xstrstr(ff->name,"noaa"))
+      {
+         bool found = false;
          for (i = 0; i < SIZE_LEN-1; i++)
             if (size <= realSizes[i])
             {                                        
                size = realSizes[i];
+               found = true;
                break; 
             }
+         if (!found)
+            size = realSizes[i];
+      }
       useRealFont = true;
       f = loadUserFont(currentContext, ff, bold, size, (JChar)uIndex);
-      useRealFont = false;
+      useRealFont = false;          
+      
       if (f != null) 
          htPutPtr(&htBaseFonts, key, f); 
    }
