@@ -36,7 +36,7 @@ void iphone_privatePumpEvent(Context currentContext)
    NSArray* events = [DEVICE_CTX->_mainview getEvents];
    if(events == nil) return;
 
-   NSEnumerator* enumerator = [events objectEnumerator];
+   NSEnumerator* enumerator = [[events objectEnumerator] autorelease];
    id event;
 
    while(event = [enumerator nextObject])
@@ -94,6 +94,7 @@ void iphone_privatePumpEvent(Context currentContext)
       {
          setEditText(currentContext, (TCObject)[[ event objectForKey:@"control"] longValue ], [ event objectForKey:@"value"]);
       }
+      [event release];
    }
 }
 
