@@ -212,8 +212,8 @@ public class Deployer4IPhoneIPA
 
       /** CREATE THE MACHOBJECTFILE **/
       TFile executable = (TFile) ipaContents.get(executableName);
-      String bundleResourceSpecification = rootDict.objectForKey("CFBundleResourceSpecification").toString();
-      byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, bundleResourceSpecification, executableName);
+//      String bundleResourceSpecification = rootDict.objectForKey("CFBundleResourceSpecification").toString();
+      byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, null, executableName);
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
 
@@ -250,11 +250,11 @@ public class Deployer4IPhoneIPA
        NSDictionary rules = new NSDictionary();
        rules.put(".*", true);
        rules.put("Info.plist", this.createOmitAndWeight(true, 10));
-       rules.put(bundleResourceSpecification, this.createOmitAndWeight(true, 100));
+//       rules.put(bundleResourceSpecification, this.createOmitAndWeight(true, 100));
        root.put("rules", rules);
        
-       TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
-       bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
+//       TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
+//       bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
        
        NSDictionary files = new NSDictionary();
        SHA1Digest digest = new SHA1Digest();
@@ -264,7 +264,7 @@ public class Deployer4IPhoneIPA
        ignoredFiles.add("Info.plist");
        ignoredFiles.add("CodeResources");
        ignoredFiles.add("_CodeSignature/CodeResources");
-       ignoredFiles.add(bundleResourceSpecification);
+//       ignoredFiles.add(bundleResourceSpecification);
        ignoredFiles.add(executableName);
        
        fillCodeResourcesFiles(appFolder, ignoredFiles, files, appFolder.getPath(), aux, digest);
