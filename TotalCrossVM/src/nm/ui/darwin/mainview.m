@@ -155,6 +155,8 @@ bool iosLowMemory;
 - (NSArray*)getEvents
 {
    NSArray* events = _events;
+   if (_events != nil)
+      [_events release];
    _events = nil;
    return events;
 }
