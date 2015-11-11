@@ -156,7 +156,7 @@ public class Camera
    public String click() throws IOException
    {
       FileChooserBox fcb = new FileChooserBox(fcbTitle,FileChooserBox.defaultButtonCaptions,null);
-      fcb.showPreview = true;
+      fcb.showPreview = fcb.newestFirst = true;
       fcb.popup();
       return fcb.getAnswer();
    }
