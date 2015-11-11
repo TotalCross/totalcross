@@ -115,6 +115,9 @@ public class FileChooserBox extends Window
    /** Set to true to use a preview window to show photo thumbnails */
    public boolean showPreview;
    
+   /** Set to true to sort the list showing the newest files first, instead of alphabetical order */
+   public boolean newestFirst;
+   
    class LoadOnDemandTree extends Tree
    {
       public LoadOnDemandTree()
@@ -323,6 +326,52 @@ public class FileChooserBox extends Window
          qsort(items,low,last);
    }
    
+   private static void qsort(String thisDir, String []items, int first, int last) // guich@tc310: newest first - do not handle folders
+   {
+      if (first >= last)
+         return;
+      int low = first;
+      int high = last;
+
+      String mid = getSortName(thisDir,items[(first+last) >> 1]);
+      while (true)
+      {
+         while (high >= low && mid.compareTo(getSortName(thisDir,items[low]))  < 0)
+            low++;
+         while (high >= low && mid.compareTo(getSortName(thisDir,items[high])) > 0)
+            high--;
+         if (low <= high)
+         {
+            String temp = items[low];
+            items[low++] = items[high];
+            items[high--] = temp;
+         }
+         else break;
+      }
+
+      if (first < high)
+         qsort(thisDir, items,first,high);
+      if (low < last)
+         qsort(thisDir, items,low,last);
+   }
+
+   private static String getSortName(String thisDir, String s)
+   {
+      String prefix = "";
+      try
+      {
+         String theFile = Convert.appendPath(thisDir,s);
+         prefix = String.valueOf(new File(theFile, File.READ_ONLY).getTime(File.TIME_MODIFIED).getTimeLong());
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      
+      s = s.toLowerCase(); // case insensitive
+      return prefix.concat(s); // put folders first
+   }
+
    private static String getSortName(String s) // guich@tc126_9: give priority to folders and case insensitive sort
    {
       s = s.toLowerCase(); // case insensitive
@@ -340,7 +389,18 @@ public class FileChooserBox extends Window
       fileCount = 0;
       if (files != null)
       {
-         qsort(files, 0, files.length-1); // guich@tc126_9
+         if (newestFirst)
+         {
+            // have to sort folders ascending and files descending
+            qsort(files, 0, files.length-1); // put folders first
+            int i = 0;
+            for (; i < files.length; i++)
+               if (!files[i].endsWith("/"))
+                  break;
+            qsort(thisDir, files, i, files.length-1);
+         }
+         else
+            qsort(files, 0, files.length-1); // guich@tc126_9
          // add files
          for (int i = 0; i < files.length; i++)
          {
