@@ -48,7 +48,7 @@ public class Deployer4WP8
       String manifestContent =
             "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n" +
                   "<Deployment>\r\n" +
-                  "\t<App Name=\"" + DeploySettings.appTitle + "\">\r\n" +
+                  "\t<App Name=\"" + DeploySettings.filePrefix + "\">\r\n" + // don't change this or the app will not open in device!
                   "\t</App>\r\n" +
                   "</Deployment>";
       sz.putEntry("TotalCrossManifest.xml", manifestContent.getBytes("UTF-8"));
