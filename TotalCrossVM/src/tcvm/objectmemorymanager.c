@@ -753,7 +753,7 @@ static void markClass(int32 i32, VoidP ptr)
    TCClass c = (TCClass)ptr;
    int32 i,n;
    TCObject* f = c->objStaticValues;
-   bool dump = strEq(c->name, "laudomovel.cliente.bd.BDCliente");
+   bool dump = false;
    UNUSED(i32)
 
    // mark all static fields

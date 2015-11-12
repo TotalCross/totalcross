@@ -36,7 +36,7 @@ void iphone_privatePumpEvent(Context currentContext)
    NSArray* events = [DEVICE_CTX->_mainview getEvents];
    if(events == nil) return;
 
-   NSEnumerator* enumerator = [[events objectEnumerator] autorelease];
+   NSEnumerator* enumerator = [events objectEnumerator];
    id event;
 
    while(event = [enumerator nextObject])
@@ -96,6 +96,8 @@ void iphone_privatePumpEvent(Context currentContext)
       }
       [event release];
    }
+   if (enumerator)
+      [enumerator release];
 }
 
 bool iphone_privateInitEvent()
