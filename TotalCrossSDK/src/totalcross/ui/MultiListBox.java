@@ -73,6 +73,9 @@ public class MultiListBox extends ListBox
    
    /** Local suffix to display the number of items in a ComboBox. Defaults to " items". */
    public String localItemsText = " items";
+   
+   /** The amount of time used to show how many itens. */
+   public int tipDelay = 250;
 
    /** Constructs an empty MultiListBox. */
    public MultiListBox()
@@ -320,7 +323,7 @@ public class MultiListBox extends ListBox
                {
                   order.addElement(index);
                   if (showOrderInTip)
-                     showTip(this, Convert.toString(order.size()),250,getIndexY(index));
+                     showTip(this, Convert.toString(order.size()),tipDelay,getIndexY(index));
                }
                changed = true;
             }
