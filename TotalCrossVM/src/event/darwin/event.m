@@ -97,7 +97,10 @@ void iphone_privatePumpEvent(Context currentContext)
       [event release];
    }
    if (enumerator)
+   {
+      [events release];
       [enumerator release];
+   }
 }
 
 bool iphone_privateInitEvent()
