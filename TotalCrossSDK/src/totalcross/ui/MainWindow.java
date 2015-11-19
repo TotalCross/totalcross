@@ -132,7 +132,9 @@ public class MainWindow extends Window implements totalcross.MainClass
                   append(",fonth=").append(Settings.deviceFontHeight).
                   append(",tcver='").append(Settings.versionStr).append('.').append(Settings.buildNumber).append("'").
                   append(",romver=").append(Settings.romVersion).
-                  append(",deviceid='").append(Settings.deviceId).append("'");
+                  append(",deviceid='").append(Settings.deviceId).append("'").
+                  append(",activkey='").append(Settings.activationKey).append("'");
+               if (Settings.bugreportUser != null) sb.append(",bruser='").append(Settings.bugreportUser).append("'");
                if (Settings.applicationId != null) sb.append(",appid='").append(Settings.applicationId).append("'");
                if (Settings.romSerialNumber != null) sb.append(",serial='").append(Settings.romSerialNumber).append("'");
                if (Settings.imei != null) sb.append(",imei='").append(Settings.imei).append("'");

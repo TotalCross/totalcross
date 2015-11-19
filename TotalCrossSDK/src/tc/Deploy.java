@@ -52,7 +52,7 @@ public class Deploy
    public static final int FREE_MAX_SIZE = 150000;
 
    private boolean waitIfError; // guich@tc111_24
-   private String activationKey;
+   public static String activationKey;
    
    public Deploy(String[] args)
    {

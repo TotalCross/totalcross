@@ -70,6 +70,7 @@ final class ActivationClientImpl extends ActivationClient
 
          rsaPubKey = new RSAPublicKey(getSignerRSAKeyE(), getSignerRSAKeyN());
          pkcs1Signature = new PKCS1Signature(new MD5Digest());
+
       }
       catch (CryptoException e)
       {
@@ -88,6 +89,9 @@ final class ActivationClientImpl extends ActivationClient
             Settings.applicationId = field;
          if ((field = htVmParams.getString("appVersion")) != null)
             Settings.appVersion = field;
+         if ((field = htVmParams.getString("activationKey")) != null)
+            Settings.activationKey = field;
+         
       }
    }
 

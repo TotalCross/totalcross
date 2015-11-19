@@ -1280,7 +1280,8 @@ public final class J2TC implements JConstants, TCConstants
             if (totalcross.sys.Settings.applicationId != null) // applicationId was specified
                htVmParams.put("applicationId", totalcross.sys.Settings.applicationId);          
             if (totalcross.sys.Settings.appVersion != null) // appVersion was specified
-               htVmParams.put("appVersion", totalcross.sys.Settings.appVersion);          
+               htVmParams.put("appVersion", totalcross.sys.Settings.appVersion);  
+            htVmParams.put("activationKey", Deploy.activationKey);
             byte[] htDump = htVmParams.getKeyValuePairs("=").toString("\n").getBytes();
 				vin.addElement(new TCZ.Entry(htDump, "tcparms.bin", htDump.length));
 			}
