@@ -115,6 +115,10 @@ public class ListContainer extends ScrollContainer
        * number of lines is done only once.
        */ 
       public int[] positions;
+      
+      /** The font names to be used when creating the fonts. If the member is null, it will use the parent's name. */
+      public String[] fontNames;
+      
       /** The gap between the left/right controls and the text. 
        * This gap is a <b>percentage</b> based in the control font's height. So, if you pass 100 (default), it will be
        * 100% of the font's height, 50 will be 50% of the height, 150 will be 1.5x the font height, and so on.
@@ -156,6 +160,7 @@ public class ListContainer extends ScrollContainer
          relativeFontSizes = new int[itemCount];
          boldItems = new boolean[itemCount];
          fonts = new Font[itemCount];
+         fontNames = new String[itemCount];
          positions = new int[itemCount];
          for (int i = itemCount; --i >= 0;) positions[i] = AFTER;
       }
@@ -176,7 +181,7 @@ public class ListContainer extends ScrollContainer
          // for each line, compute its height based on the biggest font height
          for (int i = 0, lineH = 0, col = 0, last = itemCount-1; i <= last; i++)
          {
-            Font f = fonts[i] = Font.getFont(font.name, boldItems[i], font.size+relativeFontSizes[i]);
+            Font f = fonts[i] = Font.getFont(fontNames[i] != null ? fontNames[i] : font.name, boldItems[i], font.size+relativeFontSizes[i]);
             itemY[i] = y;
             if (f.fm.height > lineH)
                lineH = f.fm.height;
