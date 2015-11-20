@@ -79,6 +79,9 @@ public class SpinList extends Control
     * by a set of SpinLists with different lengths on each SpinList.
     */
    public int choicesLen;
+   
+   /** Allows -1 as selected index (nothing selected). */
+   public boolean allowsNoneSelected;
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
     */
@@ -131,7 +134,7 @@ public class SpinList extends Control
       }
       this.choices = choices;
       this.choicesLen = choices.length;
-      selected = 0;
+      selected = allowsNoneSelected ? -1 : 0;
       Window.needsPaint = true;
    }
 
@@ -169,7 +172,7 @@ public class SpinList extends Control
    /** Returns the selected item. */
    public String getSelectedItem()
    {
-      return choices[selected];
+      return selected == -1 ? "" : choices[selected];
    }
 
    /** Returns the selected index. */
@@ -187,7 +190,8 @@ public class SpinList extends Control
    /** Sets the selected item; -1 is NOT accepted. */
 	public void setSelectedIndex(int i, boolean sendPress)
 	{
-  	   if (0 <= i && i < choicesLen && selected != i)
+	   int min = allowsNoneSelected ? -1 : 0;
+  	   if (min <= i && i < choicesLen && selected != i)
   	   {
 		   selected = i;
 		   Window.needsPaint = true;
@@ -227,7 +231,7 @@ public class SpinList extends Control
    /** Removes the current item */
    public String removeCurrent()
    {
-   	return removeAt(selected);
+   	return selected == -1 ? "" : removeAt(selected);
    }
    
    /** Returns the index of the given item. */
@@ -272,13 +276,13 @@ public class SpinList extends Control
       g.foreColor = fore;
       int yoff = (height - fmH) / 2 + 1;
       int wArrow = getArrowHeight();
-      String s = choicesLen > 0 ? choices[selected] : "";
+      String s = choicesLen > 0 && selected != -1 ? choices[selected] : "";
       if (isVertical)
       {
          g.drawArrow(0,yoff,wArrow,Graphics.ARROW_UP,false,fore);
          g.drawArrow(0,yoff+height/2,wArrow,Graphics.ARROW_DOWN,false,fore);
          if (choicesLen > 0) 
-            g.drawText(choices[selected],hAlign==LEFT?wArrow*2:hAlign==RIGHT?width-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+            g.drawText(s,hAlign==LEFT?wArrow*2:hAlign==RIGHT?width-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
       }
       else
       {
@@ -290,25 +294,26 @@ public class SpinList extends Control
          g.drawArrow(0,yoff,wArrow,Graphics.ARROW_LEFT,false,fore);
          g.drawArrow(width-wArrow,yoff,wArrow,Graphics.ARROW_RIGHT,false,fore);
          if (choicesLen > 0) 
-            g.drawText(choices[selected],hAlign==LEFT?wArrow:hAlign==RIGHT?width-fmH/2-1-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+            g.drawText(s,hAlign==LEFT?wArrow:hAlign==RIGHT?width-fmH/2-1-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
       }
    }
    
    private void scroll(boolean up, boolean doPostEvent)
    {
+      int min = allowsNoneSelected ? -1 : 0;
       int max = choicesLen-1;
       if (!wrapAround && ((up && selected == 0) || (!up && selected == max)))
          return;
   	   if (up)
       {
    	   selected--;
-	      if (selected < 0) 
+	      if (selected < min) 
 	         selected = max;
       }
       else
       {
          selected++;
-	      if (selected > max) selected = 0;
+	      if (selected > max) selected = min;
       }
       Window.needsPaint = true;
       if (doPostEvent) 
