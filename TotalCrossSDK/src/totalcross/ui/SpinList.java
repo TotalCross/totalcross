@@ -302,7 +302,7 @@ public class SpinList extends Control
    {
       int min = allowsNoneSelected ? -1 : 0;
       int max = choicesLen-1;
-      if (!wrapAround && ((up && selected == 0) || (!up && selected == max)))
+      if (!wrapAround && ((up && selected == min) || (!up && selected == max)))
          return;
   	   if (up)
       {
