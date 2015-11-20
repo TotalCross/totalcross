@@ -37,8 +37,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    public static class Item extends Container
    {
       Control tit;
-      Image icon;
-      ImageControl ic;
+      Object icon; // Image or Control
 
       /** Used when you want to fully customize your Item by extending this class. */
       protected Item()
@@ -48,6 +47,14 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       
       /** Pass a Control and optionally an icon */
       public Item(Control c, Image icon)
+      {
+         this();
+         this.tit = c;
+         this.icon = icon;
+      }
+      
+      /** Pass a Control and optionally another control that serves as an icon */
+      public Item(Control c, Control icon)
       {
          this();
          this.tit = c;
@@ -64,14 +71,22 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       {
          int itemH = fmH + Edit.prefH;
          int perc = percCap;
+         Control c = null;
          if (icon == null)
             perc = 100;
          else
          {
-            try {ic = new ImageControl(Settings.enableWindowTransitionEffects ? icon.getSmoothScaledInstance(itemH,itemH) : icon.getHwScaledInstance(itemH,itemH)); ic.centerImage = true;} catch (ImageException e) {}
-            add(ic == null ? (Control)new Spacer(itemH,itemH) : (Control)ic,LEFT,TOP,PARENTSIZE+percIcon,FILL);
+            if (icon instanceof Control)
+               c = (Control)icon;
+            else // surely an Image
+               try 
+               {
+                  c = new ImageControl(Settings.enableWindowTransitionEffects ? ((Image)icon).getSmoothScaledInstance(itemH,itemH) : ((Image)icon).getHwScaledInstance(itemH,itemH)); 
+                  ((ImageControl)c).centerImage = true;
+               } catch (ImageException e) {}
+            add(c == null ? (Control)new Spacer(itemH,itemH) : c,LEFT,TOP,PARENTSIZE+percIcon,FILL);
          }
-         add(tit, AFTER+(icon==null? tit instanceof Label ? itemH:0:0),TOP,PARENTSIZE+perc-(tit instanceof Label?10:0),FILL,ic);
+         add(tit, AFTER+(icon==null? tit instanceof Label ? itemH:0:0),TOP,PARENTSIZE+perc-(tit instanceof Label?10:0),FILL,c);
       }
       
       public void onEvent(Event e)
