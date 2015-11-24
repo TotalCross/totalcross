@@ -1,10 +1,11 @@
 package tc.samples.like.fb.ui;
 
-import tc.samples.like.fb.*;
-
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+
+import tc.samples.like.fb.*;
 
 public class FBTitleBar extends FBContainer
 {
@@ -32,7 +33,7 @@ public class FBTitleBar extends FBContainer
             case ControlEvent.PRESSED:
                if (e.target == btOnline && FaceBookUI.defaultUser != null)
                {
-                  TopMenu.Item it0 = new TopMenu.Item(new Label("Users"), null);
+                  TopMenu.Item it0 = new TopMenu.Item(new Label("Users"), (Image)null);
                   TopMenu.Item it = new TopMenu.Item(new Label(FaceBookUI.defaultUser), FaceBookUI.defaultPhoto);
                   TopMenu top = new TopMenu(new Control[]{it0,it},RIGHT);
                   top.totalTime = 500;
