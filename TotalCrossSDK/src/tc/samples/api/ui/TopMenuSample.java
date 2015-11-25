@@ -16,13 +16,14 @@
 
 package tc.samples.api.ui;
 
-import tc.samples.api.*;
-
 import totalcross.res.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+
+import tc.samples.api.*;
 
 public class TopMenuSample extends BaseContainer
 {
@@ -33,7 +34,9 @@ public class TopMenuSample extends BaseContainer
       public void initUI()
       {
          super.initUI();
-         add(new Label("FILTERS"),CENTER,TOP);
+         Label l = new Label("FILTERS",CENTER,Color.WHITE, true);
+         l.transparentBackground = true;
+         add(l,LEFT,TOP,FILL,PREFERRED);
          add(new ComboBox(new String[]{"Name","Name 1","Name 2","Name 3"}),LEFT,AFTER+fmH/4,FILL,PREFERRED);
          add(new Edit(),LEFT,AFTER+fmH/4);
          Button b;
@@ -84,7 +87,9 @@ public class TopMenuSample extends BaseContainer
 
          final TopMenu t = new TopMenu(new Control[] {new FilterContainer()}, RIGHT);
          t.totalTime = 500;
-         t.autoClose = false;   
+         t.autoClose = false;  
+         t.backImage = new Image("ui/images/back1.jpg");
+         t.backImageAlpha = 96;
          t.popup();
          back();
       }

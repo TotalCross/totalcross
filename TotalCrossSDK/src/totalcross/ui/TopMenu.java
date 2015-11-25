@@ -31,6 +31,11 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    /** The width in pixels instead of percentage of screen's width. */
    public int widthInPixels;
    
+   /** An optional image to be used as background */
+   public Image backImage;
+   /** The alpha value to be applied to the background image */
+   public int backImageAlpha = 128;
+   
    /** Insets used to place the ScrollContainer. */
    public Insets scInsets = new Insets(2,1,2,1);
    
@@ -151,8 +156,20 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height-4) : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
-      ScrollContainer sc;
-      add(sc = new ScrollContainer(false,true),LEFT+scInsets.left,TOP+scInsets.top,FILL-scInsets.right,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-scInsets.bottom);
+      ScrollContainer sc = new ScrollContainer(false,true);
+      if (backImage != null)
+         try
+         {
+            sc.transparentBackground = true;
+            Image img = backImage.smoothScaledFixedAspectRatio(getClientRect().height, true);
+            img.alphaMask = backImageAlpha;
+            add(new ImageControl(img), LEFT,TOP,FILL,FILL);
+         }
+         catch (Throwable t)
+         {
+            t.printStackTrace(); // don't add the image
+         }
+      add(sc,LEFT+scInsets.left,TOP+scInsets.top,FILL-scInsets.right,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-scInsets.bottom);
       sc.setBackColor(backColor);
       for (int i = 0;; i++)
       {
