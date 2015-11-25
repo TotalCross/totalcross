@@ -2337,4 +2337,15 @@ public class Image extends GfxSurface
    {
       return getFrameInstance(0);
    }
+
+   /** Returns a clipped image from the current position. Note that you must ensure that the values are correct or
+    * an exception will be thrown
+    */
+   public Image getClippedInstance(int x, int y, int w, int h) throws ImageException
+   {
+      Image img = new Image(w,h);
+      Graphics g = img.getGraphics();
+      g.copyImageRect(this, x,y,w,h,true);
+      return img;
+   }
 }

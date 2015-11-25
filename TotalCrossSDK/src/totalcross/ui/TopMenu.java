@@ -161,7 +161,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          try
          {
             sc.transparentBackground = true;
-            Image img = backImage.smoothScaledFixedAspectRatio(getClientRect().height, true);
+            Rect r = getClientRect();
+            Image img = backImage.smoothScaledFixedAspectRatio(r.height, true);
+            img = img.getClippedInstance(0,0,r.width,r.height);
             img.alphaMask = backImageAlpha;
             add(new ImageControl(img), LEFT,TOP,FILL,FILL);
          }

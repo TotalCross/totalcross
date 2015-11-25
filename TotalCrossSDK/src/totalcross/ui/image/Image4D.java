@@ -622,4 +622,11 @@ public class Image4D extends GfxSurface
    {
       return getFrameInstance(0);
    }
+   public Image4D getClippedInstance(int x, int y, int w, int h) throws ImageException
+   {
+      Image4D img = new Image4D(w,h);
+      Graphics4D g = img.getGraphics();
+      g.copyImageRect(this, x,y,w,h,true);
+      return img;
+   }
 }

@@ -259,7 +259,7 @@ public final class Graphics4D
    native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
    native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
    native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
-   native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
+   native public void copyImageRect(totalcross.ui.image.Image4D image, int x, int y, int width, int height, boolean doClip);
    native public void setPixels(int []xPoints, int []yPoints, int nPoints);
    native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
    native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
@@ -317,7 +317,7 @@ public final class Graphics4D
    {
    }
    /** Dumb method to keep compilation compatibility with TC 1; parameters drawOp and backColor are ignored. */
-   public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   public void copyImageRect(totalcross.ui.image.Image4D image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
    {
       copyImageRect(image, x, y, width, height, doClip);
    }
