@@ -76,6 +76,7 @@ public class Image extends GfxSurface
    private Graphics gfx;
 
    private Object pixelsOfAllFrames;
+   private String path;
    private int currentFrame=-1, widthOfAllFrames;
 
    /** Dumb field to keep compilation compatibility with TC 1 */
@@ -189,6 +190,7 @@ public class Image extends GfxSurface
    */
    public Image(String path) throws ImageException, IOException
    {
+      this.path = path;
       imageLoad(path);
       if (width == 0)
          throw new ImageException("Could not load image, file not found: "+path);
@@ -200,6 +202,8 @@ public class Image extends GfxSurface
     * @throws totalcross.io.IOException */
    public Image(Stream s) throws ImageException, totalcross.io.IOException
    {
+      if (s instanceof File)
+         path = ((File)s).getPath();
       ByteArrayStream bas = new ByteArrayStream(8192);
       byte[] buf = new byte[1024];
       while (true)
@@ -215,6 +219,12 @@ public class Image extends GfxSurface
       init();
    }
    
+   /** Returns the path used to create the Image. For constructors that don't receive a path, returns null */
+   public String getPath()
+   {
+      return path;
+   }
+
    /** Sets the transparent color of this image. A new image is NOT created.
     * 
     * @return The image itself
@@ -1200,6 +1210,7 @@ public class Image extends GfxSurface
    private Image getCopy(int w, int h) throws ImageException
    {
       Image i = new Image(w,h);
+      i.path = path;
       // copy other attributes
       return i;
    }

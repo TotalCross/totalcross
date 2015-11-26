@@ -44,6 +44,7 @@ public class Image4D extends GfxSurface
    private boolean[] changed = {true};
    private int []instanceCount = new int[1];
    private Image4D[] master = new Image4D[1];
+   private String path;
 
    // double
    public double hwScaleW=1,hwScaleH=1;
@@ -64,6 +65,7 @@ public class Image4D extends GfxSurface
 
    public Image4D(String path) throws ImageException
    {
+      this.path = path;
       imageLoad(path);
       if (width == 0)
          throw new ImageException("Could not load image, file not found: "+path);
@@ -72,6 +74,8 @@ public class Image4D extends GfxSurface
 
    public Image4D(Stream s) throws ImageException, totalcross.io.IOException
    {
+      if (s instanceof File)
+         path = ((File)s).getPath();
       // the buffer must go initially filled so that the native parser can discover if this is a jpeg or png image
       byte[] buf = new byte[512];
       int n = s.readBytes(buf, 0, 4);
@@ -125,6 +129,11 @@ public class Image4D extends GfxSurface
       else
          this.master = src.master;
       src.instanceCount[0]++;
+   }
+   
+   public String getPath()
+   {
+      return path;
    }
 
    private void init() throws ImageException
@@ -502,6 +511,7 @@ public class Image4D extends GfxSurface
    {
       Image4D i = new Image4D(w,h);
       // copy other attributes
+      i.path = path;
       i.hwScaleH = this.hwScaleH;
       i.hwScaleW = this.hwScaleW;
       return i;
