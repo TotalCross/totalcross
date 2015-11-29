@@ -252,7 +252,10 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
                   c = chars;
                   len -= l;
                   while (--l >= 0)
-                     *jc++ = *c++;
+                  {
+                     *jc++ = *c & 0xFF;
+                     c++;
+                  }
                }
             }
             else // standard (mark=255)
