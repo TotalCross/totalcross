@@ -14,7 +14,6 @@ package tc.tools.deployer;
 import totalcross.sys.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
-
 import com.dd.plist.*;
 import de.schlichtherle.truezip.file.*;
 import java.io.*;
@@ -213,7 +212,14 @@ public class Deployer4IPhoneIPA
       /** CREATE THE MACHOBJECTFILE **/
       TFile executable = (TFile) ipaContents.get(executableName);
 //      String bundleResourceSpecification = rootDict.objectForKey("CFBundleResourceSpecification").toString();
-      byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, null, executableName);
+
+      TFile codeResources = new TFile((TFile) ipaContents.get("_CodeSignature"), "CodeResources");
+      baos.reset();
+      codeResources.output(baos);
+      NSDictionary codeResourcesDict = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
+      NSDictionary rules = (NSDictionary) codeResourcesDict.objectForKey("rules");
+      
+      byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, rules, executableName);
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
 
@@ -243,15 +249,16 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleIconFiles", iconBundle);
    }
 
-   protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final String bundleResourceSpecification, final String executableName) throws UnsupportedEncodingException, IOException
+   protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final NSDictionary rules,
+         final String executableName) throws UnsupportedEncodingException, IOException
    {
-       NSDictionary root = new NSDictionary();
+//       NSDictionary root = new NSDictionary();
        
-       NSDictionary rules = new NSDictionary();
-       rules.put(".*", true);
-       rules.put("Info.plist", this.createOmitAndWeight(true, 10));
+//       NSDictionary rules = new NSDictionary();
+//       rules.put(".*", true);
+//       rules.put("Info.plist", this.createOmitAndWeight(true, 10));
 //       rules.put(bundleResourceSpecification, this.createOmitAndWeight(true, 100));
-       root.put("rules", rules);
+//       root.put("rules", rules);
        
 //       TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
 //       bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
@@ -269,7 +276,7 @@ public class Deployer4IPhoneIPA
        
        fillCodeResourcesFiles(appFolder, ignoredFiles, files, appFolder.getPath(), aux, digest);
        
-       root = new NSDictionary();
+       NSDictionary root = new NSDictionary();
        root.put("files", files);
        root.put("rules", rules);
        
