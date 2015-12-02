@@ -203,7 +203,7 @@ jmethodID jalert;
 // nativelib.c
 VoidPs* openNativeLibs = NULL;
 
-//native proc addresses for iOS
+//native proc addresses for iOS and Android
 Hashtable htNativeProcAddresses = { 0 };
 
 // tcz.c

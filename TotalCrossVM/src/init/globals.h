@@ -175,7 +175,7 @@ extern jmethodID jalert;
 // nativelib.c
 extern VoidPs* openNativeLibs;
 
-// native proc addresses for iOS
+// native proc addresses for iOS and Android
 extern Hashtable htNativeProcAddresses;
 
 // tcz.c
