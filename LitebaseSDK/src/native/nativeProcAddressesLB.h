@@ -1,4 +1,4 @@
-#if defined (darwin) && !defined (THEOS)
+#if defined (darwin) || defined (ANDROID)
 void fillNativeProcAddressesLB();
 #else
 #define fillNativeProcAddressesLB()
