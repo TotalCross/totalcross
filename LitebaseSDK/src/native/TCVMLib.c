@@ -15,7 +15,7 @@
 
 #include "TCVMLib.h"
 
-#if defined (darwin) && !defined (THEOS)
+#if defined (darwin) || defined (ANDROID)
 #define GETPROCADDRESS(x) x
 #else
 #define GETPROCADDRESS(x) TC_getProcAddress(null, #x)
