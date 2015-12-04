@@ -6,6 +6,8 @@ TYPE ?= release
 
 TC_SRCDIR := ..
 TC_INCLUDEDIR := $(TC_SRCDIR)/src
+LB_SRCDIR := $(TC_SRCDIR)/../../../Litebase/LitebaseSDK/src/native
+LB_INCLUDEDIR := $(TC_SRCDIR)/../../Litebase/LitebaseSDK/src/native
 
 _TEST_SUITE ?= DISABLE
 
@@ -46,6 +48,7 @@ VM_FILES =                                    \
 INIT_FILES =                                  \
 	$(TC_SRCDIR)/init/demo.c                   \
 	$(TC_SRCDIR)/init/globals.c                \
+	$(TC_SRCDIR)/init/nativeProcAddressesTC.c  \
 	$(TC_SRCDIR)/init/startup.c                \
 	$(TC_SRCDIR)/init/settings.c
 
@@ -233,8 +236,43 @@ SQLITE_FILES =                               \
 
 SCANNER_FILES =                                \
 	$(TC_SRCDIR)/scanner/android/Android_barcode.c
+	
+LITEBASE_FILES = \
+	$(LB_SRCDIR)/lbFile.c	\
+	$(LB_SRCDIR)/PlainDB.c	\
+	$(LB_SRCDIR)/TCVMLib.c	\
+	$(LB_SRCDIR)/Litebase.c	\
+	$(LB_SRCDIR)/ResultSet.c	\
+	$(LB_SRCDIR)/NativeMethods.c	\
+	$(LB_SRCDIR)/Table.c \
+	$(LB_SRCDIR)/LitebaseGlobals.c \
+	$(LB_SRCDIR)/nativeProcAddressesLB.c \
+	$(LB_SRCDIR)/Key.c \
+	$(LB_SRCDIR)/Node.c \
+	$(LB_SRCDIR)/Index.c \
+	$(LB_SRCDIR)/SQLValue.c \
+	$(LB_SRCDIR)/MarkBits.c \
+	$(LB_SRCDIR)/MemoryFile.c \
+	$(LB_SRCDIR)/NormalFile.c \
+	$(LB_SRCDIR)/PreparedStatement.c \
+	$(LB_SRCDIR)/UtilsLB.c
+
+PARSER_FILES = \
+	$(LB_SRCDIR)/parser/LitebaseLex.c \
+	$(LB_SRCDIR)/parser/LitebaseMessage.c \
+	$(LB_SRCDIR)/parser/LitebaseParser.c \
+	$(LB_SRCDIR)/parser/SQLBooleanClause.c \
+	$(LB_SRCDIR)/parser/SQLBooleanClauseTree.c \
+	$(LB_SRCDIR)/parser/SQLColumnListClause.c \
+	$(LB_SRCDIR)/parser/SQLDeleteStatement.c \
+	$(LB_SRCDIR)/parser/SQLInsertStatement.c \
+	$(LB_SRCDIR)/parser/SQLSelectStatement.c \
+	$(LB_SRCDIR)/parser/SQLUpdateStatement.c
+	
 
 SOURCE_FILES =                                \
+	$(LITEBASE_FILES)                          \
+	$(PARSER_FILES)                            \
 	$(SQLITE_FILES)                            \
 	$(NM_UI_FILES)                             \
 	$(EVENT_FILES)                             \
@@ -267,7 +305,7 @@ SOURCE_FILES =                                \
 LOCAL_ARM_MODE   := arm
 LOCAL_MODULE     := tcvm
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
-LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/scanner $(TC_INCLUDEDIR)/sqlite $(TC_INCLUDEDIR)/nm
+LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/scanner $(TC_INCLUDEDIR)/sqlite $(TC_INCLUDEDIR)/nm $(TC_INCLUDEDIR)/nm/lang $(LB_INCLUDEDIR)/parser $(LB_INCLUDEDIR)
 LOCAL_LDLIBS     := -llog -ldl -lGLESv2 -lEGL -landroid
 LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
 LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map
