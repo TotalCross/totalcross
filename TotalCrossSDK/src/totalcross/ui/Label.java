@@ -402,7 +402,7 @@ public class Label extends Control implements TextControl
       if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
       {
          lastASW = this.width;
-         split(this.width);
+         split(this.width-(insets == null ? 0 : insets.left+insets.right));
          if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
             setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
       }
@@ -538,7 +538,7 @@ public class Label extends Control implements TextControl
          {
             case TOP: y = (insets == null ? 0 : insets.top); break;
             case BOTTOM: y = this.height - fmH*Math.min(lines.length,linesPerPage) - (insets == null ? 0 : insets.bottom); break;
-            default: y = ((this.height - fmH*Math.min(lines.length,linesPerPage)) >> 1) + (insets == null ? 0 : insets.top); break; // guich@tc115_34: min of lines.length and linesPerPage
+            default: y = ((this.height - fmH*Math.min(lines.length,linesPerPage)) >> 1)/* + (insets == null ? 0 : insets.top)*/; break; // guich@tc115_34: min of lines.length and linesPerPage
          }
          if (marqueeStep != 0)
          {
@@ -563,7 +563,7 @@ public class Label extends Control implements TextControl
          {
             int n = Math.min(currentLine+linesPerPage, lines.length);
             int x0 = (insets == null ? 0 : insets.left);
-            int xx = invert || highlighted ? 1 : 0 + x0;
+            int xx = invert || highlighted ? 1 : 0/* + x0*/;
             int fmH = this.fmH; // guich@450_36: use local var
             int []linesW = this.linesW; // same
             for (int i =currentLine; i < n; i++,y+=fmH)
