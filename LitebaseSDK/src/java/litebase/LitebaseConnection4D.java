@@ -11,7 +11,7 @@
 
 package litebase;
 
-import totalcross.sys.Vm;
+import totalcross.sys.*;
 import totalcross.util.Logger;
 
 /**
@@ -93,7 +93,7 @@ public class LitebaseConnection4D
    /**
     * Indicates if the native library is already attached.
     */
-   private static boolean isDriverLoaded;
+   private static boolean isDriverLoaded = Settings.platform.equals(Settings.ANDROID);
 
    /**
     * The logger.
