@@ -93,7 +93,7 @@ public class LitebaseConnection4D
    /**
     * Indicates if the native library is already attached.
     */
-   private static boolean isDriverLoaded = Settings.platform.equals(Settings.ANDROID);
+   private static boolean isDriverLoaded;
 
    /**
     * The logger.
