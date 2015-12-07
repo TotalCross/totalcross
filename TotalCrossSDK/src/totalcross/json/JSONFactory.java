@@ -123,7 +123,7 @@ public class JSONFactory
       for (Method method : methods)
       {
          String methodName = method.getName();
-         if (method.getParameterCount() == 1 && methodName.length() > 3 && methodName.startsWith("set"))
+         if (method.getParameterTypes().length == 1 && methodName.length() > 3 && methodName.startsWith("set"))
          {
             String name = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
             if ((jsonObject.isNull(name)))
