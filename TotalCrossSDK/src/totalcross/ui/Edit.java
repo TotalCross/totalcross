@@ -847,29 +847,29 @@ public class Edit extends Control implements TextControl
                case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
             }
          if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
-         switch (mode)
+         if (drawCaption)
          {
-            case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
-               g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
-               break;
-            case PASSWORD_ALL:
-               g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
-               break;
-            case CURRENCY:
-               if (isMaskedEdit)
-                  xx = this.width-getTotalCharWidth()-xOffset-1;
-            default:
-               if (drawCaption)
-               {
-                  g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
-                  g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
-               }
-               else
-               if (masked.length() > 0)
-                  g.drawText(masked, 0, masked.length(), xx, y, textShadowColor != -1, textShadowColor);
-               else
-                  g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
+            g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
+            g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
          }
+         else
+            switch (mode)
+            {
+               case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
+                  g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
+                  break;
+               case PASSWORD_ALL:
+                  g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
+                  break;
+               case CURRENCY:
+                  if (isMaskedEdit)
+                     xx = this.width-getTotalCharWidth()-xOffset-1;
+               default:
+                  if (masked.length() > 0)
+                     g.drawText(masked, 0, masked.length(), xx, y, textShadowColor != -1, textShadowColor);
+                  else
+                     g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
+            }
          if (hasBorder) g.clearClip();
       }
       if (hasBorder && !uiAndroid)

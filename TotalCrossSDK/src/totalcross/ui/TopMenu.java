@@ -130,21 +130,21 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
 
    public void popup()
    {
-      setRect();
+      setRect(false);
       super.popup();
    }
    
-   private void setRect()
+   private void setRect(boolean screenResized)
    {
       int ww = widthInPixels != 0 ? widthInPixels : SCREENSIZE+(percWidth > 0 ? percWidth : 50);
       switch (animDir)
       {
          case LEFT:
          case RIGHT:
-            setRect(animDir,TOP,ww,FILL); 
+            setRect(animDir,TOP,ww,FILL,null,screenResized); 
             break;
          default:
-            setRect(100000,100000,ww,WILL_RESIZE); 
+            setRect(100000,100000,ww,WILL_RESIZE,null,screenResized); 
             break;
       }
    }
@@ -217,7 +217,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
 
    public void screenResized()
    {
-      setRect();
+      setRect(true);
       removeAll();
       initUI();
       // used for custom containers

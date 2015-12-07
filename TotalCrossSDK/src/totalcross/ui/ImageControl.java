@@ -301,6 +301,12 @@ public class ImageControl extends Control
    {
       imgBack = img;
    }
+   
+   /** Returns the background image set with setBackground */
+   public Image getBackground()
+   {
+      return imgBack;
+   }
 
    /** Gets an image representing the portion being shown. If all image is being shown,
     * returns the currently assigned image. */
