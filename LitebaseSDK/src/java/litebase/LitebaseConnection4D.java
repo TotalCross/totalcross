@@ -11,7 +11,7 @@
 
 package litebase;
 
-import totalcross.sys.Vm;
+import totalcross.sys.*;
 import totalcross.util.Logger;
 
 /**
