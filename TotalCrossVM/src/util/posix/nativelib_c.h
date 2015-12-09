@@ -60,7 +60,9 @@ VoidP privateLoadLibrary(CharP libName)
 
 void privateUnloadLibrary(VoidP libPtr)
 {
+#ifndef ANDROID   
    dlclose(libPtr);
+#endif   
 }
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
