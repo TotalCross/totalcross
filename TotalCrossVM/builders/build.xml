@@ -548,9 +548,6 @@ target: Android builds
       <fileset dir="${base.temp.path}/android/TotalCross/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
-      <fileset dir="${base.temp.path}/android/Litebase/${type}/libs" >
-         <include name="**/*.so" />
-      </fileset>
    </copy>
   <retry retrycount="3">
     <antcall target="build_android_java" />
