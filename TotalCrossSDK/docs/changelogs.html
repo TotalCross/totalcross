@@ -1,4 +1,19 @@
 <h2>TotalCross 3.1</h2>
+<h1>build 2841</h1>
+* fixed android 6. android removed support for dlsym<br>
+. fixed memory leak in ios<br>
+. added Settings.activationKey and bugreportUser<br>
+. added SpinList.allowsNoneSelected<br>
+. fixed scroll not allowing to -1<br>
+. added ListContainer.fontNames<br>
+. added a new constructor to TopMenu.Item(Control,Control), so you can use a Label with a FontAwesome char as the icon (or anything else)<br>
+. added TopMenu.backImage/backImageAlpha<br>
+. added Image.getClippedInstance. Improved TopMenu.backImage to keep only a copy of the visible area of source image<br>
+. added Image.getPath. Does not work for multiframe images.<br>
+. fixed vm error when loading non-unicode strings greater than 255 chars<br>
+. fixed Label not correctly respecting the insets when breaking the text<br>
+. fixed TopMenu.onBoundsChanged's screenResized parameter always being set to false even on screen resize event<br>
+. fixed Edit when using Caption with PASSWORD fields<br>
 <h1>build 2804</h1>
 . fixed Button's translucent shape not working on windows.<br>
 . increased iOS target version from 5.1.1 to 6.0<br>
