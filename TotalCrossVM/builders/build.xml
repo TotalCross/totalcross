@@ -507,13 +507,27 @@ target: Android builds
 </target>
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
-   <property name="type" value="demo" />
-   <exec dir="${source.vm.path}/src" executable="cmd.exe" failonerror="true">
-      <env key="TYPE" value="${type}" />
-      <env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
-      <arg line="/c ${android.ndk.path}/ndk-build"/>
-   </exec>
-  <sleep seconds="3"/>
+	<trycatch>
+		<try>
+			<delete dir="${source.vm.path}/native" failonerror="false" />
+			<copy todir="${source.vm.path}" overwrite="true">
+				<fileset dir="${basedir}/../../../Litebase/LitebaseSDK/src">
+					<include name="native/**/*" />
+					<exclude name="native/jni/**/*" />
+				</fileset>
+			</copy>
+			<property name="type" value="demo" />
+			<exec dir="${source.vm.path}/src" executable="cmd.exe" failonerror="true">
+				<env key="TYPE" value="${type}" />
+				<env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
+				<arg line="/c ${android.ndk.path}/ndk-build" />
+			</exec>
+			<sleep seconds="3" />
+		</try>
+		<finally>
+			<delete dir="${source.vm.path}/native" failonerror="false" />
+		</finally>
+	</trycatch>
 </target>
 
 <target name="build_android_java" description="Builds the TotalCross.apk for Android">
