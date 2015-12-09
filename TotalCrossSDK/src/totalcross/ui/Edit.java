@@ -856,7 +856,8 @@ public class Edit extends Control implements TextControl
             switch (mode)
             {
                case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
-                  g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
+                  if (len > 0)
+                     g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
                   break;
                case PASSWORD_ALL:
                   g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
