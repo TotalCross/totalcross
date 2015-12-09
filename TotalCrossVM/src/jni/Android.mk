@@ -6,8 +6,8 @@ TYPE ?= release
 
 TC_SRCDIR := ..
 TC_INCLUDEDIR := $(TC_SRCDIR)/src
-LB_SRCDIR := $(TC_SRCDIR)/../../../Litebase/LitebaseSDK/src/native
-LB_INCLUDEDIR := $(TC_SRCDIR)/../../Litebase/LitebaseSDK/src/native
+LB_SRCDIR := $(TC_SRCDIR)/../native
+LB_INCLUDEDIR := $(TC_SRCDIR)/native
 
 _TEST_SUITE ?= DISABLE
 
