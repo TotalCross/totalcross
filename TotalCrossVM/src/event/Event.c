@@ -95,8 +95,8 @@ void mainEventLoop(Context currentContext)
    // now that the Main class was load, it's safe to get these methods
    _postEvent = getMethod(OBJ_CLASS(mainClass), true, "_postEvent", 6, J_INT, J_INT, J_INT, J_INT, J_INT, J_INT);
    _onTimerTick = getMethod(OBJ_CLASS(mainClass), true, "_onTimerTick", 1, J_BOOLEAN);
-   onMinimize = getMethod(OBJ_CLASS(mainClass), true, "onMinimize", 0);
-   onRestore = getMethod(OBJ_CLASS(mainClass), true, "onRestore", 0);
+   onMinimize = getMethod(OBJ_CLASS(mainClass), true, "_onMinimize", 0);
+   onRestore = getMethod(OBJ_CLASS(mainClass), true, "_onRestore", 0);
 
 #ifdef darwin
     graphicsSetupIOS(); // start the opengl context in the same thread of the events

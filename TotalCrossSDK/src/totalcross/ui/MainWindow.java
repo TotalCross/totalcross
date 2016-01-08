@@ -67,6 +67,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    private static Thread mainThread;
    private Lock runnersLock = new Lock();
    private Vector runners = new Vector(1);
+   private static String APP_CRASHED = Convert.appendPath(Settings.appPath, "appCr4shed");
 
    /** Constructs a main window with no title and no border. */
    public MainWindow()
@@ -114,71 +115,104 @@ public class MainWindow extends Window implements totalcross.MainClass
          Settings.appProps = new Hashtable(new String(bytes));
    }
    
-   //$START:REMOVE-ON-SDK-GENERATION$
+   //$START:REMOVE-ON-SDK-GENERATION$   
    private static void sendStats()
    {
-      new Thread()
+      try
       {
-         public void run()
+         new File(APP_CRASHED, File.READ_WRITE).delete();
+         new Thread() // app crashed exists, send report
          {
-            try
+            public void run()
             {
-               boolean createdBugRep = Settings.ANDROID.equals(Settings.platform) && Vm.exec("bugreport",null,0,true) == 1;
-               StringBuffer sb = new StringBuffer(128);
-               sb.append("classname='").append(MainWindow.getMainWindow().getClass().getName()).append("'").
-                  append(",platform='").append(Settings.platform).append("'").
-                  append(",wres=").append(Settings.screenWidth).
-                  append(",hres=").append(Settings.screenHeight).
-                  append(",fonth=").append(Settings.deviceFontHeight).
-                  append(",tcver='").append(Settings.versionStr).append('.').append(Settings.buildNumber).append("'").
-                  append(",romver=").append(Settings.romVersion).
-                  append(",deviceid='").append(Settings.deviceId).append("'").
-                  append(",activkey='").append(Settings.activationKey).append("'");
-               if (Settings.bugreportUser != null) sb.append(",bruser='").append(Settings.bugreportUser).append("'");
-               if (Settings.applicationId != null) sb.append(",appid='").append(Settings.applicationId).append("'");
-               if (Settings.romSerialNumber != null) sb.append(",serial='").append(Settings.romSerialNumber).append("'");
-               if (Settings.imei != null) sb.append(",imei='").append(Settings.imei).append("'");
-               if (Settings.appVersion != null) sb.append(",appver='").append(Settings.appVersion).append("'");
-               if (Settings.bugreportEmail != null) sb.append(",bremail='").append(Settings.bugreportEmail).append("'");
-               if (Settings.companyInfo != null) sb.append(",compinfo='").append(Settings.companyInfo.replace(',',';')).append("'");
-               byte[] info = Convert.getBytes(sb);
-               totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(256);
-               ZLibStream z = new ZLibStream(bas, ZipStream.DEFLATE);
-               z.writeBytes(info);
-               z.close();
-               final byte[] infobytes = bas.toByteArray();
-               final byte[] bugrbytes = createdBugRep ? new File("/sdcard/IssueReport/bugreport.zip",File.READ_WRITE).readAndDelete() : new byte[0];               
-               //HttpStream
-               totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
-               options.openTimeOut = 30000;
-               options.readTimeOut = options.writeTimeOut = 60000;
-               options.httpType = totalcross.net.HttpStream.POST;
-               //options.postHeaders.put("Content-Type","application/octet-stream");
-               options.postHeaders.put("Info-u-len", String.valueOf(info.length));
-               options.postHeaders.put("Info-c-len", String.valueOf(infobytes.length));
-               options.postHeaders.put("Content-Length", String.valueOf(bugrbytes.length+infobytes.length));
-               options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
-               new totalcross.net.HttpStream(new totalcross.net.URI(/*Settings.onJavaSE ? "http://localhost:8080/SDKRegistrationService/BugReportService" : */"http://www.superwaba.net/SDKRegistrationService/BugReportService"), options)
+               try
                {
-                  protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
+                  boolean createdBugRep = Settings.ANDROID.equals(Settings.platform) && Vm.exec("bugreport",null,0,true) == 1;
+                  StringBuffer sb = new StringBuffer(128);
+                  sb.append("classname='").append(MainWindow.getMainWindow().getClass().getName()).append("'").
+                     append(",platform='").append(Settings.platform).append("'").
+                     append(",wres=").append(Settings.screenWidth).
+                     append(",hres=").append(Settings.screenHeight).
+                     append(",fonth=").append(Settings.deviceFontHeight).
+                     append(",tcver='").append(Settings.versionStr).append('.').append(Settings.buildNumber).append("'").
+                     append(",romver=").append(Settings.romVersion).
+                     append(",deviceid='").append(Settings.deviceId).append("'").
+                     append(",activkey='").append(Settings.activationKey).append("'");
+                  if (Settings.bugreportUser != null) sb.append(",bruser='").append(Settings.bugreportUser).append("'");
+                  if (Settings.applicationId != null) sb.append(",appid='").append(Settings.applicationId).append("'");
+                  if (Settings.romSerialNumber != null) sb.append(",serial='").append(Settings.romSerialNumber).append("'");
+                  if (Settings.imei != null) sb.append(",imei='").append(Settings.imei).append("'");
+                  if (Settings.appVersion != null) sb.append(",appver='").append(Settings.appVersion).append("'");
+                  if (Settings.bugreportEmail != null) sb.append(",bremail='").append(Settings.bugreportEmail).append("'");
+                  if (Settings.companyInfo != null) sb.append(",compinfo='").append(Settings.companyInfo.replace(',',';')).append("'");
+                  byte[] info = Convert.getBytes(sb);
+                  totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(256);
+                  ZLibStream z = new ZLibStream(bas, ZipStream.DEFLATE);
+                  z.writeBytes(info);
+                  z.close();
+                  final byte[] infobytes = bas.toByteArray();
+                  final byte[] bugrbytes = createdBugRep ? new File("/sdcard/IssueReport/bugreport.zip",File.READ_WRITE).readAndDelete() : new byte[0];
+                  final byte[] dconbytes = readDebugConsole();
+                  //HttpStream
+                  totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
+                  options.openTimeOut = 30000;
+                  options.readTimeOut = options.writeTimeOut = 60000;
+                  options.httpType = totalcross.net.HttpStream.POST;
+                  //options.postHeaders.put("Content-Type","application/octet-stream");
+                  options.postHeaders.put("Info-u-len", String.valueOf(info.length));
+                  options.postHeaders.put("Info-c-len", String.valueOf(infobytes.length));
+                  options.postHeaders.put("Content-Length", String.valueOf(bugrbytes.length+infobytes.length));
+                  options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
+                  options.postHeaders.put("DCon-len", String.valueOf(dconbytes.length));
+                  new totalcross.net.HttpStream(new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"), options)
                   {
-                     String str = sb.toString();
-                     byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
-                     writeBytes(bytes, 0, bytes.length);
-                     // content length
-                     writeBytes(infobytes, 0, infobytes.length);
-                     if (bugrbytes.length > 0) 
-                        writeBytes(bugrbytes, 0, bugrbytes.length);
-                  }
-               };
+                     protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
+                     {
+                        String str = sb.toString();
+                        byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
+                        writeBytes(bytes, 0, bytes.length);
+                        // content length
+                        writeBytes(infobytes, 0, infobytes.length);
+                        if (bugrbytes.length > 0) 
+                           writeBytes(bugrbytes, 0, bugrbytes.length);
+                        if (dconbytes.length > 0)
+                           writeBytes(dconbytes, 0, dconbytes.length);
+                     }
+                  };
+               }
+               catch (Throwable t)
+               {
+                  if (Settings.buildNumber == 0) t.printStackTrace();
+                  // ignore
+               }
             }
-            catch (Throwable t)
-            {
-               if (Settings.buildNumber == 0) t.printStackTrace();
-               // ignore
-            }
-         }
-      }.start();
+         }.start();
+      }
+      catch (Throwable t) // FileNotFound
+      {
+         // if appCrashed don't exist, it exitted normally
+      }
+      try {new File(APP_CRASHED, File.CREATE_EMPTY);} catch (Throwable t) {} // restarting app
+   }
+   private static byte[] readDebugConsole()
+   {
+      String name = Convert.appendPath(Settings.appPath,"DebugConsole.txt");
+      byte[] ret = new byte[0];
+      try 
+      {
+         byte[] bytes = new File(name, File.READ_ONLY).readAndClose();
+         if (bytes.length == 0)
+            return new byte[0];
+         totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(bytes.length/10);
+         ZLibStream z = new ZLibStream(bas, ZipStream.DEFLATE);
+         z.writeBytes(bytes);
+         z.close();
+         ret = bas.toByteArray();
+      } catch (Exception e) {}
+      if (ret != null) // if we read the file, make sure we set its size to 0 to prevent sending a bugreport with the same data
+         for (int i = 0; i < 10; i++)
+            try {File f = new File(name, File.READ_WRITE); f.setSize(0); f.close(); break;}  catch (Exception e) {Vm.sleep(100);}
+      return ret;
    }
    //$END:REMOVE-ON-SDK-GENERATION$
    
@@ -455,12 +489,26 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
+      try {new File(APP_CRASHED, File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
       quittingApp = true;
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
          onExit(); // guich@200b4_85
    }
 
+   final protected void _onMinimize()
+   {
+      try {new File(APP_CRASHED, File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
+      onMinimize();
+   }
+   
+   final protected void _onRestore()
+   {
+      try {new File(APP_CRASHED, File.CREATE_EMPTY);} catch (Throwable t) {} // restarting app
+      onRestore();
+   }
+   
+   
    /**
    * Called just before an application exits.
    * When this is called, all threads are already killed.
