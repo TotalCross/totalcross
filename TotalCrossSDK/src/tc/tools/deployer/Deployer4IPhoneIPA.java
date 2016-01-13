@@ -215,7 +215,12 @@ public class Deployer4IPhoneIPA
 //      String bundleResourceSpecification = rootDict.objectForKey("CFBundleResourceSpecification").toString();
 
       TFile codeResources = new TFile((TFile) ipaContents.get("_CodeSignature"), "CodeResources");
-      byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, codeResources, executableName);
+      baos.reset();
+      codeResources.output(baos);
+      NSDictionary codeResourcesDict = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
+      NSDictionary rules = (NSDictionary) codeResourcesDict.objectForKey("rules");
+      
+      byte[] sourceData = this.CreateCodeResourcesDirectory(appFolder, rules, executableName);
       ByteArrayOutputStream appStream = new ByteArrayOutputStream();
       executable.output(appStream);
 
@@ -245,35 +250,42 @@ public class Deployer4IPhoneIPA
       rootDict.put("CFBundleIconFiles", iconBundle);
    }
 
-   private byte[] CreateCodeResourcesDirectory(TFile appFolder, final TFile codeResources,
-         final String executableName) throws UnsupportedEncodingException, IOException, Exception
+   protected byte[] CreateCodeResourcesDirectory(TFile appFolder, final NSDictionary rules,
+         final String executableName) throws UnsupportedEncodingException, IOException
    {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      codeResources.output(baos);
-      NSDictionary codeResourcesDict = (NSDictionary) PropertyListParser.parse(baos.toByteArray());
-      
-      NSDictionary files = new NSDictionary();
-      SHA1Digest digest = new SHA1Digest();
-      ByteArrayOutputStream aux = new ByteArrayOutputStream();
-
-      Set<String> ignoredFiles = new HashSet<String>();
-      ignoredFiles.add("Info.plist");
-      ignoredFiles.add("CodeResources");
-      ignoredFiles.add("_CodeSignature/CodeResources");
-      ignoredFiles.add(executableName);
-
-      fillCodeResourcesFiles(appFolder, ignoredFiles, files, appFolder.getPath(), aux, digest);
-
-      NSDictionary root = new NSDictionary();
-      root.put("files", files);
-      root.put("files2", files);
-      root.put("rules", (NSDictionary) codeResourcesDict.objectForKey("rules"));
-      root.put("rules2", (NSDictionary) codeResourcesDict.objectForKey("rules2"));
-
-      byte[] rootBytes = MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root);
-      codeResources.input(new ByteArrayInputStream(rootBytes));
-
-      return rootBytes;
+//       NSDictionary root = new NSDictionary();
+       
+//       NSDictionary rules = new NSDictionary();
+//       rules.put(".*", true);
+//       rules.put("Info.plist", this.createOmitAndWeight(true, 10));
+//       rules.put(bundleResourceSpecification, this.createOmitAndWeight(true, 100));
+//       root.put("rules", rules);
+       
+//       TFile bundleResourceSpecificationFile = (TFile) ipaContents.get(bundleResourceSpecification);
+//       bundleResourceSpecificationFile.input(new ByteArrayInputStream(MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root)));
+       
+       NSDictionary files = new NSDictionary();
+       SHA1Digest digest = new SHA1Digest();
+       ByteArrayOutputStream aux = new ByteArrayOutputStream();
+       
+       Set<String> ignoredFiles = new HashSet<String>();
+       ignoredFiles.add("Info.plist");
+       ignoredFiles.add("CodeResources");
+       ignoredFiles.add("_CodeSignature/CodeResources");
+//       ignoredFiles.add(bundleResourceSpecification);
+       ignoredFiles.add(executableName);
+       
+       fillCodeResourcesFiles(appFolder, ignoredFiles, files, appFolder.getPath(), aux, digest);
+       
+       NSDictionary root = new NSDictionary();
+       root.put("files", files);
+       root.put("rules", rules);
+       
+       byte[] rootBytes = MyNSObjectSerializer.toXMLPropertyListBytesUTF8(root);
+       TFile codeResources = new TFile((TFile) ipaContents.get("_CodeSignature"), "CodeResources");
+       codeResources.input(new ByteArrayInputStream(rootBytes));
+       
+       return rootBytes;
    }
    
    private NSDictionary createOmitAndWeight(boolean omit, double weight)
