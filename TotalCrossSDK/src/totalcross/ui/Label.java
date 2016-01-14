@@ -568,7 +568,7 @@ public class Label extends Control implements TextControl
             int []linesW = this.linesW; // same
             for (int i =currentLine; i < n; i++,y+=fmH)
             {
-               int justify = align == FILL && (i < lines.length-1) ? this.width-1 : 0; // don't justify the text line
+               int justify = align == FILL && (i < lines.length-1) ? this.width-1 - (insets == null ? 0 : insets.left+insets.right) : 0; // don't justify the text line
                int x = x0;
                if (align != LEFT)
                {
