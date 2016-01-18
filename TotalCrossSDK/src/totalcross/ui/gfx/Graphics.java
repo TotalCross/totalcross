@@ -863,7 +863,7 @@ public final class Graphics
       boolean isVert = isVerticalText;
       if (justifyWidth > 0 && !isVert)
       {
-         while (text.charAt(chrCount - 1) <= ' ')
+         while (chrCount > 0 && text.charAt(chrCount - 1) <= ' ')
             chrCount--;
          if (chrCount == 0)
             return;

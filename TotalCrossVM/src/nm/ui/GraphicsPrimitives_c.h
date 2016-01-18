@@ -976,7 +976,7 @@ static void drawText(Context currentContext, TCObject g, JCharP text, int32 chrC
 
    if (justifyWidth > 0)
    {
-      while (text[chrCount - 1] <= (JChar)' ')
+      while (chrCount > 0 && text[chrCount - 1] <= (JChar)' ')
          chrCount--;
       if (chrCount == 0) return;
       rem = justifyWidth - getJCharPWidth(currentContext, fontObj, text, chrCount);

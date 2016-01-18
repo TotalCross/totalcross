@@ -6,10 +6,7 @@
 	<classpathentry kind="lib" path="P:/android-sdk-windows/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="lib" path="P:/android-sdk-windows/platforms/android-11/android.jar"/>
-	<classpathentry kind="lib" path="libs/DataCollection.jar"/>
-	<classpathentry kind="lib" path="libs/activation.jar"/>
-	<classpathentry kind="lib" path="libs/additionnal.jar"/>
-	<classpathentry kind="lib" path="libs/mail.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
+	<classpathentry kind="lib" path="libs/DataCollection.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
