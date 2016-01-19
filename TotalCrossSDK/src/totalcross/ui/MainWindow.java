@@ -120,7 +120,9 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       try
       {
-         new File(APP_CRASHED, File.READ_WRITE).delete();
+if (false)         new File(APP_CRASHED, File.READ_WRITE).delete();
+         Vm.debug("Application crashed since last run");
+         // if appCrashed doesn't exists, its because it exitted normally
          new Thread() // app crashed exists, send report
          {
             public void run()
@@ -161,7 +163,7 @@ public class MainWindow extends Window implements totalcross.MainClass
                   //options.postHeaders.put("Content-Type","application/octet-stream");
                   options.postHeaders.put("Info-u-len", String.valueOf(info.length));
                   options.postHeaders.put("Info-c-len", String.valueOf(infobytes.length));
-                  options.postHeaders.put("Content-Length", String.valueOf(bugrbytes.length+infobytes.length));
+                  options.postHeaders.put("Content-Length", String.valueOf(bugrbytes.length + infobytes.length + dconbytes.length));
                   options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
                   options.postHeaders.put("DCon-len", String.valueOf(dconbytes.length));
                   new totalcross.net.HttpStream(new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"), options)
@@ -190,7 +192,6 @@ public class MainWindow extends Window implements totalcross.MainClass
       }
       catch (Throwable t) // FileNotFound
       {
-         // if appCrashed don't exist, it exitted normally
       }
       try {new File(APP_CRASHED, File.CREATE_EMPTY);} catch (Throwable t) {} // restarting app
    }
@@ -203,15 +204,17 @@ public class MainWindow extends Window implements totalcross.MainClass
          byte[] bytes = new File(name, File.READ_ONLY).readAndClose();
          if (bytes.length == 0)
             return new byte[0];
+         
          totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(bytes.length/10);
-         ZLibStream z = new ZLibStream(bas, ZipStream.DEFLATE);
-         z.writeBytes(bytes);
-         z.close();
+         ZipStream zstream = new ZipStream(bas, ZipStream.DEFLATE);
+         zstream.putNextEntry(new ZipEntry("dc.z"));
+         zstream.writeBytes(bytes);
+         zstream.closeEntry();
+         zstream.close();
          ret = bas.toByteArray();
-      } catch (Exception e) {}
-      if (ret != null) // if we read the file, make sure we set its size to 0 to prevent sending a bugreport with the same data
-         for (int i = 0; i < 10; i++)
-            try {File f = new File(name, File.READ_WRITE); f.setSize(0); f.close(); break;}  catch (Exception e) {Vm.sleep(100);}
+      } catch (Exception e) {e.printStackTrace();}
+      if (ret != null) // if we read the file, erase it to prevent sending again with the same data
+         Vm.debug(Vm.ERASE_DEBUG);
       return ret;
    }
    //$END:REMOVE-ON-SDK-GENERATION$
