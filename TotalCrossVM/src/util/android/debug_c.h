@@ -11,15 +11,6 @@
 
 #include <android/log.h>
 
-#define MODE_ADB 2
-#ifdef DEBUG_TO_ADB_ONLY
- #define MODE_TXT MODE_ADB
-#else 
- #define MODE_TXT 1
-#endif 
-
-static int debugMode = MODE_TXT;
-
 static CharP stripUnicode(CharP s)
 {
    CharP s0 = s;
@@ -38,35 +29,25 @@ static bool privateInitDebug()
 
 void closeDebug()
 {
-   if (debugMode == MODE_TXT)
-   {
-      if (fdebug != NULL)
-         fclose(fdebug);
-      fdebug = NULL;
-   }
+   if (fdebug != NULL)
+      fclose(fdebug);
+   fdebug = NULL;
 }
 
 static void privateDestroyDebug()
 {
-   if (debugMode == MODE_TXT)
+   if (fdebug)
    {
-      if (fdebug)
-      {
-         fputs("===============\n",fdebug);
-         closeDebug();
-      }
+      fputs("===============\n",fdebug);
+      closeDebug();
    }
 }
 
 static bool privateDebug(char* str)
 {
    if (strEq(str,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
-   {
-      closeDebug();
-      debugMode = debugMode == MODE_TXT ? MODE_ADB : MODE_TXT;
       return true;
-   }
-   if (debugMode != MODE_ADB)
+   else
    {
       static char debugPath[MAX_PATHNAME];
       bool err = true;
