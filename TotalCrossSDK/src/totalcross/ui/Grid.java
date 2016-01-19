@@ -1542,6 +1542,7 @@ public class Grid extends Container implements Scrollable
       }
 
       // add the scrollbar next to the grid
+      if (by > height) by = height; // avoid problems if height is too small
       add(sbVert,RIGHT, Settings.fingerTouch ? lineH : 0, PREFERRED, FILL - by);
       sbVert.setValues(0, linesPerPage, 0, itemsCount); // guich@580_15: set the current itemsCount
       sbVert.setLiveScrolling(true);
