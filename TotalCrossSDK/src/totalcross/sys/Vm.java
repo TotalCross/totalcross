@@ -36,13 +36,7 @@ public final class Vm
    /** Pass this to Vm.debug to erase the memo/txt file used to store the output. */
    public final static String ERASE_DEBUG = "!erase debug!";
    
-   /** Pass this to Vm.debug to redirect the output to an alternative debugging viewer. The current platforms that support
-    * this command are:
-    * <ul>
-    *  <li> Android: use the logging window throught ADB, which can be viewed by calling
-    * <code>\TotalCross3\etc\tools\android\debug_console.bat</code>
-    * </ul>
-    * This flag can be used only once, at the Application's constructor. Calling it afterwards can result in debugging data loss.
+   /** @deprecated In Android, it writes things on DebugConsole.txt and on ADB, so this is now useless
     */
    public final static String ALTERNATIVE_DEBUG = "!alt_debug!"; // guich@tc122_14
 
@@ -459,7 +453,6 @@ public final class Vm
     * Note: if you're debugging a String that contains \0 in it, all chars after the first \0 are ignored.
     * @see Settings#nvfsVolume
     * @see #disableDebug
-    * @see #ALTERNATIVE_DEBUG
     * @see #ERASE_DEBUG
     */
    public static void debug(String s)
