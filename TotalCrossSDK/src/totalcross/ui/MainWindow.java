@@ -120,8 +120,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       try
       {
-if (false)         new File(APP_CRASHED, File.READ_WRITE).delete();
-         Vm.debug("Application crashed since last run");
+         new File(APP_CRASHED, File.READ_WRITE).delete();
          // if appCrashed doesn't exists, its because it exitted normally
          new Thread() // app crashed exists, send report
          {
