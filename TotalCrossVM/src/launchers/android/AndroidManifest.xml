@@ -6,7 +6,7 @@
       android:sharedUserId="totalcross.app.sharedid"
       >
     <application android:icon="@drawable/icon" android:label="Stub"
-     android:theme="@android:style/Theme.Black.NoTitleBar" >
+     android:theme="@style/TCThemeNS" >
         <activity android:name=".Stub">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
