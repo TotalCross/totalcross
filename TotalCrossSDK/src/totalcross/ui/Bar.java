@@ -467,7 +467,7 @@ public class Bar extends Container
             add(c, posX, TOP, height, FILL, rel);
          }
          if (n == 0)
-            add(title, AFTER, TOP, FILL, FILL);
+            add(title, n == 0 ? LEFT : AFTER, TOP, FILL, FILL);
          else
          {
             Spacer spl = new Spacer(0,0), spr = new Spacer(0,0);
