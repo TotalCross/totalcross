@@ -211,7 +211,10 @@ public class MainWindow extends Window implements totalcross.MainClass
          zstream.closeEntry();
          zstream.close();
          ret = bas.toByteArray();
-      } catch (Exception e) {e.printStackTrace();}
+      } 
+      catch (FileNotFoundException fnfe) {}
+      catch (Exception e) {e.printStackTrace();}
+      
       if (ret != null) // if we read the file, erase it to prevent sending again with the same data
          Vm.debug(Vm.ERASE_DEBUG);
       return ret;
