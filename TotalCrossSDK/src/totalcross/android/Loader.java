@@ -367,7 +367,6 @@ public class Loader extends Activity implements BarcodeReadListener
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
-   public static boolean dontSendBugreports;
    
    public boolean isSingleApk()
    {
@@ -392,11 +391,6 @@ public class Loader extends Activity implements BarcodeReadListener
             tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
             totalcrossPKG = "totalcross."+tczname;
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
-            if (tczname.endsWith("hmg4") || tczname.endsWith("detm"))
-            {
-               AndroidUtils.debug("Disabling bug reports");
-               dontSendBugreports = true;
-            }
             isSingleAPK = true;
          }
       }
