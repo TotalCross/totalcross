@@ -375,9 +375,9 @@ public class Deployer4Android
       if (DeploySettings.bitmaps != null)
       {
          int res;
-         if (name.equals("res/drawable-xhdpi/icon.png"))   res = 96; else
-         if (name.equals("res/drawable-xxhdpi/icon.png"))  res = 144; else
-         if (name.equals("res/drawable-xxxhdpi/icon.png")) res = 192; 
+         if (name.equals("res/drawable-xhdpi-v4/icon.png"))   res = 96; else
+         if (name.equals("res/drawable-xxhdpi-v4/icon.png"))  res = 144; else
+         if (name.equals("res/drawable-xxxhdpi-v4/icon.png")) res = 192; 
          else res = 72;
          DeploySettings.bitmaps.saveAndroidIcon(zos,res); // libraries don't have icons
       }
@@ -490,7 +490,7 @@ public class Deployer4Android
       // if is full screen, search and replace TCThemeNC by TCThemeFS
       if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
       {
-         byte[] themeMark = {(byte)0x00,(byte)0x00,(byte)0x0b,(byte)0x7f};
+         byte[] themeMark = {(byte)0x00,(byte)0x00,(byte)0x03,(byte)0x7f};
          ofs = Utils.indexOf(res, themeMark, false);
          if (ofs == -1)
             throw new DeployerException("Error: could not find position for theme");
