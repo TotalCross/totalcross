@@ -529,4 +529,9 @@ public class Node extends Vector implements totalcross.util.Comparable
          return ((totalcross.util.Comparable) userObject).compareTo((totalcross.util.Comparable) other.userObject);
       return this.equals(other) ? 0 : -1;
    }
+   
+   public boolean equals(Object o)
+   {
+      return o.equals(userObject);
+   }
 }
