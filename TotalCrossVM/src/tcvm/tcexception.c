@@ -28,8 +28,8 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
-      debug("invalidating exception due to OutOfMemory (1). Stack trace:");
-      printStackTraceFromObj(*Throwable_trace(exception));
+//      debug("invalidating exception due to OutOfMemory (1). Stack trace:");
+//      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -65,8 +65,8 @@ TC_API TCObject createException(Context currentContext, Throwable t, bool fillSt
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
-      debug("invalidating exception due to OutOfMemory (2). Stack trace:");
-      printStackTraceFromObj(*Throwable_trace(exception));
+//      debug("invalidating exception due to OutOfMemory (2). Stack trace:");
+//      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
