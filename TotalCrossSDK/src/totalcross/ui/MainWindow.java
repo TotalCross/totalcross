@@ -192,7 +192,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       catch (Throwable t) // FileNotFound
       {
       }
-      try {new File(APP_CRASHED, File.CREATE_EMPTY);} catch (Throwable t) {} // restarting app
+      try {new File(APP_CRASHED, File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
    }
    private static byte[] readDebugConsole()
    {
@@ -494,7 +494,7 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
-      try {new File(APP_CRASHED, File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
+      try {new File(APP_CRASHED, File.READ_WRITE).delete();} catch (Throwable t) {t.printStackTrace();} // finished fine
       quittingApp = true;
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
@@ -509,7 +509,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    
    final protected void _onRestore()
    {
-      try {new File(APP_CRASHED, File.CREATE_EMPTY);} catch (Throwable t) {} // restarting app
+      try {new File(APP_CRASHED, File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
       onRestore();
    }
    
