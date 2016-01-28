@@ -1119,7 +1119,7 @@ public class Edit extends Control implements TextControl
 
    private void focusOut()
    {
-      if (Settings.isWindowsCE() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+      if (/*Settings.isWindowsCE() && */virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
          hideSip();
       hasFocus = false;
       clearPosState();

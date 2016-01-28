@@ -929,6 +929,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    len = sizeof(deviceId);
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
+   *(tcSettings.virtualKeyboardPtr) = GetSystemMetrics(SM_TABLETPC);
 # endif
 
 #if !defined WP8

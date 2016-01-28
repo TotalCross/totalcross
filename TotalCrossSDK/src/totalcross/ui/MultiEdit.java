@@ -524,7 +524,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
 
    private void focusOut()
    {
-      if (Settings.virtualKeyboard && Settings.isWindowsCE() && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+      if (Settings.virtualKeyboard && /*Settings.isWindowsCE() && */editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
       {
          Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);

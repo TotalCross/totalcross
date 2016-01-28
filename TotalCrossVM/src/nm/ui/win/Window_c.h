@@ -83,7 +83,21 @@ static bool loadSip6()
 
 static void windowSetSIP(int32 sipOption)
 {
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined(WIN32) && !defined(WINCE)
+   switch (sipOption)
+   {
+      case SIP_HIDE:
+         {
+         HWND iHandle = FindWindow("IPTIP_Main_Window", "");
+         if (iHandle > 0)
+            SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);
+         break;
+         }
+      default:
+         ShellExecute(NULL, "open", "C:\\Program Files\\Common Files\\Microsoft Shared\\ink\\TabTip.exe", NULL, NULL, SW_SHOWNORMAL);
+         break;
+   }
+#elif defined (WINCE) && _WIN32_WCE >= 300
    CLSID Clsid;
    RECT sipRect;
    int32 scrW = GetSystemMetrics(SM_CXSCREEN);
