@@ -493,7 +493,8 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
-      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();} catch (Throwable t) {t.printStackTrace();} // finished fine
+      if (!Settings.onJavaSE)
+         try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
       quittingApp = true;
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
@@ -502,13 +503,15 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    final protected void _onMinimize()
    {
-      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
+      if (!Settings.onJavaSE)
+         try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
       onMinimize();
    }
    
    final protected void _onRestore()
    {
-      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
+      if (!Settings.onJavaSE)
+         try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
       onRestore();
    }
    
