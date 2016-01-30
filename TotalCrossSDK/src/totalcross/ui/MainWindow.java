@@ -67,7 +67,6 @@ public class MainWindow extends Window implements totalcross.MainClass
    private static Thread mainThread;
    private Lock runnersLock = new Lock();
    private Vector runners = new Vector(1);
-   private static String APP_CRASHED = Convert.appendPath(Settings.appPath, "appCr4shed");
 
    /** Constructs a main window with no title and no border. */
    public MainWindow()
@@ -120,7 +119,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       try
       {
-         new File(APP_CRASHED, File.READ_WRITE).delete();
+         new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();
          // if appCrashed doesn't exists, its because it exitted normally
          new Thread() // app crashed exists, send report
          {
@@ -192,7 +191,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       catch (Throwable t) // FileNotFound
       {
       }
-      try {new File(APP_CRASHED, File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
+      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
    }
    private static byte[] readDebugConsole()
    {
@@ -494,7 +493,7 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
    final public void appEnding() // guich@200final_11: fixed when switching apps not calling killThreads.
    {
-      try {new File(APP_CRASHED, File.READ_WRITE).delete();} catch (Throwable t) {t.printStackTrace();} // finished fine
+      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();} catch (Throwable t) {t.printStackTrace();} // finished fine
       quittingApp = true;
       // guich@tc100: do this at device side - if (resetSipToBottom) setStatePosition(0, Window.VK_BOTTOM); // fixes a problem of the window of the sip not correctly being returned to the bottom
       if (initUICalled) // guich@tc126_46: don't call app's onExit if time expired, since initUI was not called.
@@ -503,13 +502,13 @@ public class MainWindow extends Window implements totalcross.MainClass
 
    final protected void _onMinimize()
    {
-      try {new File(APP_CRASHED, File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
+      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();} catch (Throwable t) {} // finished fine
       onMinimize();
    }
    
    final protected void _onRestore()
    {
-      try {new File(APP_CRASHED, File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
+      try {new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.CREATE_EMPTY).close();} catch (Throwable t) {} // restarting app
       onRestore();
    }
    
