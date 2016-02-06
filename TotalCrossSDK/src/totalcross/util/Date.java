@@ -45,6 +45,10 @@ public class Date implements Comparable
    private static int epochYear = 1000;
    /** After constructing a date, can be used to verify if the date was valid */
    private static int[][]part2idx = {{},{1,0,2},{0,1,2},{2,1,0}}; // guich@566_29
+   
+   /** Defines the minimum valid year. Any year before this date throws an InvalidDateException.
+    * Defaults to 1000 DC */
+   public static int minValidYear = epochYear;
 
    public static final int JANUARY = 1;
    public static final int FEBRUARY = 2;
@@ -145,7 +149,7 @@ public class Date implements Comparable
       else
       if (20 <= year && year < 100)
          year += 1900;
-      if (!(day > 0 && month >= 1 && month <= 12 && day <= getDaysInMonth() && year >= epochYear && year < 3000)) // guich@200b4_118: fixed dates before epocYear giving a wrong result  - guich@230_26
+      if (!(day > 0 && month >= 1 && month <= 12 && day <= getDaysInMonth() && year >= minValidYear && year < 3000)) // guich@200b4_118: fixed dates before epocYear giving a wrong result  - guich@230_26
             throw new InvalidDateException("Invalid date. Day: "+day+", month: "+month+", year: "+year);
    }
    /** Constructs a Date object set to a passed string in the format specified in the dateFormat parameter. 
