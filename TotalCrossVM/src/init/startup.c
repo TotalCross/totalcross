@@ -190,8 +190,6 @@ static void checkFullScreenPlatform() // guich@tc120_59
    }
 }
 
-#include "noras_ids/noras.inc"
-
 #define ISNOTSIGNED 0
 #define ISFREE 1
 #define ISFAILED 2
@@ -204,7 +202,7 @@ static int checkActivation(Context currentContext)
    TCObject rasClientInstance, ret;
    Method m;
    char buf[4];
-   uint8 *allowedKey, *allowedKeysBase = (uint8*)NORAS_KEYS, *signedKey, *retb;
+   uint8 *allowedKey, *signedKey, *retb;
 
    // load ActivationClient
    c = loadClass(currentContext, "ras.ActivationClient", true);
@@ -232,21 +230,10 @@ static int checkActivation(Context currentContext)
 
    // check if free sdk
    if (strEqn(retb, "TCST",4))
-	  return ISFREE;
+	  return ISFREE;              
+	if (strEqn(retb, "TCDK",4))
+	  return ISNORAS;
 
-   // check the key
-   for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) 
-   {
-      uint8 *signedKeyEnd = retb + ARRAYOBJ_LEN(ret);
-      for (signedKey = retb; signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
-      {
-         int2hex(*signedKey, 2, buf);
-         if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
-            break;
-         if (allowedKey == allowedKeysBase + 22) // noras confirmed!
-            return ISNORAS;
-      }
-   }
    // could not activate noras, try ras
    m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
    return executeMethod(currentContext, m, rasClientInstance).asInt32 == 1 ? ISACTIVATED : ISWILLACTIVATE;
