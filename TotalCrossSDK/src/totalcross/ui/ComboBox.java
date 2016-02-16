@@ -709,9 +709,21 @@ public class ComboBox extends Container
     */
    public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive) // guich@tc113_2
    {
+      return setSelectedItemStartingWith(text, caseInsensitive, Settings.sendPressEventOnChange);
+   }
+
+   /** Selects the item that starts with the given text
+    * @param text The text string to search for
+    * @param caseInsensitive If true, the text and all searched strings are first converted to lowercase.
+    * @param sendPress If true, sends the PRESSED event
+    * @return If an item was found and selected.
+    * @since TotalCross 1.13
+    */
+   public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive, boolean sendPress) // guich@tc310
+   {
       int idx = pop.lb.selectedIndex;
       boolean b = pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
-      if (Settings.sendPressEventOnChange && pop.lb.selectedIndex != idx)
+      if (sendPress && pop.lb.selectedIndex != idx)
          postPressedEvent();
       return b;
    }

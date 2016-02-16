@@ -253,7 +253,16 @@ public class FileChooserBox extends Window
       if (initialPath != null)
          try
          {
-            mountTree(initialPath);
+            if (!Settings.onJavaSE && !Settings.platform.equals(Settings.WIN32))
+               mountTree(initialPath);
+            else
+            {
+               int dp = initialPath.indexOf(':');
+               String ini = dp == -1 ? initialPath : initialPath.substring(0,dp+2);
+               mountTree(ini);
+               if (dp != -1)
+                  tree.expandTo(initialPath.substring(dp+2));
+            }
          }
          catch (IOException e)
          {
@@ -291,11 +300,12 @@ public class FileChooserBox extends Window
                if (otherSlash != -1)
                   firstSlash = otherSlash;
             }
-            cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true);
+            cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true,false);
             previouslySelectedRootIndex = cbRoot.getSelectedIndex();
          }
       }
    }
+
 
    private static void qsort(String []items, int first, int last) // guich@tc126_9: quick sort method
    {
