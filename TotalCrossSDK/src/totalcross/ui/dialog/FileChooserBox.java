@@ -258,9 +258,10 @@ public class FileChooserBox extends Window
             else
             {
                int dp = initialPath.indexOf(':');
-               String ini = dp == -1 ? initialPath : initialPath.substring(0,dp+2);
+               boolean cut = initialPath.length() > 3 && dp != -1; // dont cut if is "c:\"
+               String ini = cut ? initialPath.substring(0,dp+2) : initialPath;
                mountTree(ini);
-               if (dp != -1)
+               if (cut)
                   tree.expandTo(initialPath.substring(dp+2));
             }
          }
