@@ -374,6 +374,10 @@ public class FileChooserBox extends Window
          String theFile = Convert.appendPath(thisDir,s);
          prefix = String.valueOf(new File(theFile, File.READ_ONLY).getTime(File.TIME_MODIFIED).getTimeLong());
       }
+      catch (FileNotFoundException fnfe) 
+      {
+         // ignore. usually trying to access hidden or system files, like swapfile.sys and pagefile.sys
+      }
       catch (Exception e)
       {
          e.printStackTrace();
