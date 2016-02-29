@@ -208,6 +208,8 @@ public class Deployer4Android
       while ((ze = zis.getNextEntry()) != null)
       {
          String name = ze.getName();
+         if (name.indexOf("icon.png") >= 0 && singleApk && name.contains("-v4"))
+            name = name.replace("-v4","");
          zos.putNextEntry(ze2=new ZipEntry(name));
          if (name.indexOf("tcfiles.zip") >= 0)
             insertTCFiles_zip(ze2, zos);
