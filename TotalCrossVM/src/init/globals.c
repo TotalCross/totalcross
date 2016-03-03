@@ -61,7 +61,7 @@ JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
-jfieldID jsipVisible,jappTitleH;
+jfieldID jsipVisible,jappTitleH,jgpsPrecision;
 jmethodID jgetHeight;
 #elif defined WIN32 || defined linux
 TCHAR exeName[MAX_PATHNAME];

@@ -102,6 +102,19 @@ public class GPS
     */
    public String lowSignalReason;
 
+   /** Used in gpsPrecision */
+   public static final int HIGH_GPS_PRECISION = 0;
+   /** Used in gpsPrecision */
+   public static final int LOW_GPS_PRECISION = 1;
+
+   /** Defines the GPS precision (currently has effect only on Android): 
+    * if HIGH, only the GPS is used, if LOW, then Google Play Services is also used.
+    * Be aware that Google Play Services may return wifi and radio antenna values, with pdop
+    * ranging from 30m to 1500m or more; always check the pdop value and discard or store it.
+    * @since TotalCross 3.1
+    */
+   public int precision = HIGH_GPS_PRECISION;
+
    /** A value that indicates that invalid data was retrieved. 
     * Declared as the minimum double value. 
     */

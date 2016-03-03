@@ -278,6 +278,7 @@
 #define GPS_pdop(o)                       *getInstanceFieldDouble(o, "pdop", "totalcross.io.device.gps.GPS")
 #define GPS_lowSignalReason(o)            *getInstanceFieldObject(o, "lowSignalReason", "totalcross.io.device.gps.GPS")
 #define GPS_messageReceived(o)            *getInstanceFieldObject(o, "messageReceived", "totalcross.io.device.gps.GPS") 
+#define GPS_precision(o)                  *getInstanceFieldInt(o, "precision", "totalcross.io.device.gps.GPS")
 
 // totalcross.net.Socket
 #define Socket_socketRef(o)               FIELD_OBJ(o, OBJ_CLASS(o), 0)
