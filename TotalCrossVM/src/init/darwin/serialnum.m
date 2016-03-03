@@ -14,6 +14,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIDevice.h>
 #import "UIDevice+IdentifierAddition.h"
+#import <Security/Security.h>
 // DeviceUID.h
 #import <Foundation/Foundation.h>
 @interface DeviceUID : NSObject
