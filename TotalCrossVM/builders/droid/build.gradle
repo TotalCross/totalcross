@@ -1,5 +1,5 @@
 buildscript {
-    repositories {
+    repositories {           
         mavenCentral()
     }
     dependencies {
@@ -16,7 +16,8 @@ android {
     defaultConfig {
         minSdkVersion 10
         targetSdkVersion 22
-		applicationId 'totalcross.android'
+		applicationId 'totalcross.android'   
+		multiDexEnabled true
     }
 	
     sourceSets {
@@ -127,6 +128,5 @@ android {
 
 dependencies {
 	compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
-	compile 'com.sun.mail:android-mail:1.5.5'
-	compile 'com.sun.mail:android-activation:1.5.5'
+	compile 'com.google.android.gms:play-services:8.3.0'
 }
