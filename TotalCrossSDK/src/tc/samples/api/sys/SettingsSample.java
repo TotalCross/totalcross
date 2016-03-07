@@ -52,6 +52,9 @@ public class SettingsSample extends BaseContainer
       log("Free memory is at " + Vm.getFreeMemory(),false);
       log("Line number is " + Settings.lineNumber,false);
       log("Rom serial number is " + Settings.romSerialNumber,false);
+      if (Settings.imeis == null)
+         ;
+      else
       if (Settings.imeis.length == 1)
          log("IMEI is "+ Settings.imeis[0],false);
       else

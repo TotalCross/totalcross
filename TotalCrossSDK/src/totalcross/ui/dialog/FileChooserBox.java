@@ -253,7 +253,17 @@ public class FileChooserBox extends Window
       if (initialPath != null)
          try
          {
-            mountTree(initialPath);
+            if (!Settings.onJavaSE && !Settings.platform.equals(Settings.WIN32))
+               mountTree(initialPath);
+            else
+            {
+               int dp = initialPath.indexOf(':');
+               boolean cut = initialPath.length() > 3 && dp != -1; // dont cut if is "c:\"
+               String ini = cut ? initialPath.substring(0,dp+2) : initialPath;
+               mountTree(ini);
+               if (cut)
+                  tree.expandTo(initialPath.substring(dp+2));
+            }
          }
          catch (IOException e)
          {
@@ -291,11 +301,12 @@ public class FileChooserBox extends Window
                if (otherSlash != -1)
                   firstSlash = otherSlash;
             }
-            cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true);
+            cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true,false);
             previouslySelectedRootIndex = cbRoot.getSelectedIndex();
          }
       }
    }
+
 
    private static void qsort(String []items, int first, int last) // guich@tc126_9: quick sort method
    {
@@ -362,6 +373,10 @@ public class FileChooserBox extends Window
       {
          String theFile = Convert.appendPath(thisDir,s);
          prefix = String.valueOf(new File(theFile, File.READ_ONLY).getTime(File.TIME_MODIFIED).getTimeLong());
+      }
+      catch (FileNotFoundException fnfe) 
+      {
+         // ignore. usually trying to access hidden or system files, like swapfile.sys and pagefile.sys
       }
       catch (Exception e)
       {

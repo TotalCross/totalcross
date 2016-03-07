@@ -665,6 +665,24 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       return false;
    }
 
+   /** Expands all nodes until the given path is reached */
+   public void expandTo(String filePath)
+   {
+      Vector its = items;
+      for (String p: filePath.split("/"))
+         for (int i = 0, size = its.size(); i < size; i++)
+         {
+            Node n = (Node)its.items[i];
+            String s = n.toString();
+            if (s.equals(p))
+            {
+               expand(n);
+               its = n;
+               break;
+            }
+         }
+   }
+
    /**
     * Method to collapse an expanded node.
     *
