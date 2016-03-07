@@ -59,7 +59,7 @@ static Err nativeUpdateLocation(Context currentContext, TCObject gpsObject, int3
    int32 yy,mm,dd,HH,MM,SS,gpsPrecision;
    if (!env)
       return 1;
-   (*env)->SetStaticIntField(env, applicationClass, jappTitleH, GPS_precision(gpsObject));
+   (*env)->SetStaticIntField(env, applicationClass, jgpsPrecision, GPS_precision(gpsObject));
    
    jgpsData = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_GETDATA);
    if (jgpsData == null) // no provider?

@@ -923,6 +923,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    // gps stuff
+   public static int gpsPrecision=1;
    
    public static String gpsFunc(int what)
    {
