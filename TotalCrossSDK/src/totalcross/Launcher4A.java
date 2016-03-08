@@ -923,13 +923,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    // gps stuff
-   public static int gpsPrecision=1;
+   public static int gpsPrecision;
    
-   public static String gpsFunc(int what)
+   public static String gpsFunc(int what, int opc)
    {
       switch (what)
       {
          case GPSFUNC_GETDATA:
+            gpsPrecision = opc;
             return GPSHelper.instance.gpsGetData();
          case GPSFUNC_START:
             return GPSHelper.instance.gpsTurn(true);

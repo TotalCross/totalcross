@@ -86,7 +86,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jshowCamera       = (*env)->GetStaticMethodID(env, applicationClass, "showCamera", "(Ljava/lang/String;IIIZI)V");
    jgetNativeResolutions= (*env)->GetStaticMethodID(env, applicationClass, "getNativeResolutions", "()Ljava/lang/String;");
    jdial             = (*env)->GetStaticMethodID(env, applicationClass, "dial", "(Ljava/lang/String;)V");
-   jgpsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "gpsFunc", "(I)Ljava/lang/String;");
+   jgpsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "gpsFunc", "(II)Ljava/lang/String;");
    jtone             = (*env)->GetStaticMethodID(env, applicationClass, "tone", "(II)V");
    jsoundPlay        = (*env)->GetStaticMethodID(env, applicationClass, "soundPlay", "(Ljava/lang/String;)V");
    jsoundEnable      = (*env)->GetStaticMethodID(env, applicationClass, "soundEnable", "(Z)V");
@@ -94,7 +94,6 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
    jgetHeight        = (*env)->GetStaticMethodID(env, applicationClass, "getAppHeight", "()I");
    jsipVisible       = (*env)->GetStaticFieldID (env, applicationClass, "sipVisible", "Z");
-   jgpsPrecision     = (*env)->GetStaticFieldID (env, applicationClass, "gpsPrecision", "I");
    jappTitleH        = (*env)->GetStaticFieldID (env, applicationClass, "appTitleH", "I");
    jclipboard        = (*env)->GetStaticMethodID(env, applicationClass, "clipboard", "(Ljava/lang/String;)Ljava/lang/String;");
    jhardwareKeyboardIsVisible = (*env)->GetStaticFieldID (env, applicationClass, "hardwareKeyboardIsVisible", "Z");
