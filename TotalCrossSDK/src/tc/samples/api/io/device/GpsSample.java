@@ -76,6 +76,7 @@ public class GpsSample extends BaseContainer
                      try 
                      {
                         GPS gps = new GPS();
+                        gps.precision = chPlay != null && chPlay.isChecked() ? GPS.LOW_GPS_PRECISION : GPS.HIGH_GPS_PRECISION;
                         int endTime = Vm.getTimeStamp() + Math.min(3*60*1000,SECONDS*1000*2/3); // try for some seconds, but a max of 3 minutes
                         do
                         {
@@ -123,13 +124,16 @@ public class GpsSample extends BaseContainer
 
    MenuBar mbar;
    Button btnGps;
+   static Check chPlay;
 
    public void initUI() 
    {
       super.initUI();
       try 
       {
-         add(btnGps = new Button("  Start GPS Logger  "), CENTER, TOP + 10);
+         if (Settings.platform.equals(Settings.ANDROID))
+            add(chPlay = new Check("Enable Google Play Services"), LEFT, TOP+10);
+         add(btnGps = new Button("  Start GPS Logger  "), CENTER, AFTER+10);
          btnGps.setBackColor(Color.getRGB(188, 238, 104));
          addLog(LEFT, AFTER+10, FILL, FILL,null);
       } 
