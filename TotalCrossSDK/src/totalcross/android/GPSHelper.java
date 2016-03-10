@@ -7,16 +7,17 @@ import android.location.*;
 import android.os.*;
 import com.google.android.gms.common.*;
 import com.google.android.gms.common.api.*;
+import com.google.android.gms.common.api.GoogleApiClient.*;
 import com.google.android.gms.location.*;
+import com.google.android.gms.location.LocationListener;
 import java.util.*;
 
-public class GPSHelper implements android.location.LocationListener, GpsStatus.Listener
+public class GPSHelper implements android.location.LocationListener, GpsStatus.Listener, LocationListener, ConnectionCallbacks, OnConnectionFailedListener
 {
    public static GPSHelper instance = new GPSHelper();
    private GoogleApiClient googleApiClient;
    private LocationRequest locationRequest;
    private int validSatellites;
-   private LocationManager gps;
    private static final String NOGPS = "*";
    private String lastGps = NOGPS;
 
@@ -41,11 +42,13 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
 
    public void onLocationChanged(Location loc)
    {
+      AndroidUtils.debug("loc: "+loc);
       try
       {
          Bundle b = loc.getExtras();
          int sats = b != null ? b.getInt("satellites") : 0;
          String provider = loc.getProvider();
+         AndroidUtils.debug(loc.toString());
          if (provider == null || provider.equals("gps") || provider.equals("fused"))
          {
             String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
@@ -70,13 +73,14 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
 
    public String gpsGetData()
    {
-      String ret = gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
+      String ret = googleApiClient != null ? lastGps : null;
       //lastGps = NOGPS;
       Location fusedLocation = null;
       if ((ret == null || ret.equals(NOGPS)) && (fusedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient)) != null)
       {
          onLocationChanged(fusedLocation);
          ret = lastGps;
+         lastGps = NOGPS;
       }
       return ret;
    }
@@ -93,9 +97,9 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
          Launcher4A.viewhandler.sendMessage(msg);
          if (on)
          {
-            while (gps == null)
+            while (googleApiClient == null)
                try {Thread.sleep(100);} catch (Exception e) {}
-            return gps.isProviderEnabled(LocationManager.GPS_PROVIDER) || googleApiClient != null ? NOGPS : null;
+            return googleApiClient != null ? NOGPS : null;
          }
       }
       return null;
@@ -103,7 +107,7 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    
    public void onGpsStatusChanged(int event) 
    {
-      if (gps != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
+      if (googleApiClient != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
       {
          GpsStatus status = gps.getGpsStatus(null);
          Iterable<GpsSatellite> sats = status.getSatellites();
@@ -118,41 +122,44 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    public void onProviderEnabled(String provider)    {}
    public void onStatusChanged(String provider, int status, Bundle extras)   {}
 
-   private static final int LOW_GPS_PRECISION = 1;
+   LocationManager gps;
+   
+//   private static final int LOW_GPS_PRECISION = 1;
 
    public void startGps()
    {
-      gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
-      gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-      gps.addGpsStatusListener(this);
-
-      if (Launcher4A.gpsPrecision == LOW_GPS_PRECISION && checkPlayServices())
+      if (googleApiClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
       {
-         AndroidUtils.debug("ENABLING LOW-PREC GPS");
-         googleApiClient = new GoogleApiClient.Builder(Launcher4A.loader).addApi(LocationServices.API).build();
+         locationRequest = LocationRequest.create();
+         locationRequest.setInterval(5000);
+         locationRequest.setFastestInterval(1000);
+         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+         locationRequest.setSmallestDisplacement(2); // meters
+
+         googleApiClient = new GoogleApiClient.Builder(Launcher4A.loader).addConnectionCallbacks(this)
+               .addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
          googleApiClient.connect();
          
-         locationRequest = new LocationRequest();
-         locationRequest.setInterval(10000);
-         locationRequest.setFastestInterval(5000);
-         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-         locationRequest.setSmallestDisplacement(10); // 10 meters
+         gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
+         gps.addGpsStatusListener(this);
       }
    }
    public void stopGps()
    {
-      if (gps != null)
+      if (googleApiClient != null)
       {
-         gps.removeUpdates(this);
-         gps.removeGpsStatusListener(this);
+         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
          validSatellites = 0;
+         googleApiClient = null;
+
+         gps.removeGpsStatusListener(this);
          gps = null;
       }
    }
 
    public void sendStopGps()
    {
-      if (gps != null) // stop the gps if still running
+      if (googleApiClient != null) // stop the gps if still running
       {
          Message msg = Launcher4A.viewhandler.obtainMessage();
          Bundle b = new Bundle();
@@ -166,5 +173,20 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
             googleApiClient.disconnect();
          googleApiClient = null;
       }         
+   }
+
+   public void onConnected(Bundle arg0)
+   {
+      LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+   }
+
+   public void onConnectionSuspended(int arg0)
+   {
+      googleApiClient.connect();
+   }
+
+   public void onConnectionFailed(ConnectionResult arg0)
+   {
+      AndroidUtils.debug("onConnectionFailed "+arg0);
    }
 }
