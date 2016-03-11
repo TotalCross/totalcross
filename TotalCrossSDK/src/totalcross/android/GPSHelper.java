@@ -42,7 +42,6 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
 
    public void onLocationChanged(Location loc)
    {
-      AndroidUtils.debug("loc: "+loc);
       try
       {
          Bundle b = loc.getExtras();
