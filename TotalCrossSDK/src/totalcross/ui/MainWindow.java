@@ -164,21 +164,30 @@ public class MainWindow extends Window implements totalcross.MainClass
                   options.postHeaders.put("Content-Length", String.valueOf(bugrbytes.length + infobytes.length + dconbytes.length));
                   options.postHeaders.put("Bugr-len", String.valueOf(bugrbytes.length));
                   options.postHeaders.put("DCon-len", String.valueOf(dconbytes.length));
-                  new totalcross.net.HttpStream(new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"), options)
-                  {
-                     protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
+                  for (int i = 0; i < 200; i++)
+                     try
                      {
-                        String str = sb.toString();
-                        byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
-                        writeBytes(bytes, 0, bytes.length);
-                        // content length
-                        writeBytes(infobytes, 0, infobytes.length);
-                        if (bugrbytes.length > 0) 
-                           writeBytes(bugrbytes, 0, bugrbytes.length);
-                        if (dconbytes.length > 0)
-                           writeBytes(dconbytes, 0, dconbytes.length);
+                        new totalcross.net.HttpStream(new totalcross.net.URI("http://www.superwaba.net/SDKRegistrationService/BugReportService"), options)
+                        {
+                           protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
+                           {
+                              String str = sb.toString();
+                              byte[] bytes = new CharacterConverter().chars2bytes(str.toCharArray(), 0, sb.length());
+                              writeBytes(bytes, 0, bytes.length);
+                              // content length
+                              writeBytes(infobytes, 0, infobytes.length);
+                              if (bugrbytes.length > 0) 
+                                 writeBytes(bugrbytes, 0, bugrbytes.length);
+                              if (dconbytes.length > 0)
+                                 writeBytes(dconbytes, 0, dconbytes.length);
+                           }
+                        };
+                        break;
                      }
-                  };
+                     catch (Exception e)
+                     {
+                        Vm.sleep(60000);
+                     }
                }
                catch (Throwable t)
                {
