@@ -249,6 +249,7 @@ public class BaseContainer extends Container
    public static void log(Object s, boolean selLast)
    {
       if (s == null) return;
+      Vm.debug(s.toString());
       final Object _s = s;
       final boolean _selLast = selLast;
       if (MainWindow.isMainThread())
