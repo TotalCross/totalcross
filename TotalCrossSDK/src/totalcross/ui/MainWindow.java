@@ -120,6 +120,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       try
       {
          new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();
+         final byte[] dconbytes = readDebugConsole();
          // if appCrashed doesn't exists, its because it exitted normally
          new Thread() // app crashed exists, send report
          {
@@ -152,7 +153,6 @@ public class MainWindow extends Window implements totalcross.MainClass
                   z.close();
                   final byte[] infobytes = bas.toByteArray();
                   final byte[] bugrbytes = createdBugRep ? new File("/sdcard/IssueReport/bugreport.zip",File.READ_WRITE).readAndDelete() : new byte[0];
-                  final byte[] dconbytes = readDebugConsole();
                   //HttpStream
                   totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
                   options.openTimeOut = 30000;
