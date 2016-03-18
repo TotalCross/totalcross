@@ -69,8 +69,7 @@ public class GpsSample extends BaseContainer
                      int ini = Vm.getTimeStamp();
                      try 
                      {
-                        GPS gps = new GPS();
-                        gps.precision = chPlay != null && chPlay.isChecked() ? GPS.LOW_GPS_PRECISION : GPS.HIGH_GPS_PRECISION;
+                        GPS gps = new GPS(chPlay != null && chPlay.isChecked() ? GPS.LOW_GPS_PRECISION : GPS.HIGH_GPS_PRECISION);
                         int endTime = Vm.getTimeStamp() + Math.min(3*60*1000,SECONDS*1000*2/3); // try for some seconds, but a max of 3 minutes
                         do
                         {

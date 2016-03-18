@@ -111,6 +111,10 @@ public class GPS
     * if HIGH, only the GPS is used, if LOW, then Google Play Services is also used.
     * Be aware that Google Play Services may return wifi and radio antenna values, with pdop
     * ranging from 30m to 1500m or more; always check the pdop value and discard or store it.
+    * 
+    * Note that this is set at the constructor, and changing it after will have no effect;
+    * you must create a new GPS instance.
+    * 
     * @since TotalCross 3.1
     */
    public int precision = HIGH_GPS_PRECISION;
@@ -183,7 +187,7 @@ public class GPS
    }
 
    /**
-    * Constructs a GPS control, opening a default port at 9600 bps. Already prepared for PIDION scanners. It
+    * Constructs a GPS control. Already prepared for PIDION scanners. It
     * automatically scans the Windows CE registry searching for the correct GPS COM port.
     * 
     * Under Windows Mobile and Android, uses the internal GPS api.
@@ -193,6 +197,21 @@ public class GPS
     */
    public GPS() throws IOException
    {
+      this(HIGH_GPS_PRECISION);
+   }
+      
+   /**
+    * Constructs a GPS control, with the given precision. Already prepared for PIDION scanners. It
+    * automatically scans the Windows CE registry searching for the correct GPS COM port.
+    * 
+    * Under Windows Mobile and Android, uses the internal GPS api.
+    * 
+    * @throws GPSDisabledException If GPS is disabled
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
+    */
+   public GPS(int precision) throws IOException
+   {
+      this.precision = precision;
       checkOpen();
       if (!nativeAPI || !testStartGPS())
       {
