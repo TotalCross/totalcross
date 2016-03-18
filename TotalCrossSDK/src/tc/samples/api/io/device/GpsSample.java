@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.api.io.device;
 
 import tc.samples.api.*;
@@ -33,27 +31,22 @@ public class GpsSample extends BaseContainer
    
    static class GpsThread implements Runnable 
    {
-      public static boolean running;
+      private boolean stopThread;
       public static Thread thread;
       public static boolean gpsDesligado;
-      private boolean stopThread;
       public static boolean colectingGps;
 
       public void start() 
       {
-         stopThread = false;
-         if (!running) 
-         {
-            running = true;
-            if (thread == null)
-               thread = new Thread(this);
-            thread.start();
-         }
+         if (thread == null)
+            thread = new Thread(this);
+         thread.start();
       }
 
       public void stop() 
       {
          stopThread = true;
+         thread = null;
       }
 
       public void run() 
@@ -64,7 +57,6 @@ public class GpsSample extends BaseContainer
             {
                if (stopThread) 
                {
-                  log("stopped 1");
                   stopThread = false;
                   return;
                }
@@ -73,10 +65,10 @@ public class GpsSample extends BaseContainer
                   if (!colectingGps) 
                   {
                      colectingGps = true;
+                     
                      int ini = Vm.getTimeStamp();
                      try 
                      {
-                        log("starting");
                         GPS gps = new GPS();
                         gps.precision = chPlay != null && chPlay.isChecked() ? GPS.LOW_GPS_PRECISION : GPS.HIGH_GPS_PRECISION;
                         int endTime = Vm.getTimeStamp() + Math.min(3*60*1000,SECONDS*1000*2/3); // try for some seconds, but a max of 3 minutes
@@ -90,7 +82,6 @@ public class GpsSample extends BaseContainer
                            Vm.sleep(50);
                            if (stopThread)
                            {
-                              log("stopped 2");
                               gps.stop();
                               stopThread = false;
                               return;
@@ -121,10 +112,6 @@ public class GpsSample extends BaseContainer
          {
             log(new Time()+" ERROR: "+e.getMessage());
          } 
-         finally 
-         {
-            running = false;
-         }
       }
 
    }
