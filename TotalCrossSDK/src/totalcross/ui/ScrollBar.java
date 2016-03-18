@@ -453,7 +453,8 @@ public class ScrollBar extends Container
       else
       if (mustPostEvent)
       {
-         parent.postEvent(getPressedEvent(this));
+         if (parent != null)
+            parent.postEvent(getPressedEvent(this));
          isHighlighting = false; // don't let postEvent steal our focus!
       }
    }
