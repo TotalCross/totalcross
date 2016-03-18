@@ -210,7 +210,8 @@ public class MainWindow extends Window implements totalcross.MainClass
          zstream.closeEntry();
          zstream.close();
          ret = bas.toByteArray();
-      } 
+      }
+      catch (OutOfMemoryError oome) {}
       catch (FileNotFoundException fnfe) {}
       catch (Exception e) {e.printStackTrace();}
       
