@@ -72,10 +72,13 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
 
    public String gpsGetData()
    {
-      String ret = googleApiClient != null ? lastGps : null;
+      boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
+      if (isHigh)
+         return gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
+      String ret = isHigh ? (gps != null ? lastGps : null) : (googleApiClient != null ? lastGps : null);
       //lastGps = NOGPS;
       Location fusedLocation = null;
-      if ((ret == null || ret.equals(NOGPS)) && (fusedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient)) != null)
+      if ((ret == null || ret.equals(NOGPS)) && googleApiClient != null && (fusedLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient)) != null)
       {
          onLocationChanged(fusedLocation);
          ret = lastGps;
@@ -88,17 +91,18 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    {
       if (isGpsOn())
       {
+         boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
          lastGps = NOGPS;
          Message msg = Launcher4A.viewhandler.obtainMessage();
          Bundle b = new Bundle();
          b.putInt("type", on ? Launcher4A.GPSFUNC_START : Launcher4A.GPSFUNC_STOP);
          msg.setData(b);
          Launcher4A.viewhandler.sendMessage(msg);
-         if (on)
+         if (on) // if turning on, wait until the message is handled
          {
-            while (googleApiClient == null)
+            while (gps == null)
                try {Thread.sleep(100);} catch (Exception e) {}
-            return googleApiClient != null ? NOGPS : null;
+            return (isHigh && gps.isProviderEnabled(LocationManager.GPS_PROVIDER)) || (!isHigh && gps != null) ? NOGPS : null;
          }
       }
       return null;
@@ -106,7 +110,7 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    
    public void onGpsStatusChanged(int event) 
    {
-      if (googleApiClient != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
+      if (gps != null && (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS || event == GpsStatus.GPS_EVENT_FIRST_FIX)) 
       {
          GpsStatus status = gps.getGpsStatus(null);
          Iterable<GpsSatellite> sats = status.getSatellites();
@@ -123,11 +127,19 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
 
    LocationManager gps;
    
-//   private static final int LOW_GPS_PRECISION = 1;
+   private static final int HIGH_GPS_PRECISION = 0;
 
+   // high=gps only, low=gps+googleApiClient (gps is used to get satellite info)
    public void startGps()
    {
-      if (googleApiClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
+      boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
+      if (isHigh && gps == null)
+      {
+         gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
+         gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, instance);
+         gps.addGpsStatusListener(instance);
+      }      
+      if (!isHigh && googleApiClient == null && /*Launcher4A.gpsPrecision == LOW_GPS_PRECISION && */checkPlayServices())
       {
          locationRequest = LocationRequest.create();
          locationRequest.setInterval(5000);
@@ -139,26 +151,31 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
                .addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
          googleApiClient.connect();
          
+         // try only to get satellite information, since this is not given by Google Play Services
          gps = (LocationManager) Launcher4A.loader.getSystemService(Context.LOCATION_SERVICE);
          gps.addGpsStatusListener(this);
       }
    }
    public void stopGps()
-   {
+   {      
+      boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
+      if (isHigh && gps != null)
+         gps.removeUpdates(instance);
+
       if (googleApiClient != null)
       {
          LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-         validSatellites = 0;
          googleApiClient = null;
-
-         gps.removeGpsStatusListener(this);
-         gps = null;
       }
+      if (gps != null)
+         gps.removeGpsStatusListener(this);
+      gps = null;
+      validSatellites = 0;
    }
 
    public void sendStopGps()
    {
-      if (googleApiClient != null) // stop the gps if still running
+      if (gps != null) // stop the gps if still running
       {
          Message msg = Launcher4A.viewhandler.obtainMessage();
          Bundle b = new Bundle();
@@ -176,16 +193,17 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
 
    public void onConnected(Bundle arg0)
    {
-      LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+      if (googleApiClient != null)
+         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
    }
 
    public void onConnectionSuspended(int arg0)
    {
-      googleApiClient.connect();
+      if (googleApiClient != null)
+         googleApiClient.connect();
    }
 
    public void onConnectionFailed(ConnectionResult arg0)
    {
-      AndroidUtils.debug("onConnectionFailed "+arg0);
    }
 }

@@ -930,9 +930,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       switch (what)
       {
          case GPSFUNC_GETDATA:
-            gpsPrecision = opc;
             return GPSHelper.instance.gpsGetData();
          case GPSFUNC_START:
+            gpsPrecision = opc;
             return GPSHelper.instance.gpsTurn(true);
          case GPSFUNC_STOP:
             return GPSHelper.instance.gpsTurn(false);

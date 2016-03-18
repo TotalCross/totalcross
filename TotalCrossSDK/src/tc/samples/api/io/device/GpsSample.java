@@ -64,6 +64,7 @@ public class GpsSample extends BaseContainer
             {
                if (stopThread) 
                {
+                  log("stopped 1");
                   stopThread = false;
                   return;
                }
@@ -75,6 +76,7 @@ public class GpsSample extends BaseContainer
                      int ini = Vm.getTimeStamp();
                      try 
                      {
+                        log("starting");
                         GPS gps = new GPS();
                         gps.precision = chPlay != null && chPlay.isChecked() ? GPS.LOW_GPS_PRECISION : GPS.HIGH_GPS_PRECISION;
                         int endTime = Vm.getTimeStamp() + Math.min(3*60*1000,SECONDS*1000*2/3); // try for some seconds, but a max of 3 minutes
@@ -86,6 +88,13 @@ public class GpsSample extends BaseContainer
                               break;
                            }
                            Vm.sleep(50);
+                           if (stopThread)
+                           {
+                              log("stopped 2");
+                              gps.stop();
+                              stopThread = false;
+                              return;
+                           }
                         }
                         while (Vm.getTimeStamp() < endTime);
                         gps.stop();
@@ -123,7 +132,7 @@ public class GpsSample extends BaseContainer
    public static GpsThread gpsThread;
 
    MenuBar mbar;
-   Button btnGps;
+   Button btnGps,btnStopGps;
    static Check chPlay;
 
    public void initUI() 
@@ -133,7 +142,8 @@ public class GpsSample extends BaseContainer
       {
          if (Settings.platform.equals(Settings.ANDROID))
             add(chPlay = new Check("Enable Google Play Services"), LEFT, TOP+10);
-         add(btnGps = new Button("  Start GPS Logger  "), CENTER, AFTER+10);
+         add(btnGps = new Button("Start Logger"), PARENTSIZE+25, AFTER+10,PARENTSIZE+40,PREFERRED);
+         add(btnStopGps = new Button("Stop Logger"), PARENTSIZE+75, SAME,PARENTSIZE+40,PREFERRED);
          btnGps.setBackColor(Color.getRGB(188, 238, 104));
          addLog(LEFT, AFTER+10, FILL, FILL,null);
       } 
@@ -150,11 +160,20 @@ public class GpsSample extends BaseContainer
          switch (e.type) 
          {
             case ControlEvent.PRESSED:
-               if (e.target == btnGps) 
+               if (e.target == chPlay && gpsThread != null)
+                  Toast.show("You must stop and start the logger",2000);
+               else
+               if (e.target == btnStopGps && gpsThread != null)
+               {
+                  gpsThread.stop();
+                  gpsThread = null;
+                  log("Gps stopped");
+               }
+               else
+               if (e.target == btnGps && gpsThread == null) 
                {
                   log("Gps started with intervals of "+SECONDS+" seconds");
-                  if (gpsThread == null) 
-                     gpsThread = new GpsThread();
+                  gpsThread = new GpsThread();
                   gpsThread.start();
                } 
                break;

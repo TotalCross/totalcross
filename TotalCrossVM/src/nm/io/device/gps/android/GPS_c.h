@@ -15,13 +15,13 @@
 #define GPSFUNC_STOP    8
 #define GPSFUNC_GETDATA 9
 
-static Err nativeStartGPS()
+static Err nativeStartGPS(TCObject gpsObject)
 {
    JNIEnv *env = getJNIEnv();
    jstring jgpsData;
    if (!env)
       return 1;
-   jgpsData = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_START, 0); // guich@tc125_1
+   jgpsData = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_START, GPS_precision(gpsObject)); // guich@tc125_1
    if (jgpsData != null) (*env)->DeleteLocalRef(env, jgpsData);
    return jgpsData == null ? 2 : NO_ERROR;
 }
@@ -31,7 +31,7 @@ static void nativeStopGPS()
    JNIEnv *env = getJNIEnv();
    if (env)
    {
-      jobject ret = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_STOP,0);
+      jobject ret = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_STOP, -1);
       if (ret != null) (*env)->DeleteLocalRef(env, ret); // guich@tc125_1
    }
 }
@@ -60,7 +60,7 @@ static Err nativeUpdateLocation(Context currentContext, TCObject gpsObject, int3
    if (!env)
       return 1;
 
-   jgpsData = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_GETDATA, 1);//GPS_precision(gpsObject));
+   jgpsData = (*env)->CallStaticObjectMethod(env, applicationClass, jgpsFunc, GPSFUNC_GETDATA, -1);
    if (jgpsData == null) // no provider?
       return NO_ERROR;
    jstring2CharP(jgpsData, gpsData);

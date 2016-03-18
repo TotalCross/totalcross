@@ -26,8 +26,12 @@ TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native 
 {
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
    Err err;
-   
-   if ((err = nativeStartGPS()) > 0)
+
+#ifdef ANDROID   
+   if ((err = nativeStartGPS(p->obj[0])) > 0)
+#else
+   if ((err = nativeStartGPS()
+#endif
    {
       if (err == 2)
          throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
