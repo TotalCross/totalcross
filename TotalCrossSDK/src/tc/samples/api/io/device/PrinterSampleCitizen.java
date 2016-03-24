@@ -57,6 +57,7 @@ public class PrinterSampleCitizen extends PrinterSampleBase
          // change the font to a big one
          cp.setFont(true, true, true, false, true);
          cp.print("*** Barbara ***\n");
+         cp.setFont(true, false, false, false, false);
 
          // print a png file.
          try
@@ -65,8 +66,6 @@ public class PrinterSampleCitizen extends PrinterSampleBase
             cp.newLine();
          }
          catch (OutOfMemoryError oome) {add(new Label("No memory to load image"),CENTER,AFTER);}
-
-         add(new Label("Done"),CENTER,AFTER);
       }
       catch (Exception e)
       {
