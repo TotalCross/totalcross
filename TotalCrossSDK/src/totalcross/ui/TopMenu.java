@@ -91,7 +91,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
                } catch (ImageException e) {}
             add(c == null ? (Control)new Spacer(itemH,itemH) : c,LEFT,TOP,PARENTSIZE+percIcon,FILL);
          }
-         add(tit, AFTER+(icon==null? tit instanceof Label ? itemH:0:0),TOP,PARENTSIZE+perc-(tit instanceof Label?10:0),FILL,c);
+         add(tit, (icon==null? tit instanceof Label ? LEFT+itemH:AFTER+0:AFTER+0),TOP,PARENTSIZE+perc-(tit instanceof Label?10:0),FILL,c);
       }
       
       public void onEvent(Event e)
