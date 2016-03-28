@@ -23,7 +23,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    /** Set to false to disable the close when pressing in a button of the menu. */
    public boolean autoClose = true;
    /** Defines the animation delay */
-   public int totalTime;
+   public int totalTime=800;
    /** The percentage of the screen that this TopMenu will take: LEFT/RIGHT will take 50% of the screen's width, 
     * other directions will take 80% of the screen's width. Must be ser before calling <code>popup()</code>. */
    public int percWidth;
