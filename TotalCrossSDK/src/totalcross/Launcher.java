@@ -2014,7 +2014,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
             bits.offset = bitIndexTable[index];
             bits.width = bitIndexTable[index+1] - bits.offset - minusW;
             if (bits.width == 0) bits.width += minusW;
-            if (ubase != null)
+            if (ubase != null && ubase.nativeFonts != null)
                try
                {
                   if (ubase.nativeFonts[index] == null) // character at original size
