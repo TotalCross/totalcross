@@ -50,8 +50,8 @@ public class PrinterSampleMPT extends PrinterSampleBase
 
          // ...and print it
          cp.print(img);
+         cp.newLine();
 
-         cp.reset();
          // change the font to a big one
          cp.setFont(true, true, false, true);
          cp.print("*** Barbara ***\n");
@@ -60,7 +60,6 @@ public class PrinterSampleMPT extends PrinterSampleBase
          // print a png file.
          try
          {
-            cp.setLineHeight(24);
             cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"));
             cp.newLine();
          }
