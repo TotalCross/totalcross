@@ -48,15 +48,8 @@ public class PrinterSampleMPT extends PrinterSampleBase
          g.drawLine(0,0,k,k);
          g.drawLine(k,0,0,k);
 
-         // ...and print it in several resolutions
-         cp.setLineHeight(8);
-         cp.print(img, CitizenPrinter.IMAGE_MODE_8_SINGLE);        cp.newLine();
-         cp.setLineHeight(24);
-         cp.print(img, CitizenPrinter.IMAGE_MODE_24_SINGLE);       cp.newLine();
-         cp.setLineHeight(8);
-         cp.print(img, CitizenPrinter.IMAGE_MODE_8_DOUBLE);        cp.newLine();
-         cp.setLineHeight(24);
-         cp.print(img, CitizenPrinter.IMAGE_MODE_24_DOUBLE);       cp.newLine();
+         // ...and print it
+         cp.print(img);
 
          cp.reset();
          // change the font to a big one
@@ -68,7 +61,7 @@ public class PrinterSampleMPT extends PrinterSampleBase
          try
          {
             cp.setLineHeight(24);
-            cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"),CitizenPrinter.IMAGE_MODE_24_DOUBLE);
+            cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"));
             cp.newLine();
          }
          catch (OutOfMemoryError oome) {add(new Label("No memory to load image"),CENTER,AFTER);}
