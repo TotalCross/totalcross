@@ -181,8 +181,7 @@ Finish:
  *************************************/
 static Err socketClose(SOCKET* socketHandle)
 {
-   if (shutdown(*socketHandle, SHUT_WR) < 0)
-      goto error;
+   shutdown(*socketHandle, SHUT_WR); // always call close, even if shutdown fails
    if (close(*socketHandle) < 0)
       goto error;
 

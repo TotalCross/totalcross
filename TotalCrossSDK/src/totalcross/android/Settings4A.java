@@ -68,6 +68,7 @@ public final class Settings4A
    public static String esn;   
    public static String iccid;
    public static String serialNumber;
+   public static String macAddress;
 
    // device capabilities
    public static boolean virtualKeyboard;
@@ -198,25 +199,26 @@ public final class Settings4A
          }
          catch (NoSuchFieldError nsfe) {}
          catch (Throwable t) {}
-      
-      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR) // no else here!
+
+      if (!Loader.IS_EMULATOR)
       {
          WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
          if (wifiMan != null) // not sure what happens when device has no connectivity at all
          {
-            String macAddr = wifiMan.getConnectionInfo().getMacAddress();
-            if (macAddr == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
+            macAddress = wifiMan.getConnectionInfo().getMacAddress();
+            if (macAddress == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
             {
                wifiMan.setWifiEnabled(true);
                while (!wifiMan.isWifiEnabled()) // wait until its active
                   try {Thread.sleep(100);} catch (Exception e) {}
                wifiMan.setWifiEnabled(false);
-               macAddr = wifiMan.getConnectionInfo().getMacAddress();
+               macAddress = wifiMan.getConnectionInfo().getMacAddress();
             }
-            if (macAddr != null)
-               serialNumber = String.valueOf(((long)macAddr.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
          }
       }
+
+      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR && macAddress != null) // no else here!
+         serialNumber = String.valueOf(((long)macAddress.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
       
       // virtualKeyboard
       virtualKeyboard = true; // always available on droid?

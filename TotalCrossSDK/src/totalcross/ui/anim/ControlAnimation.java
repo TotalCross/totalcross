@@ -35,7 +35,7 @@ public abstract class ControlAnimation implements TimerListener
    {
       this.c = c;
       this.animFinish = animFinish;
-      this.totalTime = totalTime <= 0 ? 800 : totalTime;
+      this.totalTime = totalTime < 0 ? 800 : totalTime;
    }
       
    public ControlAnimation(Control c, AnimationFinished animFinish)
@@ -52,6 +52,11 @@ public abstract class ControlAnimation implements TimerListener
    {
       if (!slave)
       {
+         if (totalTime == 0)
+         {
+            animatePriv();
+            return;
+         }
          if (teFrame == null)
          {
             teFrame = c.addTimer(frameRate);

@@ -44,29 +44,26 @@ public class PrinterSampleCitizen extends PrinterSampleBase
          g.backColor = Color.WHITE;
          g.fillRect(0,0,k,k);
          g.foreColor = Color.BLACK;
-         g.drawRect(0,0,k,k);
+         g.drawRect(0,0,k-1,k-1);
          g.drawLine(0,0,k,k);
          g.drawLine(k,0,0,k);
 
-         // ...and print it in several resolutions
-         cp.print(img, CitizenPrinter.IMAGE_MODE_8_SINGLE);        cp.newLine();
-         cp.print(img, CitizenPrinter.IMAGE_MODE_24_SINGLE);       cp.newLine();
-         cp.print(img, CitizenPrinter.IMAGE_MODE_8_DOUBLE);        cp.newLine();
-         cp.print(img, CitizenPrinter.IMAGE_MODE_24_DOUBLE);       cp.newLine();
+         // ...and print it
+         cp.print(img);       
+         cp.newLine();
 
          // change the font to a big one
          cp.setFont(true, true, true, false, true);
          cp.print("*** Barbara ***\n");
+         cp.setFont(true, false, false, false, false);
 
          // print a png file.
          try
          {
-            cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"),CitizenPrinter.IMAGE_MODE_24_DOUBLE);
+            cp.print(new MonoImage("tc/samples/api/io/device/barbara.png"));
             cp.newLine();
          }
          catch (OutOfMemoryError oome) {add(new Label("No memory to load image"),CENTER,AFTER);}
-
-         add(new Label("Done"),CENTER,AFTER);
       }
       catch (Exception e)
       {

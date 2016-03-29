@@ -952,7 +952,7 @@ public final class Graphics
                   currentBit = startBit;
                   for (x = x0; x < xMax; x++) // draw each column
                   {
-                     if ((bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin)
+                     if (bitmapTable != null && (bitmapTable[current] & ands8[currentBit]) != 0 && x >= xMin)
                         pixels[yy + x] = foreColor | alpha;
                      if (++currentBit == 8) // finished this byte?
                      {

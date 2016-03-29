@@ -63,46 +63,48 @@ public class MonoImage extends Image
       super(path);
    }
    
-   /** Creates a 1-bpp bitmap from this image. When writting, only black pixels are written. */ 
-   void printTo(BluetoothPrinter pad, byte imageMode) throws IOException
+   /** Prints a 1-bpp bitmap from this image. When writting, all non-white pixels are written. */ 
+   protected void printTo(BluetoothPrinter pad) throws IOException
    {
-      // the image must be stored in vertical stripes
-      boolean doubleDensity = (imageMode & 1) == 1;
-      int rowW = !doClip ? width : Math.min(width, doubleDensity ? 384 : 192);
-      int rowH = imageMode >= BluetoothPrinter.IMAGE_MODE_24_SINGLE ? 24 : 8;
-      int bytes = rowH / 8;
+      int w = width;
+      int h = height;
+      final int WHITE_PIXEL = -1;
+      ByteArrayStream bas = new ByteArrayStream(w*h/7);
+      bas.writeBytes(new byte[]{ 27, 64 }); // init
+      bas.writeBytes(new byte[]{0x1D, 0x45, 8}); // set density 
 
-      // data
-      byte rowIn[] = new byte[width*4];
-      byte rowOut[] = new byte[rowW * rowH / 8];
-      byte []bits = 
+      byte[] header = {0x1D, 0x2A, (byte)(w / 8), (byte)8};
+      byte[] footer = { 0x1D, 0x2F, 0x00 };
+      byte[] dots = new byte[w * h];
+      byte[] line = new byte[w * 4];
+      final byte[] bits = {(byte)128, 64, 32, 16, 8, 4, 2, 1};
+      byte[] slice = new byte[8];
+
+      for (int i = 0,j=0; i < h; i++) // get all pixels from image
       {
-         (byte)128, (byte)64, (byte)32, (byte)16, (byte)8, (byte)4, (byte)2, (byte)1,
-         (byte)128, (byte)64, (byte)32, (byte)16, (byte)8, (byte)4, (byte)2, (byte)1,
-         (byte)128, (byte)64, (byte)32, (byte)16, (byte)8, (byte)4, (byte)2, (byte)1,
-      };
-      
-      for (int y = 0,ry=0,h=height; y < h; y++,ry++) // rows are stored upside down.
-      {
-         if ((y % rowH) == 0)
-         {
-            if (y > 0) 
-            {
-               pad.write(rowOut);
-               pad.newLine();
-               for (int i = rowOut.length; --i >= 0;)
-                  rowOut[i] = 0;
-            }
-            pad.write(new byte[]{BluetoothPrinter.ESC, (byte)'*', imageMode, (byte)(rowW % 256), (byte)(rowW / 256)});
-            ry = 0;
-         }
-            
-         getPixelRow(rowIn,y);
-         for (int x =0,ry8 = ry/8, i=0; x < rowW; x++,i+=4)
-            if (rowIn[i] == 0)
-               rowOut[x*bytes+ry8] |= bits[ry];
+         getPixelRow(line,i);
+         for (int k = 0; k < w; k++)
+            dots[j++] = line[k*4] == WHITE_PIXEL ? (byte)0 : (byte)1;
       }
-      pad.write(rowOut);
-      pad.newLine();
+      for (int offset = 0; offset < h; offset += 64)
+      {
+         bas.writeBytes(header);
+         for (int x = 0; x < w; x++)
+         {
+            for (int k = 0, y = offset; k < 8; k++)
+            {
+               slice[k] = 0;
+               for (int b = 0; b < 8; b++)
+               {
+                  int i = (y++ * w) + x;
+                  if (i < dots.length && dots[i] == 1)
+                     slice[k] |= bits[b];
+               }
+            }
+            bas.writeBytes(slice);
+         }
+         bas.writeBytes(footer);
+      }
+      pad.write(bas.getBuffer(),0,bas.getPos());
    }
 }  
