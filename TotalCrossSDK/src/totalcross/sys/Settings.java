@@ -361,6 +361,11 @@ public final class Settings
      * @since SuperWaba 4.21
      */
    public static String romSerialNumber;
+   
+   /** The macAddress currently in use.
+    * Currently works only on Android.
+    */
+   public static String macAddress;
 
    /** Field that represents if the PDA has a password and the user choosen to hide the secret records
      * (via the Apps/Security/Current Privacy).

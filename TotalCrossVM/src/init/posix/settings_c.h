@@ -411,6 +411,16 @@ bool fillSettings(Context currentContext)
       jstring2CharP(jStringField, romSerialNumber);
 //    (*env)->DeleteLocalRef(env, jSettingsClass); - this is NOT a local ref. breaks on android 4.2.2
 
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "macAddress", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      if (strTemp[0])
+         setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "macAddress") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+   }
+
    return true;
 }
 
