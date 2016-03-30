@@ -13,7 +13,7 @@
     <application android:icon="@drawable/ic_launcher" android:label="TotalCross Virtual Machine"
          android:theme="@style/TCThemeNS">
         <activity android:name=".Loader" 
-        android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
+        android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"
         />
         <activity android:name=".RouteViewer"/>
