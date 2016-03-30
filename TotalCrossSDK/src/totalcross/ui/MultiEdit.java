@@ -143,6 +143,15 @@ public class MultiEdit extends Container implements Scrollable, TextControl
     * Note that this makes the text drawing a bit slower. */
    public boolean justify;
 
+   /** The caption to draw when this Edit is empty.
+    * Important: the caption is NOT splitted.
+    * @see #captionColor 
+    */
+   public String caption;
+   
+   /** The caption's color. */
+   public int captionColor = -1;
+
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
 
@@ -1206,25 +1215,33 @@ public class MultiEdit extends Container implements Scrollable, TextControl
       g.foreColor = fColor;
       g.backColor = back0;
       int last = numberTextLines - 1;
+      StringBuffer chars = this.chars;
       int len = chars.length();
-      for (; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+      boolean drawCaption = caption != null && !hasFocus && len == 0;
+      if (drawCaption)
       {
-         //if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
-         int k = first.items[i];
-         int k2 = first.items[i + 1];
-         if (len > 0 && k < len && k != k2)
-         {
-            if (chars.charAt(k) <= ' ') // guich@tc166: ignore space/ENTER at line start
-               k++;
-            if (k2 > k)
-               g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
-         }
-         if (drawDots)
-         {
-            g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
-            g.backColor = back0;
-         }
+         g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
+         g.drawText(caption, textRect.x, h, textShadowColor != -1, textShadowColor);
       }
+      else
+         for (; i <= last && h < maxh; i++, h += hLine, dh += hLine)
+         {
+            //if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
+            int k = first.items[i];
+            int k2 = first.items[i + 1];
+            if (len > 0 && k < len && k != k2)
+            {
+               if (chars.charAt(k) <= ' ') // guich@tc166: ignore space/ENTER at line start
+                  k++;
+               if (k2 > k)
+                  g.drawText(chars, k, k2 - k, textRect.x, h, (!editable && justify && i < last && k2 < len && chars.charAt(k2) >= ' ') ? textRect.width : 0, textShadowColor != -1, textShadowColor); // don't justify if the line ends with <enter>
+            }
+            if (drawDots)
+            {
+               g.drawDots(textRect.x, dh, textRect.x2(), dh); // guich@320_28: draw the dotted line
+               g.backColor = back0;
+            }
+         }
 
       // guich@320_28: draw the dotted lines
       if (drawDots) 

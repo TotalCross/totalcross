@@ -44,6 +44,7 @@ public class MultiEditSample extends BaseContainer
          MultiEdit c;
 
          sc.add(c = new MultiEdit(5,1), LEFT,AFTER+gap,FILL,PREFERRED);
+         c.caption = "Please enter the text in this MultiEdit";
          c.setBackColor(Color.brighter(Color.BLUE));
 
          sc.add(c = new MultiEdit(2,0), LEFT,AFTER+gap,FILL,PREFERRED);
