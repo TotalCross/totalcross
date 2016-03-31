@@ -10,3 +10,4 @@ builders/chime.mp3
 src/launchers/android/lint.xml
 builders/xcode/totalcross_ios_devkeys
 builders/uedit.GUILHERMECHAZAN.g.pui
+builders/droid
