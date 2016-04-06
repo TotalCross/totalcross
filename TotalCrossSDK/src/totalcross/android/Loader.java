@@ -66,6 +66,7 @@ public class Loader extends Activity implements BarcodeReadListener
          }
          onCreateCalled = true;
          AndroidUtils.checkInstall();
+         startService(new Intent(this, totalcross.android.gcm.RegistrationIntentService.class));
          runVM();
       }
       catch (Throwable e)
