@@ -39,9 +39,11 @@ public class Deployer4WinCE
    byte bytes[];
 
    String sEx = "The CEStub.exe file has been modified. some of the placeholder strings could not be found. Reinstall TotalCross. - "; // string Exception - sEx - good name, isnt? ;-)
+   boolean allTargets;
 
    public Deployer4WinCE(boolean allTargets) throws Exception
    {
+      this.allTargets = allTargets;
       // suportar tb arquivo .inf alem de .pkg
       String ceArguments = DeploySettings.commandLine.trim(); // the name of the tcz will be the same of the .exe
       if (ceArguments.length() > DeploySettings.defaultArgument.length/2)
@@ -366,7 +368,8 @@ public class Deployer4WinCE
          throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
       // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
       try {new File(Convert.appendPath(targetDir,cabName+".CAB")).delete();} catch (Exception e) {}
-      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/compress"};
+      String[] callCabWiz = allTargets ? new String[]{path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName} // old wince devices
+                                       : new String[]{path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/compress"};
       out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 
       // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
