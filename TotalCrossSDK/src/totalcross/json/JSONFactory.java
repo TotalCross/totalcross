@@ -123,7 +123,8 @@ public class JSONFactory
       for (Method method : methods)
       {
          String methodName = method.getName();
-         if (method.getParameterTypes().length == 1 && methodName.length() > 3 && methodName.startsWith("set"))
+         Class<?>[] paramTypes = method.getParameterTypes();
+         if (paramTypes != null && paramTypes.length == 1 && methodName.length() > 3 && methodName.startsWith("set"))
          {
             String name = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
             if ((jsonObject.isNull(name)))
@@ -136,20 +137,32 @@ public class JSONFactory
                   if (parameterType.isAssignableFrom(boolean.class))
                      method.invoke(object, jsonObject.getBoolean(name));
                   else
-                     if (parameterType.isAssignableFrom(int.class))
-                        method.invoke(object, jsonObject.getInt(name));
-                     else
-                        if (parameterType.isAssignableFrom(long.class))
-                           method.invoke(object, jsonObject.getLong(name));
-                        else
-                           if (parameterType.isAssignableFrom(double.class))
-                              method.invoke(object, jsonObject.getDouble(name));
+                  if (parameterType.isAssignableFrom(int.class))
+                     method.invoke(object, jsonObject.getInt(name));
+                  else
+                  if (parameterType.isAssignableFrom(long.class))
+                     method.invoke(object, jsonObject.getLong(name));
+                  else
+                  if (parameterType.isAssignableFrom(double.class))
+                     method.invoke(object, jsonObject.getDouble(name));
                }
                else
-                  if (parameterType.isAssignableFrom(String.class))
-                     method.invoke(object, jsonObject.getString(name));
-                  else
-                     method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType.getClass()));
+               if (parameterType.isAssignableFrom(String.class))
+                  method.invoke(object, jsonObject.getString(name));
+               else 
+               if (parameterType.isAssignableFrom(Double.class))
+                  method.invoke(object, jsonObject.getDouble(name));
+               else 
+               if (parameterType.isAssignableFrom(Integer.class))
+                  method.invoke(object, jsonObject.getInt(name));
+               else 
+               if (parameterType.isAssignableFrom(Long.class))
+                  method.invoke(object, jsonObject.getLong(name));
+               else 
+               if (parameterType.isAssignableFrom(Boolean.class))
+                  method.invoke(object, jsonObject.getBoolean(name));
+               else
+                  method.invoke(object, parse(jsonObject.getJSONObject(name), parameterType.getClass()));
             }
          }
       }
