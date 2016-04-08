@@ -1,4 +1,17 @@
-<h2>TotalCross 3.2</h2>
+<h2>TotalCross 3.2</h2>   
+<h1>build 2878</h1>
+. added support for primitive Classes in JsonFactory. thanks to Jonatas Schuler<br>
+. now tc.Deploy -wince creates non-compressed cab files, and -winmo creates compressed ones. old wince devices do not support compressed cab files<br>
+<h1>build 2876</h1>
+. read the debugconsole before user deletes it so it can be sent to bugreport system<br>
+. wait up to 200 minutes trying to send the packet for bugreport<br>
+. added barcode support<br>
+. now using 0 on control animations will show the control at once (useful for TopMenu)<br>
+. fixed label not being shown when it contains just text without icons<br>
+. prevent NPE when using bad fonts on javase<br>
+. fixed printing on MPT bluetooth printers. Now the MonoImage is printed correctly. Note that the image width is 576<br>
+. added Settings.macAddress. currently works only on android<br>
+. added MultiEdit.caption and captionColor (as in Edit). Note that the text is NOT splitted<br>
 <h1>build 2870</h1>
 . added Date.minValidYear<br>
 . using some extra memory at the end to try to avoid buffer overruns<br>
