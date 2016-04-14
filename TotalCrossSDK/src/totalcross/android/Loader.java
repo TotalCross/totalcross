@@ -66,7 +66,6 @@ public class Loader extends Activity implements BarcodeReadListener
          }
          onCreateCalled = true;
          AndroidUtils.checkInstall();
-         startService(new Intent(this, totalcross.android.gcm.RegistrationIntentService.class));
          runVM();
       }
       catch (Throwable e)
@@ -407,6 +406,14 @@ public class Loader extends Activity implements BarcodeReadListener
       String cmdline = ht.get("cmdline");
       setContentView(new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK));
       onMainLoop = true;
+      
+      // start GCM service
+      String pack = ht.get("package");
+      AndroidUtils.debug("**************** CLASS FILE: "+pack+", "+tczname); 
+      Intent intent = new Intent(this, totalcross.android.gcm.RegistrationIntentService.class);
+      intent.putExtra("pack", pack);
+      intent.putExtra("cls", tczname);
+      startService(intent);
    }
    
    
