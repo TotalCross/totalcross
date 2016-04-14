@@ -47,7 +47,6 @@ public class TotalCrossAPI extends MainWindow
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
       Settings.scrollDistanceOnMouseWheelMove = fmH*10;
-      Vm.debug(Vm.ALTERNATIVE_DEBUG);
    }
    
    public void initUI()
