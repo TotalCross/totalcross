@@ -19,6 +19,14 @@ android {
 		applicationId 'totalcross.android'   
 		multiDexEnabled true
     }
+    
+	productFlavors {
+		standard {
+		}
+		
+		singleApk {
+		}
+	}
 	
     sourceSets {
         main {
@@ -103,11 +111,11 @@ android {
 	task blah {
 		println archivesBaseName
 	}
-	
+	/*
 	assembleDebug {}.doLast{
     	tasks.copySupportFiles.execute()
 	}
-	
+	*/
 	assembleDebug.mustRunAfter buildAndroidNative, assembleAssets
 	assembleRelease.mustRunAfter buildAndroidNative, assembleAssets
     
@@ -115,7 +123,12 @@ android {
     }
     
     project.afterEvaluate{
-   		prepareReleaseDependencies.dependsOn(['buildAndroidNative', 'assembleAssets'])
+	    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
+		    for (flavor in variant.productFlavors) {
+		    	def prepareReleaseDependencies = project.tasks.getByName("prepare${flavor.name.capitalize()}ReleaseDependencies")
+        		prepareReleaseDependencies.dependsOn(['buildAndroidNative', 'assembleAssets'])
+		    }
+		}
 	}
 }
 
