@@ -707,7 +707,7 @@ public class Window extends Container
       {
          Control c = findChild(x - this.x, y - this.y);
          for (; c != null && !(c instanceof Scrollable); c = c.parent) {}
-         if (c != null && c instanceof Scrollable)
+         if (c != null && c instanceof Scrollable && !(c instanceof TabbedContainer))
          {
             int k = Settings.scrollDistanceOnMouseWheelMove;
             Scrollable sc = (Scrollable)c;
