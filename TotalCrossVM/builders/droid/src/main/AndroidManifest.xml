@@ -6,10 +6,6 @@
       android:sharedUserId="totalcross.app.sharedid"
     >
 
-    <!-- ATTENTION: THIS IS *** NOT *** FOR THE SINGLE APK - THERE'S ANOTHER MANIFEST FILE 
-    FOR STANDARD SINGLE APK APPLICATIONS AT
-    P:\gitrepo\TotalCross\TotalCrossVM\builders\android\apps\tcvm\AndroidManifest.xml -->
-
     <application android:icon="@drawable/ic_launcher" android:label="TotalCross Virtual Machine"
          android:theme="@style/TCThemeNS">
         <activity android:name=".Loader" 
