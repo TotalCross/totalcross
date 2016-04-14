@@ -96,8 +96,7 @@ static void getWorkingDir()
 #endif
 }
 
-//#if defined(ENABLE_TEST_SUITE) && defined(WINCE)
-#ifndef WP8
+#if defined(ENABLE_TEST_SUITE) && defined(WINCE)
 static void waitUntilStarted() // waits until the window is shown in windows ce so that the graphics test can run correctly
 {
    MSG msg;
