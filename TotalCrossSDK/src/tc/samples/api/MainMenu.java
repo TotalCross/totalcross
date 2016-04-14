@@ -363,6 +363,9 @@ public class MainMenu extends BaseContainer
             return;
          }
          catch (Exception e) {}
+      else
+      if (cmd != null)
+         setInfo("cmdline: "+cmd);
    }
 
    
