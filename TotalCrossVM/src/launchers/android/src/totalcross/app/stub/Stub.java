@@ -64,7 +64,9 @@ public class Stub extends Activity
       ht.clear();
       // set some parameters
       String app = getClass().getName();
-      String tczName = app.substring(app.lastIndexOf('.')+1); // strip the package
+      int dot = app.lastIndexOf('.');
+      String tczName = app.substring(dot+1); // strip the package
+      ht.put("package", app.substring(0,dot));
       ht.put("tczname", tczName);
       ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
       ht.put("fullscreen", (getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.theme & 0x1) == 0x1 ? "true" : "false");
