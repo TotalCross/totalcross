@@ -41,18 +41,6 @@ static const char *unixTempFileDir(void){
 
 ///////////////////////////////////////////////////////////////////////////////////////
 2.
-
-SQLITE_API int sqlite3_reset(sqlite3_stmt *pStmt){
-  int rc;
-  if( pStmt==0 ){
-    rc = SQLITE_OK;
-  }else{
-    Vdbe *v = (Vdbe*)pStmt;
-    if (v->db==0) return SQLITE_OK; // guich: db may be closed
-...
-
-///////////////////////////////////////////////////////////////////////////////////////
-3.
 struct sqlite3 {
 ...
  MUTEX_TYPE tcmutex;
