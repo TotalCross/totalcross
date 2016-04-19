@@ -61,34 +61,40 @@ import totalcross.util.*;
 
 public class FileChooserBox extends Window
 {
-	protected PushButtonGroup pbg;
-	protected Tree tree;
-	protected Node lastSelected;
-	protected Filter ff;
-	/** The default button captions: " Select " and " Cancel ". You can localize them if you want. */
-	public static String[] defaultButtonCaptions = {" Select "," Cancel "};
-	/** The "Volume: " label that's placed before the volume combo. You can localize it if you want. */
-	public static String msgVolume = "Volume: ";
+   protected PushButtonGroup pbg;
+   protected Tree tree;
+   protected Node lastSelected;
+   protected Filter ff;
+   /** The default button captions: " Select " and " Cancel ". You can localize them if you want. */
+   public static String[] defaultButtonCaptions = {" Select "," Cancel "};
+   /** The "Volume: " label that's placed before the volume combo. You can localize it if you want. */
+   public static String msgVolume = "Volume: ";
    /** The " Refresh " button that's placed after the volume combo. You can localize it if you want. */
-	public static String msgRefresh = " Refresh ";
-	/** The title of a message box that appears if the user tries to access a volume and an error is issued by the operating system. Defaults to "Error". You can localize it if you want. */
-	public static String msgInvalidVolumeTitle = "Error";
+   public static String msgRefresh = " Refresh ";
+   /** The title of a message box that appears if the user tries to access a volume and an error is issued by the operating system. Defaults to "Error". You can localize it if you want. */
+   public static String msgInvalidVolumeTitle = "Error";
    /** The " Preview " button title. You can localize it if you want. */
    public static String previewTitle = " Preview ";
    /** The body of a message box that appears if the user tries to access a volume and an error is issued by the operating system. Defaults to "Unable to read the contents of the selected volume. Make sure the volume is mounted and you have enough privileges to query its contents.". You can localize it if you want. */
-	public static String msgInvalidVolumeMessage = "Unable to read the contents of the selected volume. Make sure the volume is mounted and you have enough privileges to query its contents.";
-	protected String[] buttonCaptions;
-	protected TreeModel tmodel;
-	protected int selectedIndex;
-	protected Vector selectedNodes; // guich@tc115_4: used in multiple selections
-	protected ComboBox cbRoot;
-	protected Button btRefresh;
-	protected ImageControl preview;
+   public static String msgInvalidVolumeMessage = "Unable to read the contents of the selected volume. Make sure the volume is mounted and you have enough privileges to query its contents.";
+   protected String[] buttonCaptions;
+   protected TreeModel tmodel;
+   protected int selectedIndex;
+   protected Vector selectedNodes; // guich@tc115_4: used in multiple selections
+   protected ComboBox cbRoot;
+   protected Button btRefresh;
+   protected ImageControl preview;
    private int previouslySelectedRootIndex = -1;
    private Button btnPreview;
    private Container tap;
    private static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
 
+   /** On Win32, we show by default the root drive and expand to the default path.
+    * Set this to false to show the initial path only.
+    * @since TotalCross 3.2
+    */
+   public boolean showInitialPathOnly = !Settings.onJavaSE && !Settings.platform.equals(Settings.WIN32);
+   
    /* return the number of files found in the current directory
     * @since TotalCross 1.53 
     */
@@ -157,8 +163,8 @@ public class FileChooserBox extends Window
     * @param buttonCaptions The button captions that will be used in the PushButtonGroup
     * @param ff The Filter. Pass null to accept all files.
     */
-	public FileChooserBox(String caption, String[] buttonCaptions, Filter ff)
-	{
+   public FileChooserBox(String caption, String[] buttonCaptions, Filter ff)
+   {
       super(caption, RECT_BORDER);
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       fadeOtherWindows = Settings.fadeOtherWindows;
@@ -169,15 +175,15 @@ public class FileChooserBox extends Window
       if (Settings.isWindowsCE() || isAndroid || Settings.platform.equals(Settings.WIN32) || Settings.platform.equals(Settings.JAVA)) // guich@tc126_10
          cbRoot = new ComboBox(listRoots());
    }
-	
-	private static String[] listRoots()
-	{
-	   if (!isAndroid)
-	      return File.listRoots();
-	   Vector v = new Vector(10);
-	   v.addElement("device/");
-	   try
-	   {
+   
+   private static String[] listRoots()
+   {
+      if (!isAndroid)
+         return File.listRoots();
+      Vector v = new Vector(10);
+      v.addElement("device/");
+      try
+      {
          String[] ll = new File("/mnt").listFiles();
          for (int i = 0; i < ll.length; i++)
          {
@@ -188,12 +194,12 @@ public class FileChooserBox extends Window
                   v.addElement(dir);
             } catch (Exception e) {}
          }
-	   }
-	   catch (Exception e)
-	   {
-	   }
-	   return (String[]) v.toObjectArray();
-	}
+      }
+      catch (Exception e)
+      {
+      }
+      return (String[]) v.toObjectArray();
+   }
 
    /** Constructs a file chooser with "Select a file" as the window title, and "Select" and "Cancel" buttons.
     * @param ff The Filter. Pass null to accept all files.
@@ -251,26 +257,31 @@ public class FileChooserBox extends Window
       tree.setBackColor(c);
       tree.setCursorColor(c);
       if (initialPath != null)
-         try
-         {
-            if (!Settings.onJavaSE && !Settings.platform.equals(Settings.WIN32))
-               mountTree(initialPath);
-            else
-            {
-               int dp = initialPath.indexOf(':');
-               boolean cut = initialPath.length() > 3 && dp != -1; // dont cut if is "c:\"
-               String ini = cut ? initialPath.substring(0,dp+2) : initialPath;
-               mountTree(ini);
-               if (cut)
-                  tree.expandTo(initialPath.substring(dp+2));
-            }
-         }
-         catch (IOException e)
-         {
-            e.printStackTrace();
-         }
+         reload(initialPath);
       tree.requestFocus();
-	}
+   }
+   
+   private void reload(String initialPath)
+   {
+      try
+      {
+         if (showInitialPathOnly)
+            mountTree(initialPath);
+         else
+         {
+            int dp = initialPath.indexOf(':');
+            boolean cut = initialPath.length() > 3 && dp != -1; // dont cut if is "c:\"
+            String ini = cut ? initialPath.substring(0,dp+2) : initialPath;
+            mountTree(ini);
+            if (cut)
+               tree.expandTo(initialPath.substring(dp+2));
+         }
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+   }
    
    /** @deprecated */
    public void mountTree(String filePath, int volume) throws IOException
@@ -450,37 +461,37 @@ public class FileChooserBox extends Window
 
    private int lastPenUp;
    private StringBuffer sbp = new StringBuffer(128);
-	public void onEvent(Event e)
-	{
-	   try
-	   {
-   	   switch (e.type)
-   	   {
-   	      case PenEvent.PEN_UP:
-         	   if (defaultButton >= 0 && !(e.target instanceof ScrollBar) && !(e.target instanceof Button))
-         	   {
-         	      int curTime = Vm.getTimeStamp();
-         	      if ((curTime-lastPenUp) < 1000)
-         	      {
-         	         selectedIndex = defaultButton;
-         	         this.unpop();
-         	      }
-         	      else lastPenUp = curTime;
-         	   }
-         	   break;
-   	      case ControlEvent.PRESSED:
-   	         if (showPreview && e.target == btnPreview)
-   	         {
-   	            preview.setImage(null);
-   	            boolean b = !preview.isVisible();
- 	               preview.setVisible(b);
-   	            tree.setRect(KEEP,KEEP,KEEP,PARENTSIZE+(b ? 100-PREVIEW_HEIGHT : 100));
-   	         }
-   	         else
-         		if (e.target == pbg)
+   public void onEvent(Event e)
+   {
+      try
+      {
+         switch (e.type)
+         {
+            case PenEvent.PEN_UP:
+               if (defaultButton >= 0 && !(e.target instanceof ScrollBar) && !(e.target instanceof Button))
+               {
+                  int curTime = Vm.getTimeStamp();
+                  if ((curTime-lastPenUp) < 1000)
+                  {
+                     selectedIndex = defaultButton;
+                     this.unpop();
+                  }
+                  else lastPenUp = curTime;
+               }
+               break;
+            case ControlEvent.PRESSED:
+               if (showPreview && e.target == btnPreview)
+               {
+                  preview.setImage(null);
+                  boolean b = !preview.isVisible();
+                  preview.setVisible(b);
+                  tree.setRect(KEEP,KEEP,KEEP,PARENTSIZE+(b ? 100-PREVIEW_HEIGHT : 100));
+               }
+               else
+               if (e.target == pbg)
                {
                   selectedIndex = pbg.getSelectedIndex();
-         			this.unpop();
+                  this.unpop();
                }
                else
                if (e.target == tree)
@@ -533,11 +544,7 @@ public class FileChooserBox extends Window
                      {
                         String selectedItem = (String) cbRoot.getSelectedItem();
                         if (selectedItem != null || initialPath != null)
-                        {
-                           mountTree(initialPath != null ? initialPath : selectedItem);
-                           //tree.setModel(tmodel);
-                           //tree.reload();
-                        }
+                           reload(initialPath != null ? initialPath : selectedItem);
                      }
                   }
                   catch (IOException e1)
@@ -545,14 +552,14 @@ public class FileChooserBox extends Window
                      new MessageBox(msgInvalidVolumeTitle, msgInvalidVolumeMessage).popupNonBlocking();
                      cbRoot.setSelectedIndex(previouslySelectedRootIndex);
                   }
-         		break;
+               break;
          }
-	   }
+      }
       catch (Exception ee)
       {
          if (Settings.onJavaSE) ee.printStackTrace();
       }
-	}
+   }
 
    private boolean isImage(String f)
    {
