@@ -70,7 +70,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static ActivityManager activityManager;
    static MemoryInfo mi = new MemoryInfo();
    
-   private static String appPath;
+   public static String appPath;
    private static android.text.ClipboardManager clip;
    
    public static Handler viewhandler = new Handler()

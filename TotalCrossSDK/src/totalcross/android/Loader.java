@@ -16,6 +16,9 @@
 
 package totalcross.android;
 
+import totalcross.*;
+import totalcross.android.compat.*;
+
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -32,9 +35,6 @@ import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-
-import totalcross.*;
-import totalcross.android.compat.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -410,7 +410,7 @@ public class Loader extends Activity implements BarcodeReadListener
       // start GCM service
       String pack = ht.get("package");
       AndroidUtils.debug("**************** CLASS FILE: "+pack+", "+tczname); 
-      Intent intent = new Intent(this, totalcross.android.gcm.RegistrationIntentService.class);
+      Intent intent = new Intent(this, totalcross.android.gcm.GCMTokenReceiver.class);
       intent.putExtra("pack", pack);
       intent.putExtra("cls", tczname);
       startService(intent);

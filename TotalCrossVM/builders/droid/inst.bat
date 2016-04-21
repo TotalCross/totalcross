@@ -1,1 +1,1 @@
-adb install -r build\outputs\apk\droid-release.apk
+adb install -r build\outputs\apk\droid-standard-release.apk

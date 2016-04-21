@@ -36,18 +36,20 @@
             android:exported="true"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
-                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <category android:name="totalcross.applmv3.gcm" />
             </intent-filter>
         </receiver>
+        <!-- receives the message -->
         <service
-            android:name="totalcross.android.gcm.MyGcmListenerService"
+            android:name="totalcross.android.gcm.GCMMessageReceiver"
             android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
+        <!-- receives the token (2nd time on) -->
         <service
             android:name="totalcross.android.gcm.MyInstanceIDListenerService"
             android:exported="false">
@@ -55,8 +57,9 @@
                 <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
         </service>
-         <service
-            android:name="totalcross.android.gcm.RegistrationIntentService"
+        <!-- receives the token - must be in a separate intent -->
+        <service
+            android:name="totalcross.android.gcm.GCMTokenReceiver"
             android:exported="false">
         </service>
     </application>
