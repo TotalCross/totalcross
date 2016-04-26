@@ -30,7 +30,7 @@ TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native 
 #ifdef ANDROID   
    if ((err = nativeStartGPS(p->obj[0])) > 0)
 #else
-   if ((err = nativeStartGPS()
+   if ((err = nativeStartGPS()) > 0)
 #endif
    {
       if (err == 2)
