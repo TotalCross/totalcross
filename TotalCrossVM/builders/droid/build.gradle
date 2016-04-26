@@ -132,6 +132,7 @@ android {
 	*/
 	assembleDebug.mustRunAfter buildAndroidNative, assembleAssets
 	assembleRelease.mustRunAfter buildAndroidNative, assembleAssets
+	copyApk.mustRunAfter assembleRelease
     
     task buildAndroid_sdkNoClean(dependsOn: ['buildAndroidNative', 'assembleAssets', 'assembleDebug']) << {
     }
