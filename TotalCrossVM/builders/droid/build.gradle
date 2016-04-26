@@ -65,7 +65,7 @@ android {
 	    tasks.withType(Exec) { environment << envVars }
 	}
     
-    task buildAndroidNative(type:Exec) << {
+    task buildAndroidNative(type:Exec) {
     	delete '../../native'
         copy {
 	        from './../../../../Litebase/LitebaseSDK/src'
@@ -103,9 +103,9 @@ android {
 		destinationDir file('src/main/assets') // directory that you want your archive to be placed in
 	}
 	
-	task copyApk (type:Copy) << {
+	task copyApk << {
 		copy {
-			from 'build/outputs/apk'
+			from { 'build/outputs/apk' }
 			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
 			include '**/droid-standard-release.apk'
 			rename { String fileName ->
@@ -113,7 +113,7 @@ android {
 			}
 		}
 		copy {
-			from zipTree('build/outputs/apk/droid-singleApk-release.apk') 
+			from { zipTree('build/outputs/apk/droid-singleApk-release.apk') }
 			into '../../../../output/release/TotalCrossSDK/etc/tools/android'
 			include 'AndroidManifest.xml', 'resources.arsc'
 			rename { String fileName ->
