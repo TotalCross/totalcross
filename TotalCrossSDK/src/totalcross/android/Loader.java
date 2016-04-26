@@ -28,9 +28,11 @@ import android.media.*;
 import android.net.*;
 import android.os.*;
 import android.provider.*;
+import android.support.v4.content.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
+import android.widget.*;
 import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
@@ -414,8 +416,17 @@ public class Loader extends Activity implements BarcodeReadListener
       intent.putExtra("pack", pack);
       intent.putExtra("cls", tczname);
       startService(intent);
+      // receives a notification when a message is received
+      LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() 
+      {
+         public void onReceive(Context context, Intent intent) 
+         {
+            int resultCode = intent.getIntExtra("resultCode", RESULT_CANCELED);
+            if (resultCode == RESULT_OK)
+               AndroidUtils.debug("*** MESSAGE EVENT RECEIVED for "+intent.getStringExtra("classname"));
+         }
+      }, new IntentFilter("totalcross.MESSAGE_EVENT"));
    }
-   
    
    class EventHandler extends Handler 
    {

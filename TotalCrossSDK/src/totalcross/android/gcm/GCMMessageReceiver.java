@@ -6,8 +6,18 @@ import android.app.*;
 import android.content.*;
 import android.os.*;
 import android.support.v4.app.*;
+import android.support.v4.content.*;
 import com.google.android.gms.gcm.*;
 
+/**
+ 
+ This class is called when a message is received.
+ One of the parameters that is sent from the server is the classname, so that the correct application can be called.
+ The message is written to the Message queue file, and a broadcast is sent, because if the application is
+ running, it can get the message.
+ The message is also sent as notification so, if the app is not running, it can be opened.
+ 
+ */
 public class GCMMessageReceiver extends GcmListenerService
 {
    /**
@@ -39,6 +49,14 @@ public class GCMMessageReceiver extends GcmListenerService
             AndroidUtils.debug("Message received: "+appdata);
             // write to the program
             GCM2TC.writeEvent(GCM2TC.MESSAGE_RECEIVED, appdata);
+            
+            // send a broadcast if the vm is running
+            Intent in = new Intent("totalcross.MESSAGE_EVENT");
+            // Put extras into the intent as usual
+            in.putExtra("classname",classname);
+            in.putExtra("resultCode", Activity.RESULT_OK);
+            // Fire the broadcast with intent packaged
+            LocalBroadcastManager.getInstance(this).sendBroadcast(in);
             
             // prepare the notification
             if (title != null)
