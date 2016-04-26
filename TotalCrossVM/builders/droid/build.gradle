@@ -104,8 +104,22 @@ android {
 	}
 	
 	task copyApk (type:Copy){
-    	from 'build/outputs/apk'
-        into '../..'
+		copy {
+			from 'build/outputs/apk'
+			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
+			include '**/droid-standard-release.apk'
+			rename { String fileName ->
+				fileName.replace('droid-standard-release', 'TotalCross')
+			}
+		}
+		copy {
+			from zipTree('build/outputs/apk/droid-singleApk-release.apk') 
+			into '../../../../output/release/TotalCrossSDK/etc/tools/android'
+			include 'AndroidManifest.xml', 'resources.arsc'
+			rename { String fileName ->
+				fileName.replace('.', '_singleapk.')
+			}
+		}
 	}
 	
 	task blah {
