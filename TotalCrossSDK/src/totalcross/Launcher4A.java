@@ -160,6 +160,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
       String vmPath = context.getApplicationInfo().dataDir;
+      getSDCardPath(); // debug sdcard locations
       initializeVM(context, tczname, appPath, vmPath, cmdline);
       if (GENERATE_FONT)
       {
@@ -916,11 +917,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return 0;
    }
    
+   private static boolean debugSD = true;
    public static String getSDCardPath()
    {
       java.io.File sd = Environment.getExternalStorageDirectory();
+      String bestOption = null;
       if (sd.canWrite())
-         return sd.toString();
+      {
+         bestOption = sd.toString();
+         if (debugSD) AndroidUtils.debug("SD0: "+bestOption);
+      }
       try
       {
          Method getExternalFilesDir = Context.class.getMethod("getExternalFilesDirs",  new Class[] { String.class } );
@@ -928,13 +934,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (ff != null)
             for (File f: ff)
                if (f.canWrite())
-                  return f.toString();
+               {
+                  String fn = f.toString();
+                  int idx = fn.indexOf("Android");
+                  if (idx != -1) fn = fn.substring(0,idx-1);
+                  if (debugSD && !fn.equals(bestOption)) AndroidUtils.debug("SD1: "+fn);
+                  if (!fn.contains("emulated") && (bestOption == null || bestOption.contains("emulated"))) // stops on first non-emulated
+                     bestOption = fn;
+               }
       }
       catch (Throwable t)
       {
          t.printStackTrace();
       }      
-      return null;
+      if (debugSD) AndroidUtils.debug("SD is: "+bestOption);
+      debugSD = false;
+      return bestOption;
    }
 
    // gps stuff
