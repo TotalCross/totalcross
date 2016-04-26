@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="totalcross.android"
-      android:versionCode="-1"
+      android:versionCode="305419896"
       android:versionName="!1.0!"
       android:sharedUserId="totalcross.app.sharedid"
     >
