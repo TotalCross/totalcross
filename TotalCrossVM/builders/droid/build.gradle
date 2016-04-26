@@ -103,7 +103,7 @@ android {
 		destinationDir file('src/main/assets') // directory that you want your archive to be placed in
 	}
 	
-	task copyApk (type:Copy){
+	task copyApk (type:Copy) << {
 		copy {
 			from 'build/outputs/apk'
 			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
