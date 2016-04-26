@@ -87,7 +87,8 @@ android {
 		}
     }
     
-	task assembleAssets(type:Zip) << {
+	task assembleAssets(type:Zip) {
+		outputs.upToDateWhen { false }
 		from ('../../../TotalCrossSDK/dist/vm') {
 			include 'TCBase.tcz'
 			include 'TCUI.tcz'
