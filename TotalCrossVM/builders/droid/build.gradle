@@ -65,7 +65,7 @@ android {
 	    tasks.withType(Exec) { environment << envVars }
 	}
     
-    task buildAndroidNative(type:Exec) {
+    task buildAndroidNative(type:Exec) << {
     	delete '../../native'
         copy {
 	        from './../../../../Litebase/LitebaseSDK/src'
@@ -87,7 +87,7 @@ android {
 		}
     }
     
-	task assembleAssets(type:Zip) {
+	task assembleAssets(type:Zip) << {
 		from ('../../../TotalCrossSDK/dist/vm') {
 			include 'TCBase.tcz'
 			include 'TCUI.tcz'
