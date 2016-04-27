@@ -5,8 +5,6 @@ import totalcross.*;
 import android.app.*;
 import android.content.*;
 import android.os.*;
-import android.support.v4.app.*;
-import android.support.v4.content.*;
 import com.google.android.gms.gcm.*;
 
 /**
@@ -69,7 +67,7 @@ public class GCMMessageReceiver extends GcmListenerService
                Intent intent = new Intent("android.intent.action.MAIN");
                intent.setClassName(pack,pack+"."+cls);
          
-               NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+               Notification.Builder builder = new Notification.Builder(this);
                builder.setAutoCancel(true);
                builder.setContentTitle(title); // 1st line big
                if (text != null) builder.setContentText(text);   // 2nd line small
@@ -77,7 +75,7 @@ public class GCMMessageReceiver extends GcmListenerService
                builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
                builder.setSmallIcon(totalcross.android.R.drawable.icon);
                builder.setTicker(ticker);
-               notificationManager.notify(19700325, builder.build());
+               notificationManager.notify(19700325, builder.getNotification());
                AndroidUtils.debug("Sent notification");
             }               
          }

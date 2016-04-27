@@ -18,6 +18,7 @@ package totalcross.android;
 
 import totalcross.*;
 import totalcross.android.compat.*;
+import totalcross.android.gcm.*;
 
 import android.app.*;
 import android.content.*;
@@ -28,11 +29,9 @@ import android.media.*;
 import android.net.*;
 import android.os.*;
 import android.provider.*;
-import android.support.v4.content.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
-import android.widget.*;
 import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
