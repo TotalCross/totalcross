@@ -1,20 +1,19 @@
 #include "tcvm.h"
 #undef MIN
 #undef MAX
-#define SQLITE_ENABLE_COLUMN_METADATA 1
-#define SQLITE_ENABLE_FTS3 1
+#define SQLITE_ENABLE_COLUMN_METADATA
+#define SQLITE_ENABLE_FTS3
 #define SQLITE_ENABLE_LOAD_EXTENSION 1 
-#define SQLITE_ENABLE_UPDATE_DELETE_LIMIT 1
-#define SQLITE_ENABLE_FTS3_PARENTHESIS 1
-#define SQLITE_ENABLE_RTREE 1
-#define SQLITE_ENABLE_STAT2 1
-#define SQLITE_ENABLE_UNLOCK_NOTIFY 1
+#define SQLITE_ENABLE_UPDATE_DELETE_LIMIT 
+#define SQLITE_ENABLE_FTS3_PARENTHESIS 
+#define SQLITE_ENABLE_RTREE 
+#define SQLITE_ENABLE_STAT2 
+#define SQLITE_ENABLE_UNLOCK_NOTIFY
 #define SQLITE_THREADSAFE 0
 #define SQLITE_THREAD_OVERRIDE_LOCK 0
-#define SQLITE_WITHOUT_MSIZE 1
-#define SQLITE_MUTEX_OMIT 1
+#define SQLITE_WITHOUT_MSIZE
+#define SQLITE_MUTEX_OMIT
 #ifdef WP8
-#define SQLITE_WIN32_FILEMAPPING_API 1
 #define SQLITE_OMIT_WAL 1
 #define SQLITE_OS_WINRT 1
 #endif
@@ -41,6 +40,18 @@ static const char *unixTempFileDir(void){
 
 ///////////////////////////////////////////////////////////////////////////////////////
 2.
+
+SQLITE_API int sqlite3_reset(sqlite3_stmt *pStmt){
+  int rc;
+  if( pStmt==0 ){
+    rc = SQLITE_OK;
+  }else{
+    Vdbe *v = (Vdbe*)pStmt;
+    if (v->db==0) return SQLITE_OK; // guich: db may be closed
+...
+
+///////////////////////////////////////////////////////////////////////////////////////
+3.
 struct sqlite3 {
 ...
  MUTEX_TYPE tcmutex;
