@@ -44,17 +44,11 @@ public class GCMMessageReceiver extends GcmListenerService
             
             if (appdata == null) throw new Exception("You must suply at least 'appdata' or 'title' parameter with the message");
             
-            AndroidUtils.debug("Message received: "+appdata);
             // write to the program
-            GCM2TC.writeEvent(GCM2TC.MESSAGE_RECEIVED, appdata);
+            GCMUtils.writeMessage(this, classname, appdata);
             
             // send a broadcast if the vm is running
-            Intent in = new Intent("totalcross.MESSAGE_EVENT");
-            // Put extras into the intent as usual
-            in.putExtra("classname",classname);
-            in.putExtra("resultCode", Activity.RESULT_OK);
-            // Fire the broadcast with intent packaged
-            LocalBroadcastManager.getInstance(this).sendBroadcast(in);
+            GCMUtils.sendBroadcast(this, Launcher4A.MESSAGE_RECEIVED);
             
             // prepare the notification
             if (title != null)
@@ -76,7 +70,6 @@ public class GCMMessageReceiver extends GcmListenerService
                builder.setSmallIcon(totalcross.android.R.drawable.icon);
                builder.setTicker(ticker);
                notificationManager.notify(19700325, builder.getNotification());
-               AndroidUtils.debug("Sent notification");
             }               
          }
          catch (Throwable t)

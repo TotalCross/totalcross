@@ -958,4 +958,7 @@ public final class Settings
    
    /** The activation key used during deploy */
    public static String activationKey;
+
+   /** The push token used for Android */
+   public static String pushTokenAndroid;
 }

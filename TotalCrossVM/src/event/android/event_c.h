@@ -30,7 +30,7 @@ extern int32 *shiftYfield, glShiftY;
  * Signature: (IIIIII)V
  */
 void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this, jint type, jint key, jint x, jint y, jint modifiers, jint timestamp)
-{
+{                                
    switch (type)
    {
       case totalcross_Launcher4A_SIP_CLOSED:
@@ -123,6 +123,12 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          executeMethod(cont, scannerPostEvent, 1);
          break;
       }
+      case totalcross_Launcher4A_TOKEN_RECEIVED:                               
+         postEvent(mainContext, PUSHNOTIFICATIONEVENT_TOKEN_RECEIVED, 0, x, y, modifiers);
+         break;
+      case totalcross_Launcher4A_MESSAGE_RECEIVED:
+         postEvent(mainContext, PUSHNOTIFICATIONEVENT_MESSAGE_RECEIVED, 0, x, y, modifiers);
+         break;
    }
 }
 

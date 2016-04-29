@@ -409,22 +409,7 @@ public class Loader extends Activity implements BarcodeReadListener
       onMainLoop = true;
       
       // start GCM service
-      String pack = ht.get("package");
-      AndroidUtils.debug("**************** CLASS FILE: "+pack+", "+tczname); 
-      Intent intent = new Intent(this, totalcross.android.gcm.GCMTokenReceiver.class);
-      intent.putExtra("pack", pack);
-      intent.putExtra("cls", tczname);
-      startService(intent);
-      // receives a notification when a message is received
-      LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() 
-      {
-         public void onReceive(Context context, Intent intent) 
-         {
-            int resultCode = intent.getIntExtra("resultCode", RESULT_CANCELED);
-            if (resultCode == RESULT_OK)
-               AndroidUtils.debug("*** MESSAGE EVENT RECEIVED for "+intent.getStringExtra("classname"));
-         }
-      }, new IntentFilter("totalcross.MESSAGE_EVENT"));
+      GCMUtils.startGCMService(this, ht.get("package"), tczname);
    }
    
    class EventHandler extends Handler 

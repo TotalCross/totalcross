@@ -1,6 +1,7 @@
 package totalcross.android.gcm;
 
-import totalcross.AndroidUtils;
+import totalcross.*;
+
 import android.app.*;
 import android.content.*;
 import com.google.android.gms.gcm.*;
@@ -13,20 +14,18 @@ import com.google.android.gms.iid.*;
 
 public class GCMTokenReceiver extends IntentService
 {
-   private static final String SENDER_ID = "957130962496";
-
    public GCMTokenReceiver()
    {
-      super(SENDER_ID);
+      super(GCMUtils.SENDER_ID);
    }
 
    protected void onHandleIntent(Intent i)
    {
       try
       {
-         String token = InstanceID.getInstance(this).getToken(SENDER_ID, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-         AndroidUtils.debug("GCM Registration Token : "+token);
-         GCM2TC.writeEvent(GCM2TC.TOKEN_RECEIVED, token);
+         String token = InstanceID.getInstance(this).getToken(GCMUtils.SENDER_ID, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+         GCMUtils.writeToken(this, GCMUtils.SENDER_ID, token);
+         GCMUtils.sendBroadcast(this, Launcher4A.TOKEN_RECEIVED);
       }
       catch (Exception e)
       {

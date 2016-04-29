@@ -21,7 +21,7 @@ void vmSetAutoOff(bool enable); // vm_c.h
  #include "win/event_c.h"
 #elif defined(darwin)
  #include "darwin/event_c.h"
-#elif defined(ANDROID)
+#elif defined(ANDROID)                                                             
  #include "android/event_c.h"
 #else
  #include "linux/event_c.h"

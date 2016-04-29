@@ -1705,6 +1705,14 @@ public class Control extends GfxSurface
       addListener(Listener.PRESS, listener);
    }
 
+   /** Adds a listener for PushNotification events.
+    * @see totalcross.ui.event.PushNotificationEvent
+    */
+   public void addPushNotificationListener(PushNotificationListener listener)
+   {
+      addListener(Listener.PUSHNOTIFICATION, listener);
+   }
+
    /** Adds a listener for Timer events.
     * @see totalcross.ui.event.TimerListener
     */
@@ -1760,6 +1768,14 @@ public class Control extends GfxSurface
    public void removePenListener(PenListener listener)
    {
       removeListener(Listener.PEN, listener);
+   }
+
+   /** Removes a listener for PushNotification events.
+    * @see totalcross.ui.event.PushNotificationEvent
+    */
+   public void removePushNotificationListener(PushNotificationListener listener)
+   {
+      removeListener(Listener.PUSHNOTIFICATION, listener);
    }
 
    /** Removes a listener for mouse events.
@@ -1876,8 +1892,10 @@ public class Control extends GfxSurface
                case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
                case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
                case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
-               case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
-               case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
+               case PushNotificationEvent.MESSAGE_RECEIVED:       if (l.type == Listener.PUSHNOTIFICATION)     ((PushNotificationListener)l.listener).messageReceived((PushNotificationEvent)e);   break;
+               case PushNotificationEvent.TOKEN_RECEIVED:         if (l.type == Listener.PUSHNOTIFICATION)     ((PushNotificationListener)l.listener).tokenReceived((PushNotificationEvent)e);   break;
+               case ListContainerEvent.ITEM_SELECTED_EVENT:       if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
+               case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT:  if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
                case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
                case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
             }

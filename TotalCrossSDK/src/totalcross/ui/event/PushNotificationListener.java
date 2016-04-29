@@ -1,6 +1,5 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>                         *
  *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
@@ -19,32 +18,10 @@
 
 package totalcross.ui.event;
 
-import totalcross.sys.*;
-import totalcross.ui.*;
+/** Interface used to listen to Push notification events. */
 
-/**
- * TimerEvent represents a control's timer. Timers are created and destroyed using
- * the addTimer() and removeTimer() methods present in the Control class.
- */
-
-public class PushNotificationEvent extends Event
+public interface PushNotificationListener
 {
-   /** The event type for a token for this device being received by server */
-   public static final int TOKEN_RECEIVED = 360;
-   /** The event type for a message being received by server */
-   public static final int MESSAGE_RECEIVED = 361;
-   
-   /** The message or the token, depending on the event type */
-   public String message;
-
-   public PushNotificationEvent(int type, String msg)
-   {
-      super(type, MainWindow.getMainWindow(), Vm.getTimeStamp());
-      message = msg;
-   }
-
-   public String toString()
-   {
-      return (type == TOKEN_RECEIVED ? "TOKEN_RECEIVED" : "MESSAGE_RECEIVED")+": "+message;
-   }
+   public void tokenReceived(PushNotificationEvent e);
+   public void messageReceived(PushNotificationEvent e);
 }

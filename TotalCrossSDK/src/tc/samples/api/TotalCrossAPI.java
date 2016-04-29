@@ -18,6 +18,7 @@ package tc.samples.api;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
 public class TotalCrossAPI extends MainWindow
@@ -25,7 +26,7 @@ public class TotalCrossAPI extends MainWindow
    static
    {
       Settings.resizableWindow = true;
-      Settings.appVersion = "1.05";
+      Settings.appVersion = "1.06";
       Settings.windowSize = Settings.WINDOWSIZE_480X640;
       Settings.companyContact = "registro@totalcross.com";
       Settings.applicationId = "tapi"; // comentar quando for enviar pra loja Google Play
@@ -35,6 +36,9 @@ public class TotalCrossAPI extends MainWindow
       Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
       Settings.appPackageIdentifier = "1748TotalCross.TotalCrossAPI";
       Settings.iosCFBundleIdentifier = "com.totalcross.tcapi2";
+      
+      // RETIRAR DEPOIS DE TESTAR!!!!
+      Settings.pushTokenAndroid = "957130962496";
    }
    
    public TotalCrossAPI()
@@ -47,10 +51,26 @@ public class TotalCrossAPI extends MainWindow
       UIColors.messageboxBack = Color.brighter(BaseContainer.BKGCOLOR,64);
       UIColors.messageboxFore = Color.WHITE;
       Settings.scrollDistanceOnMouseWheelMove = fmH*10;
+      
+      // MUST REGISTER AT CONSTRUCTOR, SINCE THE TOKEN MAY BE SENT VERY EARLY
+      // You may also use onEvent.
+      this.addPushNotificationListener(new PushNotificationListener()
+      {
+         public void tokenReceived(PushNotificationEvent e)
+         {
+            Toast.show("The token for push notification was received: "+String.valueOf(e.message).substring(0,10)+"...",2000);
+         }
+         
+         public void messageReceived(PushNotificationEvent e)
+         {
+            Toast.show("Message received: "+e.message,3000);
+         }
+      });
    }
    
    public void initUI()
    {
+      // push notifications
       new MainMenu().show();
    }
 }

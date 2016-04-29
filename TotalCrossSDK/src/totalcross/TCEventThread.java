@@ -19,7 +19,7 @@
 
 package totalcross;
 
-class TCEventThread extends Thread
+public class TCEventThread extends Thread
 {
    Queue  eventQueue;
    static private final int INVOKE_IN_EVENT_THREAD = -99998;
@@ -93,7 +93,7 @@ class TCEventThread extends Thread
       }
    }
 
-   void pushEvent(int type, int key, int x, int y, int modifiers, int timestamp)
+   public void pushEvent(int type, int key, int x, int y, int modifiers, int timestamp)
    {
       eventQueue.push(new TCEvent(type, key, x, y, modifiers, timestamp));
    }
@@ -111,7 +111,7 @@ class TCEventThread extends Thread
       return false;
    }
 
-   void invokeInEventThread(boolean wait, Runnable r)
+   public void invokeInEventThread(boolean wait, Runnable r)
    {
       if (!wait)
          eventQueue.push(new TCEvent(INVOKE_IN_EVENT_THREAD, r));

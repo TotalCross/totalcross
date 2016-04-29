@@ -20,6 +20,7 @@
 package totalcross.ui;
 
 import totalcross.*;
+import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
@@ -567,6 +568,17 @@ public class Window extends Container
          }
       }
          
+      if (type == PushNotificationEvent.TOKEN_RECEIVED) // single message
+      {
+         broadcastEvent(new PushNotificationEvent(type, PushNotification.readToken()));
+         return;
+      }
+      if (type == PushNotificationEvent.MESSAGE_RECEIVED)// multiple messages
+      {
+         for (String msg: PushNotification.readMessages())
+            broadcastEvent(new PushNotificationEvent(type, msg));
+         return;
+      }
       if (key == SpecialKeys.SCREEN_CHANGE) // dont move from here!
       {
          MainWindow.mainWindowInstance.width  = Settings.screenWidth;

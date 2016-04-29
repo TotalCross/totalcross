@@ -29,6 +29,10 @@ extern "C" {
 #define totalcross_Launcher4A_MULTITOUCHEVENT_SCALE 10L
 #undef totalcross_Launcher4A_BARCODE_READ
 #define totalcross_Launcher4A_BARCODE_READ 11L
+#undef totalcross_Launcher4A_TOKEN_RECEIVED
+#define totalcross_Launcher4A_TOKEN_RECEIVED 12L
+#undef totalcross_Launcher4A_MESSAGE_RECEIVED
+#define totalcross_Launcher4A_MESSAGE_RECEIVED 13L
 #undef totalcross_Launcher4A_TRANSITION_NONE
 #define totalcross_Launcher4A_TRANSITION_NONE 0L
 #undef totalcross_Launcher4A_TRANSITION_OPEN

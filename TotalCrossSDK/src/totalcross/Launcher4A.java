@@ -54,7 +54,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static Launcher4A instance;
    public static Loader loader;
    static SurfaceHolder surfHolder;
-   static TCEventThread eventThread;
+   public static TCEventThread eventThread;
    static Rect rDirty = new Rect();
    static boolean showKeyCodes;
    static Hashtable<String,String> htPressedKeys = new Hashtable<String,String>(5);
@@ -326,6 +326,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int SIP_CLOSED = 9;
    private static final int MULTITOUCHEVENT_SCALE = 10;
    public static final int BARCODE_READ = 11;
+   public static final int TOKEN_RECEIVED = 12;//360;
+   public static final int MESSAGE_RECEIVED = 13;//361;
 
    ///////////////////////// ANDROID 4.4 BACK KEY BUG ///////////////////////////////
    // https://code.google.com/p/android/issues/detail?id=62306
