@@ -575,8 +575,7 @@ public class Window extends Container
       }
       if (type == PushNotificationEvent.MESSAGE_RECEIVED)// multiple messages
       {
-         for (String msg: PushNotification.readMessages())
-            broadcastEvent(new PushNotificationEvent(type, msg));
+         postPushNotifications();
          return;
       }
       if (key == SpecialKeys.SCREEN_CHANGE) // dont move from here!
@@ -1081,6 +1080,12 @@ public class Window extends Container
          repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
    }
 
+   void postPushNotifications()
+   {
+      for (String msg: PushNotification.readMessages())
+         broadcastEvent(new PushNotificationEvent(PushNotificationEvent.MESSAGE_RECEIVED, msg));
+   }
+   
    private int getDirection(int originX, int originY, int x, int y) // guich@tc122_11
    {
       int xDelt = originX - x;

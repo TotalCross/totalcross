@@ -593,6 +593,8 @@ public class MainWindow extends Window implements totalcross.MainClass
          {
             MessageBox.showException(e,true);
          }
+      if (cmd != null && cmd.equals("/pushnotification"))
+         postPushNotifications();
    }
    
    /**

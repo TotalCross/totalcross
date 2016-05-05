@@ -60,6 +60,7 @@ public class GCMMessageReceiver extends GcmListenerService
                
                Intent intent = new Intent("android.intent.action.MAIN");
                intent.setClassName(pack,pack+"."+cls);
+               intent.putExtra("cmdline","/pushnotification");
          
                Notification.Builder builder = new Notification.Builder(this);
                builder.setAutoCancel(true);
