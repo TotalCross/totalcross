@@ -66,19 +66,10 @@ android {
 	}
     
     task buildAndroidNative(type:Exec) {
-    	delete '../../native'
-        copy {
-	        from './../../../../Litebase/LitebaseSDK/src'
-	        into '../..'
-	        include 'native/**/*'
-	        exclude 'native/jni/**/*'
-    	}
-    	
 		workingDir "../.." +  "/src"
     	commandLine "cmd","/c",'P:/extlibs/android-ndk-r8b/ndk-build'
 
 		doLast{
-			delete '../../native'
 			copy {
 				from "." + "/../../../../temp/android/TotalCross/" + "demo" + "/libs"
 				into 'src/main/libs'
