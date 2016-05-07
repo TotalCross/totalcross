@@ -289,14 +289,9 @@ public class FileSample extends BaseContainer implements Runnable
 
    public void run()
    {
-      String sdId = null;
       MessageBox mb = new MessageBox("Attention", "Please wait,\nrunning tests...", null);
       mb.popupNonBlocking();
-      if (sdId != null)
-         log("SD unique id: " + sdId);
-      else
-         log("Not a SD card");
-
+      testSDCards();
       try
       {
          testFileList();
@@ -313,6 +308,18 @@ public class FileSample extends BaseContainer implements Runnable
       mb.unpop();
    }
    
+   private void testSDCards()
+   {
+      if (Settings.platform.equals(Settings.ANDROID))
+         for (int i = 0; i <= 9; i++)
+            try
+            {
+               if (File.isCardInserted(i))
+                  log("/sdcard"+i+" exists");
+            }
+            catch (Exception e) {}
+   }
+
    public void initUI()
    {
       super.initUI();

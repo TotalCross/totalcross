@@ -24,7 +24,7 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-bool getSDCardPath(char* buf);
+bool getSDCardPath(char* buf, int32 idx);
 void playSound(CharP filename)
 {
    char fullpath[MAX_PATHNAME];
@@ -38,7 +38,7 @@ void playSound(CharP filename)
    else
    if (strEqn(filename,"/sdcard",7))
    {
-      if (getSDCardPath(fullpath))
+      if (getSDCardPath(fullpath, filename[7]-'0'))
          xstrcat(fullpath, filename + 7);
    }
 #endif   

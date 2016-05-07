@@ -30,10 +30,12 @@
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
 #if defined(ANDROID) && !defined(LITEBASE_H)
-bool getSDCardPath(char* buf)
+bool getSDCardPath(char* buf, int idx)
 {
    JNIEnv *env = getJNIEnv();                                      
-   jstring path = (*env)->CallStaticObjectMethod(env, applicationClass, jgetSDCardPath);
+   if (idx < 0 || idx > 9)
+      idx = 0;
+   jstring path = (*env)->CallStaticObjectMethod(env, applicationClass, jgetSDCardPath, idx);
    if (path != null)
    {
       jstring2CharP(path, buf);
@@ -54,7 +56,7 @@ bool getSDCardPath(char* buf)
 static bool fileIsCardInserted(int32 slot)
 {
    char buf[64];
-   return getSDCardPath(buf);
+   return getSDCardPath(buf, slot);
 }
 #else
 #define fileIsCardInserted(slot) true

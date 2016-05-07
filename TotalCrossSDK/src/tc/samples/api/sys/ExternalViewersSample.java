@@ -60,7 +60,9 @@ public class ExternalViewersSample extends BaseContainer
       String fullPath = getTargetName(name);
       if (!new File(fullPath).exists())
       {
-         try {new File(Convert.getFilePath(fullPath)).createDir();} catch (Exception e) {}
+         String dir = Convert.getFilePath(fullPath);
+         Vm.debug("dir: "+dir);
+         try {new File(dir).createDir();} catch (Exception e) {e.printStackTrace();}
          new File(fullPath,File.CREATE_EMPTY).writeAndClose(Vm.getFile(name));
       }
    }
@@ -76,7 +78,7 @@ public class ExternalViewersSample extends BaseContainer
             {
                case 0: ret = Vm.exec("viewer",getTargetName(jpg),0,true); break;
                case 1: ret = Vm.exec("viewer",getTargetName(pdf),0,true); break;
-               case 2: Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); break; // always returns 0
+               case 2: Vm.exec("url","http://www.google.com",0,true); break; // always returns 0
             }
             if (ret == -2)
                new MessageBox("Attention","Viewer returned: file not found").popup();
