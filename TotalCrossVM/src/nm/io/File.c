@@ -135,7 +135,6 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
             invalidate(file);
             return;
          }
-         debug("* create %s",szPath);
          if ((err = fileCreate(natFile, szPath, mode, &File_slot(file))) != NO_ERROR)
          {
             throwExceptionWithCode(p->currentContext, IOException, err);
@@ -222,7 +221,6 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
       JCharP2TCHARPBuf(String_charsStart(path), stringSize, szPath);
       if (!replacePath(p,szPath,true))
          return;
-      debug("* create dir %s",szPath);
       if (fileExists(szPath, slot))
          throwException(p->currentContext, IOException, "Directory already exists.");
       else
