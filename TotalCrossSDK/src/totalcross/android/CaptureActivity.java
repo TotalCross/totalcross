@@ -116,6 +116,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
   public void onCreate(Bundle icicle) {
     super.onCreate(icicle);
 
+    try
+    {
     Window window = getWindow();
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     setContentView(R.layout.capture);
@@ -130,6 +132,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
     showHelpOnFirstLaunch();
+    }
+    catch (Throwable t)
+    {
+       totalcross.AndroidUtils.handleException(t,false);
+       finish();
+    }    
   }
 
   @Override
@@ -266,7 +274,8 @@ private static boolean isZXingURL(String dataString) {
 
   @Override
   protected void onDestroy() {
-    inactivityTimer.shutdown();
+    if (inactivityTimer != null)
+       inactivityTimer.shutdown();
     super.onDestroy();
   }
 
