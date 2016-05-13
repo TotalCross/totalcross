@@ -32,7 +32,7 @@ android {
         main {
 			java.srcDirs = files(
 				fileTree(dir: '../../../TotalCrossSDK/src').matching { include 'totalcross/android/**', 'totalcross/zxing/**', 'totalcross/*4A.java', 'totalcross/MainClass.java', 'totalcross/TCEventThread.java' }, 
-				fileTree(dir: '../../src/launchers/android/src').matching { include 'totalcross/**' }
+				fileTree(dir: '../../src/launchers/android/src').matching { include 'totalcross/AndroidUtils.*' }
 				)
             assets.srcDirs = ['src/main/assets']
 			jniLibs.srcDirs = ['src/main/libs']
