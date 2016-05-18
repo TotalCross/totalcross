@@ -409,7 +409,10 @@ public class Loader extends Activity implements BarcodeReadListener
       onMainLoop = true;
       
       // start GCM service
-      GCMUtils.startGCMService(this, ht.get("package"), tczname);
+      GCMUtils.pushTokenAndroid = ht.get("pushTokenAndroid");
+      AndroidUtils.debug("*** PUSH TOKEN ANDROID loader: "+GCMUtils.pushTokenAndroid);
+      if (GCMUtils.pushTokenAndroid != null)
+         GCMUtils.startGCMService(this, ht.get("package"), tczname);
    }
    
    class EventHandler extends Handler 

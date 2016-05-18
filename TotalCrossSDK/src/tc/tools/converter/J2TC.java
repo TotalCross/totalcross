@@ -306,6 +306,9 @@ public final class J2TC implements JConstants, TCConstants
 	                  else
                      if (field.equals("activationServerNamespace"))
                         totalcross.sys.Settings.activationServerNamespace = value;
+                     else
+                     if (field.equals("pushTokenAndroid"))
+                        totalcross.sys.Settings.pushTokenAndroid = value;
                   }
                }
                break;
@@ -1280,7 +1283,9 @@ public final class J2TC implements JConstants, TCConstants
             if (totalcross.sys.Settings.applicationId != null) // applicationId was specified
                htVmParams.put("applicationId", totalcross.sys.Settings.applicationId);          
             if (totalcross.sys.Settings.appVersion != null) // appVersion was specified
-               htVmParams.put("appVersion", totalcross.sys.Settings.appVersion);  
+               htVmParams.put("appVersion", totalcross.sys.Settings.appVersion);
+            if (totalcross.sys.Settings.pushTokenAndroid != null)
+               htVmParams.put("pushTokenAndroid", totalcross.sys.Settings.pushTokenAndroid);
             htVmParams.put("activationKey", Deploy.activationKey);
             byte[] htDump = htVmParams.getKeyValuePairs("=").toString("\n").getBytes();
 				vin.addElement(new TCZ.Entry(htDump, "tcparms.bin", htDump.length));

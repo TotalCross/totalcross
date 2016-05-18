@@ -7,7 +7,7 @@ import java.io.*;
 
 public class GCMUtils
 {
-   public static final String SENDER_ID = "957130962496";
+   public static String pushTokenAndroid;
    
    private static String vmPath(Context cnt)
    {
@@ -31,7 +31,7 @@ public class GCMUtils
 
    public static void writeMessage(Context cnt, String classname, String msg)
    {
-      String name = vmPath(cnt)+"push_messages."+GCMUtils.SENDER_ID;
+      String name = vmPath(cnt)+"push_messages."+pushTokenAndroid;
       try
       {
          writeChars(name, true, msg);
