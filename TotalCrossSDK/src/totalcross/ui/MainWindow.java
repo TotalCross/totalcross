@@ -152,7 +152,7 @@ public class MainWindow extends Window implements totalcross.MainClass
                   z.writeBytes(info);
                   z.close();
                   final byte[] infobytes = bas.toByteArray();
-                  final byte[] bugrbytes = createdBugRep ? new File("/sdcard/IssueReport/bugreport.zip",File.READ_WRITE).readAndDelete() : new byte[0];
+                  final byte[] bugrbytes = createdBugRep && new File("/sdcard/IssueReport/bugreport.zip").exists() ? new File("/sdcard/IssueReport/bugreport.zip",File.READ_WRITE).readAndDelete() : new byte[0];
                   //HttpStream
                   totalcross.net.HttpStream.Options options = new totalcross.net.HttpStream.Options();
                   options.openTimeOut = 30000;
