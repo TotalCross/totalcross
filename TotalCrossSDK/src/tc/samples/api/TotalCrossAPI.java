@@ -58,9 +58,8 @@ public class TotalCrossAPI extends MainWindow
       {
          public void tokenReceived(PushNotificationEvent e)
          {
-            Toast.show("The token for push notification was received: "+String.valueOf(e.message).substring(0,10)+"...",2000);
-         }
-         
+            Vm.debug("Token: "+e.message);
+         }         
          public void messageReceived(PushNotificationEvent e)
          {
             Toast.show("Message received: "+e.message,3000);

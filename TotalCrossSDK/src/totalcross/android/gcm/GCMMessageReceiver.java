@@ -31,9 +31,6 @@ public class GCMMessageReceiver extends GcmListenerService
          try
          {
             // get the parameters
-            String classname = data.getString("classname");
-            if (classname == null)
-               throw new Exception("You must suply with the message the 'classname' parameter for the target program to open when clicking in the notification");
             String title = data.getString("title");
             String text = data.getString("text");
             String info = data.getString("info");
@@ -41,6 +38,9 @@ public class GCMMessageReceiver extends GcmListenerService
             String appdata = data.getString("appdata");
             if (appdata == null) 
                appdata = title;
+            
+            String classname = getClass().getName(); // totalcross.apptapi.gcm.GCMMessageReceiver
+            classname = classname.replace("gcm.GCMMessageReceiver", "Loader");
             
             if (appdata == null) throw new Exception("You must suply at least 'appdata' or 'title' parameter with the message");
             
@@ -70,7 +70,7 @@ public class GCMMessageReceiver extends GcmListenerService
                builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
                builder.setSmallIcon(totalcross.android.R.drawable.icon);
                builder.setTicker(ticker);
-               notificationManager.notify(19700325, builder.getNotification());
+               notificationManager.notify((int)System.currentTimeMillis(), builder.getNotification());
             }               
          }
          catch (Throwable t)

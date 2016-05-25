@@ -7,8 +7,6 @@ import java.io.*;
 
 public class GCMUtils
 {
-   public static String pushTokenAndroid;
-   
    private static String vmPath(Context cnt)
    {
       try
@@ -25,13 +23,13 @@ public class GCMUtils
    ///// send to application
    public static void writeToken(Context cnt, String id, String token) throws IOException
    {
-      String name = vmPath(cnt)+"push_token."+id;
+      String name = vmPath(cnt)+"push_token.dat";
       writeChars(name, false, token);
    }
 
    public static void writeMessage(Context cnt, String classname, String msg)
    {
-      String name = vmPath(cnt)+"push_messages."+pushTokenAndroid;
+      String name = vmPath(cnt)+"push_messages.dat";
       try
       {
          writeChars(name, true, msg);
@@ -42,6 +40,23 @@ public class GCMUtils
       }
    }
 
+   public static String getToken(Context c)
+   {
+      AndroidUtils.debug("getToken "+c);
+      String ret = c.getSharedPreferences("push_token",0).getString("push_token", null);
+      AndroidUtils.debug("ret: "+ret);
+      return ret;
+   }
+   
+   public static String setToken(Context c, String tok)
+   {
+      if (tok.startsWith("_"))
+         tok = tok.substring(1,tok.length()-1);
+      AndroidUtils.debug("setToken "+c+": "+tok);
+      c.getSharedPreferences("push_token",0).edit().putString("push_token", tok).commit();
+      return tok;
+   }
+   
    private static void writeChars(String name, boolean append, String msg) throws IOException
    {
       try
@@ -76,6 +91,7 @@ public class GCMUtils
 
    public static void startGCMService(Context cnt, String pack, String tczname)
    {
+      AndroidUtils.debug("startGSMService "+cnt+" / "+pack+" / "+tczname);
       Intent intent = new Intent(cnt, totalcross.android.gcm.GCMTokenReceiver.class);
       intent.putExtra("pack", pack);
       intent.putExtra("cls", tczname);

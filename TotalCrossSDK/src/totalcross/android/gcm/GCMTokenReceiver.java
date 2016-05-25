@@ -16,16 +16,16 @@ public class GCMTokenReceiver extends IntentService
 {
    public GCMTokenReceiver()
    {
-      super(GCMUtils.pushTokenAndroid);
-      AndroidUtils.debug("*** PUSH TOKEN ANDROID receiver: "+GCMUtils.pushTokenAndroid);
+      super("GCMTokenReceiver");
    }
 
    protected void onHandleIntent(Intent i)
    {
       try
       {
-         String token = InstanceID.getInstance(this).getToken(GCMUtils.pushTokenAndroid, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-         GCMUtils.writeToken(this, GCMUtils.pushTokenAndroid, token);
+         String pushTokenAndroid = GCMUtils.getToken(getApplicationContext());
+         String token = InstanceID.getInstance(this).getToken(pushTokenAndroid, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+         GCMUtils.writeToken(this, pushTokenAndroid, token);
          GCMUtils.sendBroadcast(this, Launcher4A.TOKEN_RECEIVED);
       }
       catch (Exception e)

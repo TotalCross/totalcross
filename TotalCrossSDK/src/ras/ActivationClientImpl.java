@@ -91,7 +91,11 @@ final class ActivationClientImpl extends ActivationClient
             Settings.appVersion = field;
          if ((field = htVmParams.getString("activationKey")) != null)
             Settings.activationKey = field;
-         
+         if ((field = htVmParams.getString("pushTokenAndroid")) != null)
+         {
+            Settings.pushTokenAndroid = field;
+            Vm.exec("***REGISTER PUSH TOKEN***", field, 0, true);
+         }
       }
    }
 

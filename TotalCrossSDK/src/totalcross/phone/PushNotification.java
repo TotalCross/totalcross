@@ -10,7 +10,7 @@ public class PushNotification
    public static String readToken() 
    {
       String ret = null;
-      String name = Settings.vmPath+"/push_token."+Settings.pushTokenAndroid;
+      String name = Settings.vmPath+"/push_token.dat";
       try
       {
          // get an exclusive write to the file
@@ -32,7 +32,7 @@ public class PushNotification
    public static String[] readMessages() 
    {
       ArrayList<String> ret = new ArrayList<String>(5);
-      String name = Settings.vmPath+"/push_messages."+Settings.pushTokenAndroid;
+      String name = Settings.vmPath+"/push_messages.dat";
       try
       {
          // get an exclusive write to the file

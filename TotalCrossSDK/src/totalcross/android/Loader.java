@@ -368,6 +368,7 @@ public class Loader extends Activity implements BarcodeReadListener
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
+   private String tczName;
    
    public boolean isSingleApk()
    {
@@ -379,7 +380,7 @@ public class Loader extends Activity implements BarcodeReadListener
       if (runningVM) return;
       runningVM = true;
       Hashtable<String,String> ht = AndroidUtils.readVMParameters();
-      String tczname = tcz = ht.get("tczname");
+      String tczname = tczName = tcz = ht.get("tczname");
       boolean isSingleAPK = false;
       if (tczname == null)
       {
@@ -393,6 +394,9 @@ public class Loader extends Activity implements BarcodeReadListener
             totalcrossPKG = "totalcross."+tczname;
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
             isSingleAPK = true;
+            Bundle extras = getIntent().getExtras();
+            if (extras != null && extras.containsKey("cmdline"))
+               ht.put("cmdline",extras.getString("cmdline"));
          }
       }
       String appPath = ht.get("apppath");
@@ -407,12 +411,6 @@ public class Loader extends Activity implements BarcodeReadListener
       String cmdline = ht.get("cmdline");
       setContentView(new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK));
       onMainLoop = true;
-      
-      // start GCM service
-      GCMUtils.pushTokenAndroid = ht.get("pushTokenAndroid");
-      AndroidUtils.debug("*** PUSH TOKEN ANDROID loader: "+GCMUtils.pushTokenAndroid);
-      if (GCMUtils.pushTokenAndroid != null)
-         GCMUtils.startGCMService(this, ht.get("package"), tczname);
    }
    
    class EventHandler extends Handler 
@@ -518,6 +516,9 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       try
       {
+         if (command.equals("***REGISTER PUSH TOKEN***")) // start GCM service
+            GCMUtils.startGCMService(this, GCMUtils.setToken(this,args), tczName);
+         else
          if (command.equalsIgnoreCase("broadcast"))
          {
             Intent intent = new Intent();
