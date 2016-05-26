@@ -42,7 +42,9 @@ public class GCMUtils
 
    public static String getToken(Context c)
    {
-      return c.getSharedPreferences("push_token",0).getString("push_token", null);
+      String ret = c.getSharedPreferences("push_token",0).getString("push_token", null);
+      AndroidUtils.debug("getToken: "+ret);
+      return ret;
    }
    
    public static void setToken(Context c, String tok)

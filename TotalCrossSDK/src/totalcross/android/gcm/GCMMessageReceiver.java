@@ -70,7 +70,7 @@ public class GCMMessageReceiver extends GcmListenerService
                builder.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
                builder.setSmallIcon(totalcross.android.R.drawable.icon);
                builder.setTicker(ticker);
-               notificationManager.notify((int)System.currentTimeMillis(), builder.getNotification());
+               notificationManager.notify(13121971, builder.getNotification());
             }               
          }
          catch (Throwable t)

@@ -7,7 +7,7 @@ import android.content.*;
 import com.google.android.gms.gcm.*;
 import com.google.android.gms.iid.*;
 
-/** Receives the token from Google Cloud Messaging.
+/** Receives the toke,n from Google Cloud Messaging.
  *  Called by totalcross.Loader. 
  *  MUST BE INVOKED IN A SEPARATE SERVICE. 
  */
