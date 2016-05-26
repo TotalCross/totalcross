@@ -368,7 +368,6 @@ public class Loader extends Activity implements BarcodeReadListener
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
-   private String tczName;
    
    public boolean isSingleApk()
    {
@@ -380,7 +379,7 @@ public class Loader extends Activity implements BarcodeReadListener
       if (runningVM) return;
       runningVM = true;
       Hashtable<String,String> ht = AndroidUtils.readVMParameters();
-      String tczname = tczName = tcz = ht.get("tczname");
+      String tczname = tcz = ht.get("tczname");
       boolean isSingleAPK = false;
       if (tczname == null)
       {
@@ -517,7 +516,10 @@ public class Loader extends Activity implements BarcodeReadListener
       try
       {
          if (command.equals("***REGISTER PUSH TOKEN***")) // start GCM service
-            GCMUtils.startGCMService(this, GCMUtils.setToken(this,args), tczName);
+         {
+            GCMUtils.setToken(this,args);
+            GCMUtils.startGCMService(this);
+         }
          else
          if (command.equalsIgnoreCase("broadcast"))
          {

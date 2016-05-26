@@ -42,19 +42,14 @@ public class GCMUtils
 
    public static String getToken(Context c)
    {
-      AndroidUtils.debug("getToken "+c);
-      String ret = c.getSharedPreferences("push_token",0).getString("push_token", null);
-      AndroidUtils.debug("ret: "+ret);
-      return ret;
+      return c.getSharedPreferences("push_token",0).getString("push_token", null);
    }
    
-   public static String setToken(Context c, String tok)
+   public static void setToken(Context c, String tok)
    {
       if (tok.startsWith("_"))
          tok = tok.substring(1,tok.length()-1);
-      AndroidUtils.debug("setToken "+c+": "+tok);
       c.getSharedPreferences("push_token",0).edit().putString("push_token", tok).commit();
-      return tok;
    }
    
    private static void writeChars(String name, boolean append, String msg) throws IOException
@@ -89,13 +84,9 @@ public class GCMUtils
       LocalBroadcastManager.getInstance(cnt).sendBroadcast(in);
    }
 
-   public static void startGCMService(Context cnt, String pack, String tczname)
+   public static void startGCMService(Context cnt)
    {
-      AndroidUtils.debug("startGSMService "+cnt+" / "+pack+" / "+tczname);
-      Intent intent = new Intent(cnt, totalcross.android.gcm.GCMTokenReceiver.class);
-      intent.putExtra("pack", pack);
-      intent.putExtra("cls", tczname);
-      cnt.startService(intent);
+      cnt.startService(new Intent(cnt, totalcross.android.gcm.GCMTokenReceiver.class));
       // register broadcast receiver 
       LocalBroadcastManager.getInstance(cnt).registerReceiver(new BroadcastReceiver() 
       {
