@@ -101,7 +101,6 @@ public class DeploySettings
    public static java.io.File appleCertStore;
    public static KeyStore iosKeyStore;
    public static X509CertificateHolder iosDistributionCertificate;
-   public static Time iosCertDate;
    
    public static byte[] tcappProp;
    public static final String TCAPP_PROP = "tcapp.prop";

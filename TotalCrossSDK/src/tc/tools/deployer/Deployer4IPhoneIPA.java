@@ -65,7 +65,7 @@ public class Deployer4IPhoneIPA
    public Deployer4IPhoneIPA() throws Exception
    {
       if (DeploySettings.mobileProvision == null || DeploySettings.appleCertStore == null || DeploySettings.iosKeyStore == null || DeploySettings.iosDistributionCertificate == null)
-         throw new NullPointerException();
+         throw new DeployerException("Missing one of required files to build the IPA!");
 
       // initialize bouncy castle
       Security.addProvider(new BouncyCastleProvider());
