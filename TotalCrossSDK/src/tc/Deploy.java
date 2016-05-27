@@ -16,10 +16,17 @@ package tc;
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+
+import org.apache.commons.io.FileUtils;
+import org.bouncycastle.cert.X509CertificateHolder;
+
 import tc.tools.*;
 import tc.tools.converter.*;
 import tc.tools.deployer.*;
-
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -332,6 +339,38 @@ public class Deploy
                               return false;
                            }
                         });
+                        if (DeploySettings.appleCertStore != null) {
+                  	      CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
+                  	      KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
+                  	      ks.load(new FileInputStream(DeploySettings.appleCertStore), "".toCharArray());
+                  	      
+                  	      String keyAlias = (String) ks.aliases().nextElement();
+                  	      Certificate storecert = ks.getCertificate(keyAlias);
+                  	      if (storecert == null)
+                  	      {
+                  	         java.io.File[] certsInPath = DeploySettings.appleCertStore.getParentFile().listFiles(new FilenameFilter()
+                  	         {
+                  	            public boolean accept(java.io.File arg0, String arg1)
+                  	            {
+                  	               return arg1.endsWith(".cer");
+                  	            }
+                  	         });
+                  	         if (certsInPath.length == 0)
+                  	            throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
+                  	
+                  	         storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
+                  	         PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
+                  	         ks.deleteEntry(keyAlias);
+                  	         ks.setEntry(
+                  	               keyAlias,
+                  	               new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+                  	               new KeyStore.PasswordProtection("".toCharArray())
+                  	               );
+                  	      }
+                  	      DeploySettings.iosKeyStore = ks;
+                  	      DeploySettings.iosDistributionCertificate = new X509CertificateHolder(storecert.getEncoded());
+                  	      DeploySettings.iosCertDate = new Time(DeploySettings.iosDistributionCertificate.getNotAfter().getTime(), false);
+                        }
                         break;
                case 'n': 
                          DeploySettings.filePrefix = args[++i];
