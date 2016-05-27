@@ -13,15 +13,15 @@
 
 package tc;
 
+import totalcross.sys.*;
+import totalcross.util.*;
+
 import java.io.*;
 import java.lang.reflect.*;
 import java.net.*;
 import tc.tools.*;
 import tc.tools.converter.*;
 import tc.tools.deployer.*;
-
-import totalcross.sys.*;
-import totalcross.util.*;
 
 public class Deploy
 {
@@ -67,13 +67,14 @@ public class Deploy
          DeploySettings.init();
 
          checkClasspath();
+         addJars();
 
          // tc.tools.Deploy <arquivo zip/jar> palm wince win32 linux bb
          String fileName = args[0];
          int options = parseOptions(args);
          new RegisterSDK(activationKey);
          
-         DeploySettings.iosKeystoreInit();
+         Deployer4IPhoneIPA.iosKeystoreInit();
 
          // convert the jar file into a tcz file
          J2TC.process(fileName, options);
@@ -90,14 +91,6 @@ public class Deploy
 
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
-            //flsobral@tc210: dynamically load some useful libs for handling files and compression 
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-io-2.2.jar");
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-compress-1.4.jar");
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-file-7.5.1.jar");
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-zip-7.5.1.jar");
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-file-7.5.1.jar");
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-kernel-7.5.1.jar");
-            JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-swing-7.5.1.jar");
             if (DeploySettings.filePrefix == null)
                throw new DeployerException("Error: MainWindow or library not found!");
             
@@ -110,21 +103,15 @@ public class Deploy
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
             if ((options & BUILD_IPHONE)  != 0)
             {
-               //flsobral@tc115: dynamically load libraries required to build for iPhone.
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-147.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-147.jar");
-               JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/dd-plist.jar");
-
-               //if (DeploySettings.buildIPA)
-               if (DeploySettings.certStorePath == null)
+               if (Deployer4IPhoneIPA.certStorePath == null)
                   System.out.println("Warning: /m option not found, ignoring iOS deployment.");
                else
                {
-                  if (DeploySettings.appleCertStore == null)
-                     throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: " + DeploySettings.certStorePath);
+                  if (Deployer4IPhoneIPA.appleCertStore == null)
+                     throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the certificate store at: " + Deployer4IPhoneIPA.certStorePath);
                   else
-                  if (DeploySettings.mobileProvision == null)
-                     throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: " + DeploySettings.certStorePath);
+                  if (Deployer4IPhoneIPA.mobileProvision == null)
+                     throw new DeployerException("Failed to build the ipa for iOS distribution: Couldn't find the mobile provision at: " + Deployer4IPhoneIPA.certStorePath);
                   new Deployer4IPhoneIPA();
                }
             }
@@ -162,6 +149,21 @@ public class Deploy
       }
    }
    
+   private void addJars() throws IOException
+   {
+      //flsobral@tc210: dynamically load some useful libs for handling files and compression 
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-147.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-147.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-io-2.2.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/commons/commons-compress-1.4.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-file-7.5.1.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-driver-zip-7.5.1.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-file-7.5.1.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-kernel-7.5.1.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/truezip/truezip-swing-7.5.1.jar");
+      JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/dd-plist.jar");
+   }
+
    /**
     * Utility class that dynamically loads a jar file into the Deploy classpath.<br>
     * It uses reflection to grant access to the loaded jar, a little hackish but that's the easiest way of doing it.<br>
@@ -316,9 +318,9 @@ public class Deploy
                          }
                          break;
                case 'm':
-                        DeploySettings.buildIPA = true;
+                        Deployer4IPhoneIPA.buildIPA = true;
                         File folder = new File(args[++i]);
-                        DeploySettings.certStorePath = folder.getPath();
+                        Deployer4IPhoneIPA.certStorePath = folder.getPath();
                         folder.list(new FilenameFilter()
                         {
                            public boolean accept(File dir, String fileName)
@@ -326,11 +328,11 @@ public class Deploy
                               String fileNameLower = fileName.toLowerCase();
                               if (fileNameLower.endsWith(".mobileprovision"))
                               {
-                                 DeploySettings.mobileProvision = new File(dir, fileName);
-                                 System.out.println("Mobile provision: "+DeploySettings.mobileProvision.getAbsolutePath());
+                                 Deployer4IPhoneIPA.mobileProvision = new File(dir, fileName);
+                                 System.out.println("Mobile provision: "+Deployer4IPhoneIPA.mobileProvision.getAbsolutePath());
                               }
                               else if (fileNameLower.endsWith(".p12"))
-                                 DeploySettings.appleCertStore = new File(dir, fileName);
+                                 Deployer4IPhoneIPA.appleCertStore = new File(dir, fileName);
                               return false;
                            }
                         });

@@ -13,42 +13,17 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.util.HashMap;
-
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-import tc.Deploy;
-import totalcross.io.File;
-import totalcross.io.FileNotFoundException;
-import totalcross.sys.Convert;
-import totalcross.sys.InvalidNumberException;
-import totalcross.sys.Settings;
-import totalcross.sys.Time;
+import totalcross.io.*;
+import totalcross.sys.*;
+import totalcross.util.*;
 import totalcross.util.Hashtable;
-import totalcross.util.IntVector;
-import totalcross.util.InvalidDateException;
 import totalcross.util.Vector;
+
+import java.security.*;
+import java.util.*;
 
 public class DeploySettings
 {
-   public static final String UnknownVendor = "Unknown Vendor"; // fdie@570_96
-
    public static String[] tczs;
    // constants for including the vm and/or litebase in a package 
    public static boolean packageVM;
@@ -111,14 +86,6 @@ public class DeploySettings
    
    public static HashMap<String,String> hmMappedClasses = new HashMap<String,String>(5);
 
-   // iOS IPA required files
-   public static boolean buildIPA = false;
-   public static String certStorePath;
-   public static java.io.File mobileProvision;
-   public static java.io.File appleCertStore;
-   public static KeyStore iosKeyStore;
-   public static X509CertificateHolder iosDistributionCertificate;
-   
    public static byte[] tcappProp;
    public static final String TCAPP_PROP = "tcapp.prop";
    public static int appBuildNumber=-1;
@@ -241,47 +208,6 @@ public class DeploySettings
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
       
       handleTCAppProp();
-   }
-   
-   public static void iosKeystoreInit() throws CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException, java.io.FileNotFoundException, IOException, UnrecoverableKeyException, InvalidDateException {
-       //flsobral: dynamically load libraries required to build for iPhone.
-       Deploy.JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-147.jar");
-       Deploy.JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-147.jar");
-       // initialize bouncy castle
-       Security.addProvider(new BouncyCastleProvider());
-	   if (DeploySettings.appleCertStore != null) {
-	      CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
-	      KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
-	      ks.load(new FileInputStream(DeploySettings.appleCertStore), "".toCharArray());
-	      
-	      String keyAlias = (String) ks.aliases().nextElement();
-	      Certificate storecert = ks.getCertificate(keyAlias);
-	      if (storecert == null)
-	      {
-	         java.io.File[] certsInPath = DeploySettings.appleCertStore.getParentFile().listFiles(new FilenameFilter()
-	         {
-	            public boolean accept(java.io.File arg0, String arg1)
-	            {
-	               return arg1.endsWith(".cer");
-	            }
-	         });
-	         if (certsInPath.length == 0)
-	            throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
-	
-	         storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
-	         PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
-	         ks.deleteEntry(keyAlias);
-	         ks.setEntry(
-	               keyAlias,
-	               new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
-	               new KeyStore.PasswordProtection("".toCharArray())
-	               );
-	      }
-	      DeploySettings.iosKeyStore = ks;
-	      DeploySettings.iosDistributionCertificate = new X509CertificateHolder(storecert.getEncoded());
-	      Settings.iosCertDate = new Time(DeploySettings.iosDistributionCertificate.getNotAfter().getTime(), false);
-	      Utils.println("iOS Certificate expiration date: "+Settings.iosCertDate.getSQLString());
-      }
    }
    
    private static void handleTCAppProp()

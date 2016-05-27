@@ -11,50 +11,38 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Security;
-import java.security.cert.CertificateFactory;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.crypto.digests.GeneralDigest;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.x509.X509CollectionStoreParameters;
-import org.bouncycastle.x509.X509Store;
-
-import tc.tools.deployer.ipa.AppleBinary;
-import tc.tools.deployer.ipa.MobileProvision;
-import tc.tools.deployer.ipa.MyNSObjectSerializer;
-import totalcross.sys.Convert;
-import totalcross.sys.Settings;
+import totalcross.sys.*;
+import totalcross.util.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
-import com.dd.plist.NSArray;
-import com.dd.plist.NSData;
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSString;
-import com.dd.plist.PropertyListParser;
-
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TVFS;
+import com.dd.plist.*;
+import de.schlichtherle.truezip.file.*;
+import java.io.*;
+import java.security.*;
+import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.util.*;
+import org.apache.commons.io.*;
+import org.bouncycastle.cert.*;
+import org.bouncycastle.crypto.digests.*;
+import org.bouncycastle.jce.provider.*;
+import org.bouncycastle.x509.*;
+import tc.tools.deployer.ipa.*;
 
 /**
  * Generates IPhone application packages.
  */
 public class Deployer4IPhoneIPA
 {
+   // iOS IPA required files
+   public static boolean buildIPA;
+   public static String certStorePath;
+   public static java.io.File mobileProvision;
+   public static java.io.File appleCertStore;
+   public static KeyStore iosKeyStore;
+   public static org.bouncycastle.cert.X509CertificateHolder iosDistributionCertificate;
+   
    public static final String appleRootCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleRootCA.pem");
    public static final String appleWWDRCA = Convert.appendPath(DeploySettings.etcDir, "tools/ipa/AppleWWDRCA.pem");
    
@@ -64,7 +52,7 @@ public class Deployer4IPhoneIPA
    
    public Deployer4IPhoneIPA() throws Exception
    {
-      if (DeploySettings.mobileProvision == null || DeploySettings.appleCertStore == null || DeploySettings.iosKeyStore == null || DeploySettings.iosDistributionCertificate == null)
+      if (mobileProvision == null || appleCertStore == null || iosKeyStore == null || iosDistributionCertificate == null)
          throw new DeployerException("Missing one of required files to build the IPA!");
 
       // initialize bouncy castle
@@ -150,7 +138,7 @@ public class Deployer4IPhoneIPA
 
       /** PROCESS MOBILE PROVISION **/
       // update the mobile provision
-      this.Provision = MobileProvision.readFromFile(DeploySettings.mobileProvision);
+      this.Provision = MobileProvision.readFromFile(mobileProvision);
 
       /** PROCESS INFO.PLIST **/
       // read the info.plist from the zip file
@@ -196,14 +184,14 @@ public class Deployer4IPhoneIPA
             new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(appleRootCA)))).getEncoded());
       certs[1] = new X509CertificateHolder(cf.generateCertificate(
             new ByteArrayInputStream(FileUtils.readFileToByteArray(new File(appleWWDRCA)))).getEncoded());
-      certs[2] = DeploySettings.iosDistributionCertificate;
+      certs[2] = iosDistributionCertificate;
       
       X509Store certStore = X509Store.getInstance(
             "CERTIFICATE/Collection", new X509CollectionStoreParameters(Arrays.asList(certs)), "BC");
 
       // provision
       TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
-      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(DeploySettings.mobileProvision)));
+      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(mobileProvision)));
 
       /** CREATE THE MACHOBJECTFILE **/
       TFile executable = (TFile) ipaContents.get(executableName);
@@ -214,7 +202,7 @@ public class Deployer4IPhoneIPA
 
       AppleBinary file = AppleBinary.create(appStream.toByteArray());
       // executable
-      executable.input(new ByteArrayInputStream(file.resign(DeploySettings.iosKeyStore, certStore, bundleIdentifier, this.Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
+      executable.input(new ByteArrayInputStream(file.resign(iosKeyStore, certStore, bundleIdentifier, this.Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
       
       TVFS.umount(targetZip);      
 
@@ -321,4 +309,42 @@ public class Deployer4IPhoneIPA
          }
       });
    }   
+
+   public static void iosKeystoreInit() throws CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException, java.io.FileNotFoundException, IOException, UnrecoverableKeyException, InvalidDateException {
+      // initialize bouncy castle
+      Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+     if (appleCertStore != null) {
+        CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
+        KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
+        ks.load(new FileInputStream(appleCertStore), "".toCharArray());
+        
+        String keyAlias = (String) ks.aliases().nextElement();
+        Certificate storecert = ks.getCertificate(keyAlias);
+        if (storecert == null)
+        {
+           java.io.File[] certsInPath = appleCertStore.getParentFile().listFiles(new FilenameFilter()
+           {
+              public boolean accept(java.io.File arg0, String arg1)
+              {
+                 return arg1.endsWith(".cer");
+              }
+           });
+           if (certsInPath.length == 0)
+              throw new DeployerException("Distribution certificate was not found in " + appleCertStore.getParent());
+  
+           storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
+           PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
+           ks.deleteEntry(keyAlias);
+           ks.setEntry(
+                 keyAlias,
+                 new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+                 new KeyStore.PasswordProtection("".toCharArray())
+                 );
+        }
+        iosKeyStore = ks;
+        iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
+        Settings.iosCertDate = new Time(((org.bouncycastle.cert.X509CertificateHolder)iosDistributionCertificate).getNotAfter().getTime(), false);
+        Utils.println("iOS Certificate expiration date: "+Settings.iosCertDate.getSQLString());
+     }
+  }
 }
