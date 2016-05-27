@@ -104,7 +104,6 @@ public class DeploySettings
    public static java.io.File appleCertStore;
    public static KeyStore iosKeyStore;
    public static X509CertificateHolder iosDistributionCertificate;
-   public static Time iosCertDate;
    
    public static byte[] tcappProp;
    public static final String TCAPP_PROP = "tcapp.prop";
@@ -257,7 +256,8 @@ public class DeploySettings
 	      }
 	      DeploySettings.iosKeyStore = ks;
 	      DeploySettings.iosDistributionCertificate = new X509CertificateHolder(storecert.getEncoded());
-	      DeploySettings.iosCertDate = new Time(DeploySettings.iosDistributionCertificate.getNotAfter().getTime(), false);
+	      Settings.iosCertDate = new Time(DeploySettings.iosDistributionCertificate.getNotAfter().getTime(), false);
+	      Utils.println("iOS Certificate Date: "+Settings.iosCertDate.getSQLString());
       }
       
       handleTCAppProp();

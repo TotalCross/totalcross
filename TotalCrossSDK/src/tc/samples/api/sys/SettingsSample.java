@@ -53,6 +53,7 @@ public class SettingsSample extends BaseContainer
       log("Line number is " + Settings.lineNumber,false);
       log("Rom serial number is " + Settings.romSerialNumber,false);
       log("Mac Address is " + Settings.macAddress,false);
+      log("iosCertDate is "+Settings.iosCertDate, false);
       if (Settings.imeis == null)
          ;
       else

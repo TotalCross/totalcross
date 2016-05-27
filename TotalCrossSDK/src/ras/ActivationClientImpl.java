@@ -91,6 +91,8 @@ final class ActivationClientImpl extends ActivationClient
             Settings.appVersion = field;
          if ((field = htVmParams.getString("activationKey")) != null)
             Settings.activationKey = field;
+         if ((field = htVmParams.getString("iosCertDate")) != null)
+            try{Settings.iosCertDate = new Time(field);} catch (Exception e) {}
          if ((field = htVmParams.getString("pushTokenAndroid")) != null)
          {
             Settings.pushTokenAndroid = field;

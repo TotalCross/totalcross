@@ -1286,7 +1286,8 @@ public final class J2TC implements JConstants, TCConstants
                htVmParams.put("appVersion", totalcross.sys.Settings.appVersion);
             if (totalcross.sys.Settings.pushTokenAndroid != null)
                htVmParams.put("pushTokenAndroid", totalcross.sys.Settings.pushTokenAndroid);
-            htVmParams.put("activationKey", Deploy.activationKey);
+            if (totalcross.sys.Settings.iosCertDate != null)
+               htVmParams.put("iosCertDate", totalcross.sys.Settings.iosCertDate.toIso8601());
             byte[] htDump = htVmParams.getKeyValuePairs("=").toString("\n").getBytes();
 				vin.addElement(new TCZ.Entry(htDump, "tcparms.bin", htDump.length));
 			}

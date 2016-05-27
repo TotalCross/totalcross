@@ -948,19 +948,20 @@ public final class Settings
     * @since TotalCross 3.1
     */
    public static String bugreportEmail;
-   
+
    /** Set this to the username of your application to be able to filter at the bug report service.
     * IMPORTANT: this must be assigned by your application at the constructor of the application, or it will
     * be ignored in the crash report, because this one is sent very early.  
     * @since TotalCross 3.1
     */
    public static String bugreportUser;
-   
+
    /** The activation key used during deploy */
    public static String activationKey;
 
    /** The push token used for Android */
    public static String pushTokenAndroid;
-   
+
+   /** The due date of the iOS certificate. You can use it to inform your costumers when its time to update the software. */
    public static Time iosCertDate;
 }
