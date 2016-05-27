@@ -29,6 +29,10 @@ public class TotalCrossAPI extends MainWindow
       Settings.appVersion = "1.06";
       Settings.windowSize = Settings.WINDOWSIZE_480X640;
       Settings.companyContact = "registro@totalcross.com";
+
+      // comentar quando for enviar pra loja Google Play
+      Settings.applicationId = "tapi";
+      
       // upload your xap and the page will give you the correct values to put in the properties below
       // These values are placed by tc.Deploy in the file AppxManifest.xml inside the XAP (which is a zip file)
       Settings.companyInfo = "TotalCross";
