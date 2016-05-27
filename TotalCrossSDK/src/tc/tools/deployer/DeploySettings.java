@@ -19,7 +19,17 @@ import totalcross.util.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.*;
+
+import org.apache.commons.io.FileUtils;
+import org.bouncycastle.cert.X509CertificateHolder;
 
 public class DeploySettings
 {
@@ -92,6 +102,9 @@ public class DeploySettings
    public static String certStorePath;
    public static java.io.File mobileProvision;
    public static java.io.File appleCertStore;
+   public static KeyStore iosKeyStore;
+   public static X509CertificateHolder iosDistributionCertificate;
+   public static Time iosCertDate;
    
    public static byte[] tcappProp;
    public static final String TCAPP_PROP = "tcapp.prop";
@@ -213,6 +226,39 @@ public class DeploySettings
          folderTotalCross3DistVM = null;
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
+      
+      if (DeploySettings.appleCertStore != null) {
+	      CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
+	      KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
+	      ks.load(new FileInputStream(DeploySettings.appleCertStore), "".toCharArray());
+	      
+	      String keyAlias = (String) ks.aliases().nextElement();
+	      Certificate storecert = ks.getCertificate(keyAlias);
+	      if (storecert == null)
+	      {
+	         java.io.File[] certsInPath = DeploySettings.appleCertStore.getParentFile().listFiles(new FilenameFilter()
+	         {
+	            public boolean accept(java.io.File arg0, String arg1)
+	            {
+	               return arg1.endsWith(".cer");
+	            }
+	         });
+	         if (certsInPath.length == 0)
+	            throw new DeployerException("Distribution certificate was not found in " + DeploySettings.appleCertStore.getParent());
+	
+	         storecert = cf.generateCertificate(new ByteArrayInputStream(FileUtils.readFileToByteArray(certsInPath[0])));
+	         PrivateKey pk = (PrivateKey) ks.getKey(keyAlias, "".toCharArray());
+	         ks.deleteEntry(keyAlias);
+	         ks.setEntry(
+	               keyAlias,
+	               new KeyStore.PrivateKeyEntry(pk, new Certificate[] { storecert }),
+	               new KeyStore.PasswordProtection("".toCharArray())
+	               );
+	      }
+	      DeploySettings.iosKeyStore = ks;
+	      DeploySettings.iosDistributionCertificate = new X509CertificateHolder(storecert.getEncoded());
+	      DeploySettings.iosCertDate = new Time(DeploySettings.iosDistributionCertificate.getNotAfter().getTime(), false);
+      }
       
       handleTCAppProp();
    }
