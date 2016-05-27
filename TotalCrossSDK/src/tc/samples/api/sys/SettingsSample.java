@@ -67,6 +67,6 @@ public class SettingsSample extends BaseContainer
       log("Rom version is " + Settings.romVersion,false);
       log("Device id is " + Settings.deviceId,false);
       log("App path is " + Settings.appPath,false);
-      log("iosCertDate is "+Settings.iosCertDate, false);
+      log("iosCertDate is "+(Settings.iosCertDate != null ? Settings.iosCertDate.getSQLString() : "null"), false);
    }
 }
