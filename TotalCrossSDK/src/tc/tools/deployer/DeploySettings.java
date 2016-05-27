@@ -280,7 +280,7 @@ public class DeploySettings
 	      DeploySettings.iosKeyStore = ks;
 	      DeploySettings.iosDistributionCertificate = new X509CertificateHolder(storecert.getEncoded());
 	      Settings.iosCertDate = new Time(DeploySettings.iosDistributionCertificate.getNotAfter().getTime(), false);
-	      Utils.println("iOS Certificate Date: "+Settings.iosCertDate.getSQLString());
+	      Utils.println("iOS Certificate expiration date: "+Settings.iosCertDate.getSQLString());
       }
    }
    
