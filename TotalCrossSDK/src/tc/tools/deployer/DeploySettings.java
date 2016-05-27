@@ -19,7 +19,6 @@ import totalcross.util.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
-import java.security.*;
 import java.util.*;
 
 public class DeploySettings
