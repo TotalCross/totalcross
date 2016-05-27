@@ -22,6 +22,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import tc.Deploy;
 import totalcross.io.File;
@@ -245,6 +247,8 @@ public class DeploySettings
        //flsobral: dynamically load libraries required to build for iPhone.
        Deploy.JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcprov-jdk15on-147.jar");
        Deploy.JarClassPathLoader.addFile(DeploySettings.etcDir + "libs/bouncycastle/bcpkix-jdk15on-147.jar");
+       // initialize bouncy castle
+       Security.addProvider(new BouncyCastleProvider());
 	   if (DeploySettings.appleCertStore != null) {
 	      CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
 	      KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
