@@ -961,4 +961,6 @@ public final class Settings
 
    /** The push token used for Android */
    public static String pushTokenAndroid;
+   
+   public static Time iosCertDate;
 }
