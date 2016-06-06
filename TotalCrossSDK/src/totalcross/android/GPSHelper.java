@@ -47,7 +47,6 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
          Bundle b = loc.getExtras();
          int sats = b != null ? b.getInt("satellites") : 0;
          String provider = loc.getProvider();
-         AndroidUtils.debug(loc.toString());
          if (provider == null || provider.equals("gps") || provider.equals("fused"))
          {
             String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
