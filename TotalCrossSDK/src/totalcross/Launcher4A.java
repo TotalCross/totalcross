@@ -914,8 +914,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             if (i < 0 || i >= ff.length)
                return null;
             File f = ff[i];
-            AndroidUtils.debug("/sdcard"+i+": "+f+(f.canRead() ? " (valid)" : " (cant read)"));
-            return f.canRead() ? f.toString() : null;
+            if (!f.canRead())
+            {
+               //AndroidUtils.debug("/sdcard"+i+": "+f+" (cant read)");
+               return null;
+            }
+            String ret = f.toString();
+            if (ret.contains("/Android/data"))
+               ret = ret.substring(0,ret.indexOf("/Android/data"));
+            //AndroidUtils.debug("/sdcard"+i+": "+ret+" (valid)");
+            return ret;
          }
       }
       catch (Throwable t)
