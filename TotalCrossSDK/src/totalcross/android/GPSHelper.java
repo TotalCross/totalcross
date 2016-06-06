@@ -72,7 +72,6 @@ public class GPSHelper implements android.location.LocationListener, GpsStatus.L
    public String gpsGetData()
    {
       boolean isHigh = Launcher4A.gpsPrecision == HIGH_GPS_PRECISION;
-      AndroidUtils.debug("get date is high: "+isHigh);
       if (isHigh)
          return gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
       String ret = isHigh ? (gps != null ? lastGps : null) : (googleApiClient != null ? lastGps : null);
