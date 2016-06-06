@@ -903,6 +903,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return 0;
    }
    
+   static boolean shownSD[] = new boolean[10];
    public static String getSDCardPath(int i)
    {
       try
@@ -916,13 +917,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             File f = ff[i];
             if (!f.canRead())
             {
-               //AndroidUtils.debug("/sdcard"+i+": "+f+" (cant read)");
+               try {if (!shownSD[i]) AndroidUtils.debug("/sdcard"+i+": "+f+" (cant read)"); shownSD[i] = true;} catch (Exception e) {}
                return null;
             }
             String ret = f.toString();
             if (ret.contains("/Android/data"))
                ret = ret.substring(0,ret.indexOf("/Android/data"));
-            //AndroidUtils.debug("/sdcard"+i+": "+ret+" (valid)");
+            try {if (!shownSD[i]) AndroidUtils.debug("/sdcard"+i+": "+ret+" (valid)"); shownSD[i] = true;} catch (Exception e) {}
             return ret;
          }
       }
