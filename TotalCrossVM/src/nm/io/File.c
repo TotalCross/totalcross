@@ -64,13 +64,14 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
    if (xstrncmp(szPath,"/sdcard",7) == 0)
    {
       char path2[MAX_PATHNAME];
-      if (!getSDCardPath(path2,szPath[7] - '0'))
+      char n = szPath[7] - '0';
+      if (!getSDCardPath(path2,n))
       {                                                
          if (throwEx)
             throwException(p->currentContext, IOException, "Card not inserted.");
          return false;
       }   
-      xstrcat(path2, &szPath[7]);
+      xstrcat(path2, &szPath[0 <= n && n <= 9 ? 8 : 7]);
       xstrcpy(szPath, path2);
    }
    return true;
@@ -123,6 +124,11 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
       JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
       if (IS_DEBUG_CONSOLE(szPath))
          mode = READ_ONLY;
+      if (!replacePath(p,szPath,true))
+      {
+         invalidate(file);
+         return;
+      }
       if (mode != CREATE && mode != CREATE_EMPTY && !fileExists(szPath, File_slot(file)))
          throwFileNotFoundException(p->currentContext, szPath);
       else
@@ -130,11 +136,6 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
       {
          File_fileRef(file) = fileRef;
          natFile = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-         if (!replacePath(p,szPath,true))
-         {
-            invalidate(file);
-            return;
-         }
          if ((err = fileCreate(natFile, szPath, mode, &File_slot(file))) != NO_ERROR)
          {
             throwExceptionWithCode(p->currentContext, IOException, err);
