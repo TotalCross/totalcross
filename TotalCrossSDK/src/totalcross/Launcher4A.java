@@ -881,6 +881,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int vmExec(String command, String args, int launchCode, boolean wait)
    {
+      if (command != null && command.contains("/sdcard"))
+         command = replaceSDcard(command);
+      if (args != null && args.contains("/sdcard"))
+         args = replaceSDcard(args);
+
       if (command.equals("bugreport"))
          return createBugreport() ? 1 : 0;
       if (command.equals("viewer"))
@@ -903,6 +908,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return 0;
    }
    
+   private static String replaceSDcard(String args)
+   {
+      int idx = args.indexOf("/sdcard");
+      if (idx != -1 && idx < args.length()-1)
+      {
+         char m1 = args.charAt(idx+7);
+         if ('0' <= m1 && m1 <= '9')
+         {
+            String sd = Launcher4A.getSDCardPath(m1 - '0');
+            args = args.substring(0,idx) + sd + args.substring(idx+8);
+            AndroidUtils.debug("changing path to "+args);
+         }
+      }
+      return args;
+   }
+
    static boolean shownSD[] = new boolean[10];
    public static String getSDCardPath(int i)
    {
