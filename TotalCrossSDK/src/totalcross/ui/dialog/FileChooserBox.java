@@ -184,16 +184,9 @@ public class FileChooserBox extends Window
       v.addElement("device/");
       try
       {
-         String[] ll = new File("/mnt").listFiles();
-         for (int i = 0; i < ll.length; i++)
-         {
-            String dir = "/mnt/"+ll[i];
-            try
-            {
-               if (new File(dir).listFiles() != null)
-                  v.addElement(dir);
-            } catch (Exception e) {}
-         }
+         for (int i = 0; i < 9; i++)
+            if (File.isCardInserted(i))
+               v.addElement("/sdcard"+i);
       }
       catch (Exception e)
       {
@@ -303,17 +296,15 @@ public class FileChooserBox extends Window
       tmodel.setRoot(root);
       if (cbRoot != null) // guich@tc126_10: select current drive on combobox
       {
-         int firstSlash = filePath.indexOf('/');
-         if (firstSlash != -1)
+         previouslySelectedRootIndex = cbRoot.getSelectedIndex();
+         Node p = tmodel.getRoot();
+         if (p != null)
          {
-            if (isAndroid && filePath.startsWith("/mnt"))
-            {
-               int otherSlash = filePath.indexOf(firstSlash+1);
-               if (otherSlash != -1)
-                  firstSlash = otherSlash;
-            }
-            cbRoot.setSelectedItemStartingWith(filePath.substring(0,firstSlash),true,false);
-            previouslySelectedRootIndex = cbRoot.getSelectedIndex();
+            String s = p.toString();
+            int pp = s.length() > 1 ? s.indexOf('/', 1) : -1;
+            if (pp != -1)
+               s = s.substring(0,pp);
+            cbRoot.setSelectedItemStartingWith(s, true, false);
          }
       }
    }
