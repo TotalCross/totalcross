@@ -295,6 +295,7 @@ HINSTANCE coreDll;
 HINSTANCE cellcoreDll;
 #endif
 
+DECLARE_MUTEX(tcz);
 DECLARE_MUTEX(metAndCls);
 DECLARE_MUTEX(omm);
 DECLARE_MUTEX(screen);
@@ -315,6 +316,7 @@ bool initGlobals()
 	SETUP_MUTEX;
    INIT_MUTEX(opengl);
    INIT_MUTEX(omm);
+   INIT_MUTEX(tcz);
    INIT_MUTEX(metAndCls);
    INIT_MUTEX(alloc);
    INIT_MUTEX(screen);
@@ -336,6 +338,7 @@ bool initGlobals()
 void destroyGlobals()
 {
    DESTROY_MUTEX(omm);   
+   DESTROY_MUTEX(tcz);
    DESTROY_MUTEX(metAndCls);
    DESTROY_MUTEX(screen);
    DESTROY_MUTEX(htSSL);

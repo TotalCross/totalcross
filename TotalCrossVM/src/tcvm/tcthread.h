@@ -112,6 +112,7 @@ Pthreads on Posix (iPhone, Linux, ...)
 /************  PUBLIC MUTEXES *************/
 
 extern DECLARE_MUTEX(omm);
+extern DECLARE_MUTEX(tcz);
 extern DECLARE_MUTEX(metAndCls);
 extern DECLARE_MUTEX(screen);
 extern DECLARE_MUTEX(htSSL);

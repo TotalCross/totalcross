@@ -69,6 +69,8 @@ void destroyTCZ() // no threads are running at this point
 static bool tczReadMore(TCZFile f)
 {
    int32 n;
+   bool ret = true;
+   LOCKVAR(tcz);
 #ifdef ANDROID
    n = callReadTCZ(f->header->apkIdx, f->buf, f->expectedFilePos, TCZ_BUFFER_SIZE);
 #else   
@@ -78,10 +80,14 @@ static bool tczReadMore(TCZFile f)
 #endif   
    f->header->realFilePos = (f->expectedFilePos += n);
    if (n <= 0)
-      return false; // no more data
-   f->zs.next_in = f->buf;
-   f->zs.avail_in = n;
-   return true;
+      ret = false; // no more data
+   else
+   {
+      f->zs.next_in = f->buf;
+      f->zs.avail_in = n;
+   }
+   UNLOCKVAR(tcz);
+   return ret;
 }
 
 int32 tczRead(TCZFile f, void* outBuf, int32 count)
