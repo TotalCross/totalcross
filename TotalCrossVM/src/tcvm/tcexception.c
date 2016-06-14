@@ -300,7 +300,7 @@ void initException()
    throwableAsCharP[ExceptionClass                ] = "java.lang.Exception";
    throwableAsCharP[IllegalAccessException        ] = "java.lang.IllegalAccessException";
    throwableAsCharP[IllegalArgumentException      ] = "java.lang.IllegalArgumentException";
-   throwableAsCharP[ImageException                ] = "java.lang.ImageException";
+   throwableAsCharP[ImageException                ] = "totalcross.ui.image.ImageException";
    throwableAsCharP[IndexOutOfBoundsException     ] = "java.lang.IndexOutOfBoundsException";
    throwableAsCharP[InstantiationException        ] = "java.lang.InstantiationException";
    throwableAsCharP[NoSuchFieldError              ] = "java.lang.NoSuchFieldError";
