@@ -14,6 +14,7 @@
 #ifndef TCVM_H
 #define TCVM_H
 
+//#define ENABLE_WIN32_POINTER_VERIFICATION 1
 //#define ENABLE_TRACE
 #define ENABLE_TEXTURE_TRACE 0
 
