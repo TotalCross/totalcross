@@ -14,7 +14,7 @@
 #include "tcvm.h"
 
 #if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
-#define EXTRA4ALIGN 8
+#define EXTRA4ALIGN 0
 #else
 #define EXTRA4ALIGN 4
 #endif
@@ -51,12 +51,12 @@ static inline VoidP realMalloc(uint32 size) // we can't use DbgMalloc on the lea
 #else
 static VoidP realMalloc(uint32 size)
 {
-   return dlmalloc(size);
+   return malloc(size);
 }
 #endif
 static void realFree(VoidP p) 
 {
-   dlfree(p);
+   free(p);
 }
 ////
 
