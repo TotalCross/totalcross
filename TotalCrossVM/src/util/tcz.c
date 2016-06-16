@@ -260,11 +260,13 @@ TCZFile tczFindName(TCZFile tcz, CharP name) // locates the name and also positi
    ntcz = tczNewInstance(tcz);
    if (!ntcz)
       return null;
+   LOCKVAR(tcz);
    ntcz->header->realFilePos = ntcz->expectedFilePos = ntcz->header->offsets[pos];
 #ifndef ANDROID   
    fseek(ntcz->header->fin, ntcz->expectedFilePos, SEEK_SET);
 #endif   
    ntcz->uncompressedSize = tcz->header->uncompressedSizes[pos];
+   UNLOCKVAR(tcz);
    return ntcz;
 }
 
