@@ -31,8 +31,6 @@ TC_API TCObject createObjectWithoutCallingDefaultConstructor(Context currentCont
 typedef TCObject (*createObjectWithoutCallingDefaultConstructorFunc)(Context currentContext, CharP className);
 TC_API TCObject createObject(Context currentContext, CharP className);
 typedef TCObject (*createObjectFunc)(Context currentContext, CharP className);
-TC_API TCObject allocObject(Context currentContext, uint32 size);
-typedef TCObject (*allocObjectFunc)(Context currentContext, uint32 size);
 TC_API TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line);
 typedef TCObject (*createByteArrayObjectFunc)(Context currentContext, int32 len);
 TC_API TCObject createArrayObject(Context currentContext, CharP type, int32 len);

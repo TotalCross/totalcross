@@ -148,6 +148,7 @@ pointer to next):
 #endif
 //
 
+void gc2(Context currentContext, bool lockOMM);
 void soundTone(int32 frequency, int32 duration);
 
 #if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID)
@@ -381,11 +382,11 @@ static TCObject allocObjWith(uint32 size)
 }
 
 extern bool iosLowMemory;
+static int32 consecutiveSkips;
 
-TCObject allocObject(Context currentContext, uint32 size)
+static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, int32 alen)
 {
    TCObject o = null;
-   bool firstPass = true;
    ObjectProperties op;
 
 #ifdef darwin
@@ -396,7 +397,7 @@ TCObject allocObject(Context currentContext, uint32 size)
       return null;
    }
 #endif
-   if (currentContext == gcContext) // a finalize method is creating an object? return null
+   if (currentContext == gcContext) //  a finalize method is creating an object? return null
    {
       throwException(currentContext, OutOfMemoryError, "Objects can't be allocated during finalize.");
       return null;
@@ -413,13 +414,11 @@ TCObject allocObject(Context currentContext, uint32 size)
    o = allocObjWith(size);
    if (!o) // no more memory to create this object? Run the GC to free up memory
    {
-      if (size < 1024*1024)
+      if (size < 1024*1024 || ++consecutiveSkips > 16)
       {
-      tryAgain:
+         if (size >= 1024*1024) debug("Freeing mem with GC");
          #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
-         UNLOCKVAR(omm);
-         gc(currentContext);
-         LOCKVAR(omm);
+         gc2(currentContext,false);
          o = allocObjWith(size);
          #endif
       }
@@ -428,12 +427,6 @@ TCObject allocObject(Context currentContext, uint32 size)
          // still no memory? allocate a new chunk and place it at the OBJARRAY_MAX_INDEX
          if (!createChunk(size > DEFAULT_CHUNK_SIZE ? size : DEFAULT_CHUNK_SIZE))
          {
-            // "force" gc again, ignoring the timeout
-            if (firstPass)
-            {
-               firstPass = false;
-               goto tryAgain;
-            }
             if (COMPUTETIME) alert("out of memory!");
             throwException(currentContext, OutOfMemoryError, null);
             goto end; // no more memory at all, quit.
@@ -476,6 +469,7 @@ TCObject allocObject(Context currentContext, uint32 size)
          else size = oSize; // not enough memory remains in the object, so keep the old size
       }
       OBJ_SIZE(o) = size;
+
       // objects are always locked
       OBJ_SETLOCKED(o);
       insertNodeInDblList(lockList[0], o);
@@ -484,6 +478,8 @@ TCObject allocObject(Context currentContext, uint32 size)
       if (_TRACE_OBJCREATION) debug("G Object %X locked",o);
       // erase the object.
       xmemzero(o, size);
+      if (alen >= 0) ARRAYOBJ_LEN(o) = alen;
+      OBJ_CLASS(o) = cls;
    }
 end:
    UNLOCKVAR(omm);
@@ -501,7 +497,7 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
       goto end;
 
    objectSize = c->objSize;
-   o = allocObject(currentContext, objectSize);
+   o = allocObject(currentContext, objectSize, c, -1);
    if (!o)
       goto end;
    if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
@@ -509,8 +505,6 @@ static TCObject privateCreateObject(Context currentContext, CharP className, boo
       if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
       htInc(&htObjsPerClass, (int32)c, 1);
    }
-
-   OBJ_CLASS(o) = c;
 
    if (_TRACE_OBJCREATION) debug("G %X obj created %s of size %d at %d. lock: %d. mark: %d. context: %X", o, className, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o), markedAsUsed, currentContext);
 
@@ -549,7 +543,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
       goto end;
    arraySize = TC_ARRAYSIZE(c,len);
    objectSize = TSIZE + arraySize; // there's a single instance field in the Array class: length
-   o = allocObject(currentContext, objectSize);
+   o = allocObject(currentContext, objectSize, c, len);
    if (!o)
       goto end;
    if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
@@ -557,11 +551,7 @@ TCObject createArrayObject(Context currentContext, CharP type, int32 len)
       if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
       htInc(&htObjsPerClass, (int32)c, 1);
    }
-
    if (_TRACE_OBJCREATION) debug("G %X array obj created %s len %d, size = %d at %d. lock: %d", o, c->name,len, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o));
-
-   ARRAYOBJ_LEN(o) = len;
-   OBJ_CLASS(o) = c;
 end:
    return o;
 }
@@ -688,7 +678,6 @@ static void markSingleObject(TCObject o, bool dump)
 {
    TCClass c;
    TObjectsToVisit objs;
-
    c = OBJ_CLASS(o);
    if (OBJ_MARK(o) == markedAsUsed) // don't remove! this test is important
       return;
@@ -755,6 +744,7 @@ static void markClass(int32 i32, VoidP ptr)
    TCObject* f = c->objStaticValues;
    bool dump = false;
    UNUSED(i32)
+//   debug("marking %s",c->name);
 
    // mark all static fields
    for (i = 0, n = ARRAYLENV(f); i < n; f++, i++)
@@ -805,7 +795,7 @@ static int32 countObjectsIn(TCObjectArray oa, bool dumpCount, bool dumpObj, int3
    return n;
 }
 
-bool joinAdjacentObjects(uint8* block, uint32 size)
+static bool joinAdjacentObjects(uint8* block, uint32 size)
 {
    uint8* block00 = block;
    uint8* block0 = block;
@@ -901,7 +891,7 @@ static void markContexts()
       }
 }
 
-void finalizeObject(TCObject o, TCClass c)
+static void finalizeObject(TCObject o, TCClass c)
 {
    while (c != null) 
    {
@@ -999,7 +989,7 @@ void runFinalizers() // calls finalize of all objects in use
 }
 
 #if defined(ANDROID) || defined(WINCE)
- #define CRITICAL_SIZE 2*1024*1024
+ #define CRITICAL_SIZE 16*1024*1024
  #define USE_MAX_BLOCK true
 #elif defined(WIN32)
  #define CRITICAL_SIZE 512*1024
@@ -1039,41 +1029,47 @@ static void dumpDif(HTKey key, int32 i32, VoidP ptr)
    if (conta1 == 0 || conta1 != conta2)
       debug("% 3d %30s: %d -> %d (%d)",++indp,cc->name, conta1, conta2, conta2-conta1);
 }
-
+static int ggg;
 void gc(Context currentContext)
+{
+   gc2(currentContext, true);
+}
+void gc2(Context currentContext, bool lockOMM)
 {
    int32 i;
    TCClass c;
    TCObjectArray freeL, usedL;
    TCObject o;
-   int32 iniT,endT, elapsed;
+   int32 iniT,endT;
    int32 nfree,nused,compIni,freemem;
    bool traceCreatedClassObjs;
    bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
-   LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
+   int32 gcCount = ggg++;
+   debug("%d gc ini: used: %d mb, free: %d, chunks: %d",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,*tcSettings.chunksCreated);
+   if (lockOMM) LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
    iniT = getTimeStamp();
-   elapsed = iniT - lastGC;
 #ifdef WINCE // guich@tc113_20
    if (oldAutoOffValue != 0) // guich@450_33: since the autooff timer function don't work on wince, we must keep resetting the idle timer so that the device will never go sleep - guich@554_7: reimplemented this feature
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
    freemem = getFreeMemory(USE_MAX_BLOCK);
-   if (disableGC || ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < MINTIME) && freemem > CRITICAL_SIZE)) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
+   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) && freemem > CRITICAL_SIZE)) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
-      if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
-      UNLOCKVAR(omm);
+      if (COMPUTETIME) 
+         debug("G ====  GC SKIPPED");
+      if (lockOMM) UNLOCKVAR(omm);
       return;
    }
 #endif
+   consecutiveSkips = 0;
    //debug("gc %d (%dms / %d bytes)",tcSettings.gcCount ? *tcSettings.gcCount : 0,elapsed,freemem);
    if (destroyingApplication)
    {
       UNLOCKVAR(omm);
       return;
    }
-   lastGC = getTimeStamp(); // guich@tc210: moving to here will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads
 
    runningGC = true;
 
@@ -1118,7 +1114,7 @@ heaperror:
 #ifdef __gl2_h_
       if (currentContext != mainContext) // in opengl, an image can only be freed in the main context, otherwise the texture will not be released
          markAllImages(); // marking all images
-#endif         
+#endif                                         
       if (CANTRAVERSE)
          htTraverse(&htLoadedClasses, markClass);
       // 2b. mark the locked objects
@@ -1227,8 +1223,10 @@ end:
       soundTone(1100,10);
 
    //debug("G Freed objects (including allocated chunks)"); countObjectsIn(freeList,false);
+   lastGC = getTimeStamp(); // guich@tc210: moving to begining will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads. guich@tc330: moving to the end fixes 2 threads being able to call gc one after the other, thus spending time in the 2nd call
    runningGC = false;
-   UNLOCKVAR(omm);
+   if (lockOMM) UNLOCKVAR(omm);
+   debug("%d gc end: used: %d mb, free: %d, chunks: %d",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,*tcSettings.chunksCreated);
 }
 
 #ifdef ENABLE_TEST_SUITE
