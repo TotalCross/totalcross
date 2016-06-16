@@ -204,6 +204,7 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
             g += pval.g * iweight;
             b += pval.b * iweight;
          }
+         if (wsum == 0) continue;
          a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
          r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
          g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
