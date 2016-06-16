@@ -253,19 +253,21 @@ static int32 findNamePosition(TCZFile tcz, CharP name)
 
 TCZFile tczFindName(TCZFile tcz, CharP name) // locates the name and also positions the stream at the place to start reading it
 {
-   TCZFile ntcz;
-   int32 pos = findNamePosition(tcz, name);
+   TCZFile ntcz = null;
+   int32 pos;
+   LOCKVAR(tcz);
+   pos = findNamePosition(tcz, name);
    if (pos == -1)
-      return null;
+      goto end;
    ntcz = tczNewInstance(tcz);
    if (!ntcz)
-      return null;
-   LOCKVAR(tcz);
+      goto end;
    ntcz->header->realFilePos = ntcz->expectedFilePos = ntcz->header->offsets[pos];
 #ifndef ANDROID   
    fseek(ntcz->header->fin, ntcz->expectedFilePos, SEEK_SET);
 #endif   
    ntcz->uncompressedSize = tcz->header->uncompressedSizes[pos];
+end:
    UNLOCKVAR(tcz);
    return ntcz;
 }
