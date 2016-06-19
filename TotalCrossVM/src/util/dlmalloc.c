@@ -5297,7 +5297,10 @@ void* dlmemalign(size_t alignment, size_t bytes) {
 }
 
 #ifndef WINCE
-#include <errno.h>                    
+#include <errno.h>
+#else
+#define EINVAL          22
+#define ENOMEM          12
 #endif
 
 int dlposix_memalign(void** pp, size_t alignment, size_t bytes) {
