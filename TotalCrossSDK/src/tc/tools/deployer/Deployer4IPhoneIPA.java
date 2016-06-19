@@ -191,7 +191,7 @@ public class Deployer4IPhoneIPA
 
       // provision
       TFile mobileProvision = (TFile) ipaContents.get("embedded.mobileprovision");
-      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(mobileProvision)));
+      mobileProvision.input(new ByteArrayInputStream(FileUtils.readFileToByteArray(Deployer4IPhoneIPA.mobileProvision)));
 
       /** CREATE THE MACHOBJECTFILE **/
       TFile executable = (TFile) ipaContents.get(executableName);
