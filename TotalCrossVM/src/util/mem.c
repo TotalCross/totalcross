@@ -13,9 +13,10 @@
 
 #include "tcvm.h"
 
-#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
-#define EXTRA4ALIGN 4
+#if defined(ANDROID) || defined(darwin)
+#define EXTRA4ALIGN 0
 #else
+//#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
 #define EXTRA4ALIGN 4
 #endif
 
