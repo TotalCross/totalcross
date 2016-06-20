@@ -762,7 +762,9 @@ notYetLinked:
                   params.obj = &regO[code->mtd.this_];
                   jlC_forName_s(&params);
                   regO[code->mtd.this_] = params.retO;
-                  c = OBJ_CLASS(params.retO);
+                  c = params.retO ? OBJ_CLASS(params.retO) : null;
+                  if (c == null)
+                     goto throwClassNotFoundException;
                }
             }
             else
