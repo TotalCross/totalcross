@@ -1,3 +1,17 @@
+<h2>TotalCross 3.3</h2>   
+<h1>build 2926</h1>
+. added push notifications to Android. See the the <a href='http://www.totalcross.com/blog'>TotalCross blog</a> for a tutorial<br>
+. dont use the wheel to scroll the tabs of a tabbed container<br>
+. fixed ZLibStream not throwing an exception when the stream end is reached<br>
+. added FileChooserBox.showInitialPathOnly<br>
+. now in android /sdcard can be used as /sdcard0, /sdcard1, ... /sdcard9. Use File.isCardInserted(slot) to check the availability.<br>
+. added Settings.iosCertDate<br>
+. now FileChooserBox uses sdcard<n> in the root list. Also fixed roots list selection<br>
+. fixed concurrency problem when loading data from tcz in multiple threads<br>
+. fixed concurrency problems in GC. Also made GC more aggressive. The program may slow down, but the memory usage will be lower and will avoid crashes<br>
+. updated dlmalloc to 2.8.6 (2012)<br>
+. prevent crash if class is not found<br>
+. updated sqlite to 3.13.0<br>
 <h2>TotalCross 3.2</h2>   
 <h1>build 2878</h1>
 . added support for primitive Classes in JsonFactory. thanks to Jonatas Schuler<br>
