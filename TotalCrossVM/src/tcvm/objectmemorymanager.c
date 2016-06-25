@@ -674,11 +674,22 @@ TC_API void setObjectLock(TCObject o, LockState lock)
 }
 
 CharP getSpaces(Context currentContext, int32 n);
-static void markSingleObject(TCObject o, bool dump)
+static void markSingleObject(TCObject o, bool dump) // NEVER call this directly, unless the Object has no instance fields nor is an array
 {
    TCClass c;
    TObjectsToVisit objs;
+   if (OBJ_PROPERTIES(o) == null)
+   {
+      debug("****** props is null: %X",o);
+      return;
+   }
+
    c = OBJ_CLASS(o);
+   if (c == null)
+   {
+      debug("****** class is null: %X",o);
+      return;
+   }
    if (OBJ_MARK(o) == markedAsUsed) // don't remove! this test is important
       return;
    // mark as used to avoid infinite recursion
@@ -893,6 +904,7 @@ static void markContexts()
 
 static void finalizeObject(TCObject o, TCClass c)
 {
+   TCClass c0 = c;
    while (c != null) 
    {
       MUTEX_TYPE* mutex;
@@ -911,7 +923,7 @@ static void finalizeObject(TCObject o, TCClass c)
       {
          if (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false) 
          {
-            if (_TRACE_OBJDESTRUCTION) debug("G object being finalized: %X (%s)", o, OBJ_CLASS(o)->name);
+            if (_TRACE_OBJDESTRUCTION) debug("G object being finalized: %X (%X)", o, OBJ_CLASS(o));
             executeMethod(gcContext, c->finalizeMethod, o);
             if (_TRACE_OBJDESTRUCTION) debug("G object finalized: %X (%s)", o, OBJ_CLASS(o)->name);
          }
@@ -923,20 +935,16 @@ static void finalizeObject(TCObject o, TCClass c)
 static void markAllImages() // visits all images
 {
    TCObjectArray freeL;
-   TCObject o,next=null;
-   int32 i;
-   markedImages = 0;
+   TCObject o,next=null;  
+   int32 i = 0;
 
-   for (i = 0, freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
+   for (freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
       if (*freeL)
          for (o=OBJ_PROPERTIES(*freeL)->next; o != null;)
          {
             next = OBJ_PROPERTIES(o)->next; // the markObjects below may break the loop
-            if (OBJ_CLASS(o) == imageClass)
-            {
-               markedImages++;
+            if (OBJ_CLASS(o) == imageClass && OBJ_MARK(o) != markedAsUsed)
                markObjects(o, false);
-            }
             o = next;
          }
 }
@@ -1045,7 +1053,7 @@ void gc2(Context currentContext, bool lockOMM)
    bool traceCreatedClassObjs;
    bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
    int32 gcCount = ggg++;
-   debug("%d gc ini: used: %d mb, free: %d, chunks: %d",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,*tcSettings.chunksCreated);
+   debug("%d gc ini: used: %d mb, free: %d, chunks: %d (ctx: %X) ",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,*tcSettings.chunksCreated,currentContext);
    if (lockOMM) LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
    iniT = getTimeStamp();
 #ifdef WINCE // guich@tc113_20
@@ -1111,12 +1119,12 @@ heaperror:
       if (traceLockedObjs) htCount = htNew(511,null); else htCount.items = 0;
       // 2. go through all the reachable objects and move them back to the used list
       // 2a. static fields of loaded classes  
+      if (CANTRAVERSE)
+         htTraverse(&htLoadedClasses, markClass);
 #ifdef __gl2_h_
       if (currentContext != mainContext) // in opengl, an image can only be freed in the main context, otherwise the texture will not be released
          markAllImages(); // marking all images
 #endif                                         
-      if (CANTRAVERSE)
-         htTraverse(&htLoadedClasses, markClass);
       // 2b. mark the locked objects
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");
       for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
