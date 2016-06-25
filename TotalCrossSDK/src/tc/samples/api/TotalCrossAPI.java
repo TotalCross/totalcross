@@ -69,7 +69,6 @@ public class TotalCrossAPI extends MainWindow
    
    public void initUI()
    {
-      // push notifications
       new MainMenu().show();
    }
 }
