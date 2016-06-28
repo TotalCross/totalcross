@@ -1053,7 +1053,7 @@ void gc2(Context currentContext, bool lockOMM)
    bool traceCreatedClassObjs;
    bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
    int32 gcCount = ggg++;
-   debug("%d gc ini: used: %d mb, free: %d, chunks: %d (ctx: %X) ",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,*tcSettings.chunksCreated,currentContext);
+   debug("%d gc ini: used: %d mb, free: %d, chunks: %d (ctx: %X) ",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,tcSettings.chunksCreated?*tcSettings.chunksCreated : 0,currentContext);
    if (lockOMM) LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
    iniT = getTimeStamp();
 #ifdef WINCE // guich@tc113_20
@@ -1234,7 +1234,7 @@ end:
    lastGC = getTimeStamp(); // guich@tc210: moving to begining will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads. guich@tc330: moving to the end fixes 2 threads being able to call gc one after the other, thus spending time in the 2nd call
    runningGC = false;
    if (lockOMM) UNLOCKVAR(omm);
-   debug("%d gc end: used: %d mb, free: %d, chunks: %d",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,*tcSettings.chunksCreated);
+   debug("%d gc end: used: %d mb, free: %d, chunks: %d",gcCount,totalAllocated/1024/1024, getFreeMemory(USE_MAX_BLOCK)/1024/1024,tcSettings.chunksCreated?*tcSettings.chunksCreated:0);
 }
 
 #ifdef ENABLE_TEST_SUITE
