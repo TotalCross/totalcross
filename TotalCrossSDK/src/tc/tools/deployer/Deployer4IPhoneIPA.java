@@ -12,7 +12,6 @@
 package tc.tools.deployer;
 
 import totalcross.sys.*;
-import totalcross.util.*;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
 
@@ -48,7 +47,7 @@ public class Deployer4IPhoneIPA
    
    private Map<String, TFile> ipaContents = new HashMap<String, TFile>();
    
-   MobileProvision Provision;
+   static MobileProvision Provision;
    
    public Deployer4IPhoneIPA() throws Exception
    {
@@ -136,10 +135,6 @@ public class Deployer4IPhoneIPA
          }
       });
 
-      /** PROCESS MOBILE PROVISION **/
-      // update the mobile provision
-      this.Provision = MobileProvision.readFromFile(mobileProvision);
-
       /** PROCESS INFO.PLIST **/
       // read the info.plist from the zip file
       TFile infoPlist = (TFile) ipaContents.get("Info.plist");
@@ -162,7 +157,7 @@ public class Deployer4IPhoneIPA
       rootDict.put("UIStatusBarHidden", DeploySettings.isFullScreen);
       //rootDict.put("CFBundleSignature", DeploySettings.applicationId);
 
-      String bundleIdentifier = this.Provision.bundleIdentifier;
+      String bundleIdentifier = Provision.bundleIdentifier;
       if (Settings.iosCFBundleIdentifier != null)
          bundleIdentifier = Settings.iosCFBundleIdentifier;
       else
@@ -202,7 +197,7 @@ public class Deployer4IPhoneIPA
 
       AppleBinary file = AppleBinary.create(appStream.toByteArray());
       // executable
-      executable.input(new ByteArrayInputStream(file.resign(iosKeyStore, certStore, bundleIdentifier, this.Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
+      executable.input(new ByteArrayInputStream(file.resign(iosKeyStore, certStore, bundleIdentifier, Provision.GetEntitlementsString().getBytes("UTF-8"), updatedInfoPlist, sourceData)));
       
       TVFS.umount(targetZip);      
 
@@ -310,10 +305,11 @@ public class Deployer4IPhoneIPA
       });
    }   
 
-   public static void iosKeystoreInit() throws CertificateException, NoSuchProviderException, KeyStoreException, NoSuchAlgorithmException, java.io.FileNotFoundException, IOException, UnrecoverableKeyException, InvalidDateException {
+   public static void iosKeystoreInit() throws Exception 
+   {
       // initialize bouncy castle
       Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-     if (appleCertStore != null) {
+      if (appleCertStore != null) {
         CertificateFactory cf = CertificateFactory.getInstance("X509", "BC");
         KeyStore ks = java.security.KeyStore.getInstance("PKCS12", "BC");
         ks.load(new FileInputStream(appleCertStore), "".toCharArray());
@@ -343,7 +339,8 @@ public class Deployer4IPhoneIPA
         }
         iosKeyStore = ks;
         iosDistributionCertificate = new org.bouncycastle.cert.X509CertificateHolder(storecert.getEncoded());
-        Settings.iosCertDate = new Time(((org.bouncycastle.cert.X509CertificateHolder)iosDistributionCertificate).getNotAfter().getTime(), false);
+        Provision = MobileProvision.readFromFile(mobileProvision);
+        Settings.iosCertDate = new Time(Provision.expirationDate.getDate().getTime(), false);
         Utils.println("iOS Certificate expiration date: "+Settings.iosCertDate.getSQLString());
      }
   }
