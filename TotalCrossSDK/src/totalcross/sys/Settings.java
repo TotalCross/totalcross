@@ -436,7 +436,7 @@ public final class Settings
    /** Set it at the application's static initializer. Makes the application full screen.
     * Only a simple assignment to true is supported; you cannot check the platform nor any other attribute of this class
     * because the static initializer is called BEFORE this class have its fields set. Also, some platforms set it at Deploying time.
-    * Note that Android applications are always full screen.
+    * Note that Android applications have problems with the keyboard when its fullscreen.
     * @since TotalCross 1.0
     * @see #fullScreenPlatforms
     */
