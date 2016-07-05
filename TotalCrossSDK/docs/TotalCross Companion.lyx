@@ -7229,13 +7229,6 @@ Platforms
 \end_layout
 
 \begin_layout Standard
-In TotalCross 3.0 we dropped support for Windows CE and Windows Mobile platforms,
- since these platforms are discontinued and replaced by Windows Phones.
-\end_layout
-
-\begin_layout Standard
-If you want to support these platforms, you must download TotalCross 2.0,
- which still supports these platforms.
  Note that Litebase 2.7 works for TotalCross 1.7 (and up), and TotalCross
  2.0 (and up).
  TotalCross 3.0 (and up) uses Litebase 2.8.
