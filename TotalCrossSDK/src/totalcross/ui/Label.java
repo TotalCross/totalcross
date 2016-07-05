@@ -560,6 +560,7 @@ public class Label extends Control implements TextControl
                   marqueeX = -linesW[0] + (insets == null ? 0 : insets.left);
          }
          else
+         if (lines != null && lines.length > 0) 
          {
             int n = Math.min(currentLine+linesPerPage, lines.length);
             int x0 = (insets == null ? 0 : insets.left);
