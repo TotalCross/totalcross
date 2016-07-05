@@ -374,7 +374,9 @@ public class FileChooserBox extends Window
       try
       {
          String theFile = Convert.appendPath(thisDir,s);
-         prefix = String.valueOf(new File(theFile, File.READ_ONLY).getTime(File.TIME_MODIFIED).getTimeLong());
+         File f = new File(theFile, File.READ_ONLY);
+         prefix = String.valueOf(f.getTime(File.TIME_MODIFIED).getTimeLong());
+         f.close();
       }
       catch (FileNotFoundException fnfe) 
       {
