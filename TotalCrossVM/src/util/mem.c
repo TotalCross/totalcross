@@ -52,7 +52,15 @@ static inline VoidP realMalloc(uint32 size) // we can't use DbgMalloc on the lea
 #else
 static VoidP realMalloc(uint32 size)
 {
-   return malloc(size);
+   VoidP p = malloc(size);
+   if (p == null)
+   {
+      Sleep(500);
+      p = malloc(size);
+      if (p)
+         debug("*** Sleep worked to alloc %d", size);
+   }
+   return p;
 }
 #endif
 static void realFree(VoidP p) 
@@ -239,8 +247,6 @@ TC_API void* heapAlloc(Heap m, uint32 size)
    {
       HEAP_ERROR(m, HEAP_MEMORY_ERROR);
    }
-   if (size > MEMBLOCK_SIZE)
-      size = size+0;
    size = ((size+3)>>2)<<2; // align at 4-bytes
    m->totalAlloc += size;
    m->numAlloc++;
