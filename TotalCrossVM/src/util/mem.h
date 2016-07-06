@@ -58,6 +58,8 @@ typedef void (*setCountToReturnNullFunc)(int32 n);
 TC_API int32 getCountToReturnNull(); // returns the current count. check this after you run the test; a value greater than 0 means that you reached the maximum number of xmalloc called by your routine and the memory test should end.
 typedef int32 (*getCountToReturnNullFunc)();
 
+uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks, const char *file, int line); // only if not defined "darwin"
+
 ////////////////////////////////////////////////////////////////////////////////
 // Heap memory allocation
 // Creates a block of memory from where other small pointers

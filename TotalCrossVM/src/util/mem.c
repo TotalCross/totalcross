@@ -523,9 +523,9 @@ static void *addMemMarks(uint32 size, uint8 *ptr)
    *(ptr+size+1) = 0x01;
    return ptr;
 }
-static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks, const char *file, int line)
+uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks, const char *file, int line)
 {
-   *_size = 0;
+   if (_size) *_size = 0;
    if (p)
    {
       uint8 *ptr = (uint8 *)p;
@@ -538,7 +538,7 @@ static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks
       else
       {
          uint32 size = XPTR_SIZE(ptr);
-         *_size = size;
+         if (_size) *_size = size;
          if (replaceMarks)
             *(ptr-1) = *(ptr-2) = *(ptr-3) = *(ptr-4) = 2; // set them to 2 so we can find a block that was freed twice
          if (*(ptr+size) != 0x01 || *(ptr+size+1) != 0x01)

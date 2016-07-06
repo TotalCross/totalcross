@@ -149,6 +149,14 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
 
    if (!tb || !v_weight || !v_pixel || !v_count || !v_wsum) goto Cleanup;
+      
+#ifndef darwin      
+   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+#endif
 
    /* Pre-calculate weights contribution for a row */
    for (i = 0; i < newWidth; i++)
@@ -182,6 +190,14 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
          v_count[i]++; // Increment contribution count
       }
    }
+
+#ifndef darwin      
+   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+#endif
 
    /* Filter horizontally from input to temporary buffer */
    for ( i = 0; i < newWidth; i++)
@@ -217,6 +233,14 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
       }
    }
 
+#ifndef darwin      
+   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+#endif
+
    /* Going to vertical stuff */
    if (newHeight > height)
    {
@@ -234,6 +258,14 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    p_pixel  = v_pixel;
    for (i = s*maxContribs; --i >= 0;)
       *p_weight++ = *p_pixel++ = 0;
+
+#ifndef darwin      
+   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+#endif
 
    /* Pre-calculate filter contributions for a column */
    for (i = 0; i < newHeight; i++)
@@ -270,6 +302,14 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
       }
    }
 
+#ifndef darwin      
+   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+#endif
+
    /* Filter vertically from work to output */
    for (i = 0; i < newHeight; i++)
    {
@@ -302,6 +342,14 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
          ob++;
       }
    }
+
+#ifndef darwin      
+   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
+   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+#endif
 
    fSuccess = true;
 
