@@ -21,6 +21,13 @@ bool isIpad;
 bool isIpad = false;
 #endif
 
+static void flushGlError()
+{
+   GLint error;
+   for (error = glGetError(); error; error = glGetError())
+      ;
+}
+
 bool checkGlError(const char* op, int line)
 {
    GLint error;
@@ -779,8 +786,8 @@ static void setProjectionMatrix(float w, float h)
       0.0,      0.0,  -1.0,  0.0,
       0.0,      0.0,   0.0,  1.0
    };
-
-   checkGlError(null,-1); // clear previous error
+   
+   flushGlError();
    setCurrentProgram(textProgram);         glUniformMatrix4fv(textProjMat        , 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(textureProgram);      glUniformMatrix4fv(textureProjMat     , 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);          glUniformMatrix4fv(lrpProjMat         , 1, 0, mat); GL_CHECK_ERROR
