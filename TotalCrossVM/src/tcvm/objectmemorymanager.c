@@ -969,11 +969,11 @@ void visitImages(VisitElementFunc onImage, int32 param) // visits all images
    for (i = 0, usedL = usedList; i <= OBJARRAY_MAX_INDEX; i++, usedL++)
       if (*usedL)
          for (o=retNext(*usedL); o != null; o = retNext(o))
-            if (OBJ_CLASS(o) == imageClass)
+            if (OBJ_PROPERTIES(o) != null && OBJ_CLASS(o) == imageClass)
                onImage(param,o);
    if (lockList)
       for (o=retNext(*lockList); o != null; o = retNext(o))
-         if (OBJ_CLASS(o) == imageClass)
+         if (OBJ_PROPERTIES(o) != null && OBJ_CLASS(o) == imageClass)
             onImage(param,o);
    UNLOCKVAR(omm);
 }
