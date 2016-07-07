@@ -788,7 +788,7 @@ static void setProjectionMatrix(float w, float h)
    };
    
    flushGlError();
-   setCurrentProgram(textProgram);         glUniformMatrix4fv(textProjMat        , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(textProgram);         glUniformMatrix4fv(textProjMat        , 1, 0, mat); 
    setCurrentProgram(textureProgram);      glUniformMatrix4fv(textureProjMat     , 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(lrpProgram);          glUniformMatrix4fv(lrpProjMat         , 1, 0, mat); GL_CHECK_ERROR
    setCurrentProgram(dotProgram);          glUniformMatrix4fv(dotProjMat         , 1, 0, mat); GL_CHECK_ERROR
