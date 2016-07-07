@@ -776,7 +776,7 @@ void freeTexture(TCObject img)
 void resetFontTexture(); // PalmFont_c.h
 #ifdef ANDROID
 static int timestampOldLimit;
-static void onImage(int32 it, VoidP ptr)
+void onImage(int32 it, VoidP ptr)
 {
    TCObject img = (TCObject)ptr;
    int32 *ids = Image_textureId(img);
