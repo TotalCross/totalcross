@@ -1143,7 +1143,7 @@ public class File extends RandomAccessStream
       dir = Convert.appendPath(dir, "/");
       files.addElement(dir);
       listFiles(dir, files, recursive);
-      files.qsort();
+      files.qsort(Convert.SORT_STRING_NOCASE);
       return (String[]) files.toObjectArray();
    }
 

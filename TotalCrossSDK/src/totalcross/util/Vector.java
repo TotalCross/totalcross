@@ -315,6 +315,16 @@ public class Vector
          Convert.qsort(items, 0, count-1);
    }
 
+   /** Sorts the elements of this Vector. If they are Strings,
+   the sort will be much faster because a cast to String is done;
+   if they are not strings, the toString() method is used to return
+   the string that will be used for comparison. */
+    public void qsort(int sortType)
+    {
+       if (count > 0)
+          Convert.qsort(items, 0, count-1, sortType);
+    }
+   
    /** Dumps the contents of this vector and returns a string of it.
     * If the number of elements is big, it can take a lot of memory!
     */
