@@ -371,12 +371,12 @@ public class FileChooserBox extends Window
    private static String getSortName(String thisDir, String s)
    {
       String prefix = "";
+      String theFile = Convert.appendPath(thisDir,s);
+      File f = null;
       try
       {
-         String theFile = Convert.appendPath(thisDir,s);
-         File f = new File(theFile, File.READ_ONLY);
+         f = new File(theFile, File.READ_ONLY);
          prefix = String.valueOf(f.getTime(File.TIME_MODIFIED).getTimeLong());
-         f.close();
       }
       catch (FileNotFoundException fnfe) 
       {
@@ -384,8 +384,10 @@ public class FileChooserBox extends Window
       }
       catch (Exception e)
       {
+         Vm.debug("File: "+theFile);
          e.printStackTrace();
       }
+      if (f != null) try {f.close();} catch (Throwable t) {}
       
       s = s.toLowerCase(); // case insensitive
       return prefix.concat(s); // put folders first
