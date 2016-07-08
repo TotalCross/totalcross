@@ -23,17 +23,19 @@ enum
 };
 
 static voidpf zalloc(voidpf opaque, uInt items, uInt size)
-{
+{  
+   CharP ret;
    UNUSED(opaque)
-   CharP ret = (CharP)xmalloc(items*size+16); // put 8 bytes before and 8 after the area
+   ret = (CharP)xmalloc(items*size+16); // put 8 bytes before and 8 after the area
    ret += 8;
    return (voidpf)ret;
 }
 
 static void zfree(voidpf opaque, voidpf address)
-{
+{  
+   CharP ret;
    UNUSED(opaque) 
-   CharP ret = (CharP)address;
+   ret = (CharP)address;
    ret -= 8;
    xfree(ret);
 }
