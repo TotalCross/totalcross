@@ -90,9 +90,10 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    int32 newHeight = Image_height(newObj);
    TCObject pixelsObj = (frameCount == 1) ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
    PixelConv *ib = (PixelConv*)ARRAYOBJ_START(pixelsObj);
-   PixelConv pval;
+   PixelConv pval;                                                                                                                                   
+   bool ok;
 
-   int32 i, j, n, s, iweight,a,r,g,b;
+   int32 i=0, j, n, s, iweight,a,r,g,b;
    double xScale, yScale;
 
    // Temporary values
@@ -105,8 +106,8 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
 
    double center;         // Center of current sampling
    double weight;         // Current wight
-   int32 left;           // Left of current sampling
-   int32 right;          // Right of current sampling
+   int32 left=0;           // Left of current sampling
+   int32 right=0;          // Right of current sampling
 
    int32 * p_weight;     // Temporary pointer
    int32 * p_pixel;      // Temporary pointer
@@ -151,11 +152,12 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    if (!tb || !v_weight || !v_pixel || !v_count || !v_wsum) goto Cleanup;
       
 #ifndef darwin      
-   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+   ok = verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);      
+   if (!ok) debug("wxh: %dx%d, nwxh: %dx%d, i: %d, l: %d, r: %d",width,height,newWidth,newHeight,i,left,right);
 #endif
 
    /* Pre-calculate weights contribution for a row */
@@ -192,11 +194,12 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    }
 
 #ifndef darwin      
-   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+   ok = verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);      
+   if (!ok) debug("wxh: %dx%d, nwxh: %dx%d, i: %d, l: %d, r: %d",width,height,newWidth,newHeight,i,left,right);
 #endif
 
    /* Filter horizontally from input to temporary buffer */
@@ -234,11 +237,12 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    }
 
 #ifndef darwin      
-   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+   ok = verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);      
+   if (!ok) debug("wxh: %dx%d, nwxh: %dx%d, i: %d, l: %d, r: %d",width,height,newWidth,newHeight,i,left,right);
 #endif
 
    /* Going to vertical stuff */
@@ -260,11 +264,12 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
       *p_weight++ = *p_pixel++ = 0;
 
 #ifndef darwin      
-   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+   ok = verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);      
+   if (!ok) debug("wxh: %dx%d, nwxh: %dx%d, s: %d, maxContribs: %d",width,height,newWidth,newHeight,s, maxContribs);
 #endif
 
    /* Pre-calculate filter contributions for a column */
@@ -303,11 +308,12 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    }
 
 #ifndef darwin      
-   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+   ok = verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);      
+   if (!ok) debug("wxh: %dx%d, nwxh: %dx%d, i: %d, l: %d, r: %d, n: %d",width,height,newWidth,newHeight,i,left,right,n);
 #endif
 
    /* Filter vertically from work to output */
@@ -344,11 +350,12 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    }
 
 #ifndef darwin      
-   verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__);
-   verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);
+   ok = verifyMemMarks(tb, "tb", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_weight, "v_weight", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_pixel, "v_pixel", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_count, "v_count", null, false, __FILE__, __LINE__) &&
+        verifyMemMarks(v_wsum, "v_wsum", null, false, __FILE__, __LINE__);      
+   if (!ok) debug("wxh: %dx%d, nwxh: %dx%d, i: %d, n: %d, j: %d",width,height,newWidth,newHeight,i,n,j);
 #endif
 
    fSuccess = true;
