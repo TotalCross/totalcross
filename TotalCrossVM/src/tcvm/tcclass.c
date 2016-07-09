@@ -533,14 +533,14 @@ static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
    IF_HEAP_ERROR(heap)
    {
       heapDestroy(heap);
-      return heap && heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
+      return !heap || heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
    }
    heap->greedyAlloc = true;
 
    IF_HEAP_ERROR(tcz->header->hheap)
    {
       heapDestroy(heap);
-      return heap && heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
+      return !heap || heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
    }
 
    tczRead(tcz, &ci, 22);
@@ -747,8 +747,11 @@ TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFou
    }
    UNLOCKVAR(classLoaderLock);
 
-   if ((ret == null || ret == CLASS_OUT_OF_MEMORY) && throwClassNotFound)
-      throwException(currentContext, ret == CLASS_OUT_OF_MEMORY ? OutOfMemoryError : ClassNotFoundException, className);
+   if (ret == CLASS_OUT_OF_MEMORY)
+	   throwException(currentContext, OutOfMemoryError, className);
+   else
+   if (ret == null && throwClassNotFound)
+      throwException(currentContext, ClassNotFoundException, className);
    else if (staticInitializer)
       executeMethod(currentContext, staticInitializer);
    return ret == CLASS_OUT_OF_MEMORY ? null : ret;
