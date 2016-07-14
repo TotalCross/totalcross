@@ -119,6 +119,7 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    if (width <= 0 || height <= 0 || newWidth <= 0 || newHeight <= 0) 
       return true;
 
+   setObjectLock(newObj, LOCKED);
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
 
@@ -373,6 +374,7 @@ Cleanup: /* CLEANUP */
    if (v_pixel) xfree(v_pixel);
    if (v_count) xfree(v_count);
    if (v_wsum) xfree(v_wsum);
+   setObjectLock(newObj, UNLOCKED);
    return fSuccess;
 }
 
