@@ -70,6 +70,7 @@ int32 getUsedMemory()
 
 #else // defined(darwin)
 
+#ifndef ANDROID
 struct mallinfo {
    int arena;     /* Non-mmapped space allocated (bytes) */
    int ordblks;   /* Number of free chunks */
@@ -83,6 +84,7 @@ struct mallinfo {
    int keepcost;  /* Top-most, releasable space (bytes) */
 };
 extern struct mallinfo mallinfo(void);
+#endif
 
 #if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
 int32 getUsedMemory()
