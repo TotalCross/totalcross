@@ -1,4 +1,19 @@
 <h2>TotalCross 3.3</h2>   
+<h1>build 2941</h1>
+. now android and win32 no longer use dlmalloc. win32 now uses the 'large address aware' trick to increase memory avaibility<br>
+. prevent crash if settings not yet initialized<br>
+. changed Settings.iosCertDate to show the mobile provision expiration date.<br>
+. forgot to close file in FileChooserBox<br>
+. clear previous error on opengl to prevent false positives<br>
+. dump less information about gc<br>
+. prevent crash if object properties is null<br>
+. prevent memory corruption in compressedStream<br>
+. added Vector.qsort(sortType). now Files.listFiles uses SORT_STRING_NOCASE sort to sort the files<br>
+. fixed OutOfMemoryError being replaced by ClassNotFound<br>
+. ignore mem checks when running pointer verification<br>
+. fixed images being collected before being used when creating new instances<br>
+. added getUsedMemory, to find the exact memory usage of an app<br>
+. fixed native ZLib.DEFLATE throwing too early an "End of Stream" Exception<br>
 <h1>build 2926</h1>
 . added push notifications to Android. See the the <a href='http://www.totalcross.com/blog'>TotalCross blog</a> for a tutorial<br>
 . dont use the wheel to scroll the tabs of a tabbed container<br>
