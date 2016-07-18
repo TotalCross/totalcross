@@ -12,7 +12,7 @@
 
 #if !defined(WP8) && !defined(WINCE)
 #include "psapi.h"
-#pragma comment(lib, “psapi.lib”) 
+#pragma comment(lib, "psapi.lib") 
 #endif
 
 static int32 privateGetFreeMemory(bool maxblock)
