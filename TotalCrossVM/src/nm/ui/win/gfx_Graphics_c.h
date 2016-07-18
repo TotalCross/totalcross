@@ -95,7 +95,11 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    {
       width = defScrW == -1 ? 240 : defScrW;
       height = defScrH == -1 ? 320 : defScrH;
-   }
+   }                                                                                                                          
+#ifdef _DEBUG
+   defScrX = defScrY = 0;
+#endif
+
    rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
    rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
    rect.bottom = height;
