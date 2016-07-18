@@ -21,6 +21,13 @@
 #include <time.h>
 #include <sys/stat.h>
 
+#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
+int32 getUsedMemory()
+{
+   return mallinfo().uordblks;
+}
+#endif
+
 #if defined(darwin)
 
 #include <mach/mach.h>

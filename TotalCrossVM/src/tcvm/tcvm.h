@@ -34,7 +34,7 @@
 #define __gl2_h_
 #endif
 
-#if defined(WIN32) && !defined(WINCE)
+#if (defined(WIN32) && !defined(WINCE)) || defined(ANDROID)
 #define FORCE_LIBC_ALLOC
 #endif
 
