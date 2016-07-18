@@ -552,7 +552,12 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #endif
 
 void debug(char *s, ...);
-#define ABORT do {debug("DLMALLOC ABORT %s (%d)",__FILE__,__LINE__);} while (0)
+static abortar()
+{
+	debug("aborted");
+}
+
+#define ABORT do {debug("DLMALLOC ABORT %s (%d)",__FILE__,__LINE__); abortar();} while (0)
 
 #if defined (darwin)
 
