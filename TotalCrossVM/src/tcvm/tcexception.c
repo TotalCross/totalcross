@@ -46,8 +46,14 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
       va_end(args);
       *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, currentContext->exmsg,-1);
       setObjectLock(*Throwable_msg(exception), UNLOCKED);
+#ifdef _DEBUG
+      debug(currentContext->exmsg);
+#endif
    }
    fillStackTrace(currentContext, exception, -1, currentContext->callStack);
+#ifdef _DEBUG
+   printStackTrace(currentContext);
+#endif
 }
 
 TC_API TCObject createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...)
@@ -83,8 +89,14 @@ TC_API TCObject createException(Context currentContext, Throwable t, bool fillSt
       va_end(args);
       *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, currentContext->exmsg,-1);
       setObjectLock(*Throwable_msg(exception), UNLOCKED);
+#ifdef _DEBUG
+      debug(currentContext->exmsg);
+#endif
    }
    if (fillStack) fillStackTrace(currentContext, exception, -1, currentContext->callStack);
+#ifdef _DEBUG
+   printStackTrace(currentContext);
+#endif
    return exception;
 }
 
@@ -118,8 +130,14 @@ TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName
       va_end(args);
       *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, currentContext->exmsg,-1);
       setObjectLock(*Throwable_msg(exception), UNLOCKED);
+#ifdef _DEBUG
+      debug(currentContext->exmsg);
+#endif
    }
    fillStackTrace(currentContext, exception, -1, currentContext->callStack);
+#ifdef _DEBUG
+   printStackTrace(currentContext);
+#endif
 }
 
 TC_API void throwExceptionWithCode(Context currentContext, Throwable t, int32 errorCode)
@@ -265,7 +283,9 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
 void printStackTrace(Context currentContext)
 {
    fillStackTrace(currentContext, null, -1, currentContext->callStack); 
+#ifdef _DEBUG
    debug(currentContext->exmsg);
+#endif
 }
 
 void showUnhandledException(Context context, bool useAlert)
