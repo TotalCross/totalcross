@@ -498,6 +498,12 @@ mainLoop:
             goto throwNullPointerException;
          }
          thisClass = OBJ_CLASS(regO[code->mtd.this_]);
+		 if (thisClass == null)
+		 {
+			 exceptionMsg = "Obj class is null";
+          debug("NULL CLASS OBJECT: %X", regO[code->mtd.this_]);
+			 goto throwNullPointerException;
+		 }
          if ((macArray = cp->boundVirtualMethod[code->mtd.sym]) != null && // was the method ever linked?
             (mac = macArray[thisClass->hash&15]) != null &&                // map to the hash position
             mac->c == thisClass) // 90% of the cases
