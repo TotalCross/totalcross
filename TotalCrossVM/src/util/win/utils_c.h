@@ -10,23 +10,33 @@
  *********************************************************************************/
 
 
+#if !defined(WP8) && !defined(WINCE)
+#include "psapi.h"
+#endif
 
 static int32 privateGetFreeMemory(bool maxblock)
 {
-#ifndef WP8
+#ifdef WP8
+   return getFreeMemoryWP8();
+#elif defined(WINCE)
    int32 result=1;
    MEMORYSTATUS ms = { 0 };  // works for most cases
    GlobalMemoryStatus(&ms);
-#ifdef WINCE
    result = maxblock ? ms.dwTotalVirtual : ms.dwAvailVirtual; // guich@tc115_3: now using dwTotalVirtual instead of dwAvailPhys
-#else
-   result = maxblock ? ms.dwTotalPhys : ms.dwAvailPhys;
-#endif
    return result;
 #else
-   return getFreeMemoryWP8();
+   MEMORYSTATUSEX ms = { 0 };
+   ms.dwLength = sizeof(MEMORYSTATUSEX);  
+   GlobalMemoryStatusEx(&ms);
+   return (int32)(ms.ullAvailVirtual > INT_MAX ? ms.ullAvailVirtual - INT_MAX : ms.ullAvailVirtual); // although the correct would be to use INT_MAX if above 2GB, we use a diff to let the user know that the memory is decreasing.
 #endif
-   
+}
+
+int32 getUsedMemory()
+{
+   PROCESS_MEMORY_COUNTERS_EX pmc;
+   GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+   return pmc.PrivateUsage;
 }
 
 static int32 privateGetTimeStamp()
