@@ -32,6 +32,8 @@
 #endif
 #include "ssl.h"
 
+#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
+
 #define SIG_OID_PREFIX_SIZE 8
 #define SIG_IIS6_OID_SIZE   5
 

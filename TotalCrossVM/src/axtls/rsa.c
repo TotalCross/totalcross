@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include "crypto.h"
 
+#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
+
 #ifdef CONFIG_BIGINT_CRT
 static bigint *bi_crt(const RSA_CTX *rsa, bigint *bi);
 #endif

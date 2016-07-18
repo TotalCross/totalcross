@@ -32,6 +32,8 @@
 #include <stdarg.h>
 #include "os_port.h"
 
+#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
+
 #ifdef WIN32
 /**
  * gettimeofday() not in Win32

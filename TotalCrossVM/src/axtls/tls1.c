@@ -26,6 +26,8 @@
 #include <stdarg.h>
 #include "ssl.h"
 
+#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
+
 /* Don't import the default key/certificate if not used */
 #if defined(CONFIG_SSL_USE_DEFAULT_KEY) || defined(CONFIG_SSL_SKELETON_MODE)
 static const    /* saves a few bytes and RAM */

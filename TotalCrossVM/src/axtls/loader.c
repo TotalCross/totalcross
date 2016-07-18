@@ -32,6 +32,8 @@
 
 #include "ssl.h"
 
+#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
+
 static int do_obj(SSL_CTX *ssl_ctx, int obj_type,
                     SSLObjLoader *ssl_obj, const char *password);
 #ifdef CONFIG_SSL_HAS_PEM
