@@ -217,11 +217,16 @@ void getIField_Names(ConstantPool cp, int32 sym, CharP* fieldName, CharP* classN
 
 uint16 getIField_Index(ConstantPool cp, TCObject o, int32 sym, RegType t)
 {
-   uint32 fieldIndex = cp->ifieldField[sym];
-   uint32 classIndex = cp->ifieldClass[sym];
-   CharP className = cp->cls[classIndex];
-   CharP fieldName = cp->mtdfld[fieldIndex];
-   uint16 idx = getInstanceFieldIndex(fieldName, className, o, t); // the strEq is needed to avoid a NoSuchField that occurs if you try to get the "width" field in a class that extends MainWindow from inside the class that extends MainWindow
-   //debug("%s.%s bound to %d", className, fieldName, idx);
-   return idx < UNBOUND_ERROR ? (cp->boundIField[sym] = idx) : idx;
+   if (sym == 0)
+      return UNBOUND_FIELD_ERROR;
+   else
+   {
+      uint32 fieldIndex = cp->ifieldField[sym];
+      uint32 classIndex = cp->ifieldClass[sym];
+      CharP className = cp->cls[classIndex];
+      CharP fieldName = cp->mtdfld[fieldIndex];
+      uint16 idx = getInstanceFieldIndex(fieldName, className, o, t); // the strEq is needed to avoid a NoSuchField that occurs if you try to get the "width" field in a class that extends MainWindow from inside the class that extends MainWindow
+      //debug("%s.%s bound to %d", className, fieldName, idx);
+      return idx < UNBOUND_ERROR ? (cp->boundIField[sym] = idx) : idx;
+   }
 }
