@@ -98,6 +98,10 @@ namespace PhoneDirect3DXamlAppInterop
             : new Thickness(0, MainPage.instance.ActualHeight * 10, 0, 0);  // to bottom
       }
 
+      public long getUsedMemory()
+      {
+         return Microsoft.Phone.Info.DeviceStatus.ApplicationCurrentMemoryUsage;
+      }
       public long getFreeMemory()
       {
          return Microsoft.Phone.Info.DeviceStatus.ApplicationMemoryUsageLimit - Microsoft.Phone.Info.DeviceStatus.ApplicationCurrentMemoryUsage;

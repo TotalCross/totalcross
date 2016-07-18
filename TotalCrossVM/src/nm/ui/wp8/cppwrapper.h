@@ -37,6 +37,7 @@ void windowSetDeviceTitle(TCObject titleObj);
 DWORD32 getRemainingBatery();
 void vibrate(DWORD32 milliseconds);
 DWORD32 getFreeMemoryWP8();
+DWORD32 getUsedMemoryWP8();
 void alertCPP(JCharP jCharStr);
 void vmSetAutoOffCPP(bool enable);
 int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait);

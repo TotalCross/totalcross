@@ -67,6 +67,7 @@ namespace PhoneDirect3DXamlAppComponent
 
      // Settings
      long long getFreeMemory();
+     long long getUsedMemory();
      Platform::String^ getDeviceId();
      bool isVirtualKeyboard();
      double getDpiX();

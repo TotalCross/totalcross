@@ -142,8 +142,13 @@ void vibrate(DWORD32 milliseconds)
 
 DWORD32 getFreeMemoryWP8()
 {
-   //long ret = (DWORD32)MemoryManager::ProcessCommittedLimit;
    long long ret2 = Direct3DBase::getLastInstance()->csharp->getFreeMemory();
+   return (DWORD32)ret2;
+}
+
+DWORD32 getUsedMemoryWP8()
+{
+   long long ret2 = Direct3DBase::getLastInstance()->csharp->getUsedMemory();
    return (DWORD32)ret2;
 }
 
