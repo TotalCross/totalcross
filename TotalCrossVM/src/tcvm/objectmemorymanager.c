@@ -729,6 +729,7 @@ static void markObjects(TCObject o, bool dump)
 {
    TObjectsToVisit objs;
 
+   if (!o) return; // can occurr if concorrent threads are accessing the structure where this object is
    markSingleObject(o,dump);
 
    // Here we will mark recursively all objects inside this one.
@@ -883,7 +884,7 @@ static void markContexts()
    int32 i;         
    Context c;
    Context copy[MAX_CONTEXTS];
-   xmemmove(copy,contexts,MAX_CONTEXTS*sizeof(Context));
+   xmemmove(copy,contexts,MAX_CONTEXTS*sizeof(Context));  // warning: only pointers are copied
    
    for (i = 0; i < MAX_CONTEXTS; i++)
       if ((c=copy[i]) != null)
