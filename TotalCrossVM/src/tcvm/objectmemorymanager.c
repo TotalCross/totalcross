@@ -896,8 +896,15 @@ static void markContexts()
          if (c->nmp.retO)
             markObjects(c->nmp.retO,false);
          for (oa = c->regOStart; oa < c->regO; oa++)
-            if (*oa && OBJ_MARK(*oa) != markedAsUsed) // we must also mark the objects inside a locked object
-               markObjects(*oa,false);
+         {
+            TCObject obj = *oa;
+            if (obj)
+            {
+               ObjectProperties op = OBJ_PROPERTIES(obj);
+               if (op && op->mark != markedAsUsed) // we must also mark the objects inside a locked object
+                  markObjects(obj, false);
+            }
+         }
          if (c->thrownException != null)
             markObjects(c->thrownException,false);
       }
