@@ -119,7 +119,7 @@ int32 tczRead(TCZFile f, void* outBuf, int32 count)
       if (f->tempHeap != null)
          HEAP_ERROR(f->tempHeap, HEAP_ZIP_ERROR);
       else
-         alert("Error on zip (in a heapless tcz): %d. Remain %d bytes",(int)err, (int)zs->avail_out);
+         debug("Error on zip (in a heapless tcz): %d. Remain %d bytes",(int)err, (int)zs->avail_out);
    }
    return count;
 }
