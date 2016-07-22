@@ -163,7 +163,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          }
 
          fillSettings();
-         if (isApplication)
+         if (isApplication && !className.equals("tc.Help"))
             Class.forName("tc.tools.RegisterSDK").getConstructor(String.class).newInstance(activationKey);
 
          try
@@ -415,7 +415,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       if (args.length == 0)
       {
          showInstructions();
-         return;
+         args = new String[]{"/scr","480x640x32","tc.Help"};
       }
       isApplication = true;
       Launcher app = new Launcher();
@@ -614,7 +614,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
-      if (isApplication && (activationKey == null || activationKey.length() != 24))
+      if (isApplication && !className.equals("tc.Help") && (activationKey == null || activationKey.length() != 24))
       {
          if (activationKey != null)
             System.out.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
