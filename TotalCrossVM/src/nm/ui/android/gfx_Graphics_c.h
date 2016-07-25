@@ -285,7 +285,7 @@ bool setShiftYonNextUpdateScreen;
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
 {
    if (!screen.extension)
-      screen.extension = newX(ScreenSurfaceEx);
+      screen.extension = xmalloc(4);//newX(ScreenSurfaceEx);
 
    if (surface == null) // passed null when the surface is destroyed
    {
