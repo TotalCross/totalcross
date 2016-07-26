@@ -210,8 +210,6 @@ JPEG_FILES =                                  \
 	$(TC_SRCDIR)/jpeg/jdsample.c               \
 	$(TC_SRCDIR)/jpeg/jerror.c                 \
 	$(TC_SRCDIR)/jpeg/jfdctfst.c               \
-	$(TC_SRCDIR)/jpeg/jidctfst.c               \
-	$(TC_SRCDIR)/jpeg/jidctred.c               \
 	$(TC_SRCDIR)/jpeg/jmemmgr.c                \
 	$(TC_SRCDIR)/jpeg/jmemnobs.c               \
 	$(TC_SRCDIR)/jpeg/JpegLoader.c             \
@@ -221,11 +219,10 @@ JPEG_FILES =                                  \
 	$(TC_SRCDIR)/jpeg/jcarith.c                \
 	$(TC_SRCDIR)/jpeg/jdarith.c                \
 	$(TC_SRCDIR)/jpeg/jdmerge.c                \
-	$(TC_SRCDIR)/jpeg/jidcflt.c                \
+	$(TC_SRCDIR)/jpeg/jidctflt.c               \
 	$(TC_SRCDIR)/jpeg/jidctfst.c               \
-	$(TC_SRCDIR)/jpeg/jidcint.c                \
+	$(TC_SRCDIR)/jpeg/jidctint.c               \
 	$(TC_SRCDIR)/jpeg/jfdctflt.c               \
-	$(TC_SRCDIR)/jpeg/jfdctfst.c               \
 	$(TC_SRCDIR)/jpeg/jfdctint.c               \
 	$(TC_SRCDIR)/jpeg/jaricom.c                \
 	$(TC_SRCDIR)/jpeg/rdbmp.c
