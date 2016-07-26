@@ -528,27 +528,27 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 
 //////// TOTALCROSS CHANGES START /////////
 
-#ifdef ANDROID
-  #define NO_MALLINFO 1
-#endif
-
 #define USE_DL_PREFIX
-#if defined(WIN32) || defined(WINCE)
-#if defined WP8
- #define MSPACES 0
- #define GetTickCount() 0
- #define GetSystemInfo(a) GetNativeSystemInfo(a)
-#else
- #define MSPACES 1
-#endif
-#define FOOTERS 1
-#define DEFAULT_GRANULARITY 2*1024*1024 // // guich@tc124_17: 2MB
-#define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // // guich@tc124_17: DISABLE
+#define MALLOC_INSPECT_ALL 1
+#define DEFAULT_GRANULARITY 2*1024*1024   // guich@tc124_17: 2MB       - tc330: increased for all platforms
+#define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // guich@tc124_17: DISABLE
+#define ABORT_ON_ASSERT_FAILURE 0 // prevent programs
+#define PROCEED_ON_ERROR 0        // crash
+#define MAX_RELEASE_CHECK_RATE MAX_SIZE_T // guich@tc330: prevent memory from being recovered
 
-#if !defined(WINCE) || !defined(DEBUG)
-#define ABORT_ON_ASSERT_FAILURE 0 // prevent program
-#define PROCEED_ON_ERROR 0        //  crash
+#ifdef ANDROID
+ #define NO_MALLINFO 1
 #endif
+
+#if defined(WIN32) || defined(WINCE)
+ #if defined WP8
+  #define MSPACES 0
+  #define GetTickCount() 0
+  #define GetSystemInfo(a) GetNativeSystemInfo(a)
+ #else
+  #define MSPACES 1
+ #endif
+ #define FOOTERS 1
 #endif
 
 void debug(char *s, ...);
