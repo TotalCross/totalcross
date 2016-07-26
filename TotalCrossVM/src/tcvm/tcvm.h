@@ -34,9 +34,9 @@
 #define __gl2_h_
 #endif
 
-#if (defined(WIN32) && !defined(WINCE))
-#define FORCE_LIBC_ALLOC
-#endif
+//#if defined(WIN32) && defined(_DEBUG) // use default libc on Visual C, because its easier to find corruption problems
+//#define FORCE_LIBC_ALLOC
+//#endif
 
 #ifdef ANDROID
 #include <jni.h>
