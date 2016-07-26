@@ -558,6 +558,8 @@ static abortar()
 }
 
 #define ABORT do {debug("DLMALLOC ABORT %s (%d)",__FILE__,__LINE__); abortar();} while (0)
+#define CORRUPTION_ERROR_ACTION(m) do{debug("DLMALLOC CORRUPTION: %X",m); abortar();} while (0)
+#define USAGE_ERROR_ACTION(m,p) do{debug("DLMALLOC USAGE ERROR: %X",m); abortar();} while (0)
 
 #if defined (darwin)
 
