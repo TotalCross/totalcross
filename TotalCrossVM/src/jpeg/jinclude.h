@@ -14,61 +14,70 @@
  * JPEG library.  Most applications need only include jpeglib.h.
  */
 
+/////////    IMPORTANT: THIS FILE HAS BEEN CHANGED BY GUICH TO SUPPORT TOTALCROSS AND SIMPLIFY SOME THINGS.
+/////////    IT IS **NOT** THE ORIGINAL JINCLUDE.H file.
+
+#ifndef JINCLUDE_H
+#define JINCLUDE_H
+
+#include "tcvm.h"
 
 /* Include auto-config file to find out which system include files we need. */
 
-#include "jconfig.h"		/* auto configuration options */
-#define JCONFIG_INCLUDED	/* so that jpeglib.h doesn't do it again */
+#include "jconfig.h"    /* auto configuration options */
+#define JCONFIG_INCLUDED   /* so that jpeglib.h doesn't do it again */
 
-/*
- * We need the NULL macro and size_t typedef.
- * On an ANSI-conforming system it is sufficient to include <stddef.h>.
- * Otherwise, we get them from <stdlib.h> or <stdio.h>; we may have to
- * pull in <sys/types.h> as well.
- * Note that the core JPEG library does not require <stdio.h>;
- * only the default error handler and data source/destination modules do.
- * But we must pull it in because of the references to FILE in jpeglib.h.
- * You can remove those references if you want to compile without <stdio.h>.
- */
-
-#ifdef HAVE_STDDEF_H
-#include <stddef.h>
+#ifdef WINCE
+ #undef FILE
+ #define FILE FORGET_IT_BILL
+ #include <stdlib.h>
+ #undef FILE
 #endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef NEED_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#include <stdio.h>
-
-/*
- * We need memory copying and zeroing functions, plus strncpy().
- * ANSI and System V implementations declare these in <string.h>.
- * BSD doesn't have the mem() functions, but it does have bcopy()/bzero().
- * Some systems may declare memset and memcpy in <memory.h>.
- *
- * NOTE: we assume the size parameters to these functions are of type size_t.
- * Change the casts in these macros if not!
- */
-
-#ifdef NEED_BSD_STRINGS
-
-#include <strings.h>
-#define MEMZERO(target,size)	bzero((void *)(target), (size_t)(size))
-#define MEMCOPY(dest,src,size)	bcopy((const void *)(src), (void *)(dest), (size_t)(size))
-
-#else /* not BSD, assume ANSI/SysV string lib */
 
 #include <string.h>
-#define MEMZERO(target,size)	memset((void *)(target), 0, (size_t)(size))
-#define MEMCOPY(dest,src,size)	memcpy((void *)(dest), (const void *)(src), (size_t)(size))
+#define MEMZERO(target,size)  memset((void *)(target), 0, (size_t)(size))
+#define MEMCOPY(dest,src,size)   memcpy((void *)(dest), (const void *)(src), (size_t)(size))
 
+//////////////////////////////////////
+/// start of changes by guich
+
+// if a warning is given in the line below, you must add WINCE to the C/C++ Preprocessor definitions
+struct TJPEGFILE
+{
+   TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
+   // for fetching data
+
+   union
+   {
+      TCObject inputStreamObj;
+      TCObject outputStreamObj;
+   };
+   union
+   {
+      Method readBytesMethod;
+      Method writeBytesMethod;
+   };
+
+   TCObject bufObj;
+   TValue params[4];
+   // the first 4 bytes
+   char *first4;
+   Context currentContext;
+};
+
+typedef struct TJPEGFILE JPEGFILE;
+
+extern int jpegRead (void * buf, int size, JPEGFILE * in);
+
+extern int jpegWrite(void *buff, int count, JPEGFILE *in);
+
+/// end of changes by guich
+//////////////////////////////////////
+
+#ifdef WIN32
+#define HAVE_BOOLEAN
+typedef unsigned char boolean;
 #endif
-
 /*
  * In ANSI C, and indeed any rational implementation, size_t is also the
  * type returned by sizeof().  However, it seems there are some irrational
@@ -77,7 +86,7 @@
  * we always use this SIZEOF() macro in place of using sizeof() directly.
  */
 
-#define SIZEOF(object)	((size_t) sizeof(object))
+#define SIZEOF(object)  ((size_t) sizeof(object))
 
 /*
  * The modules that use fread() and fwrite() always invoke them through
@@ -85,7 +94,10 @@
  * CAUTION: argument order is different from underlying functions!
  */
 
-#define JFREAD(file,buf,sizeofbuf)  \
-  ((size_t) fread((void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
-#define JFWRITE(file,buf,sizeofbuf)  \
-  ((size_t) fwrite((const void *) (buf), (size_t) 1, (size_t) (sizeofbuf), (file)))
+// GUICH - IMPORTANT: I CHANGED THE NAME OF FILE TO JPEGFILE in jpeglib.h and jdatasrc.c so it doesn't clashes with FILE from stdlib
+// I ALSO CHANGED fread to jpegRead below
+#define JFREAD(file,buf,sizeofbuf)  jpegRead ((void *) (buf), (int) (sizeofbuf), (file))
+
+#define JFWRITE(file,buf,sizeofbuf) jpegWrite((void *) (buf), (int) (sizeofbuf), (file))
+
+#endif

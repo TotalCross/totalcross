@@ -320,6 +320,16 @@ JPEG_FILES =                               \
 	$(sourcedir)/jpeg/JpegLoader.c             \
 	$(sourcedir)/jpeg/jquant1.c                \
 	$(sourcedir)/jpeg/jquant2.c                \
+	$(sourcedir)/jpeg/jcarith.c                \
+	$(sourcedir)/jpeg/jdarith.c                \
+	$(sourcedir)/jpeg/jdmerge.c                \
+	$(sourcedir)/jpeg/jidcflt.c                \
+	$(sourcedir)/jpeg/jidctfst.c               \
+	$(sourcedir)/jpeg/jidcint.c                \
+	$(sourcedir)/jpeg/jfdctflt.c               \
+	$(sourcedir)/jpeg/jfdctfst.c               \
+	$(sourcedir)/jpeg/jfdctint.c               \
+	$(sourcedir)/jpeg/jaricom.c                \
 	$(sourcedir)/jpeg/jutils.c
 
 libjpeg_la_SOURCES = ${JPEG_FILES}

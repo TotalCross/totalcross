@@ -700,6 +700,7 @@ struct jpeg_decompress_struct {
 /* Error handler object */
 
 struct jpeg_error_mgr {
+  Heap heap; // GUICH
   /* Error exit handler: does not return to caller */
   JMETHOD(noreturn_t, error_exit, (j_common_ptr cinfo));
   /* Conditionally emit a trace or warning message */
@@ -971,8 +972,8 @@ EXTERN(void) jpeg_destroy_decompress JPP((j_decompress_ptr cinfo));
 
 /* Standard data source and destination managers: stdio streams. */
 /* Caller is responsible for opening the file before and closing after. */
-EXTERN(void) jpeg_stdio_dest JPP((j_compress_ptr cinfo, FILE * outfile));
-EXTERN(void) jpeg_stdio_src JPP((j_decompress_ptr cinfo, FILE * infile));
+EXTERN(void) jpeg_stdio_dest JPP((j_compress_ptr cinfo, JPEGFILE * outfile));
+EXTERN(void) jpeg_stdio_src JPP((j_decompress_ptr cinfo, JPEGFILE * infile));
 
 /* Data source and destination managers: memory buffers. */
 EXTERN(void) jpeg_mem_dest JPP((j_compress_ptr cinfo,

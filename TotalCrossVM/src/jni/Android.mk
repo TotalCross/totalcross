@@ -218,6 +218,16 @@ JPEG_FILES =                                  \
 	$(TC_SRCDIR)/jpeg/jquant1.c                \
 	$(TC_SRCDIR)/jpeg/jquant2.c                \
 	$(TC_SRCDIR)/jpeg/jutils.c                 \
+	$(TC_SRCDIR)/jpeg/jcarith.c                \
+	$(TC_SRCDIR)/jpeg/jdarith.c                \
+	$(TC_SRCDIR)/jpeg/jdmerge.c                \
+	$(TC_SRCDIR)/jpeg/jidcflt.c                \
+	$(TC_SRCDIR)/jpeg/jidctfst.c               \
+	$(TC_SRCDIR)/jpeg/jidcint.c                \
+	$(TC_SRCDIR)/jpeg/jfdctflt.c               \
+	$(TC_SRCDIR)/jpeg/jfdctfst.c               \
+	$(TC_SRCDIR)/jpeg/jfdctint.c               \
+	$(TC_SRCDIR)/jpeg/jaricom.c                \
 	$(TC_SRCDIR)/jpeg/rdbmp.c
 
 EVENT_FILES =                                 \

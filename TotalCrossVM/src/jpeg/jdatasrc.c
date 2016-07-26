@@ -26,7 +26,7 @@
 typedef struct {
   struct jpeg_source_mgr pub;	/* public fields */
 
-  FILE * infile;		/* source stream */
+  JPEGFILE * infile;		/* source stream */
   JOCTET * buffer;		/* start of buffer */
   boolean start_of_file;	/* have we gotten any data yet? */
 } my_source_mgr;
@@ -207,7 +207,7 @@ term_source (j_decompress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_stdio_src (j_decompress_ptr cinfo, FILE * infile)
+jpeg_stdio_src (j_decompress_ptr cinfo, JPEGFILE * infile)
 {
   my_src_ptr src;
 

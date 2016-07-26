@@ -38,10 +38,10 @@ typedef struct {
 #endif /* NEED_SHORT_EXTERNAL_NAMES */
 
 /* Expand a Huffman table definition into the derived format */
-EXTERN(void) jpeg_make_c_derived_tbl
+void jpeg_make_c_derived_tbl
 	JPP((j_compress_ptr cinfo, boolean isDC, int tblno,
 	     c_derived_tbl ** pdtbl));
 
 /* Generate an optimal table definition given the specified counts */
-EXTERN(void) jpeg_gen_optimal_table
+void jpeg_gen_optimal_table
 	JPP((j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[]));

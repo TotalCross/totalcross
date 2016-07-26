@@ -219,7 +219,7 @@ METHODDEF(JDIMENSION)
 preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
-  register FILE *infile = source->pub.input_file;
+  register JPEGFILE *infile = source->pub.input_file;
   register int c;
   register JSAMPROW out_ptr;
   JSAMPARRAY image_ptr;

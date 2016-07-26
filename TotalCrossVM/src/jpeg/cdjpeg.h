@@ -31,7 +31,7 @@ struct cjpeg_source_struct {
   JMETHOD(void, finish_input, (j_compress_ptr cinfo,
 			       cjpeg_source_ptr sinfo));
 
-  FILE *input_file;
+  JPEGFILE *input_file;
 
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;

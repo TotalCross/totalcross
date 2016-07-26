@@ -31,7 +31,7 @@ extern void free JPP((void *ptr));
 typedef struct {
   struct jpeg_destination_mgr pub; /* public fields */
 
-  FILE * outfile;		/* target stream */
+  JPEGFILE * outfile;		/* target stream */
   JOCTET * buffer;		/* start of buffer */
 } my_destination_mgr;
 
@@ -170,10 +170,10 @@ term_destination (j_compress_ptr cinfo)
     if (JFWRITE(dest->outfile, dest->buffer, datacount) != datacount)
       ERREXIT(cinfo, JERR_FILE_WRITE);
   }
-  fflush(dest->outfile);
-  /* Make sure we wrote the output file OK */
+/*  fflush(dest->outfile); - commented out by GUICH
+  // Make sure we wrote the output file OK
   if (ferror(dest->outfile))
-    ERREXIT(cinfo, JERR_FILE_WRITE);
+    ERREXIT(cinfo, JERR_FILE_WRITE);*/
 }
 
 METHODDEF(void)
@@ -193,7 +193,7 @@ term_mem_destination (j_compress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_stdio_dest (j_compress_ptr cinfo, FILE * outfile)
+jpeg_stdio_dest(j_compress_ptr cinfo, JPEGFILE * outfile)
 {
   my_dest_ptr dest;
 
