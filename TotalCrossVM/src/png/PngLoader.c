@@ -12,6 +12,9 @@
 
 
 #include "png.h"
+#include "tcvm.h"
+#include "pngstruct.h"
+#include "pnginfo.h"
 
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
 static void info_callback(png_structp png_ptr, png_infop info);
@@ -174,7 +177,7 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
          if (png_ptr->num_trans == 256 && png_ptr->color_type == 3)
             isAlpha = true;
          for (i = png_ptr->num_trans; --i >= 0;) // guich@tc120_60: must find the entry that has 0 in trans array
-            if (png_ptr->trans[i] == 0)
+            if (png_ptr->trans_alpha[i] == 0)
             {
                png_color c = png_ptr->palette[i];
                transp = (c.red << 16) | (c.green << 8) | c.blue;
@@ -183,13 +186,13 @@ void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj,
             }
       }
       else
-         transp = (info_ptr->trans_values.red << 16) | (info_ptr->trans_values.green << 8) | info_ptr->trans_values.blue;
+         transp = (info_ptr->trans_color.red << 16) | (info_ptr->trans_color.green << 8) | info_ptr->trans_color.blue;
    }
 
    // Finish decompression and release memory. Do it in this order because output module
    // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    if (userData.upixels) png_free(png_ptr, userData.upixels);
-   png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
    Image_width(imageObj) = userData.width;
    Image_height(imageObj) = userData.height;
