@@ -218,6 +218,7 @@ get_32bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 METHODDEF(JDIMENSION)
 preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
+   /*
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
   register JPEGFILE *infile = source->pub.input_file;
   register int c;
@@ -226,7 +227,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   JDIMENSION row, col;
   cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;
 
-  /* Read the data into a virtual array in input-file row order. */
+  // Read the data into a virtual array in input-file row order. 
   for (row = 0; row < cinfo->image_height; row++) {
     if (progress != NULL) {
       progress->pub.pass_counter = (long) row;
@@ -238,7 +239,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
        row, (JDIMENSION) 1, TRUE);
     out_ptr = image_ptr[0];
     for (col = source->row_width; col > 0; col--) {
-      /* inline copy of read_byte() for speed */
+      // inline copy of read_byte() for speed 
       if ((c = getc(infile)) == EOF)
 	ERREXIT(cinfo, JERR_INPUT_EOF);
       *out_ptr++ = (JSAMPLE) c;
@@ -247,7 +248,7 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (progress != NULL)
     progress->completed_extra_passes++;
 
-  /* Set up to read from the virtual array in top-to-bottom order */
+  // Set up to read from the virtual array in top-to-bottom order 
   switch (source->bits_per_pixel) {
   case 8:
     source->pub.get_pixel_rows = get_8bit_row;
@@ -263,8 +264,11 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   }
   source->source_row = cinfo->image_height;
 
-  /* And read the first row */
+  // And read the first row 
   return (*source->pub.get_pixel_rows) (cinfo, sinfo);
+  */
+   debug("!!!!!!!!!!!!! preload_image NOT IMPLEMENTED!");
+   return 0;
 }
 
 
