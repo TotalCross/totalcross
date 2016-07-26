@@ -964,4 +964,7 @@ public final class Settings
 
    /** The due date of the iOS certificate. You can use it to inform your costumers when its time to update the software. */
    public static Time iosCertDate;
+
+   /** Field set to true if the program have aborted on last run. */
+   public static boolean abortedOnLastRun;
 }

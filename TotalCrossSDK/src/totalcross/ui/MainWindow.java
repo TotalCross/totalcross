@@ -120,6 +120,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       try
       {
          new File(Convert.appendPath(Settings.appPath, "appCr4shed"), File.READ_WRITE).delete();
+         Settings.abortedOnLastRun = true;
          // if appCrashed doesn't exists, its because it exitted normally
          final byte[] dconbytes = readDebugConsole();
          new Thread() // app crashed exists, send report
