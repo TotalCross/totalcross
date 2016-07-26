@@ -34,16 +34,13 @@ extern void free JPP((void *ptr));
 GLOBAL(void *)
 jpeg_get_small (j_common_ptr cinfo, size_t sizeofobject)
 {
-  return heapAlloc(cinfo->err->heap, (int)sizeofobject);
+  return (void *) malloc(sizeofobject);
 }
 
 GLOBAL(void)
 jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 {
-   UNUSED(cinfo)
-   UNUSED(object)
-   UNUSED(sizeofobject)
-  // heapFree(obj); - not needed, unless the data being deallocated is really very big
+  free(object);
 }
 
 
@@ -57,16 +54,13 @@ jpeg_free_small (j_common_ptr cinfo, void * object, size_t sizeofobject)
 GLOBAL(void FAR *)
 jpeg_get_large (j_common_ptr cinfo, size_t sizeofobject)
 {
-   UNUSED(cinfo)
-  return jpeg_get_small(cinfo, sizeofobject);//(void FAR *) xmalloc(sizeofobject);
+  return (void FAR *) malloc(sizeofobject);
 }
 
 GLOBAL(void)
 jpeg_free_large (j_common_ptr cinfo, void FAR * object, size_t sizeofobject)
 {
-   UNUSED(cinfo)
-   UNUSED(sizeofobject)
- //  xfree(object);
+  free(object);
 }
 
 
@@ -79,9 +73,6 @@ GLOBAL(long)
 jpeg_mem_available (j_common_ptr cinfo, long min_bytes_needed,
 		    long max_bytes_needed, long already_allocated)
 {
-   UNUSED(cinfo)
-   UNUSED(min_bytes_needed)
-   UNUSED(already_allocated)
   return max_bytes_needed;
 }
 
@@ -97,9 +88,6 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 			 long total_bytes_needed)
 {
   ERREXIT(cinfo, JERR_NO_BACKING_STORE);
-   UNUSED(cinfo)
-   UNUSED(info)
-   UNUSED(total_bytes_needed)
 }
 
 
@@ -111,13 +99,11 @@ jpeg_open_backing_store (j_common_ptr cinfo, backing_store_ptr info,
 GLOBAL(long)
 jpeg_mem_init (j_common_ptr cinfo)
 {
-   UNUSED(cinfo)
   return 0;			/* just set max_memory_to_use to 0 */
 }
 
 GLOBAL(void)
 jpeg_mem_term (j_common_ptr cinfo)
 {
-   UNUSED(cinfo)
   /* no work */
 }

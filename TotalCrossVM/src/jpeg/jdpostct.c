@@ -163,8 +163,6 @@ post_process_prepass (j_decompress_ptr cinfo,
 {
   my_post_ptr post = (my_post_ptr) cinfo->post;
   JDIMENSION old_next_row, num_rows;
-  UNUSED(output_buf)
-  UNUSED(out_rows_avail)
 
   /* Reposition virtual buffer if at start of strip. */
   if (post->next_row == 0) {
@@ -207,13 +205,8 @@ post_process_2pass (j_decompress_ptr cinfo,
 		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
 		    JDIMENSION out_rows_avail)
 {
-  JDIMENSION num_rows, max_rows;
   my_post_ptr post = (my_post_ptr) cinfo->post;
-  UNUSED(input_buf)
-  UNUSED(in_row_group_ctr)
-  UNUSED(in_row_groups_avail)
-  UNUSED(output_buf)
-  UNUSED(out_rows_avail)
+  JDIMENSION num_rows, max_rows;
 
   /* Reposition virtual buffer if at start of strip. */
   if (post->next_row == 0) {
