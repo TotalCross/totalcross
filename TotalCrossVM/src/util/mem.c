@@ -11,7 +11,7 @@
 
 #include "tcvm.h"
 
-#if defined(ANDROID) || defined(darwin)
+#if defined(darwin)
 #define EXTRA4ALIGN 0
 #else
 //#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
@@ -19,8 +19,9 @@
 #endif
 
 #if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
-#define dlmalloc xmalloc
-#define dlfree xfree
+#define malloc dlmalloc
+#define free dlfree
+#define realloc dlrealloc
 #endif
 
 #define XMALLOC_MARK_START 8  // note: start must be multiple of 4, otherwise a "datatype misnaligned" will be thrown in wince
@@ -580,6 +581,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
 
    LOCKVAR(alloc);
    ptr = malloc(size);
+   
    allocCount++;
 	if (ptr != null)
    {
