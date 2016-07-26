@@ -277,10 +277,13 @@ void heapFree(Heap m, void* ptr)
             if (head == m->current)
                m->current = head->next;
             else
+            if (prev) // guich@tc330
                prev->next = head->next;
             freeArray(head->block);
             xfree(head);
             m->blocksAlloc--;
+            if (prev == null) // prevents program crash
+               break;
          }
          break;
       }
