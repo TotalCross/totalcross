@@ -301,6 +301,7 @@
 #define PNG_H
 
 #include "tcvm.h"  // guich
+#include "pngconf.h"
 
 /* This is not the place to learn how to use libpng. The file libpng-manual.txt
  * describes how to use libpng, and the file example.c summarizes it
