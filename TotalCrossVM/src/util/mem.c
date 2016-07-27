@@ -18,7 +18,7 @@
 #define EXTRA4ALIGN 4
 #endif
 
-#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
+#if !defined(darwin) && (defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
 #define malloc dlmalloc
 #define free dlfree
 #define realloc dlrealloc
