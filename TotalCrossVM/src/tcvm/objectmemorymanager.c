@@ -1036,7 +1036,7 @@ static void dumpCount(HTKey key, int32 i32, VoidP ptr)
    if (i32 > 0)
       debug("%30s: %d (%d)",cc->name, i32, cc->objSize);
 }
-static int lastUsed, countp, indp;
+static int lastUsed, countp, indp, lastT,lastF,lastC;
 static void dumpDif(HTKey key, int32 i32, VoidP ptr)
 {
    TCClass cc = (TCClass)key;
@@ -1241,7 +1241,11 @@ end:
    lastGC = getTimeStamp(); // guich@tc210: moving to begining will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads. guich@tc330: moving to the end fixes 2 threads being able to call gc one after the other, thus spending time in the 2nd call
    runningGC = false;
    if (lockOMM) UNLOCKVAR(omm);
-   debug("%d gc: used: %d->%d, free: %d->%d, chunks: %d->%d (%X)",gcCount,total0, totalAllocated/1024/1024, free0, getFreeMemory(USE_MAX_BLOCK)/1024/1024,chunks0,tcSettings.chunksCreated?*tcSettings.chunksCreated:0, currentContext);
+   {
+      int32 totalf = totalAllocated / 1024 / 1024, freef = getFreeMemory(USE_MAX_BLOCK) / 1024 / 1024, chunksf = tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0;
+      if ((lastT != totalf) || (lastF != freef) || (lastC != chunksf))
+         debug("%d gc u:%d->%d f:%d->%d, c:%d->%d t:%X", gcCount, total0, lastT = totalf, free0, lastF = freef, chunks0, lastC = chunksf, currentContext);
+   }
 }
 
 #ifdef ENABLE_TEST_SUITE
