@@ -297,7 +297,6 @@ libpng_la_CFLAGS = -DPNG_SETJMP_NOT_SUPPORTED ${AM_CFLAGS}
 libpng_la_SOURCES = ${PNG_FILES}
 
 JPEG_FILES =                               \
-	$(sourcedir)/jpeg/jidctred.c               \
 	$(sourcedir)/jpeg/jdapimin.c               \
 	$(sourcedir)/jpeg/jdapistd.c               \
 	$(sourcedir)/jpeg/jdatasrc.c               \
