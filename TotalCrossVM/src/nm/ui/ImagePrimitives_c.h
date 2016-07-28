@@ -91,7 +91,6 @@ static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@
    TCObject pixelsObj = (frameCount == 1) ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
    PixelConv *ib = (PixelConv*)ARRAYOBJ_START(pixelsObj);
    PixelConv pval;                                                                                                                                   
-   bool ok;
 
    int32 i=0, j, n, s, iweight,a,r,g,b;
    double xScale, yScale;
