@@ -18,12 +18,6 @@
 #define EXTRA4ALIGN 4
 #endif
 
-#if !defined(darwin) && (defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
-#define malloc dlmalloc
-#define free dlfree
-#define realloc dlrealloc
-#endif
-
 #define XMALLOC_MARK_START 8  // note: start must be multiple of 4, otherwise a "datatype misnaligned" will be thrown in wince
 #define XMALLOC_MARK_END 2
 #define XMALLOC_MARKSSIZE (XMALLOC_MARK_START + XMALLOC_MARK_END)
