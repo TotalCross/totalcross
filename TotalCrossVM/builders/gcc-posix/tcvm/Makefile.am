@@ -323,7 +323,6 @@ JPEG_FILES =                               \
 	$(sourcedir)/jpeg/jdarith.c                \
 	$(sourcedir)/jpeg/jdmerge.c                \
 	$(sourcedir)/jpeg/jidctflt.c               \
-	$(sourcedir)/jpeg/jidctfst.c               \
 	$(sourcedir)/jpeg/jidctint.c               \
 	$(sourcedir)/jpeg/jfdctflt.c               \
 	$(sourcedir)/jpeg/jfdctfst.c               \
