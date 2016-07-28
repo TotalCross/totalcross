@@ -2811,8 +2811,12 @@ int malloc_corruption_error_count;
 /* default corruption action */
 static void reset_on_error(mstate m);
 
+#ifndef CORRUPTION_ERROR_ACTION
 #define CORRUPTION_ERROR_ACTION(m)  reset_on_error(m)
+#endif
+#ifndef USAGE_ERROR_ACTION
 #define USAGE_ERROR_ACTION(m, p)
+#endif
 
 #else /* PROCEED_ON_ERROR */
 
