@@ -1,4 +1,10 @@
 <h2>TotalCross 3.3</h2>   
+<h1>build </h1>
+. updated libraries: jpeg (9B), png (1.6.23), zlib (1.2.8).<br>
+. fixed memory crashes because these libraries were not using out internal thread-safe malloc routines.<br>
+. replace an alert about ("error on zip") by a debug<br>
+. added Settings.abortedOnLastRun, so you can notify yourself when the last run has aborted<br>
+. only print gc debugs if something has changed<br>
 <h1>build 2941</h1>
 . now android and win32 no longer use dlmalloc. win32 now uses the 'large address aware' trick to increase memory avaibility<br>
 . prevent crash if settings not yet initialized<br>
