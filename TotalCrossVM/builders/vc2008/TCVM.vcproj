@@ -1198,7 +1198,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
-				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200"
+				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200;_WINDOWS_"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				StructMemberAlignment="3"
@@ -3129,11 +3129,19 @@
 			Name="jpeg"
 			>
 			<File
+				RelativePath="..\..\src\jpeg\jaricom.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jcapimin.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\jpeg\jcapistd.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg\jcarith.c"
 				>
 			</File>
 			<File
@@ -3197,6 +3205,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jpeg\jdarith.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jdatadst.c"
 				>
 			</File>
@@ -3237,6 +3249,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jpeg\jdmerge.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jdphuff.c"
 				>
 			</File>
@@ -3253,7 +3269,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jpeg\jfdctflt.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jfdctfst.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg\jfdctint.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg\jidctflt.c"
 				>
 			</File>
 			<File
@@ -3261,7 +3289,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\jpeg\jidctred.c"
+				RelativePath="..\..\src\jpeg\jidctint.c"
 				>
 			</File>
 			<File

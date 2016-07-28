@@ -8,7 +8,7 @@ sourcedir	= ${srcdir}/../../../src
 
 AM_CFLAGS = $(CFLAGS) -DTHEOS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
 if LINUX
-AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm
+AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm -I${sourcedir}/png
 endif
 
 if LINUX
@@ -292,7 +292,7 @@ PNG_FILES =                                \
 	$(sourcedir)/png/pngset.c                  \
 	$(sourcedir)/png/pngtrans.c
 
-libpng_la_CFLAGS = -DPNG_SETJMP_NOT_SUPPORTED ${AM_CFLAGS}
+libpng_la_CFLAGS = -DPNG_SETJMP_NOT_SUPPORTED ${AM_CFLAGS} -I${sourcedir}/png
 
 libpng_la_SOURCES = ${PNG_FILES}
 

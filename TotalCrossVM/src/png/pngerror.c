@@ -913,7 +913,7 @@ png_safe_error),(png_structp png_nonconst_ptr, png_const_charp error_message),
    }
 
    /* Here on an internal programming error. */
-   abort();
+   PNG_ABORT();
 }
 
 #ifdef PNG_WARNINGS_SUPPORTED

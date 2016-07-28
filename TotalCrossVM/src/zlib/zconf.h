@@ -418,7 +418,9 @@ typedef uLong FAR uLongf;
 
 #ifdef STDC
 #  ifndef Z_SOLO
+#ifndef WINCE
 #    include <sys/types.h>      /* for off_t */
+#endif
 #  endif
 #endif
 
