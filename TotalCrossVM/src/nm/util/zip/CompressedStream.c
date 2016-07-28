@@ -26,8 +26,7 @@ static voidpf zalloc(voidpf opaque, uInt items, uInt size)
 {  
    CharP ret;
    UNUSED(opaque)
-   ret = (CharP)xmalloc(items*size+16); // put 8 bytes before and 8 after the area
-   ret += 8;
+   ret = (CharP)xmalloc(items*size);
    return (voidpf)ret;
 }
 
@@ -36,7 +35,6 @@ static void zfree(voidpf opaque, voidpf address)
    CharP ret;
    UNUSED(opaque) 
    ret = (CharP)address;
-   ret -= 8;
    xfree(ret);
 }
 

@@ -36,6 +36,10 @@
 #   include <errno.h>
 #endif
 
+// totalcross
+#define ALLOC xmalloc
+#define TRYFREE(p) xfree(p);
+//
 
 #ifndef local
 #  define local static

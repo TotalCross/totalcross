@@ -1,0 +1,880 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DEMO Debug|Win32">
+      <Configuration>DEMO Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DEMO Release|Win32">
+      <Configuration>DEMO Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="NO RAS Debug|Win32">
+      <Configuration>NO RAS Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="NO RAS Release|Win32">
+      <Configuration>NO RAS Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="TestSuite|Win32">
+      <Configuration>TestSuite</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B6DC7204-DD8B-4A7B-995F-368B82F630DE}</ProjectGuid>
+    <RootNamespace>TCVM</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestSuite|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='TestSuite|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/release/TotalCrossVMS/dist/vm/win32\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/vc2008/$(Platform)/$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TestSuite|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/vc2008/$(Platform)/$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Release|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/release/TotalCrossSDK/dist/vm/win32\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/vc2008/$(Platform)/$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Release|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/release/TotalCrossVMS_NORAS/dist/vm/win32\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">
+    <OutDir>$(SolutionDir)/../../../../output/vc2008/$(Platform)/$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(Platform)/$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>xcopy /R /Y "$(TargetPath)" "$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(Platform)"
+</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Release/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;WIN32;NDEBUG;_WINDOWS;TC_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)TCVM.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>xcopy /R /Y "$(TargetPath)" "p:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\$(Platform)"
+</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Debug/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformationFile>$(IntDir)</BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>c:\laudomovel3\TCVM.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(IntDir)TCVM.pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TestSuite|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>xcopy /R /Y "$(TargetPath)" "$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(Platform)"
+</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Debug/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;ENABLE_TEST_SUITE;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformationFile>$(IntDir)</BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)TCVM.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(IntDir)TCVM.pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Release|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>copy /Y "$(TargetPath)" "$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\win32"
+</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Release/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;WIN32;NDEBUG;_WINDOWS;TC_EXPORTS;_CRT_SECURE_NO_WARNINGS;ENABLE_DEMO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)TCVM.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>xcopy /R /Y "$(TargetPath)" "$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(Platform)"
+</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Debug/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;ENABLE_DEMO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformationFile>$(IntDir)</BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)TCVM.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(IntDir)TCVM.pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Release|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>xcopy /R /Y "$(TargetPath)" "$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(Platform)"
+</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Release/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MinSpace</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;WIN32;NDEBUG;_WINDOWS;TC_EXPORTS;_CRT_SECURE_NO_WARNINGS;DISABLE_RAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)TCVM.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">
+    <CustomBuildStep>
+      <Message>Updating TCVM.dll</Message>
+      <Command>del c:\laudomovel3\dados\laudomovel.bd &amp; del c:\laudomovel3\appCr4shed</Command>
+      <Outputs>TCVM.dll;%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>output\tcvm\Debug/TCVM.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;DISABLE_RAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <FloatingPointModel>Strict</FloatingPointModel>
+      <PrecompiledHeaderOutputFile>$(IntDir)TCVM.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <BrowseInformationFile>$(IntDir)</BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>c:\laudomovel3\tcvm.dll</OutputFile>
+      <Version>1.66</Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(IntDir)TCVM.pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(IntDir)TCVM.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>$(IntDir)TCVM.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\axtls\axssl_config.h" />
+    <ClInclude Include="..\..\src\axtls\bigint.h" />
+    <ClInclude Include="..\..\src\axtls\bigint_impl.h" />
+    <ClInclude Include="..\..\src\axtls\cert.h" />
+    <ClInclude Include="..\..\src\axtls\crypto.h" />
+    <ClInclude Include="..\..\src\axtls\os_port.h" />
+    <ClInclude Include="..\..\src\axtls\private_key.h" />
+    <ClInclude Include="..\..\src\axtls\ssl.h" />
+    <ClInclude Include="..\..\src\axtls\tls1.h" />
+    <ClInclude Include="..\..\src\axtls\version.h" />
+    <ClInclude Include="..\..\src\init\demo.h" />
+    <ClInclude Include="..\..\src\init\globals.h" />
+    <ClInclude Include="..\..\src\init\settings.h" />
+    <ClInclude Include="..\..\src\init\startup.h" />
+    <ClInclude Include="..\..\src\init\win\settings_c.h" />
+    <ClInclude Include="..\..\src\init\win\startup_c.h" />
+    <ClInclude Include="..\..\src\jpeg\cderror.h" />
+    <ClInclude Include="..\..\src\jpeg\cdjpeg.h" />
+    <ClInclude Include="..\..\src\jpeg\jchuff.h" />
+    <ClInclude Include="..\..\src\jpeg\jconfig.h" />
+    <ClInclude Include="..\..\src\jpeg\jdct.h" />
+    <ClInclude Include="..\..\src\jpeg\jdhuff.h" />
+    <ClInclude Include="..\..\src\jpeg\jerror.h" />
+    <ClInclude Include="..\..\src\jpeg\jinclude.h" />
+    <ClInclude Include="..\..\src\jpeg\jmemsys.h" />
+    <ClInclude Include="..\..\src\jpeg\jmorecfg.h" />
+    <ClInclude Include="..\..\src\jpeg\jpegint.h" />
+    <ClInclude Include="..\..\src\jpeg\jpeglib.h" />
+    <ClInclude Include="..\..\src\jpeg\jversion.h" />
+    <ClInclude Include="..\..\src\minizip\crypt.h" />
+    <ClInclude Include="..\..\src\minizip\ioapi.h" />
+    <ClInclude Include="..\..\src\minizip\unzip.h" />
+    <ClInclude Include="..\..\src\minizip\zip.h" />
+    <ClInclude Include="..\..\src\nm\instancefields.h" />
+    <ClInclude Include="..\..\src\nm\io\device\bluetooth\win\DiscoveryAgent_c.h" />
+    <ClInclude Include="..\..\src\nm\io\device\bluetooth\win\SerialPortClient_c.h" />
+    <ClInclude Include="..\..\src\nm\io\device\bluetooth\win\SerialPortServer_c.h" />
+    <ClInclude Include="..\..\src\nm\io\device\gps\win\GPS_c.h" />
+    <ClInclude Include="..\..\src\nm\io\device_PortConnector.h" />
+    <ClInclude Include="..\..\src\nm\io\device_PortConnector_test.h" />
+    <ClInclude Include="..\..\src\nm\io\File.h" />
+    <ClInclude Include="..\..\src\nm\io\File_test.h" />
+    <ClInclude Include="..\..\src\nm\io\PDBFile.h" />
+    <ClInclude Include="..\..\src\nm\io\PDBFile_test.h" />
+    <ClInclude Include="..\..\src\nm\lang\Class_test.h" />
+    <ClInclude Include="..\..\src\nm\lang\Object_test.h" />
+    <ClInclude Include="..\..\src\nm\lang\StringBuffer_test.h" />
+    <ClInclude Include="..\..\src\nm\lang\String_test.h" />
+    <ClInclude Include="..\..\src\nm\lang\Throwable_test.h" />
+    <ClInclude Include="..\..\src\nm\NativeMethods.h" />
+    <ClInclude Include="..\..\src\nm\net\ServerSocket_test.h" />
+    <ClInclude Include="..\..\src\nm\net\Socket_test.h" />
+    <ClInclude Include="..\..\src\nm\net\ssl_SSL_test.h" />
+    <ClInclude Include="..\..\src\nm\net\win\Socket_c.h" />
+    <ClInclude Include="..\..\src\nm\phone\win\CellInfo_c.h" />
+    <ClInclude Include="..\..\src\nm\phone\win\Dial_c.h" />
+    <ClInclude Include="..\..\src\nm\phone\win\ril.h" />
+    <ClInclude Include="..\..\src\nm\phone\win\SMS_c.h" />
+    <ClInclude Include="..\..\src\nm\sys\Convert_test.h" />
+    <ClInclude Include="..\..\src\nm\sys\Time_test.h" />
+    <ClInclude Include="..\..\src\nm\sys\Vm_test.h" />
+    <ClInclude Include="..\..\src\nm\sys\win\Registry_c.h" />
+    <ClInclude Include="..\..\src\nm\sys\win\Time_c.h" />
+    <ClInclude Include="..\..\src\nm\sys\win\Vm_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\Control_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\childview.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\gfx_ex.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\gfx_Graphics_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\kbdview.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\mainview.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\media_Sound_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\sipargs.h" />
+    <ClInclude Include="..\..\src\nm\ui\darwin\Window_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\event_Event_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\font_FontMetrics_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\font_Font_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\gfx_Graphics_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\GraphicsPrimitives.h" />
+    <ClInclude Include="..\..\src\nm\ui\GraphicsPrimitives_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\ImagePrimitives_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\image_Image_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\linux\gfx_ex.h" />
+    <ClInclude Include="..\..\src\nm\ui\linux\gfx_Graphics_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\linux\media_Sound_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\linux\Window_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\MainWindow_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\media_MediaClip.h" />
+    <ClInclude Include="..\..\src\nm\ui\media_Sound.h" />
+    <ClInclude Include="..\..\src\nm\ui\media_Sound_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\PalmFont_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\gfx_ex.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\gfx_Graphics_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\media_Camera_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\media_MediaClip_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\media_Sound_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\palmOneCameraCommon.h" />
+    <ClInclude Include="..\..\src\nm\ui\palm\palmOneCameraLibARM.h" />
+    <ClInclude Include="..\..\src\nm\ui\Window.h" />
+    <ClInclude Include="..\..\src\nm\ui\Window_test.h" />
+    <ClInclude Include="..\..\src\nm\ui\win\gfx_ex.h" />
+    <ClInclude Include="..\..\src\nm\ui\win\gfx_Graphics_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\win\media_Camera_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\win\media_MediaClip_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\win\media_Sound_c.h" />
+    <ClInclude Include="..\..\src\nm\ui\win\Window_c.h" />
+    <ClInclude Include="..\..\src\nm\util\zip_ZLib_test.h" />
+    <ClInclude Include="..\..\src\nm\xml\xml_XmlTokenizer_test.h" />
+    <ClInclude Include="..\..\src\tcvm\context.h" />
+    <ClInclude Include="..\..\src\tcvm\objectmemorymanager.h" />
+    <ClInclude Include="..\..\src\tcvm\objectmemorymanager_test.h" />
+    <ClInclude Include="..\..\src\tcvm\opcodes.h" />
+    <ClInclude Include="..\..\src\tcvm\tcclass.h" />
+    <ClInclude Include="..\..\src\tcvm\tcexception.h" />
+    <ClInclude Include="..\..\src\tcvm\tcfield.h" />
+    <ClInclude Include="..\..\src\tcvm\tcmethod.h" />
+    <ClInclude Include="..\..\src\tcvm\tcthread.h" />
+    <ClInclude Include="..\..\src\tcvm\tcvm.h" />
+    <ClInclude Include="..\..\src\tcvm\tcvm_test.h" />
+    <ClInclude Include="..\..\src\tests\tc_testsuite.h" />
+    <ClInclude Include="..\..\src\util\datastructures.h" />
+    <ClInclude Include="..\..\src\util\debug.h" />
+    <ClInclude Include="..\..\src\util\errormsg.h" />
+    <ClInclude Include="..\..\src\util\guid.h" />
+    <ClInclude Include="..\..\src\util\jchar.h" />
+    <ClInclude Include="..\..\src\util\mem.h" />
+    <ClInclude Include="..\..\src\util\nativelib.h" />
+    <ClInclude Include="..\..\src\util\tcz.h" />
+    <ClInclude Include="..\..\src\util\utils.h" />
+    <ClInclude Include="..\..\src\util\xtypes.h" />
+    <ClInclude Include="..\..\src\zlib\crc32.h" />
+    <ClInclude Include="..\..\src\zlib\deflate.h" />
+    <ClInclude Include="..\..\src\zlib\inffast.h" />
+    <ClInclude Include="..\..\src\zlib\inffixed.h" />
+    <ClInclude Include="..\..\src\zlib\inflate.h" />
+    <ClInclude Include="..\..\src\zlib\inftrees.h" />
+    <ClInclude Include="..\..\src\zlib\trees.h" />
+    <ClInclude Include="..\..\src\zlib\zconf.h" />
+    <ClInclude Include="..\..\src\zlib\zconf.in.h" />
+    <ClInclude Include="..\..\src\zlib\zlib.h" />
+    <ClInclude Include="..\..\src\zlib\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\src\nm\NativeMethods.txt" />
+    <Text Include="..\..\src\nm\NativeMethodsPrototypes.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\axtls\aes.c" />
+    <ClCompile Include="..\..\src\axtls\asn1.c" />
+    <ClCompile Include="..\..\src\axtls\bigint.c" />
+    <ClCompile Include="..\..\src\axtls\crypto_misc.c" />
+    <ClCompile Include="..\..\src\axtls\hmac.c" />
+    <ClCompile Include="..\..\src\axtls\loader.c" />
+    <ClCompile Include="..\..\src\axtls\md2.c" />
+    <ClCompile Include="..\..\src\axtls\md5.c" />
+    <ClCompile Include="..\..\src\axtls\openssl.c" />
+    <ClCompile Include="..\..\src\axtls\os_port.c" />
+    <ClCompile Include="..\..\src\axtls\p12.c" />
+    <ClCompile Include="..\..\src\axtls\rc4.c" />
+    <ClCompile Include="..\..\src\axtls\rsa.c" />
+    <ClCompile Include="..\..\src\axtls\sha1.c" />
+    <ClCompile Include="..\..\src\axtls\sha256.c" />
+    <ClCompile Include="..\..\src\axtls\tls1.c" />
+    <ClCompile Include="..\..\src\axtls\tls1_clnt.c" />
+    <ClCompile Include="..\..\src\axtls\tls1_svr.c" />
+    <ClCompile Include="..\..\src\event\Event.c" />
+    <ClCompile Include="..\..\src\event\specialkeys.c" />
+    <ClCompile Include="..\..\src\init\demo.c" />
+    <ClCompile Include="..\..\src\init\globals.c" />
+    <ClCompile Include="..\..\src\init\settings.c" />
+    <ClCompile Include="..\..\src\init\startup.c" />
+    <ClCompile Include="..\..\src\jpeg\jaricom.c" />
+    <ClCompile Include="..\..\src\jpeg\jcapimin.c" />
+    <ClCompile Include="..\..\src\jpeg\jcapistd.c" />
+    <ClCompile Include="..\..\src\jpeg\jcarith.c" />
+    <ClCompile Include="..\..\src\jpeg\jccoefct.c" />
+    <ClCompile Include="..\..\src\jpeg\jccolor.c" />
+    <ClCompile Include="..\..\src\jpeg\jcdctmgr.c" />
+    <ClCompile Include="..\..\src\jpeg\jchuff.c" />
+    <ClCompile Include="..\..\src\jpeg\jcinit.c" />
+    <ClCompile Include="..\..\src\jpeg\jcmainct.c" />
+    <ClCompile Include="..\..\src\jpeg\jcmarker.c" />
+    <ClCompile Include="..\..\src\jpeg\jcmaster.c" />
+    <ClCompile Include="..\..\src\jpeg\jcomapi.c" />
+    <ClCompile Include="..\..\src\jpeg\jcparam.c" />
+    <ClCompile Include="..\..\src\jpeg\jcphuff.c" />
+    <ClCompile Include="..\..\src\jpeg\jcprepct.c" />
+    <ClCompile Include="..\..\src\jpeg\jcsample.c" />
+    <ClCompile Include="..\..\src\jpeg\jdapimin.c" />
+    <ClCompile Include="..\..\src\jpeg\jdapistd.c" />
+    <ClCompile Include="..\..\src\jpeg\jdarith.c" />
+    <ClCompile Include="..\..\src\jpeg\jdatadst.c" />
+    <ClCompile Include="..\..\src\jpeg\jdatasrc.c" />
+    <ClCompile Include="..\..\src\jpeg\jdcoefct.c" />
+    <ClCompile Include="..\..\src\jpeg\jdcolor.c" />
+    <ClCompile Include="..\..\src\jpeg\jddctmgr.c" />
+    <ClCompile Include="..\..\src\jpeg\jdhuff.c" />
+    <ClCompile Include="..\..\src\jpeg\jdinput.c" />
+    <ClCompile Include="..\..\src\jpeg\jdmainct.c" />
+    <ClCompile Include="..\..\src\jpeg\jdmarker.c" />
+    <ClCompile Include="..\..\src\jpeg\jdmaster.c" />
+    <ClCompile Include="..\..\src\jpeg\jdmerge.c" />
+    <ClCompile Include="..\..\src\jpeg\jdphuff.c" />
+    <ClCompile Include="..\..\src\jpeg\jdpostct.c" />
+    <ClCompile Include="..\..\src\jpeg\jdsample.c" />
+    <ClCompile Include="..\..\src\jpeg\jerror.c" />
+    <ClCompile Include="..\..\src\jpeg\jfdctflt.c" />
+    <ClCompile Include="..\..\src\jpeg\jfdctfst.c" />
+    <ClCompile Include="..\..\src\jpeg\jfdctint.c" />
+    <ClCompile Include="..\..\src\jpeg\jidctflt.c" />
+    <ClCompile Include="..\..\src\jpeg\jidctfst.c" />
+    <ClCompile Include="..\..\src\jpeg\jidctint.c" />
+    <ClCompile Include="..\..\src\jpeg\jmemmgr.c" />
+    <ClCompile Include="..\..\src\jpeg\jmemnobs.c" />
+    <ClCompile Include="..\..\src\jpeg\JpegLoader.c" />
+    <ClCompile Include="..\..\src\jpeg\jquant1.c" />
+    <ClCompile Include="..\..\src\jpeg\jquant2.c" />
+    <ClCompile Include="..\..\src\jpeg\jutils.c" />
+    <ClCompile Include="..\..\src\jpeg\rdbmp.c" />
+    <ClCompile Include="..\..\src\minizip\ioapi.c" />
+    <ClCompile Include="..\..\src\minizip\unzip.c" />
+    <ClCompile Include="..\..\src\minizip\zip.c" />
+    <ClCompile Include="..\..\src\nm\crypto\AESCipher.c" />
+    <ClCompile Include="..\..\src\nm\crypto\MD5Digest.c" />
+    <ClCompile Include="..\..\src\nm\crypto\PKCS1Signature.c" />
+    <ClCompile Include="..\..\src\nm\crypto\RSACipher.c" />
+    <ClCompile Include="..\..\src\nm\crypto\SHA1Digest.c" />
+    <ClCompile Include="..\..\src\nm\crypto\SHA256Digest.c" />
+    <ClCompile Include="..\..\src\nm\db\NativeDB.c" />
+    <ClCompile Include="..\..\src\nm\io\device\bluetooth\DiscoveryAgent.c" />
+    <ClCompile Include="..\..\src\nm\io\device\bluetooth\SerialPortClient.c" />
+    <ClCompile Include="..\..\src\nm\io\device\bluetooth\SerialPortServer.c" />
+    <ClCompile Include="..\..\src\nm\io\device\gps\GPS.c" />
+    <ClCompile Include="..\..\src\nm\io\device\RadioDevice.c" />
+    <ClCompile Include="..\..\src\nm\io\device_PortConnector.c" />
+    <ClCompile Include="..\..\src\nm\io\File.c" />
+    <ClCompile Include="..\..\src\nm\io\PDBFile.c" />
+    <ClCompile Include="..\..\src\nm\lang\Class.c" />
+    <ClCompile Include="..\..\src\nm\lang\Object.c" />
+    <ClCompile Include="..\..\src\nm\lang\Reflection.c" />
+    <ClCompile Include="..\..\src\nm\lang\String.c" />
+    <ClCompile Include="..\..\src\nm\lang\StringBuffer.c" />
+    <ClCompile Include="..\..\src\nm\lang\Thread.c" />
+    <ClCompile Include="..\..\src\nm\lang\Throwable.c" />
+    <ClCompile Include="..\..\src\nm\net\ConnectionManager.c" />
+    <ClCompile Include="..\..\src\nm\net\ServerSocket.c" />
+    <ClCompile Include="..\..\src\nm\net\Socket.c" />
+    <ClCompile Include="..\..\src\nm\net\ssl_SSL.c" />
+    <ClCompile Include="..\..\src\nm\phone\CellInfo.c" />
+    <ClCompile Include="..\..\src\nm\phone\Dial.c" />
+    <ClCompile Include="..\..\src\nm\phone\SMS.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DEMO Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='NO RAS Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\pim\POutlook.c" />
+    <ClCompile Include="..\..\src\nm\sys\CharacterConverter.c" />
+    <ClCompile Include="..\..\src\nm\sys\Convert.c" />
+    <ClCompile Include="..\..\src\nm\sys\Registry.c" />
+    <ClCompile Include="..\..\src\nm\sys\Time.c" />
+    <ClCompile Include="..\..\src\nm\sys\Vm.c" />
+    <ClCompile Include="..\..\src\nm\ui\Control.c" />
+    <ClCompile Include="..\..\src\nm\ui\event_Event.c" />
+    <ClCompile Include="..\..\src\nm\ui\font_Font.c" />
+    <ClCompile Include="..\..\src\nm\ui\font_FontMetrics.c" />
+    <ClCompile Include="..\..\src\nm\ui\gfx_Graphics.c" />
+    <ClCompile Include="..\..\src\nm\ui\image_Image.c" />
+    <ClCompile Include="..\..\src\nm\ui\MainWindow.c" />
+    <ClCompile Include="..\..\src\nm\ui\media_Camera.c" />
+    <ClCompile Include="..\..\src\nm\ui\media_MediaClip.c" />
+    <ClCompile Include="..\..\src\nm\ui\media_Sound.c" />
+    <ClCompile Include="..\..\src\nm\ui\Window.c" />
+    <ClCompile Include="..\..\src\nm\util\BigInteger.c" />
+    <ClCompile Include="..\..\src\nm\util\concurrent_Lock.c" />
+    <ClCompile Include="..\..\src\nm\util\zip\CompressedStream.c" />
+    <ClCompile Include="..\..\src\nm\util\zip\ZipEntry.c" />
+    <ClCompile Include="..\..\src\nm\util\zip\ZipFile.c" />
+    <ClCompile Include="..\..\src\nm\util\zip_ZLib.c" />
+    <ClCompile Include="..\..\src\nm\xml\xml_XmlTokenizer.c" />
+    <ClCompile Include="..\..\src\palmdb\palmdb.c" />
+    <ClCompile Include="..\..\src\png\png.c" />
+    <ClCompile Include="..\..\src\png\pngerror.c" />
+    <ClCompile Include="..\..\src\png\pngget.c" />
+    <ClCompile Include="..\..\src\png\PngLoader.c" />
+    <ClCompile Include="..\..\src\png\pngmem.c" />
+    <ClCompile Include="..\..\src\png\pngpread.c" />
+    <ClCompile Include="..\..\src\png\pngread.c" />
+    <ClCompile Include="..\..\src\png\pngrio.c" />
+    <ClCompile Include="..\..\src\png\pngrtran.c" />
+    <ClCompile Include="..\..\src\png\pngrutil.c" />
+    <ClCompile Include="..\..\src\png\pngset.c" />
+    <ClCompile Include="..\..\src\png\pngtrans.c" />
+    <ClCompile Include="..\..\src\ras\ras_Utils.c" />
+    <ClCompile Include="..\..\src\sqlite\sqlite3.c" />
+    <ClCompile Include="..\..\src\tcvm\context.c" />
+    <ClCompile Include="..\..\src\tcvm\objectmemorymanager.c" />
+    <ClCompile Include="..\..\src\tcvm\tcclass.c" />
+    <ClCompile Include="..\..\src\tcvm\tcexception.c" />
+    <ClCompile Include="..\..\src\tcvm\tcfield.c" />
+    <ClCompile Include="..\..\src\tcvm\tcmethod.c" />
+    <ClCompile Include="..\..\src\tcvm\tcthread.c" />
+    <ClCompile Include="..\..\src\tcvm\tcvm.c" />
+    <ClCompile Include="..\..\src\tests\tc_tests.c" />
+    <ClCompile Include="..\..\src\tests\tc_testsuite.c" />
+    <ClCompile Include="..\..\src\util\datastructures.c" />
+    <ClCompile Include="..\..\src\util\debug.c" />
+    <ClCompile Include="..\..\src\util\dlmalloc.c" />
+    <ClCompile Include="..\..\src\util\errormsg.c" />
+    <ClCompile Include="..\..\src\util\guid.c" />
+    <ClCompile Include="..\..\src\util\jchar.c" />
+    <ClCompile Include="..\..\src\util\mem.c" />
+    <ClCompile Include="..\..\src\util\nativelib.c" />
+    <ClCompile Include="..\..\src\util\tcz.c" />
+    <ClCompile Include="..\..\src\util\utils.c" />
+    <ClCompile Include="..\..\src\util\winsockLib.c" />
+    <ClCompile Include="..\..\src\util\xtypes.c" />
+    <ClCompile Include="..\..\src\zlib\adler32.c" />
+    <ClCompile Include="..\..\src\zlib\compress.c" />
+    <ClCompile Include="..\..\src\zlib\crc32.c" />
+    <ClCompile Include="..\..\src\zlib\deflate.c" />
+    <ClCompile Include="..\..\src\zlib\infback.c" />
+    <ClCompile Include="..\..\src\zlib\inffast.c" />
+    <ClCompile Include="..\..\src\zlib\inflate.c" />
+    <ClCompile Include="..\..\src\zlib\inftrees.c" />
+    <ClCompile Include="..\..\src\zlib\trees.c" />
+    <ClCompile Include="..\..\src\zlib\uncompr.c" />
+    <ClCompile Include="..\..\src\zlib\zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\nm\ui\darwin\childview.m" />
+    <None Include="..\..\src\nm\ui\darwin\kbdview.m" />
+    <None Include="..\..\src\nm\ui\darwin\mainview.m" />
+    <None Include="..\..\src\nm\ui\darwin\sipargs.m" />
+    <None Include="..\..\src\nm\ui\darwin\Window_c.m" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
