@@ -23,6 +23,13 @@
 #include <linux/mman.h>
 #endif
 
+#undef malloc
+#undef free
+#undef realloc
+#define malloc xmalloc
+#define free xfree
+#define realloc xrealloc
+
 /* other changes to work with totalcross:
 
 0. On top of sqlite3.c: 

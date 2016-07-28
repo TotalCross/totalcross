@@ -54,10 +54,15 @@ woven in by Terry Thorsen 1/2003.
 #endif
 
 #ifdef NO_ERRNO_H
-    extern int errno;
+extern int errno;
 #else
 #   include <errno.h>
 #endif
+
+// totalcross
+#define ALLOC xmalloc
+#define TRYFREE(p) {xfree(p);}
+//
 
 
 #ifndef local

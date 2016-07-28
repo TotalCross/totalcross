@@ -10,6 +10,8 @@
 #  include "gzguts.h"
 #endif
 
+#include "tcvm.h"
+
 #ifndef NO_DUMMY_DECL
 struct internal_state      {int dummy;}; /* for buggy compilers */
 #endif
@@ -307,15 +309,15 @@ voidpf ZLIB_INTERNAL zcalloc (opaque, items, size)
     unsigned size;
 {
     if (opaque) items += size - size; /* make compiler happy */
-    return sizeof(uInt) > 2 ? (voidpf)malloc(items * size) :
-                              (voidpf)calloc(items, size);
+    return (voidpf)xmalloc(items * size);
+    //return sizeof(uInt) > 2 ? (voidpf)malloc(items * size) : (voidpf)calloc(items, size);
 }
 
 void ZLIB_INTERNAL zcfree (opaque, ptr)
     voidpf opaque;
     voidpf ptr;
 {
-    free(ptr);
+    xfree(ptr);
     if (opaque) return; /* make compiler happy */
 }
 
