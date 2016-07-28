@@ -503,10 +503,10 @@ typedef png_info * * png_infopp;
  * consequentially, writing portable application code is extremely difficult if
  * an attempt is made to use 'restrict'.
  */
-typedef png_struct * PNG_RESTRICT png_structrp;
-typedef const png_struct * PNG_RESTRICT png_const_structrp;
-typedef png_info * PNG_RESTRICT png_inforp;
-typedef const png_info * PNG_RESTRICT png_const_inforp;
+typedef png_struct *  png_structrp;
+typedef const png_struct *  png_const_structrp;
+typedef png_info *  png_inforp;
+typedef const png_info *  png_const_inforp;
 
 /* Three color definitions.  The order of the red, green, and blue, (and the
  * exact size) is not important, although the size of the fields need to
