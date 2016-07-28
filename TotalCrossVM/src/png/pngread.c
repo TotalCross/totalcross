@@ -16,7 +16,12 @@
 
 #include "pngpriv.h"
 #if defined(PNG_SIMPLIFIED_READ_SUPPORTED) && defined(PNG_STDIO_SUPPORTED)
-#  include <errno.h>
+#if defined (WINCE)
+    extern int errno;
+#define strerror(x) null
+#else
+#   include <errno.h>
+#endif
 #endif
 
 #ifdef PNG_READ_SUPPORTED

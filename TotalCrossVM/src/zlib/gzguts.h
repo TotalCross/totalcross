@@ -25,14 +25,18 @@
 #  include <stdlib.h>
 #  include <limits.h>
 #endif
+#ifndef WINCE
 #include <fcntl.h>
+#endif
 
 #ifdef _WIN32
 #  include <stddef.h>
 #endif
 
 #if defined(__TURBOC__) || defined(_MSC_VER) || defined(_WIN32)
+#ifndef WINCE
 #  include <io.h>
+#endif
 #endif
 
 #ifdef WINAPI_FAMILY
