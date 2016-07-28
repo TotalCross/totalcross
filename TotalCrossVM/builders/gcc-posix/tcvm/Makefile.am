@@ -292,7 +292,7 @@ PNG_FILES =                                \
 	$(sourcedir)/png/pngset.c                  \
 	$(sourcedir)/png/pngtrans.c
 
-libpng_la_CFLAGS = -DPNG_SETJMP_NOT_SUPPORTED ${AM_CFLAGS} -I${sourcedir}/png
+libpng_la_CFLAGS = -DPNG_SETJMP_NOT_SUPPORTED ${AM_CFLAGS}
 
 libpng_la_SOURCES = ${PNG_FILES}
 
