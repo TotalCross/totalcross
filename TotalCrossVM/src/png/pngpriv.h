@@ -70,6 +70,10 @@
 #  include "pnglibconf.h"
 #endif
 
+#ifdef darwin
+#define PNG_ARM_NEON_OPT 0
+#endif
+
 /* Local renames may change non-exported API functions from png.h */
 #if defined(PNG_PREFIX) && !defined(PNGPREFIX_H)
 #  include "pngprefix.h"
