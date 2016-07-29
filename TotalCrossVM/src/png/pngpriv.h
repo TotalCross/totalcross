@@ -461,11 +461,14 @@
 
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
+/*
 #  ifdef _WINDOWS_
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()
 #  endif
+*/
+#  define PNG_ABORT() {} // guich - just ignore, the long jump will do the job - abort()
 #endif
 
 /* These macros may need to be architecture dependent. */
