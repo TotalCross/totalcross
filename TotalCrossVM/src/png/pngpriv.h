@@ -468,7 +468,7 @@
 #    define PNG_ABORT() abort()
 #  endif
 */
-#  define PNG_ABORT() {} // guich - just ignore, the long jump will do the job - abort()
+#  define PNG_ABORT() do{ debug("PNG ERROR ABORT"); }while(0); // guich - just ignore, the long jump will do the job - abort()
 #endif
 
 /* These macros may need to be architecture dependent. */
