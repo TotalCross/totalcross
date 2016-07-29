@@ -25,7 +25,6 @@ enum
    COMPRESS_GZIP = 16
 };
 
-#define deflateInit4TC(a, b, c, d, e)  deflateInit2(a, b, Z_DEFLATED, (c == COMPRESS_GZIP ? (c + MAX_WBITS) : (e ? -MAX_WBITS : MAX_WBITS)), DEF_MEM_LEVEL, d) //flsobral@tc123b_68: GZIP negative window bits is for "no wrap", GZIP uses its own value.
 
 static voidpf zalloc(voidpf opaque, uInt items, uInt size)
 {
@@ -55,7 +54,15 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
 	c_stream.zfree = zfree;
 	c_stream.opaque = (voidpf) 0;
 
-	if ((err = compress != UNCOMPRESS ? deflateInit4TC(&c_stream, levelOrSizeIn, compress, strategy, noWrap) : inflateInit(&c_stream)) != Z_OK)
+   if (compress == UNCOMPRESS)
+      err = inflateInit2(&c_stream, 32 + MAX_WBITS); // windowBits can also be greater than 15 for optional gzip decoding. Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection, or add 16 to decode only the gzip format(the zlib format will return a Z_DATA_ERROR).
+   else
+   {
+      int32 bits = compress == COMPRESS_GZIP ? (compress + MAX_WBITS) : (noWrap ? -MAX_WBITS : MAX_WBITS); // flsobral@tc123b_68: GZIP negative window bits is for "no wrap", GZIP uses its own value.
+      err = deflateInit2(&c_stream, levelOrSizeIn, Z_DEFLATED, bits, DEF_MEM_LEVEL, strategy);
+   }
+
+   if (err != Z_OK)
    {
       if (err == Z_MEM_ERROR)
          throwException(currentContext, OutOfMemoryError, null);
