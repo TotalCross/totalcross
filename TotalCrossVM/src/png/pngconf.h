@@ -362,7 +362,7 @@
 #      endif
 #    endif
 #    ifndef PNG_RESTRICT
-#      define PNG_RESTRICT 
+#      define PNG_RESTRICT __restrict
 #    endif
 
 #  elif defined(__GNUC__)
@@ -390,7 +390,7 @@
 #      endif
 #      if ((__GNUC__ > 3) || !defined(__GNUC_MINOR__) || (__GNUC_MINOR__ >= 1))
 #        ifndef PNG_RESTRICT
-#          define PNG_RESTRICT 
+#          define PNG_RESTRICT __restrict
 #        endif
 #      endif /* __GNUC__.__GNUC_MINOR__ > 3.0 */
 #    endif /* __GNUC__ >= 3 */
@@ -415,13 +415,13 @@
 #    endif
 #    ifndef PNG_RESTRICT
 #      if (_MSC_VER >= 1400)
-#        define PNG_RESTRICT 
+#        define PNG_RESTRICT __restrict
 #      endif
 #    endif
 
 #  elif defined(__WATCOMC__)
 #    ifndef PNG_RESTRICT
-#      define PNG_RESTRICT 
+#      define PNG_RESTRICT __restrict
 #    endif
 #  endif
 #endif /* PNG_PEDANTIC_WARNINGS */
