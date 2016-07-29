@@ -209,7 +209,7 @@
 				ORGANIZATIONNAME = "SuperWaba Ltda";
 				TargetAttributes = {
 					0F5AF5021507FA3600D6142B = {
-						DevelopmentTeam = B3Q2UMGMW8;
+						DevelopmentTeam = W7XZ68AV26;
 						SystemCapabilities = {
 							com.apple.Keychain = {
 								enabled = 0;
