@@ -1,10 +1,13 @@
 package tc;
 
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+
+import java.util.*;
 
 public class Help extends MainWindow
 {
@@ -26,19 +29,30 @@ public class Help extends MainWindow
    Label lstatus;
    Edit edclass,edkey;
    Radio rEn, rPt;
+   RunContainer rc;
+   DepContainer dc;
+   RadioGroupController rgLang = new RadioGroupController();
    
    public void initUI()
    {
+      reload(true);
+   }
+   
+   private void reload(boolean load)
+   {
       try
       {
+         if (load)
+            loadConfig();
+         else
+            saveConfig();
          removeAll();
-         RadioGroupController rg = new RadioGroupController();
          add(new ImageControl(new Image("logoh.png")),CENTER,TOP);
          add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLUE,true),LEFT,AFTER+50,FILL,PREFERRED);
+         
          add(new Label(x("Language: ","Linguagem: ")), LEFT,AFTER+25);
-         add(rEn = new Radio("English", rg), AFTER+25, SAME);    tip(rEn,"Click here to set the user interface to English","Clique aqui para mudar a linguagem para inglês");  
-         add(rPt = new Radio("Português", rg), AFTER+25, SAME);  tip(rPt,"Click here to set the user interface to Portuguese","Clique aqui para mudar a linguagem para português");
-         rg.setSelectedIndex(isEn ? 0 : 1,false);
+         add(rEn = new Radio("English", rgLang), AFTER+25, SAME);    tip(rEn,"Click here to set the user interface to English","Clique aqui para mudar a linguagem para inglês");  
+         add(rPt = new Radio("Português", rgLang), AFTER+25, SAME);  tip(rPt,"Click here to set the user interface to Portuguese","Clique aqui para mudar a linguagem para português");
          add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
          add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow"); 
          add(new Label(x("Key: ","Chave: ")),LEFT,AFTER+25);
@@ -54,13 +68,73 @@ public class Help extends MainWindow
          tc.setBackColor(COLOR);
          tc.allSameWidth = true;
          add(tc, LEFT,AFTER+25,FILL,FIT,edkey);
-         tc.setContainer(0,new RunContainer());
-         tc.setContainer(1,new DepContainer());
+         tc.setContainer(0,rc = new RunContainer());
+         tc.setContainer(1,dc = new DepContainer());
+         
+         if (load)
+            tc.setActiveTab(tab);
+         configs[sel].toUI();
+         rgLang.setSelectedIndex(isEn ? 0 : 1,false);
       }
       catch (Exception e)
       {
          e.printStackTrace();
          exit(1);
+      }
+   }
+   
+   RunConfig[] configs;
+   int tab,sel;
+   
+   private void loadConfig()
+   {
+      try
+      {
+         File f = new File(Settings.appPath+"/help.dat", File.READ_WRITE);
+         DataStream ds = new DataStream(f);
+         /*int ver = */ds.readByte();
+         int lang = ds.readByte();
+         tab = ds.readByte();
+         int n = ds.readByte();
+         sel = ds.readByte();
+         configs = new RunConfig[n];
+         for (int i = 0; i < n; i++)
+            configs[i] = new RunConfig(ds);
+         f.close();
+         isEn = lang == 0;
+      }
+      catch (FileNotFoundException | EOFException fnfe)
+      {
+         configs = new RunConfig[]{new RunConfig()};
+      }
+      catch (Exception ee)
+      {
+         ee.printStackTrace();
+      }
+   }
+   
+   private void saveConfig()
+   {
+      try
+      {
+         File f = new File(Settings.appPath+"/help.dat", File.CREATE_EMPTY);
+         DataStream ds = new DataStream(f);
+         ds.writeByte(1);
+         ds.writeByte(isEn ? 0 : 1);
+         ds.writeByte(tc.getActiveTab());
+         int n = 1;
+         ds.writeByte(n); // number of configs
+         ds.writeByte(0); // active config
+         for (int i = 0; i < n; i++)
+            configs[i].toFile(ds);
+         f.close();
+      }
+      catch (FileNotFoundException fnfe)
+      {
+      }
+      catch (Exception ee)
+      {
+         ee.printStackTrace();
       }
    }
    
@@ -76,6 +150,11 @@ public class Help extends MainWindow
       });
    }
 
+   public void onExit()
+   {
+      saveConfig();
+   }
+   
    public void onEvent(Event e)
    {
       switch (e.type)
@@ -84,9 +163,90 @@ public class Help extends MainWindow
             if (e.target == rEn || e.target == rPt)
             {
                isEn = e.target == rEn;
-               initUI();
+               reload(false);
             }
             break;
+      }
+   }
+   
+   class RunConfig
+   {
+      String className, key, xpos, ypos, width, height, fontsize;
+      int rdsel;
+      boolean showMouse, fast;
+      String scale, bpp, cmdline;
+      
+      public RunConfig()
+      {
+      }
+      
+      public RunConfig(DataStream ds) throws IOException
+      {
+         className = ds.readString();
+         key = ds.readString();
+         xpos = ds.readString();
+         ypos = ds.readString();
+         rdsel = ds.readByte();
+         width = ds.readString();
+         height = ds.readString();
+         bpp = ds.readString();
+         fontsize = ds.readString();
+         scale = ds.readString();
+         fast = ds.readBoolean();
+         cmdline = ds.readString();
+         showMouse = ds.readBoolean();
+      }
+
+      public void toFile(DataStream ds) throws IOException
+      {
+         fromUI();
+         ds.writeString(className);
+         ds.writeString(key);
+         ds.writeString(xpos);
+         ds.writeString(ypos);
+         ds.writeByte(rdsel);
+         ds.writeString(width);
+         ds.writeString(height);
+         ds.writeString(bpp);
+         ds.writeString(fontsize);
+         ds.writeString(scale);
+         ds.writeBoolean(fast);
+         ds.writeString(cmdline);
+         ds.writeBoolean(showMouse);
+      }
+      
+      public void toUI()
+      {
+         edclass.setText(className);
+         edkey.setText(key);
+         rc.edX.setText(xpos);
+         rc.edY.setText(ypos);
+         rc.rg.setSelectedIndex(rdsel, false);
+         rc.edW.setText(width);
+         rc.edH.setText(height);
+         rc.cbBpp.setSelectedItem(bpp);
+         rc.edFS.setText(fontsize);
+         rc.cbSc.setSelectedItem(scale);
+         rc.swSc.setOn(fast);
+         rc.edCmd.setText(cmdline);
+         rc.chM.setChecked(showMouse);
+      }
+      
+      public void fromUI()
+      {
+         className = edclass.getText();
+         key = edkey.getText();
+         xpos = rc.edX.getText();
+         ypos = rc.edY.getText();
+         rdsel = rc.rg.getSelectedIndex();
+         width = rc.edW.getText();
+         height = rc.edH.getText();
+         bpp = (String)rc.cbBpp.getSelectedItem();
+         fontsize = rc.edFS.getText();
+         scale = (String)rc.cbSc.getSelectedItem();
+         fast = rc.swSc.isOn();
+         cmdline = rc.edCmd.getText();
+         showMouse = rc.chM.isChecked();
       }
    }
    
@@ -98,6 +258,7 @@ public class Help extends MainWindow
       Radio rdA, rdI, rd32, rdCE;
       Check chM;
       Button btRun;
+      RadioGroupController rg = new RadioGroupController();
       
       public RunContainer()
       {
@@ -106,7 +267,6 @@ public class Help extends MainWindow
       public void initUI()
       {
          add(new Label(x("Screen settings","Configurações da janela")),LEFT,TOP);
-         RadioGroupController rg = new RadioGroupController();
          add(new Label(x("Position - X: ","Posição - X: ")),LEFT,AFTER+25);
          add(edX = new Edit("99999"),AFTER,SAME); tip(edX, "Type the X position for the window. Leave blank to let the system set it", "Digite a posição X para a janela. Deixe em branco pro sistema posicionar");
          add(new Label("Y: "),AFTER+50,SAME);
@@ -148,6 +308,9 @@ public class Help extends MainWindow
          switch (e.type)
          {
             case ControlEvent.PRESSED:
+               if (e.target == btRun)
+                  run();
+               else
                if (e.target instanceof Radio)
                {
                   int w,h,bpp=24;
@@ -174,6 +337,12 @@ public class Help extends MainWindow
                break;
          }
       }
+   }
+   
+   private void run()
+   {
+      ArrayList<String> v = new ArrayList<String>(10);
+      
    }
    
    class DepContainer extends ScrollContainer
