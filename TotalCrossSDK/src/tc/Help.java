@@ -3,11 +3,10 @@ package tc;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-
-import java.util.*;
 
 public class Help extends MainWindow
 {
@@ -27,11 +26,12 @@ public class Help extends MainWindow
    
    TabbedContainer tc;
    Label lstatus;
-   Edit edclass,edkey;
+   Edit edclass,edkey,edpath;
    Radio rEn, rPt;
    RunContainer rc;
    DepContainer dc;
    RadioGroupController rgLang = new RadioGroupController();
+   Button btpath;
    
    public void initUI()
    {
@@ -54,7 +54,12 @@ public class Help extends MainWindow
          add(rEn = new Radio("English", rgLang), AFTER+25, SAME);    tip(rEn,"Click here to set the user interface to English","Clique aqui para mudar a linguagem para inglês");  
          add(rPt = new Radio("Português", rgLang), AFTER+25, SAME);  tip(rPt,"Click here to set the user interface to Portuguese","Clique aqui para mudar a linguagem para português");
          add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
-         add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow"); 
+         add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
+         Label l;
+         add(l = new Label(x("Class folder: ","Pasta dos .class: ")),LEFT,AFTER+25);
+         add(btpath = new Button(x(" Select ", " Selecionar ")), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
+         add(edpath = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); edpath.setEnabled(false);
+         
          add(new Label(x("Key: ","Chave: ")),LEFT,AFTER+25);
          add(edkey = new Edit(),AFTER,SAME);  tip(edkey, "Type the 24-characters registration key that you received by email", "Digite a chave com 24 caracteres que você recebeu por email");
          
@@ -160,6 +165,28 @@ public class Help extends MainWindow
       switch (e.type)
       {
          case ControlEvent.PRESSED:
+            if (e.target == btpath)
+            {
+               if (edclass.getTrimmedLength() == 0)
+                  Toast.show(x("Please type the class name before selecting the path", "Digite o nome da classe antes de selecionar a pasta"), 3000);
+               else
+               {
+                  FileChooserBox fb = new FileChooserBox(x("Select the .class' path", "Selecione a pasta dos arquivos .class"), new String[]{x("Select","Selecionar"), x("Cancel","Cancelar")},new FileChooserBox.Filter()
+                  {
+                     public boolean accept(File f) throws IOException
+                     {
+                        return f.isDir();
+                     }
+                  });
+                  fb.popup();
+                  if (fb.getPressedButtonIndex() == 0)
+                  {
+                     String ret = fb.getAnswer();
+                     edpath.setText(ret);
+                  }
+               }
+            }
+            else
             if (e.target == rEn || e.target == rPt)
             {
                isEn = e.target == rEn;
@@ -171,7 +198,7 @@ public class Help extends MainWindow
    
    class RunConfig
    {
-      String className, key, xpos, ypos, width, height, fontsize;
+      String path,className, key, xpos, ypos, width, height, fontsize;
       int rdsel;
       boolean showMouse, fast;
       String scale, bpp, cmdline;
@@ -182,6 +209,7 @@ public class Help extends MainWindow
       
       public RunConfig(DataStream ds) throws IOException
       {
+         path = ds.readString();
          className = ds.readString();
          key = ds.readString();
          xpos = ds.readString();
@@ -200,6 +228,7 @@ public class Help extends MainWindow
       public void toFile(DataStream ds) throws IOException
       {
          fromUI();
+         ds.writeString(path);
          ds.writeString(className);
          ds.writeString(key);
          ds.writeString(xpos);
@@ -217,6 +246,7 @@ public class Help extends MainWindow
       
       public void toUI()
       {
+         edpath.setText(path);
          edclass.setText(className);
          edkey.setText(key);
          rc.edX.setText(xpos);
@@ -234,6 +264,7 @@ public class Help extends MainWindow
       
       public void fromUI()
       {
+         path = edpath.getText();
          className = edclass.getText();
          key = edkey.getText();
          xpos = rc.edX.getText();
@@ -248,6 +279,114 @@ public class Help extends MainWindow
          cmdline = rc.edCmd.getText();
          showMouse = rc.chM.isChecked();
       }
+      
+      private void run()
+      {
+         try
+         {
+            fromUI();
+            StringBuilder sb = new StringBuilder(256);
+            String javapath = System.getenv("JAVA_HOME");
+            if (javapath != null)
+            {
+               sb.append(javapath);
+               if (!javapath.contains("bin"))
+                  sb.append("\\bin\\");
+               else
+                  sb.append("\\");
+            }
+            sb.append("java.exe");
+            String tcjar = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            if (tcjar.startsWith("/"))
+               tcjar = tcjar.substring(1);
+            sb.append(" -classpath "+path+java.io.File.pathSeparator+tcjar);
+            sb.append(" totalcross.Launcher ");
+            String k = key.startsWith("%") ? System.getenv(key.substring(1,key.length()-1)) : key;
+            sb.append(" /r "+k);
+            switch (rdsel)
+            {
+               case 1: sb.append(" /scr win32"); break;
+               case 2: sb.append(" /scr wince"); break;
+               case 3: sb.append(" /scr android"); break;
+               case 4: sb.append(" /scr iphone"); break;
+               case 0: 
+                  sb.append(" /scr "+width+"x"+height+"x"+bpp);
+                  if (!fontsize.isEmpty())
+                     sb.append(" /fontsize ").append(fontsize);
+                  break;
+            }
+            if (!xpos.isEmpty() && !ypos.isEmpty())
+               sb.append(" /pos "+xpos+","+ypos);
+            if (!scale.equals("1"))
+               sb.append(fast ? " /fastscale "+scale : " /scale "+scale);
+            if (showMouse)
+               sb.append(" /showmousepos");
+            if (!cmdline.isEmpty())
+               sb.append(" /cmd "+cmdline);
+            sb.append(" "+className.replace('/','.'));
+            String cmd = sb.toString();
+            System.out.println(cmd);
+            String ret = exec(cmd, path);
+            System.out.println(ret);
+         }
+         catch (Exception ee)
+         {
+            MessageBox.showException(ee,true);
+         }
+      }
+   }
+   
+   public static String exec(String command, String path) throws Exception
+   {
+      Process process = Runtime.getRuntime().exec(command, null, new java.io.File(path));
+      java.io.InputStream inputStream = process.getInputStream();
+      java.io.InputStream errorStream = process.getErrorStream();
+      StringBuffer message = new StringBuffer(1024);
+      String lineIn;
+      
+      for (int i =0; i < 5; i++) // 15 seconds must be enough...
+      {
+         if (inputStream.available() > 0)
+            while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
+               message.append("INPUT:").append(lineIn).append("\n");
+         if (errorStream.available() > 0)
+            while (errorStream.available() > 0 && (lineIn = readStream(errorStream)) != null)
+               message.append("ERROR: ").append(lineIn).append("\n");
+         try
+         {
+            process.exitValue();
+            break;
+         }
+         catch (Throwable throwable)
+         {
+            Thread.sleep(500);
+         }
+      }
+      return message.length() > 0 ? message.toString() : null;
+   }
+   public static byte bytebuf[] = new byte[4096];
+   public static String readStream(java.io.InputStream is) throws Exception
+   {
+      int avail = is.available();
+      byte[] buf = bytebuf.length >= avail ? bytebuf : new byte[avail];
+      is.read(buf,0,avail);
+      return new String(buf,0,avail).trim();
+   }
+
+   private boolean checkFilled()
+   {
+      String error = "";
+      if (edpath.getTrimmedLength() == 0)
+         error += ", path to .class";
+      if (edclass.getTrimmedLength() == 0)
+         error += ", class name";
+      if (edkey.getTrimmedLength() == 0)
+         error += ", key";
+      if (error.startsWith(", "))
+         error = error.substring(2);
+      if (!error.isEmpty())
+         Toast.show(x("The following fields must be filled: "+error, "Os seguintes campos devem ser preenchidos: "+error), 4000);
+      return error.isEmpty();
    }
    
    class RunContainer extends ScrollContainer
@@ -255,7 +394,7 @@ public class Help extends MainWindow
       Edit edX, edY, edW, edH, edFS, edCmd;
       ComboBox cbSc, cbBpp;
       Switch swSc;
-      Radio rdA, rdI, rd32, rdCE;
+      Radio rdC, rdA, rdI, rd32, rdCE;
       Check chM;
       Button btRun;
       RadioGroupController rg = new RadioGroupController();
@@ -273,7 +412,8 @@ public class Help extends MainWindow
          add(edY = new Edit("99999"),AFTER,SAME); tip(edY, "Type the Y position for the window. Leave blank to let the system set it", "Digite a posição Y para a janela. Deixe em branco pro sistema posicionar");
          
          add(new Label(x("Select one to populate the edits below", "Selecione um para popular os edits abaixo")),LEFT,AFTER+25);
-         add(rd32 = new Radio("Win32",rg),LEFT,AFTER);     rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
+         add(rdC = new Radio(x("Custom","Customizado"),rg),LEFT,AFTER);  rdC.appId = 0; tip(rdC,  "Fill the fields below", "Preencha os campos abaixo");
+         add(rd32 = new Radio("Win32",rg),AFTER+50,SAME);  rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
          add(rdCE = new Radio("WinCE",rg),AFTER+50,SAME);  rdCE.appId = 2; tip(rdCE, "Width=240, height=320, bpp=8", "Largura=240, altura=320, bpp=8");
          add(rdA = new Radio("Android",rg),AFTER+50,SAME); rdA .appId = 3; tip(rdA,  "Width=320, height=480, bpp=24", "Largura=320, altura=480, bpp=24");
          add(rdI = new Radio("iOS",rg),AFTER+50,SAME);     rdI .appId = 4; tip(rdI,  "Width=640, height=960, bpp=24, scale=0.75", "Largura=640, altura=960, bpp=24, escala=0.75");
@@ -308,8 +448,8 @@ public class Help extends MainWindow
          switch (e.type)
          {
             case ControlEvent.PRESSED:
-               if (e.target == btRun)
-                  run();
+               if (e.target == btRun && checkFilled())
+                  configs[sel].run();
                else
                if (e.target instanceof Radio)
                {
@@ -326,25 +466,23 @@ public class Help extends MainWindow
                      case 4: // ios
                         w = 640; h = 960; s="0.75"; break;
                      default:
+                        edW.clear();
+                        edH.clear();
+                        cbBpp.clear();
+                        cbSc.clear();
+                        edFS.clear();
                         return;                        
                   }
                   edW.setText(String.valueOf(w));
                   edH.setText(String.valueOf(h));
                   cbBpp.setSelectedItem(String.valueOf(bpp));
                   cbSc.setSelectedItem(s);
-               }
-                  
+               }                  
                break;
          }
       }
    }
-   
-   private void run()
-   {
-      ArrayList<String> v = new ArrayList<String>(10);
-      
-   }
-   
+
    class DepContainer extends ScrollContainer
    {
       public DepContainer()
