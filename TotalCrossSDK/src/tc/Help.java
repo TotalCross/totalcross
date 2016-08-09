@@ -35,6 +35,9 @@ public class Help extends MainWindow
    
    public void initUI()
    {
+      Toast.backColor = Color.YELLOW;
+      Toast.foreColor = 0;
+      Toast.posY = BOTTOM - 300;
       reload(true);
    }
    
@@ -170,21 +173,7 @@ public class Help extends MainWindow
                if (edclass.getTrimmedLength() == 0)
                   Toast.show(x("Please type the class name before selecting the path", "Digite o nome da classe antes de selecionar a pasta"), 3000);
                else
-               {
-                  FileChooserBox fb = new FileChooserBox(x("Select the .class' path", "Selecione a pasta dos arquivos .class"), new String[]{x("Select","Selecionar"), x("Cancel","Cancelar")},new FileChooserBox.Filter()
-                  {
-                     public boolean accept(File f) throws IOException
-                     {
-                        return f.isDir();
-                     }
-                  });
-                  fb.popup();
-                  if (fb.getPressedButtonIndex() == 0)
-                  {
-                     String ret = fb.getAnswer();
-                     edpath.setText(ret);
-                  }
-               }
+                  selectPath(edpath, x("Select the .class' path", "Selecione a pasta dos arquivos .class"));
             }
             else
             if (e.target == rEn || e.target == rPt)
@@ -278,6 +267,10 @@ public class Help extends MainWindow
          fast = rc.swSc.isOn();
          cmdline = rc.edCmd.getText();
          showMouse = rc.chM.isChecked();
+      }
+      
+      private void deploy()
+      {
       }
       
       private void run()
@@ -485,12 +478,80 @@ public class Help extends MainWindow
 
    class DepContainer extends ScrollContainer
    {
+      Check wmo, w32, lin, apl, ios, and, wp8, all, inst, pack;
+      Button btpath, btRun;
+      Edit edpath;
+      
       public DepContainer()
       {
          super(false,true);
       }
+      
       public void initUI()
       {
+         add(new Label(x("Platforms","Plataformas")),LEFT,TOP);
+         add(all = new Check(x("All", "Todas")),LEFT,AFTER);     all.appId = 1; all.appObj = "-all";     tip(all, "Deploys for all platforms", "Faz o deploy para todas as plataformas");
+         add(w32 = new Check("Win32"),AFTER+50,SAME);            w32.appId = 2; w32.appObj = "-win32";   tip(w32, "Deploys for Windows 32 desktop", "Faz o deploy para Windows 32 desktop");
+         add(lin = new Check("Linux"),AFTER+50,SAME);            lin.appId = 2; lin.appObj = "-linux";   tip(lin, "Deploys for linux desktop", "Faz o deploy para Linux desktop");
+         add(apl = new Check("Applet"),AFTER+50,SAME);           apl.appId = 2; apl.appObj = "-applet";  tip(apl, "Deploys for applet to run in a browser", "Faz o deploy para executar no navegador");
+         add(ios = new Check("iOS"),LEFT,AFTER);                 ios.appId = 2; ios.appObj = "-ios";     tip(ios, "Deploys for iOS", "Faz o deploy para iOS");
+         add(and = new Check("Android"),AFTER+50,SAME);          and.appId = 2; and.appObj = "-android"; tip(and, "Deploys for Android 2.3 or greater", "Faz o deploy para Android 2.3 ou superior");
+         add(wp8 = new Check("Windows Phone 8"),AFTER+50,SAME);  wp8.appId = 2; wp8.appObj = "-wp8";     tip(wp8, "Deploys for Windows Phone 8", "Faz o deploy para Windows Phone 8");
+
+         Label l;
+         add(l = new Label(x("Mobile provision folder: ","Pasta do mobile provision: ")),LEFT,AFTER+50);
+         add(btpath = new Button(x(" Select ", " Selecionar ")), RIGHT,SAME); tip(btpath, "Selects the folder where the iOS mobile provision is (required for iOS)", "Seleciona a pasta onde estão os arquivos do mobile provision (requerido para o iOS)");
+         add(edpath = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); edpath.setEnabled(false);
+
+         add(inst = new Check(x("Install on device (android or wp8)", "Instalar no equipamento (android ou wp8)")), LEFT,AFTER+50); tip(inst, "Install the package if device is connected. You must only select android or wp8","Instala o pacote se o equipamento estiver conectado. Você deverá selecionar somente android ou wp8");
+
+         add(pack = new Check(x("Package the vm with application", "Empacota a VM com a aplicação")),LEFT, AFTER+50);  tip(pack, "Inserts the VM inside the application's package (android and Windows Mobile); always true for other platforms", "Embute a VM no pacote da aplicação (android e Windows Mobile); sempre embute para as outras plataformas");
+
+         btRun = new Button("Deploy the application");
+         btRun.setBackColor(COLOR);
+         add(btRun, CENTER,AFTER+100,PARENTSIZE+80,PREFERRED+50);
       }
+      
+      public void onEvent(Event e)
+      {
+         switch (e.type)
+         {
+            case ControlEvent.PRESSED:
+               if (e.target == all && all.isChecked()) {w32.clear(); lin.clear(); apl.clear(); ios.clear(); and.clear(); wp8.clear(); edpath.clear(); inst.clear(); }
+               else
+               if (e.target instanceof Check && ((Check)e.target).appId == 2)
+               {
+                  if (((Check)e.target).isChecked())
+                     all.clear();
+                  if (e.target == ios)
+                     Toast.show(x("You must set the Mobile Provision path", "Você deve especificar a pasta do Mobile Provision"), 3000);
+               }
+               else
+               if (e.target == btpath)
+                  selectPath(edpath, x("Select the Mobile Provision's path", "Selecione a pasta do Mobile Provision"));
+               else
+               if (e.target == btRun)
+                  configs[sel].deploy();
+               break;
+         }
+      }
+   }
+   
+   private void selectPath(Edit ed, String tit)
+   {
+      FileChooserBox fb = new FileChooserBox(tit, new String[]{x("Select","Selecionar"), x("Cancel","Cancelar")},new FileChooserBox.Filter()
+      {
+         public boolean accept(File f) throws IOException
+         {
+            return f.isDir();
+         }
+      });
+      fb.popup();
+      ed.clear();
+      if (fb.getPressedButtonIndex() == 0)
+      {
+         String ret = fb.getAnswer();
+         ed.setText(ret);
+      }   
    }
 }
