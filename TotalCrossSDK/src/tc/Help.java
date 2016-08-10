@@ -488,7 +488,16 @@ public class Help extends MainWindow
          error = error.substring(2);
       if (!error.isEmpty())
          Toast.show(x("The following fields must be filled: "+error, "Os seguintes campos devem ser preenchidos: "+error), 4000);
-      return error.isEmpty();
+      boolean ok = error.isEmpty();
+      if (ok) // check if filename exists
+      {
+         String fn = Convert.appendPath(edpath.getText(), edclass.getText().replace('.','/'));
+         try {ok = new File(fn+".class").exists();} catch (Exception e) {e.printStackTrace();}
+         if (!ok)
+            new MessageBox("Error", x("The class folder + class name does not lead to an existing filename. Be sure that the class name contains the complete package and that the path name does NOT contains the package part. Examples: class name = my.app.MyApp and class folder = c:\\myapp\\bin", 
+                                      "A pasta da classe + nome da classe não resulta em um arquivo existente. Tenha certeza que o nome da classe contém o pacote completo e que o caminho NÃO contém parte do pacote. Exemplo: nome da classe = meu.app.MeuAplicativo e pacote da classe = c:\\meuapp\\bin")).popup(); 
+      }
+      return ok;
    }
    
    class RunContainer extends ScrollContainer
