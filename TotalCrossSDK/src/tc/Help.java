@@ -3,10 +3,13 @@ package tc;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
+import totalcross.ui.Button;
+import totalcross.ui.Label;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.ui.event.Event;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.image.Image;
 
 public class Help extends MainWindow
 {
@@ -30,8 +33,9 @@ public class Help extends MainWindow
    Radio rEn, rPt;
    RunContainer rc;
    DepContainer dc;
-   RadioGroupController rgLang = new RadioGroupController();
-   Button btpath;
+   RadioGroupController rgLang;
+   Button btpath, btHtml, btBlog, btPdf;
+   Spinner spin;
    
    public void initUI()
    {
@@ -50,10 +54,17 @@ public class Help extends MainWindow
          else
             saveConfig();
          removeAll();
-         add(new ImageControl(new Image("logoh.png")),CENTER,TOP);
-         add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLUE,true),LEFT,AFTER+50,FILL,PREFERRED);
+         ImageControl ic;
+         add(ic = new ImageControl(new Image("logoh.png")),CENTER,TOP);
+         Spinner.spinnerType = Spinner.IPHONE;
+         add(spin = new Spinner(), RIGHT-50,TOP+50,fmH*3/2,fmH*3/2); spin.setVisible(false);
+         add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLUE,true),LEFT,AFTER+50,FILL,PREFERRED, ic);
+         add(btHtml = new Button("Javadocs"), LEFT,AFTER+50, PARENTSIZE+30, PREFERRED+50); btHtml.setBackColor(0xAAFF00); tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
+         add(btBlog = new Button("Blog"), CENTER, SAME, SAME, SAME);    btBlog.setBackColor(0xAAFF00); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
+         add(btPdf = new Button("Companion"), RIGHT, SAME, SAME, SAME); btPdf.setBackColor(0xAAFF00); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
          
-         add(new Label(x("Language: ","Linguagem: ")), LEFT,AFTER+25);
+         add(new Label(x("Language: ","Linguagem: ")), LEFT,AFTER+50);
+         rgLang = new RadioGroupController();
          add(rEn = new Radio("English", rgLang), AFTER+25, SAME);    tip(rEn,"Click here to set the user interface to English","Clique aqui para mudar a linguagem para inglês");  
          add(rPt = new Radio("Português", rgLang), AFTER+25, SAME);  tip(rPt,"Click here to set the user interface to Portuguese","Clique aqui para mudar a linguagem para português");
          add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
@@ -72,13 +83,14 @@ public class Help extends MainWindow
          lstatus.autoSplit = true;
          add(lstatus,LEFT,BOTTOM,FILL,fmH*2);
          
-         tc = new TabbedContainer(new String[]{x("Run","Executar"),x("Deploy","Empacotar")});
+         tc = new TabbedContainer(new String[]{x("Run","Executar"),x("Deploy","Empacotar"),"Console"});
          tc.setBackColor(0xAAAAAA);
          tc.activeTabBackColor = COLOR;
          tc.allSameWidth = true;
          add(tc, LEFT,AFTER+25,FILL,FIT,edkey);
          tc.setContainer(0,rc = new RunContainer());
          tc.setContainer(1,dc = new DepContainer());
+         tc.setContainer(2,cc = new ConsoleContainer());
          
          if (load)
             tc.setActiveTab(tab);
@@ -87,13 +99,14 @@ public class Help extends MainWindow
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         MessageBox.showException(e,true);
          exit(1);
       }
    }
    
    Config[] configs;
    int tab,sel;
+   ConsoleContainer cc;
    
    private void loadConfig()
    {
@@ -118,7 +131,7 @@ public class Help extends MainWindow
       }
       catch (Exception ee)
       {
-         ee.printStackTrace();
+         handleException(ee);
       }
       if (f != null) try {f.close();} catch (Exception e) {}
    }
@@ -132,7 +145,8 @@ public class Help extends MainWindow
          DataStream ds = new DataStream(f);
          ds.writeByte(1);
          ds.writeByte(isEn ? 0 : 1);
-         ds.writeByte(tc.getActiveTab());
+         int t = tc.getActiveTab(); if (t == 2) t = tc.lastActiveTab; // dont save console as active tab
+         ds.writeByte(t);
          int n = 1;
          ds.writeByte(n); // number of configs
          ds.writeByte(0); // active config
@@ -145,7 +159,7 @@ public class Help extends MainWindow
       }
       catch (Exception ee)
       {
-         ee.printStackTrace();
+         handleException(ee);
       }
       if (f != null) try {f.close();} catch (Exception e) {}
    }
@@ -169,24 +183,60 @@ public class Help extends MainWindow
    
    public void onEvent(Event e)
    {
-      switch (e.type)
+      try
       {
-         case ControlEvent.PRESSED:
-            if (e.target == btpath)
-            {
-               if (edclass.getTrimmedLength() == 0)
-                  Toast.show(x("Please type the class name before selecting the path", "Digite o nome da classe antes de selecionar a pasta"), 3000);
+         switch (e.type)
+         {
+            case ControlEvent.PRESSED:
+               if (e.target == btpath)
+               {
+                  if (edclass.getTrimmedLength() == 0)
+                     Toast.show(x("Please type the class name before selecting the path", "Digite o nome da classe antes de selecionar a pasta"), 3000);
+                  else
+                     selectPath(edpath, x("Select the .class' path", "Selecione a pasta dos arquivos .class"));
+               }
                else
-                  selectPath(edpath, x("Select the .class' path", "Selecione a pasta dos arquivos .class"));
-            }
-            else
-            if (e.target == rEn || e.target == rPt)
-            {
-               isEn = e.target == rEn;
-               reload(false);
-            }
-            break;
+               if (e.target == rEn || e.target == rPt)
+               {
+                  isEn = e.target == rEn;
+                  reload(false);
+               }
+               else
+               if (e.target == btHtml)
+                  Vm.exec("viewer", getTCPath()+"/docs/html/index.html", 0, true);
+               else
+               if (e.target == btPdf)
+                  java.awt.Desktop.getDesktop().open(new java.io.File(getTCPath()+"/docs/TotalCross Companion.pdf"));
+               else
+               if (e.target == btBlog)
+                  Vm.exec("viewer", "http://www.totalcross.com/blog", 0, true);
+               break;
+         }
       }
+      catch (Exception ee)
+      {
+         handleException(ee);
+      }
+   }
+   
+   private String getTCPath()
+   {
+      String ret = System.getenv("TOTALCROSS3_HOME");
+      if (ret == null)
+         ret = System.getenv("TOTALCROSS_HOME");
+      if (ret == null)
+      {
+         String tcjar = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+         if (tcjar.startsWith("/"))
+            tcjar = tcjar.substring(1);
+         ret = "\\TotalCross3";
+         try
+         {
+            ret = new java.io.File(tcjar).getParent().toString();
+         }
+         catch (Exception ee) {handleException(ee);}
+      }
+      return ret.replace('\\', '/');
    }
    
    class Config
@@ -391,7 +441,7 @@ public class Help extends MainWindow
          }
          catch (Exception ee)
          {
-            MessageBox.showException(ee,true);
+            handleException(ee);
          }
       }
       
@@ -430,42 +480,82 @@ public class Help extends MainWindow
          }
          catch (Exception ee)
          {
-            MessageBox.showException(ee,true);
+            handleException(ee);
          }
       }
+   }
+
+   private void handleException(Throwable t)
+   {
+      t.printStackTrace();
+      cc.me.setText("");
+      tc.setActiveTab(2);
+      if (isEn)
+         cc.me.setText("Exception: "+t.getClass()+"\nMessage: "+t.getMessage()+"\n\n"+Vm.getStackTrace(t));
+      else
+         cc.me.setText("Exceção: "+t.getClass()+"\nMensagem: "+t.getMessage()+"\n\n"+Vm.getStackTrace(t));
    }
    
-   public static void exec(StringBuilder sb, String path, boolean big) throws Exception
+   private void println(String s)
    {
-      String cmd = sb.toString();
-      System.out.println("Line: "+cmd);
-      System.out.println("Path: "+path);
-      Process process = Runtime.getRuntime().exec(cmd, null, new java.io.File(path));
-      java.io.InputStream inputStream = process.getInputStream();
-      java.io.InputStream errorStream = process.getErrorStream();
-      StringBuffer message = new StringBuffer(1024);
-      String lineIn;
-      
-      for (int i =0, n = big ? 30 : 5; i < n; i++) // 15 seconds must be enough...
-      {
-         if (inputStream.available() > 0)
-            while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
-               message.append("INPUT:").append(lineIn).append("\n");
-         if (errorStream.available() > 0)
-            while (errorStream.available() > 0 && (lineIn = readStream(errorStream)) != null)
-               message.append("ERROR: ").append(lineIn).append("\n");
-         try
-         {
-            process.exitValue();
-            break;
-         }
-         catch (Throwable throwable)
-         {
-            Thread.sleep(500);
-         }
-      }
-      System.out.println(message.toString());
+      cc.me.setText(cc.me.getText()+s+"\n");
+      cc.me.scrollToBottom();
    }
+   public void exec(final StringBuilder sb, final String path, final boolean big) 
+   {
+      spin.setVisible(true);
+      spin.start();
+      new Thread() // thread is needed to let spin run
+      {
+         public void run()
+         {
+            try
+            {
+               cc.me.setText("");
+               tc.setActiveTab(2);
+               String cmd = sb.toString();
+               println("Line: "+cmd);
+               println("Path: "+path);
+               Process process = Runtime.getRuntime().exec(cmd, null, new java.io.File(path));
+               java.io.InputStream inputStream = process.getInputStream();
+               java.io.InputStream errorStream = process.getErrorStream();
+               
+               for (int i =0, n = big ? 60 : 10; i < n; i++)
+               {
+                  dump(inputStream, errorStream);
+                  try
+                  {
+                     process.exitValue();
+                     dump(inputStream, errorStream);
+                     break;
+                  }
+                  catch (Throwable throwable)
+                  {
+                     Thread.sleep(250);
+                  }
+               }
+               spin.stop();
+               spin.setVisible(false);
+            }
+            catch (Exception ee)
+            {
+               handleException(ee);
+            }
+         }
+      }.start();
+   }
+   
+   private void dump(java.io.InputStream inputStream, java.io.InputStream errorStream) throws Exception
+   {
+      String lineIn;
+      if (inputStream.available() > 0)
+         while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
+            println(lineIn);
+      if (errorStream.available() > 0)
+         while (errorStream.available() > 0 && (lineIn = readStream(errorStream)) != null)
+            println("ERROR: "+lineIn+"\n");
+   }
+   
    public static byte bytebuf[] = new byte[4096];
    public static String readStream(java.io.InputStream is) throws Exception
    {
@@ -492,12 +582,25 @@ public class Help extends MainWindow
       if (ok) // check if filename exists
       {
          String fn = Convert.appendPath(edpath.getText(), edclass.getText().replace('.','/'));
-         try {ok = new File(fn+".class").exists();} catch (Exception e) {e.printStackTrace();}
+         try {ok = new File(fn+".class").exists();} catch (Exception ee) {handleException(ee);}
          if (!ok)
-            new MessageBox("Error", x("The class folder + class name does not lead to an existing filename. Be sure that the class name contains the complete package and that the path name does NOT contains the package part. Examples: class name = my.app.MyApp and class folder = c:\\myapp\\bin", 
-                                      "A pasta da classe + nome da classe não resulta em um arquivo existente. Tenha certeza que o nome da classe contém o pacote completo e que o caminho NÃO contém parte do pacote. Exemplo: nome da classe = meu.app.MeuAplicativo e pacote da classe = c:\\meuapp\\bin")).popup(); 
+            new MessageBox("Error", x("The class folder + class name does not lead to an existing filename: "+fn+". Be sure that the class name contains the complete package and that the path name does NOT contains the package part. Examples: class name = my.app.MyApp and class folder = c:\\myapp\\bin", 
+                                      "A pasta da classe + nome da classe não resulta em um arquivo existente: "+fn+". Certifique-se que o nome da classe contém o pacote completo e que o caminho NÃO contém parte do pacote. Exemplo: nome da classe = meu.app.MeuAplicativo e pacote da classe = c:\\meuapp\\bin")).popup(); 
       }
       return ok;
+   }
+
+   class ConsoleContainer extends ScrollContainer
+   {
+      MultiEdit me;
+      public ConsoleContainer()
+      {
+         super(false,true);
+      }
+      public void initUI()
+      {
+         add(me = new MultiEdit(),LEFT,TOP,FILL,FILL);
+      }
    }
    
    class RunContainer extends ScrollContainer
@@ -508,7 +611,7 @@ public class Help extends MainWindow
       Radio rdC, rdA, rdI, rd32, rdCE;
       Check chM;
       Button btRun;
-      RadioGroupController rg = new RadioGroupController();
+      RadioGroupController rg;
       
       public RunContainer()
       {
@@ -523,6 +626,7 @@ public class Help extends MainWindow
          add(edY = new Edit("99999"),AFTER,SAME); tip(edY, "Type the Y position for the window. Leave blank to let the system set it", "Digite a posição Y para a janela. Deixe em branco pro sistema posicionar");
          
          add(new Label(x("Select one to populate the edits below", "Selecione um para popular os edits abaixo")),LEFT,AFTER+25);
+         rg = new RadioGroupController();
          add(rdC = new Radio(x("Custom","Customizado"),rg),LEFT,AFTER);  rdC.appId = 0; tip(rdC,  "Fill the fields below", "Preencha os campos abaixo");
          add(rd32 = new Radio("Win32",rg),AFTER+50,SAME);  rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
          add(rdCE = new Radio("WinCE",rg),AFTER+50,SAME);  rdCE.appId = 2; tip(rdCE, "Width=240, height=320, bpp=8", "Largura=240, altura=320, bpp=8");
@@ -599,7 +703,7 @@ public class Help extends MainWindow
    {
       Check wmo, w32, lin, apl, ios, and, wp8, all, inst, pack;
       Edit edpathd;
-      Button btpath, btDep;
+      Button btpath, btDep, btfol;
       
       public DepContainer()
       {
@@ -631,8 +735,13 @@ public class Help extends MainWindow
 
          btDep = new Button(x("Deploy the application", "Empacotar a aplicação"));
          btDep.setBackColor(COLOR);
-         add(btDep, CENTER,AFTER+100,PARENTSIZE+80,PREFERRED+50);
+         add(btDep, LEFT,AFTER+100,PARENTSIZE+60,PREFERRED+50);
          tip(btDep, "Fill the fields above and press this button to deploy the application", "Preencha os campos acima e clique nesse botão para empacotar a aplicação");
+
+         btfol = new Button(x("Install path", "Pasta da instalação"));
+         btfol.setBackColor(0xAAFF00);
+         add(btfol, RIGHT,SAME,PARENTSIZE+30,PREFERRED+50);
+         tip(btfol, "Opens the path where the packages were created", "Abre a pasta onde estão os pacotes para instalar");
       }
       
       public void onEvent(Event e)
@@ -655,6 +764,9 @@ public class Help extends MainWindow
                else
                if (e.target == btDep && checkFilled())
                   configs[sel].deploy();
+               else
+               if (e.target == btfol && !edpath.getText().isEmpty())
+                  Vm.exec("viewer", edpath.getText().replace('\\','/')+"/install", 0, true);
                break;
          }
       }
