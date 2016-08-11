@@ -13,6 +13,11 @@ import totalcross.ui.image.Image;
 
 public class Help extends MainWindow
 {
+   public static void main(String []args)
+   {
+      totalcross.Launcher.main(new String[]{"/scr","480x640x32","/fontsize","16","tc.Help"});
+   }
+   
    public Help()
    {
       setUIStyle(Settings.Android);
@@ -381,7 +386,7 @@ public class Help extends MainWindow
          pathd = dc.edpathd.getText();
       }
       
-      private StringBuilder initRD(String path)
+      private String initRD(String path)
       {
          StringBuilder sb = new StringBuilder(256);
          String javapath = System.getenv("JAVA_HOME");
@@ -398,7 +403,7 @@ public class Help extends MainWindow
          if (tcjar.startsWith("/"))
             tcjar = tcjar.substring(1);
          sb.append(" -classpath "+path+java.io.File.pathSeparator+tcjar);
-         return sb;
+         return sb.toString();
       }
       
       private String getKey()
@@ -417,8 +422,8 @@ public class Help extends MainWindow
             String cn = idx == -1 ? className : className.substring(idx+1);
             String pn = idx == -1 ? path : Convert.appendPath(path, className.substring(0,idx).replace('.','/'));
             
-            StringBuilder sb = initRD(pn);
-            sb.append(" tc.Deploy ");
+            String java = initRD(pn);
+            StringBuilder sb = new StringBuilder(512);
             sb.append(" ").append(cn).append(".class");
             sb.append(" /r "+getKey());
             if (all)
@@ -437,7 +442,7 @@ public class Help extends MainWindow
             if ((and || all) && inst) sb.append(" /i android");
             if ((wp8 || all) && inst) sb.append(" /i wp8");
             if (pack) sb.append(" /p");
-            exec(sb, pn, true);
+            exec(java, " tc.Deploy ", sb, pn, true);
          }
          catch (Exception ee)
          {
@@ -450,8 +455,8 @@ public class Help extends MainWindow
          try
          {
             fromUI();
-            StringBuilder sb = initRD(path);
-            sb.append(" totalcross.Launcher ");
+            String java = initRD(path);
+            StringBuilder sb = new StringBuilder(512);
             sb.append(" /r "+getKey());
             switch (rdsel)
             {
@@ -476,7 +481,7 @@ public class Help extends MainWindow
                sb.append(" /cmd "+cmdline);
             sb.append(" "+className.replace('/','.'));
             
-            exec(sb, path, false);
+            exec(java, " totalcross.Launcher ", sb, path, false);
          }
          catch (Exception ee)
          {
@@ -488,7 +493,6 @@ public class Help extends MainWindow
    private void handleException(Throwable t)
    {
       t.printStackTrace();
-      cc.me.setText("");
       tc.setActiveTab(2);
       if (isEn)
          cc.me.setText("Exception: "+t.getClass()+"\nMessage: "+t.getMessage()+"\n\n"+Vm.getStackTrace(t));
@@ -498,10 +502,12 @@ public class Help extends MainWindow
    
    private void println(String s)
    {
+      System.out.println(s);
       cc.me.setText(cc.me.getText()+s+"\n");
       cc.me.scrollToBottom();
    }
-   public void exec(final StringBuilder sb, final String path, final boolean big) 
+   
+   public void exec(final String java, final String command, final StringBuilder sb, final String path, final boolean deploy) 
    {
       spin.setVisible(true);
       spin.start();
@@ -511,16 +517,19 @@ public class Help extends MainWindow
          {
             try
             {
+               String args = sb.toString();
                cc.me.setText("");
+               println("To run from Eclipse: ");
+               println(" Main class: "+command+"\n");
+               println(" Arguments: "+args+"\n");
+               println(" Working directory: "+path+"\n");
                tc.setActiveTab(2);
-               String cmd = sb.toString();
-               println("Line: "+cmd);
-               println("Path: "+path);
+               String cmd = java + command + args;
                Process process = Runtime.getRuntime().exec(cmd, null, new java.io.File(path));
                java.io.InputStream inputStream = process.getInputStream();
                java.io.InputStream errorStream = process.getErrorStream();
                
-               for (int i =0, n = big ? 60 : 10; i < n; i++)
+               for (int i =0, n = deploy ? 60000/250 : 5000/250; i < n; i++)
                {
                   dump(inputStream, errorStream);
                   try
@@ -536,6 +545,9 @@ public class Help extends MainWindow
                }
                spin.stop();
                spin.setVisible(false);
+               if (!deploy)
+                  println(x("NOTE THAT WHEN YOU RUN A PROGRAM OUTSIDE THE IDE, YOU ARE NOT ABLE TO DEBUG THE PROGRAM. YOU CAN USE THE COMMANDS ON THE TOP OF THIS CONSOLE TO CONFIGURE YOUR IDE TO CREATE A RUN/DEBUG CONFIGURATION ON YOUR FAVORITE IDE",
+                     "NOTE QUE QUANDO VOCÊ EXECUTA O APLICATIVO FORA DE UM AMBIENTE DE DESENVOLVIMENTO (IDE), VOCÊ NÃO CONSEGUE DEPURAR. VOCÊ PODE USAR OS COMANDOS DESCRITOS NO TOPO DESSE CONSOLE PARA CRIAR UMA CONFIGURAÇÃO DE RUN/DEBUG NA SUA IDE FAVORITA"));
             }
             catch (Exception ee)
             {
