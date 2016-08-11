@@ -15,7 +15,7 @@ public class Help extends MainWindow
 {
    public static void main(String []args)
    {
-      totalcross.Launcher.main(new String[]{"/scr","480x640x32","/fontsize","16","tc.Help"});
+      totalcross.Launcher.main(new String[]{"/auto"});
    }
    
    public Help()

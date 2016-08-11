@@ -290,8 +290,9 @@ target: desktop
   </jar>
 
    <proguard warn="false" shrink="false" allowaccessmodification="false" defaultpackage="z" optimize="false" overloadaggressively="true" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/desktop_${versionStr}.map">
-       <keep name="tc.tools.deployer.*"><field/><method/></keep>
+       <keep name="*"><field/><method/></keep>
        <keep name="tc.tools.converter.ConverterException" />
+       <keep name="tc.Help"><field  access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.Deploy"><field  access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.Deploy$*"><field access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.deployer.LinuxBuildNatives"><field access="public protected" /><method access="public protected" /></keep>
@@ -328,25 +329,26 @@ target: desktop
     excludes="tc/**,*.tcz"
     />  
     <fileset dir="${fonts}" includes="TCFont.tcz"/>      
+  </jar>
+ 
+  <!-- join tc_t.jar and sqlite.jar into tc.jar -->
+  
+   <jar destfile="${dist}/tc.jar" filesetmanifest="skip">
+       <zipgroupfileset file="${dist}/tc_desktop.jar"/>
+       <zipgroupfileset file="${dist}/tc_deploy.jar"/>
+       <zipgroupfileset file="${tools}/sqlite/${sqlite-jdbc}.jar"/>
   	<manifest>
       <attribute name="Built-By" value="${user.name}"/>
       <attribute name="Implementation-Vendor" value="SuperWaba Ltda"/>
       <attribute name="Implementation-Title" value="Totalcross"/>
       <attribute name="Implementation-Version" value="${versionStr}"/>
       <!-- support "java -jar tc.jar" to run deployment -->
-      <attribute name="Main-Class" value="tc.Deploy"/>
+      <attribute name="Main-Class" value="tc.Help"/>
   	</manifest>
-  </jar>
- 
-  <!-- join tc_t.jar and sqlite.jar into tc.jar -->
-   <zip destfile="${dist}/tc.jar">
-       <zipgroupfileset file="${dist}/tc_desktop.jar"/>
-       <zipgroupfileset file="${dist}/tc_deploy.jar"/>
-       <zipgroupfileset file="${tools}/sqlite/${sqlite-jdbc}.jar"/>
-   </zip>
+   </jar>
    <delete file="${dist}/tc_desktop.jar" />
    <delete file="${dist}/tc_deploy.jar" />
-
+   
   <chmod file="${dist}/tc.jar" perm="ugo+x"></chmod>
 
 </target>
@@ -358,7 +360,6 @@ target: desktop
    </zip>
    <delete file="${dist}/tc.jar" />
    <move file="${dist}/tc_.jar" tofile="${dist}/tc.jar" />
-
 </target>
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: desktop

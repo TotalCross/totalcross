@@ -412,9 +412,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
    public static void main(String args[])
    {
-      if (args.length == 0)
+      if (args.length == 0 || args[0].equals("/auto"))
       {
-         showInstructions();
+         if (args.length == 0)
+            showInstructions();
          args = new String[]{"/scr","480x640x32","/fontsize","16","tc.Help"};
       }
       isApplication = true;
@@ -1266,9 +1267,25 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                {
                   InputStream is = (InputStream)_class.getResourceAsStream("/"+path);
                   if (is != null)
-                  {
                      stream = readJavaInputStream(is);
-                  }
+               } catch (Throwable tt) {if (tt.getMessage() != null) System.out.println(tt.getMessage());}
+            }
+            String sjar;
+            if (stream == null && !path.endsWith(".class") && (sjar=getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).contains(".jar")) // guich@330 - let tc.Help work from inside a jar
+            {
+               sread += "#4b - "+sjar.substring(1)+"\n";
+               try
+               {
+                  URL url = getClass().getProtectionDomain().getCodeSource().getLocation();
+                  ZipInputStream zIn = new ZipInputStream(url.openStream());
+                  String spath = "/"+path;
+                  for (java.util.zip.ZipEntry zEntry = zIn.getNextEntry(); zEntry != null; zEntry = zIn.getNextEntry())
+                     if (zEntry.getName().endsWith(spath))
+                     {
+                        stream = readJavaInputStream(zIn);
+                        break;
+                     }
+                  zIn.close();
                } catch (Throwable tt) {if (tt.getMessage() != null) System.out.println(tt.getMessage());}
             }
             if (stream == null && htAttachedFiles.size() > 0) // guich@tc100: load from attached libraries too
