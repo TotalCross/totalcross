@@ -2,7 +2,7 @@ package totalcross.lang;
 
 import totalcross.sys.*;
 
-public class Integer4D extends Number4D
+public class Integer4D extends Number4D implements Comparable<Integer4D>
 {
    public static final Class<Integer> TYPE = Integer.class;
    int v;
@@ -84,5 +84,10 @@ public class Integer4D extends Number4D
    public double doubleValue()
    {
       return v;
+   }
+   @Override
+   public int compareTo(Integer4D o)
+   {
+      return this.v - o.v;
    }
 }
