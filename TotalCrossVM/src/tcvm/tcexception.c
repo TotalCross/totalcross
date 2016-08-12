@@ -261,7 +261,7 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
          *trace = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj
    }
 #ifdef _DEBUG
-   if (c != c0) debug(c0);
+//   if (c != c0) debug(c0);
 #endif
 }
 
