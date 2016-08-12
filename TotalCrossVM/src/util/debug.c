@@ -116,3 +116,8 @@ TC_API bool alert(char *s, ...)
    }
    return false;
 }
+
+TC_API void tcabort(char* file, int32 line)
+{
+   debug("@@@ ABORT REQUESTED AT %s (%d)", file, line);
+}

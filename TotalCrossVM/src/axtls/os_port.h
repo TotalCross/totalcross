@@ -120,7 +120,6 @@ typedef int int32_t;
 /* Windows CE stuff */
 #if defined(_WIN32_WCE)
 #include <basetsd.h>
-#define abort()                 do{ debug("SSL ERROR ABORT"); }while(0);
 #else
 #include <io.h>
 #include <process.h>

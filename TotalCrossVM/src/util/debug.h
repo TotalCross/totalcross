@@ -32,6 +32,8 @@ typedef bool (*alertFunc)(char *s, ...);
 void deleteDebugFile();
 bool debugStr(char *s); // debugs the string
 
+TC_API void tcabort(char* file, int32 line);
+
 #ifdef __cplusplus
  } // __cplusplus
 #endif

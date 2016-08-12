@@ -266,7 +266,6 @@ bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStr
       executeMethod(srcFile.currentContext, srcFile.readBytesMethod, srcFile.params[0].asObj, srcFile.params[1].asObj, 0, scanLineIn);
       if (currentContext->thrownException != null)
       {
-         //alert("abort compress");
          jpeg_abort_compress(&cinfo);
          goto finish;
       }
