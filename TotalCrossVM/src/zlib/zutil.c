@@ -127,8 +127,8 @@ int ZLIB_INTERNAL z_verbose = verbose;
 void ZLIB_INTERNAL z_error (m)
     char *m;
 {
-    fprintf(stderr, "%s\n", m);
-    TCABORT;//exit(1);
+    //debug(stderr, "%s\n", m);
+    tcabort(m,__FILE__,__LINE__);//exit(1);
 }
 #endif
 

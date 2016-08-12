@@ -468,7 +468,7 @@
 #    define PNG_ABORT() abort()
 #  endif
 */
-#  define PNG_ABORT() tcabort(__FILE__,__LINE__) // guich - just ignore, the long jump will do the job - abort()
+#  define PNG_ABORT() tcabort("PNG",__FILE__,__LINE__) // guich - just ignore, the long jump will do the job - abort()
 #endif
 
 /* These macros may need to be architecture dependent. */

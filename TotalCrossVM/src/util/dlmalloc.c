@@ -535,7 +535,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define ABORT_ON_ASSERT_FAILURE 0 // prevent programs
 #define PROCEED_ON_ERROR 0        // crash
 #define MAX_RELEASE_CHECK_RATE MAX_SIZE_T // guich@tc330: prevent memory from being recovered
-void tcabort(char* file, int line);
+void tcabort(char* msg, char* file, int line);
 
 #ifdef ANDROID
  #define NO_MALLINFO 1
@@ -552,9 +552,9 @@ void tcabort(char* file, int line);
  #define FOOTERS 1
 #endif
 
-#define ABORT tcabort(__FILE__,__LINE__)
-#define CORRUPTION_ERROR_ACTION(m) tcabort(__FILE__,__LINE__)
-#define USAGE_ERROR_ACTION(m,p) tcabort(__FILE__,__LINE__)
+#define ABORT tcabort("DLMALLOC",__FILE__,__LINE__)
+#define CORRUPTION_ERROR_ACTION(m) tcabort("DLMALLOC CORRUPTION ERROR",__FILE__,__LINE__)
+#define USAGE_ERROR_ACTION(m,p) tcabort("DLMALLOC USAGE ERROR",__FILE__,__LINE__)
 
 #if defined (darwin)
 

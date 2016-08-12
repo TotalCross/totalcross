@@ -33,7 +33,7 @@
 #include "os_port.h"
 
 #define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
-#define abort() do{tcabort(__FILE__,__LINE__);} while (0) // TOTALCROSS
+#define abort() tcabort("AXTLS",__FILE__,__LINE__) // TOTALCROSS
 
 #ifdef WIN32
 /**
