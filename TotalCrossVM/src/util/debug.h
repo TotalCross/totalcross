@@ -33,6 +33,7 @@ void deleteDebugFile();
 bool debugStr(char *s); // debugs the string
 
 TC_API void tcabort(char* file, int32 line);
+#define TCABORT tcabort(__FILE__,__LINE__)
 
 #ifdef __cplusplus
  } // __cplusplus

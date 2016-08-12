@@ -105,7 +105,7 @@ EXP_FUNC void STDCALL RNG_initialize(const uint8_t *seed_buf, int size)
                            CRYPT_NEWKEYSET))
             {
                 debug("CryptoLib: %s %x", unsupported_str, GetLastError());
-                exit(1);
+                TCABORT;//exit(1);
             }
         }
 #else   
