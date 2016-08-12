@@ -176,12 +176,7 @@ TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile na
 
    if (unzLocateFile(*unzipFile, szName, 0) == UNZ_OK)
    {
-	   z_stream c_stream; // compression stream
-	   c_stream.zalloc = zalloc;
-	   c_stream.zfree = zfree;
-	   c_stream.opaque = (voidpf) 0;
-
-      if (unzOpenCurrentFile(*unzipFile, &c_stream) == UNZ_OK)
+      if (unzOpenCurrentFile(*unzipFile) == UNZ_OK)
       {
          TCObject zipStream = createObject(p->currentContext, "totalcross.util.zip.ZipStream");
          //ZipStream_zipFile(zipStream) = zipFile;
@@ -190,7 +185,6 @@ TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile na
          setObjectLock(zipStream, UNLOCKED);
       }
    }
-
    xfree(szName);
 }
 
@@ -287,11 +281,6 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
    unz_file_info file_info;
    Err err;
 
-   z_stream c_stream; // compression stream
-   c_stream.zalloc = zalloc;
-   c_stream.zfree = zfree;
-   c_stream.opaque = (voidpf) 0;
-
    if (mode != 2) // INFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in INFLATE mode.");
    else 
@@ -321,7 +310,7 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
          throwException(p->currentContext, IOException, "Failed to retrieve details for the next entry");
       else if ((zipEntryCommentObj = createStringObjectFromCharP(p->currentContext, zipEntryCommentP, (int)file_info.size_file_comment)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if (unzOpenCurrentFile(zipNativeP->zipFile, &c_stream) != UNZ_OK)
+      else if (unzOpenCurrentFile(zipNativeP->zipFile) != UNZ_OK)
          throwException(p->currentContext, IOException, "Failed to open the next entry");
       else
       {
