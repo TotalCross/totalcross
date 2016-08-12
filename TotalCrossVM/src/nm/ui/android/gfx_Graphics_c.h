@@ -506,21 +506,10 @@ bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
 {
    int32 i;
    bool ret = true;
-   PixelConv* pf = (PixelConv*)pixels, *pt, *pt0;
+   PixelConv *p,ptemp;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
    int32 tidorig = textureId[0];
-   if (onlyAlpha)
-      pt = pt0 = (PixelConv*)pixels;
-   else
-   {
-      pt0 = pt = (PixelConv*)xmalloc(width*height*4);
-      if (!pt)
-      {
-         throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
-         return false;
-      }
-   }
    if (!textureAlreadyCreated)
    {
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
@@ -547,15 +536,15 @@ bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    }
    // must invert the pixels from ARGB to RGBA
    if (!onlyAlpha)
-      for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
+      for (i = width*height, p=(PixelConv*)pixels; --i >= 0; p++) {ptemp.pixel = p->pixel; p->a = ptemp.r; p->b = ptemp.g; p->g = ptemp.b; p->r = ptemp.a;}
    if (textureAlreadyCreated)
    {
-      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pixels); GL_CHECK_ERROR
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    else
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
+      glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pixels); err = GL_CHECK_ERROR
       if (err)
       {
          glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
@@ -565,8 +554,9 @@ bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
       }
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
+   if (!onlyAlpha)
+      for (i = width*height, p=(PixelConv*)pixels; --i >= 0; p++) {ptemp.pixel = p->pixel; p->a = ptemp.r; p->b = ptemp.g; p->g = ptemp.b; p->r = ptemp.a;}
    if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
-   if (!onlyAlpha) xfree(pt0);
    return ret;
 }
 
