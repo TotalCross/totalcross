@@ -30,10 +30,17 @@
 #include "zip.h"
 
 #ifdef STDC
+#ifndef WINCE
 #  include <stddef.h>
+#endif
 #  include <string.h>
 #  include <stdlib.h>
 #endif
+
+#if defined (WINCE)
+   #define NO_ERRNO_H
+#endif
+
 #ifdef NO_ERRNO_H
     extern int errno;
 #else
