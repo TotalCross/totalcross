@@ -403,10 +403,8 @@ typedef uLong FAR uLongf;
 #endif
 
 #ifdef Z_U4
-   a
    typedef Z_U4 z_crc_t;
 #else
-   b
    typedef unsigned long z_crc_t;
 #endif
 
