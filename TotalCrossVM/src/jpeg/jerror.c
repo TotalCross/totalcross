@@ -76,7 +76,7 @@ error_exit (j_common_ptr cinfo)
   /* Let the memory manager delete any temp files before we die */
   jpeg_destroy(cinfo);
 
-  TCABORT;// exit(EXIT_FAILURE);
+  HEAP_ERROR(cinfo->err->heap, cinfo->err->msg_code);
 }
 
 
@@ -95,6 +95,7 @@ error_exit (j_common_ptr cinfo)
  * not just not use this routine.
  */
 
+extern bool debug(const char* s, ...);
 METHODDEF(void)
 output_message (j_common_ptr cinfo)
 {
