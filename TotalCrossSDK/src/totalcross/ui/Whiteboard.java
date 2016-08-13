@@ -66,7 +66,7 @@ public class Whiteboard extends Control
          }
          catch (ImageException e)
          {
-            Vm.alert("Not enough memory to resize the whiteboard");
+            Vm.debug("Not enough memory to resize the whiteboard");
          }
    }
 

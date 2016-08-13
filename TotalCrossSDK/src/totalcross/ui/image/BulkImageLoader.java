@@ -120,7 +120,6 @@ public class BulkImageLoader extends Thread
       }
       catch (Throwable e)
       {
-         Vm.alert(e.getMessage()+" "+Vm.getStackTrace(e));
          e.printStackTrace();
       }
       return img;
