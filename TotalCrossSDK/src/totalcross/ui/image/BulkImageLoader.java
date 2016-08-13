@@ -85,7 +85,13 @@ public class BulkImageLoader extends Thread
          {
             for (int i = lastIni; i < lastMinIdx; i++) loaded[i] = null;
             for (int i = lastMaxIdx+1; i <= lastEnd; i++) loaded[i] = null;
-            Vm.gc(); // very important: keep memory usage low
+            MainWindow.getMainWindow().runOnMainThread(new Runnable()
+            {
+               public void run()
+               {
+                  Vm.gc(); // very important: keep memory usage low. must run on Main thread otherwise the images are never freed.
+               }
+            });
          }
          lastIni = lastMinIdx;
          lastEnd = lastMaxIdx;
