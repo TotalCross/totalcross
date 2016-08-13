@@ -96,6 +96,8 @@ extern int errno;
 // totalcross
 #define ALLOC xmalloc
 #define TRYFREE(p) {xfree(p);}
+#undef free
+#define free(p) xfree(p)
 //
 
 
