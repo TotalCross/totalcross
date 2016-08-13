@@ -497,7 +497,6 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;DISABLE_RAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>4Bytes</StructMemberAlignment>
@@ -520,7 +519,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;ws2_32.lib;Rasapi32.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>c:\laudomovel3\tcvm.dll</OutputFile>
+      <OutputFile>P:\tctests\install\win32\tcvm.dll</OutputFile>
       <Version>1.66</Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
