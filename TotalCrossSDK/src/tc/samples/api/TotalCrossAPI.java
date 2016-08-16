@@ -30,7 +30,7 @@ public class TotalCrossAPI extends MainWindow
       Settings.windowSize = Settings.WINDOWSIZE_480X640;
       Settings.companyContact = "registro@totalcross.com";
 
-      // comentar quando for enviar pra loja Google Play
+      // comentar quando for enviar pra loja Google Play, pois la usa o appid padrao
       Settings.applicationId = "tapi";
       
       // upload your xap and the page will give you the correct values to put in the properties below
@@ -38,7 +38,7 @@ public class TotalCrossAPI extends MainWindow
       Settings.companyInfo = "TotalCross";
       Settings.appPackagePublisher = "53F995CF-1FB5-4EC3-84DD-A694BE4CFD1A";
       Settings.appPackageIdentifier = "1748TotalCross.TotalCrossAPI";
-      Settings.iosCFBundleIdentifier = "com.totalcross.tcapi2";
+      Settings.iosCFBundleIdentifier = "com.totalcross.tcapi";
    }
    
    public TotalCrossAPI()
