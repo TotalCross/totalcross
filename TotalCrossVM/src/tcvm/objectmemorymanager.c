@@ -390,9 +390,9 @@ static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, in
    ObjectProperties op;
 
 #ifdef darwin
-   if (iosLowMemory && size > 1024*1024)
+   if (iosLowMemory && size > 1024)
    {
-      iosLowMemory = false;
+      iosLowMemory = getFreeMemory(0) <= 10*1024*1024;
       throwException(currentContext, OutOfMemoryError, "iOS low memory warning");
       return null;
    }
