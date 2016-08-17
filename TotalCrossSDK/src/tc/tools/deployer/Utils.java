@@ -756,7 +756,7 @@ public class Utils
       StringBuffer message = new StringBuffer(1024);
       String lineIn;
       
-      for (int i =0; i < 30; i++) // 15 seconds must be enough...
+      for (int i =0; i < 15000/200; i++) // 15 seconds must be enough...
       {
          if (inputStream.available() > 0)
             while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
@@ -771,7 +771,7 @@ public class Utils
          }
          catch (Throwable throwable)
          {
-            Thread.sleep(1000);
+            Thread.sleep(200);
          }
       }
       return (message.length() > 0) ? message.toString() : null;
