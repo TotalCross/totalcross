@@ -80,6 +80,8 @@ TCClass uiColorsClass = { 0 };
 int32* shiftScreenColorP = NULL;
 int32* vistaFadeStepP = NULL;
 TCClass imageClass;
+int32 totalTextureLoaded;
+
 
 // mem.c
 #ifdef INITIAL_MEM

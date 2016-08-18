@@ -502,8 +502,6 @@ void initTexture()
    glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-int32 totalTextureLoaded;
-
 bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    int32 i;
@@ -576,7 +574,8 @@ void glDeleteTexture(TCObject img, int32* textureId)
    {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
       *textureId = 0;                              
-      totalTextureLoaded -= Image_width(img)*Image_height(img)*4;
+      if (img != null)
+         totalTextureLoaded -= Image_width(img)*Image_height(img)*4;
       //debug("-total texture memory: %d (c:%d)",totalTextureLoaded,*tcSettings.chunksCreated);
    }
 }

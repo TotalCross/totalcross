@@ -73,6 +73,7 @@ extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
 extern int32* vistaFadeStepP;
 extern TCClass imageClass;
+extern int32 totalTextureLoaded;
 
 // mem.c
 extern uint32 maxAvail; // in bytes

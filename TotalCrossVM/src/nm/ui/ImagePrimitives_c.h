@@ -760,6 +760,7 @@ void invalidateTextures(INVTEX it) // called by opengl when the application chan
    visitImages(onImage, it);
    if (it == INVTEX_INVALIDATE)
       resetFontTexture();
+   totalTextureLoaded = 0;   
 }
 #else
 static void onImage(int32 dumb, VoidP ptr)
@@ -780,6 +781,7 @@ void invalidateTextures() // called by opengl when the application changes the o
 {
    visitImages(onImage, 0);
    resetFontTexture();
+   totalTextureLoaded = 0;   
 }
 #endif // ANDROID
 #endif
