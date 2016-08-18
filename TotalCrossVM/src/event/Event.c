@@ -56,6 +56,11 @@ static bool pumpEvent(Context currentContext)
       ok = false;
       goto sleep;
    }
+   if (callGConMainThread)
+   {
+      callGConMainThread = false;
+      gc(currentContext);
+   }
    if (privateIsEventAvailable())
       privatePumpEvent(currentContext);
    checkTimer(currentContext);

@@ -108,8 +108,8 @@ extern TVirtualKeyboardSettings vkSettings;
 extern jmethodID jsetElapsed;
 #endif
 
-// objectmemorymanager.c
-extern bool runningGC,runningFinalizer,disableGC;
+// objectmemorymanager.c    
+extern bool runningGC,runningFinalizer,disableGC,callGConMainThread;
 extern TCObjectArray freeList; // the array with lists of free objects
 extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
 extern TCObjectArray lockList; // locked objects list

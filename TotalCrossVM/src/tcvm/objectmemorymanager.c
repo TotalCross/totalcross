@@ -1130,7 +1130,10 @@ heaperror:
          htTraverse(&htLoadedClasses, markClass);
 #ifdef __gl2_h_
       if (currentContext != mainContext) // in opengl, an image can only be freed in the main context, otherwise the texture will not be released
+      {                                                                                       
+         callGConMainThread = true; // set to run the gc on main thread so that the images can be collected
          markAllImages(); // marking all images
+      }
 #endif                                         
       // 2b. mark the locked objects
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");

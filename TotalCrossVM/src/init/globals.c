@@ -124,7 +124,8 @@ TVirtualKeyboardSettings vkSettings;
 jmethodID jsetElapsed;
 #endif
 
-// objectmemorymanager.c
+// objectmemorymanager.c 
+bool callGConMainThread = 0;
 bool disableGC = 0;
 bool runningGC = 0;
 bool runningFinalizer = 0;
