@@ -753,10 +753,10 @@ void onImage(int32 it, VoidP ptr)
    }
    Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
 }
-
+                                                                       
 void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
 {
-   timestampOldLimit = it == INVTEX_DEL_ONLYOLD ? getTimeStamp() - 10000 : 0; // delete textures
+   timestampOldLimit = it == INVTEX_DEL_ONLYOLD ? getTimeStamp() - 5000 : 0; // delete textures
    visitImages(onImage, it);
    if (it == INVTEX_INVALIDATE)
       resetFontTexture();
