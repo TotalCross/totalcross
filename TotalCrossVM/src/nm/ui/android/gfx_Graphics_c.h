@@ -502,6 +502,8 @@ void initTexture()
    glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
+int32 totalTextureLoaded;
+
 bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    int32 i;
@@ -512,11 +514,17 @@ bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    int32 tidorig = textureId[0];
    if (!textureAlreadyCreated)
    {
+      if (currentContext == mainContext && totalTextureLoaded > 100*1024*1024) // 100MB
+      {
+         debug("Releasing texture memory");
+         invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
+      }
       glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
       if (err)
       {
          debug("Out of texture memory to allow %dx%d. Releasing old textures and trying again.",width,height);
-         invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
+         if (currentContext == mainContext) 
+            invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
          glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
          if (err)
          {
@@ -557,6 +565,8 @@ bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel
    if (!onlyAlpha)
       for (i = width*height, p=(PixelConv*)pixels; --i >= 0; p++) {ptemp.pixel = p->pixel; p->a = ptemp.r; p->b = ptemp.g; p->g = ptemp.b; p->r = ptemp.a;}
    if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
+   totalTextureLoaded += width*height*4;
+   //debug("+total texture memory: %d (c:%d)",totalTextureLoaded,*tcSettings.chunksCreated);
    return ret;
 }
 
@@ -565,7 +575,9 @@ void glDeleteTexture(TCObject img, int32* textureId)
    if (textureId != null && textureId[0] != 0)
    {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
-      *textureId = 0;
+      *textureId = 0;                              
+      totalTextureLoaded -= Image_width(img)*Image_height(img)*4;
+      //debug("-total texture memory: %d (c:%d)",totalTextureLoaded,*tcSettings.chunksCreated);
    }
 }
 
