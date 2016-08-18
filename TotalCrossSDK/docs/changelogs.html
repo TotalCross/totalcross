@@ -1,4 +1,15 @@
 <h2>TotalCross 3.3</h2>   
+<h1>build 2980</h1>
+. fixed crashes related to Image usage on BulkImageLoader on Android and iOS. Added a flag to BulkImageLoader to stop the thread, which is called in ImageBookSample.onRemove<br>
+. fixed crashes on iOS where there's low memory.<br>
+. Integer4D implements Comparable<Integer4D><br>
+. added tc.Help. to open it, double click tc.jar<br>
+. prevent a buffer allocation on textore load to decrease memory fragmentation<br>
+. updated minizip from zlib 1.2.8<br>
+. removed some alerts from sdk<br>
+. forgot to correctly handle aborts on jpeg when i updated it<br>
+. decreased time to wait to install apk using /i android<br>
+. now when the total texture memory reaches 100MB, we release all old textures. this is needed because there's a bug in Android that it will abort the application if there's no more texture memory (instead of returning an error).<br>
 <h1>build 2959</h1>
 . updated libraries: jpeg (9B), png (1.6.23), zlib (1.2.8).<br>
 . fixed memory crashes because these libraries were not using out internal thread-safe malloc routines.<br>
