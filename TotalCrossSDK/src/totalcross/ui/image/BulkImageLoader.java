@@ -75,10 +75,12 @@ public class BulkImageLoader extends Thread
    {
       running = true;
       int lastcur = -1;
-      while (running)
+      while (true)
       {
-         while (lastcur == current)
+         while (lastcur == current && running)
             Vm.sleep(10);
+         if (!running)
+            break;
          int range = pageSize * pagesInMemory;
          lastcur = current;
          int lastMinIdx = lastcur - range; if (lastMinIdx < 0) lastMinIdx = 0; 
