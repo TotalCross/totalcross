@@ -50,6 +50,7 @@ public class BulkImageLoader extends Thread
       }
    }
 
+   public boolean running;
    public int pagesInMemory;
    public int pageSize;
    public int current=-1;
@@ -72,8 +73,9 @@ public class BulkImageLoader extends Thread
 
    public void run()
    {
+      running = true;
       int lastcur = -1;
-      while (true)
+      while (running)
       {
          while (lastcur == current)
             Vm.sleep(10);

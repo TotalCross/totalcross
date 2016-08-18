@@ -26,6 +26,8 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
+/** See onRemove to prevent memory leak! */
+
 public class ImageBookSample extends BaseContainer
 {
    GridContainer gc;
@@ -244,6 +246,12 @@ public class ImageBookSample extends BaseContainer
             addBook();
          }
       }
+   }
+   
+   public void onRemove() 
+   {
+      if (imgload != null)
+         imgload.running = false; // WITHOUT THIS, A HUGE MEMORY LEAK WILL OCCUR
    }
    
    public ImageBookSample()
