@@ -31,6 +31,9 @@ AXTLS_FILES =                                 \
 	$(TC_SRCDIR)/axtls/rc4.c                   \
 	$(TC_SRCDIR)/axtls/sha1.c                  \
 	$(TC_SRCDIR)/axtls/sha256.c                \
+	$(TC_SRCDIR)/axtls/sha384.c                \
+	$(TC_SRCDIR)/axtls/sha512.c                \
+	$(TC_SRCDIR)/axtls/x509.c                  \
 	$(TC_SRCDIR)/axtls/tls1.c                  \
 	$(TC_SRCDIR)/axtls/tls1_svr.c              \
 	$(TC_SRCDIR)/axtls/tls1_clnt.c

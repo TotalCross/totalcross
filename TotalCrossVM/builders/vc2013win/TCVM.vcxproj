@@ -700,6 +700,9 @@
     <ClCompile Include="..\..\src\axtls\rsa.c" />
     <ClCompile Include="..\..\src\axtls\sha1.c" />
     <ClCompile Include="..\..\src\axtls\sha256.c" />
+	<ClCompile Include="..\..\src\axtls\sha384.c" />
+	<ClCompile Include="..\..\src\axtls\sha512.c" />
+	<ClCompile Include="..\..\src\axtls\x509.c" />
     <ClCompile Include="..\..\src\axtls\tls1.c" />
     <ClCompile Include="..\..\src\axtls\tls1_clnt.c" />
     <ClCompile Include="..\..\src\axtls\tls1_svr.c" />

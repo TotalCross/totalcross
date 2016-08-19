@@ -372,6 +372,15 @@
     <ClCompile Include="..\..\..\..\..\src\axtls\sha256.c">
       <Filter>TCVM\axtls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\axtls\sha384.c">
+      <Filter>TCVM\axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\axtls\sha512.c">
+      <Filter>TCVM\axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\src\axtls\x509.c">
+      <Filter>TCVM\axtls</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\..\src\axtls\tls1.c">
       <Filter>TCVM\axtls</Filter>
     </ClCompile>
