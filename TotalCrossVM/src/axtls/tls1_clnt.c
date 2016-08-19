@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdlib.h>
@@ -37,19 +49,27 @@ static int send_cert_verify(SSL *ssl);
 /*
  * Establish a new SSL connection to an SSL server.
  */
-EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uint8_t *session_id)
+EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const
+        uint8_t *session_id, uint8_t sess_id_size)
 {
-    int ret;
     SSL *ssl = ssl_new(ssl_ctx, client_fd);
+    ssl->version = SSL_PROTOCOL_VERSION_MAX; /* try top version first */
 
     if (session_id && ssl_ctx->num_sessions)
     {
-        memcpy(ssl->session_id, session_id, SSL_SESSION_ID_SIZE);
+        if (sess_id_size > SSL_SESSION_ID_SIZE) /* validity check */
+        {
+            ssl_free(ssl);
+            return NULL;
+        }
+
+        memcpy(ssl->session_id, session_id, sess_id_size);
+        ssl->sess_id_size = sess_id_size;
         SET_SSL_FLAG(SSL_SESSION_RESUME);   /* just flag for later */
     }
 
     SET_SSL_FLAG(SSL_IS_CLIENT);
-    ret = do_client_connect(ssl);
+    do_client_connect(ssl);
     return ssl;
 }
 
@@ -58,7 +78,7 @@ EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uin
  */
 int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len)
 {
-    int ret = SSL_OK;
+    int ret;
 
     /* To get here the state must be valid */
     switch (handshake_type)
@@ -68,7 +88,7 @@ int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len)
             break;
 
         case HS_CERTIFICATE:
-            ret = process_certificate(ssl, &ssl->x509_ctx, buf, hs_len);
+            ret = process_certificate(ssl, &ssl->x509_ctx);
             break;
 
         case HS_SERVER_HELLO_DONE:
@@ -79,7 +99,7 @@ int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len)
                     if ((ret = send_certificate(ssl)) == SSL_OK &&
                         (ret = send_client_key_xchg(ssl)) == SSL_OK)
                     {
-                        ret = send_cert_verify(ssl);
+                        send_cert_verify(ssl);
                     }
                 }
                 else
@@ -87,7 +107,7 @@ int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len)
                     ret = send_client_key_xchg(ssl);
                 }
 
-                if (ret == SSL_OK &&
+                if (ret == SSL_OK && 
                      (ret = send_change_cipher_spec(ssl)) == SSL_OK)
                 {
                     ret = send_finished(ssl);
@@ -100,11 +120,18 @@ int do_clnt_handshake(SSL *ssl, int handshake_type, uint8_t *buf, int hs_len)
             break;
 
         case HS_FINISHED:
-            ret = process_finished(ssl, hs_len);
+            ret = process_finished(ssl, buf, hs_len);
+            disposable_free(ssl);   /* free up some memory */
+            /* note: client renegotiation is not allowed after this */
             break;
 
         case HS_HELLO_REQUEST:
+            disposable_new(ssl);
             ret = do_client_connect(ssl);
+            break;
+
+        default:
+            ret = SSL_ERROR_INVALID_HANDSHAKE;
             break;
     }
 
@@ -124,27 +151,19 @@ int do_client_connect(SSL *ssl)
     ssl->hs_status = SSL_NOT_OK;            /* not connected */
 
     /* sit in a loop until it all looks good */
-    while (ssl->hs_status != SSL_OK)
+    if (!IS_SET_SSL_FLAG(SSL_CONNECT_IN_PARTS))
     {
-        ret = basic_read(ssl, NULL);
-
-        if (ret < SSL_OK)
+        while (ssl->hs_status != SSL_OK)
         {
-            if (ret != SSL_ERROR_CONN_LOST)
-            {
-                /* let the server know we are dying and why */
-                if (send_alert(ssl, ret))
-                {
-                    /* something nasty happened, so get rid of it */
-                    kill_ssl_session(ssl->ssl_ctx->ssl_sessions, ssl);
-                }
-            }
-
-            break;
+            ret = ssl_read(ssl, NULL);
+            
+            if (ret < SSL_OK)
+                break;
         }
+
+        ssl->hs_status = ret;            /* connected? */    
     }
 
-    ssl->hs_status = ret;            /* connected? */
     return ret;
 }
 
@@ -163,23 +182,25 @@ static int send_client_hello(SSL *ssl)
     buf[2] = 0;
     /* byte 3 is calculated later */
     buf[4] = 0x03;
-    buf[5] = 0x01;
+    buf[5] = ssl->version & 0x0f;
 
     /* client random value - spec says that 1st 4 bytes are big endian time */
     *tm_ptr++ = (uint8_t)(((long)tm & 0xff000000) >> 24);
     *tm_ptr++ = (uint8_t)(((long)tm & 0x00ff0000) >> 16);
     *tm_ptr++ = (uint8_t)(((long)tm & 0x0000ff00) >> 8);
     *tm_ptr++ = (uint8_t)(((long)tm & 0x000000ff));
-    get_random(SSL_RANDOM_SIZE-4, &buf[10]);
-    memcpy(ssl->client_random, &buf[6], SSL_RANDOM_SIZE);
+    if (get_random(SSL_RANDOM_SIZE-4, &buf[10]) < 0)
+        return SSL_NOT_OK;
+
+    memcpy(ssl->dc->client_random, &buf[6], SSL_RANDOM_SIZE);
     offset = 6 + SSL_RANDOM_SIZE;
 
     /* give session resumption a go */
-    if (IS_SET_SSL_FLAG(SSL_SESSION_RESUME))    /* set initially bu user */
+    if (IS_SET_SSL_FLAG(SSL_SESSION_RESUME))    /* set initially by user */
     {
-        buf[offset++] = SSL_SESSION_ID_SIZE;
-        memcpy(&buf[offset], ssl->session_id, SSL_SESSION_ID_SIZE);
-        offset += SSL_SESSION_ID_SIZE;
+        buf[offset++] = ssl->sess_id_size;
+        memcpy(&buf[offset], ssl->session_id, ssl->sess_id_size);
+        offset += ssl->sess_id_size;
         CLR_SSL_FLAG(SSL_SESSION_RESUME);       /* clear so we can set later */
     }
     else
@@ -212,37 +233,62 @@ static int process_server_hello(SSL *ssl)
 {
     uint8_t *buf = ssl->bm_data;
     int pkt_size = ssl->bm_index;
-    int offset;
-    int version = (buf[4] << 4) + buf[5];
     int num_sessions = ssl->ssl_ctx->num_sessions;
-    uint8_t session_id_length;
-    int ret = SSL_OK;
+    uint8_t sess_id_size;
+    int offset, ret = SSL_OK;
 
     /* check that we are talking to a TLSv1 server */
-    if (version != 0x31)
-        return SSL_ERROR_INVALID_VERSION;
+    uint8_t version = (buf[4] << 4) + buf[5];
+    if (version > SSL_PROTOCOL_VERSION_MAX)
+    {
+        version = SSL_PROTOCOL_VERSION_MAX;
+    }
+    else if (ssl->version < SSL_PROTOCOL_MIN_VERSION)
+    {
+        ret = SSL_ERROR_INVALID_VERSION;
+        ssl_display_error(ret);
+        goto error;
+    }
+
+    ssl->version = version;
 
     /* get the server random value */
-    memcpy(ssl->server_random, &buf[6], SSL_RANDOM_SIZE);
+    memcpy(ssl->dc->server_random, &buf[6], SSL_RANDOM_SIZE);
     offset = 6 + SSL_RANDOM_SIZE; /* skip of session id size */
-    session_id_length = buf[offset++];
+    sess_id_size = buf[offset++];
+
+    if (sess_id_size > SSL_SESSION_ID_SIZE)
+    {
+        ret = SSL_ERROR_INVALID_SESSION;
+        goto error;
+    }
 
     if (num_sessions)
     {
         ssl->session = ssl_session_update(num_sessions,
                 ssl->ssl_ctx->ssl_sessions, ssl, &buf[offset]);
-        memcpy(ssl->session->session_id, &buf[offset], session_id_length);
+        memcpy(ssl->session->session_id, &buf[offset], sess_id_size);
+
+        /* pad the rest with 0's */
+        if (sess_id_size < SSL_SESSION_ID_SIZE)
+        {
+            memset(&ssl->session->session_id[sess_id_size], 0,
+                SSL_SESSION_ID_SIZE-sess_id_size);
+        }
     }
 
-    memcpy(ssl->session_id, &buf[offset], session_id_length);
-    offset += session_id_length;
+    memcpy(ssl->session_id, &buf[offset], sess_id_size);
+    ssl->sess_id_size = sess_id_size;
+    offset += sess_id_size;
 
     /* get the real cipher we are using */
     ssl->cipher = buf[++offset];
-    ssl->next_state = IS_SET_SSL_FLAG(SSL_SESSION_RESUME) ?
+    ssl->next_state = IS_SET_SSL_FLAG(SSL_SESSION_RESUME) ? 
                                         HS_FINISHED : HS_CERTIFICATE;
 
+    offset++;   // skip the compr
     PARANOIA_CHECK(pkt_size, offset);
+    ssl->dc->bm_proc_index = offset+1; 
 
 error:
     return ret;
@@ -270,9 +316,11 @@ static int send_client_key_xchg(SSL *ssl)
     buf[1] = 0;
 
     premaster_secret[0] = 0x03; /* encode the version number */
-    premaster_secret[1] = 0x01;
-    get_random(SSL_SECRET_SIZE-2, &premaster_secret[2]);
-    DISPLAY_RSA(ssl, "send_client_key_xchg", ssl->x509_ctx->rsa_ctx);
+    premaster_secret[1] = SSL_PROTOCOL_MINOR_VERSION; /* must be TLS 1.1 */
+    if (get_random(SSL_SECRET_SIZE-2, &premaster_secret[2]) < 0)
+        return SSL_NOT_OK;
+
+    DISPLAY_RSA(ssl, ssl->x509_ctx->rsa_ctx);
 
     /* rsa_ctx->bi_ctx is not thread-safe */
     SSL_CTX_LOCK(ssl->ssl_ctx->mutex);
@@ -294,10 +342,18 @@ static int send_client_key_xchg(SSL *ssl)
  */
 static int process_cert_req(SSL *ssl)
 {
+    uint8_t *buf = &ssl->bm_data[ssl->dc->bm_proc_index];
+    int ret = SSL_OK;
+    int offset = (buf[2] << 4) + buf[3];
+    int pkt_size = ssl->bm_index;
+
     /* don't do any processing - we will send back an RSA certificate anyway */
     ssl->next_state = HS_SERVER_HELLO_DONE;
     SET_SSL_FLAG(SSL_HAS_CERT_REQ);
-    return SSL_OK;
+    ssl->dc->bm_proc_index += offset;
+    PARANOIA_CHECK(pkt_size, offset);
+error:
+    return ret;
 }
 
 /*
@@ -310,7 +366,10 @@ static int send_cert_verify(SSL *ssl)
     RSA_CTX *rsa_ctx = ssl->ssl_ctx->rsa_ctx;
     int n = 0, ret;
 
-    DISPLAY_RSA(ssl, "send_cert_verify", rsa_ctx);
+    if (rsa_ctx == NULL)
+        return SSL_OK;
+
+    DISPLAY_RSA(ssl, rsa_ctx);
 
     buf[0] = HS_CERT_VERIFY;
     buf[1] = 0;
@@ -330,7 +389,7 @@ static int send_cert_verify(SSL *ssl)
             goto error;
         }
     }
-
+    
     buf[4] = n >> 8;        /* add the RSA size (not officially documented) */
     buf[5] = n & 0xff;
     n += 2;

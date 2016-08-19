@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007-2016, Cameron Rich
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * All rights reserved.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -114,7 +126,6 @@ typedef int int32_t;
  #endif
 #endif
 
-
 #ifdef WIN32
 
 /* Windows CE stuff */
@@ -154,6 +165,8 @@ typedef int int32_t;
 #define usleep(A)               Sleep(A/1000)
 #define strdup(A)               _strdup(A)
 #define chroot(A)               _chdir(A)
+#define chdir(A)                _chdir(A)
+#define alloca(A)               _alloca(A)
 #ifndef lseek
 #define lseek(A,B,C)            _lseek(A,B,C)
 #endif
@@ -181,22 +194,30 @@ typedef int socklen_t;
 
 EXP_FUNC void STDCALL gettimeofday(struct timeval* t,void* timezone);
 EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
+EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
+/*
+#elif defined(__WINDOWS__)
+
+#	include <winsock2.h>
+#	include <sys/param.h>
+*/
+#	if BYTE_ORDER == LITTLE_ENDIAN
+#		define be64toh(x) ntohll(x)
+#	elif BYTE_ORDER == BIG_ENDIAN
+		/* that would be xbox 360 */
+#		define be64toh(x) (x)
+#	else
+#		error byte order not supported
+#	endif
 
 #else   /* Not Win32 */
 
 #ifdef CONFIG_PLATFORM_SOLARIS
 #include <inttypes.h>
 #else
-#if !defined(PALMOS) && !defined(__SYMBIAN32__)
-#include <stdint.h>
-#endif
 #endif /* Not Solaris */
 
-#if defined(PALMOS)
-#include <time.h>
-#include <stdlib.h>
-#include <in.h>
-#else
+#include <unistd.h>
 #include <pwd.h>
 #include <netdb.h>
 #include <dirent.h>
@@ -207,13 +228,17 @@ EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#endif
-#include <unistd.h>
+#include <asm/byteorder.h>
 
 #define SOCKET_READ(A,B,C)      read(A,B,C)
 #define SOCKET_WRITE(A,B,C)     write(A,B,C)
-#define SOCKET_CLOSE(A)         close(A)
+#define SOCKET_CLOSE(A)         if (A >= 0) close(A)
 #define TTY_FLUSH()
+
+#ifndef be64toh
+#define be64toh(x) __be64_to_cpu(x)
+#endif
+
 #endif  /* Not Win32 */
 
 //flsobral@tc115: Removed ifdef for PalmOS, it's the same code for all platforms from now on. (seems to fix the problem with corrupted VMs)

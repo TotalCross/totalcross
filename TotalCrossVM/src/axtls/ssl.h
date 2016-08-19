@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -31,22 +43,22 @@
  * - ASN.1, X.509, PKCS#8, PKCS#12 keys/certificates with DER/PEM encoding.
  * - Highly configurable compile time options.
  * - Portable across many platforms (written in ANSI C), and has language
- * bindings in C, C#, VB.NET, Java and Perl.
+ * bindings in C, C#, VB.NET, Java, Perl and Lua.
  * - Partial openssl API compatibility (via a wrapper).
- * - A very small footprint for a HTTPS server (around 60-70kB in 'server-only'
- * mode).
+ * - A very small footprint (around 50-60kB for the library in 'server-only' 
+ *   mode).
  * - No dependencies on sockets - can use serial connections for example.
  * - A very simple API - ~ 20 functions/methods.
  *
  * A list of these functions/methods are described below.
  *
- *  @ref c_api
+ *  @ref c_api 
  *
- *  @ref bigint_api
+ *  @ref bigint_api 
  *
- *  @ref csharp_api
+ *  @ref csharp_api 
  *
- *  @ref java_api
+ *  @ref java_api 
  */
 #ifndef HEADER_SSL_H
 #define HEADER_SSL_H
@@ -74,11 +86,13 @@ extern "C" {
 #define SSL_DISPLAY_BYTES                       0x00100000
 #define SSL_DISPLAY_CERTS                       0x00200000
 #define SSL_DISPLAY_RSA                         0x00400000
+#define SSL_CONNECT_IN_PARTS                    0x00800000
 
 /* errors that can be generated */
 #define SSL_OK                                  0
 #define SSL_NOT_OK                              -1
 #define SSL_ERROR_DEAD                          -2
+#define SSL_CLOSE_NOTIFY                        -3
 #define SSL_ERROR_CONN_LOST                     -256
 #define SSL_ERROR_SOCK_SETUP_FAILURE            -258
 #define SSL_ERROR_INVALID_HANDSHAKE             -260
@@ -91,10 +105,14 @@ extern "C" {
 #define SSL_ERROR_INVALID_KEY                   -269
 #define SSL_ERROR_FINISHED_INVALID              -271
 #define SSL_ERROR_NO_CERT_DEFINED               -272
-#define SSL_ERROR_TOO_MANY_CERTS                -273
+#define SSL_ERROR_NO_CLIENT_RENOG               -273
 #define SSL_ERROR_NOT_SUPPORTED                 -274
 #define SSL_X509_OFFSET                         -512
 #define SSL_X509_ERROR(A)                       (SSL_X509_OFFSET+A)
+
+/* alert types that are recognized */
+#define SSL_ALERT_TYPE_WARNING                  1
+#define SLL_ALERT_TYPE_FATAL                    2
 
 /* these are all the alerts that are recognized */
 #define SSL_ALERT_CLOSE_NOTIFY                  0
@@ -106,13 +124,13 @@ extern "C" {
 #define SSL_ALERT_DECODE_ERROR                  50
 #define SSL_ALERT_DECRYPT_ERROR                 51
 #define SSL_ALERT_INVALID_VERSION               70
+#define SSL_ALERT_NO_RENEGOTIATION              100
 
-/* The ciphers that are supported, see http://www.rfc-archive.org/getrfc.php?rfc=3268 and
- * section A.5 in http://www.rfc-archive.org/getrfc.php?rfc=2246 */
-#define TLS_RSA_WITH_AES_128_CBC_SHA            0x2f
-#define TLS_RSA_WITH_AES_256_CBC_SHA            0x35
-#define TLS_RSA_WITH_RC4_128_SHA                0x05
-#define TLS_RSA_WITH_RC4_128_MD5                0x04
+/* The ciphers that are supported */
+#define SSL_AES128_SHA                          0x2f
+#define SSL_AES256_SHA                          0x35
+#define SSL_RC4_128_SHA                         0x05
+#define SSL_RC4_128_MD5                         0x04
 
 /* build mode ids' */
 #define SSL_BUILD_SKELETON_MODE                 0x01
@@ -155,16 +173,16 @@ extern "C" {
 /**
  * @brief Establish a new client/server context.
  *
- * This function is called before any client/server SSL connections are made.
+ * This function is called before any client/server SSL connections are made. 
  *
- * Each new connection will use the this context's private key and
- * certificate chain. If a different certificate chain is required, then a
+ * Each new connection will use the this context's private key and 
+ * certificate chain. If a different certificate chain is required, then a 
  * different context needs to be be used.
  *
  * There are two threading models supported - a single thread with one
- * SSL_CTX can support any number of SSL connections - and multiple threads can
- * support one SSL_CTX object each (the default). But if a single SSL_CTX
- * object uses many SSL objects in individual threads, then the
+ * SSL_CTX can support any number of SSL connections - and multiple threads can 
+ * support one SSL_CTX object each (the default). But if a single SSL_CTX 
+ * object uses many SSL objects in individual threads, then the 
  * CONFIG_SSL_CTX_MUTEXING option needs to be configured.
  *
  * @param options [in]  Any particular options. At present the options
@@ -175,8 +193,6 @@ extern "C" {
  * - SSL_CLIENT_AUTHENTICATION (server only): Enforce client authentication
  * i.e. each handshake will include a "certificate request" message from the
  * server. Only available if verification has been enabled.
- * - SSL_NO_DEFAULT_KEY: Don't use the default key/certificate. The user will
- * load the key/certificate explicitly.
  * - SSL_DISPLAY_BYTES (full mode build only): Display the byte sequences
  * during the handshake.
  * - SSL_DISPLAY_STATES (full mode build only): Display the state changes
@@ -185,7 +201,8 @@ extern "C" {
  * are passed during a handshake.
  * - SSL_DISPLAY_RSA (full mode build only): Display the RSA key details that
  * are passed during a handshake.
- *
+ * - SSL_CONNECT_IN_PARTS (client only): To use a non-blocking version of 
+ * ssl_client_new().
  * @param num_sessions [in] The number of sessions to be used for session
  * caching. If this value is 0, then there is no session caching. This option
  * is not used in skeleton mode.
@@ -196,7 +213,7 @@ EXP_FUNC SSL_CTX * STDCALL ssl_ctx_new(uint32_t options, int num_sessions);
 /**
  * @brief Remove a client/server context.
  *
- * Frees any used resources used by this context. Each connection will be
+ * Frees any used resources used by this context. Each connection will be 
  * sent a "Close Notify" alert (if possible).
  * @param ssl_ctx [in] The client/server context.
  */
@@ -208,7 +225,7 @@ EXP_FUNC void STDCALL ssl_ctx_free(SSL_CTX *ssl_ctx);
  * It is up to the application to establish the logical connection (whether it
  * is  a socket, serial connection etc).
  * @param ssl_ctx [in] The server context.
- * @param client_fd [in] The client's file descriptor.
+ * @param client_fd [in] The client's file descriptor. 
  * @return An SSL object reference.
  */
 EXP_FUNC SSL * STDCALL ssl_server_new(SSL_CTX *ssl_ctx, int client_fd);
@@ -216,25 +233,27 @@ EXP_FUNC SSL * STDCALL ssl_server_new(SSL_CTX *ssl_ctx, int client_fd);
 /**
  * @brief (client only) Establish a new SSL connection to an SSL server.
  *
- * It is up to the application to establish the initial logical connection
+ * It is up to the application to establish the initial logical connection 
  * (whether it is  a socket, serial connection etc).
  *
- * This is a blocking call - it will finish when the handshake is complete (or
- * has failed).
+ * This is a normally a blocking call - it will finish when the handshake is 
+ * complete (or has failed). To use in non-blocking mode, set 
+ * SSL_CONNECT_IN_PARTS in ssl_ctx_new().
  * @param ssl_ctx [in] The client context.
  * @param client_fd [in] The client's file descriptor.
- * @param session_id [in] A 32 byte session id for session resumption. This
+ * @param session_id [in] A 32 byte session id for session resumption. This 
  * can be null if no session resumption is being used or required. This option
  * is not used in skeleton mode.
- * @return An SSL object reference. Use ssl_handshake_status() to check
+ * @param sess_id_size The size of the session id (max 32)
+ * @return An SSL object reference. Use ssl_handshake_status() to check 
  * if a handshake succeeded.
  */
-EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uint8_t *session_id);
+EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const uint8_t *session_id, uint8_t sess_id_size);
 
 /**
- * @brief Free any used resources on this connection.
-
- * A "Close Notify" message is sent on this connection (if possible). It is up
+ * @brief Free any used resources on this connection. 
+ 
+ * A "Close Notify" message is sent on this connection (if possible). It is up 
  * to the application to close the socket or file descriptor.
  * @param ssl [in] The ssl object reference.
  */
@@ -242,15 +261,16 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl);
 
 /**
  * @brief Read the SSL data stream.
- * The socket must be in blocking mode.
+ * If the socket is non-blocking and data is blocked then SSO_OK will be
+ * returned.
  * @param ssl [in] An SSL object reference.
  * @param in_data [out] If the read was successful, a pointer to the read
  * buffer will be here. Do NOT ever free this memory as this buffer is used in
  * sucessive calls. If the call was unsuccessful, this value will be null.
  * @return The number of decrypted bytes:
- * - if > 0, then the handshaking is complete and we are returning the number
- *   of decrypted bytes.
- * - SSL_OK if the handshaking stage is successful (but not yet complete).
+ * - if > 0, then the handshaking is complete and we are returning the number 
+ *   of decrypted bytes. 
+ * - SSL_OK if the handshaking stage is successful (but not yet complete).  
  * - < 0 if an error.
  * @see ssl.h for the error code list.
  * @note Use in_data before doing any successive ssl calls.
@@ -258,8 +278,9 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl);
 EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data);
 
 /**
- * @brief Write to the SSL data stream.
- * The socket must be in blocking mode.
+ * @brief Write to the SSL data stream. 
+ * if the socket is non-blocking and data is blocked then a check is made
+ * to ensure that all data is sent (i.e. blocked mode is forced).
  * @param ssl [in] An SSL obect reference.
  * @param out_data [in] The data to be written
  * @param out_len [in] The number of bytes to be written.
@@ -275,14 +296,14 @@ EXP_FUNC int STDCALL ssl_write(SSL *ssl, const uint8_t *out_data, int out_len);
  * to look for a file descriptor match.
  * @param ssl_ctx [in] The client/server context.
  * @param client_fd [in]  The file descriptor.
- * @return A reference to the SSL object. Returns null if the object could not
+ * @return A reference to the SSL object. Returns null if the object could not 
  * be found.
  */
 EXP_FUNC SSL * STDCALL ssl_find(SSL_CTX *ssl_ctx, int client_fd);
 
 /**
- * @brief Get the session id for a handshake.
- *
+ * @brief Get the session id for a handshake. 
+ * 
  * This will be a 32 byte sequence and is available after the first
  * handshaking messages are sent.
  * @param ssl [in] An SSL object reference.
@@ -292,20 +313,29 @@ EXP_FUNC SSL * STDCALL ssl_find(SSL_CTX *ssl_ctx, int client_fd);
 EXP_FUNC const uint8_t * STDCALL ssl_get_session_id(const SSL *ssl);
 
 /**
+ * @brief Get the session id size for a handshake. 
+ * 
+ * This will normally be 32 but could be 0 (no session id) or something else.
+ * @param ssl [in] An SSL object reference.
+ * @return The size of the session id.
+ */
+EXP_FUNC uint8_t STDCALL ssl_get_session_id_size(const SSL *ssl);
+
+/**
  * @brief Return the cipher id (in the SSL form).
  * @param ssl [in] An SSL object reference.
  * @return The cipher id. This will be one of the following:
- * - TLS_RSA_WITH_AES_128_CBC_SHA (0x2f)
- * - TLS_RSA_WITH_AES_256_CBC_SHA (0x35)
- * - TLS_RSA_WITH_RC4_128_SHA     (0x05)
- * - TLS_RSA_WITH_RC4_128_MD5     (0x04)
+ * - SSL_AES128_SHA (0x2f)
+ * - SSL_AES256_SHA (0x35)
+ * - SSL_RC4_128_SHA (0x05)
+ * - SSL_RC4_128_MD5 (0x04)
  */
 EXP_FUNC uint8_t STDCALL ssl_get_cipher_id(const SSL *ssl);
 
 /**
  * @brief Return the status of the handshake.
  * @param ssl [in] An SSL object reference.
- * @return SSL_OK if the handshake is complete and ok.
+ * @return SSL_OK if the handshake is complete and ok. 
  * @see ssl.h for the error code list.
  */
 EXP_FUNC int STDCALL ssl_handshake_status(const SSL *ssl);
@@ -337,7 +367,7 @@ EXP_FUNC void STDCALL ssl_display_error(int error_code);
 
 /**
  * @brief Authenticate a received certificate.
- *
+ * 
  * This call is usually made by a client after a handshake is complete and the
  * context is in SSL_SERVER_VERIFY_LATER mode.
  * @param ssl [in] An SSL object reference.
@@ -347,14 +377,12 @@ EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl);
 
 /**
  * @brief Retrieve an X.509 distinguished name component.
- *
+ * 
  * When a handshake is complete and a certificate has been exchanged, then the
  * details of the remote certificate can be retrieved.
  *
- * This will usually be used by a client to check that the server's common
+ * This will usually be used by a client to check that the server's common 
  * name matches the URL.
- *
- * A full handshake needs to occur for this call to work properly.
  *
  * @param ssl [in] An SSL object reference.
  * @param component [in] one of:
@@ -368,6 +396,22 @@ EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl);
  * @note Verification build mode must be enabled.
  */
 EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component);
+
+/**
+ * @brief Retrieve a Subject Alternative DNSName
+ *
+ * When a handshake is complete and a certificate has been exchanged, then the
+ * details of the remote certificate can be retrieved.
+ *
+ * This will usually be used by a client to check that the server's DNS  
+ * name matches the URL.
+ *
+ * @param ssl [in] An SSL object reference.
+ * @param dnsindex [in] The index of the DNS name to retrieve.
+ * @return The appropriate string (or null if not defined)
+ * @note Verification build mode must be enabled.
+ */
+EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl, int dnsindex);
 
 /**
  * @brief Force the client to perform its handshake again.
@@ -419,9 +463,34 @@ EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type, const char *fi
  */
 EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int obj_type, const uint8_t *data, int len, const char *password);
 
+#ifdef CONFIG_SSL_GENERATE_X509_CERT
+/**
+ * @brief Create an X.509 certificate. 
+ * 
+ * This certificate is a self-signed v1 cert with a fixed start/stop validity 
+ * times. It is signed with an internal private key in ssl_ctx.
+ *
+ * @param ssl_ctx [in] The client/server context.
+ * @param options [in] Not used yet.
+ * @param dn [in] An array of distinguished name strings. The array is defined
+ * by:
+ * - SSL_X509_CERT_COMMON_NAME (0)
+ *      - If SSL_X509_CERT_COMMON_NAME is empty or not defined, then the 
+ *        hostname will be used.
+ * - SSL_X509_CERT_ORGANIZATION (1)
+ *      - If SSL_X509_CERT_ORGANIZATION is empty or not defined, then $USERNAME 
+ *        will be used.
+ * - SSL_X509_CERT_ORGANIZATIONAL_NAME (2)
+ *      - SSL_X509_CERT_ORGANIZATIONAL_NAME is optional.
+ * @param cert_data [out] The certificate as a sequence of bytes.
+ * @return < 0 if an error, or the size of the certificate in bytes.
+ * @note cert_data must be freed when there is no more need for it.
+ */
+EXP_FUNC int STDCALL ssl_x509_create(SSL_CTX *ssl_ctx, uint32_t options, const char * dn[], uint8_t **cert_data);
+#endif
+
 /**
  * @brief Return the axTLS library version as a string.
- * @note New API function for v1.1
  */
 EXP_FUNC const char * STDCALL ssl_version(void);
 

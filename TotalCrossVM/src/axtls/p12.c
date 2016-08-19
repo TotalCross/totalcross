@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -23,7 +35,7 @@
  * key generated with:
  *
  * openssl pkcs12 -export -in axTLS.x509_1024.pem -inkey axTLS.key_1024.pem
- * -keypbe PBE-SHA1-RC4-128 -certpbe PBE-SHA1-RC4-128
+ * -keypbe PBE-SHA1-RC4-128 -certpbe PBE-SHA1-RC4-128 
  * -name "p12_withoutCA" -out axTLS.withoutCA.p12 -password pass:abcd
  *
  * or with a certificate chain:
@@ -62,11 +74,11 @@
 #define PKCS12_MAC_ID       3
 
 static char *make_uni_pass(const char *password, int *uni_pass_len);
-static int p8_decrypt(const char *uni_pass, int uni_pass_len,
-                        const uint8_t *salt, int iter,
+static int p8_decrypt(const char *uni_pass, int uni_pass_len, 
+                        const uint8_t *salt, int iter, 
                         uint8_t *priv_key, int priv_key_len, int id);
 static int p8_add_key(SSL_CTX *ssl_ctx, uint8_t *priv_key);
-static int get_pbe_params(uint8_t *buf, int *offset,
+static int get_pbe_params(uint8_t *buf, int *offset, 
         const uint8_t **salt, int *iterations);
 
 /*
@@ -107,7 +119,7 @@ int pkcs8_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 
     priv_key = &buf[offset];
 
-    p8_decrypt(uni_pass, uni_pass_len, salt,
+    p8_decrypt(uni_pass, uni_pass_len, salt, 
                         iterations, priv_key, len, PKCS12_KEY_ID);
     ret = p8_add_key(ssl_ctx, priv_key);
 
@@ -118,7 +130,7 @@ error:
 }
 
 /*
- * Take the unencrypted pkcs8 and turn it into a private key
+ * Take the unencrypted pkcs8 and turn it into a private key 
  */
 static int p8_add_key(SSL_CTX *ssl_ctx, uint8_t *priv_key)
 {
@@ -141,7 +153,7 @@ error:
 }
 
 /*
- * Create the unicode password
+ * Create the unicode password 
  */
 static char *make_uni_pass(const char *password, int *uni_pass_len)
 {
@@ -153,7 +165,7 @@ static char *make_uni_pass(const char *password, int *uni_pass_len)
         password = "";
     }
 
-    uni_pass = (char *)malloc((xstrlen(password)+1)*2);
+    uni_pass = (char *)malloc((strlen(password)+1)*2);
 
     /* modify the password into a unicode version */
     for (i = 0; i < (int)strlen(password); i++)
@@ -172,7 +184,7 @@ static char *make_uni_pass(const char *password, int *uni_pass_len)
  * Decrypt a pkcs8 block.
  */
 static int p8_decrypt(const char *uni_pass, int uni_pass_len,
-                        const uint8_t *salt, int iter,
+                        const uint8_t *salt, int iter, 
                         uint8_t *priv_key, int priv_key_len, int id)
 {
     uint8_t p[BLOCK_SIZE*2];
@@ -190,16 +202,16 @@ static int p8_decrypt(const char *uni_pass, int uni_pass_len,
     }
 
     /* get the key - no IV since we are using RC4 */
-    SHA1Init(&sha_ctx);
-    SHA1Update(&sha_ctx, d, sizeof(d));
-    SHA1Update(&sha_ctx, p, sizeof(p));
-    SHA1Final(&sha_ctx, Ai);
+    SHA1_Init(&sha_ctx);
+    SHA1_Update(&sha_ctx, d, sizeof(d));
+    SHA1_Update(&sha_ctx, p, sizeof(p));
+    SHA1_Final(Ai, &sha_ctx);
 
     for (i = 1; i < iter; i++)
     {
-        SHA1Init(&sha_ctx);
-        SHA1Update(&sha_ctx, Ai, SHA1_SIZE);
-        SHA1Final(&sha_ctx, Ai);
+        SHA1_Init(&sha_ctx);
+        SHA1_Update(&sha_ctx, Ai, SHA1_SIZE);
+        SHA1_Final(Ai, &sha_ctx);
     }
 
     /* do the decryption */
@@ -221,15 +233,14 @@ static int p8_decrypt(const char *uni_pass, int uni_pass_len,
 int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 {
     uint8_t *buf = ssl_obj->buf;
-    int all_ok = 0, len, iterations, auth_safes_start,
+    int len, iterations, auth_safes_start, 
               auth_safes_end, auth_safes_len, key_offset, offset = 0;
     int all_certs = 0;
     uint8_t *version = NULL, *auth_safes = NULL, *cert, *orig_mac;
     uint8_t key[SHA1_SIZE];
     uint8_t mac[SHA1_SIZE];
     const uint8_t *salt;
-    int uni_pass_len, ret;
-    int error_code = SSL_ERROR_NOT_SUPPORTED;
+    int uni_pass_len, ret = SSL_OK;
     char *uni_pass = make_uni_pass(password, &uni_pass_len);
     static const uint8_t pkcs_data[] = /* pkc7 data */
         { 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x07, 0x01 };
@@ -248,14 +259,14 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 
     if (asn1_get_int(buf, &offset, &version) < 0 || *version != 3)
     {
-        error_code = SSL_ERROR_INVALID_VERSION;
+        ret = SSL_ERROR_INVALID_VERSION;
         goto error;
     }
 
     /* remove all the boring pcks7 bits */
-    if (asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
+    if (asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 || 
                 (len = asn1_next_obj(buf, &offset, ASN1_OID)) < 0 ||
-                len != sizeof(pkcs_data) ||
+                len != sizeof(pkcs_data) || 
                 memcmp(&buf[offset], pkcs_data, sizeof(pkcs_data)))
         goto error;
 
@@ -279,7 +290,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
     if (asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
             asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
             (len = asn1_next_obj(buf, &offset, ASN1_OID)) < 0 ||
-            (len != sizeof(pkcs_encrypted) ||
+            (len != sizeof(pkcs_encrypted) || 
             memcmp(&buf[offset], pkcs_encrypted, sizeof(pkcs_encrypted))))
         goto error;
 
@@ -290,7 +301,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
             asn1_skip_obj(buf, &offset, ASN1_INTEGER) < 0 ||
             asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
             (len = asn1_next_obj(buf, &offset, ASN1_OID)) < 0 ||
-            len != sizeof(pkcs_data) ||
+            len != sizeof(pkcs_data) || 
             memcmp(&buf[offset], pkcs_data, sizeof(pkcs_data)))
         goto error;
 
@@ -303,7 +314,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 
     /* decrypt the certificate */
     cert = &buf[offset];
-    if ((ret = p8_decrypt(uni_pass, uni_pass_len, salt, iterations, cert,
+    if ((ret = p8_decrypt(uni_pass, uni_pass_len, salt, iterations, cert, 
                             len, PKCS12_KEY_ID)) < 0)
         goto error;
 
@@ -336,7 +347,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 
     if (asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
             (len = asn1_next_obj(buf, &offset, ASN1_OID)) < 0 ||
-            len != sizeof(pkcs_data) ||
+            len != sizeof(pkcs_data) || 
             memcmp(&buf[offset], pkcs_data, sizeof(pkcs_data)))
         goto error;
 
@@ -347,7 +358,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
             asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
             asn1_next_obj(buf, &offset, ASN1_SEQUENCE) < 0 ||
             (len = asn1_next_obj(buf, &offset, ASN1_OID)) < 0 ||
-            (len != sizeof(pkcs8_key_bag)) ||
+            (len != sizeof(pkcs8_key_bag)) || 
             memcmp(&buf[offset], pkcs8_key_bag, sizeof(pkcs8_key_bag)))
         goto error;
 
@@ -362,7 +373,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 
     /* decrypt the private key */
     cert = &buf[offset];
-    if ((ret = p8_decrypt(uni_pass, uni_pass_len, salt, iterations, cert,
+    if ((ret = p8_decrypt(uni_pass, uni_pass_len, salt, iterations, cert, 
                             len, PKCS12_KEY_ID)) < 0)
         goto error;
 
@@ -394,7 +405,7 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
     salt = &buf[offset];
 
     /* work out what the mac should be */
-    if ((ret = p8_decrypt(uni_pass, uni_pass_len, salt, iterations,
+    if ((ret = p8_decrypt(uni_pass, uni_pass_len, salt, iterations, 
                             key, SHA1_SIZE, PKCS12_MAC_ID)) < 0)
         goto error;
 
@@ -402,23 +413,21 @@ int pkcs12_decode(SSL_CTX *ssl_ctx, SSLObjLoader *ssl_obj, const char *password)
 
     if (memcmp(mac, orig_mac, SHA1_SIZE))
     {
-        error_code = SSL_ERROR_INVALID_HMAC;
+        ret = SSL_ERROR_INVALID_HMAC;                  
         goto error;
     }
-
-    all_ok = 1;
 
 error:
     free(version);
     free(uni_pass);
     free(auth_safes);
-    return all_ok ? SSL_OK : error_code;
+    return ret;
 }
 
 /*
  * Retrieve the salt/iteration details from a PBE block.
  */
-static int get_pbe_params(uint8_t *buf, int *offset,
+static int get_pbe_params(uint8_t *buf, int *offset, 
         const uint8_t **salt, int *iterations)
 {
     static const uint8_t pbeSH1RC4[] = /* pbeWithSHAAnd128BitRC4  */
@@ -433,9 +442,9 @@ static int get_pbe_params(uint8_t *buf, int *offset,
             (len = asn1_next_obj(buf, offset, ASN1_OID)) < 0)
         goto error;
 
-    /* we expect pbeWithSHAAnd128BitRC4 (1.2.840.113549.1.12.1.1)
+    /* we expect pbeWithSHAAnd128BitRC4 (1.2.840.113549.1.12.1.1) 
        which is the only algorithm we support */
-    if (len != sizeof(pbeSH1RC4) ||
+    if (len != sizeof(pbeSH1RC4) || 
                     memcmp(&buf[*offset], pbeSH1RC4, sizeof(pbeSH1RC4)))
     {
 #ifdef CONFIG_SSL_FULL_MODE
@@ -447,7 +456,7 @@ static int get_pbe_params(uint8_t *buf, int *offset,
     *offset += len;
 
     if (asn1_next_obj(buf, offset, ASN1_SEQUENCE) < 0 ||
-            (len = asn1_next_obj(buf, offset, ASN1_OCTET_STRING)) < 0 ||
+            (len = asn1_next_obj(buf, offset, ASN1_OCTET_STRING)) < 0 || 
             len != 8)
         goto error;
 

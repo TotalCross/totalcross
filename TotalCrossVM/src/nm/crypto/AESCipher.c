@@ -46,7 +46,7 @@ TC_API void tccAESC_doReset(NMParams p) // totalcross/crypto/cipher/AESCipher na
       // initialize a random IV
       if ((iv = createByteArray(p->currentContext, AES_BLOCKSIZE)) == null)
          return;
-      RNG_initialize((uint8*) &iv, 4);
+      RNG_custom_init((uint8*) &iv, 4);
       get_random_NZ(AES_BLOCKSIZE, ARRAYOBJ_START(iv));
       RNG_terminate();
       *Cipher_iv(aesObj) = iv;

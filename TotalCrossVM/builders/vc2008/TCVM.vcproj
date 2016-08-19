@@ -3589,6 +3589,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\axtls\sha384.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\axtls\sha512.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\axtls\ssl.h"
 				>
 			</File>
@@ -3610,6 +3618,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\axtls\version.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\axtls\x509.c"
 				>
 			</File>
 		</Filter>
