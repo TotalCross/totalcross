@@ -1011,7 +1011,7 @@ void runFinalizers() // calls finalize of all objects in use
  #define CRITICAL_SIZE 8*1024*1024
  #define USE_MAX_BLOCK false
 #else
- #define CRITICAL_SIZE 8*1024*1024
+ #define CRITICAL_SIZE 64*1024*1024
  #define USE_MAX_BLOCK false
 #endif
 
