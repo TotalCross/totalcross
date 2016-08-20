@@ -575,7 +575,10 @@ void glDeleteTexture(TCObject img, int32* textureId)
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
       *textureId = 0;                              
       if (img != null)
+      {
          totalTextureLoaded -= Image_width(img)*Image_height(img)*4;
+         if (totalTextureLoaded < 0) totalTextureLoaded = 0;
+      }
       //debug("-total texture memory: %d (c:%d)",totalTextureLoaded,*tcSettings.chunksCreated);
    }
 }
