@@ -416,7 +416,6 @@ static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, in
    {
       if (size < 1024*1024 || ++consecutiveSkips > 16)
       {
-         if (size >= 1024*1024) debug("Freeing mem with GC");
          #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
          gc2(currentContext,false);
          o = allocObjWith(size);
