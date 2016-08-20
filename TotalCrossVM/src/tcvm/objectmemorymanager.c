@@ -1024,11 +1024,6 @@ void preallocateArray(Context currentContext, TCObject sample, int32 length)
       while (totChunks-- > 0)
          createChunk(DEFAULT_CHUNK_SIZE);
 }
-#if defined(WIN32) && !defined(WINCE)
-#define MINTIME 50
-#else
-#define MINTIME 500
-#endif
 
 static void dumpCount(HTKey key, int32 i32, VoidP ptr)
 {
@@ -1045,7 +1040,7 @@ static void dumpDif(HTKey key, int32 i32, VoidP ptr)
    if (conta1 == 0 || conta1 != conta2)
       debug("% 3d %30s: %d -> %d (%d)",++indp,cc->name, conta1, conta2, conta2-conta1);
 }
-static int ggg;
+
 void gc(Context currentContext)
 {
    gc2(currentContext, true);
@@ -1060,7 +1055,7 @@ void gc2(Context currentContext, bool lockOMM)
    int32 nfree,nused,compIni,freemem;
    bool traceCreatedClassObjs;
    bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
-   int32 gcCount = ggg++, total0 = totalAllocated/1024/1024, free0 = getFreeMemory(USE_MAX_BLOCK)/1024/1024, chunks0 = tcSettings.chunksCreated?*tcSettings.chunksCreated : 0;
+   int32 total0 = totalAllocated/1024/1024, free0 = getFreeMemory(USE_MAX_BLOCK)/1024/1024, chunks0 = tcSettings.chunksCreated?*tcSettings.chunksCreated : 0;
    if (lockOMM) LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
    iniT = getTimeStamp();
 #ifdef WINCE // guich@tc113_20
@@ -1247,7 +1242,7 @@ end:
    {
       int32 totalf = totalAllocated / 1024 / 1024, freef = getFreeMemory(USE_MAX_BLOCK) / 1024 / 1024, chunksf = tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0;
       if ((lastT != totalf) || (lastF != freef) || (lastC != chunksf))
-         debug("%d gc u:%d->%d f:%d->%d, c:%d->%d tex:%d t:%X", gcCount, total0, lastT = totalf, free0, lastF = freef, chunks0, lastC = chunksf, totalTextureLoaded, currentContext);
+         debug("%d gc u:%d->%d f:%d->%d, c:%d->%d tex:%d t:%X (%c) %dms", tcSettings.gcCount ? *tcSettings.gcCount : 0, total0, lastT = totalf, free0, lastF = freef, chunks0, lastC = chunksf, totalTextureLoaded, currentContext, currentContext == mainContext ? 'M' : currentContext == gcContext ? 'G' : 'T', endT - iniT);
    }
 }
 
