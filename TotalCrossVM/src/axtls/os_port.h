@@ -241,6 +241,55 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 
 #endif  /* Not Win32 */
 
+#if defined ANDROID
+static __inline__ __const__ __u16 __fswab16(__u16 x)
+{
+	return __arch__swab16(x);
+}
+static __inline__ __u16 __swab16p(__u16 *x)
+{
+	return __arch__swab16p(x);
+}
+static __inline__ void __swab16s(__u16 *addr)
+{
+	__arch__swab16s(addr);
+}
+
+static __inline__ __const__ __u32 __fswab32(__u32 x)
+{
+	return __arch__swab32(x);
+}
+static __inline__ __u32 __swab32p(__u32 *x)
+{
+	return __arch__swab32p(x);
+}
+static __inline__ void __swab32s(__u32 *addr)
+{
+	__arch__swab32s(addr);
+}
+
+#ifdef __BYTEORDER_HAS_U64__
+static __inline__ __const__ __u64 __fswab64(__u64 x)
+{
+#  ifdef __SWAB_64_THRU_32__
+	__u32 h = x >> 32;
+        __u32 l = x & ((1ULL<<32)-1);
+        return (((__u64)__swab32(l)) << 32) | ((__u64)(__swab32(h)));
+#  else
+	return __arch__swab64(x);
+#  endif
+}
+static __inline__ __u64 __swab64p(__u64 *x)
+{
+	return __arch__swab64p(x);
+}
+static __inline__ void __swab64s(__u64 *addr)
+{
+	__arch__swab64s(addr);
+}
+#endif /* __BYTEORDER_HAS_U64__ */
+#endif
+
 //flsobral@tc115: Removed ifdef for PalmOS, it's the same code for all platforms from now on. (seems to fix the problem with corrupted VMs)
 #if defined (TOTALCROSS_INTEGRATION) //flsobral@tc114_36: we'll use tcvm functions instead.
  #undef free
