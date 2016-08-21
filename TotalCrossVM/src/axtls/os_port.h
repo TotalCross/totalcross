@@ -336,7 +336,7 @@ EXP_FUNC time_h *getNowUTC(time_h *t);
 #if !defined ctime
 #define ASC_BUFF_SIZE	26  // Ascii buffer size is 26 bytes, (24 chars and CR+LF)
 
-char* ctime(const time_h* timer);
+char* ctime(const time_t* timer);
 #endif
 
 //typedef int FILE;

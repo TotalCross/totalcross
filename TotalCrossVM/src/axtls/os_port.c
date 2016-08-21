@@ -121,10 +121,10 @@ EXP_FUNC const char *asc_time_h(const time_h *t, char *buffer)
 //-fdie@20090325
 
 #if !defined ctime
-char* ctime(const time_h* timer)
+char* ctime(const time_t* timer)
 {
 	static char ascbuf[ASC_BUFF_SIZE];
-	return asc_time_h(timer, ascbuf);
+	return asc_time_h((time_h*) timer, ascbuf);
 }
 #endif
 
