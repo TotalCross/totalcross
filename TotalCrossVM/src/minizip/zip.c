@@ -194,7 +194,7 @@ typedef struct
 } zip64_internal;
 
 
-#ifndef NOCRYPT
+#if !defined NOCRYPT
 #define INCLUDECRYPTINGCODE_IFCRYPTALLOWED
 #include "crypt.h"
 #endif
