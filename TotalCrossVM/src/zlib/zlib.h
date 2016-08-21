@@ -31,7 +31,9 @@
 #ifndef ZLIB_H
 #define ZLIB_H
 
-#define NOCRYPT // TOTALCROSS
+#ifndef NOCRYPT // TOTALCROSS
+#define NOCRYPT
+#endif
 
 #include "zconf.h"
 

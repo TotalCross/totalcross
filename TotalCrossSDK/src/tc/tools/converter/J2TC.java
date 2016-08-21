@@ -970,6 +970,7 @@ public final class J2TC implements JConstants, TCConstants
                if (nameLow.endsWith(".bmp") || nameLow.endsWith(".gif")) // convert gif and bmp to png
                {
                   new Image(bytes).createPng(basz = new ByteArrayStream(8192));
+                  len = basz.getPos();
                   System.out.print(" (converted to PNG)");
                }
    
