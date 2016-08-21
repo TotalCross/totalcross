@@ -8,7 +8,7 @@ sourcedir	= ${srcdir}/../../../src
 
 AM_CFLAGS = $(CFLAGS) -DTHEOS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
 if LINUX
-AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm
+AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm -I${sourcedir}/zlib
 endif
 
 if LINUX
@@ -105,7 +105,7 @@ MINIZIP_FILES =                               \
 	$(sourcedir)/minizip/unzip.c               \
 	$(sourcedir)/minizip/zip.c
 
-libminizip_la_SOURCES = ${MINIZIP_FILES} -I${sourcedir}/zlib
+libminizip_la_SOURCES = ${MINIZIP_FILES}
 
 ZLIB_FILES =                                  \
 	$(sourcedir)/zlib/adler32.c                \
