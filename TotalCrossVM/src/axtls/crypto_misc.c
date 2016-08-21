@@ -44,7 +44,7 @@
 #ifdef CONFIG_WIN32_USE_CRYPTO_LIB
 #include "wincrypt.h"
 #endif
-#ifdef WIN32
+#if defined WIN32 && !defined WINCE
 #define rand_r(x) rand_s(x)
 #endif
 
