@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "zlib.h"
 #include "zip.h"
 
 #ifdef STDC
@@ -194,7 +193,7 @@ typedef struct
 } zip64_internal;
 
 
-#if !defined NOCRYPT
+#ifndef NOCRYPT
 #define INCLUDECRYPTINGCODE_IFCRYPTALLOWED
 #include "crypt.h"
 #endif
