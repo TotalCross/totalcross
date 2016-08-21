@@ -37,7 +37,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(_WIN32_WCE)
 #include <time.h>
+#endif
 #include "os_port.h"
 #include "crypto_misc.h"
 
