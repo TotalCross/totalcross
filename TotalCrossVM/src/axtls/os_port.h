@@ -166,7 +166,6 @@ typedef int int32_t;
 #define strdup(A)               _strdup(A)
 #define chroot(A)               _chdir(A)
 #define chdir(A)                _chdir(A)
-#define alloca(A)               _alloca(A)
 #ifndef lseek
 #define lseek(A,B,C)            _lseek(A,B,C)
 #endif
