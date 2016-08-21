@@ -105,7 +105,7 @@ MINIZIP_FILES =                               \
 	$(sourcedir)/minizip/unzip.c               \
 	$(sourcedir)/minizip/zip.c
 
-libminizip_la_SOURCES = ${MINIZIP_FILES} -I${sourcedir}/zlib
+libminizip_la_SOURCES = ${MINIZIP_FILES} -I${sourcedir}/zlib -I${sourcedir}/minizip
 
 ZLIB_FILES =                                  \
 	$(sourcedir)/zlib/adler32.c                \
