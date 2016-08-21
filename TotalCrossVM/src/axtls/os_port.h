@@ -336,7 +336,7 @@ typedef struct
 EXP_FUNC const char *asc_time_h(const time_h *t, char *buffer);
 EXP_FUNC time_h *getNowUTC(time_h *t);
 
-#if !defined ctime
+#if !defined _INC_TIME_INL
 #define ASC_BUFF_SIZE	26  // Ascii buffer size is 26 bytes, (24 chars and CR+LF)
 
 char* ctime(const time_t* timer);
