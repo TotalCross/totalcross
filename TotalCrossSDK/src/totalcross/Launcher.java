@@ -415,7 +415,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       {
          if (args.length == 0)
             showInstructions();
-         args = new String[]{"/scr","480x580x32","/fontsize","16","tc.Help"};
+         args = new String[]{"/scr","480x620x32","/fontsize","16","tc.Help"};
       }
       isApplication = true;
       Launcher app = new Launcher();

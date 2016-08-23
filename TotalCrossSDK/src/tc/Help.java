@@ -5,7 +5,6 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
@@ -24,6 +23,7 @@ public class Help extends MainWindow
    }
    
    private static final int COLOR = 0x188AD0;
+   private final int Orange = 0xF68E16, GREEN = 0x75A827;
    private boolean isEn=true;
    private String x(String en, String pt)
    {
@@ -38,22 +38,23 @@ public class Help extends MainWindow
    DepContainer dc;
    RadioGroupController rgLang;
    SButton btpath, btHtml, btBlog, btPdf;
-   Spinner spin;  
+   Spinner spin;
+   Image fimg;
    
    class SButton extends Control
    {
       String text;
       Image back0, back,fore;
       int fcolor,bcolor;
-      int gap;
+      int shadeDist;
       
-      public SButton(String text, Image back, int fcolor, int bcolor)
+      public SButton(String text, int fcolor, int bcolor)
       {
          this.text = text;
-         this.back0 = back;
+         this.back0 = fimg;
          this.fcolor = fcolor;
          this.bcolor = bcolor;
-         gap = 3;
+         shadeDist = 3;
       }
       
       public void onBoundsChanged(boolean changed)
@@ -61,12 +62,9 @@ public class Help extends MainWindow
          super.onBoundsChanged(changed);
          try
          {
-            back = back0.getSmoothScaledInstance(width-gap,height-gap);
-            fore = back0.getSmoothScaledInstance(width-gap,height-gap);
-            if (bcolor == Color.WHITE)
-               fore.applyColor(bcolor);
-            else
-               fore.applyColor2(bcolor);
+            back = back0.getSmoothScaledInstance(width-shadeDist,height-shadeDist);
+            fore = back0.getSmoothScaledInstance(width-shadeDist,height-shadeDist);
+            fore.applyColor2(bcolor);
             back.alphaMask = 200;
          }
          catch (Exception e) {e.printStackTrace();}
@@ -84,10 +82,10 @@ public class Help extends MainWindow
       
       public void onPaint(Graphics g)
       {
-         g.drawImage(back,gap,gap);
+         g.drawImage(back,shadeDist,shadeDist);
          g.drawImage(fore,0,0);
          g.foreColor = fcolor;
-         g.drawText(text,(width-fm.stringWidth(text)-gap)/2, (height-fmH)/2-gap);
+         g.drawText(text,(width-fm.stringWidth(text)-shadeDist)/2, (height-fmH)/2-shadeDist);
       }      
    }
    
@@ -104,6 +102,7 @@ public class Help extends MainWindow
    {
       try
       {
+         fimg = new Image("btnh.png");
          Label l;
          if (load)
             loadConfig();
@@ -111,20 +110,15 @@ public class Help extends MainWindow
             saveConfig();
          removeAll();
          ImageControl ic;
-         final int Orange = 0xF68E16, green = 0x75A827;
          Container c0 = new Container();
          add(c0,LEFT+50,TOP+50,FILL-50,FILL-50);         
          
          c0.add(ic = new ImageControl(new Image("logoh.png")),LEFT,TOP);
-//         Spinner.spinnerType = Spinner.IPHONE;
-//         c0.add(spin = new Spinner(), RIGHT-50,TOP+50,fmH*3/2,fmH*3/2); spin.setVisible(false);
          c0.add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLACK,true),LEFT,AFTER+50, ic);
 
-         Image fimg = new Image("btnh.png");
-         
-         c0.add(btHtml = new SButton("Javadocs",fimg,Color.WHITE,Orange), RIGHT,TOP, PARENTSIZE+30, PREFERRED+50);  tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
-         c0.add(btBlog = new SButton("Blog",fimg,Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME);    btBlog.setBackColor(Orange); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
-         c0.add(btPdf = new SButton("Companion",fimg,Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME); btPdf.setBackColor(Orange); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
+         c0.add(btHtml = new SButton("Javadocs",Color.WHITE,Orange), RIGHT,TOP, PARENTSIZE+30, PREFERRED+50);  tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
+         c0.add(btBlog = new SButton("Blog",Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME);    btBlog.setBackColor(Orange); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
+         c0.add(btPdf = new SButton("Companion",Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME); btPdf.setBackColor(Orange); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
          btHtml.setFont(font.asBold()); btBlog.setFont(font.asBold()); btPdf.setFont(font.asBold());
          
          rgLang = new RadioGroupController();
@@ -133,10 +127,13 @@ public class Help extends MainWindow
          c0.add(l = new Label(x("Language: ","Linguagem: ")), BEFORE-100,SAME);
          l.transparentBackground = rPt.transparentBackground = rEn.transparentBackground = true;
 
+         Spinner.spinnerType = Spinner.IPHONE;
+//         c0.add(spin = new Spinner(), LEFT+50,SAME-50,fmH*3/2,fmH*3/2); spin.setVisible(false);
+
          c0.add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
          c0.add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
          c0.add(l = new Label(x("Class folder: ","Pasta dos .class: ")),LEFT,AFTER+25); 
-         c0.add(btpath = new SButton(x(" Select ", " Selecionar "),fimg,Color.WHITE,green), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
+         c0.add(btpath = new SButton(x(" Select ", " Selecionar "),Color.BLACK,GREEN), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
          c0.add(edpath = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); tip(edpath, "Type the .class folder or press the Select button", "Digite a pasta dos .class ou clique no botão Selecionar");
          
          c0.add(new Label(x("Key: ","Chave: ")),LEFT,AFTER+25);
@@ -675,6 +672,8 @@ public class Help extends MainWindow
       public void initUI()
       {
          add(me = new MultiEdit(),LEFT,TOP,FILL,FILL);
+         me.drawDots = false;
+         me.transparentBackground = true;
       }
    }
    
@@ -685,7 +684,7 @@ public class Help extends MainWindow
       Switch swSc;
       Radio rdC, rdA, rdI, rd32, rdCE;
       Check chM;
-      Button btRun;
+      SButton btRun;
       RadioGroupController rg;
       
       public RunContainer()
@@ -694,54 +693,55 @@ public class Help extends MainWindow
       }
       public void initUI()
       {
-         Font big = font.adjustedBy(2,true);
-         Container c = new Container();
-         c.borderColor = 0xAAAAAA;
-         c.setBorderStyle(Help.BORDER_ROUNDED);
-         c.setInsets(fmH/4,fmH/4,fmH/4,fmH/4);
+         BorderContainer c = new BorderContainer(x("Screen settings","Configurações da janela"));
+         c.borderColor = COLOR;
+         c.fillW = true;
          add(c,LEFT,TOP+50,FILL,fmH*9);
-         Label l = new Label(x("Screen settings","Configurações da janela"));
-         l.setFont(big);
-         c.add(l,LEFT,TOP);
-         c.add(new Label(x("Position: ","Posição: ")),LEFT,AFTER+25);
-         c.add(new Label("X: "),LEFT,AFTER);
-         c.add(edX = new Edit("99999"),AFTER,SAME); tip(edX, "Type the X position for the window. Leave blank to let the system set it", "Digite a posição X para a janela. Deixe em branco pro sistema posicionar");
-         c.add(new Label("Y: "),AFTER+50,SAME);
-         c.add(edY = new Edit("99999"),AFTER,SAME); tip(edY, "Type the Y position for the window. Leave blank to let the system set it", "Digite a posição Y para a janela. Deixe em branco pro sistema posicionar");
          
-         c.add(l=new Label(x("Select one to fill below", "Selecione um para preencher abaixo")),PARENTSIZE+70,TOP);
+         BorderContainer bc1 = new BorderContainer(x("Position","Posição"));
+         c.add(bc1, LEFT,AFTER);
+         bc1.add(new Label("X: "),LEFT,AFTER);
+         bc1.add(edX = new Edit("99999"),AFTER,SAME); tip(edX, "Type the X position for the window. Leave blank to let the system set it", "Digite a posição X para a janela. Deixe em branco pro sistema posicionar");
+         bc1.add(new Label("Y: "),LEFT,AFTER+50);
+         bc1.add(edY = new Edit("99999"),AFTER,SAME); tip(edY, "Type the Y position for the window. Leave blank to let the system set it", "Digite a posição Y para a janela. Deixe em branco pro sistema posicionar");
+         bc1.finish();
+         
+         BorderContainer bc2 = new BorderContainer(x("Size","Tamanho"));
+         c.add(bc2, AFTER+100, SAME, bc1);
          rg = new RadioGroupController();
-         c.add(rdC = new Radio(x("Custom","Customizado"),rg),SAME,AFTER);  rdC.appId = 0; tip(rdC,  "Fill the fields below", "Preencha os campos abaixo");
-         c.add(rd32 = new Radio("Win32",rg),AFTER+50,SAME);  rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
-         c.add(rdCE = new Radio("WinCE",rg),SAME,AFTER+150,l);  rdCE.appId = 2; tip(rdCE, "Width=240, height=320, bpp=8", "Largura=240, altura=320, bpp=8");
-         c.add(rdA = new Radio("Android",rg),AFTER+50,SAME); rdA .appId = 3; tip(rdA,  "Width=320, height=480, bpp=24", "Largura=320, altura=480, bpp=24");
-         c.add(rdI = new Radio("iOS",rg),AFTER+50,SAME);     rdI .appId = 4; tip(rdI,  "Width=640, height=960, bpp=24, scale=0.75", "Largura=640, altura=960, bpp=24, escala=0.75");
+         bc2.add(rdC = new Radio(x("Custom","Customizado"),rg),SAME,AFTER);  rdC.appId = 0; tip(rdC,  "Fill the fields at right", "Preencha os campos ao lado");
+         bc2.add(rd32 = new Radio("Win32",rg),SAME,AFTER+25);  rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
+         bc2.add(rdCE = new Radio("WinCE",rg),SAME,AFTER+25);  rdCE.appId = 2; tip(rdCE, "Width=240, height=320, bpp=8", "Largura=240, altura=320, bpp=8");
+         bc2.add(rdA = new Radio("Android",rg),SAME,AFTER+25); rdA .appId = 3; tip(rdA,  "Width=320, height=480, bpp=24", "Largura=320, altura=480, bpp=24");
+         bc2.add(rdI = new Radio("iOS",rg),SAME,AFTER+25);     rdI .appId = 4; tip(rdI,  "Width=640, height=960, bpp=24, scale=0.75", "Largura=640, altura=960, bpp=24, escala=0.75");
+                  
+         Label l1,l2,l3,l4; // store labels to make sure all fields are in the same X position
+         bc2.add(l1=new Label(x("Width: ","Largura: ")),AFTER+100,SAME, rdC);
+         bc2.add(edW = new Edit("99999"),AFTER,SAME);   tip(edW, "Type the width for the window", "Digite a largura da janela");
+         bc2.add(l2=new Label(x("Height: ","Altura: ")),SAME,AFTER+25,l1); 
+         bc2.add(edH = new Edit("99999"),AFTER,SAME);   tip(edH, "Type the height for the window", "Digite a altura da janela");
          
-         c.add(new Ruler(),LEFT,AFTER+25,FILL,PREFERRED);
-         c.add(new Label(x("Width: ","Largura: ")),LEFT,AFTER+50);
-         c.add(edW = new Edit("99999"),AFTER,SAME);   tip(edW, "Type the width for the window", "Digite a largura da janela");
-         c.add(new Label(x("Height: ","Altura: ")),AFTER+50,SAME); 
-         c.add(edH = new Edit("99999"),AFTER,SAME);   tip(edH, "Type the height for the window", "Digite a altura da janela");
-         c.add(new Label(x("BitsPerPixel: ","BitsPorPixel: ")),AFTER+50,SAME);
-         c.add(cbBpp = new ComboBox(new String[]{"8","16","24","32"}),AFTER,SAME); tip(cbBpp, "Select the bits per pixel to be used in the Window. All platforms uses 24bpp, except WinCE, which uses 8bpp", "Selecione os bits por pixel usado na janela. Todas as plataformas, menos WinCE, usam 24bpp");
-         c.add(new Label(x("Font size: ","Tam da letra: ")),LEFT,AFTER+50);
-         c.add(edFS = new Edit("99999"),AFTER,SAME);  tip(edFS, "Type the font size. Leave it blank to use the default one", "Digite o tamanho da fonte. Deixe vazio pra usar o tamanho padrão");
-         c.add(new Label(x("Scale: ","Escala: ")),AFTER+50,SAME);
-         c.add(cbSc = new ComboBox(new String[]{"0.25","0.5","0.75","1","2","4","6","8"}),AFTER,SAME); tip(cbSc, "Select the scale to apply in the Window. Useful when you test screen sizes above your monitor's resolution", "Selecione a escala pra aplicar na janela. Útil quando usar tamanho de janela maior que a resolução do seu monitor");
-         cbSc.setSelectedItem("1");
+         bc2.add(l3=new Label(x("BitsPerPixel: ","BitsPorPixel: ")),SAME,AFTER+25,l2);
+         bc2.add(cbBpp = new ComboBox(new String[]{"8","16","24","32"}),AFTER,SAME); tip(cbBpp, "Select the bits per pixel to be used in the Window. All platforms uses 24bpp, except WinCE, which uses 8bpp", "Selecione os bits por pixel usado na janela. Todas as plataformas, menos WinCE, usam 24bpp");
+         cbBpp.clearValueStr = "32";
          
-         swSc = new Switch(true); tip(swSc, "Scale slow has a good appearance, while fast scale has a worst appearance", "Escala lenta tem boa aparência, e escala devagar tem uma pior aparência");
-         swSc.textBackOn = x(" fast","rápida ");
-         swSc.textBackOff = x(" slow","lenta ");
-         c.add(swSc, AFTER+50,SAME);
+         bc2.add(l4=new Label(x("Font size: ","Tam da letra: ")),SAME,AFTER+25,l3);
+         bc2.add(edFS = new Edit("99999"),AFTER,SAME);  tip(edFS, "Type the font size. Leave it blank to use the default one", "Digite o tamanho da fonte. Deixe vazio pra usar o tamanho padrão");
          
-         add(new Label(x("Miscelaneous","Miscelânia"), LEFT,Color.BLACK,true),LEFT,AFTER+50);
-         add(new Label(x("Command line to pass to application: ","Linha de comandos para passar à aplicação")),LEFT,AFTER+25);
+         bc2.add(new Label(x("Scale: ","Escala: ")),SAME,AFTER+25,l4);
+         bc2.add(cbSc = new ComboBox(new String[]{"0.25","0.5","0.75","1","2","4","6","8"}),AFTER,SAME); tip(cbSc, "Select the scale to apply in the Window. Useful when you test screen sizes above your monitor's resolution", "Selecione a escala pra aplicar na janela. Útil quando usar tamanho de janela maior que a resolução do seu monitor");
+         cbSc.setSelectedItem(cbSc.clearValueStr = "1");
+         swSc = new Switch(true); swSc.setForeColor(GREEN); tip(swSc, "Scale slow has a good appearance, while fast scale has a worst appearance", "Escala lenta tem boa aparência, e escala devagar tem uma pior aparência");
+         swSc.textBackOn = x(" fast and worst","rápida");
+         swSc.textBackOff = x(" slow and good","lenta");
+         bc2.add(swSc, AFTER+50,SAME);
+         
+         bc2.finish();
+         c.finish();
+         add(new Label(x("Command line to pass to application: ","Linha de comandos para passar à aplicação")),LEFT,AFTER+50);
          add(edCmd = new Edit(),LEFT,AFTER);   tip(edCmd, "You can pass extra arguments to application and retrieve it using MainWindow.getCommandLine()", "Você pode passar argumentos extras pra aplicação e recuperá-los usando MainWindow.getCommandLine()");
          add(chM = new Check(x("Show mouse position","Mostrar posição do mouse")),LEFT,AFTER+25); tip(chM, "Show the mouse position on window's title area", "Mostra a posição do mouse no título da janela");
-         btRun = new Button(x("Run the application","Executar a aplicação"));
-         btRun.setBackColor(COLOR);
-         btRun.setForeColor(Color.WHITE);
+         btRun = new SButton(x("Run the application","Executar a aplicação"),Color.WHITE,COLOR);
          btRun.setFont(font.asBold());
          add(btRun, CENTER,AFTER+100,PARENTSIZE+80,PREFERRED+50);
          tip(btRun, "Fill the fields above and press this button to run the application", "Preencha os campos acima e clique nesse botão para executar a aplicação");
@@ -786,12 +786,12 @@ public class Help extends MainWindow
          }
       }
    }
-
+   
    class DepContainer extends ScrollContainer
    {
       Check wmo, w32, lin, apl, ios, and, wp8, all, inst, pack;
       Edit edpathd;
-      Button btpath, btDep, btfol;
+      SButton btpath, btDep, btfol;
       
       public DepContainer()
       {
@@ -800,33 +800,45 @@ public class Help extends MainWindow
       
       public void initUI()
       {
-         add(new Label(x("Platforms","Plataformas")),LEFT,TOP);
-         add(all = new Check(x("All platforms listed below", "Todas as plataformas listadas abaixo")),LEFT,AFTER);     all.appId = 1; tip(all, "Deploys for all platforms", "Faz o deploy para todas as plataformas");
-         add(new Label("Desktop"),LEFT,AFTER);
-         add(w32 = new Check("Win32"),AFTER+50,SAME);        w32.appId = 2; tip(w32, "Deploys for Windows 32 desktop", "Faz o deploy para Windows 32 desktop");
-         add(lin = new Check("Linux"),AFTER+50,SAME);        lin.appId = 2; tip(lin, "Deploys for linux desktop", "Faz o deploy para Linux desktop");
-         add(apl = new Check("Applet"),AFTER+50,SAME);       apl.appId = 2; tip(apl, "Deploys for applet to run in a browser", "Faz o deploy para executar no navegador");
-         add(new Label(x("Mobile", "Móvel")),LEFT,AFTER);
-         add(ios = new Check("iOS"),AFTER+50,SAME);          ios.appId = 2; tip(ios, "Deploys for iOS", "Faz o deploy para iOS");
-         add(and = new Check("Android"),AFTER+50,SAME);      and.appId = 2; tip(and, "Deploys for Android 2.3 or greater", "Faz o deploy para Android 2.3 ou superior");
-         add(wp8 = new Check("Win Phone 8"),AFTER+50,SAME);  wp8.appId = 2; tip(wp8, "Deploys for Windows Phone 8", "Faz o deploy para Windows Phone 8");
-         add(wmo = new Check("Win Mobile"),AFTER+50,SAME);   wmo.appId = 2; tip(wmo, "Deploys for Windows Mobile 5, 6 and 7", "Faz o deploy para Windows Mobile 5, 6 e 7");
-
          Label l;
+         BorderContainer c = new BorderContainer(x("Platforms","Plataformas"));
+         c.borderColor = COLOR;
+         c.fillW = true;
+         add(c,LEFT,TOP+50);
+
+         c.add(all = new Check(x("All the ones listed below", "Todas as listadas abaixo")),LEFT+100,AFTER);     all.appId = 1; tip(all, "Deploys for all platforms", "Faz o deploy para todas as plataformas");
+         
+         BorderContainer b = new BorderContainer("Desktop");
+         c.add(b,LEFT+100,AFTER+50);
+         b.add(w32 = new Check("Win32 "),LEFT,AFTER);        w32.appId = 2; tip(w32, "Deploys for Windows 32 desktop", "Faz o deploy para Windows 32 desktop");
+         b.add(lin = new Check("Linux "),AFTER,SAME);  lin.appId = 2; tip(lin, "Deploys for linux desktop", "Faz o deploy para Linux desktop");
+         b.add(apl = new Check("Applet"),LEFT,AFTER+25);  apl.appId = 2; tip(apl, "Deploys for applet to run in a browser", "Faz o deploy para executar no navegador");
+         b.finish();
+
+         BorderContainer b2 = new BorderContainer(x("Mobile", "Móvel"));
+         c.add(b2,AFTER+100,SAME,b);
+         b2.add(ios = new Check("iOS"),LEFT+50,AFTER);          ios.appId = 2; tip(ios, "Deploys for iOS", "Faz o deploy para iOS");
+         b2.add(wp8 = new Check("Win Phone 8"),LEFT+50,AFTER+25);  wp8.appId = 2; tip(wp8, "Deploys for Windows Phone 8", "Faz o deploy para Windows Phone 8");
+         b2.add(wmo = new Check("Win Mobile"),AFTER+50,SAME);   wmo.appId = 2; tip(wmo, "Deploys for Windows Mobile 5, 6 and 7", "Faz o deploy para Windows Mobile 5, 6 e 7");
+         b2.add(and = new Check("Android"),SAME,BEFORE-25);      and.appId = 2; tip(and, "Deploys for Android 2.3 or greater", "Faz o deploy para Android 2.3 ou superior");
+         b2.finish();
+         c.finish();
+
          add(l = new Label(x("Mobile provision folder: ","Pasta do mobile provision: ")),LEFT,AFTER+50);
-         add(btpath = new Button(x(" Select ", " Selecionar ")), RIGHT,SAME); tip(btpath, "Selects the folder where the iOS mobile provision is (required for iOS)", "Seleciona a pasta onde estão os arquivos do mobile provision (requerido para o iOS)");
+         add(btpath = new SButton(x(" Select ", " Selecionar "),Color.BLACK,GREEN), RIGHT,SAME); tip(btpath, "Selects the folder where the iOS mobile provision is (required for iOS)", "Seleciona a pasta onde estão os arquivos do mobile provision (requerido para o iOS)");
          add(edpathd = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); 
 
          add(inst = new Check(x("Install on device (android or wp8)", "Instalar no equipamento (android ou wp8)")), LEFT,AFTER+50); tip(inst, "Install the package if device is connected. You must only select android or wp8","Instala o pacote se o equipamento estiver conectado. Você deverá selecionar somente android ou wp8");
 
          add(pack = new Check(x("Package the vm with application", "Empacota a VM com a aplicação")),LEFT, AFTER+50);  tip(pack, "Inserts the VM inside the application's package (android and Windows Mobile); always true for other platforms", "Embute a VM no pacote da aplicação (android e Windows Mobile); sempre embute para as outras plataformas");
 
-         btDep = new Button(x("Deploy the application", "Empacotar a aplicação"));
+         btDep = new SButton(x("Deploy the application", "Empacotar a aplicação"),Color.WHITE,COLOR);
          btDep.setBackColor(COLOR);
          add(btDep, LEFT,AFTER+100,PARENTSIZE+60,PREFERRED+50);
          tip(btDep, "Fill the fields above and press this button to deploy the application", "Preencha os campos acima e clique nesse botão para empacotar a aplicação");
 
-         btfol = new Button(x("Install path", "Pasta da instalação"));
+         btfol = new SButton(x("Install path", "Pasta da instalação"),Color.WHITE,GREEN);
+         btfol.setFont(font.asBold());
          btfol.setBackColor(0xAAFF00);
          add(btfol, RIGHT,SAME,PARENTSIZE+30,PREFERRED+50);
          tip(btfol, "Opens the path where the packages were created", "Abre a pasta onde estão os pacotes para instalar");
