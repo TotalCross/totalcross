@@ -119,6 +119,9 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
    private String[] strCaptions0;
    private int tabsType = TABS_TOP;
    
+   /** Set to true to enable the alternative tab border */
+   public boolean useBorder2;
+   
    /** Set to true to automatically shrink the captions to prevent using arrows. Works only for String-based captions. */
    public boolean autoShrinkCaptions;
 
@@ -878,7 +881,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
                if (uiAndroid)
                   try
                   {
-                     Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop);
+                     Image img = NinePatch.getInstance().getNormalInstance(useBorder2 ? NinePatch.TAB2 : NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop);
                      img.alphaMask = alphaValue;
                      NinePatch.tryDrawImage(g, img, r.x,r.y);
                   }
@@ -906,7 +909,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable, Ani
             if (uiAndroid)
                try
                {
-                  Image img = NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
+                  Image img = NinePatch.getInstance().getNormalInstance(useBorder2 ? NinePatch.TAB2 : NinePatch.TAB, r.width,r.height, g.backColor, !atTop);
                   NinePatch.tryDrawImage(g, img, r.x,r.y);
                }
                catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}

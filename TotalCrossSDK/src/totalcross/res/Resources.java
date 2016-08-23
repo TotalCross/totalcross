@@ -40,7 +40,7 @@ public class Resources
    public static Image multiedit;
    public static Image progressbarv;
    public static Image scrollposh,scrollposv;
-   public static Image tab;
+   public static Image tab,tab2;
    public static Image grid;
    // Background and selection images
    public static TristateImage checkSel;
@@ -73,6 +73,7 @@ public class Resources
       if (scrollposh     == null) try {scrollposh     = new Image(folder+"scrollposH.png");      } catch (ImageException e) {}
       if (scrollposv     == null) try {scrollposv     = new Image(folder+"scrollposV.png");      } catch (ImageException e) {}
       if (tab            == null) try {tab            = new Image(folder+"tab.png");             } catch (ImageException e) {}
+      if (tab2           == null) try {tab2           = new Image(folder+"tab2.png");            } catch (ImageException e) {}
       if (grid           == null) try {grid           = new Image(folder+"grid.png");            } catch (ImageException e) {}
       if (exit           == null) try {exit           = new Image(folder+"exit.png");            } catch (ImageException e) {}
       if (back           == null) try {back           = new Image(folder+"back.png");            } catch (ImageException e) {}

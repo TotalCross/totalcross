@@ -47,6 +47,7 @@ public class NinePatch
    public static final int TAB          = 8;
    public static final int GRID         = 9;
    public static final int GRID_CAPTION = 1;
+   public static final int TAB2          = 10;
    
    static NinePatch instance;
    
@@ -74,6 +75,7 @@ public class NinePatch
             load(Resources.scrollposv,3,2),
             load(Resources.tab,10,4),
             load(Resources.grid,5,3),
+            load(Resources.tab2,18,3),
          };
       else
          parts = new Parts [] 
@@ -88,6 +90,7 @@ public class NinePatch
             load(Resources.scrollposv,3,2),
             load(Resources.tab,10,4),
             load(Resources.grid,5,3),
+            load(Resources.tab2,10,2),
          };
    }
    

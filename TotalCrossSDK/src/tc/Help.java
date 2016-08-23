@@ -3,13 +3,11 @@ package tc;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.Button;
-import totalcross.ui.Label;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.image.Image;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 public class Help extends MainWindow
 {
@@ -25,7 +23,7 @@ public class Help extends MainWindow
       Settings.uiAdjustmentsBasedOnFontHeight = true;
    }
    
-   private static final int COLOR = 0x05B6EE;
+   private static final int COLOR = 0x188AD0;
    private boolean isEn=true;
    private String x(String en, String pt)
    {
@@ -39,11 +37,63 @@ public class Help extends MainWindow
    RunContainer rc;
    DepContainer dc;
    RadioGroupController rgLang;
-   Button btpath, btHtml, btBlog, btPdf;
-   Spinner spin;
+   SButton btpath, btHtml, btBlog, btPdf;
+   Spinner spin;  
+   
+   class SButton extends Control
+   {
+      String text;
+      Image back0, back,fore;
+      int fcolor,bcolor;
+      int gap;
+      
+      public SButton(String text, Image back, int fcolor, int bcolor)
+      {
+         this.text = text;
+         this.back0 = back;
+         this.fcolor = fcolor;
+         this.bcolor = bcolor;
+         gap = 3;
+      }
+      
+      public void onBoundsChanged(boolean changed)
+      {
+         super.onBoundsChanged(changed);
+         try
+         {
+            back = back0.getSmoothScaledInstance(width-gap,height-gap);
+            fore = back0.getSmoothScaledInstance(width-gap,height-gap);
+            if (bcolor == Color.WHITE)
+               fore.applyColor(bcolor);
+            else
+               fore.applyColor2(bcolor);
+            back.alphaMask = 200;
+         }
+         catch (Exception e) {e.printStackTrace();}
+      }
+      
+      public int getPreferredWidth()
+      {
+         return fm.stringWidth(text)+fmH;
+      }
+      
+      public int getPreferredHeight()
+      {
+         return fmH+Edit.prefH;
+      }
+      
+      public void onPaint(Graphics g)
+      {
+         g.drawImage(back,gap,gap);
+         g.drawImage(fore,0,0);
+         g.foreColor = fcolor;
+         g.drawText(text,(width-fm.stringWidth(text)-gap)/2, (height-fmH)/2-gap);
+      }      
+   }
    
    public void initUI()
    {
+      Settings.disableScreenRotation = true; // valid only on JavaSE
       Toast.backColor = Color.YELLOW;
       Toast.foreColor = 0;
       Toast.posY = BOTTOM - 300;
@@ -54,45 +104,58 @@ public class Help extends MainWindow
    {
       try
       {
+         Label l;
          if (load)
             loadConfig();
          else
             saveConfig();
          removeAll();
          ImageControl ic;
-         add(ic = new ImageControl(new Image("logoh.png")),CENTER,TOP);
-         Spinner.spinnerType = Spinner.IPHONE;
-         add(spin = new Spinner(), RIGHT-50,TOP+50,fmH*3/2,fmH*3/2); spin.setVisible(false);
-         add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLUE,true),LEFT,AFTER+50,FILL,PREFERRED, ic);
-         add(btHtml = new Button("Javadocs"), LEFT,AFTER+50, PARENTSIZE+30, PREFERRED+50); btHtml.setBackColor(0xAAFF00); tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
-         add(btBlog = new Button("Blog"), CENTER, SAME, SAME, SAME);    btBlog.setBackColor(0xAAFF00); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
-         add(btPdf = new Button("Companion"), RIGHT, SAME, SAME, SAME); btPdf.setBackColor(0xAAFF00); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
+         final int Orange = 0xF68E16, green = 0x75A827;
+         Container c0 = new Container();
+         add(c0,LEFT+50,TOP+50,FILL-50,FILL-50);         
          
-         add(new Label(x("Language: ","Linguagem: ")), LEFT,AFTER+50);
+         c0.add(ic = new ImageControl(new Image("logoh.png")),LEFT,TOP);
+//         Spinner.spinnerType = Spinner.IPHONE;
+//         c0.add(spin = new Spinner(), RIGHT-50,TOP+50,fmH*3/2,fmH*3/2); spin.setVisible(false);
+         c0.add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLACK,true),LEFT,AFTER+50, ic);
+
+         Image fimg = new Image("btnh.png");
+         
+         c0.add(btHtml = new SButton("Javadocs",fimg,Color.WHITE,Orange), RIGHT,TOP, PARENTSIZE+30, PREFERRED+50);  tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
+         c0.add(btBlog = new SButton("Blog",fimg,Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME);    btBlog.setBackColor(Orange); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
+         c0.add(btPdf = new SButton("Companion",fimg,Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME); btPdf.setBackColor(Orange); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
+         btHtml.setFont(font.asBold()); btBlog.setFont(font.asBold()); btPdf.setFont(font.asBold());
+         
          rgLang = new RadioGroupController();
-         add(rEn = new Radio("English", rgLang), AFTER+25, SAME);    tip(rEn,"Click here to set the user interface to English","Clique aqui para mudar a linguagem para inglês");  
-         add(rPt = new Radio("Português", rgLang), AFTER+25, SAME);  tip(rPt,"Click here to set the user interface to Portuguese","Clique aqui para mudar a linguagem para português");
-         add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
-         add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
-         Label l;
-         add(l = new Label(x("Class folder: ","Pasta dos .class: ")),LEFT,AFTER+25); 
-         add(btpath = new Button(x(" Select ", " Selecionar ")), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
-         add(edpath = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); tip(edpath, "Type the .class folder or press the Select button", "Digite a pasta dos .class ou clique no botão Selecionar");
+         c0.add(rPt = new Radio("Português", rgLang), RIGHT-150,AFTER+50);  tip(rPt,"Click here to set the user interface to Portuguese","Clique aqui para mudar a linguagem para português");
+         c0.add(rEn = new Radio("English", rgLang), BEFORE-50, SAME);    tip(rEn,"Click here to set the user interface to English","Clique aqui para mudar a linguagem para inglês");  
+         c0.add(l = new Label(x("Language: ","Linguagem: ")), BEFORE-100,SAME);
+         l.transparentBackground = rPt.transparentBackground = rEn.transparentBackground = true;
+
+         c0.add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
+         c0.add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
+         c0.add(l = new Label(x("Class folder: ","Pasta dos .class: ")),LEFT,AFTER+25); 
+         c0.add(btpath = new SButton(x(" Select ", " Selecionar "),fimg,Color.WHITE,green), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
+         c0.add(edpath = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); tip(edpath, "Type the .class folder or press the Select button", "Digite a pasta dos .class ou clique no botão Selecionar");
          
-         add(new Label(x("Key: ","Chave: ")),LEFT,AFTER+25);
-         add(edkey = new Edit(),AFTER,SAME);  tip(edkey, "Type the 24-characters registration key that you received by email", "Digite a chave com 24 caracteres que você recebeu por email");
+         c0.add(new Label(x("Key: ","Chave: ")),LEFT,AFTER+25);
+         c0.add(edkey = new Edit(),AFTER,SAME);  tip(edkey, "Type the 24-characters registration key that you received by email", "Digite a chave com 24 caracteres que você recebeu por email");
          
          lstatus = new Label("",CENTER);
          lstatus.setBackForeColors(COLOR,0);
          lstatus.setFont(font.asBold());
          lstatus.autoSplit = true;
-         add(lstatus,LEFT,BOTTOM,FILL,fmH*2);
+         c0.add(lstatus,LEFT,BOTTOM,FILL,fmH*2);
          
          tc = new TabbedContainer(new String[]{x("Run","Executar"),x("Deploy","Empacotar"),"Console"});
+         tc.useBorder2 = true;
          tc.setBackColor(0xAAAAAA);
          tc.activeTabBackColor = COLOR;
+         tc.setCaptionColor(Color.WHITE);
+         tc.unselectedTextColor = 0;
          tc.allSameWidth = true;
-         add(tc, LEFT,AFTER+25,FILL,FIT,edkey);
+         c0.add(tc, LEFT,AFTER+25,FILL,FIT,edkey);
          tc.setContainer(0,rc = new RunContainer());
          tc.setContainer(1,dc = new DepContainer());
          tc.setContainer(2,cc = new ConsoleContainer());
@@ -100,7 +163,7 @@ public class Help extends MainWindow
          if (load)
             tc.setActiveTab(tab);
          configs[sel].toUI();
-         rgLang.setSelectedIndex(isEn ? 0 : 1,false);
+         rgLang.setSelectedIndex(isEn ? 1 : 0,false);
       }
       catch (Exception e)
       {
@@ -631,42 +694,55 @@ public class Help extends MainWindow
       }
       public void initUI()
       {
-         add(new Label(x("Screen settings","Configurações da janela")),LEFT,TOP);
-         add(new Label(x("Position - X: ","Posição - X: ")),LEFT,AFTER+25);
-         add(edX = new Edit("99999"),AFTER,SAME); tip(edX, "Type the X position for the window. Leave blank to let the system set it", "Digite a posição X para a janela. Deixe em branco pro sistema posicionar");
-         add(new Label("Y: "),AFTER+50,SAME);
-         add(edY = new Edit("99999"),AFTER,SAME); tip(edY, "Type the Y position for the window. Leave blank to let the system set it", "Digite a posição Y para a janela. Deixe em branco pro sistema posicionar");
+         Font big = font.adjustedBy(2,true);
+         Container c = new Container();
+         c.borderColor = 0xAAAAAA;
+         c.setBorderStyle(Help.BORDER_ROUNDED);
+         c.setInsets(fmH/4,fmH/4,fmH/4,fmH/4);
+         add(c,LEFT,TOP+50,FILL,fmH*9);
+         Label l = new Label(x("Screen settings","Configurações da janela"));
+         l.setFont(big);
+         c.add(l,LEFT,TOP);
+         c.add(new Label(x("Position: ","Posição: ")),LEFT,AFTER+25);
+         c.add(new Label("X: "),LEFT,AFTER);
+         c.add(edX = new Edit("99999"),AFTER,SAME); tip(edX, "Type the X position for the window. Leave blank to let the system set it", "Digite a posição X para a janela. Deixe em branco pro sistema posicionar");
+         c.add(new Label("Y: "),AFTER+50,SAME);
+         c.add(edY = new Edit("99999"),AFTER,SAME); tip(edY, "Type the Y position for the window. Leave blank to let the system set it", "Digite a posição Y para a janela. Deixe em branco pro sistema posicionar");
          
-         add(new Label(x("Select one to populate the edits below", "Selecione um para popular os edits abaixo")),LEFT,AFTER+25);
+         c.add(l=new Label(x("Select one to fill below", "Selecione um para preencher abaixo")),PARENTSIZE+70,TOP);
          rg = new RadioGroupController();
-         add(rdC = new Radio(x("Custom","Customizado"),rg),LEFT,AFTER);  rdC.appId = 0; tip(rdC,  "Fill the fields below", "Preencha os campos abaixo");
-         add(rd32 = new Radio("Win32",rg),AFTER+50,SAME);  rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
-         add(rdCE = new Radio("WinCE",rg),AFTER+50,SAME);  rdCE.appId = 2; tip(rdCE, "Width=240, height=320, bpp=8", "Largura=240, altura=320, bpp=8");
-         add(rdA = new Radio("Android",rg),AFTER+50,SAME); rdA .appId = 3; tip(rdA,  "Width=320, height=480, bpp=24", "Largura=320, altura=480, bpp=24");
-         add(rdI = new Radio("iOS",rg),AFTER+50,SAME);     rdI .appId = 4; tip(rdI,  "Width=640, height=960, bpp=24, scale=0.75", "Largura=640, altura=960, bpp=24, escala=0.75");
-         add(new Label(x("Width: ","Largura: ")),LEFT,AFTER+25);
-         add(edW = new Edit("99999"),AFTER,SAME);   tip(edW, "Type the width for the window", "Digite a largura da janela");
-         add(new Label(x("Height: ","Altura: ")),AFTER+50,SAME); 
-         add(edH = new Edit("99999"),AFTER,SAME);   tip(edH, "Type the height for the window", "Digite a altura da janela");
-         add(new Label(x("BitsPerPixel: ","BitsPorPixel: ")),LEFT,AFTER+25);
-         add(cbBpp = new ComboBox(new String[]{"8","16","24","32"}),AFTER,SAME); tip(cbBpp, "Select the bits per pixel to be used in the Window. All platforms uses 24bpp, except WinCE, which uses 8bpp", "Selecione os bits por pixel usado na janela. Todas as plataformas, menos WinCE, usam 24bpp");
-         add(new Label(x("Font size: ","Tam da letra: ")),LEFT,AFTER+25);
-         add(edFS = new Edit("99999"),AFTER,SAME);  tip(edFS, "Type the font size. Leave it blank to use the default one", "Digite o tamanho da fonte. Deixe vazio pra usar o tamanho padrão");
-         add(new Label(x("Scale: ","Escala: ")),LEFT,AFTER+25);
-         add(cbSc = new ComboBox(new String[]{"0.25","0.5","0.75","1","2","4","6","8"}),AFTER,SAME); tip(cbSc, "Select the scale to apply in the Window. Useful when you test screen sizes above your monitor's resolution", "Selecione a escala pra aplicar na janela. Útil quando usar tamanho de janela maior que a resolução do seu monitor");
+         c.add(rdC = new Radio(x("Custom","Customizado"),rg),SAME,AFTER);  rdC.appId = 0; tip(rdC,  "Fill the fields below", "Preencha os campos abaixo");
+         c.add(rd32 = new Radio("Win32",rg),AFTER+50,SAME);  rd32.appId = 1; tip(rd32, "Width=240, height=320, bpp=24", "Largura=240, altura=320, bpp=24");
+         c.add(rdCE = new Radio("WinCE",rg),SAME,AFTER+150,l);  rdCE.appId = 2; tip(rdCE, "Width=240, height=320, bpp=8", "Largura=240, altura=320, bpp=8");
+         c.add(rdA = new Radio("Android",rg),AFTER+50,SAME); rdA .appId = 3; tip(rdA,  "Width=320, height=480, bpp=24", "Largura=320, altura=480, bpp=24");
+         c.add(rdI = new Radio("iOS",rg),AFTER+50,SAME);     rdI .appId = 4; tip(rdI,  "Width=640, height=960, bpp=24, scale=0.75", "Largura=640, altura=960, bpp=24, escala=0.75");
+         
+         c.add(new Ruler(),LEFT,AFTER+25,FILL,PREFERRED);
+         c.add(new Label(x("Width: ","Largura: ")),LEFT,AFTER+50);
+         c.add(edW = new Edit("99999"),AFTER,SAME);   tip(edW, "Type the width for the window", "Digite a largura da janela");
+         c.add(new Label(x("Height: ","Altura: ")),AFTER+50,SAME); 
+         c.add(edH = new Edit("99999"),AFTER,SAME);   tip(edH, "Type the height for the window", "Digite a altura da janela");
+         c.add(new Label(x("BitsPerPixel: ","BitsPorPixel: ")),AFTER+50,SAME);
+         c.add(cbBpp = new ComboBox(new String[]{"8","16","24","32"}),AFTER,SAME); tip(cbBpp, "Select the bits per pixel to be used in the Window. All platforms uses 24bpp, except WinCE, which uses 8bpp", "Selecione os bits por pixel usado na janela. Todas as plataformas, menos WinCE, usam 24bpp");
+         c.add(new Label(x("Font size: ","Tam da letra: ")),LEFT,AFTER+50);
+         c.add(edFS = new Edit("99999"),AFTER,SAME);  tip(edFS, "Type the font size. Leave it blank to use the default one", "Digite o tamanho da fonte. Deixe vazio pra usar o tamanho padrão");
+         c.add(new Label(x("Scale: ","Escala: ")),AFTER+50,SAME);
+         c.add(cbSc = new ComboBox(new String[]{"0.25","0.5","0.75","1","2","4","6","8"}),AFTER,SAME); tip(cbSc, "Select the scale to apply in the Window. Useful when you test screen sizes above your monitor's resolution", "Selecione a escala pra aplicar na janela. Útil quando usar tamanho de janela maior que a resolução do seu monitor");
          cbSc.setSelectedItem("1");
          
          swSc = new Switch(true); tip(swSc, "Scale slow has a good appearance, while fast scale has a worst appearance", "Escala lenta tem boa aparência, e escala devagar tem uma pior aparência");
          swSc.textBackOn = x(" fast","rápida ");
          swSc.textBackOff = x(" slow","lenta ");
-         add(swSc, AFTER+50,SAME);
+         c.add(swSc, AFTER+50,SAME);
          
-         add(new Label(x("Miscelaneous","Miscelânia")),LEFT,AFTER+50);
+         add(new Label(x("Miscelaneous","Miscelânia"), LEFT,Color.BLACK,true),LEFT,AFTER+50);
          add(new Label(x("Command line to pass to application: ","Linha de comandos para passar à aplicação")),LEFT,AFTER+25);
          add(edCmd = new Edit(),LEFT,AFTER);   tip(edCmd, "You can pass extra arguments to application and retrieve it using MainWindow.getCommandLine()", "Você pode passar argumentos extras pra aplicação e recuperá-los usando MainWindow.getCommandLine()");
          add(chM = new Check(x("Show mouse position","Mostrar posição do mouse")),LEFT,AFTER+25); tip(chM, "Show the mouse position on window's title area", "Mostra a posição do mouse no título da janela");
          btRun = new Button(x("Run the application","Executar a aplicação"));
          btRun.setBackColor(COLOR);
+         btRun.setForeColor(Color.WHITE);
+         btRun.setFont(font.asBold());
          add(btRun, CENTER,AFTER+100,PARENTSIZE+80,PREFERRED+50);
          tip(btRun, "Fill the fields above and press this button to run the application", "Preencha os campos acima e clique nesse botão para executar a aplicação");
       }
