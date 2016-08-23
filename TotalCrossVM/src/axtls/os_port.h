@@ -230,7 +230,9 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifndef darwin
 #include <asm/byteorder.h>
+#endif
 
 #define SOCKET_READ(A,B,C)      read(A,B,C)
 #define SOCKET_WRITE(A,B,C)     write(A,B,C)
@@ -238,7 +240,11 @@ EXP_FUNC int STDCALL getdomainname(char *buf, int buf_size);
 #define TTY_FLUSH()
 
 #ifndef be64toh
-#define be64toh(x) __be64_to_cpu(x)
+ #ifdef darwin
+  #define be64toh(x) ntohll(x)
+ #else
+  #define be64toh(x) __be64_to_cpu(x)
+ #endif
 #endif
 
 #endif  /* Not Win32 */
