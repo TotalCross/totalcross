@@ -18,6 +18,7 @@
 
 package totalcross.sys;
 
+import totalcross.ui.IVirtualKeyboard;
 import totalcross.util.*;
 
 
@@ -967,4 +968,6 @@ public final class Settings
 
    /** Field set to true if the program have aborted on last run. */
    public static boolean abortedOnLastRun;
+
+   public static IVirtualKeyboard customKeyboard;
 }

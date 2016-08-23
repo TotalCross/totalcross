@@ -502,6 +502,11 @@ public class Edit extends Control implements TextControl
       }
    }
 
+   public int getMaxLength()
+   {
+      return maxLength;
+   }
+
    private void clearPosState()
    {
       insertPos = 0;
@@ -1067,9 +1072,13 @@ public class Edit extends Control implements TextControl
             break;
 
          default:
-            if (virtualKeyboard)
+            if (virtualKeyboard && editable && !"".equals(validChars))
             {
-               if (editable && !"".equals(validChars))
+               if (Settings.customKeyboard != null)
+               {
+                  Settings.customKeyboard.show(this, validChars);
+               }
+               else
                {
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
