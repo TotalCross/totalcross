@@ -411,7 +411,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
    public static void main(String args[])
    {
-      if (args.length == 0 || args[0].equals("/auto"))
+      if (args.length == 0 || args[0].equals("/help"))
       {
          if (args.length == 0)
             showInstructions();

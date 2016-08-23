@@ -12,7 +12,7 @@ public class Help extends MainWindow
 {
    public static void main(String []args)
    {
-      totalcross.Launcher.main(new String[]{"/auto"});
+      totalcross.Launcher.main(new String[]{"/help"});
    }
    
    public Help()
