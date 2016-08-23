@@ -80,7 +80,7 @@ public class Help extends MainWindow
          l.transparentBackground = rPt.transparentBackground = rEn.transparentBackground = true;
 
          Spinner.spinnerType = Spinner.IPHONE;
-//         c0.add(spin = new Spinner(), LEFT+50,SAME-50,fmH*3/2,fmH*3/2); spin.setVisible(false);
+         c0.add(spin = new Spinner(), LEFT+50,SAME-50,fmH*3/2,fmH*3/2); spin.setVisible(false);
 
          c0.add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
          c0.add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
