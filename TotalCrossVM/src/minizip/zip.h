@@ -50,6 +50,10 @@ extern "C" {
 #include "zlib.h"
 #endif
 
+#ifndef NOCRYPT // TOTALCROSS
+#define NOCRYPT
+#endif
+
 #ifndef _ZLIBIOAPI_H
 #include "ioapi.h"
 #endif
