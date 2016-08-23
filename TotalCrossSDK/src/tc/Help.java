@@ -37,64 +37,16 @@ public class Help extends MainWindow
    RunContainer rc;
    DepContainer dc;
    RadioGroupController rgLang;
-   SButton btpath, btHtml, btBlog, btPdf;
+   ShadedButton btpath, btHtml, btBlog, btPdf;
    Spinner spin;
    Image fimg;
-   
-   class SButton extends Control
-   {
-      String text;
-      Image back0, back,fore;
-      int fcolor,bcolor;
-      int shadeDist;
-      
-      public SButton(String text, int fcolor, int bcolor)
-      {
-         this.text = text;
-         this.back0 = fimg;
-         this.fcolor = fcolor;
-         this.bcolor = bcolor;
-         shadeDist = 3;
-      }
-      
-      public void onBoundsChanged(boolean changed)
-      {
-         super.onBoundsChanged(changed);
-         try
-         {
-            back = back0.getSmoothScaledInstance(width-shadeDist,height-shadeDist);
-            fore = back0.getSmoothScaledInstance(width-shadeDist,height-shadeDist);
-            fore.applyColor2(bcolor);
-            back.alphaMask = 200;
-         }
-         catch (Exception e) {e.printStackTrace();}
-      }
-      
-      public int getPreferredWidth()
-      {
-         return fm.stringWidth(text)+fmH;
-      }
-      
-      public int getPreferredHeight()
-      {
-         return fmH+Edit.prefH;
-      }
-      
-      public void onPaint(Graphics g)
-      {
-         g.drawImage(back,shadeDist,shadeDist);
-         g.drawImage(fore,0,0);
-         g.foreColor = fcolor;
-         g.drawText(text,(width-fm.stringWidth(text)-shadeDist)/2, (height-fmH)/2-shadeDist);
-      }      
-   }
    
    public void initUI()
    {
       Settings.disableScreenRotation = true; // valid only on JavaSE
       Toast.backColor = Color.YELLOW;
       Toast.foreColor = 0;
-      Toast.posY = BOTTOM - 300;
+      Toast.posY = BOTTOM-100;
       reload(true);
    }
    
@@ -116,9 +68,9 @@ public class Help extends MainWindow
          c0.add(ic = new ImageControl(new Image("logoh.png")),LEFT,TOP);
          c0.add(new Label(x("Helper application to Run/Deploy", "Aplicação de ajuda para Executar / Empacotar"),CENTER,Color.BLACK,true),LEFT,AFTER+50, ic);
 
-         c0.add(btHtml = new SButton("Javadocs",Color.WHITE,Orange), RIGHT,TOP, PARENTSIZE+30, PREFERRED+50);  tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
-         c0.add(btBlog = new SButton("Blog",Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME);    btBlog.setBackColor(Orange); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
-         c0.add(btPdf = new SButton("Companion",Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME); btPdf.setBackColor(Orange); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
+         c0.add(btHtml = new ShadedButton("Javadocs",fimg,Color.WHITE,Orange), RIGHT,TOP, PARENTSIZE+30, PREFERRED+50);  tip(btHtml, "Opens the html javadocs in your browser", "Abre os javadocs em html no seu navegador");
+         c0.add(btBlog = new ShadedButton("Blog",fimg,Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME);    btBlog.setBackColor(Orange); tip(btBlog, "Opens the TotalCross blog, a very useful technical source", "Abre o blog do TotalCross, uma fonte extremamente útil de informações");
+         c0.add(btPdf = new ShadedButton("Companion",fimg,Color.WHITE,Orange), SAME, AFTER+50, SAME, SAME); btPdf.setBackColor(Orange); tip(btPdf, "Opens the TotalCross Companion.pdf", "Abre o TotalCross Companion.pdf");
          btHtml.setFont(font.asBold()); btBlog.setFont(font.asBold()); btPdf.setFont(font.asBold());
          
          rgLang = new RadioGroupController();
@@ -133,14 +85,14 @@ public class Help extends MainWindow
          c0.add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
          c0.add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
          c0.add(l = new Label(x("Class folder: ","Pasta dos .class: ")),LEFT,AFTER+25); 
-         c0.add(btpath = new SButton(x(" Select ", " Selecionar "),Color.BLACK,GREEN), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
+         c0.add(btpath = new ShadedButton(x(" Select ", " Selecionar "),fimg,Color.BLACK,GREEN), RIGHT,SAME); tip(btpath, "Press this button to select the folder where the .class is located", "Pressione esse botão para selecionar a pasta onde os arquivos .class estão localizados");
          c0.add(edpath = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); tip(edpath, "Type the .class folder or press the Select button", "Digite a pasta dos .class ou clique no botão Selecionar");
          
          c0.add(new Label(x("Key: ","Chave: ")),LEFT,AFTER+25);
          c0.add(edkey = new Edit(),AFTER,SAME);  tip(edkey, "Type the 24-characters registration key that you received by email", "Digite a chave com 24 caracteres que você recebeu por email");
          
          lstatus = new Label("",CENTER);
-         lstatus.setBackForeColors(COLOR,0);
+         lstatus.setBackForeColors(Color.brighter(COLOR,32),0);
          lstatus.setFont(font.asBold());
          lstatus.autoSplit = true;
          c0.add(lstatus,LEFT,BOTTOM,FILL,fmH*2);
@@ -684,7 +636,7 @@ public class Help extends MainWindow
       Switch swSc;
       Radio rdC, rdA, rdI, rd32, rdCE;
       Check chM;
-      SButton btRun;
+      ShadedButton btRun;
       RadioGroupController rg;
       
       public RunContainer()
@@ -741,7 +693,7 @@ public class Help extends MainWindow
          add(new Label(x("Command line to pass to application: ","Linha de comandos para passar à aplicação")),LEFT,AFTER+50);
          add(edCmd = new Edit(),LEFT,AFTER);   tip(edCmd, "You can pass extra arguments to application and retrieve it using MainWindow.getCommandLine()", "Você pode passar argumentos extras pra aplicação e recuperá-los usando MainWindow.getCommandLine()");
          add(chM = new Check(x("Show mouse position","Mostrar posição do mouse")),LEFT,AFTER+25); tip(chM, "Show the mouse position on window's title area", "Mostra a posição do mouse no título da janela");
-         btRun = new SButton(x("Run the application","Executar a aplicação"),Color.WHITE,COLOR);
+         btRun = new ShadedButton(x("Run the application","Executar a aplicação"),fimg,Color.WHITE,COLOR);
          btRun.setFont(font.asBold());
          add(btRun, CENTER,AFTER+100,PARENTSIZE+80,PREFERRED+50);
          tip(btRun, "Fill the fields above and press this button to run the application", "Preencha os campos acima e clique nesse botão para executar a aplicação");
@@ -791,7 +743,7 @@ public class Help extends MainWindow
    {
       Check wmo, w32, lin, apl, ios, and, wp8, all, inst, pack;
       Edit edpathd;
-      SButton btpath, btDep, btfol;
+      ShadedButton btpath, btDep, btfol;
       
       public DepContainer()
       {
@@ -825,19 +777,19 @@ public class Help extends MainWindow
          c.finish();
 
          add(l = new Label(x("Mobile provision folder: ","Pasta do mobile provision: ")),LEFT,AFTER+50);
-         add(btpath = new SButton(x(" Select ", " Selecionar "),Color.BLACK,GREEN), RIGHT,SAME); tip(btpath, "Selects the folder where the iOS mobile provision is (required for iOS)", "Seleciona a pasta onde estão os arquivos do mobile provision (requerido para o iOS)");
+         add(btpath = new ShadedButton(x(" Select ", " Selecionar "),fimg,Color.BLACK,GREEN), RIGHT,SAME); tip(btpath, "Selects the folder where the iOS mobile provision is (required for iOS)", "Seleciona a pasta onde estão os arquivos do mobile provision (requerido para o iOS)");
          add(edpathd = new Edit(), AFTER,SAME,FIT-25,PREFERRED,l); 
 
          add(inst = new Check(x("Install on device (android or wp8)", "Instalar no equipamento (android ou wp8)")), LEFT,AFTER+50); tip(inst, "Install the package if device is connected. You must only select android or wp8","Instala o pacote se o equipamento estiver conectado. Você deverá selecionar somente android ou wp8");
 
          add(pack = new Check(x("Package the vm with application", "Empacota a VM com a aplicação")),LEFT, AFTER+50);  tip(pack, "Inserts the VM inside the application's package (android and Windows Mobile); always true for other platforms", "Embute a VM no pacote da aplicação (android e Windows Mobile); sempre embute para as outras plataformas");
 
-         btDep = new SButton(x("Deploy the application", "Empacotar a aplicação"),Color.WHITE,COLOR);
+         btDep = new ShadedButton(x("Deploy the application", "Empacotar a aplicação"),fimg,Color.WHITE,COLOR);
          btDep.setBackColor(COLOR);
          add(btDep, LEFT,AFTER+100,PARENTSIZE+60,PREFERRED+50);
          tip(btDep, "Fill the fields above and press this button to deploy the application", "Preencha os campos acima e clique nesse botão para empacotar a aplicação");
 
-         btfol = new SButton(x("Install path", "Pasta da instalação"),Color.WHITE,GREEN);
+         btfol = new ShadedButton(x("Install path", "Pasta da instalação"),fimg,Color.WHITE,GREEN);
          btfol.setFont(font.asBold());
          btfol.setBackColor(0xAAFF00);
          add(btfol, RIGHT,SAME,PARENTSIZE+30,PREFERRED+50);

@@ -274,7 +274,7 @@ public class Button extends Control implements TextControl
          img = null;
       Window.needsPaint = true;
    }
-
+   
    /** Creates a button with the given image. The transparentColor property of
     * the Image must be set before calling this constructor. */
    public Button(Image img)
@@ -288,6 +288,10 @@ public class Button extends Control implements TextControl
    {
        this(null,img,0,0);
        setBorder(border);
+   }
+   
+   protected Button()
+   {
    }
 
    /** Sets the image that is displayed in the button. The
