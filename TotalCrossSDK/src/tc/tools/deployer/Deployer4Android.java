@@ -12,17 +12,15 @@
 package tc.tools.deployer;
 
 import totalcross.util.*;
-import tc.tools.converter.bb.*;
-import tc.tools.converter.bb.attribute.Code;
-import tc.tools.converter.bb.attribute.LocalVariableTable;
-import tc.tools.converter.bb.attribute.SourceFile;
-import tc.tools.converter.bb.constant.Integer;
-import tc.tools.converter.bb.constant.NameAndType;
-import tc.tools.converter.bb.constant.UTF8;
-import tc.tools.converter.bb.constant.Class;
 
 import java.io.*;
+import java.lang.String;
 import java.util.zip.*;
+import tc.tools.converter.bb.*;
+import tc.tools.converter.bb.attribute.*;
+import tc.tools.converter.bb.constant.*;
+import tc.tools.converter.bb.constant.Class;
+import tc.tools.converter.bb.constant.Integer;
 
 /*
     A launcher for Android is placed in a Android PacKage (APK), which is a 
@@ -449,13 +447,21 @@ public class Deployer4Android
       dsbas.writeInt(props);
       
       // if is full screen, search and replace TCThemeNC by TCThemeFS
+      // if this fails again, 
+      //    0. build and store original "G:\TotalCross\TotalCrossVM\builders\droid\build\outputs\apk\droid-singleApk-release.apk" / AndroidManifest.xml somewhere
+      //    1. open G:\TotalCross\TotalCrossVM\builders\droid\src\main\AndroidManifest.xml
+      //    2. replace android:theme="@style/TCThemeNS" by android:theme="@style/TCThemeFS"
+      //    3. build and store the changed AndroidManifest.xml inside the apk and then compare the differences.
       if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
       {
-         byte[] themeMark = singleApk ? new byte[]{(byte)0x00,(byte)0x00,(byte)0x0b,(byte)0x7f} : new byte[]{(byte)0x00,(byte)0x00,(byte)0x03,(byte)0x7f};
+         byte[] themeMark = singleApk ? new byte[]{(byte)0x00,(byte)0x00,(byte)0x01,(byte)0xA4} : new byte[]{(byte)0x00,(byte)0x00,(byte)0x03,(byte)0x7f};
          ofs = Utils.indexOf(res, themeMark, false);
          if (ofs == -1)
             throw new DeployerException("Error: could not find position for theme");
-         res[ofs] = 1; // set Fullscreen attribute: TCThemeNC -> TCThemeFS
+         if (singleApk)
+            res[ofs+3] = (byte)0xA3;
+         else
+            res[ofs] = 1; // set Fullscreen attribute: TCThemeNC -> TCThemeFS
       }
       
       // now, change the names accordingly
