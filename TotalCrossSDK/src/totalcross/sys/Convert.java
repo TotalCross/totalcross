@@ -45,16 +45,26 @@ public final class Convert
        * create it if necessary. The values in the class aren't important; but
        * they must not be null.
        */
-      if (Launcher.instance == null)
+      try
       {
-         new Launcher();
+         if (Launcher.instance == null)
+         {
+            new Launcher();
+         }
+         if (Launcher.instance == null)
+         {
+            new Launcher();
+            System.out.println("******************** NULL");
+         }
+         Launcher.instance.fillSettings(); // guich@tc100
       }
-      if (Launcher.instance == null)
+      catch (java.awt.HeadlessException he)
       {
-         new Launcher();
-         System.out.println("******************** NULL");
       }
-      Launcher.instance.fillSettings(); // guich@tc100
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+      }
    }
    static void newLauncherInstance4D() {}
 
