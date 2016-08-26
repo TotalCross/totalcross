@@ -385,7 +385,8 @@ public class FileChooserBox extends Window
       catch (Exception e)
       {
          Vm.debug("File: "+theFile);
-         e.printStackTrace();
+         if (!String.valueOf(e.getMessage()).contains("Error Code: 32")) // file is being used by another process
+            e.printStackTrace();
       }
       if (f != null) try {f.close();} catch (Throwable t) {}
       
