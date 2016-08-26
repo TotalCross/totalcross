@@ -591,6 +591,7 @@ public class Label extends Control implements TextControl
                   g.drawText(lines[i], xx+x, y, justify);
                }
                else
+               if (0 <= i && i < lines.length)
                   g.drawText(lines[i], xx+x, y, justify, textShadowColor != -1, textShadowColor);
             }
          }
