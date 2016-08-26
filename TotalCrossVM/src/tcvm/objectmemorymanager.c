@@ -1008,7 +1008,7 @@ void runFinalizers() // calls finalize of all objects in use
  #define USE_MAX_BLOCK true
 #elif defined(WIN32)
  #define CRITICAL_SIZE 8*1024*1024
- #define USE_MAX_BLOCK false
+ #define USE_MAX_BLOCK true
 #else
  #define CRITICAL_SIZE 64*1024*1024
  #define USE_MAX_BLOCK false
