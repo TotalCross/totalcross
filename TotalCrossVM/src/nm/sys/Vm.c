@@ -74,14 +74,24 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    else
    {
       TCClass c = OBJ_CLASS(srcArray);
-      uint32 s = TC_ARRAYSIZE(c, 1);
-      length *= s; // convert array units into byte units
-      dstStart *= s;
-      srcStart *= s;
-      // Copy
       src = ARRAYOBJ_START(srcArray);
       dst = ARRAYOBJ_START(dstArray);
-      xmemmove(dst+dstStart, src+srcStart, length);
+      if (OBJ_PROPERTIES(srcArray)->class_->flags.isObjectArray) // copy pointers directly to prevent a partial assigned value from being considered a valid object
+      {
+         TCObjectArray psrc = (TCObjectArray)src;
+         TCObjectArray pdst = (TCObjectArray)dst;
+         if (src == dst && srcStart < dstStart) // copy arrays overlap?
+            for (psrc += srcStart + length - 1, pdst += dstStart + length - 1;  --length >= 0; ) // must go backwards to allow copy into overlapping array
+               *pdst-- = *psrc--;
+         else
+            for (psrc += srcStart, pdst += dstStart;  --length >= 0; )
+               *pdst++ = *psrc++;
+      }
+      else
+      {
+         uint32 s = TC_ARRAYSIZE(c, 1);
+         xmemmove(dst + dstStart * s, src + srcStart * s, length * s);
+      }
       result = true;
    }
    p->retI = result;
