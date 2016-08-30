@@ -57,7 +57,7 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    {
       bool isObjectArray;
       isObjectArray = OBJ_PROPERTIES(srcArray)->class_->flags.isObjectArray;
-      if (isObjectArray && p->currentContext != gcContext)
+      if (isObjectArray && p->currentContext != gcContext) // prevent another thread from calling the gc while running this method, which can change objects in memory and result in a crash
          LOCKVAR(omm);
       if (dstStart < 0)
          throwIllegalArgumentExceptionI(p->currentContext, "dstStart",dstStart);
