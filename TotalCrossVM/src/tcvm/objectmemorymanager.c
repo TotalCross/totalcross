@@ -180,7 +180,6 @@ typedef struct
 #define OBJECT2CHUNK(o) (Chunk)(((uint8*)o)-sizeof(TObjectProperties))
 
 #define OBJ_MARK(o)         OBJ_PROPERTIES(o)->mark
-#define OBJ_ISLOCKED(o)     (OBJ_PROPERTIES(o)->lock  == 1)
 #define OBJ_SETLOCKED(o)    OBJ_PROPERTIES(o)->lock = 1
 #define OBJ_SETUNLOCKED(o)  OBJ_PROPERTIES(o)->lock = 0
 
@@ -650,7 +649,7 @@ TC_API void setObjectLock(TCObject o, LockState lock)
    if (lock == LOCKED)
    {
       if (OBJ_ISLOCKED(o))
-         alert("FATAL ERROR: OBJECT %X (%s) IS BEING LOCKED BUT IT WAS NOT PREVIOUSLY UNLOCKED!", o, OBJ_CLASS(o)->name);
+         alert("FATAL ERROR: OBJECT %X (%s) IS BEING LOCKED BUT IT IS ALREADY LOCKED!", o, OBJ_CLASS(o)->name);
       OBJ_SETLOCKED(o);
       // remove from the used list
       removeNodeFromDblList(usedList[idx], o);
@@ -660,7 +659,7 @@ TC_API void setObjectLock(TCObject o, LockState lock)
    else
    {
       if (!OBJ_ISLOCKED(o))
-         alert("FATAL ERROR: OBJECT %X (%s) IS BEING UNLOCKED BUT IT WAS NOT PREVIOUSLY LOCKED!", o, OBJ_CLASS(o)->name);
+         alert("FATAL ERROR: OBJECT %X (%s) IS BEING UNLOCKED BUT IT IS ALREADY UNLOCKED!", o, OBJ_CLASS(o)->name);
       OBJ_SETUNLOCKED(o);
       // add it back to the used list
       removeNodeFromDblList(lockList[0], o);
