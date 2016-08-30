@@ -54,45 +54,53 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    if (!dstArray)
       throwNullArgumentException(p->currentContext, "dstArray");
    else
-   if (dstStart < 0)
-      throwIllegalArgumentExceptionI(p->currentContext, "dstStart",dstStart);
-   else
-   if (length < 0)
-      throwIllegalArgumentExceptionI(p->currentContext, "length",length);
-   else
-   if (length == 0)
-      result = true;
-   else
-   if (!checkArrayRange(p->currentContext, srcArray, srcStart, length) || !checkArrayRange(p->currentContext, dstArray, dstStart, length)) // Check the array's range
-      result = false;
-   else
-   if (OBJ_CLASS(srcArray) != OBJ_CLASS(dstArray) && // quick test
-      areClassesCompatible(p->currentContext, OBJ_CLASS(srcArray), OBJ_CLASS(dstArray)->name) != COMPATIBLE && // Check if srcArray and dstArray are compatible
-      (OBJ_CLASS(srcArray)->name[1] == '&' || OBJ_CLASS(dstArray)->name[1] == '&' || // make sure the arrays are not primitive arrays
-         areArraysCompatible(p->currentContext, srcArray, OBJ_CLASS(dstArray)->name+1) != COMPATIBLE)) // check if the first elements are compatible
-      throwException(p->currentContext, ArrayStoreException, "srcArray and dstArray are not compatible");
-   else
    {
-      TCClass c = OBJ_CLASS(srcArray);
-      src = ARRAYOBJ_START(srcArray);
-      dst = ARRAYOBJ_START(dstArray);
-      if (OBJ_PROPERTIES(srcArray)->class_->flags.isObjectArray) // copy pointers directly to prevent a partial assigned value from being considered a valid object
-      {
-         TCObjectArray psrc = (TCObjectArray)src;
-         TCObjectArray pdst = (TCObjectArray)dst;
-         if (src == dst && srcStart < dstStart) // copy arrays overlap?
-            for (psrc += srcStart + length - 1, pdst += dstStart + length - 1;  --length >= 0; ) // must go backwards to allow copy into overlapping array
-               *pdst-- = *psrc--;
-         else
-            for (psrc += srcStart, pdst += dstStart;  --length >= 0; )
-               *pdst++ = *psrc++;
-      }
+      bool isObjectArray;
+      isObjectArray = OBJ_PROPERTIES(srcArray)->class_->flags.isObjectArray;
+      if (isObjectArray && p->currentContext != gcContext)
+         LOCKVAR(omm);
+      if (dstStart < 0)
+         throwIllegalArgumentExceptionI(p->currentContext, "dstStart",dstStart);
+      else
+      if (length < 0)
+         throwIllegalArgumentExceptionI(p->currentContext, "length",length);
+      else
+      if (length == 0)
+         result = true;
+      else
+      if (!checkArrayRange(p->currentContext, srcArray, srcStart, length) || !checkArrayRange(p->currentContext, dstArray, dstStart, length)) // Check the array's range
+         result = false;                                              
+      else
+      if (OBJ_CLASS(srcArray) != OBJ_CLASS(dstArray) && // quick test
+         areClassesCompatible(p->currentContext, OBJ_CLASS(srcArray), OBJ_CLASS(dstArray)->name) != COMPATIBLE && // Check if srcArray and dstArray are compatible
+         (OBJ_CLASS(srcArray)->name[1] == '&' || OBJ_CLASS(dstArray)->name[1] == '&' || // make sure the arrays are not primitive arrays
+            areArraysCompatible(p->currentContext, srcArray, OBJ_CLASS(dstArray)->name+1) != COMPATIBLE)) // check if the first elements are compatible
+         throwException(p->currentContext, ArrayStoreException, "srcArray and dstArray are not compatible");
       else
       {
-         uint32 s = TC_ARRAYSIZE(c, 1);
-         xmemmove(dst + dstStart * s, src + srcStart * s, length * s);
+         TCClass c = OBJ_CLASS(srcArray);
+         src = ARRAYOBJ_START(srcArray);
+         dst = ARRAYOBJ_START(dstArray);
+         if (isObjectArray) // copy pointers directly to prevent a partial assigned value from being considered a valid object
+         {
+            TCObjectArray psrc = (TCObjectArray)src;
+            TCObjectArray pdst = (TCObjectArray)dst;
+            if (src == dst && srcStart < dstStart) // copy arrays overlap?
+               for (psrc += srcStart + length - 1, pdst += dstStart + length - 1;  --length >= 0; ) // must go backwards to allow copy into overlapping array
+                  *pdst-- = *psrc--;
+            else
+               for (psrc += srcStart, pdst += dstStart;  --length >= 0; )
+                  *pdst++ = *psrc++;
+         }
+         else
+         {
+            uint32 s = TC_ARRAYSIZE(c, 1);
+            xmemmove(dst + dstStart * s, src + srcStart * s, length * s);
+         }
+         result = true;
       }
-      result = true;
+      if (isObjectArray && p->currentContext != gcContext)
+         UNLOCKVAR(omm);
    }
    p->retI = result;
 }

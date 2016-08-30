@@ -84,6 +84,7 @@ typedef void (*setObjectLockFunc)(TCObject o, LockState lock);
 
 /// Returns a pointer to the Object properties given an Object
 #define OBJ_PROPERTIES(o) ((ObjectProperties)(((uint8*)(o))-sizeof(TObjectProperties)))
+#define OBJ_ISLOCKED(o)     (OBJ_PROPERTIES(o)->lock  == 1)
 
 /** A Java Object is a Class instance.
  *
