@@ -129,7 +129,7 @@ void RSA_pub_key_new_external(RSA_CTX *rsa_ctx,
 {
    BI_CTX *bi_ctx = bi_initialize();
    rsa_ctx->bi_ctx = bi_ctx;
-    rsa_ctx->num_octets = mod_len;
+    rsa_ctx->num_octets = (mod_len & 0xFFF0);
    rsa_ctx->m = bi_import(bi_ctx, modulus, mod_len);
    bi_set_mod(bi_ctx, rsa_ctx->m, BIGINT_M_OFFSET);
    rsa_ctx->e = bi_import(bi_ctx, pub_exp, pub_len);
