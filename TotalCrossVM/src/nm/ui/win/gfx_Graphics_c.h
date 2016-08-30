@@ -146,7 +146,9 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 #endif
 
 #endif
-
+#ifdef _DEBUG
+   SetProcessAffinityMask(GetCurrentProcess(), 1);
+#endif
    return true;
 }
 
