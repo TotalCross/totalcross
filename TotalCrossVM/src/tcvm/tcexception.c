@@ -268,6 +268,7 @@ void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidP
 void printStackTrace(Context currentContext)
 {
    fillStackTrace(currentContext, null, -1, currentContext->callStack); 
+   debug(currentContext->exmsg);
 }
 
 void showUnhandledException(Context context, bool useAlert)
