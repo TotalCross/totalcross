@@ -107,16 +107,23 @@ public class Loader extends Activity implements BarcodeReadListener
       switch (requestCode)
       {
          case SELECT_PICTURE:
+            AndroidUtils.debug("onActivityResult 1");
             if (resultCode == RESULT_OK)
             {
+               AndroidUtils.debug("onActivityResult 2");
                Uri selectedImageUri = data.getData();
+               AndroidUtils.debug("onActivityResult 3: "+selectedImageUri);
                String selectedImagePath = getImagePath(selectedImageUri);
+               AndroidUtils.debug("onActivityResult 4");
                if (selectedImagePath == null)
                   resultCode = RESULT_OK+1;
                else
                   AndroidUtils.copyFile(selectedImagePath,imageFN,false);
+               AndroidUtils.debug("onActivityResult 5");
             }
+            AndroidUtils.debug("onActivityResult 6: "+resultCode);
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            AndroidUtils.debug("onActivityResult 7");
             break;
          case Level5.BT_MAKE_DISCOVERABLE:
             Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED,null);
@@ -125,10 +132,14 @@ public class Loader extends Activity implements BarcodeReadListener
             finish();
             break;
          case TAKE_PHOTO:
+            AndroidUtils.debug("onActivityResult 8");
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            AndroidUtils.debug("onActivityResult 9");
             break;
          case CAMERA_PIC_REQUEST:
+            AndroidUtils.debug("onActivityResult 10");
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            AndroidUtils.debug("onActivityResult 11");
             break;
          case MAP_RETURN:
             Launcher4A.showingMap = false;
@@ -138,28 +149,50 @@ public class Loader extends Activity implements BarcodeReadListener
             Launcher4A.callingZXing = false;
             break;
          case EXTCAMERA_RETURN:
+         {
+            AndroidUtils.debug("onActivityResult 12");
             String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED}; 
+            AndroidUtils.debug("onActivityResult 13");
             Cursor cursor = managedQuery(capturedImageURI, projection, null, null, null);
+            AndroidUtils.debug("onActivityResult 14");
             
             String capturedImageFilePath = null;
             if (cursor.moveToFirst())
+            {
+               AndroidUtils.debug("onActivityResult 15");
                capturedImageFilePath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
+               AndroidUtils.debug("onActivityResult 16");
+            }
+            AndroidUtils.debug("onActivityResult 17");
             if (capturedImageFilePath == null || !AndroidUtils.copyFile(capturedImageFilePath,imageFN,cameraType == CAMERA_NATIVE_NOCOPY))
+            {
+               AndroidUtils.debug("onActivityResult 18");
                resultCode = RESULT_OK+1; // error
+            }
             else
             {
+               AndroidUtils.debug("onActivityResult 19");
                long date = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED));
+               AndroidUtils.debug("onActivityResult 20");
                autoRotatePhoto(imageFN);
+               AndroidUtils.debug("onActivityResult 21");
                if (cameraType == CAMERA_NATIVE_NOCOPY) // if the file was deleted, delete from database too
                   try
                   { 
+                     AndroidUtils.debug("onActivityResult 22");
                      getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, BaseColumns._ID + "=" + cursor.getString(cursor.getColumnIndexOrThrow(BaseColumns._ID)), null);
+                     AndroidUtils.debug("onActivityResult 23");
                      try {new File(capturedImageFilePath).delete();} catch (Exception e) {} // on android 2.3 the code above does not work, so we just ensure that we delete the file
+                     AndroidUtils.debug("onActivityResult 24");
                      removeLastImageFromGallery(date);
+                     AndroidUtils.debug("onActivityResult 25");
                   } catch (Exception e) {AndroidUtils.handleException(e,false);}
             }
+            AndroidUtils.debug("onActivityResult 26");
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
+            AndroidUtils.debug("onActivityResult 27");
             break;
+         }
       }
    }
 
@@ -297,6 +330,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int CAMERA_NATIVE = 1;
    private static final int CAMERA_NATIVE_NOCOPY = 2;
    private static final int FROM_GALLERY = 3;
+   private static String[] cameraTypes = {"CUSTOM","NATIVE","NATIVE_NOCOPY","GALLERY","UNDEFINED"};
    private int cameraType;
    private void captureCamera(String s, int quality, int width, int height, boolean allowRotation, int cameraType)
    {
@@ -305,6 +339,7 @@ public class Loader extends Activity implements BarcodeReadListener
          imageFN = s;
          this.cameraType = cameraType;
          String deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
+         AndroidUtils.debug("Taking photo "+width+"x"+height+" from "+cameraTypes[0 <= cameraType && cameraType <= 3 ? cameraType : 4]);
          if (cameraType == FROM_GALLERY)
          {
             Intent i = new Intent();
@@ -342,6 +377,7 @@ public class Loader extends Activity implements BarcodeReadListener
             startActivityForResult(intent, TAKE_PHOTO);
             Launcher4A.instance.nativeInitSize(null,-998,0);
          }
+         AndroidUtils.debug("Launched photo");
       }
       catch (Throwable e)
       {
