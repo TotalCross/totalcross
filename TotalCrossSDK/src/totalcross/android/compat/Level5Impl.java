@@ -106,33 +106,56 @@ public class Level5Impl extends Level5
          }
    }      
    
-   private void btReadWrite(boolean isRead, String btc, byte[] byteArray, int ofs, int count) throws Exception
+   private void btReadWrite(final boolean isRead, final String btc, final byte[] byteArray, final int ofs, final int count) throws Exception
    {
-      BluetoothSocket sock = htbt.get(btc);
+      final BluetoothSocket sock = htbt.get(btc);
+
       if (sock == null)
          throw new IOException("socket for device "+btc+" not found on hashtable");
-      if (isRead)
-      {
-         InputStream is = sock.getInputStream();
-         if (is == null)
-            setResponse(ERROR,null);
-         else
+      
+      Thread t = new Thread() {
+         public void run()
          {
-            int n = is.read(byteArray, ofs, count);
-            setResponse(n,null);
+            int ret = ERROR;
+            try
+            {
+               if (isRead)
+               {
+                  InputStream is = sock.getInputStream();
+                  if (is != null)
+                     ret = is.read(byteArray, ofs, count);
+               }
+               else
+               {
+                  OutputStream os = sock.getOutputStream();
+                  if (os != null)
+                  {
+                     os.write(byteArray, ofs, count);
+                     os.flush();
+                     ret = count;
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               AndroidUtils.handleException(e, false);
+            }
+            setResponse(ret,null);
          }
-      }
-      else
+      };
+      try 
       {
-         OutputStream os = sock.getOutputStream();
-         if (os == null)
+         t.setDaemon(true);
+         t.start();
+         long end = System.currentTimeMillis() + 4000;
+         while (t.isAlive() && System.currentTimeMillis() < end)
+            try {Thread.sleep(20);} catch (Exception e) {}
+         if (t.isAlive())
             setResponse(ERROR,null);
-         else
-         {
-            os.write(byteArray, ofs, count);
-            os.flush();
-            setResponse(count,null);
-         }
+      } 
+      catch (Exception e) 
+      {
+         AndroidUtils.handleException(e, false);
       }
    }
 
