@@ -303,6 +303,11 @@ public class MultiEdit extends Container implements Scrollable, TextControl
          chars.setLength(length);
    }
 
+   public int getMaxLength()
+   {
+      return maxLength;
+   }
+
    /** Used to change the default keyboard to be used with this Edit control.
      * Use the constants Edit.KBD_NONE and Edit.KBD_KEYBOARD.
      */
@@ -1146,21 +1151,28 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    {
       if (kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !hadParentScrolled() && !Window.isScreenShifted()) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
       {
-         int sbl = Settings.SIPBottomLimit;
-         if (sbl == -1) sbl = Settings.screenHeight / 2;
-         boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
-         if (!Window.isSipShown || Settings.isWindowsCE())
+         if (Settings.customKeyboard != null)
          {
-            Window.isSipShown = true;
-            Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
+            Settings.customKeyboard.show(this, validChars);
          }
-         if (Settings.unmovableSIP) // guich@tc126_21
+         else
          {
-            Window w = getParentWindow();
-            if (w == null) w = Window.topMost;
-            w.shiftScreen(this,0);
-         }
-         lastZ1y = -9999;
+            int sbl = Settings.SIPBottomLimit;
+            if (sbl == -1) sbl = Settings.screenHeight / 2;
+            boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
+            if (!Window.isSipShown || Settings.isWindowsCE())
+            {
+               Window.isSipShown = true;
+               Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
+            }
+            if (Settings.unmovableSIP) // guich@tc126_21
+            {
+               Window w = getParentWindow();
+               if (w == null) w = Window.topMost;
+               w.shiftScreen(this,0);
+            }
+            lastZ1y = -9999;
+   	   }
       }
    }
 
