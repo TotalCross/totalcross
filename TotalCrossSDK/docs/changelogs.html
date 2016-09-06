@@ -1,4 +1,15 @@
 <h2>TotalCross 3.3</h2>   
+<h1>build 3007</h1>
+. fixed singleapk isFullScreen (again)<br>
+. fixed getFreeMemory returning very small values in win32<br>
+. ignore file is being used by another process in FileChooserBox.getSortName<br>
+. fixed vm crash that occured when copying an object array to another array. if the gc was called during the memory move, it could break the thread in the mid of the pointer, thus resulting in an invalid memory location.<br>
+. fixed crash that can occur when a thread copies an object array into another one and another thread calls gc<br>
+. added lots of debug information to find why aborting during Camera.click.<br>
+. removed printStackTraces for appcrashed<br>
+. decreased wait time for bluetooth transfers<br>
+. added a read timeout of 4 seconds to bluetooth read.<br>
+. got rid of a console that appears on PNG library errors and warnings<br>
 <h1>build 2999</h1>
 . added TabbedContainerr.useBorder2, to use an alternative tab border<br>
 . added totalcross.ui.BorderContainer, an auto-resizable container with a title and round border, used in tc.Help<br>
