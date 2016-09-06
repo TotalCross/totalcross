@@ -108,7 +108,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    TCObject res, out;
    getDeviceId(deviceId); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
    
-   MD5Init(&ctx);
+   MD5_Init(&ctx);
    getImei(imei);
 #ifdef ANDROID
    if (__system_property_get("ro.serialno",serial) <= 0)
@@ -129,11 +129,11 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #if defined (WIN32) && !defined (WINCE)
       int32 serialLen = xstrlen(serial);
       if (serialLen > 12) // use only the first mac address to keep the hash the same as the previous versions.
-         MD5Update(&ctx, serial, 12);
+         MD5_Update(&ctx, serial, 12);
       else
-         MD5Update(&ctx, serial, serialLen);
+         MD5_Update(&ctx, serial, serialLen);
 #else
-      MD5Update(&ctx, (uint8*)serial, xstrlen(serial));
+      MD5_Update(&ctx, (uint8*)serial, xstrlen(serial));
 #endif
    }
    else notFound++;
@@ -144,7 +144,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #endif
    {
       if (*imei)
-         MD5Update(&ctx, (uint8*)imei, xstrlen(imei));
+         MD5_Update(&ctx, (uint8*)imei, xstrlen(imei));
 #if defined (WINCE)
       else if (RdIsSupported(PHONE))
          return GDHERR_IMEI;
@@ -157,7 +157,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
       serial[0] = 0;
       getArtificialHash(serial);
       if (*serial)
-         MD5Update(&ctx, (uint8*)serial, xstrlen(serial));
+         MD5_Update(&ctx, (uint8*)serial, xstrlen(serial));
       else
          return GDHERR_ARTIFICIAL_HASH;
    }
@@ -165,7 +165,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    if ((out = createByteArray(currentContext, MD5_SIZE)) == null)
       return GDHERR_OOM;
 
-   MD5Final(&ctx, ARRAYOBJ_START(out));
+   MD5_Final(ARRAYOBJ_START(out), &ctx);
 
    res = executeMethod(currentContext, getMethod(loadClass(currentContext, "totalcross.sys.Convert", true), true, "bytesToHexString", 1, BYTE_ARRAY), out).asObj;
    setObjectLock(out, UNLOCKED);

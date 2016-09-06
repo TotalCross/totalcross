@@ -200,6 +200,9 @@ AXTLS_FILES =                          \
 	$(sourcedir)/axtls/rc4.c            \
 	$(sourcedir)/axtls/sha1.c           \
 	$(sourcedir)/axtls/sha256.c         \
+	$(sourcedir)/axtls/sha384.c         \
+	$(sourcedir)/axtls/sha512.c         \
+	$(sourcedir)/axtls/x509.c           \
 	$(sourcedir)/axtls/tls1.c           \
 	$(sourcedir)/axtls/tls1_svr.c       \
 	$(sourcedir)/axtls/tls1_clnt.c

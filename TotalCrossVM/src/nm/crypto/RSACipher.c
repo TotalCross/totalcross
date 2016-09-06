@@ -98,7 +98,7 @@ TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher 
          throwException(p->currentContext, OutOfMemoryError, null);
       else
       {
-         if ((count = RSA_decrypt(ctx, ARRAYOBJ_START(dataObj), out, true)) == -1)
+         if ((count = RSA_decrypt(ctx, ARRAYOBJ_START(dataObj), out, ARRAYOBJ_LEN(RSAPrivateKey_n(key)), true)) == -1)
             throwException(p->currentContext, CryptoException, "Decryption error");
       }
    }
