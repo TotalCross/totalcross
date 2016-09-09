@@ -23,6 +23,7 @@ import totalcross.zxing.Result;
 import totalcross.zxing.ResultPoint;
 import totalcross.zxing.ResultPointCallback;
 import totalcross.zxing.common.BitArray;
+import totalcross.zxing.common.detector.MathUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,8 +58,8 @@ public final class RSS14Reader extends AbstractRSSReader {
   private final List<Pair> possibleRightPairs;
 
   public RSS14Reader() {
-    possibleLeftPairs = new ArrayList<Pair>();
-    possibleRightPairs = new ArrayList<Pair>();
+    possibleLeftPairs = new ArrayList<>();
+    possibleRightPairs = new ArrayList<>();
   }
 
   @Override
@@ -71,13 +72,9 @@ public final class RSS14Reader extends AbstractRSSReader {
     Pair rightPair = decodePair(row, true, rowNumber, hints);
     addOrTally(possibleRightPairs, rightPair);
     row.reverse();
-    int lefSize = possibleLeftPairs.size();
-    for (int i = 0; i < lefSize; i++) {
-      Pair left = possibleLeftPairs.get(i);
+    for (Pair left : possibleLeftPairs) {
       if (left.getCount() > 1) {
-        int rightSize = possibleRightPairs.size();
-        for (int j = 0; j < rightSize; j++) {
-          Pair right = possibleRightPairs.get(j);
+        for (Pair right : possibleRightPairs) {
           if (right.getCount() > 1) {
             if (checkChecksum(left, right)) {
               return constructResult(left, right);
@@ -213,7 +210,7 @@ public final class RSS14Reader extends AbstractRSSReader {
     }
 
     int numModules = outsideChar ? 16 : 15;
-    float elementWidth = (float) count(counters) / (float) numModules;
+    float elementWidth = MathUtils.sum(counters) / (float) numModules;
 
     int[] oddCounts = this.getOddCounts();
     int[] evenCounts = this.getEvenCounts();
@@ -221,14 +218,14 @@ public final class RSS14Reader extends AbstractRSSReader {
     float[] evenRoundingErrors = this.getEvenRoundingErrors();
 
     for (int i = 0; i < counters.length; i++) {
-      float value = (float) counters[i] / elementWidth;
+      float value = counters[i] / elementWidth;
       int count = (int) (value + 0.5f); // Round
       if (count < 1) {
         count = 1;
       } else if (count > 8) {
         count = 8;
       }
-      int offset = i >> 1;
+      int offset = i / 2;
       if ((i & 0x01) == 0) {
         oddCounts[offset] = count;
         oddRoundingErrors[offset] = value - count;
@@ -254,7 +251,7 @@ public final class RSS14Reader extends AbstractRSSReader {
       evenChecksumPortion += evenCounts[i];
       evenSum += evenCounts[i];
     }
-    int checksumPortion = oddChecksumPortion + 3*evenChecksumPortion;
+    int checksumPortion = oddChecksumPortion + 3 * evenChecksumPortion;
 
     if (outsideChar) {
       if ((oddSum & 0x01) != 0 || oddSum > 12 || oddSum < 4) {
@@ -359,11 +356,8 @@ public final class RSS14Reader extends AbstractRSSReader {
 
   private void adjustOddEvenCounts(boolean outsideChar, int numModules) throws NotFoundException {
 
-    int oddSum = count(getOddCounts());
-    int evenSum = count(getEvenCounts());
-    int mismatch = oddSum + evenSum - numModules;
-    boolean oddParityBad = (oddSum & 0x01) == (outsideChar ? 1 : 0);
-    boolean evenParityBad = (evenSum & 0x01) == 1;
+    int oddSum = MathUtils.sum(getOddCounts());
+    int evenSum = MathUtils.sum(getEvenCounts());
 
     boolean incrementOdd = false;
     boolean decrementOdd = false;
@@ -394,6 +388,9 @@ public final class RSS14Reader extends AbstractRSSReader {
       }
     }
 
+    int mismatch = oddSum + evenSum - numModules;
+    boolean oddParityBad = (oddSum & 0x01) == (outsideChar ? 1 : 0);
+    boolean evenParityBad = (evenSum & 0x01) == 1;
     /*if (mismatch == 2) {
       if (!(oddParityBad && evenParityBad)) {
         throw ReaderException.getInstance();
@@ -406,7 +403,7 @@ public final class RSS14Reader extends AbstractRSSReader {
       }
       incrementOdd = true;
       incrementEven = true;
-    } else */if (mismatch == 1) {
+    } else */ if (mismatch == 1) {
       if (oddParityBad) {
         if (evenParityBad) {
           throw NotFoundException.getNotFoundInstance();

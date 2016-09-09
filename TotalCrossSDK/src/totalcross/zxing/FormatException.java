@@ -25,14 +25,23 @@ package totalcross.zxing;
  */
 public final class FormatException extends ReaderException {
 
-  private static final FormatException instance = new FormatException();
+  private static final FormatException INSTANCE = new FormatException();
+  static {
+    INSTANCE.setStackTrace(NO_TRACE); // since it's meaningless
+  }
 
   private FormatException() {
-    // do nothing
+  }
+
+  private FormatException(Throwable cause) {
+    super(cause);
   }
 
   public static FormatException getFormatInstance() {
-    return instance;
+    return isStackTrace ? new FormatException() : INSTANCE;
   }
-
+  
+  public static FormatException getFormatInstance(Throwable cause) {
+    return isStackTrace ? new FormatException(cause) : INSTANCE;
+  }
 }

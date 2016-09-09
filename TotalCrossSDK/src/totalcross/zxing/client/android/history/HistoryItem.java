@@ -18,6 +18,9 @@ package totalcross.zxing.client.android.history;
 
 import totalcross.zxing.Result;
 
+/**
+ * Represents one item in the scan history.
+ */
 public final class HistoryItem {
 
   private final Result result;
@@ -36,12 +39,12 @@ public final class HistoryItem {
 
   public String getDisplayAndDetails() {
     StringBuilder displayResult = new StringBuilder();
-    if (display == null || display.length() == 0) {
+    if (display == null || display.isEmpty()) {
       displayResult.append(result.getText());
     } else {
       displayResult.append(display);
     }
-    if (details != null && details.length() > 0) {
+    if (details != null && !details.isEmpty()) {
       displayResult.append(" : ").append(details);
     }
     return displayResult.toString();

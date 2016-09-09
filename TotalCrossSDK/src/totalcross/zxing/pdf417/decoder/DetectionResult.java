@@ -94,9 +94,9 @@ final class DetectionResult {
     return unadjustedCount + adjustRowNumbersFromRRI();
   }
 
-  private int adjustRowNumbersFromBothRI() {
+  private void adjustRowNumbersFromBothRI() {
     if (detectionResultColumns[0] == null || detectionResultColumns[barcodeColumnCount + 1] == null) {
-      return 0;
+      return;
     }
     Codeword[] LRIcodewords = detectionResultColumns[0].getCodewords();
     Codeword[] RRIcodewords = detectionResultColumns[barcodeColumnCount + 1].getCodewords();
@@ -116,7 +116,6 @@ final class DetectionResult {
         }
       }
     }
-    return 0;
   }
 
   private int adjustRowNumbersFromRRI() {
@@ -287,7 +286,7 @@ final class DetectionResult {
         }
         formatter.format(" %3d|%3d", codeword.getRowNumber(), codeword.getValue());
       }
-      formatter.format("\n");
+      formatter.format("%n");
     }
     String result = formatter.toString();
     formatter.close();

@@ -26,6 +26,7 @@
 
 package totalcross.zxing.oned.rss.expanded.decoders;
 
+import totalcross.zxing.FormatException;
 import totalcross.zxing.NotFoundException;
 import totalcross.zxing.common.BitArray;
 
@@ -39,30 +40,30 @@ final class GeneralAppIdDecoder {
   private final CurrentParsingState current = new CurrentParsingState();
   private final StringBuilder buffer = new StringBuilder();
 
-  GeneralAppIdDecoder(BitArray information){
+  GeneralAppIdDecoder(BitArray information) {
     this.information = information;
   }
 
-  String decodeAllCodes(StringBuilder buff, int initialPosition) throws NotFoundException {
+  String decodeAllCodes(StringBuilder buff, int initialPosition) throws NotFoundException, FormatException {
     int currentPosition = initialPosition;
     String remaining = null;
-    do{
+    do {
       DecodedInformation info = this.decodeGeneralPurposeField(currentPosition, remaining);
       String parsedFields = FieldParser.parseFieldsInGeneralPurpose(info.getNewString());
       if (parsedFields != null) {
         buff.append(parsedFields);
       }
-      if(info.isRemaining()) {
+      if (info.isRemaining()) {
         remaining = String.valueOf(info.getRemainingValue());
       } else {
         remaining = null;
       }
 
-      if(currentPosition == info.getNewPosition()) {// No step forward!
+      if (currentPosition == info.getNewPosition()) { // No step forward!
         break;
       }
       currentPosition = info.getNewPosition();
-    }while(true);
+    } while (true);
 
     return buff.toString();
   }
@@ -70,7 +71,7 @@ final class GeneralAppIdDecoder {
   private boolean isStillNumeric(int pos) {
     // It's numeric if it still has 7 positions
     // and one of the first 4 bits is "1".
-    if(pos + 7 > this.information.getSize()){
+    if (pos + 7 > this.information.getSize()) {
       return pos + 4 <= this.information.getSize();
     }
 
@@ -83,10 +84,10 @@ final class GeneralAppIdDecoder {
     return this.information.get(pos + 3);
   }
 
-  private DecodedNumeric decodeNumeric(int pos) {
-    if(pos + 7 > this.information.getSize()){
+  private DecodedNumeric decodeNumeric(int pos) throws FormatException {
+    if (pos + 7 > this.information.getSize()) {
       int numeric = extractNumericValueFromBitArray(pos, 4);
-      if(numeric == 0) {
+      if (numeric == 0) {
         return new DecodedNumeric(this.information.getSize(), DecodedNumeric.FNC1, DecodedNumeric.FNC1);
       }
       return new DecodedNumeric(this.information.getSize(), numeric - 1, DecodedNumeric.FNC1);
@@ -99,15 +100,11 @@ final class GeneralAppIdDecoder {
     return new DecodedNumeric(pos + 7, digit1, digit2);
   }
 
-  int extractNumericValueFromBitArray(int pos, int bits){
+  int extractNumericValueFromBitArray(int pos, int bits) {
     return extractNumericValueFromBitArray(this.information, pos, bits);
   }
 
   static int extractNumericValueFromBitArray(BitArray information, int pos, int bits) {
-    if(bits > 32) {
-      throw new IllegalArgumentException("extractNumberValueFromBitArray can't handle more than 32 bits");
-    }
-
     int value = 0;
     for (int i = 0; i < bits; ++i) {
       if (information.get(pos + i)) {
@@ -118,41 +115,41 @@ final class GeneralAppIdDecoder {
     return value;
   }
 
-  DecodedInformation decodeGeneralPurposeField(int pos, String remaining) {
+  DecodedInformation decodeGeneralPurposeField(int pos, String remaining) throws FormatException {
     this.buffer.setLength(0);
 
-    if(remaining != null) {
+    if (remaining != null) {
       this.buffer.append(remaining);
     }
 
     this.current.setPosition(pos);
 
     DecodedInformation lastDecoded = parseBlocks();
-    if(lastDecoded != null && lastDecoded.isRemaining()) {
+    if (lastDecoded != null && lastDecoded.isRemaining()) {
       return new DecodedInformation(this.current.getPosition(), this.buffer.toString(), lastDecoded.getRemainingValue());
     }
     return new DecodedInformation(this.current.getPosition(), this.buffer.toString());
   }
 
-  private DecodedInformation parseBlocks() {
+  private DecodedInformation parseBlocks() throws FormatException {
     boolean isFinished;
     BlockParsedResult result;
-    do{
+    do {
       int initialPosition = current.getPosition();
 
-      if (current.isAlpha()){
+      if (current.isAlpha()) {
         result = parseAlphaBlock();
         isFinished = result.isFinished();
-      }else if (current.isIsoIec646()){
+      } else if (current.isIsoIec646()) {
         result = parseIsoIec646Block();
         isFinished = result.isFinished();
-      }else{ // it must be numeric
+      } else { // it must be numeric
         result = parseNumericBlock();
         isFinished = result.isFinished();
       }
 
       boolean positionChanged = initialPosition != current.getPosition();
-      if(!positionChanged && !isFinished) {
+      if (!positionChanged && !isFinished) {
         break;
       }
     } while (!isFinished);
@@ -160,12 +157,12 @@ final class GeneralAppIdDecoder {
     return result.getDecodedInformation();
   }
 
-  private BlockParsedResult parseNumericBlock() {
+  private BlockParsedResult parseNumericBlock() throws FormatException {
     while (isStillNumeric(current.getPosition())) {
       DecodedNumeric numeric = decodeNumeric(current.getPosition());
       current.setPosition(numeric.getNewPosition());
 
-      if(numeric.isFirstDigitFNC1()){
+      if (numeric.isFirstDigitFNC1()) {
         DecodedInformation information;
         if (numeric.isSecondDigitFNC1()) {
           information = new DecodedInformation(current.getPosition(), buffer.toString());
@@ -176,7 +173,7 @@ final class GeneralAppIdDecoder {
       }
       buffer.append(numeric.getFirstDigit());
 
-      if(numeric.isSecondDigitFNC1()){
+      if (numeric.isSecondDigitFNC1()) {
         DecodedInformation information = new DecodedInformation(current.getPosition(), buffer.toString());
         return new BlockParsedResult(information, true);
       }
@@ -190,7 +187,7 @@ final class GeneralAppIdDecoder {
     return new BlockParsedResult(false);
   }
 
-  private BlockParsedResult parseIsoIec646Block() {
+  private BlockParsedResult parseIsoIec646Block() throws FormatException {
     while (isStillIsoIec646(current.getPosition())) {
       DecodedChar iso = decodeIsoIec646(current.getPosition());
       current.setPosition(iso.getNewPosition());
@@ -222,7 +219,7 @@ final class GeneralAppIdDecoder {
       DecodedChar alpha = decodeAlphanumeric(current.getPosition());
       current.setPosition(alpha.getNewPosition());
 
-      if(alpha.isFNC1()) {
+      if (alpha.isFNC1()) {
         DecodedInformation information = new DecodedInformation(current.getPosition(), buffer.toString());
         return new BlockParsedResult(information, true); //end of the char block
       }
@@ -260,7 +257,7 @@ final class GeneralAppIdDecoder {
     }
 
     int sevenBitValue = extractNumericValueFromBitArray(pos, 7);
-    if(sevenBitValue >= 64 && sevenBitValue < 116) {
+    if (sevenBitValue >= 64 && sevenBitValue < 116) {
       return true;
     }
 
@@ -273,7 +270,7 @@ final class GeneralAppIdDecoder {
 
   }
 
-  private DecodedChar decodeIsoIec646(int pos) {
+  private DecodedChar decodeIsoIec646(int pos) throws FormatException {
     int fiveBitValue = extractNumericValueFromBitArray(pos, 5);
     if (fiveBitValue == 15) {
       return new DecodedChar(pos + 5, DecodedChar.FNC1);
@@ -360,13 +357,13 @@ final class GeneralAppIdDecoder {
         c = ' ';
         break;
       default:
-        throw new IllegalArgumentException("Decoding invalid ISO/IEC 646 value: " + eightBitValue);
+        throw FormatException.getFormatInstance();
     }
     return new DecodedChar(pos + 8, c);
   }
 
   private boolean isStillAlpha(int pos) {
-    if(pos + 5 > this.information.getSize()) {
+    if (pos + 5 > this.information.getSize()) {
       return false;
     }
 
@@ -401,7 +398,7 @@ final class GeneralAppIdDecoder {
     }
 
     char c;
-    switch (sixBitValue){
+    switch (sixBitValue) {
       case 58:
         c = '*';
         break;
@@ -429,7 +426,7 @@ final class GeneralAppIdDecoder {
     }
 
     for (int i = 0; i < 5 && i + pos < this.information.getSize(); ++i) {
-      if(i == 2){
+      if (i == 2) {
         if (!this.information.get(pos + 2)) {
           return false;
         }

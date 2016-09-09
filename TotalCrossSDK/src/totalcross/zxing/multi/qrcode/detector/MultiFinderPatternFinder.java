@@ -143,7 +143,7 @@ final class MultiFinderPatternFinder extends FinderPatternFinder {
      * So, if the layout seems right, lets have the decoder try to decode.     
      */
 
-     List<FinderPattern[]> results = new ArrayList<FinderPattern[]>(); // holder for the results
+     List<FinderPattern[]> results = new ArrayList<>(); // holder for the results
 
     for (int i1 = 0; i1 < (size - 2); i1++) {
       FinderPattern p1 = possibleCenters.get(i1);
@@ -230,6 +230,7 @@ final class MultiFinderPatternFinder extends FinderPatternFinder {
 
   public FinderPatternInfo[] findMulti(Map<DecodeHintType,?> hints) throws NotFoundException {
     boolean tryHarder = hints != null && hints.containsKey(DecodeHintType.TRY_HARDER);
+    boolean pureBarcode = hints != null && hints.containsKey(DecodeHintType.PURE_BARCODE);
     BitMatrix image = getImage();
     int maxI = image.getHeight();
     int maxJ = image.getWidth();
@@ -264,7 +265,7 @@ final class MultiFinderPatternFinder extends FinderPatternFinder {
         } else { // White pixel
           if ((currentState & 1) == 0) { // Counting black pixels
             if (currentState == 4) { // A winner?
-              if (foundPatternCross(stateCount) && handlePossibleCenter(stateCount, i, j)) { // Yes
+              if (foundPatternCross(stateCount) && handlePossibleCenter(stateCount, i, j, pureBarcode)) { // Yes
                 // Clear state to start looking again
                 currentState = 0;
                 stateCount[0] = 0;
@@ -290,11 +291,11 @@ final class MultiFinderPatternFinder extends FinderPatternFinder {
       } // for j=...
 
       if (foundPatternCross(stateCount)) {
-        handlePossibleCenter(stateCount, i, maxJ);
+        handlePossibleCenter(stateCount, i, maxJ, pureBarcode);
       } // end if foundPatternCross
     } // for i=iSkip-1 ...
     FinderPattern[][] patternInfo = selectMutipleBestPatterns();
-    List<FinderPatternInfo> result = new ArrayList<FinderPatternInfo>();
+    List<FinderPatternInfo> result = new ArrayList<>();
     for (FinderPattern[] pattern : patternInfo) {
       ResultPoint.orderBestPatterns(pattern);
       result.add(new FinderPatternInfo(pattern));

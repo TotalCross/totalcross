@@ -20,7 +20,6 @@ import totalcross.zxing.BinaryBitmap;
 import totalcross.zxing.DecodeHintType;
 import totalcross.zxing.NotFoundException;
 import totalcross.zxing.ResultPoint;
-import totalcross.zxing.common.BitArray;
 import totalcross.zxing.common.BitMatrix;
 
 import java.util.ArrayList;
@@ -40,10 +39,8 @@ public final class Detector {
 
   private static final int[] INDEXES_START_PATTERN = {0, 4, 1, 5};
   private static final int[] INDEXES_STOP_PATTERN = {6, 2, 7, 3};
-  private static final int INTEGER_MATH_SHIFT = 8;
-  private static final int PATTERN_MATCH_RESULT_SCALE_FACTOR = 1 << INTEGER_MATH_SHIFT;
-  private static final int MAX_AVG_VARIANCE = (int) (PATTERN_MATCH_RESULT_SCALE_FACTOR * 0.42f);
-  private static final int MAX_INDIVIDUAL_VARIANCE = (int) (PATTERN_MATCH_RESULT_SCALE_FACTOR * 0.8f);
+  private static final float MAX_AVG_VARIANCE = 0.42f;
+  private static final float MAX_INDIVIDUAL_VARIANCE = 0.8f;
 
   // B S B S B S B S Bar/Space pattern
   // 11111111 0 1 0 1 0 1 000
@@ -66,6 +63,7 @@ public final class Detector {
   /**
    * <p>Detects a PDF417 Code in an image. Only checks 0 and 180 degree rotations.</p>
    *
+   * @param image barcode image to decode
    * @param hints optional hints to detector
    * @param multiple if true, then the image is searched for multiple codes. If false, then at most one code will
    * be found and returned
@@ -82,7 +80,8 @@ public final class Detector {
 
     List<ResultPoint[]> barcodeCoordinates = detect(multiple, bitMatrix);
     if (barcodeCoordinates.isEmpty()) {
-      rotate180(bitMatrix);
+      bitMatrix = bitMatrix.clone();
+      bitMatrix.rotate180();
       barcodeCoordinates = detect(multiple, bitMatrix);
     }
     return new PDF417DetectorResult(bitMatrix, barcodeCoordinates);
@@ -96,7 +95,7 @@ public final class Detector {
    * @return List of ResultPoint arrays containing the coordinates of found barcodes
    */
   private static List<ResultPoint[]> detect(boolean multiple, BitMatrix bitMatrix) {
-    List<ResultPoint[]> barcodeCoordinates = new ArrayList<ResultPoint[]>();
+    List<ResultPoint[]> barcodeCoordinates = new ArrayList<>();
     int row = 0;
     int column = 0;
     boolean foundBarcodeInRow = false;
@@ -139,39 +138,6 @@ public final class Detector {
       }
     }
     return barcodeCoordinates;
-  }
-
-  // The following could go to the BitMatrix class (maybe in a more efficient version using the BitMatrix internal
-  // data structures)
-  /**
-   * Rotates a bit matrix by 180 degrees.
-   * @param bitMatrix bit matrix to rotate
-   */
-  static void rotate180(BitMatrix bitMatrix) {
-    int width = bitMatrix.getWidth();
-    int height = bitMatrix.getHeight();
-    BitArray firstRowBitArray = new BitArray(width);
-    BitArray secondRowBitArray = new BitArray(width);
-    BitArray tmpBitArray = new BitArray(width);
-    for (int y = 0; y < height + 1 >> 1; y++) {
-      firstRowBitArray = bitMatrix.getRow(y, firstRowBitArray);
-      bitMatrix.setRow(y, mirror(bitMatrix.getRow(height - 1 - y, secondRowBitArray), tmpBitArray));
-      bitMatrix.setRow(height - 1 - y, mirror(firstRowBitArray, tmpBitArray));
-    }
-  }
-
-  /**
-   * Copies the bits from the input to the result BitArray in reverse order
-   */
-  static BitArray mirror(BitArray input, BitArray result) {
-    result.clear();
-    int size = input.getSize();
-    for (int i = 0; i < size; i++) {
-      if (input.get(i)) {
-        result.set(size - 1 - i);
-      }
-    }
-    return result;
   }
 
   /**
@@ -293,8 +259,6 @@ public final class Detector {
                                         int[] pattern,
                                         int[] counters) {
     Arrays.fill(counters, 0, counters.length, 0);
-    int patternLength = pattern.length;
-    boolean isWhite = whiteFirst;
     int patternStart = column;
     int pixelDrift = 0;
 
@@ -304,6 +268,8 @@ public final class Detector {
     }
     int x = patternStart;
     int counterPosition = 0;
+    int patternLength = pattern.length;
+    boolean isWhite = whiteFirst;
     for (; x < width; x++) {
       boolean pixel = matrix.get(x, row);
       if (pixel ^ isWhite) {
@@ -342,13 +308,9 @@ public final class Detector {
    * @param counters observed counters
    * @param pattern expected pattern
    * @param maxIndividualVariance The most any counter can differ before we give up
-   * @return ratio of total variance between counters and pattern compared to
-   *         total pattern size, where the ratio has been multiplied by 256.
-   *         So, 0 means no variance (perfect match); 256 means the total
-   *         variance between counters and patterns equals the pattern length,
-   *         higher values mean even more variance
+   * @return ratio of total variance between counters and pattern compared to total pattern size
    */
-  private static int patternMatchVariance(int[] counters, int[] pattern, int maxIndividualVariance) {
+  private static float patternMatchVariance(int[] counters, int[] pattern, float maxIndividualVariance) {
     int numCounters = counters.length;
     int total = 0;
     int patternLength = 0;
@@ -359,21 +321,21 @@ public final class Detector {
     if (total < patternLength) {
       // If we don't even have one pixel per unit of bar width, assume this
       // is too small to reliably match, so fail:
-      return Integer.MAX_VALUE;
+      return Float.POSITIVE_INFINITY;
     }
     // We're going to fake floating-point math in integers. We just need to use more bits.
     // Scale up patternLength so that intermediate values below like scaledCounter will have
     // more "significant digits".
-    int unitBarWidth = (total << INTEGER_MATH_SHIFT) / patternLength;
-    maxIndividualVariance = (maxIndividualVariance * unitBarWidth) >> INTEGER_MATH_SHIFT;
+    float unitBarWidth = (float) total / patternLength;
+    maxIndividualVariance *= unitBarWidth;
 
-    int totalVariance = 0;
+    float totalVariance = 0.0f;
     for (int x = 0; x < numCounters; x++) {
-      int counter = counters[x] << INTEGER_MATH_SHIFT;
-      int scaledPattern = pattern[x] * unitBarWidth;
-      int variance = counter > scaledPattern ? counter - scaledPattern : scaledPattern - counter;
+      int counter = counters[x];
+      float scaledPattern = pattern[x] * unitBarWidth;
+      float variance = counter > scaledPattern ? counter - scaledPattern : scaledPattern - counter;
       if (variance > maxIndividualVariance) {
-        return Integer.MAX_VALUE;
+        return Float.POSITIVE_INFINITY;
       }
       totalVariance += variance;
     }

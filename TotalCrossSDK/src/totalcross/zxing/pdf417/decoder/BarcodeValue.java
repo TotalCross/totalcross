@@ -28,11 +28,10 @@ import java.util.Map.Entry;
  * @author Guenther Grau
  */
 final class BarcodeValue {
-  private final Map<Integer,Integer> values = new HashMap<Integer,Integer>();
+  private final Map<Integer,Integer> values = new HashMap<>();
 
   /**
    * Add an occurrence of a value
-   * @param value
    */
   void setValue(int value) {
     Integer confidence = values.get(value);
@@ -49,7 +48,7 @@ final class BarcodeValue {
    */
   int[] getValue() {
     int maxConfidence = -1;
-    Collection<Integer> result = new ArrayList<Integer>();
+    Collection<Integer> result = new ArrayList<>();
     for (Entry<Integer,Integer> entry : values.entrySet()) {
       if (entry.getValue() > maxConfidence) {
         maxConfidence = entry.getValue();

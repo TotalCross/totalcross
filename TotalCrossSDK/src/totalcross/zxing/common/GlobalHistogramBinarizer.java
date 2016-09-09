@@ -62,22 +62,29 @@ public class GlobalHistogramBinarizer extends Binarizer {
     byte[] localLuminances = source.getRow(y, luminances);
     int[] localBuckets = buckets;
     for (int x = 0; x < width; x++) {
-      int pixel = localLuminances[x] & 0xff;
-      localBuckets[pixel >> LUMINANCE_SHIFT]++;
+      localBuckets[(localLuminances[x] & 0xff) >> LUMINANCE_SHIFT]++;
     }
     int blackPoint = estimateBlackPoint(localBuckets);
 
-    int left = localLuminances[0] & 0xff;
-    int center = localLuminances[1] & 0xff;
-    for (int x = 1; x < width - 1; x++) {
-      int right = localLuminances[x + 1] & 0xff;
-      // A simple -1 4 -1 box filter with a weight of 2.
-      int luminance = ((center << 2) - left - right) >> 1;
-      if (luminance < blackPoint) {
-        row.set(x);
+    if (width < 3) {
+      // Special case for very small images
+      for (int x = 0; x < width; x++) {
+        if ((localLuminances[x] & 0xff) < blackPoint) {
+          row.set(x);
+        }
       }
-      left = center;
-      center = right;
+    } else {
+      int left = localLuminances[0] & 0xff;
+      int center = localLuminances[1] & 0xff;
+      for (int x = 1; x < width - 1; x++) {
+        int right = localLuminances[x + 1] & 0xff;
+        // A simple -1 4 -1 box filter with a weight of 2.
+        if (((center * 4) - left - right) / 2 < blackPoint) {
+          row.set(x);
+        }
+        left = center;
+        center = right;
+      }
     }
     return row;
   }
@@ -97,7 +104,7 @@ public class GlobalHistogramBinarizer extends Binarizer {
     for (int y = 1; y < 5; y++) {
       int row = height * y / 5;
       byte[] localLuminances = source.getRow(row, luminances);
-      int right = (width << 2) / 5;
+      int right = (width * 4) / 5;
       for (int x = width / 5; x < right; x++) {
         int pixel = localLuminances[x] & 0xff;
         localBuckets[pixel >> LUMINANCE_SHIFT]++;
@@ -111,7 +118,7 @@ public class GlobalHistogramBinarizer extends Binarizer {
     byte[] localLuminances = source.getMatrix();
     for (int y = 0; y < height; y++) {
       int offset = y * width;
-      for (int x = 0; x< width; x++) {
+      for (int x = 0; x < width; x++) {
         int pixel = localLuminances[offset + x] & 0xff;
         if (pixel < blackPoint) {
           matrix.set(x, y);
@@ -174,7 +181,7 @@ public class GlobalHistogramBinarizer extends Binarizer {
 
     // If there is too little contrast in the image to pick a meaningful black point, throw rather
     // than waste time trying to decode the image, and risk false positives.
-    if (secondPeak - firstPeak <= numBuckets >> 4) {
+    if (secondPeak - firstPeak <= numBuckets / 16) {
       throw NotFoundException.getNotFoundInstance();
     }
 

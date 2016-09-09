@@ -17,6 +17,7 @@
 package totalcross.zxing.client.android.result;
 
 import totalcross.zxing.Result;
+import totalcross.zxing.client.android.CaptureActivity;
 import totalcross.zxing.client.result.ParsedResult;
 import totalcross.zxing.client.result.ResultParser;
 
@@ -29,7 +30,7 @@ public final class ResultHandlerFactory {
   private ResultHandlerFactory() {
   }
 
-  public static ResultHandler makeResultHandler(totalcross.android.CaptureActivity activity, Result rawResult) {
+  public static ResultHandler makeResultHandler(CaptureActivity activity, Result rawResult) {
     ParsedResult result = parseResult(rawResult);
     switch (result.getType()) {
       case ADDRESSBOOK:

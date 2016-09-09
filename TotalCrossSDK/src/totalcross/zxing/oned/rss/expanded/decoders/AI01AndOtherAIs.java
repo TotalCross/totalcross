@@ -26,6 +26,7 @@
 
 package totalcross.zxing.oned.rss.expanded.decoders;
 
+import totalcross.zxing.FormatException;
 import totalcross.zxing.NotFoundException;
 import totalcross.zxing.common.BitArray;
 
@@ -42,7 +43,7 @@ final class AI01AndOtherAIs extends AI01decoder {
   }
 
   @Override
-  public String parseInformation() throws NotFoundException {
+  public String parseInformation() throws NotFoundException, FormatException {
     StringBuilder buff = new StringBuilder();
 
     buff.append("(01)");

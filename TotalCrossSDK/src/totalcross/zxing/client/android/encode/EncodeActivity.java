@@ -16,6 +16,7 @@
 
 package totalcross.zxing.client.android.encode;
 
+import android.graphics.Point;
 import android.view.Display;
 import android.view.MenuInflater;
 import android.view.WindowManager;
@@ -104,6 +105,7 @@ public final class EncodeActivity extends Activity {
           return false;
         }
         intent.putExtra(USE_VCARD_KEY, !qrCodeEncoder.isUseVCard());
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
         return true;
@@ -144,7 +146,10 @@ public final class EncodeActivity extends Activity {
       return;
     }
     File barcodeFile = new File(barcodesRoot, makeBarcodeFileName(contents) + ".png");
-    barcodeFile.delete();
+    if (!barcodeFile.delete()) {
+      Log.w(TAG, "Could not delete " + barcodeFile);
+      // continue anyway
+    }
     FileOutputStream fos = null;
     try {
       fos = new FileOutputStream(barcodeFile);
@@ -186,8 +191,10 @@ public final class EncodeActivity extends Activity {
     // This assumes the view is full screen, which is a good assumption
     WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
     Display display = manager.getDefaultDisplay();
-    int width = display.getWidth();
-    int height = display.getHeight();
+    Point displaySize = new Point();
+    display.getSize(displaySize);
+    int width = displaySize.x;
+    int height = displaySize.y;
     int smallerDimension = width < height ? width : height;
     smallerDimension = smallerDimension * 7 / 8;
 

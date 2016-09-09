@@ -23,7 +23,6 @@ import totalcross.zxing.client.result.ParsedResult;
 import totalcross.zxing.client.result.ProductParsedResult;
 
 import android.app.Activity;
-import android.view.View;
 
 /**
  * Handles generic products which are not books.
@@ -39,13 +38,6 @@ public final class ProductResultHandler extends ResultHandler {
 
   public ProductResultHandler(Activity activity, ParsedResult result, Result rawResult) {
     super(activity, result, rawResult);
-    showGoogleShopperButton(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        ProductParsedResult productResult = (ProductParsedResult) getResult();
-        openGoogleShopper(productResult.getNormalizedProductID());
-      }
-    });
   }
 
   @Override
@@ -60,15 +52,7 @@ public final class ProductResultHandler extends ResultHandler {
 
   @Override
   public void handleButtonPress(int index) {
-    ParsedResult rawResult = getResult();
-    String productID;
-    if (rawResult instanceof ProductParsedResult) {
-      productID = ((ProductParsedResult) rawResult).getNormalizedProductID();
-    } else if (rawResult instanceof ExpandedProductParsedResult) {
-      productID = ((ExpandedProductParsedResult) rawResult).getRawText();
-    } else {
-      throw new IllegalArgumentException(rawResult.getClass().toString());
-    }
+    String productID = getProductIDFromResult(getResult());
     switch (index) {
       case 0:
         openProductSearch(productID);
@@ -80,6 +64,16 @@ public final class ProductResultHandler extends ResultHandler {
         openURL(fillInCustomSearchURL(productID));
         break;
     }
+  }
+
+  private static String getProductIDFromResult(ParsedResult rawResult) {
+    if (rawResult instanceof ProductParsedResult) {
+      return ((ProductParsedResult) rawResult).getNormalizedProductID();
+    }
+    if (rawResult instanceof ExpandedProductParsedResult) {
+      return ((ExpandedProductParsedResult) rawResult).getRawText();
+    }
+    throw new IllegalArgumentException(rawResult.getClass().toString());
   }
 
   @Override

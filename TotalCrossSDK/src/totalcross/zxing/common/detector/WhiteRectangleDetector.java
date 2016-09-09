@@ -32,7 +32,7 @@ import totalcross.zxing.common.BitMatrix;
  */
 public final class WhiteRectangleDetector {
 
-  private static final int INIT_SIZE = 30;
+  private static final int INIT_SIZE = 10;
   private static final int CORR = 1;
 
   private final BitMatrix image;
@@ -43,30 +43,22 @@ public final class WhiteRectangleDetector {
   private final int downInit;
   private final int upInit;
 
-  /**
-   * @throws NotFoundException if image is too small
-   */
   public WhiteRectangleDetector(BitMatrix image) throws NotFoundException {
-    this.image = image;
-    height = image.getHeight();
-    width = image.getWidth();
-    leftInit = (width - INIT_SIZE) >> 1;
-    rightInit = (width + INIT_SIZE) >> 1;
-    upInit = (height - INIT_SIZE) >> 1;
-    downInit = (height + INIT_SIZE) >> 1;
-    if (upInit < 0 || leftInit < 0 || downInit >= height || rightInit >= width) {
-      throw NotFoundException.getNotFoundInstance();
-    }
+    this(image, INIT_SIZE, image.getWidth() / 2, image.getHeight() / 2);
   }
 
   /**
-   * @throws NotFoundException if image is too small
+   * @param image barcode image to find a rectangle in
+   * @param initSize initial size of search area around center
+   * @param x x position of search center
+   * @param y y position of search center
+   * @throws NotFoundException if image is too small to accommodate {@code initSize}
    */
   public WhiteRectangleDetector(BitMatrix image, int initSize, int x, int y) throws NotFoundException {
     this.image = image;
     height = image.getHeight();
     width = image.getWidth();
-    int halfsize = initSize >> 1;
+    int halfsize = initSize / 2;
     leftInit = x - halfsize;
     rightInit = x + halfsize;
     upInit = y - halfsize;
@@ -99,6 +91,11 @@ public final class WhiteRectangleDetector {
     boolean sizeExceeded = false;
     boolean aBlackPointFoundOnBorder = true;
     boolean atLeastOneBlackPointFoundOnBorder = false;
+    
+    boolean atLeastOneBlackPointFoundOnRight = false;
+    boolean atLeastOneBlackPointFoundOnBottom = false;
+    boolean atLeastOneBlackPointFoundOnLeft = false;
+    boolean atLeastOneBlackPointFoundOnTop = false;
 
     while (aBlackPointFoundOnBorder) {
 
@@ -108,11 +105,14 @@ public final class WhiteRectangleDetector {
       // .   |
       // .....
       boolean rightBorderNotWhite = true;
-      while (rightBorderNotWhite && right < width) {
+      while ((rightBorderNotWhite || !atLeastOneBlackPointFoundOnRight) && right < width) {
         rightBorderNotWhite = containsBlackPoint(up, down, right, false);
         if (rightBorderNotWhite) {
           right++;
           aBlackPointFoundOnBorder = true;
+          atLeastOneBlackPointFoundOnRight = true;
+        } else if (!atLeastOneBlackPointFoundOnRight) {
+          right++;
         }
       }
 
@@ -125,11 +125,14 @@ public final class WhiteRectangleDetector {
       // .   .
       // .___.
       boolean bottomBorderNotWhite = true;
-      while (bottomBorderNotWhite && down < height) {
+      while ((bottomBorderNotWhite || !atLeastOneBlackPointFoundOnBottom) && down < height) {
         bottomBorderNotWhite = containsBlackPoint(left, right, down, true);
         if (bottomBorderNotWhite) {
           down++;
           aBlackPointFoundOnBorder = true;
+          atLeastOneBlackPointFoundOnBottom = true;
+        } else if (!atLeastOneBlackPointFoundOnBottom) {
+          down++;
         }
       }
 
@@ -142,11 +145,14 @@ public final class WhiteRectangleDetector {
       // |   .
       // .....
       boolean leftBorderNotWhite = true;
-      while (leftBorderNotWhite && left >= 0) {
+      while ((leftBorderNotWhite || !atLeastOneBlackPointFoundOnLeft) && left >= 0) {
         leftBorderNotWhite = containsBlackPoint(up, down, left, false);
         if (leftBorderNotWhite) {
           left--;
           aBlackPointFoundOnBorder = true;
+          atLeastOneBlackPointFoundOnLeft = true;
+        } else if (!atLeastOneBlackPointFoundOnLeft) {
+          left--;
         }
       }
 
@@ -159,11 +165,14 @@ public final class WhiteRectangleDetector {
       // .   .
       // .....
       boolean topBorderNotWhite = true;
-      while (topBorderNotWhite && up >= 0) {
+      while ((topBorderNotWhite  || !atLeastOneBlackPointFoundOnTop) && up >= 0) {
         topBorderNotWhite = containsBlackPoint(left, right, up, true);
         if (topBorderNotWhite) {
           up--;
           aBlackPointFoundOnBorder = true;
+          atLeastOneBlackPointFoundOnTop = true;
+        } else if (!atLeastOneBlackPointFoundOnTop) {
+          up--;
         }
       }
 
@@ -183,11 +192,8 @@ public final class WhiteRectangleDetector {
       int maxSize = right - left;
 
       ResultPoint z = null;
-      for (int i = 1; i < maxSize; i++) {
+      for (int i = 1; z == null && i < maxSize; i++) {
         z = getBlackPointOnSegment(left, down - i, left + i, down);
-        if (z != null) {
-          break;
-        }
       }
 
       if (z == null) {
@@ -196,11 +202,8 @@ public final class WhiteRectangleDetector {
 
       ResultPoint t = null;
       //go down right
-      for (int i = 1; i < maxSize; i++) {
+      for (int i = 1; t == null && i < maxSize; i++) {
         t = getBlackPointOnSegment(left, up + i, left + i, up);
-        if (t != null) {
-          break;
-        }
       }
 
       if (t == null) {
@@ -209,11 +212,8 @@ public final class WhiteRectangleDetector {
 
       ResultPoint x = null;
       //go down left
-      for (int i = 1; i < maxSize; i++) {
+      for (int i = 1; x == null && i < maxSize; i++) {
         x = getBlackPointOnSegment(right, up + i, right - i, up);
-        if (x != null) {
-          break;
-        }
       }
 
       if (x == null) {
@@ -222,11 +222,8 @@ public final class WhiteRectangleDetector {
 
       ResultPoint y = null;
       //go up left
-      for (int i = 1; i < maxSize; i++) {
+      for (int i = 1; y == null && i < maxSize; i++) {
         y = getBlackPointOnSegment(right, down - i, right - i, down);
-        if (y != null) {
-          break;
-        }
       }
 
       if (y == null) {

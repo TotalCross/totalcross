@@ -16,6 +16,7 @@
 
 package totalcross.zxing.common;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import totalcross.zxing.DecodeHintType;
@@ -28,8 +29,7 @@ import totalcross.zxing.DecodeHintType;
  */
 public final class StringUtils {
 
-  private static final String PLATFORM_DEFAULT_ENCODING =
-      System.getProperty("file.encoding");
+  private static final String PLATFORM_DEFAULT_ENCODING = Charset.defaultCharset().name();
   public static final String SHIFT_JIS = "SJIS";
   public static final String GB2312 = "GB2312";
   private static final String EUC_JP = "EUC_JP";
@@ -49,11 +49,8 @@ public final class StringUtils {
    *  default encoding if none of these can possibly be correct
    */
   public static String guessEncoding(byte[] bytes, Map<DecodeHintType,?> hints) {
-    if (hints != null) {
-      String characterSet = (String) hints.get(DecodeHintType.CHARACTER_SET);
-      if (characterSet != null) {
-        return characterSet;
-      }
+    if (hints != null && hints.containsKey(DecodeHintType.CHARACTER_SET)) {
+      return hints.get(DecodeHintType.CHARACTER_SET).toString();
     }
     // For now, merely tries to distinguish ISO-8859-1, UTF-8 and Shift_JIS,
     // which should be by far the most common encodings.

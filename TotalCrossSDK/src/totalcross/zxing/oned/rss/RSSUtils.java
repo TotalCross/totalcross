@@ -21,6 +21,7 @@ public final class RSSUtils {
 
   private RSSUtils() {}
 
+  /*
   static int[] getRSSwidths(int val, int n, int elements, int maxWidth, boolean noNarrow) {
     int[] widths = new int[elements];
     int bar;
@@ -60,15 +61,16 @@ public final class RSSUtils {
     widths[bar] = n;
     return widths;
   }
+   */
 
   public static int getRSSvalue(int[] widths, int maxWidth, boolean noNarrow) {
-    int elements = widths.length;
     int n = 0;
     for (int width : widths) {
       n += width;
     }
     int val = 0;
     int narrowMask = 0;
+    int elements = widths.length;
     for (int bar = 0; bar < elements - 1; bar++) {
       int elmWidth;
       for (elmWidth = 1, narrowMask |= 1 << bar;
@@ -123,34 +125,5 @@ public final class RSSUtils {
     }
     return val;
   }
-
-  static int[] elements(int[] eDist, int N, int K) {
-    int[] widths = new int[eDist.length + 2];
-    int twoK = K << 1;
-    widths[0] = 1;
-    int i;
-    int minEven = 10;
-    int barSum = 1;
-    for (i = 1; i < twoK - 2; i += 2) {
-      widths[i] = eDist[i - 1] - widths[i - 1];
-      widths[i + 1] = eDist[i] - widths[i];
-      barSum += widths[i] + widths[i + 1];
-      if (widths[i] < minEven) {
-        minEven = widths[i];
-      }
-    }
-    widths[twoK - 1] = N - barSum;
-    if (widths[twoK - 1] < minEven) {
-      minEven = widths[twoK - 1];
-    }
-    if (minEven > 1) {
-      for (i = 0; i < twoK; i += 2) {
-        widths[i] += minEven - 1;
-        widths[i + 1] -= minEven - 1;
-      }
-    }
-    return widths;
-  }
-
 
 }

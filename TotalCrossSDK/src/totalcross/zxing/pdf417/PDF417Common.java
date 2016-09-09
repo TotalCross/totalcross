@@ -15,7 +15,10 @@
  */
 package totalcross.zxing.pdf417;
 
+import java.util.Arrays;
 import java.util.Collection;
+
+import totalcross.zxing.common.detector.MathUtils;
 
 /**
  * @author SITA Lab (kevin.osullivan@sita.aero)
@@ -29,7 +32,7 @@ public final class PDF417Common {
   public static final int MIN_ROWS_IN_BARCODE = 3;
   public static final int MAX_ROWS_IN_BARCODE = 90;
   // One left row indication column + max 30 data columns + one right row indicator column
-  public static final int MAX_CODEWORDS_IN_ROW = 32;
+  //public static final int MAX_CODEWORDS_IN_ROW = 32;
   public static final int MODULES_IN_CODEWORD = 17;
   public static final int MODULES_IN_STOP_PATTERN = 18;
   public static final int BARS_IN_MODULE = 8;
@@ -39,12 +42,14 @@ public final class PDF417Common {
   private PDF417Common() {
   }
 
+  /**
+   * @param moduleBitCount values to sum
+   * @return sum of values
+   * @deprecated call {@link MathUtils#sum(int[])}
+   */
+  @Deprecated
   public static int getBitCountSum(int[] moduleBitCount) {
-    int bitCountSum = 0;
-    for (int count : moduleBitCount) {
-      bitCountSum += count;
-    }
-    return bitCountSum;
+    return MathUtils.sum(moduleBitCount);
   }
 
   public static int[] toIntArray(Collection<Integer> list) {
@@ -60,40 +65,15 @@ public final class PDF417Common {
   }
 
   /**
-   * Translate the symbol into a codeword.
-   *
+   * @param symbol encoded symbol to translate to a codeword
    * @return the codeword corresponding to the symbol.
    */
-  public static int getCodeword(long symbol) {
-    long sym = symbol & 0x3FFFF;
-    int i = findCodewordIndex(sym);
-    if (i == -1) {
+  public static int getCodeword(int symbol) {
+    int i = Arrays.binarySearch(SYMBOL_TABLE, symbol & 0x3FFFF);
+    if (i < 0) {
       return -1;
     }
     return (CODEWORD_TABLE[i] - 1) % NUMBER_OF_CODEWORDS;
-  }
-
-  /**
-   * Use a binary search to find the index of the codeword corresponding to
-   * this symbol.
-   *
-   * @param symbol the symbol from the barcode.
-   * @return the index into the codeword table.
-   */
-  private static int findCodewordIndex(long symbol) {
-    int first = 0;
-    int upto = SYMBOL_TABLE.length;
-    while (first < upto) {
-      int mid = (first + upto) >>> 1; // Compute mid point.
-      if (symbol < SYMBOL_TABLE[mid]) {
-        upto = mid; // continue search in bottom half.
-      } else if (symbol > SYMBOL_TABLE[mid]) {
-        first = mid + 1; // continue search in top half.
-      } else {
-        return mid; // Found it. return position
-      }
-    }
-    return -1;
   }
 
   /**

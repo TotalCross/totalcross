@@ -22,6 +22,8 @@ package totalcross.zxing.pdf417.encoder;
 
 import totalcross.zxing.WriterException;
 
+import java.nio.charset.Charset;
+
 /**
  * Top-level class for the logic part of the PDF417 implementation.
  */
@@ -513,6 +515,7 @@ public final class PDF417 {
   private BarcodeMatrix barcodeMatrix;
   private boolean compact;
   private Compaction compaction;
+  private Charset encoding;
   private int minCols;
   private int maxCols;
   private int maxRows;
@@ -525,6 +528,7 @@ public final class PDF417 {
   public PDF417(boolean compact) {
     this.compact = compact;
     compaction = Compaction.AUTO;
+    encoding = null; // Use default
     minCols = 2;
     maxCols = 30;
     maxRows = 30;
@@ -634,15 +638,15 @@ public final class PDF417 {
   }
 
   /**
-   * Generates the barcode logic.
-   *
-   * @param msg        the message to encode
+   * @param msg message to encode
+   * @param errorCorrectionLevel PDF417 error correction level to use
+   * @throws WriterException if the contents cannot be encoded in this format
    */
   public void generateBarcodeLogic(String msg, int errorCorrectionLevel) throws WriterException {
 
     //1. step: High-level encoding
     int errorCorrectionCodeWords = PDF417ErrorCorrection.getErrorCorrectionCodewordCount(errorCorrectionLevel);
-    String highLevel = PDF417HighLevelEncoder.encodeHighLevel(msg, compaction);
+    String highLevel = PDF417HighLevelEncoder.encodeHighLevel(msg, compaction, encoding);
     int sourceCodeWords = highLevel.length();
 
     int[] dimension = determineDimensions(sourceCodeWords, errorCorrectionCodeWords);
@@ -655,7 +659,7 @@ public final class PDF417 {
     //2. step: construct data codewords
     if (sourceCodeWords + errorCorrectionCodeWords + 1 > 929) { // +1 for symbol length CW
       throw new WriterException(
-          "Encoded message contains to many code words, message to big (" + msg.length() + " bytes)");
+          "Encoded message contains too many code words, message too big (" + msg.length() + " bytes)");
     }
     int n = sourceCodeWords + pad + 1;
     StringBuilder sb = new StringBuilder(n);
@@ -668,11 +672,10 @@ public final class PDF417 {
 
     //3. step: Error correction
     String ec = PDF417ErrorCorrection.generateErrorCorrection(dataCodewords, errorCorrectionLevel);
-    String fullCodewords = dataCodewords + ec;
 
     //4. step: low-level encoding
     barcodeMatrix = new BarcodeMatrix(rows, cols);
-    encodeLowLevel(fullCodewords, cols, rows, errorCorrectionLevel, barcodeMatrix);
+    encodeLowLevel(dataCodewords + ec, cols, rows, errorCorrectionLevel, barcodeMatrix);
   }
 
   /**
@@ -727,6 +730,11 @@ public final class PDF417 {
 
   /**
    * Sets max/min row/col values
+   *
+   * @param maxCols maximum allowed columns
+   * @param minCols minimum allowed columns
+   * @param maxRows maximum allowed rows
+   * @param minRows minimum allowed rows
    */
   public void setDimensions(int maxCols, int minCols, int maxRows, int minRows) {
     this.maxCols = maxCols;
@@ -736,18 +744,24 @@ public final class PDF417 {
   }
 
   /**
-   * Sets compaction to values stored in {@link Compaction} enum
+   * @param compaction compaction mode to use
    */
   public void setCompaction(Compaction compaction) {
     this.compaction = compaction;
   }
 
   /**
-   * Sets compact to be true or false
-   * @param compact
+   * @param compact if true, enables compaction
    */
   public void setCompact(boolean compact) {
     this.compact = compact;
+  }
+
+  /**
+   * @param encoding sets character encoding to use
+   */
+  public void setEncoding(Charset encoding) {
+    this.encoding = encoding;
   }
 
 }

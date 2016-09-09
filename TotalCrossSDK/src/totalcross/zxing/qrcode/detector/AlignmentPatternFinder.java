@@ -67,7 +67,7 @@ final class AlignmentPatternFinder {
                          float moduleSize,
                          ResultPointCallback resultPointCallback) {
     this.image = image;
-    this.possibleCenters = new ArrayList<AlignmentPattern>(5);
+    this.possibleCenters = new ArrayList<>(5);
     this.startX = startX;
     this.startY = startY;
     this.width = width;
@@ -88,13 +88,13 @@ final class AlignmentPatternFinder {
     int startX = this.startX;
     int height = this.height;
     int maxJ = startX + width;
-    int middleI = startY + (height >> 1);
+    int middleI = startY + (height / 2);
     // We are looking for black/white/black modules in 1:1:1 ratio;
     // this tracks the number of black/white/black modules seen so far
     int[] stateCount = new int[3];
     for (int iGen = 0; iGen < height; iGen++) {
       // Search from middle outwards
-      int i = middleI + ((iGen & 0x01) == 0 ? (iGen + 1) >> 1 : -((iGen + 1) >> 1));
+      int i = middleI + ((iGen & 0x01) == 0 ? (iGen + 1) / 2 : -((iGen + 1) / 2));
       stateCount[0] = 0;
       stateCount[1] = 0;
       stateCount[2] = 0;
@@ -110,7 +110,7 @@ final class AlignmentPatternFinder {
         if (image.get(j, i)) {
           // Black pixel
           if (currentState == 1) { // Counting black pixels
-            stateCount[currentState]++;
+            stateCount[1]++;
           } else { // Counting white pixels
             if (currentState == 2) { // A winner?
               if (foundPatternCross(stateCount)) { // Yes
@@ -158,7 +158,7 @@ final class AlignmentPatternFinder {
    * figures the location of the center of this black/white/black run.
    */
   private static float centerFromEnd(int[] stateCount, int end) {
-    return (float) (end - stateCount[2]) - stateCount[1] / 2.0f;
+    return (end - stateCount[2]) - stateCount[1] / 2.0f;
   }
 
   /**
@@ -257,7 +257,7 @@ final class AlignmentPatternFinder {
     float centerJ = centerFromEnd(stateCount, j);
     float centerI = crossCheckVertical(i, (int) centerJ, 2 * stateCount[1], stateCountTotal);
     if (!Float.isNaN(centerI)) {
-      float estimatedModuleSize = (float) (stateCount[0] + stateCount[1] + stateCount[2]) / 3.0f;
+      float estimatedModuleSize = (stateCount[0] + stateCount[1] + stateCount[2]) / 3.0f;
       for (AlignmentPattern center : possibleCenters) {
         // Look for about the same center and module size:
         if (center.aboutEquals(estimatedModuleSize, centerI, centerJ)) {

@@ -88,7 +88,6 @@ final class BoundingBox {
       if (newMinY < 0) {
         newMinY = 0;
       }
-      // TODO use existing points to better interpolate the new x positions
       ResultPoint newTop = new ResultPoint(top.getX(), newMinY);
       if (isLeft) {
         newTopLeft = newTop;
@@ -103,7 +102,6 @@ final class BoundingBox {
       if (newMaxY >= image.getHeight()) {
         newMaxY = image.getHeight() - 1;
       }
-      // TODO use existing points to better interpolate the new x positions
       ResultPoint newBottom = new ResultPoint(bottom.getX(), newMaxY);
       if (isLeft) {
         newBottomLeft = newBottom;
@@ -131,6 +129,7 @@ final class BoundingBox {
     maxY = (int) Math.max(bottomLeft.getY(), bottomRight.getY());
   }
 
+  /*
   void setTopRight(ResultPoint topRight) {
     this.topRight = topRight;
     calculateMinMaxValues();
@@ -140,6 +139,7 @@ final class BoundingBox {
     this.bottomRight = bottomRight;
     calculateMinMaxValues();
   }
+   */
 
   int getMinX() {
     return minX;

@@ -25,17 +25,17 @@ import java.net.URLEncoder;
 
 /**
  * Manages functionality related to responding to requests to scan from an HTTP link in a web page.
- * See <a href="http://code.google.com/p/zxing/wiki/ScanningFromWebPages">ScanningFromWebPages</a>.
+ * See <a href="https://github.com/zxing/zxing/wiki/ScanningFromWebPages">ScanningFromWebPages</a>.
  *
  * @author Sean Owen
  */
-public final class ScanFromWebPageManager {
+final class ScanFromWebPageManager {
 
-  private static final String CODE_PLACEHOLDER = "{CODE}";
-  private static final String RAW_CODE_PLACEHOLDER = "{RAWCODE}";
-  private static final String META_PLACEHOLDER = "{META}";
-  private static final String FORMAT_PLACEHOLDER = "{FORMAT}";
-  private static final String TYPE_PLACEHOLDER = "{TYPE}";
+  private static final CharSequence CODE_PLACEHOLDER = "{CODE}";
+  private static final CharSequence RAW_CODE_PLACEHOLDER = "{RAWCODE}";
+  private static final CharSequence META_PLACEHOLDER = "{META}";
+  private static final CharSequence FORMAT_PLACEHOLDER = "{FORMAT}";
+  private static final CharSequence TYPE_PLACEHOLDER = "{TYPE}";
 
   private static final String RETURN_URL_PARAM = "ret";
   private static final String RAW_PARAM = "raw";
@@ -43,16 +43,16 @@ public final class ScanFromWebPageManager {
   private final String returnUrlTemplate;
   private final boolean returnRaw;
 
-  public ScanFromWebPageManager(Uri inputUri) {
+  ScanFromWebPageManager(Uri inputUri) {
     returnUrlTemplate = inputUri.getQueryParameter(RETURN_URL_PARAM);
     returnRaw = inputUri.getQueryParameter(RAW_PARAM) != null;
   }
 
-  public boolean isScanFromWebPage() {
+  boolean isScanFromWebPage() {
     return returnUrlTemplate != null;
   }
 
-  public String buildReplyURL(Result rawResult, ResultHandler resultHandler) {
+  String buildReplyURL(Result rawResult, ResultHandler resultHandler) {
     String result = returnUrlTemplate;
     result = replace(CODE_PLACEHOLDER,
                      returnRaw ? rawResult.getText() : resultHandler.getDisplayContents(), result);

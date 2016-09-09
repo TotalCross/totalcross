@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 ZXing authors
+ * Copyright (C) 2015 ZXing authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package totalcross.zxing.client.android.common.executor;
+package totalcross.zxing.client.android.camera.open;
 
-import totalcross.zxing.client.android.common.PlatformSupportManager;
+/**
+ * Enumeration of directions a camera may face: front or back.
+ */
+public enum CameraFacing {
 
-public final class AsyncTaskExecManager extends PlatformSupportManager<AsyncTaskExecInterface> {
-
-  public AsyncTaskExecManager() {
-    super(AsyncTaskExecInterface.class, new DefaultAsyncTaskExecInterface());
-    addImplementationClass(11, "totalcross.zxing.client.android.common.executor.HoneycombAsyncTaskExecInterface");
-  }
+  BACK,  // must be value 0!
+  FRONT, // must be value 1!
 
 }

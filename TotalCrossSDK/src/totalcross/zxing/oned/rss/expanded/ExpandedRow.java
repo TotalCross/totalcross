@@ -30,7 +30,7 @@ final class ExpandedRow {
   private final boolean wasReversed;
 
   ExpandedRow(List<ExpandedPair> pairs, int rowNumber, boolean wasReversed) {
-    this.pairs = new ArrayList<ExpandedPair>(pairs);
+    this.pairs = new ArrayList<>(pairs);
     this.rowNumber = rowNumber;
     this.wasReversed = wasReversed;
   }
@@ -48,7 +48,7 @@ final class ExpandedRow {
   }
   
   boolean isEquivalent(List<ExpandedPair> otherPairs) {
-	  return this.pairs.equals(otherPairs);
+    return this.pairs.equals(otherPairs);
   }
   
   @Override

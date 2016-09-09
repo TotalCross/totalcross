@@ -16,10 +16,11 @@
 
 package totalcross.zxing.client.android.share;
 
+import java.util.List;
+
 import totalcross.zxing.client.android.R;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,23 +37,23 @@ import android.widget.TextView;
  * @author dswitkin@google.com (Daniel Switkin)
  */
 final class BookmarkAdapter extends BaseAdapter {
-  private final Context context;
-  private final Cursor cursor;
 
-  BookmarkAdapter(Context context, Cursor cursor) {
+  private final Context context;
+  private final List<String[]> titleURLs;
+
+  BookmarkAdapter(Context context, List<String[]> titleURLs) {
     this.context = context;
-    this.cursor = cursor;
+    this.titleURLs = titleURLs;
   }
 
   @Override
   public int getCount() {
-    return cursor.getCount();
+    return titleURLs.size();
   }
 
   @Override
   public Object getItem(int index) {
-    // Not used, so no point in retrieving it.
-    return null;
+    return titleURLs.get(index);
   }
 
   @Override
@@ -62,21 +63,16 @@ final class BookmarkAdapter extends BaseAdapter {
 
   @Override
   public View getView(int index, View view, ViewGroup viewGroup) {
-    LinearLayout layout;
+    View layout;
     if (view instanceof LinearLayout) {
-      layout = (LinearLayout) view;
+      layout = view;
     } else {
       LayoutInflater factory = LayoutInflater.from(context);
-      layout = (LinearLayout) factory.inflate(R.layout.bookmark_picker_list_item, viewGroup, false);
+      layout = factory.inflate(R.layout.bookmark_picker_list_item, viewGroup, false);
     }
-
-    if (!cursor.isClosed()) {
-      cursor.moveToPosition(index);
-      String title = cursor.getString(BookmarkPickerActivity.TITLE_COLUMN);
-      ((TextView) layout.findViewById(R.id.bookmark_title)).setText(title);
-      String url = cursor.getString(BookmarkPickerActivity.URL_COLUMN);
-      ((TextView) layout.findViewById(R.id.bookmark_url)).setText(url);
-    } // Otherwise... just don't update as the object is shutting down
+    String[] titleURL = titleURLs.get(index);
+    ((TextView) layout.findViewById(R.id.bookmark_title)).setText(titleURL[0]);
+    ((TextView) layout.findViewById(R.id.bookmark_url)).setText(titleURL[1]);
     return layout;
   }
 }

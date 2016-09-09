@@ -37,7 +37,8 @@ import java.util.Map;
 public final class Code39Reader extends OneDReader {
 
   static final String ALPHABET_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. *$/+%";
-  private static final char[] ALPHABET = ALPHABET_STRING.toCharArray();
+  // Note this lacks '*' compared to ALPHABET_STRING
+  private static final String CHECK_DIGIT_STRING = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%";
 
   /**
    * These represent the encodings of characters, as patterns of wide and narrow bars.
@@ -52,7 +53,7 @@ public final class Code39Reader extends OneDReader {
       0x0A8, 0x0A2, 0x08A, 0x02A // $-%
   };
 
-  private static final int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
+  static final int ASTERISK_ENCODING = CHARACTER_ENCODINGS[39];
 
   private final boolean usingCheckDigit;
   private final boolean extendedMode;
@@ -136,7 +137,7 @@ public final class Code39Reader extends OneDReader {
     int whiteSpaceAfterEnd = nextStart - lastStart - lastPatternSize;
     // If 50% of last pattern size, following last pattern, is not whitespace, fail
     // (but if it's whitespace to the very end of the image, that's OK)
-    if (nextStart != end && (whiteSpaceAfterEnd >> 1) < lastPatternSize) {
+    if (nextStart != end && (whiteSpaceAfterEnd * 2) < lastPatternSize) {
       throw NotFoundException.getNotFoundInstance();
     }
 
@@ -144,9 +145,9 @@ public final class Code39Reader extends OneDReader {
       int max = result.length() - 1;
       int total = 0;
       for (int i = 0; i < max; i++) {
-        total += ALPHABET_STRING.indexOf(decodeRowResult.charAt(i));
+        total += CHECK_DIGIT_STRING.indexOf(decodeRowResult.charAt(i));
       }
-      if (result.charAt(max) != ALPHABET[total % 43]) {
+      if (result.charAt(max) != CHECK_DIGIT_STRING.charAt(total % 43)) {
         throw ChecksumException.getChecksumInstance();
       }
       result.setLength(max);
@@ -164,14 +165,14 @@ public final class Code39Reader extends OneDReader {
       resultString = result.toString();
     }
 
-    float left = (float) (start[1] + start[0]) / 2.0f;
-    float right = (float) (nextStart + lastStart) / 2.0f;
+    float left = (start[1] + start[0]) / 2.0f;
+    float right = lastStart + lastPatternSize / 2.0f;
     return new Result(
         resultString,
         null,
         new ResultPoint[]{
-            new ResultPoint(left, (float) rowNumber),
-            new ResultPoint(right, (float) rowNumber)},
+            new ResultPoint(left, rowNumber),
+            new ResultPoint(right, rowNumber)},
         BarcodeFormat.CODE_39);
 
   }
@@ -192,7 +193,7 @@ public final class Code39Reader extends OneDReader {
         if (counterPosition == patternLength - 1) {
           // Look for whitespace before start pattern, >= 50% of width of start pattern
           if (toNarrowWidePattern(counters) == ASTERISK_ENCODING &&
-              row.isRange(Math.max(0, patternStart - ((i - patternStart) >> 1)), patternStart, false)) {
+              row.isRange(Math.max(0, patternStart - ((i - patternStart) / 2)), patternStart, false)) {
             return new int[]{patternStart, i};
           }
           patternStart += counters[0] + counters[1];
@@ -244,7 +245,7 @@ public final class Code39Reader extends OneDReader {
           if (counter > maxNarrowCounter) {
             wideCounters--;
             // totalWideCountersWidth = 3 * average, so this checks if counter >= 3/2 * average
-            if ((counter << 1) >= totalWideCountersWidth) {
+            if ((counter * 2) >= totalWideCountersWidth) {
               return -1;
             }
           }
@@ -258,7 +259,7 @@ public final class Code39Reader extends OneDReader {
   private static char patternToChar(int pattern) throws NotFoundException {
     for (int i = 0; i < CHARACTER_ENCODINGS.length; i++) {
       if (CHARACTER_ENCODINGS[i] == pattern) {
-        return ALPHABET[i];
+        return ALPHABET_STRING.charAt(i);
       }
     }
     throw NotFoundException.getNotFoundInstance();

@@ -29,6 +29,9 @@ package totalcross.zxing.client.result;
 import java.util.Map;
 
 /**
+ * Represents a parsed result that encodes extended product information as encoded
+ * by the RSS format, like weight, price, dates, etc.
+ *
  * @author Antonio Manuel Benjumea Conde, Servinform, S.A.
  * @author Agustín Delgado, Servinform, S.A.
  */
@@ -88,12 +91,12 @@ public final class ExpandedProductParsedResult extends ParsedResult {
   }
 
   @Override
-  public boolean equals(Object o){
+  public boolean equals(Object o) {
     if (!(o instanceof ExpandedProductParsedResult)) {
       return false;
     }
 
-    ExpandedProductParsedResult other = (ExpandedProductParsedResult)o;
+    ExpandedProductParsedResult other = (ExpandedProductParsedResult) o;
 
     return equalsOrNull(productID, other.productID)
         && equalsOrNull(sscc, other.sscc)
@@ -115,7 +118,7 @@ public final class ExpandedProductParsedResult extends ParsedResult {
   }
 
   @Override
-  public int hashCode(){
+  public int hashCode() {
     int hash = 0;
     hash ^= hashNotNull(productID);
     hash ^= hashNotNull(sscc);

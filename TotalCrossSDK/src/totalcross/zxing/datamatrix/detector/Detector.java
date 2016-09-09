@@ -65,7 +65,7 @@ public final class Detector {
     // Point A and D are across the diagonal from one another,
     // as are B and C. Figure out which are the solid black lines
     // by counting transitions
-    List<ResultPointsAndTransitions> transitions = new ArrayList<ResultPointsAndTransitions>(4);
+    List<ResultPointsAndTransitions> transitions = new ArrayList<>(4);
     transitions.add(transitionsBetween(pointA, pointB));
     transitions.add(transitionsBetween(pointA, pointC));
     transitions.add(transitionsBetween(pointB, pointD));
@@ -79,7 +79,7 @@ public final class Detector {
 
     // Figure out which point is their intersection by tallying up the number of times we see the
     // endpoints in the four endpoints. One will show up twice.
-    Map<ResultPoint,Integer> pointCount = new HashMap<ResultPoint,Integer>();
+    Map<ResultPoint,Integer> pointCount = new HashMap<>();
     increment(pointCount, lSideOne.getFrom());
     increment(pointCount, lSideOne.getTo());
     increment(pointCount, lSideTwo.getFrom());
@@ -164,7 +164,7 @@ public final class Detector {
 
       correctedTopRight =
           correctTopRightRectangular(bottomLeft, bottomRight, topLeft, topRight, dimensionTop, dimensionRight);
-      if (correctedTopRight == null){
+      if (correctedTopRight == null) {
         correctedTopRight = topRight;
       }
 
@@ -189,7 +189,7 @@ public final class Detector {
       int dimension = Math.min(dimensionRight, dimensionTop);
       // correct top right point to match the white module
       correctedTopRight = correctTopRight(bottomLeft, bottomRight, topLeft, topRight, dimension);
-      if (correctedTopRight == null){
+      if (correctedTopRight == null) {
         correctedTopRight = topRight;
       }
 
@@ -224,19 +224,19 @@ public final class Detector {
                                                  int dimensionTop,
                                                  int dimensionRight) {
 
-    float corr = distance(bottomLeft, bottomRight) / (float)dimensionTop;
+    float corr = distance(bottomLeft, bottomRight) / (float) dimensionTop;
     int norm = distance(topLeft, topRight);
     float cos = (topRight.getX() - topLeft.getX()) / norm;
     float sin = (topRight.getY() - topLeft.getY()) / norm;
 
-    ResultPoint c1 = new ResultPoint(topRight.getX()+corr*cos, topRight.getY()+corr*sin);
+    ResultPoint c1 = new ResultPoint(topRight.getX() + corr * cos, topRight.getY() + corr * sin);
 
-    corr = distance(bottomLeft, topLeft) / (float)dimensionRight;
+    corr = distance(bottomLeft, topLeft) / (float) dimensionRight;
     norm = distance(bottomRight, topRight);
     cos = (topRight.getX() - bottomRight.getX()) / norm;
     sin = (topRight.getY() - bottomRight.getY()) / norm;
 
-    ResultPoint c2 = new ResultPoint(topRight.getX()+corr*cos, topRight.getY()+corr*sin);
+    ResultPoint c2 = new ResultPoint(topRight.getX() + corr * cos, topRight.getY() + corr * sin);
 
     if (!isValid(c1)) {
       if (isValid(c2)) {
@@ -244,7 +244,7 @@ public final class Detector {
       }
       return null;
     }
-    if (!isValid(c2)){
+    if (!isValid(c2)) {
       return c1;
     }
 
@@ -253,7 +253,7 @@ public final class Detector {
     int l2 = Math.abs(dimensionTop - transitionsBetween(topLeft, c2).getTransitions()) +
     Math.abs(dimensionRight - transitionsBetween(bottomRight, c2).getTransitions());
 
-    if (l1 <= l2){
+    if (l1 <= l2) {
       return c1;
     }
 
@@ -370,7 +370,7 @@ public final class Detector {
 
     int dx = Math.abs(toX - fromX);
     int dy = Math.abs(toY - fromY);
-    int error = -dx >> 1;
+    int error = -dx / 2;
     int ystep = fromY < toY ? 1 : -1;
     int xstep = fromX < toX ? 1 : -1;
     int transitions = 0;
@@ -416,7 +416,7 @@ public final class Detector {
       return to;
     }
 
-    public int getTransitions() {
+    int getTransitions() {
       return transitions;
     }
     

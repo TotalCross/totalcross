@@ -31,7 +31,7 @@ import totalcross.zxing.DecodeHintType;
 /**
  * @author Lachezar Dobrev
  */
-public final class DecodeHintManager {
+final class DecodeHintManager {
   
   private static final String TAG = DecodeHintManager.class.getSimpleName();
 
@@ -55,7 +55,7 @@ public final class DecodeHintManager {
    * @return name-value pairs
    */
   private static Map<String,String> splitQuery(String query) {
-    Map<String,String> map = new HashMap<String,String>();
+    Map<String,String> map = new HashMap<>();
     int pos = 0;
     while (pos < query.length()) {
       if (query.charAt(pos) == '&') {
@@ -103,7 +103,7 @@ public final class DecodeHintManager {
       String name = query.substring(pos, equ);
       name = name.replace('+', ' '); // Preemptively decode +
       name = Uri.decode(name);
-      String text = query.substring(equ+1, amp);
+      String text = query.substring(equ + 1, amp);
       text = text.replace('+', ' '); // Preemptively decode +
       text = Uri.decode(text);
       if (!map.containsKey(name)) {
@@ -114,16 +114,16 @@ public final class DecodeHintManager {
     return map;
   }
 
-  public static Map<DecodeHintType,?> parseDecodeHints(Uri inputUri) {
+  static Map<DecodeHintType,?> parseDecodeHints(Uri inputUri) {
     String query = inputUri.getEncodedQuery();
-    if (query == null || query.length() == 0) {
+    if (query == null || query.isEmpty()) {
       return null;
     }
 
     // Extract parameters
     Map<String, String> parameters = splitQuery(query);
 
-    Map<DecodeHintType, Object> hints = new EnumMap<DecodeHintType, Object>(DecodeHintType.class);
+    Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
 
     for (DecodeHintType hintType: DecodeHintType.values()) {
 
@@ -157,7 +157,7 @@ public final class DecodeHintManager {
       if (hintType.getValueType().equals(Boolean.class)) {
         // A boolean hint: a few values for false, everything else is true.
         // An empty parameter is simply a flag-style parameter, assuming true
-        if (parameterText.length() == 0) {
+        if (parameterText.isEmpty()) {
           hints.put(hintType, Boolean.TRUE);
         } else if ("0".equals(parameterText) || 
                    "false".equalsIgnoreCase(parameterText) || 
@@ -172,7 +172,7 @@ public final class DecodeHintManager {
       if (hintType.getValueType().equals(int[].class)) {
         // An integer array. Used to specify valid lengths.
         // Strip a trailing comma as in Java style array initialisers.
-        if (parameterText.length() > 0 && parameterText.charAt(parameterText.length() - 1) == ',') {
+        if (!parameterText.isEmpty() && parameterText.charAt(parameterText.length() - 1) == ',') {
           parameterText = parameterText.substring(0, parameterText.length() - 1);
         }
         String[] values = COMMA.split(parameterText);
@@ -198,12 +198,12 @@ public final class DecodeHintManager {
     return hints;
   }
 
-  public static Map<DecodeHintType, Object> parseDecodeHints(Intent intent) {
+  static Map<DecodeHintType, Object> parseDecodeHints(Intent intent) {
     Bundle extras = intent.getExtras();
     if (extras == null || extras.isEmpty()) {
       return null;
     }
-    Map<DecodeHintType,Object> hints = new EnumMap<DecodeHintType,Object>(DecodeHintType.class);
+    Map<DecodeHintType,Object> hints = new EnumMap<>(DecodeHintType.class);
 
     for (DecodeHintType hintType: DecodeHintType.values()) {
 

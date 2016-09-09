@@ -22,10 +22,12 @@ import totalcross.zxing.datamatrix.DataMatrixWriter;
 import totalcross.zxing.oned.CodaBarWriter;
 import totalcross.zxing.oned.Code128Writer;
 import totalcross.zxing.oned.Code39Writer;
+import totalcross.zxing.oned.Code93Writer;
 import totalcross.zxing.oned.EAN13Writer;
 import totalcross.zxing.oned.EAN8Writer;
 import totalcross.zxing.oned.ITFWriter;
 import totalcross.zxing.oned.UPCAWriter;
+import totalcross.zxing.oned.UPCEWriter;
 import totalcross.zxing.pdf417.PDF417Writer;
 import totalcross.zxing.qrcode.QRCodeWriter;
 
@@ -58,6 +60,9 @@ public final class MultiFormatWriter implements Writer {
       case EAN_8:
         writer = new EAN8Writer();
         break;
+      case UPC_E:
+        writer = new UPCEWriter();
+        break;
       case EAN_13:
         writer = new EAN13Writer();
         break;
@@ -69,6 +74,9 @@ public final class MultiFormatWriter implements Writer {
         break;
       case CODE_39:
         writer = new Code39Writer();
+        break;
+      case CODE_93:
+        writer = new Code93Writer();
         break;
       case CODE_128:
         writer = new Code128Writer();

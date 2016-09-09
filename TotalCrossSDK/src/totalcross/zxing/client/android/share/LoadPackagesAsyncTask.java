@@ -18,6 +18,7 @@ package totalcross.zxing.client.android.share;
 
 import android.app.ListActivity;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -37,7 +38,7 @@ import java.util.List;
  *
  * @author Sean Owen
  */
-final class LoadPackagesAsyncTask extends AsyncTask<Void,Void,List<AppInfo>> {
+final class LoadPackagesAsyncTask extends AsyncTask<Object,Object,List<AppInfo>> {
 
   private static final String[] PKG_PREFIX_WHITELIST = {
       "com.google.android.apps.",
@@ -56,11 +57,11 @@ final class LoadPackagesAsyncTask extends AsyncTask<Void,Void,List<AppInfo>> {
   }
 
   @Override
-  protected List<AppInfo> doInBackground(Void... objects) {
-    List<AppInfo> labelsPackages = new ArrayList<AppInfo>();
+  protected List<AppInfo> doInBackground(Object... objects) {
+    List<AppInfo> labelsPackages = new ArrayList<>();
     PackageManager packageManager = activity.getPackageManager();
-    List<ApplicationInfo> appInfos = packageManager.getInstalledApplications(0);
-    for (ApplicationInfo appInfo : appInfos) {
+    Iterable<ApplicationInfo> appInfos = packageManager.getInstalledApplications(0);
+    for (PackageItemInfo appInfo : appInfos) {
       String packageName = appInfo.packageName;
       if (!isHidden(packageName)) {
         CharSequence label = appInfo.loadLabel(packageManager);
@@ -94,15 +95,15 @@ final class LoadPackagesAsyncTask extends AsyncTask<Void,Void,List<AppInfo>> {
   @Override
   protected void onPostExecute(final List<AppInfo> results) {    
     ListAdapter listAdapter = new ArrayAdapter<AppInfo>(activity, 
-                                                        /*R.layout.app_picker_list_item*/0, 
-                                                        /*R.id.app_picker_list_item_label*/0, 
+                                                        R.layout.app_picker_list_item, 
+                                                        R.id.app_picker_list_item_label, 
                                                         results) {
       @Override
       public View getView(int position, View convertView, ViewGroup parent) {
         View view = super.getView(position, convertView, parent);
         Drawable icon = results.get(position).getIcon();
         if (icon != null) {
-          ((ImageView) view.findViewById(/*R.id.app_picker_list_item_icon*/0)).setImageDrawable(icon);
+          ((ImageView) view.findViewById(R.id.app_picker_list_item_icon)).setImageDrawable(icon);
         }
         return view;
       }

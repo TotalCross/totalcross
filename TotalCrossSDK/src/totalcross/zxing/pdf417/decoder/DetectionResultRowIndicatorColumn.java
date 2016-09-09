@@ -31,7 +31,7 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
     this.isLeft = isLeft;
   }
 
-  void setRowNumbers() {
+  private void setRowNumbers() {
     for (Codeword codeword : getCodewords()) {
       if (codeword != null) {
         codeword.setRowNumberAsRowIndicatorColumn();
@@ -43,7 +43,7 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
   // TODO maybe we should add missing codewords to store the correct row number to make
   // finding row numbers for other columns easier
   // use row height count to make detection of invalid row numbers more reliable
-  int adjustCompleteIndicatorColumnRowNumbers(BarcodeMetadata barcodeMetadata) {
+  void adjustCompleteIndicatorColumnRowNumbers(BarcodeMetadata barcodeMetadata) {
     Codeword[] codewords = getCodewords();
     setRowNumbers();
     removeIncorrectCodewords(codewords, barcodeMetadata);
@@ -54,7 +54,7 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
     int lastRow = imageRowToCodewordIndex((int) bottom.getY());
     // We need to be careful using the average row height. Barcode could be skewed so that we have smaller and 
     // taller rows
-    float averageRowHeight = (lastRow - firstRow) / (float) barcodeMetadata.getRowCount();
+    //float averageRowHeight = (lastRow - firstRow) / (float) barcodeMetadata.getRowCount();
     int barcodeRow = -1;
     int maxRowHeight = 1;
     int currentRowHeight = 0;
@@ -82,11 +82,9 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
         maxRowHeight = Math.max(maxRowHeight, currentRowHeight);
         currentRowHeight = 1;
         barcodeRow = codeword.getRowNumber();
-      } else if (rowDifference < 0) {
-        codewords[codewordsRow] = null;
-      } else if (codeword.getRowNumber() >= barcodeMetadata.getRowCount()) {
-        codewords[codewordsRow] = null;
-      } else if (rowDifference > codewordsRow) {
+      } else if (rowDifference < 0 ||
+                 codeword.getRowNumber() >= barcodeMetadata.getRowCount() ||
+                 rowDifference > codewordsRow) {
         codewords[codewordsRow] = null;
       } else {
         int checkedRows;
@@ -109,7 +107,7 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
         }
       }
     }
-    return (int) (averageRowHeight + 0.5);
+    //return (int) (averageRowHeight + 0.5);
   }
 
   int[] getRowHeights() {
@@ -121,8 +119,13 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
     int[] result = new int[barcodeMetadata.getRowCount()];
     for (Codeword codeword : getCodewords()) {
       if (codeword != null) {
-        result[codeword.getRowNumber()]++;
-      }
+        int rowNumber = codeword.getRowNumber();
+        if (rowNumber >= result.length) {
+          // We have more rows than the barcode metadata allows for, ignore them.
+          continue;
+        }
+        result[rowNumber]++;
+      } // else throw exception?
     }
     return result;
   }
@@ -130,13 +133,13 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
   // TODO maybe we should add missing codewords to store the correct row number to make
   // finding row numbers for other columns easier
   // use row height count to make detection of invalid row numbers more reliable
-  int adjustIncompleteIndicatorColumnRowNumbers(BarcodeMetadata barcodeMetadata) {
+  private void adjustIncompleteIndicatorColumnRowNumbers(BarcodeMetadata barcodeMetadata) {
     BoundingBox boundingBox = getBoundingBox();
     ResultPoint top = isLeft ? boundingBox.getTopLeft() : boundingBox.getTopRight();
     ResultPoint bottom = isLeft ? boundingBox.getBottomLeft() : boundingBox.getBottomRight();
     int firstRow = imageRowToCodewordIndex((int) top.getY());
     int lastRow = imageRowToCodewordIndex((int) bottom.getY());
-    float averageRowHeight = (lastRow - firstRow) / (float) barcodeMetadata.getRowCount();
+    //float averageRowHeight = (lastRow - firstRow) / (float) barcodeMetadata.getRowCount();
     Codeword[] codewords = getCodewords();
     int barcodeRow = -1;
     int maxRowHeight = 1;
@@ -166,7 +169,7 @@ final class DetectionResultRowIndicatorColumn extends DetectionResultColumn {
         currentRowHeight = 1;
       }
     }
-    return (int) (averageRowHeight + 0.5);
+    //return (int) (averageRowHeight + 0.5);
   }
 
   BarcodeMetadata getBarcodeMetadata() {

@@ -36,18 +36,14 @@ public final class ProductResultParser extends ResultParser {
       return null;
     }
     String rawText = getMassagedText(result);
-    int length = rawText.length();
-    for (int x = 0; x < length; x++) {
-      char c = rawText.charAt(x);
-      if (c < '0' || c > '9') {
-        return null;
-      }
+    if (!isStringOfDigits(rawText, rawText.length())) {
+      return null;
     }
     // Not actually checking the checksum again here    
 
     String normalizedProductID;
     // Expand UPC-E for purposes of searching
-    if (format == BarcodeFormat.UPC_E) {
+    if (format == BarcodeFormat.UPC_E && rawText.length() == 8) {
       normalizedProductID = UPCEReader.convertUPCEtoUPCA(rawText);
     } else {
       normalizedProductID = rawText;

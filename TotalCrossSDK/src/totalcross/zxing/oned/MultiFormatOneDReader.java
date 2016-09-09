@@ -44,7 +44,7 @@ public final class MultiFormatOneDReader extends OneDReader {
         (Collection<BarcodeFormat>) hints.get(DecodeHintType.POSSIBLE_FORMATS);
     boolean useCode39CheckDigit = hints != null &&
         hints.get(DecodeHintType.ASSUME_CODE_39_CHECK_DIGIT) != null;
-    Collection<OneDReader> readers = new ArrayList<OneDReader>();
+    Collection<OneDReader> readers = new ArrayList<>();
     if (possibleFormats != null) {
       if (possibleFormats.contains(BarcodeFormat.EAN_13) ||
           possibleFormats.contains(BarcodeFormat.UPC_A) ||
@@ -70,7 +70,7 @@ public final class MultiFormatOneDReader extends OneDReader {
       if (possibleFormats.contains(BarcodeFormat.RSS_14)) {
          readers.add(new RSS14Reader());
       }
-      if (possibleFormats.contains(BarcodeFormat.RSS_EXPANDED)){
+      if (possibleFormats.contains(BarcodeFormat.RSS_EXPANDED)) {
         readers.add(new RSSExpandedReader());
       }
     }

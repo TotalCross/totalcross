@@ -46,7 +46,7 @@ public final class DataMatrixWriter implements Writer {
   @Override
   public BitMatrix encode(String contents, BarcodeFormat format, int width, int height, Map<EncodeHintType,?> hints) {
 
-    if (contents.length() == 0) {
+    if (contents.isEmpty()) {
       throw new IllegalArgumentException("Found empty contents");
     }
     
@@ -67,10 +67,12 @@ public final class DataMatrixWriter implements Writer {
       if (requestedShape != null) {
         shape = requestedShape;
       }
+      @SuppressWarnings("deprecation")
       Dimension requestedMinSize = (Dimension) hints.get(EncodeHintType.MIN_SIZE);
       if (requestedMinSize != null) {
         minSize = requestedMinSize;
       }
+      @SuppressWarnings("deprecation")
       Dimension requestedMaxSize = (Dimension) hints.get(EncodeHintType.MAX_SIZE);
       if (requestedMaxSize != null) {
         maxSize = requestedMaxSize;

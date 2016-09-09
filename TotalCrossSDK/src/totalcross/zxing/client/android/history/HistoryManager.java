@@ -67,13 +67,14 @@ public final class HistoryManager {
 
   private static final String[] ID_COL_PROJECTION = { DBHelper.ID_COL };
   private static final String[] ID_DETAIL_COL_PROJECTION = { DBHelper.ID_COL, DBHelper.DETAILS_COL };
-  private static final DateFormat EXPORT_DATE_TIME_FORMAT =
-      DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
 
   private final Activity activity;
+  private final boolean enableHistory;
 
   public HistoryManager(Activity activity) {
     this.activity = activity;
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+    enableHistory = prefs.getBoolean(PreferencesActivity.KEY_ENABLE_HISTORY, true);
   }
 
   public boolean hasHistoryItems() {
@@ -92,7 +93,7 @@ public final class HistoryManager {
 
   public List<HistoryItem> buildHistoryItems() {
     SQLiteOpenHelper helper = new DBHelper(activity);
-    List<HistoryItem> items = new ArrayList<HistoryItem>();
+    List<HistoryItem> items = new ArrayList<>();
     SQLiteDatabase db = null;
     Cursor cursor = null;
     try {
@@ -154,7 +155,7 @@ public final class HistoryManager {
     // Do not save this item to the history if the preference is turned off, or the contents are
     // considered secure.
     if (!activity.getIntent().getBooleanExtra(Intents.Scan.SAVE_HISTORY, true) ||
-        handler.areContentsSecure()) {
+        handler.areContentsSecure() || !enableHistory) {
       return;
     }
 
@@ -267,13 +268,14 @@ public final class HistoryManager {
    * and double-quoted. Double-quotes within values are escaped with a sequence of two
    * double-quotes. The fields output are:</p>
    *
-   * <ul>
+   * <ol>
    *  <li>Raw text</li>
    *  <li>Display text</li>
    *  <li>Format (e.g. QR_CODE)</li>
-   *  <li>Timestamp</li>
+   *  <li>Unix timestamp (milliseconds since the epoch)</li>
    *  <li>Formatted version of timestamp</li>
-   * </ul>
+   *  <li>Supplemental info (e.g. price info for a product barcode)</li>
+   * </ol>
    */
   CharSequence buildHistory() {
     SQLiteOpenHelper helper = new DBHelper(activity);
@@ -286,6 +288,7 @@ public final class HistoryManager {
                         null, null, null, null,
                         DBHelper.TIMESTAMP_COL + " DESC");
 
+      DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
       StringBuilder historyText = new StringBuilder(1000);
       while (cursor.moveToNext()) {
 
@@ -297,7 +300,7 @@ public final class HistoryManager {
         // Add timestamp again, formatted
         long timestamp = cursor.getLong(3);
         historyText.append('"').append(massageHistoryField(
-            EXPORT_DATE_TIME_FORMAT.format(new Date(timestamp)))).append("\",");
+            format.format(new Date(timestamp)))).append("\",");
 
         // Above we're preserving the old ordering of columns which had formatted data in position 5
 

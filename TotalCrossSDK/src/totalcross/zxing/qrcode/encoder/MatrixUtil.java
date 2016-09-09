@@ -271,12 +271,7 @@ final class MatrixUtil {
   // - findMSBSet(1) => 1
   // - findMSBSet(255) => 8
   static int findMSBSet(int value) {
-    int numDigits = 0;
-    while (value != 0) {
-      value >>>= 1;
-      ++numDigits;
-    }
-    return numDigits;
+    return 32 - Integer.numberOfLeadingZeros(value);
   }
 
   // Calculate BCH (Bose-Chaudhuri-Hocquenghem) code for "value" using polynomial "poly". The BCH
@@ -305,6 +300,9 @@ final class MatrixUtil {
   // Since all coefficients in the polynomials are 1 or 0, we can do the calculation by bit
   // operations. We don't care if cofficients are positive or negative.
   static int calculateBCHCode(int value, int poly) {
+    if (poly == 0) {
+      throw new IllegalArgumentException("0 polynomial");
+    }
     // If poly is "1 1111 0010 0101" (version info poly), msbSetInPoly is 13. We'll subtract 1
     // from 13 to make it 12.
     int msbSetInPoly = findMSBSet(poly);

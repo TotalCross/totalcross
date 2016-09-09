@@ -43,9 +43,11 @@ public final class MaxiCodeReader implements Reader {
 
   private final Decoder decoder = new Decoder();
 
+  /*
   Decoder getDecoder() {
     return decoder;
   }
+   */
 
   /**
    * Locates and decodes a MaxiCode in an image.
@@ -71,8 +73,7 @@ public final class MaxiCodeReader implements Reader {
       throw NotFoundException.getNotFoundInstance();
     }
 
-    ResultPoint[] points = NO_POINTS;
-    Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), points, BarcodeFormat.MAXICODE);
+    Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), NO_POINTS, BarcodeFormat.MAXICODE);
 
     String ecLevel = decoderResult.getECLevel();
     if (ecLevel != null) {

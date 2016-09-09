@@ -26,9 +26,9 @@ import totalcross.zxing.Result;
 import totalcross.zxing.ResultMetadataType;
 import totalcross.zxing.ResultPoint;
 import totalcross.zxing.ResultPointCallback;
-import totalcross.zxing.common.DecoderResult;
 import totalcross.zxing.aztec.decoder.Decoder;
 import totalcross.zxing.aztec.detector.Detector;
+import totalcross.zxing.common.DecoderResult;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,6 @@ public final class AztecReader implements Reader {
    * @return a String representing the content encoded by the Data Matrix code
    * @throws NotFoundException if a Data Matrix code cannot be found
    * @throws FormatException if a Data Matrix code cannot be decoded
-   * @throws totalcross.zxing.ChecksumException if error correction fails
    */
   @Override
   public Result decode(BinaryBitmap image) throws NotFoundException, FormatException {
@@ -57,8 +56,35 @@ public final class AztecReader implements Reader {
   public Result decode(BinaryBitmap image, Map<DecodeHintType,?> hints)
       throws NotFoundException, FormatException {
 
-    AztecDetectorResult detectorResult = new Detector(image.getBlackMatrix()).detect();
-    ResultPoint[] points = detectorResult.getPoints();
+    NotFoundException notFoundException = null;
+    FormatException formatException = null;
+    Detector detector = new Detector(image.getBlackMatrix());
+    ResultPoint[] points = null;
+    DecoderResult decoderResult = null;
+    try {
+      AztecDetectorResult detectorResult = detector.detect(false);
+      points = detectorResult.getPoints();
+      decoderResult = new Decoder().decode(detectorResult);
+    } catch (NotFoundException e) {
+      notFoundException = e;
+    } catch (FormatException e) {
+      formatException = e;
+    }
+    if (decoderResult == null) {
+      try {
+        AztecDetectorResult detectorResult = detector.detect(true);
+        points = detectorResult.getPoints();
+        decoderResult = new Decoder().decode(detectorResult);
+      } catch (NotFoundException | FormatException e) {
+        if (notFoundException != null) {
+          throw notFoundException;
+        }
+        if (formatException != null) {
+          throw formatException;
+        }
+        throw e;
+      }
+    }
 
     if (hints != null) {
       ResultPointCallback rpcb = (ResultPointCallback) hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
@@ -68,8 +94,6 @@ public final class AztecReader implements Reader {
         }
       }
     }
-
-    DecoderResult decoderResult = new Decoder().decode(detectorResult);
 
     Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), points, BarcodeFormat.AZTEC);
     

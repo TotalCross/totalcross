@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
  */
 public final class URIResultParser extends ResultParser {
 
-  private static final String ALPHANUM_PART = "[a-zA-Z0-9\\-]";
-  private static final Pattern URL_WITH_PROTOCOL_PATTERN = Pattern.compile("[a-zA-Z0-9]{2,}:");
+  // See http://www.ietf.org/rfc/rfc2396.txt
+  private static final Pattern URL_WITH_PROTOCOL_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9+-.]+:");
   private static final Pattern URL_WITHOUT_PROTOCOL_PATTERN = Pattern.compile(
-      '(' + ALPHANUM_PART + "+\\.)+" + ALPHANUM_PART + "{2,}" + // host name elements
+      "([a-zA-Z0-9\\-]+\\.){1,6}[a-zA-Z]{2,}" + // host name elements; allow up to say 6 domain elements
       "(:\\d{1,5})?" + // maybe port
       "(/|\\?|$)"); // query, path or nothing
 

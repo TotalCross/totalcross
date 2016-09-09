@@ -74,23 +74,18 @@ public final class PDF417Reader implements Reader, MultipleBarcodeReader {
   public Result[] decodeMultiple(BinaryBitmap image, Map<DecodeHintType,?> hints) throws NotFoundException {
     try {
       return decode(image, hints, true);
-    } catch (FormatException ignored) {
-      throw NotFoundException.getNotFoundInstance();
-    } catch (ChecksumException ignored) {
+    } catch (FormatException | ChecksumException ignored) {
       throw NotFoundException.getNotFoundInstance();
     }
   }
 
   private static Result[] decode(BinaryBitmap image, Map<DecodeHintType, ?> hints, boolean multiple) 
       throws NotFoundException, FormatException, ChecksumException {
-    List<Result> results = new ArrayList<Result>();
+    List<Result> results = new ArrayList<>();
     PDF417DetectorResult detectorResult = Detector.detect(image, hints, multiple);
     for (ResultPoint[] points : detectorResult.getPoints()) {
       DecoderResult decoderResult = PDF417ScanningDecoder.decode(detectorResult.getBits(), points[4], points[5],
           points[6], points[7], getMinCodewordWidth(points), getMaxCodewordWidth(points));
-      if (decoderResult == null) {
-        throw NotFoundException.getNotFoundInstance();
-      }
       Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), points, BarcodeFormat.PDF_417);
       result.putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, decoderResult.getECLevel());
       PDF417ResultMetadata pdf417ResultMetadata = (PDF417ResultMetadata) decoderResult.getOther();

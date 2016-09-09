@@ -27,8 +27,6 @@ final class BarcodeRow {
 
   /**
    * Creates a Barcode row of the width
-   *
-   * @param width
    */
   BarcodeRow(int width) {
     this.row = new byte[width];
@@ -51,7 +49,7 @@ final class BarcodeRow {
    * @param x The location in the bar
    * @param black Black if true, white if false;
    */
-  void set(int x, boolean black) {
+  private void set(int x, boolean black) {
     row[x] = (byte) (black ? 1 : 0);
   }
 
@@ -65,9 +63,11 @@ final class BarcodeRow {
     }
   }
 
+  /*
   byte[] getRow() {
     return row;
   }
+   */
 
   /**
    * This function scales the row

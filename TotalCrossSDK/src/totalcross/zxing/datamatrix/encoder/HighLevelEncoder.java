@@ -18,7 +18,6 @@ package totalcross.zxing.datamatrix.encoder;
 
 import totalcross.zxing.Dimension;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -112,21 +111,24 @@ public final class HighLevelEncoder {
   private HighLevelEncoder() {
   }
 
-  /**
+  /*
    * Converts the message to a byte array using the default encoding (cp437) as defined by the
    * specification
    *
    * @param msg the message
    * @return the byte array of the message
    */
+
+  /*
   public static byte[] getBytesForMessage(String msg) {
     return msg.getBytes(Charset.forName("cp437")); //See 4.4.3 and annex B of ISO/IEC 15438:2001(E)
   }
+   */
 
   private static char randomize253State(char ch, int codewordPosition) {
     int pseudoRandom = ((149 * codewordPosition) % 253) + 1;
     int tempVariable = ch + pseudoRandom;
-    return tempVariable <= 254 ? (char) tempVariable : (char) (tempVariable - 254);
+    return (char) (tempVariable <= 254 ? tempVariable : tempVariable - 254);
   }
 
   /**
@@ -178,21 +180,21 @@ public final class HighLevelEncoder {
     int encodingMode = ASCII_ENCODATION; //Default mode
     while (context.hasMoreCharacters()) {
       encoders[encodingMode].encode(context);
-      if (context.newEncoding >= 0) {
-        encodingMode = context.newEncoding;
+      if (context.getNewEncoding() >= 0) {
+        encodingMode = context.getNewEncoding();
         context.resetEncoderSignal();
       }
     }
-    int len = context.codewords.length();
+    int len = context.getCodewordCount();
     context.updateSymbolInfo();
-    int capacity = context.symbolInfo.dataCapacity;
+    int capacity = context.getSymbolInfo().getDataCapacity();
     if (len < capacity) {
       if (encodingMode != ASCII_ENCODATION && encodingMode != BASE256_ENCODATION) {
         context.writeCodeword('\u00fe'); //Unlatch (254)
       }
     }
     //Padding
-    StringBuilder codewords = context.codewords;
+    StringBuilder codewords = context.getCodewords();
     if (codewords.length() < capacity) {
       codewords.append(PAD);
     }
@@ -200,7 +202,7 @@ public final class HighLevelEncoder {
       codewords.append(randomize253State(PAD, codewords.length() + 1));
     }
 
-    return context.codewords.toString();
+    return context.getCodewords().toString();
   }
 
   static int lookAheadTest(CharSequence msg, int startpos, int currentMode) {
@@ -249,12 +251,12 @@ public final class HighLevelEncoder {
 
       //step L
       if (isDigit(c)) {
-        charCounts[ASCII_ENCODATION] += 0.5;
+        charCounts[ASCII_ENCODATION] += 0.5f;
       } else if (isExtendedASCII(c)) {
-        charCounts[ASCII_ENCODATION] = (int) Math.ceil(charCounts[ASCII_ENCODATION]);
-        charCounts[ASCII_ENCODATION] += 2;
+        charCounts[ASCII_ENCODATION] = (float) Math.ceil(charCounts[ASCII_ENCODATION]);
+        charCounts[ASCII_ENCODATION] += 2.0f;
       } else {
-        charCounts[ASCII_ENCODATION] = (int) Math.ceil(charCounts[ASCII_ENCODATION]);
+        charCounts[ASCII_ENCODATION] = (float) Math.ceil(charCounts[ASCII_ENCODATION]);
         charCounts[ASCII_ENCODATION]++;
       }
 
@@ -296,7 +298,7 @@ public final class HighLevelEncoder {
 
       // step Q
       if (isSpecialB256(c)) {
-        charCounts[BASE256_ENCODATION] += 4;
+        charCounts[BASE256_ENCODATION] += 4.0f;
       } else {
         charCounts[BASE256_ENCODATION]++;
       }

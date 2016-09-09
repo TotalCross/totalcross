@@ -26,12 +26,13 @@ import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * Manages beeps and vibrations for {@link CaptureActivity}.
  */
-public final class BeepManager {
+final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
 
   private static final String TAG = BeepManager.class.getSimpleName();
 
@@ -43,13 +44,13 @@ public final class BeepManager {
   private boolean playBeep;
   private boolean vibrate;
 
-  public BeepManager(Activity activity) {
+  BeepManager(Activity activity) {
     this.activity = activity;
     this.mediaPlayer = null;
     updatePrefs();
   }
 
-  public void updatePrefs() {
+  synchronized void updatePrefs() {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
     playBeep = shouldBeep(prefs, activity);
     vibrate = prefs.getBoolean(PreferencesActivity.KEY_VIBRATE, false);
@@ -61,7 +62,7 @@ public final class BeepManager {
     }
   }
 
-  public void playBeepSoundAndVibrate() {
+  synchronized void playBeepSoundAndVibrate() {
     if (playBeep && mediaPlayer != null) {
       mediaPlayer.start();
     }
@@ -83,28 +84,47 @@ public final class BeepManager {
     return shouldPlayBeep;
   }
 
-  private static MediaPlayer buildMediaPlayer(Context activity) {
+  private MediaPlayer buildMediaPlayer(Context activity) {
     MediaPlayer mediaPlayer = new MediaPlayer();
-    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-    // When the beep has finished playing, rewind to queue up another one.
-    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer player) {
-        player.seekTo(0);
-      }
-    });
-
-    AssetFileDescriptor file = activity.getResources().openRawResourceFd(R.raw.beep);
     try {
-      mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
-      file.close();
+      AssetFileDescriptor file = activity.getResources().openRawResourceFd(R.raw.beep);
+      try {
+        mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
+      } finally {
+        file.close();
+      }
+      mediaPlayer.setOnErrorListener(this);
+      mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+      mediaPlayer.setLooping(false);
       mediaPlayer.setVolume(BEEP_VOLUME, BEEP_VOLUME);
       mediaPlayer.prepare();
+      return mediaPlayer;
     } catch (IOException ioe) {
       Log.w(TAG, ioe);
+      mediaPlayer.release();
+      return null;
+    }
+  }
+
+  @Override
+  public synchronized boolean onError(MediaPlayer mp, int what, int extra) {
+    if (what == MediaPlayer.MEDIA_ERROR_SERVER_DIED) {
+      // we are finished, so put up an appropriate error toast if required and finish
+      activity.finish();
+    } else {
+      // possibly media player error, so release and recreate
+      close();
+      updatePrefs();
+    }
+    return true;
+  }
+
+  @Override
+  public synchronized void close() {
+    if (mediaPlayer != null) {
+      mediaPlayer.release();
       mediaPlayer = null;
     }
-    return mediaPlayer;
   }
 
 }

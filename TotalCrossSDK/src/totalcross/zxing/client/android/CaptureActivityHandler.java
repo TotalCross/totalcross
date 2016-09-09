@@ -47,7 +47,7 @@ public final class CaptureActivityHandler extends Handler {
 
   private static final String TAG = CaptureActivityHandler.class.getSimpleName();
 
-  private final totalcross.android.CaptureActivity activity;
+  private final CaptureActivity activity;
   private final DecodeThread decodeThread;
   private State state;
   private final CameraManager cameraManager;
@@ -58,7 +58,7 @@ public final class CaptureActivityHandler extends Handler {
     DONE
   }
 
-  public CaptureActivityHandler(totalcross.android.CaptureActivity activity,
+  CaptureActivityHandler(CaptureActivity activity,
                          Collection<BarcodeFormat> decodeFormats,
                          Map<DecodeHintType,?> baseHints,
                          String characterSet,
@@ -79,11 +79,9 @@ public final class CaptureActivityHandler extends Handler {
   public void handleMessage(Message message) {
     switch (message.what) {
       case R.id.restart_preview:
-        Log.d(TAG, "Got restart preview message");
         restartPreviewAndDecode();
         break;
       case R.id.decode_succeeded:
-        Log.d(TAG, "Got decode succeeded message");
         state = State.SUCCESS;
         Bundle bundle = message.getData();
         Bitmap barcode = null;
@@ -105,12 +103,10 @@ public final class CaptureActivityHandler extends Handler {
         cameraManager.requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
         break;
       case R.id.return_scan_result:
-        Log.d(TAG, "Got return scan result message");
         activity.setResult(Activity.RESULT_OK, (Intent) message.obj);
         activity.finish();
         break;
       case R.id.launch_product_query:
-        Log.d(TAG, "Got product query message");
         String url = (String) message.obj;
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -120,7 +116,7 @@ public final class CaptureActivityHandler extends Handler {
         ResolveInfo resolveInfo =
             activity.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
         String browserPackageName = null;
-        if (resolveInfo.activityInfo != null) {
+        if (resolveInfo != null && resolveInfo.activityInfo != null) {
           browserPackageName = resolveInfo.activityInfo.packageName;
           Log.d(TAG, "Using browser in package " + browserPackageName);
         }

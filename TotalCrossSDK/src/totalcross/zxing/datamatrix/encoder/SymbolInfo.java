@@ -25,7 +25,7 @@ import totalcross.zxing.Dimension;
  */
 public class SymbolInfo {
 
-  public static final SymbolInfo[] PROD_SYMBOLS = {
+  static final SymbolInfo[] PROD_SYMBOLS = {
     new SymbolInfo(false, 3, 5, 8, 8, 1),
     new SymbolInfo(false, 5, 7, 10, 10, 1),
       /*rect*/new SymbolInfo(true, 5, 7, 16, 6, 1),
@@ -73,13 +73,13 @@ public class SymbolInfo {
   }
 
   private final boolean rectangular;
-  final int dataCapacity;
-  final int errorCodewords;
+  private final int dataCapacity;
+  private final int errorCodewords;
   public final int matrixWidth;
   public final int matrixHeight;
   private final int dataRegions;
-  int rsBlockData;
-  int rsBlockError;
+  private final int rsBlockData;
+  private final int rsBlockError;
 
   public SymbolInfo(boolean rectangular, int dataCapacity, int errorCodewords,
                     int matrixWidth, int matrixHeight, int dataRegions) {
@@ -87,9 +87,9 @@ public class SymbolInfo {
          dataCapacity, errorCodewords);
   }
 
-  private SymbolInfo(boolean rectangular, int dataCapacity, int errorCodewords,
-                     int matrixWidth, int matrixHeight, int dataRegions,
-                     int rsBlockData, int rsBlockError) {
+  SymbolInfo(boolean rectangular, int dataCapacity, int errorCodewords,
+             int matrixWidth, int matrixHeight, int dataRegions,
+             int rsBlockData, int rsBlockError) {
     this.rectangular = rectangular;
     this.dataCapacity = dataCapacity;
     this.errorCodewords = errorCodewords;
@@ -152,12 +152,11 @@ public class SymbolInfo {
     return null;
   }
 
-  final int getHorizontalDataRegions() {
+  private int getHorizontalDataRegions() {
     switch (dataRegions) {
       case 1:
         return 1;
       case 2:
-        return 2;
       case 4:
         return 2;
       case 16:
@@ -169,10 +168,9 @@ public class SymbolInfo {
     }
   }
 
-  final int getVerticalDataRegions() {
+  private int getVerticalDataRegions() {
     switch (dataRegions) {
       case 1:
-        return 1;
       case 2:
         return 1;
       case 4:
@@ -209,6 +207,14 @@ public class SymbolInfo {
   public int getInterleavedBlockCount() {
     return dataCapacity / rsBlockData;
   }
+  
+  public final int getDataCapacity() {
+    return dataCapacity;
+  }
+  
+  public final int getErrorCodewords() {
+    return errorCodewords;
+  }
 
   public int getDataLengthForInterleavedBlock(int index) {
     return rsBlockData;
@@ -220,13 +226,11 @@ public class SymbolInfo {
 
   @Override
   public final String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(rectangular ? "Rectangular Symbol:" : "Square Symbol:");
-    sb.append(" data region ").append(matrixWidth).append('x').append(matrixHeight);
-    sb.append(", symbol size ").append(getSymbolWidth()).append('x').append(getSymbolHeight());
-    sb.append(", symbol data size ").append(getSymbolDataWidth()).append('x').append(getSymbolDataHeight());
-    sb.append(", codewords ").append(dataCapacity).append('+').append(errorCodewords);
-    return sb.toString();
+    return (rectangular ? "Rectangular Symbol:" : "Square Symbol:") +
+        " data region " + matrixWidth + 'x' + matrixHeight +
+        ", symbol size " + getSymbolWidth() + 'x' + getSymbolHeight() +
+        ", symbol data size " + getSymbolDataWidth() + 'x' + getSymbolDataHeight() +
+        ", codewords " + dataCapacity + '+' + errorCodewords;
   }
 
 }

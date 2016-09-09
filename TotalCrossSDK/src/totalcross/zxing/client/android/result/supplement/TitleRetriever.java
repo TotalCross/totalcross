@@ -16,6 +16,7 @@
 
 package totalcross.zxing.client.android.result.supplement;
 
+import android.text.Html;
 import android.widget.TextView;
 import totalcross.zxing.client.android.HttpHelper;
 import totalcross.zxing.client.android.history.HistoryManager;
@@ -55,7 +56,8 @@ final class TitleRetriever extends SupplementalInfoRetriever {
       Matcher m = TITLE_PATTERN.matcher(contents);
       if (m.find()) {
         String title = m.group(1);
-        if (title != null && title.length() > 0) {
+        if (title != null && !title.isEmpty()) {
+          title = Html.fromHtml(title).toString();
           if (title.length() > MAX_TITLE_LEN) {
             title = title.substring(0, MAX_TITLE_LEN) + "...";
           }

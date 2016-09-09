@@ -30,6 +30,7 @@ import totalcross.zxing.common.BitMatrix;
 import totalcross.zxing.common.DecoderResult;
 import totalcross.zxing.common.DetectorResult;
 import totalcross.zxing.qrcode.decoder.Decoder;
+import totalcross.zxing.qrcode.decoder.QRCodeDecoderMetaData;
 import totalcross.zxing.qrcode.detector.Detector;
 
 import java.util.List;
@@ -78,6 +79,11 @@ public class QRCodeReader implements Reader {
       points = detectorResult.getPoints();
     }
 
+    // If the code was mirrored: swap the bottom-left and the top-right points.
+    if (decoderResult.getOther() instanceof QRCodeDecoderMetaData) {
+      ((QRCodeDecoderMetaData) decoderResult.getOther()).applyMirroredCorrection(points);
+    }
+
     Result result = new Result(decoderResult.getText(), decoderResult.getRawBytes(), points, BarcodeFormat.QR_CODE);
     List<byte[]> byteSegments = decoderResult.getByteSegments();
     if (byteSegments != null) {
@@ -86,6 +92,12 @@ public class QRCodeReader implements Reader {
     String ecLevel = decoderResult.getECLevel();
     if (ecLevel != null) {
       result.putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, ecLevel);
+    }
+    if (decoderResult.hasStructuredAppend()) {
+      result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_SEQUENCE,
+                         decoderResult.getStructuredAppendSequenceNumber());
+      result.putMetadata(ResultMetadataType.STRUCTURED_APPEND_PARITY,
+                         decoderResult.getStructuredAppendParity());
     }
     return result;
   }
@@ -127,6 +139,10 @@ public class QRCodeReader implements Reader {
       // Special case, where bottom-right module wasn't black so we found something else in the last row
       // Assume it's a square, so use height as the width
       right = left + (bottom - top);
+      if (right >= image.getWidth()) {
+        // Abort if that would not make sense -- off image
+        throw NotFoundException.getNotFoundInstance();
+      }
     }
 
     int matrixWidth = Math.round((right - left + 1) / moduleSize);
@@ -147,12 +163,23 @@ public class QRCodeReader implements Reader {
     left += nudge;
     
     // But careful that this does not sample off the edge
-    int nudgedTooFarRight = left + (int) ((matrixWidth - 1) * moduleSize) - (right - 1);
+    // "right" is the farthest-right valid pixel location -- right+1 is not necessarily
+    // This is positive by how much the inner x loop below would be too large
+    int nudgedTooFarRight = left + (int) ((matrixWidth - 1) * moduleSize) - right;
     if (nudgedTooFarRight > 0) {
+      if (nudgedTooFarRight > nudge) {
+        // Neither way fits; abort
+        throw NotFoundException.getNotFoundInstance();
+      }
       left -= nudgedTooFarRight;
     }
-    int nudgedTooFarDown = top + (int) ((matrixHeight - 1) * moduleSize) - (bottom - 1);
+    // See logic above
+    int nudgedTooFarDown = top + (int) ((matrixHeight - 1) * moduleSize) - bottom;
     if (nudgedTooFarDown > 0) {
+      if (nudgedTooFarDown > nudge) {
+        // Neither way fits; abort
+        throw NotFoundException.getNotFoundInstance();
+      }
       top -= nudgedTooFarDown;
     }
 

@@ -61,7 +61,7 @@ public final class GenericMultipleBarcodeReader implements MultipleBarcodeReader
   @Override
   public Result[] decodeMultiple(BinaryBitmap image, Map<DecodeHintType,?> hints)
       throws NotFoundException {
-    List<Result> results = new ArrayList<Result>();
+    List<Result> results = new ArrayList<>();
     doDecodeMultiple(image, hints, results, 0, 0, 0);
     if (results.isEmpty()) {
       throw NotFoundException.getNotFoundInstance();
@@ -106,6 +106,9 @@ public final class GenericMultipleBarcodeReader implements MultipleBarcodeReader
     float maxX = 0.0f;
     float maxY = 0.0f;
     for (ResultPoint point : resultPoints) {
+      if (point == null) {
+        continue;
+      }
       float x = point.getX();
       float y = point.getY();
       if (x < minX) {
@@ -160,7 +163,9 @@ public final class GenericMultipleBarcodeReader implements MultipleBarcodeReader
     ResultPoint[] newResultPoints = new ResultPoint[oldResultPoints.length];
     for (int i = 0; i < oldResultPoints.length; i++) {
       ResultPoint oldPoint = oldResultPoints[i];
-      newResultPoints[i] = new ResultPoint(oldPoint.getX() + xOffset, oldPoint.getY() + yOffset);
+      if (oldPoint != null) {
+        newResultPoints[i] = new ResultPoint(oldPoint.getX() + xOffset, oldPoint.getY() + yOffset);
+      }
     }
     Result newResult = new Result(result.getText(), result.getRawBytes(), newResultPoints, result.getBarcodeFormat());
     newResult.putAllMetadata(result.getResultMetadata());

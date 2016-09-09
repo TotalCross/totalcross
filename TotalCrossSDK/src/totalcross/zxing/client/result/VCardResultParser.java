@@ -20,6 +20,7 @@ import totalcross.zxing.Result;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -127,7 +128,7 @@ public final class VCardResultParser extends ResultParser {
       if (metadataString != null) {
         for (String metadatum : SEMICOLON.split(metadataString)) {
           if (metadata == null) {
-            metadata = new ArrayList<String>(1);
+            metadata = new ArrayList<>(1);
           }
           metadata.add(metadatum);
           String[] metadatumTokens = EQUALS.split(metadatum, 2);
@@ -145,14 +146,14 @@ public final class VCardResultParser extends ResultParser {
 
       int matchStart = i; // Found the start of a match here
 
-      while ((i = rawText.indexOf((int) '\n', i)) >= 0) { // Really, end in \r\n
+      while ((i = rawText.indexOf('\n', i)) >= 0) { // Really, end in \r\n
         if (i < rawText.length() - 1 &&           // But if followed by tab or space,
-            (rawText.charAt(i+1) == ' ' ||        // this is only a continuation
-             rawText.charAt(i+1) == '\t')) {
+            (rawText.charAt(i + 1) == ' ' ||        // this is only a continuation
+             rawText.charAt(i + 1) == '\t')) {
           i += 2; // Skip \n and continutation whitespace
         } else if (quotedPrintable &&             // If preceded by = in quoted printable
-                   ((i >= 1 && rawText.charAt(i-1) == '=') || // this is a continuation
-                    (i >= 2 && rawText.charAt(i-2) == '='))) {
+                   ((i >= 1 && rawText.charAt(i - 1) == '=') || // this is a continuation
+                    (i >= 2 && rawText.charAt(i - 2) == '='))) {
           i++; // Skip \n
         } else {
           break;
@@ -165,9 +166,9 @@ public final class VCardResultParser extends ResultParser {
       } else if (i > matchStart) {
         // found a match
         if (matches == null) {
-          matches = new ArrayList<List<String>>(1); // lazy init
+          matches = new ArrayList<>(1); // lazy init
         }
-        if (i >= 1 && rawText.charAt(i-1) == '\r') {
+        if (i >= 1 && rawText.charAt(i - 1) == '\r') {
           i--; // Back up over \r, which really should be there
         }
         String element = rawText.substring(matchStart, i);
@@ -188,7 +189,7 @@ public final class VCardResultParser extends ResultParser {
           element = VCARD_ESCAPES.matcher(element).replaceAll("$1");
         }
         if (metadata == null) {
-          List<String> match = new ArrayList<String>(1);
+          List<String> match = new ArrayList<>(1);
           match.add(element);
           matches.add(match);
         } else {
@@ -217,9 +218,9 @@ public final class VCardResultParser extends ResultParser {
           break;
         case '=':
           if (i < length - 2) {
-            char nextChar = value.charAt(i+1);
+            char nextChar = value.charAt(i + 1);
             if (nextChar != '\r' && nextChar != '\n') {
-              char nextNextChar = value.charAt(i+2);
+              char nextNextChar = value.charAt(i + 2);
               int firstDigit = parseHexDigit(nextChar);
               int secondDigit = parseHexDigit(nextNextChar);
               if (firstDigit >= 0 && secondDigit >= 0) {
@@ -245,13 +246,12 @@ public final class VCardResultParser extends ResultParser {
       byte[] fragmentBytes = fragmentBuffer.toByteArray();
       String fragment;
       if (charset == null) {
-        fragment = new String(fragmentBytes);
+        fragment = new String(fragmentBytes, Charset.forName("UTF-8"));
       } else {
         try {
           fragment = new String(fragmentBytes, charset);
         } catch (UnsupportedEncodingException e) {
-          // Yikes, well try anyway:
-          fragment = new String(fragmentBytes);
+          fragment = new String(fragmentBytes, Charset.forName("UTF-8"));
         }
       }
       fragmentBuffer.reset();
@@ -275,10 +275,10 @@ public final class VCardResultParser extends ResultParser {
     if (lists == null || lists.isEmpty()) {
       return null;
     }
-    List<String> result = new ArrayList<String>(lists.size());
+    List<String> result = new ArrayList<>(lists.size());
     for (List<String> list : lists) {
       String value = list.get(0);
-      if (value != null && value.length() > 0) {
+      if (value != null && !value.isEmpty()) {
         result.add(value);
       }
     }
@@ -289,7 +289,7 @@ public final class VCardResultParser extends ResultParser {
     if (lists == null || lists.isEmpty()) {
       return null;
     }
-    List<String> result = new ArrayList<String>(lists.size());
+    List<String> result = new ArrayList<>(lists.size());
     for (List<String> list : lists) {
       String type = null;
       for (int i = 1; i < list.size(); i++) {
@@ -328,7 +328,7 @@ public final class VCardResultParser extends ResultParser {
         int start = 0;
         int end;
         int componentIndex = 0;
-        while (componentIndex < components.length - 1 && (end = name.indexOf(';', start)) > 0) {
+        while (componentIndex < components.length - 1 && (end = name.indexOf(';', start)) >= 0) {
           components[componentIndex] = name.substring(start, end);
           componentIndex++;
           start = end + 1;
@@ -346,8 +346,10 @@ public final class VCardResultParser extends ResultParser {
   }
 
   private static void maybeAppendComponent(String[] components, int i, StringBuilder newName) {
-    if (components[i] != null) {
-      newName.append(' ');
+    if (components[i] != null && !components[i].isEmpty()) {
+      if (newName.length() > 0) {
+        newName.append(' ');
+      }
       newName.append(components[i]);
     }
   }

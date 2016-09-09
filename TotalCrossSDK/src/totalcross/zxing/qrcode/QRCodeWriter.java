@@ -51,7 +51,7 @@ public final class QRCodeWriter implements Writer {
                           int height,
                           Map<EncodeHintType,?> hints) throws WriterException {
 
-    if (contents.length() == 0) {
+    if (contents.isEmpty()) {
       throw new IllegalArgumentException("Found empty contents");
     }
 
@@ -67,13 +67,11 @@ public final class QRCodeWriter implements Writer {
     ErrorCorrectionLevel errorCorrectionLevel = ErrorCorrectionLevel.L;
     int quietZone = QUIET_ZONE_SIZE;
     if (hints != null) {
-      ErrorCorrectionLevel requestedECLevel = (ErrorCorrectionLevel) hints.get(EncodeHintType.ERROR_CORRECTION);
-      if (requestedECLevel != null) {
-        errorCorrectionLevel = requestedECLevel;
+      if (hints.containsKey(EncodeHintType.ERROR_CORRECTION)) {
+        errorCorrectionLevel = ErrorCorrectionLevel.valueOf(hints.get(EncodeHintType.ERROR_CORRECTION).toString());
       }
-      Integer quietZoneInt = (Integer) hints.get(EncodeHintType.MARGIN);
-      if (quietZoneInt != null) {
-        quietZone = quietZoneInt;
+      if (hints.containsKey(EncodeHintType.MARGIN)) {
+        quietZone = Integer.parseInt(hints.get(EncodeHintType.MARGIN).toString());
       }
     }
 
@@ -90,8 +88,8 @@ public final class QRCodeWriter implements Writer {
     }
     int inputWidth = input.getWidth();
     int inputHeight = input.getHeight();
-    int qrWidth = inputWidth + (quietZone << 1);
-    int qrHeight = inputHeight + (quietZone << 1);
+    int qrWidth = inputWidth + (quietZone * 2);
+    int qrHeight = inputHeight + (quietZone * 2);
     int outputWidth = Math.max(width, qrWidth);
     int outputHeight = Math.max(height, qrHeight);
 

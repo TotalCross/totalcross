@@ -50,7 +50,7 @@ public abstract class OneDimensionalCodeWriter implements Writer {
                           int width,
                           int height,
                           Map<EncodeHintType,?> hints) throws WriterException {
-    if (contents.length() == 0) {
+    if (contents.isEmpty()) {
       throw new IllegalArgumentException("Found empty contents");
     }
 
@@ -60,11 +60,8 @@ public abstract class OneDimensionalCodeWriter implements Writer {
     }
 
     int sidesMargin = getDefaultMargin();
-    if (hints != null) {
-      Integer sidesMarginInt = (Integer) hints.get(EncodeHintType.MARGIN);
-      if (sidesMarginInt != null) {
-        sidesMargin = sidesMarginInt;
-      }
+    if (hints != null && hints.containsKey(EncodeHintType.MARGIN)) {
+      sidesMargin = Integer.parseInt(hints.get(EncodeHintType.MARGIN).toString());
     }
 
     boolean[] code = encode(contents);
@@ -95,8 +92,9 @@ public abstract class OneDimensionalCodeWriter implements Writer {
 
 
   /**
-   * Appends the given pattern to the target array starting at pos.
-   *
+   * @param target encode black/white pattern into this array
+   * @param pos position to start encoding at in {@code target}
+   * @param pattern lengths of black/white runs to encode
    * @param startColor starting color - false for white, true for black
    * @return the number of elements added to target.
    */
@@ -123,6 +121,7 @@ public abstract class OneDimensionalCodeWriter implements Writer {
    * Encode the contents to boolean array expression of one-dimensional barcode.
    * Start code and end code should be included in result, and side margins should not be included.
    *
+   * @param contents barcode contents to encode
    * @return a {@code boolean[]} of horizontal pixels (false = white, true = black)
    */
   public abstract boolean[] encode(String contents);

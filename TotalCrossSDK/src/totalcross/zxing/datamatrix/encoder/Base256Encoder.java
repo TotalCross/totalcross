@@ -33,7 +33,7 @@ final class Base256Encoder implements Encoder {
 
       context.pos++;
 
-      int newMode = HighLevelEncoder.lookAheadTest(context.msg, context.pos, getEncodingMode());
+      int newMode = HighLevelEncoder.lookAheadTest(context.getMessage(), context.pos, getEncodingMode());
       if (newMode != getEncodingMode()) {
         context.signalEncoderChange(newMode);
         break;
@@ -43,11 +43,11 @@ final class Base256Encoder implements Encoder {
     int lengthFieldSize = 1;
     int currentSize = context.getCodewordCount() + dataCount + lengthFieldSize;
     context.updateSymbolInfo(currentSize);
-    boolean mustPad = (context.symbolInfo.dataCapacity - currentSize) > 0;
+    boolean mustPad = (context.getSymbolInfo().getDataCapacity() - currentSize) > 0;
     if (context.hasMoreCharacters() || mustPad) {
       if (dataCount <= 249) {
         buffer.setCharAt(0, (char) dataCount);
-      } else if (dataCount > 249 && dataCount <= 1555) {
+      } else if (dataCount <= 1555) {
         buffer.setCharAt(0, (char) ((dataCount / 250) + 249));
         buffer.insert(1, (char) (dataCount % 250));
       } else {

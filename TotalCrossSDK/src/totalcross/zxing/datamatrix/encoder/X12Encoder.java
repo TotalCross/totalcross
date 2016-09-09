@@ -37,7 +37,7 @@ final class X12Encoder extends C40Encoder {
       if ((count % 3) == 0) {
         writeNextTriplet(context, buffer);
 
-        int newMode = HighLevelEncoder.lookAheadTest(context.msg, context.pos, getEncodingMode());
+        int newMode = HighLevelEncoder.lookAheadTest(context.getMessage(), context.pos, getEncodingMode());
         if (newMode != getEncodingMode()) {
           context.signalEncoderChange(newMode);
           break;
@@ -70,18 +70,14 @@ final class X12Encoder extends C40Encoder {
   @Override
   void handleEOD(EncoderContext context, StringBuilder buffer) {
     context.updateSymbolInfo();
-    int available = context.symbolInfo.dataCapacity - context.getCodewordCount();
+    int available = context.getSymbolInfo().getDataCapacity() - context.getCodewordCount();
     int count = buffer.length();
-    if (count == 2) {
+    context.pos -= count;
+    if (context.getRemainingCharacters() > 1 || available > 1 ||
+        context.getRemainingCharacters() != available) {
       context.writeCodeword(HighLevelEncoder.X12_UNLATCH);
-      context.pos -= 2;
-      context.signalEncoderChange(HighLevelEncoder.ASCII_ENCODATION);
-    } else if (count == 1) {
-      context.pos--;
-      if (available > 1) {
-        context.writeCodeword(HighLevelEncoder.X12_UNLATCH);
-      }
-      //NOP - No unlatch necessary
+    }
+    if (context.getNewEncoding() < 0) {
       context.signalEncoderChange(HighLevelEncoder.ASCII_ENCODATION);
     }
   }

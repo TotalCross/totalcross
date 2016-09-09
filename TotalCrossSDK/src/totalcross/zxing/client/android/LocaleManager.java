@@ -43,7 +43,7 @@ public final class LocaleManager {
    */
   private static final Map<String,String> GOOGLE_COUNTRY_TLD;
   static {
-    GOOGLE_COUNTRY_TLD = new HashMap<String,String>();
+    GOOGLE_COUNTRY_TLD = new HashMap<>();
     GOOGLE_COUNTRY_TLD.put("AR", "com.ar"); // ARGENTINA
     GOOGLE_COUNTRY_TLD.put("AU", "com.au"); // AUSTRALIA
     GOOGLE_COUNTRY_TLD.put("BR", "com.br"); // BRAZIL
@@ -65,6 +65,7 @@ public final class LocaleManager {
     GOOGLE_COUNTRY_TLD.put("NL", "nl"); // NETHERLANDS
     GOOGLE_COUNTRY_TLD.put("PL", "pl"); // POLAND
     GOOGLE_COUNTRY_TLD.put("PT", "pt"); // PORTUGAL
+    GOOGLE_COUNTRY_TLD.put("RO", "ro"); // ROMANIA    
     GOOGLE_COUNTRY_TLD.put("RU", "ru"); // RUSSIA
     GOOGLE_COUNTRY_TLD.put("SK", "sk"); // SLOVAK REPUBLIC
     GOOGLE_COUNTRY_TLD.put("SI", "si"); // SLOVENIA
@@ -73,6 +74,7 @@ public final class LocaleManager {
     GOOGLE_COUNTRY_TLD.put("CH", "ch"); // SWITZERLAND    
     GOOGLE_COUNTRY_TLD.put(Locale.TAIWAN.getCountry(), "tw");
     GOOGLE_COUNTRY_TLD.put("TR", "com.tr"); // TURKEY
+    GOOGLE_COUNTRY_TLD.put("UA", "com.ua"); // UKRAINE
     GOOGLE_COUNTRY_TLD.put(Locale.UK.getCountry(), "co.uk");
     GOOGLE_COUNTRY_TLD.put(Locale.US.getCountry(), "com");
   }
@@ -83,7 +85,7 @@ public final class LocaleManager {
    */
   private static final Map<String,String> GOOGLE_PRODUCT_SEARCH_COUNTRY_TLD;
   static {
-    GOOGLE_PRODUCT_SEARCH_COUNTRY_TLD = new HashMap<String,String>();
+    GOOGLE_PRODUCT_SEARCH_COUNTRY_TLD = new HashMap<>();
     GOOGLE_PRODUCT_SEARCH_COUNTRY_TLD.put("AU", "com.au"); // AUSTRALIA
     //GOOGLE_PRODUCT_SEARCH_COUNTRY_TLD.put(Locale.CHINA.getCountry(), "cn");
     GOOGLE_PRODUCT_SEARCH_COUNTRY_TLD.put(Locale.FRANCE.getCountry(), "fr");
@@ -103,11 +105,12 @@ public final class LocaleManager {
   private static final Map<String,String> GOOGLE_BOOK_SEARCH_COUNTRY_TLD = GOOGLE_COUNTRY_TLD;
 
   private static final Collection<String> TRANSLATED_HELP_ASSET_LANGUAGES =
-      Arrays.asList("de", "en", "es", "fr", "it", "ja", "ko", "nl", "pt", "ru", "zh-rCN", "zh-rTW");
+      Arrays.asList("de", "en", "es", "fr", "it", "ja", "ko", "nl", "pt", "ru", "uk", "zh-rCN", "zh-rTW", "zh-rHK");
 
   private LocaleManager() {}
 
   /**
+   * @param context application's {@link Context}
    * @return country-specific TLD suffix appropriate for the current default locale
    *  (e.g. "co.uk" for the United Kingdom)
    */
@@ -117,6 +120,8 @@ public final class LocaleManager {
 
   /**
    * The same as above, but specifically for Google Product Search.
+   *
+   * @param context application's {@link Context}
    * @return The top-level domain to use.
    */
   public static String getProductSearchCountryTLD(Context context) {
@@ -125,6 +130,8 @@ public final class LocaleManager {
 
   /**
    * The same as above, but specifically for Google Book Search.
+   *
+   * @param context application's {@link Context}
    * @return The top-level domain to use.
    */
   public static String getBookSearchCountryTLD(Context context) {
@@ -159,7 +166,7 @@ public final class LocaleManager {
     return language;
   }
 
-  public static String getTranslatedAssetLanguage() {
+  static String getTranslatedAssetLanguage() {
     String language = getSystemLanguage();
     return TRANSLATED_HELP_ASSET_LANGUAGES.contains(language) ? language : DEFAULT_LANGUAGE;
   }
@@ -169,10 +176,10 @@ public final class LocaleManager {
     return tld == null ? DEFAULT_TLD : tld;
   }
 
-  public static String getCountry(Context context) {
+  private static String getCountry(Context context) {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    String countryOverride = prefs.getString(PreferencesActivity.KEY_SEARCH_COUNTRY, null);
-    if (countryOverride != null && countryOverride.length() > 0 && !"-".equals(countryOverride)) {
+    String countryOverride = prefs.getString(PreferencesActivity.KEY_SEARCH_COUNTRY, "-");
+    if (countryOverride != null && !countryOverride.isEmpty() && !"-".equals(countryOverride)) {
       return countryOverride;
     }
     return getSystemCountry();

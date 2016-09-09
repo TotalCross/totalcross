@@ -59,10 +59,10 @@ public abstract class ResultParser {
       new ISBNResultParser(),
       new ProductResultParser(),
       new ExpandedProductResultParser(),
+      new VINResultParser(),
   };
 
-  private static final Pattern DIGITS = Pattern.compile("\\d*");
-  private static final Pattern ALPHANUM = Pattern.compile("[a-zA-Z0-9]*");
+  private static final Pattern DIGITS = Pattern.compile("\\d+");
   private static final Pattern AMPERSAND = Pattern.compile("&");
   private static final Pattern EQUALS = Pattern.compile("=");
   private static final String BYTE_ORDER_MARK = "\ufeff";
@@ -71,6 +71,9 @@ public abstract class ResultParser {
    * Attempts to parse the raw {@link Result}'s contents as a particular type
    * of information (email, URL, etc.) and return a {@link ParsedResult} encapsulating
    * the result of parsing.
+   *
+   * @param theResult the raw {@link Result} to parse
+   * @return {@link ParsedResult} encapsulating the parsing result
    */
   public abstract ParsedResult parse(Result theResult);
 
@@ -113,7 +116,7 @@ public abstract class ResultParser {
   }
 
   protected static String unescapeBackslash(String escaped) {
-    int backslash = escaped.indexOf((int) '\\');
+    int backslash = escaped.indexOf('\\');
     if (backslash < 0) {
       return escaped;
     }
@@ -147,23 +150,15 @@ public abstract class ResultParser {
   }
 
   protected static boolean isStringOfDigits(CharSequence value, int length) {
-    return value != null && length == value.length() && DIGITS.matcher(value).matches();
+    return value != null && length > 0 && length == value.length() && DIGITS.matcher(value).matches();
   }
 
   protected static boolean isSubstringOfDigits(CharSequence value, int offset, int length) {
-    if (value == null) {
+    if (value == null || length <= 0) {
       return false;
     }
     int max = offset + length;
     return value.length() >= max && DIGITS.matcher(value.subSequence(offset, max)).matches();
-  }
-
-  protected static boolean isSubstringOfAlphaNumeric(CharSequence value, int offset, int length) {
-    if (value == null) {
-      return false;
-    }
-    int max = offset + length;
-    return value.length() >= max && ALPHANUM.matcher(value.subSequence(offset, max)).matches();
   }
 
   static Map<String,String> parseNameValuePairs(String uri) {
@@ -171,7 +166,7 @@ public abstract class ResultParser {
     if (paramStart < 0) {
       return null;
     }
-    Map<String,String> result = new HashMap<String,String>(3);
+    Map<String,String> result = new HashMap<>(3);
     for (String keyValue : AMPERSAND.split(uri.substring(paramStart + 1))) {
       appendKeyValue(keyValue, result);
     }
@@ -191,7 +186,7 @@ public abstract class ResultParser {
       }
     }
   }
-  
+
   static String urlDecode(String encoded) {
     try {
       return URLDecoder.decode(encoded, "UTF-8");
@@ -213,24 +208,24 @@ public abstract class ResultParser {
       int start = i; // Found the start of a match here
       boolean more = true;
       while (more) {
-        i = rawText.indexOf((int) endChar, i);
+        i = rawText.indexOf(endChar, i);
         if (i < 0) {
           // No terminating end character? uh, done. Set i such that loop terminates and break
           i = rawText.length();
           more = false;
-        } else if (rawText.charAt(i - 1) == '\\') {
-          // semicolon was escaped so continue
+        } else if (countPrecedingBackslashes(rawText, i) % 2 != 0) {
+          // semicolon was escaped (odd count of preceding backslashes) so continue
           i++;
         } else {
           // found a match
           if (matches == null) {
-            matches = new ArrayList<String>(3); // lazy init
+            matches = new ArrayList<>(3); // lazy init
           }
           String element = unescapeBackslash(rawText.substring(start, i));
           if (trim) {
             element = element.trim();
           }
-          if (element.length() > 0) {
+          if (!element.isEmpty()) {
             matches.add(element);
           }
           i++;
@@ -242,6 +237,18 @@ public abstract class ResultParser {
       return null;
     }
     return matches.toArray(new String[matches.size()]);
+  }
+
+  private static int countPrecedingBackslashes(CharSequence s, int pos) {
+    int count = 0;
+    for (int i = pos - 1; i >= 0; i--) {
+      if (s.charAt(i) == '\\') {
+        count++;
+      } else {
+        break;
+      }
+    }
+    return count;
   }
 
   static String matchSinglePrefixedField(String prefix, String rawText, char endChar, boolean trim) {

@@ -23,7 +23,7 @@ import java.util.Arrays;
  */
 public class DefaultPlacement {
 
-  private final String codewords;
+  private final CharSequence codewords;
   private final int numrows;
   private final int numcols;
   private final byte[] bits;
@@ -35,7 +35,7 @@ public class DefaultPlacement {
    * @param numcols   the number of columns
    * @param numrows   the number of rows
    */
-  public DefaultPlacement(String codewords, int numcols, int numrows) {
+  public DefaultPlacement(CharSequence codewords, int numcols, int numrows) {
     this.codewords = codewords;
     this.numcols = numcols;
     this.numrows = numrows;
@@ -59,11 +59,11 @@ public class DefaultPlacement {
     return bits[row * numcols + col] == 1;
   }
 
-  final void setBit(int col, int row, boolean bit) {
-    bits[row * numcols + col] = bit ? (byte) 1 : (byte) 0;
+  private void setBit(int col, int row, boolean bit) {
+    bits[row * numcols + col] = (byte) (bit ? 1 : 0);
   }
 
-  final boolean hasBit(int col, int row) {
+  private boolean hasBit(int col, int row) {
     return bits[row * numcols + col] >= 0;
   }
 

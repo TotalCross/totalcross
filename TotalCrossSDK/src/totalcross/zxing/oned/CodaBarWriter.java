@@ -16,8 +16,6 @@
 
 package totalcross.zxing.oned;
 
-import java.util.Arrays;
-
 /**
  * This class renders CodaBar as {@code boolean[]}.
  *
@@ -25,30 +23,51 @@ import java.util.Arrays;
  */
 public final class CodaBarWriter extends OneDimensionalCodeWriter {
 
-  private static final char[] START_CHARS = {'A', 'B', 'C', 'D'};
-  private static final char[] END_CHARS = {'T', 'N', '*', 'E'};
+  private static final char[] START_END_CHARS = {'A', 'B', 'C', 'D'};
+  private static final char[] ALT_START_END_CHARS = {'T', 'N', '*', 'E'};
+  private static final char[] CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED = {'/', ':', '+', '.'};
+  private static final char DEFAULT_GUARD = START_END_CHARS[0];
 
   @Override
   public boolean[] encode(String contents) {
 
-    // Verify input and calculate decoded length.
-    if (!CodaBarReader.arrayContains(START_CHARS, Character.toUpperCase(contents.charAt(0)))) {
-      throw new IllegalArgumentException(
-          "Codabar should start with one of the following: " + Arrays.toString(START_CHARS));
+    if (contents.length() < 2) {
+      // Can't have a start/end guard, so tentatively add default guards
+      contents = DEFAULT_GUARD + contents + DEFAULT_GUARD;
+    } else {
+      // Verify input and calculate decoded length.
+      char firstChar = Character.toUpperCase(contents.charAt(0));
+      char lastChar = Character.toUpperCase(contents.charAt(contents.length() - 1));
+      boolean startsNormal = CodaBarReader.arrayContains(START_END_CHARS, firstChar);
+      boolean endsNormal = CodaBarReader.arrayContains(START_END_CHARS, lastChar);
+      boolean startsAlt = CodaBarReader.arrayContains(ALT_START_END_CHARS, firstChar);
+      boolean endsAlt = CodaBarReader.arrayContains(ALT_START_END_CHARS, lastChar);
+      if (startsNormal) {
+        if (!endsNormal) {
+          throw new IllegalArgumentException("Invalid start/end guards: " + contents);
+        }
+        // else already has valid start/end
+      } else if (startsAlt) {
+        if (!endsAlt) {
+          throw new IllegalArgumentException("Invalid start/end guards: " + contents);
+        }
+        // else already has valid start/end
+      } else {
+        // Doesn't start with a guard
+        if (endsNormal || endsAlt) {
+          throw new IllegalArgumentException("Invalid start/end guards: " + contents);
+        }
+        // else doesn't end with guard either, so add a default
+        contents = DEFAULT_GUARD + contents + DEFAULT_GUARD;
+      }
     }
-    if (!CodaBarReader.arrayContains(END_CHARS, Character.toUpperCase(contents.charAt(contents.length() - 1)))) {
-      throw new IllegalArgumentException(
-          "Codabar should end with one of the following: " + Arrays.toString(END_CHARS));
-    }
+
     // The start character and the end character are decoded to 10 length each.
     int resultLength = 20;
-    char[] charsWhichAreTenLengthEachAfterDecoded = {'/', ':', '+', '.'};
     for (int i = 1; i < contents.length() - 1; i++) {
-      if (Character.isDigit(contents.charAt(i)) || contents.charAt(i) == '-'
-          || contents.charAt(i) == '$') {
+      if (Character.isDigit(contents.charAt(i)) || contents.charAt(i) == '-' || contents.charAt(i) == '$') {
         resultLength += 9;
-      } else if (CodaBarReader.arrayContains(
-          charsWhichAreTenLengthEachAfterDecoded, contents.charAt(i))) {
+      } else if (CodaBarReader.arrayContains(CHARS_WHICH_ARE_TEN_LENGTH_EACH_AFTER_DECODED, contents.charAt(i))) {
         resultLength += 10;
       } else {
         throw new IllegalArgumentException("Cannot encode : '" + contents.charAt(i) + '\'');
@@ -61,8 +80,8 @@ public final class CodaBarWriter extends OneDimensionalCodeWriter {
     int position = 0;
     for (int index = 0; index < contents.length(); index++) {
       char c = Character.toUpperCase(contents.charAt(index));
-      if (index == contents.length() - 1) {
-        // The end chars are not in the CodaBarReader.ALPHABET.
+      if (index == 0 || index == contents.length() - 1) {
+        // The start/end chars are not in the CodaBarReader.ALPHABET.
         switch (c) {
           case 'T':
             c = 'A';

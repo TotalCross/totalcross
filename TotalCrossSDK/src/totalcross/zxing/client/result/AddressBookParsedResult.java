@@ -17,6 +17,9 @@
 package totalcross.zxing.client.result;
 
 /**
+ * Represents a parsed result that encodes contact information, like that in an address book
+ * entry.
+ *
  * @author Sean Owen
  */
 public final class AddressBookParsedResult extends ParsedResult {
