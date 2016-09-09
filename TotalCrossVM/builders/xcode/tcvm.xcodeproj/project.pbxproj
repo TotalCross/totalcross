@@ -404,6 +404,9 @@
 		3A2B6B261577F4BD00E3993A /* childview.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B6B251577F4BD00E3993A /* childview.m */; };
 		3A52AACB1627275900DCEE4A /* gfx_Graphics_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */; };
 		3A5AE222159B63E8000A0B5B /* media_Camera_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A5AE221159B63E7000A0B5B /* media_Camera_c.h */; };
+		3A6D32991D6C822200707721 /* sha384.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A6D32961D6C822200707721 /* sha384.c */; };
+		3A6D329A1D6C822200707721 /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A6D32971D6C822200707721 /* sha512.c */; };
+		3A6D329B1D6C822200707721 /* x509.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A6D32981D6C822200707721 /* x509.c */; };
 		3A819A611D490AD900B6D4A4 /* jaricom.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A571D490AD900B6D4A4 /* jaricom.c */; };
 		3A819A621D490AD900B6D4A4 /* jcarith.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A581D490AD900B6D4A4 /* jcarith.c */; };
 		3A819A631D490AD900B6D4A4 /* jctrans.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A591D490AD900B6D4A4 /* jctrans.c */; };
@@ -827,6 +830,9 @@
 		3A2B6B251577F4BD00E3993A /* childview.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.objc; path = childview.m; sourceTree = "<group>"; tabWidth = 3; };
 		3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfx_Graphics_c.h; path = ../android/gfx_Graphics_c.h; sourceTree = "<group>"; };
 		3A5AE221159B63E7000A0B5B /* media_Camera_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = media_Camera_c.h; sourceTree = "<group>"; };
+		3A6D32961D6C822200707721 /* sha384.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sha384.c; sourceTree = "<group>"; };
+		3A6D32971D6C822200707721 /* sha512.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sha512.c; sourceTree = "<group>"; };
+		3A6D32981D6C822200707721 /* x509.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = x509.c; sourceTree = "<group>"; };
 		3A819A571D490AD900B6D4A4 /* jaricom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jaricom.c; sourceTree = "<group>"; };
 		3A819A581D490AD900B6D4A4 /* jcarith.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jcarith.c; sourceTree = "<group>"; };
 		3A819A591D490AD900B6D4A4 /* jctrans.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jctrans.c; sourceTree = "<group>"; };
@@ -915,6 +921,9 @@
 		0F8C89FB1549CFC700E0967F /* axtls */ = {
 			isa = PBXGroup;
 			children = (
+				3A6D32961D6C822200707721 /* sha384.c */,
+				3A6D32971D6C822200707721 /* sha512.c */,
+				3A6D32981D6C822200707721 /* x509.c */,
 				0F8C89FC1549CFC700E0967F /* aes.c */,
 				0F8C89FD1549CFC700E0967F /* asn1.c */,
 				0F8C89FE1549CFC700E0967F /* axssl_config.h */,
@@ -2214,6 +2223,7 @@
 				0F8C8CCA1549CFC700E0967F /* jmemmgr.c in Sources */,
 				0F8C8CCB1549CFC700E0967F /* jmemnobs.c in Sources */,
 				0F8C8CD01549CFC700E0967F /* JpegLoader.c in Sources */,
+				3A6D329A1D6C822200707721 /* sha512.c in Sources */,
 				0F8C8CD11549CFC700E0967F /* jquant1.c in Sources */,
 				0F8C8CD21549CFC700E0967F /* jquant2.c in Sources */,
 				0F8C8CD31549CFC700E0967F /* jutils.c in Sources */,
@@ -2263,6 +2273,7 @@
 				0F8C8D4B1549CFC700E0967F /* Vm.c in Sources */,
 				0F8C8D561549CFC700E0967F /* Control.c in Sources */,
 				0F8C8D591549CFC700E0967F /* AudioPlayer.m in Sources */,
+				3A6D32991D6C822200707721 /* sha384.c in Sources */,
 				3A819A6A1D490AD900B6D4A4 /* jidctint.c in Sources */,
 				0F8C8D5B1549CFC700E0967F /* AudioQueueObject.m in Sources */,
 				0F8C8D661549CFC700E0967F /* media_Sound_c.m in Sources */,
@@ -2328,6 +2339,7 @@
 				0F8C8E171549CFC700E0967F /* utils.c in Sources */,
 				15A29ADA189C4D3C007C420B /* NativeDB.c in Sources */,
 				0F8C8E201549CFC700E0967F /* xtypes.c in Sources */,
+				3A6D329B1D6C822200707721 /* x509.c in Sources */,
 				0F8C8E221549CFC700E0967F /* adler32.c in Sources */,
 				0F8C8E231549CFC700E0967F /* compress.c in Sources */,
 				0F8C8E241549CFC700E0967F /* crc32.c in Sources */,

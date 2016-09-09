@@ -532,8 +532,10 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define MALLOC_INSPECT_ALL 1
 #define DEFAULT_GRANULARITY 2*1024*1024   // guich@tc124_17: 2MB       - tc330: increased for all platforms
 #define DEFAULT_MMAP_THRESHOLD MAX_SIZE_T // guich@tc124_17: DISABLE
+#if !defined(WINCE) || !defined(DEBUG)
 #define ABORT_ON_ASSERT_FAILURE 0 // prevent programs
 #define PROCEED_ON_ERROR 0        // crash
+#endif
 #define MAX_RELEASE_CHECK_RATE MAX_SIZE_T // guich@tc330: prevent memory from being recovered
 void tcabort(char* msg, char* file, int line);
 

@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007-2014, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -27,10 +39,6 @@
 #include "crypto.h"
 
 #define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
-
-#ifdef CONFIG_BIGINT_CRT
-static bigint *bi_crt(const RSA_CTX *rsa, bigint *bi);
-#endif
 
 static void RSA_priv_key_new_common(RSA_CTX *rsa_ctx,
         const uint8_t *modulus, int mod_len,
@@ -109,6 +117,8 @@ void RSA_pub_key_new(RSA_CTX **ctx,
         const uint8_t *modulus, int mod_len,
         const uint8_t *pub_exp, int pub_len)
 {
+    if (*ctx)   /* if we load multiple certs, dump the old one */
+        RSA_free(*ctx);
     *ctx = (RSA_CTX *)calloc(1, sizeof(RSA_CTX));
     RSA_pub_key_new_external(*ctx, modulus, mod_len, pub_exp, pub_len);
 }
@@ -119,7 +129,7 @@ void RSA_pub_key_new_external(RSA_CTX *rsa_ctx,
 {
    BI_CTX *bi_ctx = bi_initialize();
    rsa_ctx->bi_ctx = bi_ctx;
-   rsa_ctx->num_octets = (mod_len & 0xFFF0);
+    rsa_ctx->num_octets = (mod_len & 0xFFF0);
    rsa_ctx->m = bi_import(bi_ctx, modulus, mod_len);
    bi_set_mod(bi_ctx, rsa_ctx->m, BIGINT_M_OFFSET);
    rsa_ctx->e = bi_import(bi_ctx, pub_exp, pub_len);
@@ -172,21 +182,26 @@ void RSA_free_external(RSA_CTX *rsa_ctx)
 /**
  * @brief Use PKCS1.5 for decryption/verification.
  * @param ctx [in] The context
- * @param in_data [in] The data to encrypt (must be < modulus size-11)
- * @param out_data [out] The encrypted data.
+ * @param in_data [in] The data to decrypt (must be < modulus size-11)
+ * @param out_data [out] The decrypted data.
+ * @param out_len [int] The size of the decrypted buffer in bytes
  * @param is_decryption [in] Decryption or verify operation.
  * @return  The number of bytes that were originally encrypted. -1 on error.
  * @see http://www.rsasecurity.com/rsalabs/node.asp?id=2125
  */
-int RSA_decrypt(const RSA_CTX *ctx, const uint8_t *in_data,
-                            uint8_t *out_data, int is_decryption)
+int RSA_decrypt(const RSA_CTX *ctx, const uint8_t *in_data, 
+                            uint8_t *out_data, int out_len, int is_decryption)
 {
-    int byte_size = ctx->num_octets;
-    uint8_t *block;
-    int i, size;
+    const int byte_size = ctx->num_octets;
+    int i = 0, size;
     bigint *decrypted_bi, *dat_bi;
+    uint8_t *block = (uint8_t *)alloca(byte_size);
+    int pad_count = 0;
 
-    memset(out_data, 0, byte_size); /* initialise */
+    if (out_len < byte_size)        /* check output has enough size */
+        return -1;
+
+    memset(out_data, 0, out_len);   /* initialise */
 
     /* decrypt */
     dat_bi = bi_import(ctx->bi_ctx, in_data, byte_size);
@@ -198,32 +213,39 @@ int RSA_decrypt(const RSA_CTX *ctx, const uint8_t *in_data,
 #endif
 
     /* convert to a normal block */
-    block = (uint8_t *)malloc(byte_size+64);
     bi_export(ctx->bi_ctx, decrypted_bi, block, byte_size);
 
-    i = 10; /* start at the first possible non-padded byte */
+    if (block[i++] != 0)             /* leading 0? */
+        return -1;
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION
     if (is_decryption == 0) /* PKCS1.5 signing pads with "0xff"s */
     {
-        while (block[i++] == 0xff && i < byte_size);
+        if (block[i++] != 0x01)     /* BT correct? */
+            return -1;
 
-        if (block[i-2] != 0xff)
-            i = byte_size;     /*ensure size is 0 */
+        while (block[i++] == 0xff && i < byte_size)
+            pad_count++;
     }
     else                    /* PKCS1.5 encryption padding is random */
 #endif
     {
-        while (block[i++] && i < byte_size);
+        if (block[i++] != 0x02)     /* BT correct? */
+            return -1;
+
+        while (block[i++] && i < byte_size)
+            pad_count++;
     }
+
+    /* check separator byte 0x00 - and padding must be 8 or more bytes */
+    if (i == byte_size || pad_count < 8) 
+        return -1;
+
     size = byte_size - i;
 
     /* get only the bit we want */
-    if (size > 0)
-        memcpy(out_data, &block[i], size);
-
-    free(block);
-    return size ? size : -1;
+    memcpy(out_data, &block[i], size);
+    return size;
 }
 
 /**
@@ -232,7 +254,7 @@ int RSA_decrypt(const RSA_CTX *ctx, const uint8_t *in_data,
 bigint *RSA_private(const RSA_CTX *c, bigint *bi_msg)
 {
 #ifdef CONFIG_BIGINT_CRT
-    return bi_crt(c, bi_msg);
+    return bi_crt(c->bi_ctx, bi_msg, c->dP, c->dQ, c->p, c->q, c->qInv);
 #else
     BI_CTX *ctx = c->bi_ctx;
     ctx->mod_offset = BIGINT_M_OFFSET;
@@ -240,44 +262,11 @@ bigint *RSA_private(const RSA_CTX *c, bigint *bi_msg)
 #endif
 }
 
-#ifdef CONFIG_BIGINT_CRT
-/**
- * Use the Chinese Remainder Theorem to quickly perform RSA decrypts.
- * This should really be in bigint.c (and was at one stage), but needs
- * access to the RSA_CTX context...
- */
-static bigint *bi_crt(const RSA_CTX *rsa, bigint *bi)
-{
-    BI_CTX *ctx = rsa->bi_ctx;
-    bigint *m1, *m2, *h;
-
-    /* Montgomery has a condition the 0 < x, y < m and these products violate
-     * that condition. So disable Montgomery when using CRT */
-#if defined(CONFIG_BIGINT_MONTGOMERY)
-    ctx->use_classical = 1;
-#endif
-    ctx->mod_offset = BIGINT_P_OFFSET;
-    m1 = bi_mod_power(ctx, bi_copy(bi), rsa->dP);
-
-    ctx->mod_offset = BIGINT_Q_OFFSET;
-    m2 = bi_mod_power(ctx, bi, rsa->dQ);
-
-    h = bi_subtract(ctx, bi_add(ctx, m1, rsa->p), bi_copy(m2), NULL);
-    h = bi_multiply(ctx, h, rsa->qInv);
-    ctx->mod_offset = BIGINT_P_OFFSET;
-    h = bi_residue(ctx, h);
-#if defined(CONFIG_BIGINT_MONTGOMERY)
-    ctx->use_classical = 0;         /* reset for any further operation */
-#endif
-    return bi_add(ctx, m2, bi_multiply(ctx, rsa->q, h));
-}
-#endif
-
 #ifdef CONFIG_SSL_FULL_MODE
 /**
  * Used for diagnostics.
  */
-void RSA_print(const RSA_CTX *rsa_ctx)
+void RSA_print(const RSA_CTX *rsa_ctx) 
 {
     if (rsa_ctx == NULL)
         return;
@@ -290,7 +279,7 @@ void RSA_print(const RSA_CTX *rsa_ctx)
 }
 #endif
 
-#ifdef CONFIG_SSL_CERT_VERIFICATION
+#if defined(CONFIG_SSL_CERT_VERIFICATION) || defined(CONFIG_SSL_GENERATE_X509_CERT)
 /**
  * Performs c = m^e mod n
  */
@@ -304,7 +293,7 @@ bigint *RSA_public(const RSA_CTX * c, bigint *bi_msg)
  * Use PKCS1.5 for encryption/signing.
  * see http://www.rsasecurity.com/rsalabs/node.asp?id=2125
  */
-int RSA_encrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint16_t in_len,
+int RSA_encrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint16_t in_len, 
         uint8_t *out_data, int is_signing)
 {
     int byte_size = ctx->num_octets;
@@ -319,10 +308,11 @@ int RSA_encrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint16_t in_len,
         out_data[1] = 1;        /* PKCS1.5 signing pads with "0xff"'s */
         memset(&out_data[2], 0xff, num_pads_needed);
     }
-    else /* randomize the encryption padding with non-zero bytes */
+    else /* randomize the encryption padding with non-zero bytes */   
     {
         out_data[1] = 2;
-        get_random_NZ(num_pads_needed, &out_data[2]);
+        if (get_random_NZ(num_pads_needed, &out_data[2]) < 0)
+            return -1;
     }
 
     out_data[2+num_pads_needed] = 0;
@@ -330,53 +320,13 @@ int RSA_encrypt(const RSA_CTX *ctx, const uint8_t *in_data, uint16_t in_len,
 
     /* now encrypt it */
     dat_bi = bi_import(ctx->bi_ctx, out_data, byte_size);
-    encrypt_bi = is_signing ? RSA_private(ctx, dat_bi) :
-        RSA_public(ctx, dat_bi);
+    encrypt_bi = is_signing ? RSA_private(ctx, dat_bi) : 
+                              RSA_public(ctx, dat_bi);
     bi_export(ctx->bi_ctx, encrypt_bi, out_data, byte_size);
+
+    /* save a few bytes of memory */
+    bi_clear_cache(ctx->bi_ctx);
     return byte_size;
-}
-
-/**
- * Take a signature and decrypt it.
- */
-bigint *RSA_sign_verify(BI_CTX *ctx, const uint8_t *sig, int sig_len,
-        bigint *modulus, bigint *pub_exp)
-{
-    uint8_t *block;
-    int i, size;
-    bigint *decrypted_bi, *dat_bi;
-    bigint *bir = NULL;
-
-    block = (uint8_t *)malloc(sig_len+64);
-
-    /* decrypt */
-    dat_bi = bi_import(ctx, sig, sig_len);
-    ctx->mod_offset = BIGINT_M_OFFSET;
-
-    /* convert to a normal block */
-    decrypted_bi = bi_mod_power2(ctx, dat_bi, modulus, pub_exp);
-
-    bi_export(ctx, decrypted_bi, block, sig_len);
-    ctx->mod_offset = BIGINT_M_OFFSET;
-
-    i = 10; /* start at the first possible non-padded byte */
-    while (block[i++] && i < sig_len);
-    size = sig_len - i;
-
-    /* get only the bit we want */
-    if (size > 0)
-    {
-        int len;
-        const uint8_t *sig_ptr = x509_get_signature(&block[i], &len);
-
-        if (sig_ptr)
-        {
-            bir = bi_import(ctx, sig_ptr, len);
-        }
-    }
-
-    free(block);
-    return bir;
 }
 
 #endif  /* CONFIG_SSL_CERT_VERIFICATION */

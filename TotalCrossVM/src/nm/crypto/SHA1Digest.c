@@ -42,13 +42,13 @@ TC_API void tcdSHA1D_process_B(NMParams p) // totalcross/crypto/digest/SHA1Diges
       return;
    }
 
-   SHA1Init(ctx);
-   SHA1Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
+   SHA1_Init(ctx);
+   SHA1_Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
 
    if ((byteArrayResult = createByteArray(p->currentContext, SHA1_SIZE)) != null)
    {
       p->retO = byteArrayResult;
       setObjectLock(byteArrayResult, UNLOCKED);
-      SHA1Final(ctx, ARRAYOBJ_START(byteArrayResult));
+      SHA1_Final(ARRAYOBJ_START(byteArrayResult), ctx);
    }
 }

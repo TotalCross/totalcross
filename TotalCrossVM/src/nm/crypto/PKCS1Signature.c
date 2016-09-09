@@ -315,7 +315,7 @@ TC_API void tcsPKCS1S_doVerify_BB(NMParams p) // totalcross/crypto/signature/PKC
       goto cleanup;
    }
 
-   sigDigestLen = RSA_decrypt(ctx, ARRAYOBJ_START(signature), decBuf, false); // get the original decrypted signature package
+   sigDigestLen = RSA_decrypt(ctx, ARRAYOBJ_START(signature), decBuf, ARRAYOBJ_LEN(RSAPublicKey_n(key)), false); // get the original decrypted signature package
    if (sigDigestLen == -1) // error decrypting
    {
       throwException(p->currentContext, CryptoException, "Signature error");

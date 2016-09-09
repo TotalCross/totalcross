@@ -42,13 +42,13 @@ TC_API void tcdSHA256D_process_B(NMParams p) // totalcross/crypto/digest/SHA256D
       return;
    }
 
-   SHA256Init(ctx);
-   SHA256Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
+   SHA256_Init(ctx);
+   SHA256_Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
 
    if ((byteArrayResult = createByteArray(p->currentContext, SHA256_SIZE)) != null)
    {
       p->retO = byteArrayResult;
       setObjectLock(byteArrayResult, UNLOCKED);
-      SHA256Final(ctx, ARRAYOBJ_START(byteArrayResult));
+      SHA256_Final(ARRAYOBJ_START(byteArrayResult), ctx);
    }
 }

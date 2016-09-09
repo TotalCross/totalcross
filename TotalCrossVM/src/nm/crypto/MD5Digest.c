@@ -42,13 +42,13 @@ TC_API void tcdMD5D_process_B(NMParams p) // totalcross/crypto/digest/MD5Digest 
       return;
    }
 
-   MD5Init(ctx);
-   MD5Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
+   MD5_Init(ctx);
+   MD5_Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
 
    if ((byteArrayResult = createByteArray(p->currentContext, MD5_SIZE)) != null)
    {
       p->retO = byteArrayResult;
       setObjectLock(byteArrayResult, UNLOCKED);
-      MD5Final(ctx, ARRAYOBJ_START(byteArrayResult));
+      MD5_Final(ARRAYOBJ_START(byteArrayResult), ctx);
    }
 }
