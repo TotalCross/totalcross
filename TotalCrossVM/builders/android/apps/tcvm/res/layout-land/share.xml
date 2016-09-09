@@ -15,6 +15,7 @@
  limitations under the License.
  -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_gravity="center"
@@ -27,7 +28,8 @@
       android:layout_height="wrap_content"
       android:gravity="center"
       android:text="@string/msg_share_explanation"
-      android:paddingBottom="12dip"/>
+      android:paddingBottom="12dip"
+      android:textIsSelectable="false"/>
 
   <LinearLayout
       android:layout_width="fill_parent"
@@ -38,9 +40,11 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:scaleType="center"
         android:src="@drawable/share_via_barcode"
-        android:paddingRight="24dip"/>
+        android:paddingRight="24dip"
+        tools:ignore="ContentDescription"/>
 
     <LinearLayout
         android:layout_width="0dip"
@@ -49,13 +53,11 @@
         android:orientation="vertical">
 
       <Button android:id="@+id/share_app_button"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
+              style="@style/ShareButton"
               android:text="@string/button_share_app"/>
 
       <Button android:id="@+id/share_contact_button"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
+              style="@style/ShareButton"
               android:text="@string/button_share_contact"/>
 
     </LinearLayout>
@@ -67,13 +69,11 @@
         android:orientation="vertical">
 
       <Button android:id="@+id/share_bookmark_button"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
+              style="@style/ShareButton"
               android:text="@string/button_share_bookmark"/>
 
       <Button android:id="@+id/share_clipboard_button"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
+              style="@style/ShareButton"
               android:text="@string/button_share_clipboard"/>
 
     </LinearLayout>
