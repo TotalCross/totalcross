@@ -34,7 +34,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import totalcross.zxing.client.android.CaptureActivity;
+import totalcross.android.CaptureActivity;
 import totalcross.zxing.client.android.Intents;
 import totalcross.zxing.client.android.R;
 

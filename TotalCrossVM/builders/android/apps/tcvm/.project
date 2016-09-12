@@ -66,6 +66,11 @@
 			<type>2</type>
 			<locationURI>TOTALCROSS_REPO_LOC/TotalCrossVM/src</locationURI>
 		</link>
+      <link>
+			<name>src_java/totalcross/AndroidUtils.java</name>
+			<type>1</type>
+			<locationURI>TOTALCROSS_REPO_LOC/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</locationURI>
+		</link>
 	</linkedResources>
 	<variableList>
 		<variable>

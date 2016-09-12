@@ -23,7 +23,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import totalcross.zxing.client.android.CaptureActivity;
+import totalcross.android.CaptureActivity;
 import totalcross.zxing.client.android.R;
 import totalcross.zxing.client.android.wifi.WifiConfigManager;
 import totalcross.zxing.client.result.ParsedResult;

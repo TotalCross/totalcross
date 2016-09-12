@@ -32,7 +32,7 @@ import java.io.IOException;
 /**
  * Manages beeps and vibrations for {@link CaptureActivity}.
  */
-final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
+public final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
 
   private static final String TAG = BeepManager.class.getSimpleName();
 
@@ -44,13 +44,13 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
   private boolean playBeep;
   private boolean vibrate;
 
-  BeepManager(Activity activity) {
+  public BeepManager(Activity activity) {
     this.activity = activity;
     this.mediaPlayer = null;
     updatePrefs();
   }
 
-  synchronized void updatePrefs() {
+  public synchronized void updatePrefs() {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
     playBeep = shouldBeep(prefs, activity);
     vibrate = prefs.getBoolean(PreferencesActivity.KEY_VIBRATE, false);
@@ -62,7 +62,7 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
     }
   }
 
-  synchronized void playBeepSoundAndVibrate() {
+  public synchronized void playBeepSoundAndVibrate() {
     if (playBeep && mediaPlayer != null) {
       mediaPlayer.start();
     }
@@ -85,25 +85,20 @@ final class BeepManager implements MediaPlayer.OnErrorListener, Closeable {
   }
 
   private MediaPlayer buildMediaPlayer(Context activity) {
-    MediaPlayer mediaPlayer = new MediaPlayer();
-    try {
-      AssetFileDescriptor file = activity.getResources().openRawResourceFd(R.raw.beep);
-      try {
-        mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
-      } finally {
-        file.close();
-      }
-      mediaPlayer.setOnErrorListener(this);
-      mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-      mediaPlayer.setLooping(false);
-      mediaPlayer.setVolume(BEEP_VOLUME, BEEP_VOLUME);
-      mediaPlayer.prepare();
-      return mediaPlayer;
-    } catch (IOException ioe) {
-      Log.w(TAG, ioe);
-      mediaPlayer.release();
+//     MediaPlayer mediaPlayer = null;
+//     try {
+//     mediaPlayer = MediaPlayer.create(totalcross.Launcher4A.loader, R.raw.beep);
+//      mediaPlayer.setOnErrorListener(this);
+//      mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//      mediaPlayer.setLooping(false);
+//      mediaPlayer.setVolume(BEEP_VOLUME, BEEP_VOLUME);
+//      mediaPlayer.prepare();
+//      return mediaPlayer;
+//    } catch (IOException ioe) {
+//      Log.w(TAG, ioe);
+//      if (mediaPlayer != null) mediaPlayer.release();
       return null;
-    }
+//    }
   }
 
   @Override

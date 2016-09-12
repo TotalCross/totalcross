@@ -28,11 +28,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-final class DecodeFormatManager {
+public final class DecodeFormatManager {
 
   private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
-  static final Set<BarcodeFormat> PRODUCT_FORMATS;
+  public static final Set<BarcodeFormat> PRODUCT_FORMATS;
   static final Set<BarcodeFormat> INDUSTRIAL_FORMATS;
   private static final Set<BarcodeFormat> ONE_D_FORMATS;
   static final Set<BarcodeFormat> QR_CODE_FORMATS = EnumSet.of(BarcodeFormat.QR_CODE);
@@ -67,7 +67,7 @@ final class DecodeFormatManager {
 
   private DecodeFormatManager() {}
 
-  static Set<BarcodeFormat> parseDecodeFormats(Intent intent) {
+  public static Set<BarcodeFormat> parseDecodeFormats(Intent intent) {
     Iterable<String> scanFormats = null;
     CharSequence scanFormatsString = intent.getStringExtra(Intents.Scan.FORMATS);
     if (scanFormatsString != null) {
@@ -76,7 +76,7 @@ final class DecodeFormatManager {
     return parseDecodeFormats(scanFormats, intent.getStringExtra(Intents.Scan.MODE));
   }
 
-  static Set<BarcodeFormat> parseDecodeFormats(Uri inputUri) {
+  public static Set<BarcodeFormat> parseDecodeFormats(Uri inputUri) {
     List<String> formats = inputUri.getQueryParameters(Intents.Scan.FORMATS);
     if (formats != null && formats.size() == 1 && formats.get(0) != null) {
       formats = Arrays.asList(COMMA_PATTERN.split(formats.get(0)));

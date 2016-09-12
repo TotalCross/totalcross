@@ -28,7 +28,7 @@ import android.util.Log;
 /**
  * Finishes an activity after a period of inactivity if the device is on battery power.
  */
-final class InactivityTimer {
+public final class InactivityTimer {
 
   private static final String TAG = InactivityTimer.class.getSimpleName();
 
@@ -39,20 +39,20 @@ final class InactivityTimer {
   private boolean registered;
   private AsyncTask<Object,Object,Object> inactivityTask;
 
-  InactivityTimer(Activity activity) {
+  public InactivityTimer(Activity activity) {
     this.activity = activity;
     powerStatusReceiver = new PowerStatusReceiver();
     registered = false;
     onActivity();
   }
 
-  synchronized void onActivity() {
+  public synchronized void onActivity() {
     cancel();
     inactivityTask = new InactivityAsyncTask();
     inactivityTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
   }
 
-  synchronized void onPause() {
+  public synchronized void onPause() {
     cancel();
     if (registered) {
       activity.unregisterReceiver(powerStatusReceiver);
@@ -62,7 +62,7 @@ final class InactivityTimer {
     }
   }
 
-  synchronized void onResume() {
+  public synchronized void onResume() {
     if (registered) {
       Log.w(TAG, "PowerStatusReceiver was already registered?");
     } else {
@@ -80,7 +80,7 @@ final class InactivityTimer {
     }
   }
 
-  void shutdown() {
+  public void shutdown() {
     cancel();
   }
 

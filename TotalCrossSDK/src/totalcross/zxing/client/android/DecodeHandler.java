@@ -24,6 +24,7 @@ import totalcross.zxing.PlanarYUVLuminanceSource;
 import totalcross.zxing.ReaderException;
 import totalcross.zxing.Result;
 import totalcross.zxing.common.HybridBinarizer;
+import totalcross.android.CaptureActivity;
 
 import android.os.Bundle;
 import android.os.Handler;

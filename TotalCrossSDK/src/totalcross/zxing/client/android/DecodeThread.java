@@ -19,6 +19,7 @@ package totalcross.zxing.client.android;
 import totalcross.zxing.BarcodeFormat;
 import totalcross.zxing.DecodeHintType;
 import totalcross.zxing.ResultPointCallback;
+import totalcross.android.CaptureActivity;
 
 import android.content.SharedPreferences;
 import android.os.Handler;

@@ -17,7 +17,7 @@
 package totalcross.zxing.client.android.result;
 
 import totalcross.zxing.Result;
-import totalcross.zxing.client.android.CaptureActivity;
+import totalcross.android.CaptureActivity;
 import totalcross.zxing.client.result.ParsedResult;
 import totalcross.zxing.client.result.ResultParser;
 

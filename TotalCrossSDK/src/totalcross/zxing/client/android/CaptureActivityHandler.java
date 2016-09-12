@@ -21,10 +21,11 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.BitmapFactory;
 import android.provider.Browser;
-import totalcross.zxing.BarcodeFormat;
+import totalcross.zxing.*;
 import totalcross.zxing.DecodeHintType;
 import totalcross.zxing.Result;
 import totalcross.zxing.client.android.camera.CameraManager;
+import totalcross.android.CaptureActivity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -58,7 +59,7 @@ public final class CaptureActivityHandler extends Handler {
     DONE
   }
 
-  CaptureActivityHandler(CaptureActivity activity,
+  public CaptureActivityHandler(CaptureActivity activity,
                          Collection<BarcodeFormat> decodeFormats,
                          Map<DecodeHintType,?> baseHints,
                          String characterSet,
