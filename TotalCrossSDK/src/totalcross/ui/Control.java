@@ -242,7 +242,7 @@ public class Control extends GfxSurface
    protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
    public boolean eventsEnabled = true;
 
-   static Rect cli = new Rect();
+   Rect cli = new Rect();
    /** Specifies if this device is a tablet, computing the number of text lines.
     */
    public static boolean isTablet;
@@ -642,7 +642,7 @@ public class Control extends GfxSurface
          repositionAllowed = true;
          int lpx=0,lpy=0;
          Container parent = this.parent; // guich@450_36: use local var instead of field
-         Rect cli = Control.cli; // guich@450_36: avoid recreating Rects
+         Rect cli = this.cli; // guich@450_36: avoid recreating Rects
          // relative placement
          if (parent != null)
          {
