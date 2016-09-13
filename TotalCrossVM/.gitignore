@@ -15,3 +15,4 @@ builders/droid/gradlew
 builders/droid/gradlew.bat
 builders/droid/*.log
 builders/droid/*.properties
+builders/*.pui
