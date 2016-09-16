@@ -61,23 +61,26 @@ TC_API void tuzZF_createZipFile_f(NMParams p) // totalcross/util/zip/ZipFile nat
    else
    {
       zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
-      initializeZipNative(p->currentContext, zipNativeP, streamObj);
-
-      fill_fopen_filefunc(&zipNativeP->zlib_def);
-      zipNativeP->zlib_def.opaque = p->currentContext;
-
-      zipNativeP->zipFile = unzOpen2((char*) streamObj, &zipNativeP->zlib_def);
-
-      if (zipNativeP->zipFile != null)
+      if (!initializeZipNative(p->currentContext, zipNativeP, streamObj))
+         throwException(p->currentContext, IOException, "Failed to initialize zip context");
+      else
       {
-         err = unzGetGlobalInfo(zipNativeP->zipFile, &unzGlobalInfo);
-         if (err == UNZ_OK)
-         {
-            ZipFile_nativeFile(zipFile) = zipNativeObj;
-            ZipFile_size(zipFile) = (int32)unzGlobalInfo.number_entry;
-            setObjectLock(zipNativeObj, UNLOCKED);
+         fill_fopen_filefunc(&zipNativeP->zlib_def);
+         zipNativeP->zlib_def.opaque = zipNativeP;
 
-            p->retO = zipFile;
+         zipNativeP->zipFile = unzOpen2((char*)streamObj, &zipNativeP->zlib_def);
+
+         if (zipNativeP->zipFile != null)
+         {
+            err = unzGetGlobalInfo(zipNativeP->zipFile, &unzGlobalInfo);
+            if (err == UNZ_OK)
+            {
+               ZipFile_nativeFile(zipFile) = zipNativeObj;
+               ZipFile_size(zipFile) = (int32)unzGlobalInfo.number_entry;
+               setObjectLock(zipNativeObj, UNLOCKED);
+
+               p->retO = zipFile;
+            }
          }
       }
    }
