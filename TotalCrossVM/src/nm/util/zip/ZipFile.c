@@ -494,6 +494,9 @@ TC_API void tuzZS_readBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream nat
    uint8* bufP = ARRAYOBJ_START(buf);
    int32 ret;
 
+   if (zipNativeObj == null)
+      throwException(p->currentContext, IOException, "Stream not initialized.");
+   else
    if (mode != 2) // INFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in INFLATE mode.");
    else if ((ret = unzReadCurrentFile(zipNativeP->zipFile, bufP + start, count)) < 0)
@@ -514,6 +517,9 @@ TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream na
    uint8* bufP = ARRAYOBJ_START(buf);
    Err err;
 
+   if (zipNativeObj == null)
+      throwException(p->currentContext, IOException, "Stream not initialized.");
+   else
    if (mode != 1) // DEFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in DEFLATE mode.");
    else if ((err = zipWriteInFileInZip(zipNativeP->zipFile, bufP + start, count)) != ZIP_OK)
@@ -531,6 +537,12 @@ TC_API void tuzZS_close(NMParams p) // totalcross/util/zip/ZipStream native publ
    int32 mode = CompressedStream_mode(zipStream);
    Err err;
 
+   if (zipNativeObj == null)
+   {
+      CompressedStream_mode(zipStream) = 0;
+      throwException(p->currentContext, IOException, "Stream not initialized.");
+      return;
+   }
    executeMethod(p->currentContext, zipNativeP->streamTell, CompressedStream_streamRef(zipStream));
    if (p->currentContext->thrownException != null)
    {
