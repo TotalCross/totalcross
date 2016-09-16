@@ -5,6 +5,8 @@ import totalcross.Launcher;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 
+/** @deprecated This class was never fully implemented. Use ZipStream instead. */
+
 public class ZipFile
 {
    private java.util.zip.ZipFile nativeFile;
