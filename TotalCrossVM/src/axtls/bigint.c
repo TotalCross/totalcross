@@ -76,7 +76,6 @@
 
 #include "crypto.h"
 
-#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
 #define abort() tcabort("BIGINT", __FILE__,__LINE__); // TOTALCROSS
 
 #if defined(__SYMBIAN32__) && !defined(EKA2)
