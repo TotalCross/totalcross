@@ -792,7 +792,8 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
 TC_API uint8 *privateXcalloc(uint32 NumOfElements,uint32 SizeOfElements,const char *file, int line)
 {
 #if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
-	uint8 *ptr;
+   uint8 *ptr;
+   uint32 size = NumOfElements * SizeOfElements;
 
    if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
       return null;
