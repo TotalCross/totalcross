@@ -70,10 +70,11 @@ public class SSLSocket extends Socket
          if (e != null)
             throw new IOException(e.getMessage());
          int status;
-         while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
+         for (int elapsedTime = 0 ; (status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS && elapsedTime < super.readTimeout ; elapsedTime += 25) {
             Vm.sleep(25);
+         }
          if (status != Constants.SSL_OK)
-            throw new IOException("SSL handshake failed");
+            throw new IOException("SSL handshake failed: " + status);
          sslReader = new SSLReadHolder();
          buffer = new ByteArrayStream(256);
          buffer.mark();
@@ -89,7 +90,6 @@ public class SSLSocket extends Socket
          }
          if (e instanceof IOException)
             throw (IOException) e;
-         else
             throw new IOException(e.getMessage());
       }
    }
