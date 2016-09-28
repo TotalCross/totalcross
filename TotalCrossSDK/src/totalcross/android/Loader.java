@@ -36,6 +36,7 @@ import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import com.google.zxing.integration.android.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -144,6 +145,12 @@ public class Loader extends Activity implements BarcodeReadListener
          case MAP_RETURN:
             Launcher4A.showingMap = false;
             break;
+         case IntentIntegrator.REQUEST_CODE:
+         {
+            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            Launcher4A.zxingResult = result.getContents();
+            Launcher4A.callingZXing = false;
+         } break;
          case ZXING_RETURN:
             Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringExtra("SCAN_RESULT") : null;
             Launcher4A.callingZXing = false;
@@ -525,16 +532,25 @@ public class Loader extends Activity implements BarcodeReadListener
                   if (s1.equalsIgnoreCase("msg"))
                      scanmsg = s2;
                }
-               mode = mode.equalsIgnoreCase("2D") ? "QR_CODE_MODE" : 
-                      mode.equalsIgnoreCase("1D") ? "ONE_D_MODE" :
-                      "SCAN_MODE";
-               Intent intent = new Intent("totalcross.zxing.client.android.SCAN");
-               intent.putExtra("SCAN_MODE", mode);//for Qr code, its "QR_CODE_MODE" instead of "PRODUCT_MODE"
-               intent.putExtra("SAVE_HISTORY", false);//this stops saving ur barcode in barcode scanner app's history
-               intent.putExtra("SCAN_MESSAGE", scanmsg);
-               startActivityForResult(intent, ZXING_RETURN);
-               //if (harder) decodeHints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-               //Result result = reader.decode(bitmap, decodeHints);
+               
+               IntentIntegrator integrator = new IntentIntegrator(Loader.this);
+               if (mode.equalsIgnoreCase("1D"))
+               {
+                  integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+               }
+               else if (mode.equalsIgnoreCase("2D"))
+               {
+                  integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+               }
+               else
+               {
+                  integrator.setDesiredBarcodeFormats(null);
+               }
+               integrator.setPrompt(scanmsg);
+               integrator.setResultDisplayDuration(1000);
+               integrator.autoWide();  // Wide scanning rectangle, may work better for 1D barcodes
+               integrator.setCameraId(0);  // Use a specific camera of the device
+               integrator.initiateScan();
                break;
             }
                
