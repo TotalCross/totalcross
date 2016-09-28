@@ -40,8 +40,6 @@
 #endif
 #include "ssl.h"
 
-#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
-
 /* 1.2.840.113549.1.1 OID prefix - handle the following */
 /* md5WithRSAEncryption(4) */
 /* sha1WithRSAEncryption(5) */

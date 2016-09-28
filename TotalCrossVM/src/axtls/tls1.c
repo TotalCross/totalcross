@@ -38,8 +38,6 @@
 #include <stdarg.h>
 #include "ssl.h"
 
-#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
-
 /* The session expiry time */
 #define SSL_EXPIRY_TIME     (CONFIG_SSL_EXPIRY_TIME*3600)
 

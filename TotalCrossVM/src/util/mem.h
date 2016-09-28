@@ -38,11 +38,13 @@ extern "C" {
 #define malloc dlmalloc
 #define free dlfree
 #define realloc dlrealloc
+#define calloc dlcalloc
 #endif
 
 #define xmalloc(size) TCAPI_FUNC(privateXmalloc)(size,__FILE__,__LINE__)
 #define xfree(p) do {if (p) TCAPI_FUNC(privateXfree)(p,__FILE__,__LINE__); p = null;} while (0)
 #define xrealloc(ptr, size) TCAPI_FUNC(privateXrealloc)(ptr, size,__FILE__,__LINE__)
+#define xcalloc(NumOfElements, SizeOfElements) TCAPI_FUNC(privateXcalloc)(NumOfElements,SizeOfElements,__FILE__,__LINE__)
 
 TC_API uint8* privateXmalloc(uint32 size, const char *file, int line); // allocate and zero the memory region
 typedef uint8* (*privateXmallocFunc)(uint32 size, const char *file, int line);
@@ -50,6 +52,8 @@ TC_API void privateXfree(void *ptr, const char *file, int line); // never use pr
 typedef void (*privateXfreeFunc)(void *ptr, const char *file, int line);
 TC_API uint8* privateXrealloc(uint8* ptr, uint32 size, const char *file, int line); // allocate and zero the memory region
 typedef uint8* (*privateXreallocFunc)(uint8* ptr, uint32 size, const char *file, int line);
+TC_API uint8* privateXcalloc(uint32 NumOfElements, uint32 SizeOfElements, const char *file, int line); // allocate and zero the memory region
+typedef uint8* (*privateXcallocFunc)(uint32 NumOfElements, uint32 SizeOfElements, const char *file, int line);
 #define newX(x) (x)xmalloc(sizeof(T##x))
 #define newXH(x,p) (x)heapAlloc(p, sizeof(T##x))
 

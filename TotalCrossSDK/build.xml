@@ -354,10 +354,18 @@ target: desktop
 </target>
 
 <target name="desktoplb" depends="desktop" description="builds tc.jar joined with litebase.jar">
-   <zip destfile="${dist}/tc_.jar">
+   <jar destfile="${dist}/tc_.jar">
        <zipgroupfileset file="${dist}/tc.jar"/>
        <zipgroupfileset file="${sdk.root}/../../Litebase/LitebaseSDK/dist/litebase.jar"/>
-   </zip>
+     	<manifest>
+         <attribute name="Built-By" value="${user.name}"/>
+         <attribute name="Implementation-Vendor" value="SuperWaba Ltda"/>
+         <attribute name="Implementation-Title" value="Totalcross"/>
+         <attribute name="Implementation-Version" value="${versionStr}"/>
+         <!-- support "java -jar tc.jar" to run deployment -->
+         <attribute name="Main-Class" value="tc.Help"/>
+     	</manifest>
+   </jar>
    <delete file="${dist}/tc.jar" />
    <move file="${dist}/tc_.jar" tofile="${dist}/tc.jar" />
 </target>
