@@ -201,12 +201,25 @@ public class Deployer4Android
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
       ZipEntry ze,ze2;
-
+      byte[] buffer = new byte[512];
+      
       // search the input zip file, convert and write each entry to the output zip file
       while ((ze = zis.getNextEntry()) != null)
       {
          String name = ze.getName();
-         zos.putNextEntry(ze2=new ZipEntry(name));
+         // keep all the metadata if possible
+         if (ze.getMethod() != ZipEntry.STORED)
+         {
+            ze2 = new ZipEntry(ze);
+            // little trick to make the entry reusable
+            ze2.setCompressedSize(-1);
+         }
+         else
+         {
+            // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
+            ze2 = new ZipEntry(ze.getName());
+         }
+         zos.putNextEntry(ze2);
          if (name.indexOf("tcfiles.zip") >= 0)
             insertTCFiles_zip(ze2, zos);
          else
@@ -218,14 +231,21 @@ public class Deployer4Android
          else
          if (name.indexOf("AndroidManifest.xml") >= 0)
             insertAndroidManifest_xml(zis,zos);
-         
+         else if (singleApk)
+         {
+            // copy other resources
+            int read;
+            while ((read = zis.read(buffer)) > 0)
+            {
+               zos.write(buffer, 0, read);
+            }
+            zis.closeEntry();
+         }
          zos.closeEntry();
       }
       if (singleApk)
       {
          processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
-         for (int i = 0; i < extras.length; i++)
-            copyZipEntry(tcFolder+"TotalCross.apk", extras[i], zos);
       }
       else
       {
