@@ -62,7 +62,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    private static final char LINEFEED = '\r';
    private int lastZ1y = -9999;
    private TimerEvent blinkTimer; // only valid while the edit has focus --   original
-   private boolean hasFocus;
+   protected boolean hasFocus;
    private boolean cursorShowing;
    boolean firstPenDown;
    protected boolean editable = true;
