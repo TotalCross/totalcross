@@ -17,7 +17,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    private Image btn;
    private boolean isIos,dragged,wasChecked;
    private int startDragPos, dragBarPos, dragBarSize, dragBarMin, dragBarMax;
-   /** The animation time. */
+   /** The animation time. Set to 0 to disable animations in all Switches. */
    public static int ANIMATION_TIME = 250;
    
    /** Text to draw when on background or foreground, and when this switch is on or off */
@@ -56,7 +56,7 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
          moveSwitch(!b);
    }
    
-   /** Returns true if this switch is ON */
+   /** Returns true if this switch is ON. Note that, if this Switch has animations, it will return on only after the animation finishes */
    public boolean isOn()
    {
       return dragBarPos+dragBarSize/2 >= width/2;
@@ -65,22 +65,31 @@ public class Switch extends Control implements PathAnimation.SetPosition, Animat
    public void moveSwitch(boolean toLeft)
    {
       int destPos = toLeft ? dragBarMin : dragBarMax;
-      if (dragBarPos != destPos)
-         try
-         {
-            PathAnimation p = PathAnimation.create(this, dragBarPos,0, destPos, 0, this, ANIMATION_TIME);
-            p.useOffscreen = false;
-            p.setpos = this;
-            p.start();
-         }
-         catch (Exception ee)
-         {
-            if (Settings.onJavaSE) ee.printStackTrace();
-            dragBarPos = destPos;
-         }
+      if (ANIMATION_TIME == 0)
+      {
+         dragBarPos = destPos;
+         if (isOn() != wasChecked)
+            postPressedEvent();
+      }
       else
-      if (isOn() != wasChecked)
-         postPressedEvent();
+      {
+         if (dragBarPos != destPos)
+            try
+            {
+               PathAnimation p = PathAnimation.create(this, dragBarPos,0, destPos, 0, this, ANIMATION_TIME);
+               p.useOffscreen = false;
+               p.setpos = this;
+               p.start();
+            }
+            catch (Exception ee)
+            {
+               if (Settings.onJavaSE) ee.printStackTrace();
+               dragBarPos = destPos;
+            }
+         else
+         if (isOn() != wasChecked)
+            postPressedEvent();
+      }
    }
    
    /** Used by animation */
