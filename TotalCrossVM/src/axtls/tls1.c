@@ -38,8 +38,6 @@
 #include <stdarg.h>
 #include "ssl.h"
 
-#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
-
 /* The session expiry time */
 #define SSL_EXPIRY_TIME     (CONFIG_SSL_EXPIRY_TIME*3600)
 
@@ -911,6 +909,8 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
         ret = SOCKET_WRITE(ssl->client_fd, 
                         &ssl->bm_all_data[sent], pkt_size-sent);
 
+        if (ret < 0)
+           return SSL_ERROR_CONN_LOST;
         if (ret >= 0)
         sent += ret;
 

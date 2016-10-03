@@ -38,8 +38,6 @@
 #include <stdlib.h>
 #include "crypto.h"
 
-#define calloc(x,y) xmalloc((x)*(y)) // TOTALCROSS
-
 static void RSA_priv_key_new_common(RSA_CTX *rsa_ctx,
         const uint8_t *modulus, int mod_len,
         const uint8_t *pub_exp, int pub_len,

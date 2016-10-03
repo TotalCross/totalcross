@@ -46,6 +46,7 @@ extern "C" {
 #define TC_privateXfree                privateXfree
 #define TC_privateXmalloc              privateXmalloc
 #define TC_privateXrealloc             privateXrealloc
+#define TC_privateXcalloc              privateXcalloc
 #include "tcvm.h"  //flsobral@tc114_36: including tcvm.h to be able to use xmalloc and xfree.
 #if defined(WIN32)
 #include "winsockLib.h"
@@ -307,7 +308,7 @@ static __inline__ void __swab64s(__u64 *addr)
 
  #define free(A)         xfree(A)
  #define malloc(A)       xmalloc(A)
-// #define calloc(A,B)     xmalloc(A*B)  guich@tc307: now all platforms supports calloc
+ #define calloc(A,B)     xcalloc(A,B)
  #define realloc(A, B)   xrealloc(A, B)
 
 #else // previous code

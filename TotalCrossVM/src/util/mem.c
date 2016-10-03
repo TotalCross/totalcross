@@ -788,3 +788,79 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
    return p;
 #endif
 }
+
+TC_API uint8 *privateXcalloc(uint32 NumOfElements,uint32 SizeOfElements,const char *file, int line)
+{
+#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
+   uint8 *ptr;
+   uint32 size = NumOfElements * SizeOfElements;
+
+   if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
+      return null;
+
+   LOCKVAR(alloc);
+   ptr = calloc(NumOfElements, SizeOfElements);
+   
+   allocCount++;
+	if (ptr != null)
+   {
+      xmemzero(ptr, size);
+      if (leakCheckingEnabled)
+         htmPut((uint32)ptr, line, file);
+   }
+   else
+      memError("XMALLOC",size, file, line);
+   updateStats();
+   UNLOCKVAR(alloc);
+   return ptr;
+#else
+   void *p=null;
+   uint32 origSize = NumOfElements * SizeOfElements;
+   uint32 size = origSize + XMALLOC_EXTRASIZE;
+   //size = ((size >> 2) << 2) + 4; dlmalloc already aligns
+   if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
+      return null;
+   LOCKVAR(alloc);
+#ifdef INITIAL_MEM
+   if (size <= maxAvail)
+#endif
+      p = realMalloc(size);
+
+   if (!p)
+   {
+      UNLOCKVAR(alloc);
+      return memError("XMALLOC",origSize, file, line);
+   }
+#ifdef INITIAL_MEM
+   maxAvail -= size;
+#ifdef TRACE_OBJCREATION
+   //debug("xmalloc(%d) at %s (%d). avail after: %d",size, file, line, maxAvail);
+#endif
+#endif
+   xmemzero(p, size); // guich@340_21: make sure we erase the allocated memory
+//   debug("%7d at %s (%d)",size, file, line);
+
+// fdie: If you want to use a memory checking tool such as Valgrind,
+// you have to define USE_MEMCHECKER to limit your memory use to the requested
+// memory size or the checking tool may detect many false memory corruptions.
+#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+   size = getPtrSize(p);
+#endif
+
+   p = addMemMarks(size, p);
+
+   allocCount++;
+   totalAllocated += size;
+   if (totalAllocated > maxAllocated)
+      maxAllocated = totalAllocated;
+   if (totalAllocated > profilerMaxMem) // guich@tc111_4
+      profilerMaxMem = totalAllocated;
+   if (leakCheckingEnabled)
+      htmPut((uint32)p, line, file);
+#ifdef ENABLE_TRACE
+   //debug("alloc(%d) in %s line %d. Free: %d, used: %d (%lX)",(int)size, file, line, (int)getFreeMemory(false),totalAllocated,(long)p);
+#endif
+   UNLOCKVAR(alloc);
+   return p;
+#endif
+}
