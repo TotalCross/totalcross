@@ -14,15 +14,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="fill_parent"
-             android:layout_height="fill_parent">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:tools="http://schemas.android.com/tools">
 
   <SurfaceView android:id="@+id/preview_view"
                android:layout_width="fill_parent"
                android:layout_height="fill_parent"/>
 
-  <totalcross.zxing.client.android.ViewfinderView
+  <com.google.zxing.client.android.ViewfinderView
       android:id="@+id/viewfinder_view"
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"/>
@@ -56,7 +55,8 @@
                    android:maxHeight="150dip"
                    android:layout_marginBottom="@dimen/half_padding"
                    android:adjustViewBounds="true"
-                   android:scaleType="centerInside"/>
+                   android:scaleType="centerInside"
+                   tools:ignore="ContentDescription"/>
 
         <LinearLayout
           android:orientation="horizontal"
@@ -153,7 +153,8 @@
                     android:textColorLink="@color/result_text"
                     android:textSize="22sp"
                     android:paddingLeft="12dip"
-                    android:autoLink="web"/>
+                    android:autoLink="web"
+                    android:textIsSelectable="true"/>
 
           <TextView android:id="@+id/contents_supplement_text_view"
                     android:layout_width="wrap_content"
@@ -162,7 +163,7 @@
                     android:textColorLink="@color/result_text"
                     android:paddingLeft="12dip"
                     android:autoLink="web"
-                    android:clickable="true"/>
+                    android:textIsSelectable="true"/>
 
         </LinearLayout>
 
@@ -176,32 +177,16 @@
                   android:layout_height="wrap_content"
                   android:gravity="center">
 
-      <Button android:layout_width="0dip"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
+      <Button style="@style/ResultButton"
               android:visibility="gone"/>
 
-      <Button android:layout_width="0dip"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
+      <Button style="@style/ResultButton"
               android:visibility="gone"/>
 
-      <Button android:layout_width="0dip"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
+      <Button style="@style/ResultButton"
               android:visibility="gone"/>
 
-      <Button android:layout_width="0dip"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
-              android:visibility="gone"/>
-
-      <Button android:id="@+id/shopper_button"
-              android:layout_width="0dip"
-              android:layout_height="wrap_content"
-              android:layout_weight="1"
-              android:drawableLeft="@drawable/shopper_icon"
-              android:text="@string/button_google_shopper"
+      <Button style="@style/ResultButton"
               android:visibility="gone"/>
 
     </LinearLayout>
@@ -216,4 +201,4 @@
             android:text="@string/msg_default_status"
             android:textColor="@color/status_text"/>
 
-</FrameLayout>
+</merge>

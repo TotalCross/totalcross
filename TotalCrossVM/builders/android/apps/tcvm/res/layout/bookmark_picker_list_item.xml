@@ -24,11 +24,15 @@
   <TextView android:id="@+id/bookmark_title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:singleLine="true"/>
+            android:textAppearance="?android:attr/textAppearanceLarge"            
+            android:singleLine="true"
+            android:textIsSelectable="false"/>
 
   <TextView android:id="@+id/bookmark_url"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:singleLine="false"/>
+            android:textAppearance="?android:attr/textAppearanceSmall"                
+            android:singleLine="false"
+            android:textIsSelectable="false"/>
 
 </LinearLayout>

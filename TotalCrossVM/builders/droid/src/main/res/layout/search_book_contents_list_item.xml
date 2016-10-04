@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  -->
-<totalcross.zxing.client.android.book.SearchBookContentsListItem
+<com.google.zxing.client.android.book.SearchBookContentsListItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="fill_parent"
@@ -27,12 +27,14 @@
             android:layout_gravity="left|top"
             android:layout_marginRight="@dimen/standard_padding"
             android:singleLine="false"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textIsSelectable="false"/>
 
   <TextView android:id="@+id/snippet_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left|top"
-            android:singleLine="false"/>
+            android:singleLine="false"
+            android:textIsSelectable="false"/>
 
-</totalcross.zxing.client.android.book.SearchBookContentsListItem>
+</com.google.zxing.client.android.book.SearchBookContentsListItem>
