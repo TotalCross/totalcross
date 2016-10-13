@@ -22,7 +22,7 @@ static TCClass getTargetClass(TCObject o)
 	  xmoveptr(&ret, ARRAYOBJ_START(Class_nativeStruct(o)));
    return ret;
 }
-static void createClassObject(Context currentContext, CharP className, Type type, TCObject* ret, bool* isNew)
+void createClassObject(Context currentContext, CharP className, Type type, TCObject* ret, bool* isNew)
 {
    TCObject ptrObj=null;
    TCClass c = null;

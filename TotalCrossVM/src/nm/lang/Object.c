@@ -36,23 +36,15 @@ TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private St
    }
 }
 //////////////////////////////////////////////////////////////////////////
+void createClassObject(Context currentContext, CharP className, Type type, TCObject* ret, bool* isNew); // Class.c
 TC_API void jlO_getClass(NMParams p) // java/lang/Object native public final Class getClass();
 {
-   TCClass c;
-   TCObject thisObj, classObj, ptrObj;
-
-   p->retO = classObj = createObject(p->currentContext, "java.lang.Class");
-   if (classObj != null && (Class_nativeStruct(classObj) = ptrObj = createByteArray(p->currentContext, TSIZE)) != null)
-   {
-      thisObj = p->obj[0];
-      c = OBJ_CLASS(thisObj);
-      xmoveptr(ARRAYOBJ_START(ptrObj), &c);
-      Class_targetName(classObj) = createStringObjectFromCharP(p->currentContext, c->name, -1);
-      setObjectLock(ptrObj, UNLOCKED);
-      setObjectLock(Class_targetName(classObj), UNLOCKED);
-   }
-   if (p->retO != null)
-      setObjectLock(p->retO, UNLOCKED);
+   TCObject thisObj = p->obj[0];
+   TCClass c = OBJ_CLASS(thisObj);
+   if (c->classObj == null)
+      createClassObject(p->currentContext, c->name, Type_Null, &p->retO, null);
+   else
+      p->retO = c->classObj;
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object clone() throws CloneNotSupportedException;
