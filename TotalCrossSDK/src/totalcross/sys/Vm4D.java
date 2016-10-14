@@ -97,6 +97,18 @@ public final class Vm4D
       try {throw new Exception("Stack trace");} catch (Exception e) {e.printStackTrace();}
    }
 
+   public static void printStackTrace(String msg)
+   {
+      try 
+      {
+         throw new Exception(msg);
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+   }
+
    public static void safeSleep(int millis)
    {
       int cur = getTimeStamp();
