@@ -1083,16 +1083,16 @@ public class Edit extends Control implements TextControl
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
                   boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
+                  if (Settings.unmovableSIP && !Window.isSipShown) // guich@tc126_21
+                  {
+                     Window ww = getParentWindow();
+                     if (ww != null)
+                        ww.shiftScreen(this,this.height-(fmH+prefH));
+                  }
                   if (!Window.isSipShown)
                   {
                      Window.isSipShown = true;
                      Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-                  }
-                  if (Settings.unmovableSIP) // guich@tc126_21
-                  {
-                     Window ww = getParentWindow();
-                     if (ww != null)
-                        ww.shiftScreen(this,0);
                   }
                }
             }
@@ -1110,6 +1110,7 @@ public class Edit extends Control implements TextControl
    {
       if (Window.isSipShown) // non-default keyboards gets here
       {
+         Vm.debug("==== fechando teclado 3 ====");
          Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);
       }
@@ -1128,8 +1129,8 @@ public class Edit extends Control implements TextControl
 
    private void focusOut()
    {
-      if (/*Settings.isWindowsCE() && */virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
-         hideSip();
+//      if (virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+//         hideSip();
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
