@@ -163,6 +163,7 @@ public class JSONObject {
             try {
                 this.putOnce(names[i], jo.opt(names[i]));
             } catch (Exception ignore) {
+               ignore.printStackTrace();
             }
         }
     }
@@ -292,6 +293,7 @@ public class JSONObject {
             try {
                 this.putOpt(name, c.getField(name).get(object));
             } catch (Exception ignore) {
+               ignore.printStackTrace();
             }
         }
     }
@@ -814,6 +816,7 @@ public class JSONObject {
         try {
             return this.getBoolean(key);
         } catch (Exception e) {
+           e.printStackTrace();
             return defaultValue;
         }
     }
@@ -846,6 +849,7 @@ public class JSONObject {
         try {
             return this.getDouble(key);
         } catch (Exception e) {
+           e.printStackTrace();
             return defaultValue;
         }
     }
@@ -878,6 +882,7 @@ public class JSONObject {
         try {
             return this.getInt(key);
         } catch (Exception e) {
+           e.printStackTrace();
             return defaultValue;
         }
     }
@@ -936,6 +941,7 @@ public class JSONObject {
         try {
             return this.getLong(key);
         } catch (Exception e) {
+           e.printStackTrace();
             return defaultValue;
         }
     }
@@ -1010,6 +1016,7 @@ public class JSONObject {
                     }
                 }
             } catch (Exception ignore) {
+               ignore.printStackTrace();
             }
         }
     }
@@ -1195,6 +1202,7 @@ public class JSONObject {
             try {
                 return quote(string, sw).toString();
             } catch (java.io.IOException ignored) {
+               ignored.printStackTrace();
                 // will never happen - we are writing to a string writer
                 return "";
             }
@@ -1308,6 +1316,7 @@ public class JSONObject {
             }
             return true;
         } catch (Throwable exception) {
+           exception.printStackTrace();
             return false;
         }
     }
@@ -1360,6 +1369,7 @@ public class JSONObject {
                     }
                 }
             } catch (Exception ignore) {
+               ignore.printStackTrace();
             }
         }
         return string;
@@ -1427,6 +1437,7 @@ public class JSONObject {
         try {
             return this.toString(0);
         } catch (Exception e) {
+           e.printStackTrace();
             return null;
         }
     }
@@ -1556,6 +1567,7 @@ public class JSONObject {
             }
             return new JSONObject(object);
         } catch (Exception exception) {
+           exception.printStackTrace();
             return null;
         }
     }
