@@ -207,17 +207,18 @@ public class Deployer4Android
       while ((ze = zis.getNextEntry()) != null)
       {
          String name = ze.getName();
-         // keep all the metadata if possible
-         if (ze.getMethod() != ZipEntry.STORED)
-         {
-            ze2 = new ZipEntry(ze);
-            // little trick to make the entry reusable
-            ze2.setCompressedSize(-1);
+         
+         if (ze.getMethod() == ZipEntry.STORED || name.indexOf("AndroidManifest.xml") >= 0) {
+            // the trick below doesn't work with stored entries, so we'll ignore the metadata and use only the name
+            // we'll also treat the manifest the same way to make sure we get the expected size
+            ze2 = new ZipEntry(ze.getName());
          }
          else
          {
-            // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
-            ze2 = new ZipEntry(ze.getName());
+            // keep all the metadata if possible
+            ze2 = new ZipEntry(ze);
+            // little trick to make the entry reusable
+            ze2.setCompressedSize(-1);
          }
          zos.putNextEntry(ze2);
          if (name.indexOf("tcfiles.zip") >= 0)
