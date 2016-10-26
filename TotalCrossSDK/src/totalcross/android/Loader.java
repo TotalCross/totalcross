@@ -157,6 +157,12 @@ public class Loader extends Activity implements BarcodeReadListener
             break;
          case EXTCAMERA_RETURN:
          {
+            if (capturedImageURI == null)
+            {
+               AndroidUtils.debug("capturedImageURI is null!");
+               Launcher4A.pictureTaken(0);
+               break;
+            }
             AndroidUtils.debug("onActivityResult 12");
             String[] projection = {MediaStore.Images.Media.DATA, BaseColumns._ID, MediaStore.Images.Media.DATE_ADDED}; 
             AndroidUtils.debug("onActivityResult 13");

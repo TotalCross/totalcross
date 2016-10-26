@@ -607,7 +607,7 @@ public class Window extends Container
             repaintActiveWindows();
             return;
          }
-         if (shiftY > 0) shiftY = 0; // required for WP8. not sure on other platforms
+         if (Settings.isWindowsDevice() && shiftY > 0) shiftY = 0; // required for WP8. not sure on other platforms
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
@@ -1346,6 +1346,11 @@ public class Window extends Container
          if (topMost == lastTopMost) // guich@240_23: if the postEvent before pops up another Window, we must not set the focus back because the topMost var has changed
             topMost.setFocus(topMost.focusOnPopup);
          postUnpop();
+         if (topMost.focusOnPopup != null && !(topMost.focusOnPopup instanceof TextControl) && Settings.virtualKeyboard && Window.isSipShown) // if we close a window that has opened the keyboard, close it.
+         {
+            Window.isSipShown = false;
+            Window.setSIP(Window.SIP_HIDE,null,false);
+         }
          popped = false;
          needsPaint = true;
          if (transitionEffect != TRANSITION_NONE)
@@ -1903,7 +1908,6 @@ public class Window extends Container
       else
       {
          Rect r = c.getAbsoluteRect();
-
          int newShiftY = Math.max(r.y + deltaY - c.fmH, 0);
          if (newShiftY != shiftY)
          {

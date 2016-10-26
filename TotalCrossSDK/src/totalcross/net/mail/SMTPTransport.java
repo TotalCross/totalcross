@@ -43,7 +43,7 @@ public class SMTPTransport extends Transport
 
    String lastServerResponse;
 
-   private static final String ehlo = "EHLO ..." + Convert.CRLF;
+   private static final String ehlo = "EHLO localhost" + Convert.CRLF;
    protected static final String starttls = "STARTTLS" + Convert.CRLF;
 
    protected SMTPTransport(MailSession session)
@@ -115,7 +115,16 @@ public class SMTPTransport extends Transport
 
    protected boolean ehlo() throws MessagingException
    {
-      boolean ret = simpleCommand(ehlo) == 220;
+      String actualEhlo;
+      try
+      {
+         actualEhlo = ehlo.replace("localhost", ConnectionManager.getLocalHost());
+      }
+      catch (UnknownHostException e)
+      {
+         actualEhlo = ehlo;
+      }
+      boolean ret = simpleCommand(actualEhlo) == 220;
       while (readServerResponse() == 220)
          ; // the HELO reply may be followed by textual messages, just ignore them.
 
@@ -169,6 +178,7 @@ public class SMTPTransport extends Transport
       try
       {
          lastServerResponse = reader.readLine();
+         System.err.println(lastServerResponse);
          return Convert.toInt(lastServerResponse.substring(0, 3));
       }
       catch (InvalidNumberException e)
@@ -203,6 +213,7 @@ public class SMTPTransport extends Transport
 
    public int simpleCommand(String command) throws MessagingException
    {
+      System.out.println(command);
       return simpleCommand(command.getBytes());
    }
 
