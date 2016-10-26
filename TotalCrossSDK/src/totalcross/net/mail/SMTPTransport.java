@@ -178,7 +178,6 @@ public class SMTPTransport extends Transport
       try
       {
          lastServerResponse = reader.readLine();
-         System.err.println(lastServerResponse);
          return Convert.toInt(lastServerResponse.substring(0, 3));
       }
       catch (InvalidNumberException e)
@@ -213,7 +212,6 @@ public class SMTPTransport extends Transport
 
    public int simpleCommand(String command) throws MessagingException
    {
-      System.out.println(command);
       return simpleCommand(command.getBytes());
    }
 
