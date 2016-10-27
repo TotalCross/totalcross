@@ -259,13 +259,23 @@ static bool callingCamera;
    {
       int w = finalImage.size.width;
       int h = finalImage.size.height;
+      if (h > w && imageW > imageH) // if user selected a landscape resolution and the photo was taken in portrait, swap the resolution
+      {
+         int t = imageW; imageW = imageH; imageH = t;
+      }
       if (imageW != 0 && imageH != 0 && (w >= imageW || h >= imageH))
       {
-         int ww=imageW,hh;
+         int ww,hh;
          if (w < h)
-            hh = (int)(imageW * w / h);
+         {
+            hh = imageH;
+            ww = (int)(imageH * w / h);
+         }
          else
+         {
+            ww = imageW;
             hh = (int)(imageW * h / w);
+         }
          CGRect imageRect = CGRectMake(0, 0, ww,hh);
          UIGraphicsBeginImageContext(imageRect.size);
          [finalImage drawInRect:imageRect];
