@@ -1,4 +1,16 @@
 <h2>TotalCross 3.3</h2>   
+<h1>build 3037</h1>
+. deprecated ZipFile This class was never fully implemented. Use ZipStream instead.<br>
+. prevent SSLSocket getting stuck at the handshake<br>
+. updated zxing to version 3.2.0 using zxing-android-embedded https://github.com/journeyapps/zxing-android-embedded/tree/2.x<br>
+. fixes ssl connection getting hung when the connection is lost<br>
+. set Switch.ANIMATION_TIME to 0 to disable animation<br>
+. now obj.getClass() returns the same Class object for different objects of the same class type. This may solve some json parsing problems<br>
+. fixed virtual keyboard flashing when moving from one edit to another, and also considering the wrong coordinates when pressing the screen with the keyboard being shown<br>
+. show stack traces on exceptions on json<br>
+. reverts team id used to build for iOS<br>
+. changes the ehlo command to include the localhost address instead of "..." because the office365 smtp doesn't recognize it as a valid domain<br>
+. fixed image being distorced when taking photo in landscape in ios<br>
 <h1>build 3009</h1>
 . fixed strange png warnings<br>
 . fixed open of the tc.Help file using double-click on tc.jar<br>
