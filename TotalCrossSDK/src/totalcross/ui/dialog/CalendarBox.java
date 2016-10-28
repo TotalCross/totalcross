@@ -111,6 +111,7 @@ public class CalendarBox extends Window
       btnToday.setFont(font);
       btnClear.setFont(font);
       btnCancel.setFont(font);
+      setTitleFont(font.asBold());
       int btnH = btnCancel.getPreferredHeight();
       Button.commonGap = 0;
 
