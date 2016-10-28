@@ -179,7 +179,7 @@ public class Animation extends Control
    */
   public void onEvent(Event e)
   {
-     if (animTimer != null && animTimer.triggered && !(pauseIfNotVisible && !getParentWindow().isVisible()))
+     if (animTimer != null && animTimer.triggered && !(pauseIfNotVisible && (getParentWindow() == null || !getParentWindow().isVisible())))
         paintNextFrame();
      else
         super.onEvent(e);
