@@ -1044,6 +1044,7 @@ public class ListBox extends Container implements Scrollable
    protected void drawItem(Graphics g, int index, int dx, int dy)
    {
       Object obj = items.items[index];
+      if (obj == null) return;
       if (obj instanceof CustomDrawingItem)
       {
          ((CustomDrawingItem)obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
