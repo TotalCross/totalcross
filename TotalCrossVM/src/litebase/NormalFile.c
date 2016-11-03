@@ -296,29 +296,31 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
+	
+	//flsobral: flushCache already reopens the file if needed
+   // Flushes the cache if necessary and frees it.
+   if (xFile->cacheIsDirty) 
+      flushCache(context, xFile);
+   xfree(xFile->cache);
 
-// juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
-// Some files might have been closed if the maximum number of opened files was reached.
-#if defined(POSIX) || defined(ANDROID)
-   if ((ret = reopenFileIfNeeded(context, xFile)))
-      fileError(context, ret, xFile->name);
-#endif
-
+   // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
+   if (xFile->finalPos)
+   {
+      // juliana@closeFiles_1: removed possible problem of the IOException with the message "Too many open files".
+      // Some files might have been closed if the maximum number of opened files was reached.
+      #if defined(POSIX) || defined(ANDROID)
+         if ((ret = reopenFileIfNeeded(context, xFile)))
+            fileError(context, ret, xFile->name);
+      #endif  
+      if (ret |= lbfileSetSize(&xFile->file, xFile->finalPos))
+         fileError(context, ret, xFile->name);
+   }
+   
    if (fileIsValid(xFile->file))
    {
-      // Flushes the cache if necessary and frees it.
-      if (xFile->cacheIsDirty) 
-         flushCache(context, xFile);
-      
-      xfree(xFile->cache);
-
-      // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret |= lbfileSetSize(&xFile->file, xFile->finalPos)))
-         fileError(context, ret, xFile->name);
-
       if ((ret |= lbfileClose(&xFile->file)))
          fileError(context, ret, xFile->name);
-   
+      
       fileInvalidate(xFile->file);
    }
 

@@ -395,10 +395,10 @@ public class Deployer4Android
       bas.mark();
       totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
       
-      String oldPackage  = singleApk ? sourcePackage.replace('/','.') : "totalcross.app.stub";
+      String oldPackage  = singleApk ? sourcePackage.replace('/','.') : "totalcross.android";
       String oldVersion  = "!1.0!";
-      String oldTitle    = "Stub";
-      String oldActivity = singleApk ? null : ".Stub";
+      String oldTitle    = "TotalCross Virtual Machine";
+      String oldActivity = singleApk ? null : "totalcross.android.Loader";
       String oldSharedId = singleApk ? "totalcross.app.sharedid" : null;
       
       String newPackage  = targetPackage.replace('/','.');
@@ -534,20 +534,18 @@ public class Deployer4Android
    private void insertResources_arsc(InputStream zis, OutputStream zos) throws Exception
    {
       byte[] all;
-      byte[] key;
+      byte[] key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'n',(byte)0,'d',(byte)0,'r',(byte)0,'o',(byte)0,'i',(byte)0,'d',(byte)0};
       if (singleApk)
       {
-         key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'n',(byte)0,'d',(byte)0,'r',(byte)0,'o',(byte)0,'i',(byte)0,'d',(byte)0};
          all = Utils.loadFile(DeploySettings.etcDir+"tools/android/resources_singleapk.arsc",true);
       }
       else
       {
-         key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'p',(byte)0,'p',(byte)0,'.',(byte)0,'s',(byte)0,'t',(byte)0,'u',(byte)0,'b',(byte)0};
          all = readInputStream(zis).toByteArray();
       }
       int ofs = Utils.indexOf(all, key, false);
       if (ofs == -1)
-         throw new DeployerException("Could not find position for totalcross.app.stub in arsc.");
+         throw new DeployerException("Could not find position for totalcross.android in arsc.");
       // write the name
       char[] chars = targetPackage.replace('/','.').toCharArray();
       if (chars.length > 0x7F)
