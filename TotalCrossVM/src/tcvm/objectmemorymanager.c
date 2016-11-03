@@ -389,11 +389,13 @@ static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, in
    ObjectProperties op;
 
 #ifdef darwin
-   if (iosLowMemory && size > 1024)
-   {
-      iosLowMemory = getFreeMemory(0) <= 10*1024*1024;
-      throwException(currentContext, OutOfMemoryError, "iOS low memory warning");
-      return null;
+   if (iosLowMemory/* && size > 1024*/)
+   {    
+      iosLowMemory = false;
+      debug("IOS low memory. Free: %d",getFreeMemory(0));
+      //iosLowMemory = getFreeMemory(0) <= 10*1024*1024;
+      //throwException(currentContext, OutOfMemoryError, "iOS low memory warning");
+      //return null;
    }
 #endif
    if (currentContext == gcContext) //  a finalize method is creating an object? return null
