@@ -69,9 +69,11 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    Err err;
    int hostSocket;
    int res, valopt;
-   struct sockaddr_in destination_sin;
 #ifndef darwin
    struct hostent *phostent;
+   struct sockaddr_in destination_sin;
+#else
+   struct sockaddr_in6 destination_sin;
 #endif
    long arg;
    fd_set fdWriteSet;
@@ -79,7 +81,13 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    socklen_t lon;
 
    // Create socket
-   if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+   if ((hostSocket = socket(
+#ifndef darwin
+                            AF_INET,
+#else
+                            AF_INET6,
+#endif
+                            SOCK_STREAM, 0)) < 0)
       goto Error;
 
    // Set non-blocking
@@ -88,13 +96,16 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    fcntl(hostSocket, F_SETFL, arg);
 
 #if defined (darwin)
-   res = iphoneSocket(hostname, (struct sockaddr*) &destination_sin);
+   res = iphoneSocket(hostname, (struct sockaddr_in6*) &destination_sin);
    if (res < 0)
    {
       //debug("res: %d", res);
       *isUnknownHost = true;
       goto Error;
    }
+   
+   // Convert to network ordering.
+   destination_sin.sin6_port = htons((uint16) port);
 #else   
    // Fill out the server socket's address information.
    destination_sin.sin_family = AF_INET;
@@ -113,15 +124,18 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          xmemmove(&(destination_sin.sin_addr.s_addr), phostent->h_addr, phostent->h_length);
       }
    }
-#endif   
+   
    // Convert to network ordering.
    destination_sin.sin_port = htons((uint16) port);
+#endif   
 
-//   destination_sin.sin_family = AF_INET;
-//   destination_sin.sin_port = htons(2000);
-//   destination_sin.sin_addr.s_addr = inet_addr("192.168.0.1");
-
-   res = connect(hostSocket, (struct sockaddr *)&destination_sin, sizeof(destination_sin));
+   res = connect(hostSocket,
+#ifndef darwin
+                 (struct sockaddr *)&destination_sin,
+#else
+                 (struct sockaddr_in6 *)&destination_sin,
+#endif
+                 sizeof(destination_sin));
    if (res < 0)
    {
       if (errno != EINPROGRESS)
