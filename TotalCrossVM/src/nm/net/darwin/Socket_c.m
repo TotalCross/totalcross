@@ -14,7 +14,7 @@
 bool debug(const char *s, ...);
 
 
-int iphoneSocket(char* hostname, struct sockaddr *in_addr)
+int iphoneSocket(char* hostname, struct sockaddr_in6 *in_addr)
 {
    CFStringRef hostnameStr;
    CFHostRef host;
@@ -22,7 +22,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
    Boolean success;
    CFArrayRef addresses;
    CFIndex index, count;
-   struct sockaddr *addr;
+   struct sockaddr_in6 *addr;
    char             ipAddress[INET6_ADDRSTRLEN];
    int err;
    
@@ -53,12 +53,12 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
       count = CFArrayGetCount(addresses);
       for (index = 0; index < count; index++)
       {
-         addr = (struct sockaddr *)CFDataGetBytePtr(CFArrayGetValueAtIndex(addresses, index));
+         addr = (struct sockaddr_in6 *)CFDataGetBytePtr(CFArrayGetValueAtIndex(addresses, index));
          if (addr != NULL)
          {
-            memcpy(in_addr, addr, sizeof(struct sockaddr));
+            memcpy(in_addr, addr, sizeof(struct sockaddr_in6));
             /* getnameinfo converts an IPv4 or IPv6 address into a text string. */
-            err = getnameinfo(addr, addr->sa_len, ipAddress, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST);
+            err = getnameinfo(addr, addr->sin6_len, ipAddress, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST);
             if (err != 0) 
                debug("getnameinfo returned %d\n", err);
             //break;
