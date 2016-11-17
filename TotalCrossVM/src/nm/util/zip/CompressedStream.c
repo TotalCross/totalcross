@@ -132,6 +132,11 @@ TC_API void tuzCS_readBytes_Bii(NMParams p) // totalcross/util/zip/CompressedStr
             zstreamRef->c_stream.avail_in = executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, ARRAYOBJ_LEN(streamBuffer)).asInt32;
             zstreamRef->c_stream.next_in = ARRAYOBJ_START(streamBuffer);
          }
+         if (zstreamRef->c_stream.avail_in < 0)
+         {
+            p->retI = -1;
+            break;
+         }
          zstreamRef->c_stream.next_out = ARRAYOBJ_START(buf) + start;
          toCopy = end - start;
          zstreamRef->c_stream.avail_out = toCopy;
