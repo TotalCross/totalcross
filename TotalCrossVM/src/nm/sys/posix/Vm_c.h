@@ -180,7 +180,7 @@ static bool vmTurnScreenOn(bool on)
 }
 
 #ifndef darwin // implemented in Vm_c.m
-static void vmVibrate(int32 ms)
+void vmVibrate(int32 ms)
 {
 }
 #endif

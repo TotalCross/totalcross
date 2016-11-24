@@ -165,7 +165,7 @@ static bool vmTurnScreenOn(bool on)
    return !env ? false : (*env)->CallStaticIntMethod(env, applicationClass, jvmFuncI, TURN_SCREEN_ON, (int32)on) == 1;
 }
 
-static void vmVibrate(int32 ms)
+void vmVibrate(int32 ms)
 {
    JNIEnv *env = getJNIEnv();                                      
    if (env != null)

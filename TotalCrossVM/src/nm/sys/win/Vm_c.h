@@ -593,7 +593,7 @@ LRESULT VibrateThread(int32 *ms_)
 }
 #endif // WINCE
 
-static void vmVibrate(int32 ms)
+void vmVibrate(int32 ms)
 {
 #ifdef WINCE
    if (vibtype == VIB_NONE)

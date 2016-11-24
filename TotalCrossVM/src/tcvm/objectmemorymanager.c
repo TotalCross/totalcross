@@ -1040,6 +1040,7 @@ static void dumpDif(HTKey key, int32 i32, VoidP ptr)
    if (conta1 == 0 || conta1 != conta2)
       debug("% 3d %30s: %d -> %d (%d)",++indp,cc->name, conta1, conta2, conta2-conta1);
 }
+void vmVibrate(int32 ms);
 
 void gc(Context currentContext)
 {
@@ -1233,7 +1234,13 @@ end:
    markedAsUsed = !markedAsUsed;
 
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
+   {
+#ifdef WIN32
       soundTone(1100,10);
+#else      
+      vmVibrate(50);
+#endif
+   }
 
    //debug("G Freed objects (including allocated chunks)"); countObjectsIn(freeList,false);
    lastGC = getTimeStamp(); // guich@tc210: moving to begining will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads. guich@tc330: moving to the end fixes 2 threads being able to call gc one after the other, thus spending time in the 2nd call
