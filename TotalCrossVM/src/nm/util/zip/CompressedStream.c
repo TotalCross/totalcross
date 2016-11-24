@@ -22,6 +22,13 @@ enum
    INFLATE
 };
 
+enum
+{
+   UNCOMPRESS = -1,
+   COMPRESS_ZLIB = 0,
+   COMPRESS_GZIP = 16
+};
+
 static voidpf zalloc(voidpf opaque, uInt items, uInt size)
 {  
    CharP ret;
@@ -65,7 +72,7 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
       zstreamRef->c_stream.next_in = Z_NULL;
       zstreamRef->c_stream.avail_in = 0;
 
-      if ((err = inflateInit(&zstreamRef->c_stream)) != Z_OK)
+      if ((err = inflateInit2(&zstreamRef->c_stream, 32 + MAX_WBITS)) != Z_OK)
          throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       else
          zstreamRef->rwMethod  = getMethod((TCClass) OBJ_CLASS(stream), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
@@ -80,6 +87,7 @@ TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/Compressed
    TCObject zstreamRefObj;
    ZLibStreamRef zstreamRef;
    Err err = Z_OK;
+   int32 bits = compressionType == COMPRESS_GZIP ? (compressionType + MAX_WBITS) : MAX_WBITS;
 
    if ((zstreamRefObj = createByteArray(p->currentContext, sizeof(TZLibStreamRef))) != null)
    {
@@ -90,7 +98,7 @@ TC_API void tuzCS_createDeflate_si(NMParams p) // totalcross/util/zip/Compressed
       zstreamRef->c_stream.zfree = zfree;
       zstreamRef->c_stream.opaque = (voidpf) 0;
 
-      if ((err = deflateInit2(&zstreamRef->c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, compressionType + MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY)) != Z_OK) //flsobral@tc114_82: now supports GZip compression.
+      if ((err = deflateInit2(&zstreamRef->c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, bits, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY)) != Z_OK) //flsobral@tc114_82: now supports GZip compression.
          throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
       else
          zstreamRef->rwMethod  = getMethod((TCClass) OBJ_CLASS(stream), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);

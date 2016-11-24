@@ -562,23 +562,29 @@ public class BigDecimal implements Comparable
 
    public int compareTo(BigDecimal val)
    {
-      if (scale == val.scale) return intVal.compareTo(val.intVal);
-
-      BigInteger thisParts[] = intVal.divideAndRemainder(BigInteger.TEN.pow(scale));
-      BigInteger valParts[] = val.intVal.divideAndRemainder(BigInteger.TEN.pow(val.scale));
-
-      int compare;
-      if ((compare = thisParts[0].compareTo(valParts[0])) != 0) return compare;
-
-      // quotients are the same, so compare remainders
-
-      // Add some trailing zeros to the remainder with the smallest scale
-      if (scale < val.scale)
-         thisParts[1] = thisParts[1].multiply(BigInteger.valueOf(10).pow(val.scale - scale));
-      else if (scale > val.scale) valParts[1] = valParts[1].multiply(BigInteger.valueOf(10).pow(scale - val.scale));
+	  int delta = scale - val.scale;
+      BigInteger thisIntVal;
+      BigInteger valIntVal;
+      
+      // Putting both BigIntegers in the same scale...
+      if (delta == 0)
+      {
+    	  thisIntVal = intVal;
+    	  valIntVal = val.intVal;
+      }
+      else if (delta > 0)
+      {
+         thisIntVal = intVal;
+         valIntVal = val.intVal.multiply(BigInteger.TEN.pow(delta));
+      }
+      else
+      {
+          thisIntVal = intVal.multiply(BigInteger.TEN.pow(-delta));
+          valIntVal = val.intVal;
+      }
 
       // and compare them
-      return thisParts[1].compareTo(valParts[1]);
+      return thisIntVal.compareTo(valIntVal);
    }
 
    public boolean equals(Object o)
