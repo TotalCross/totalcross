@@ -3,9 +3,9 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry excluding="ras/|tc/" including="totalcross/AndroidUtils.java|totalcross/Launcher4A.java|totalcross/MainClass.java|totalcross/TCEventThread.java|totalcross/android/|totalcross/zxing/" kind="src" path="src_java"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="P:/android-sdk-windows/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
+	<classpathentry kind="lib" path="P:/android-sdk-windows-5.0/add-ons/addon-google_apis-google-22/libs/maps.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="P:/android-sdk-windows4.4/sdk/platforms/android-19/android.jar"/>
+	<classpathentry kind="lib" path="P:/android-sdk-windows-5.0/platforms/android-22/android.jar"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="lib" path="libs/DataCollection.jar"/>
 	<classpathentry kind="lib" path="/google-play-services_lib/libs/google-play-services.jar"/>
