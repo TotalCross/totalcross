@@ -29,14 +29,16 @@ import android.media.*;
 import android.net.*;
 import android.os.*;
 import android.provider.*;
+import android.speech.*;
 import android.util.*;
 import android.view.*;
 import android.view.inputmethod.*;
+import android.widget.*;
+import com.google.zxing.integration.android.*;
 import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-import com.google.zxing.integration.android.*;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -50,6 +52,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int EXTCAMERA_RETURN = 1234324334;
    private static final int SELECT_PICTURE = 1234324335;
    private static final int CAMERA_PIC_REQUEST = 1337;
+   private static final int TEXT_TO_SPEECH = 1234324336;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -107,6 +110,11 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       switch (requestCode)
       {
+         case TEXT_TO_SPEECH:
+            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
+            Launcher4A.callingZXing = false;
+            break;
+            
          case SELECT_PICTURE:
             AndroidUtils.debug("onActivityResult 1");
             if (resultCode == RESULT_OK)
@@ -522,6 +530,11 @@ public class Loader extends Activity implements BarcodeReadListener
             case ZXING_SCAN:
             {
                String cmd = b.getString("zxing.mode");
+               if (cmd.startsWith("voice:"))
+               {
+                  promptSpeechInput(cmd.substring(6));
+                  break;
+               }
                StringTokenizer st = new StringTokenizer(cmd,"&");
                String mode = "SCAN_MODE";
                String scanmsg = "";
@@ -558,8 +571,7 @@ public class Loader extends Activity implements BarcodeReadListener
                integrator.setCameraId(0);  // Use a specific camera of the device
                integrator.initiateScan();
                break;
-            }
-               
+            }               
          }
       }
    }
@@ -770,5 +782,21 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       AndroidUtils.debug("on new intent "+i);
       super.onNewIntent(i);
+   }
+
+   public void promptSpeechInput(String caption)
+   {
+      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+      intent.putExtra(RecognizerIntent.EXTRA_PROMPT, caption);
+      try
+      {
+         startActivityForResult(intent, TEXT_TO_SPEECH);
+      }
+      catch (ActivityNotFoundException a)
+      {
+         Toast.makeText(getApplicationContext(), "Fala não suportada", Toast.LENGTH_SHORT).show();
+      }
    }
 }
