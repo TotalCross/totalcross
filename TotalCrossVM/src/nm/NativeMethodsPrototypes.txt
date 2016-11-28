@@ -76,6 +76,7 @@ TC_API void tuzZF_close(NMParams p);
 TC_API void tuzZF_entries(NMParams p);
 TC_API void tuzZF_getEntry_s(NMParams p);
 TC_API void tuzZF_getEntryStream_s(NMParams p);
+TC_API void tumS_toText_s(NMParams p);
 TC_API void tumS_play_s(NMParams p);
 TC_API void tumS_beep(NMParams p);
 TC_API void tumS_tone_ii(NMParams p);
@@ -534,6 +535,12 @@ TC_API void tdsNDB_backup_ssp(NMParams p);
 TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
 TC_API void tdsNDB_load(NMParams p);
+TC_API void tmA_getHeightD_i(NMParams p);
+TC_API void tmA_configureD_s(NMParams p);
+TC_API void tmA_setSizeD_i(NMParams p);
+TC_API void tmA_setPositionD_i(NMParams p);
+TC_API void tmA_setVisibleD_b(NMParams p);
+TC_API void tmA_isVisibleD(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
@@ -841,6 +848,10 @@ TC_API void tuzZF_getEntry_s(NMParams p) // totalcross/util/zip/ZipFile native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile native public totalcross.io.Stream getEntryStream(String name) throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_toText_s(NMParams p) // totalcross/ui/media/Sound native public static String toText(String params);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2673,5 +2684,29 @@ TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeD
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_getHeightD_i(NMParams p) // totalcross/money/Ads native static int getHeightD(int size);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_configureD_s(NMParams p) // totalcross/money/Ads native static void configureD(String id);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setSizeD_i(NMParams p) // totalcross/money/Ads native static void setSizeD(int s);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setPositionD_i(NMParams p) // totalcross/money/Ads native static void setPositionD(int p);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setVisibleD_b(NMParams p) // totalcross/money/Ads native static void setVisibleD(boolean b);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_isVisibleD(NMParams p) // totalcross/money/Ads native static boolean isVisibleD();
 {
 }

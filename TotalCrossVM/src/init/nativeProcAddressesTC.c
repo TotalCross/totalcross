@@ -81,6 +81,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_entries"), &tuzZF_entries);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntry_s"), &tuzZF_getEntry_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntryStream_s"), &tuzZF_getEntryStream_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tumS_toText_s"), &tumS_toText_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_play_s"), &tumS_play_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_beep"), &tumS_beep);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_tone_ii"), &tumS_tone_ii);
@@ -539,5 +540,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_restore_ssp"), &tdsNDB_restore_ssp);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_column_metadata_l"), &tdsNDB_column_metadata_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_load"), &tdsNDB_load);
+   htPutPtr(&htNativeProcAddresses, hashCode("tmA_getHeightD_i"), &tmA_getHeightD_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tmA_configureD_s"), &tmA_configureD_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tmA_setSizeD_i"), &tmA_setSizeD_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tmA_setPositionD_i"), &tmA_setPositionD_i);
+   htPutPtr(&htNativeProcAddresses, hashCode("tmA_setVisibleD_b"), &tmA_setVisibleD_b);
+   htPutPtr(&htNativeProcAddresses, hashCode("tmA_isVisibleD"), &tmA_isVisibleD);
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }

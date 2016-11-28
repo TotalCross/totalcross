@@ -235,10 +235,14 @@ jmethodID jclipboard;
 // media_Sound.c
 TSoundSettings soundSettings;
 #ifdef ANDROID
-jmethodID jtone;
+jmethodID jtone, jsoundToText;
 jmethodID jsoundEnable,jsoundPlay;
 #endif
 
+// money
+#ifdef ANDROID
+jmethodID jadsFunc;
+#endif
 
 // ConnectionManager.c
 TCClass connMgrClass = { 0 };

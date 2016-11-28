@@ -75,6 +75,7 @@ totalcross/util/zip/ZipFile|native public void close() throws totalcross.io.IOEx
 totalcross/util/zip/ZipFile|native public String[] entries();
 totalcross/util/zip/ZipFile|native public String getEntry(String name);
 totalcross/util/zip/ZipFile|native public totalcross.io.Stream getEntryStream(String name) throws IOException;
+totalcross/ui/media/Sound|native public static String toText(String params);
 totalcross/ui/media/Sound|native public static void play(String filename);
 totalcross/ui/media/Sound|native public static void beep();
 totalcross/ui/media/Sound|native public static void tone(int freq, int duration);
@@ -533,3 +534,9 @@ totalcross/db/sqlite/NativeDB|native int backup(String dbName, String destFileNa
 totalcross/db/sqlite/NativeDB|native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 totalcross/db/sqlite/NativeDB|native boolean[][] column_metadata(long stmt);
 totalcross/db/sqlite/NativeDB|native static void load() throws Exception;
+totalcross/money/Ads|native static int getHeightD(int size);
+totalcross/money/Ads|native static void configureD(String id);
+totalcross/money/Ads|native static void setSizeD(int s);
+totalcross/money/Ads|native static void setPositionD(int p);
+totalcross/money/Ads|native static void setVisibleD(boolean b);
+totalcross/money/Ads|native static boolean isVisibleD();

@@ -209,7 +209,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (h == 0 || w == 0 || appPaused) return;
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
-      int screenHeight = display.getHeight();
+      int screenHeight = display.getHeight(); //Loader.mainView.getHeight();
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
@@ -226,7 +226,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       else
       {
          instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
-         android.view.Surface surface = holder.getSurface();
+         android.view.Surface surface = holder == null ? lastSurface : holder.getSurface();
          if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
          {
             lastSurface = surface;
@@ -662,6 +662,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    public SipClosedReceiver siprecv = new SipClosedReceiver();
    private SipClosedThread sipthread = new SipClosedThread();
+
+   private static void showAds(boolean show)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type", Loader.ADS);
+      b.putBoolean("show", show);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
+   }
    
    public static void setSIP(int sipOption)
    {
@@ -670,6 +680,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          case SIP_HIDE:
             sipVisible = false;
+            if (Loader.adView != null)
+               showAds(true);
             if (Loader.isFullScreen)
                setLoaderFullScreen(true);
             else
@@ -679,6 +691,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case SIP_TOP:
          case SIP_BOTTOM:
             sipVisible = true;
+            if (Loader.adView != null)
+               showAds(false);
             if (Loader.isFullScreen)
                setLoaderFullScreen(false);
             else
@@ -1458,13 +1472,44 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          msg.setData(b);
          loader.achandler.sendMessage(msg);
          while (callingZXing)
-            try {Thread.sleep(200);} catch (Exception e) {}
+            try {Thread.sleep(50);} catch (Exception e) {}
          return zxingResult;
       } 
       catch (Throwable e) 
       {
          e.printStackTrace();
          text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1)
+      }
+      return text;
+   }
+
+   public static boolean callingSound;
+   public static String soundResult;
+   public static String soundToText(String params)
+   {
+      String text = null;
+      try 
+      {
+         String title = "";
+         if (params == null) params = "";
+         if (params.startsWith("title:"))
+            title = params.substring(6);
+         soundResult = null;
+         callingSound = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("title", title);
+         b.putInt("type",Loader.TOTEXT);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingSound)
+            try {Thread.sleep(5);} catch (Exception e) {}
+         return soundResult;
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION";
       }
       return text;
    }
@@ -1585,4 +1630,34 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             try {Thread.sleep(100);} catch (Exception e) {}
       }
   }
+   
+//   int getHeightD(int size)
+//   void configureD(String id);
+//   void setSizeD(int s);
+//   void setPositionD(int p);
+//   void setVisibleD(boolean b)
+//   boolean isVisibleD();
+   
+   public static final int GET_WH       = 1;
+   public static final int CONFIGURE    = 2;
+   public static final int SET_SIZE     = 3;
+   public static final int SET_POSITION = 4;
+   public static final int SET_VISIBLE  = 5;
+   public static final int IS_VISIBLE   = 6;
+   
+   public static int adsRet = -1;
+   public static int adsFunc(int func, int i, String s)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type",Loader.ADS_FUNC);
+      b.putInt("func", func);
+      b.putInt("int", i);
+      b.putString("str", s);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
+      while (adsRet == -1)
+         try {Thread.sleep(20);} catch (Exception e) {};
+      return adsRet;
+   }
 }

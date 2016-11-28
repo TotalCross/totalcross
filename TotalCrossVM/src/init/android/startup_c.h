@@ -106,6 +106,8 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
    jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
+   jsoundToText      = (*env)->GetStaticMethodID(env, applicationClass, "soundToText", "(Ljava/lang/String;)Ljava/lang/String;");
+   jadsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "adsFunc", "(IILjava/lang/String;)I");
 }
 
 char* getTotalCrossAndroidClass(CharP className)

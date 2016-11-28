@@ -93,6 +93,7 @@ TC_API void tuzZF_close(NMParams p);
 TC_API void tuzZF_entries(NMParams p);
 TC_API void tuzZF_getEntry_s(NMParams p);
 TC_API void tuzZF_getEntryStream_s(NMParams p);
+TC_API void tumS_toText_s(NMParams p);
 TC_API void tumS_play_s(NMParams p);
 TC_API void tumS_beep(NMParams p);
 TC_API void tumS_tone_ii(NMParams p);
@@ -551,6 +552,12 @@ TC_API void tdsNDB_backup_ssp(NMParams p);
 TC_API void tdsNDB_restore_ssp(NMParams p);
 TC_API void tdsNDB_column_metadata_l(NMParams p);
 TC_API void tdsNDB_load(NMParams p);
+TC_API void tmA_getHeightD_i(NMParams p);
+TC_API void tmA_configureD_s(NMParams p);
+TC_API void tmA_setSizeD_i(NMParams p);
+TC_API void tmA_setPositionD_i(NMParams p);
+TC_API void tmA_setVisibleD_b(NMParams p);
+TC_API void tmA_isVisibleD(NMParams p);
 
 #ifdef __cplusplus
 }

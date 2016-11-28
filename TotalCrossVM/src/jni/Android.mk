@@ -131,6 +131,9 @@ NM_NET_FILES =                                \
 NM_PIM_FILES =                                \
 	$(TC_SRCDIR)/nm/pim/POutlook.c
 
+NM_MONEY_FILES =                                \
+	$(TC_SRCDIR)/nm/money/money.c
+
 NM_PHONE_FILES =                              \
 	$(TC_SRCDIR)/nm/phone/Dial.c               \
 	$(TC_SRCDIR)/nm/phone/SMS.c                \
@@ -296,6 +299,7 @@ SOURCE_FILES =                                \
 	$(NM_LANG_FILES)                           \
 	$(NM_NET_FILES)                            \
 	$(NM_PIM_FILES)                            \
+	$(NM_MONEY_FILES)                          \
 	$(NM_SYS_FILES)                            \
 	$(NM_UTIL_FILES)                           \
 	$(NM_UTIL_ZIP_FILES)                       \

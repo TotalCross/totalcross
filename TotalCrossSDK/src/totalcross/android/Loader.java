@@ -32,8 +32,10 @@ import android.provider.*;
 import android.speech.*;
 import android.util.*;
 import android.view.*;
+import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
 import android.widget.*;
+import com.google.android.gms.ads.*;
 import com.google.zxing.integration.android.*;
 import com.intermec.aidc.*;
 import java.io.*;
@@ -111,8 +113,9 @@ public class Loader extends Activity implements BarcodeReadListener
       switch (requestCode)
       {
          case TEXT_TO_SPEECH:
-            Launcher4A.zxingResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
-            Launcher4A.callingZXing = false;
+            AndroidUtils.debug("requestCode: "+requestCode+", resultCode: "+resultCode+", data: "+data);
+            Launcher4A.soundResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
+            Launcher4A.callingSound = false;
             break;
             
          case SELECT_PICTURE:
@@ -422,6 +425,9 @@ public class Loader extends Activity implements BarcodeReadListener
    public static final int ROUTE = 8;
    public static final int ZXING_SCAN = 9;
    public static final int MAPITEMS = 10;
+   public static final int ADS = 11;
+   public static final int TOTEXT = 12;
+   public static final int ADS_FUNC = 13;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -465,9 +471,17 @@ public class Loader extends Activity implements BarcodeReadListener
       // start the vm
       achandler = new EventHandler();
       String cmdline = ht.get("cmdline");
-      setContentView(new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK));
+      
+      mainView = new Launcher4A(this, tczname, appPath, cmdline, isSingleAPK);
+      mainLayout = new RelativeLayout(this);
+      mainLayout.addView(mainView);
+      setContentView(mainLayout); 
       onMainLoop = true;
    }
+
+   RelativeLayout mainLayout;
+   public static View mainView;
+   public static AdView adView;
    
    class EventHandler extends Handler 
    {
@@ -480,7 +494,8 @@ public class Loader extends Activity implements BarcodeReadListener
                Level5.getInstance().processMessage(b);
                break;
             case DIAL:
-               dialNumber(b.getString("dial.number"));
+               String nr = b.getString("dial.number");
+               dialNumber(nr);
                break;
             case CAMERA:
                captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width")
@@ -530,11 +545,6 @@ public class Loader extends Activity implements BarcodeReadListener
             case ZXING_SCAN:
             {
                String cmd = b.getString("zxing.mode");
-               if (cmd.startsWith("voice:"))
-               {
-                  promptSpeechInput(cmd.substring(6));
-                  break;
-               }
                StringTokenizer st = new StringTokenizer(cmd,"&");
                String mode = "SCAN_MODE";
                String scanmsg = "";
@@ -572,8 +582,137 @@ public class Loader extends Activity implements BarcodeReadListener
                integrator.initiateScan();
                break;
             }               
+            case ADS:
+               adsFunc(b);
+               break;
+            case TOTEXT:
+               String title = b.getString("title");
+               promptSpeechInput(title.isEmpty() ? null : title);
+               break;
+            case ADS_FUNC:
+               adsFunc(b);
+               break;
          }
       }
+   }
+   
+   public enum Size
+   {
+      ADMOB_BANNER,
+      ADMOB_FULL,
+      ADMOB_LARGE,
+      ADMOB_LEADER,
+      ADMOB_MEDIUM,
+      ADMOB_SKY,
+      ADMOB_SMART,
+   };
+   
+   public enum Position
+   {
+      BOTTOM,
+      TOP
+   };
+   
+   private AdSize toAdSize(int i)
+   {
+      switch (Size.values()[i])
+      {
+         case ADMOB_BANNER:  return AdSize.BANNER; 
+         case ADMOB_FULL:    return AdSize.FULL_BANNER;
+         case ADMOB_LARGE:   return AdSize.LARGE_BANNER;
+         case ADMOB_LEADER:  return AdSize.LEADERBOARD;
+         case ADMOB_MEDIUM:  return AdSize.MEDIUM_RECTANGLE;
+         case ADMOB_SKY:     return AdSize.WIDE_SKYSCRAPER;
+         case ADMOB_SMART:   return AdSize.SMART_BANNER;
+      }
+      return null;
+   }
+
+   private void configureAd(String id)
+   {
+      if (adView != null)
+         return;
+      
+      adView = new AdView(this);
+      adView.setAdUnitId(id);
+      adView.setAdSize(defaultAdSize);
+      adView.setVisibility(adIsVisible ? View.VISIBLE : View.INVISIBLE);
+      adView.loadAd(new AdRequest.Builder().build());
+
+      RelativeLayout.LayoutParams adParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+      adParams.addRule(adAtBottom ? RelativeLayout.ALIGN_PARENT_BOTTOM : RelativeLayout.ALIGN_PARENT_TOP);
+      mainLayout.addView(adView, adParams);
+      
+      adView.setAdListener(new AdListener()
+      {
+         boolean firstAd = true;
+         public void onAdLoaded()
+         {
+            AndroidUtils.debug("onAdLoaded");
+            if (firstAd && adIsVisible)
+            {
+               firstAd = false;
+               adView.setVisibility(View.GONE);
+               adView.setVisibility(View.VISIBLE);
+            }
+         }
+         public void onAdFailedToLoad(int errorCode)
+         {
+            AndroidUtils.debug("onAdFailedToLoad: "+errorCode);
+         }
+         public void onAdOpened()
+         {
+            AndroidUtils.debug("onAdOpened");
+         }
+         public void onAdClosed()
+         {
+            AndroidUtils.debug("onAdClosed");
+         }
+         public void onAdLeftApplication()
+         {
+            AndroidUtils.debug("onAdLeftApplication");
+         }
+      });
+   }
+
+   private AdSize defaultAdSize = AdSize.SMART_BANNER;
+   private boolean adAtBottom = true;
+   private boolean adIsVisible;
+
+   // Banner: 640x100, Full: 936x120, Large: 640x200, Leader: 1456x180, Medium: 600x500, Sky: 320x1200, Smart: 720x100
+   private void adsFunc(Bundle b)
+   {
+      int i = b.getInt("int");
+      String s = b.getString("str");
+      int ret = 0;
+      
+      switch (b.getInt("func"))
+      {
+         case Launcher4A.GET_WH:
+            AdSize as = toAdSize(i);
+            ret = as.getHeightInPixels(this) * 1000000 + as.getWidthInPixels(this);
+            break;
+         case Launcher4A.SET_SIZE:
+               defaultAdSize = toAdSize(i);
+               if (adView != null)
+                  adView.setAdSize(toAdSize(i));
+            break;         
+         case Launcher4A.SET_POSITION:
+            adAtBottom = Position.values()[i] == Position.BOTTOM;
+            break;         
+         case Launcher4A.SET_VISIBLE:
+            adIsVisible = i == 1;
+            if (adView != null)
+               adView.setVisibility(adIsVisible ? View.VISIBLE : View.INVISIBLE);
+            break;         
+         case Launcher4A.IS_VISIBLE: 
+            ret = adView != null && adView.isShown() ? 1 : 0; 
+            break;
+         case Launcher4A.CONFIGURE: // must be last step! 
+            configureAd(s); 
+            break;         
+      }
+      Launcher4A.adsRet = ret;
    }
    
    Uri capturedImageURI;
@@ -784,11 +923,13 @@ public class Loader extends Activity implements BarcodeReadListener
       super.onNewIntent(i);
    }
 
-   public void promptSpeechInput(String caption)
+   public void promptSpeechInput(String caption) // http://stackoverflow.com/questions/16228817/android-speech-recognition-app-without-pop-up
    {
       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
+      //intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
       intent.putExtra(RecognizerIntent.EXTRA_PROMPT, caption);
       try
       {
