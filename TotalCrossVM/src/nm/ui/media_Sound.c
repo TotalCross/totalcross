@@ -87,6 +87,13 @@ TC_API void tumS_setEnabled_b(NMParams p) // totalcross/ui/media/Sound native pu
       soundSettings.isSoundEnabled = enableSound;
    }
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_toText_s(NMParams p) // totalcross/ui/media/Sound native public static String toText(String params);
+{
+#if defined(ANDROID)
+   soundToText(p);
+#endif
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "media_Sound_test.h"

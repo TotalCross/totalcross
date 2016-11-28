@@ -121,4 +121,14 @@ public final class Sound
    public static void play(String filename)
    {
    }
+   
+   /** Activates speech and let the user dictate something that will be returned. The params can be currently only:
+    * <pre>
+    * title=title to show to user
+    * </pre>
+    */
+   public static String toText(String params)
+   {
+      return "";
+   }
 }
