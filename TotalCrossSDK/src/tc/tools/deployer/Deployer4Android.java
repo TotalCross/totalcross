@@ -201,7 +201,6 @@ public class Deployer4Android
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
       ZipEntry ze,ze2;
-      byte[] buffer = new byte[512];
       
       // search the input zip file, convert and write each entry to the output zip file
       while ((ze = zis.getNextEntry()) != null)
@@ -219,26 +218,43 @@ public class Deployer4Android
             // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
             ze2 = new ZipEntry(ze.getName());
          }
-         zos.putNextEntry(ze2);
          if (name.indexOf("tcfiles.zip") >= 0)
+         {
+            zos.putNextEntry(ze2);
             insertTCFiles_zip(ze2, zos);
+         }
          else
          if (name.indexOf("resources.arsc") >= 0)
+         {
+            zos.putNextEntry(ze2);
             insertResources_arsc(zis, zos);
+         }
          else
          if (name.indexOf("icon.png") >= 0)
+         {
+            zos.putNextEntry(ze2);
             insertIcon_png(zos, name);
+         }
          else
          if (name.indexOf("AndroidManifest.xml") >= 0)
+         {
+            zos.putNextEntry(ze2);
             insertAndroidManifest_xml(zis,zos);
+         }
          else if (singleApk)
          {
-            // copy other resources
-            int read;
-            while ((read = zis.read(buffer)) > 0)
+            byte[] bytes = Utils.readJavaInputStream(zis);
+            if (name.endsWith(".ogg")) // for zxing beep.ogg file 
             {
-               zos.write(buffer, 0, read);
+               CRC32 crc = new CRC32();
+               crc.update(bytes); 
+               ze2.setCrc(crc.getValue());
+               ze2.setMethod(ZipEntry.STORED);
+               ze2.setCompressedSize(bytes.length);
+               ze2.setSize(bytes.length);
             }
+            zos.putNextEntry(ze2);
+            zos.write(bytes,0,bytes.length);
             zis.closeEntry();
          }
          zos.closeEntry();
