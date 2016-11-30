@@ -169,7 +169,7 @@ public class MessageBox extends Window
       msg.repaintNow();
    }
    
-   protected void onPopup()
+   public void onPopup()
    {
       removeAll();
       int maxW = Settings.screenWidth-fmH - lgap;
