@@ -246,7 +246,7 @@ public class MessageBox extends Window
       if (btns != null)
       {
          if (uiAndroid && !multiRow)
-            btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap/2,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
+            btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
          else
             btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
       }
