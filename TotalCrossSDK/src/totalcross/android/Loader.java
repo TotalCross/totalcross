@@ -22,6 +22,7 @@ import totalcross.android.gcm.*;
 
 import android.app.*;
 import android.content.*;
+import android.content.pm.*;
 import android.content.res.*;
 import android.database.*;
 import android.graphics.*;
@@ -425,9 +426,9 @@ public class Loader extends Activity implements BarcodeReadListener
    public static final int ROUTE = 8;
    public static final int ZXING_SCAN = 9;
    public static final int MAPITEMS = 10;
-   public static final int ADS = 11;
+   public static final int ADS_FUNC = 11;
    public static final int TOTEXT = 12;
-   public static final int ADS_FUNC = 13;
+   public static final int ORIENTATION = 13;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -582,9 +583,6 @@ public class Loader extends Activity implements BarcodeReadListener
                integrator.initiateScan();
                break;
             }               
-            case ADS:
-               adsFunc(b);
-               break;
             case TOTEXT:
                String title = b.getString("title");
                promptSpeechInput(title.isEmpty() ? null : title);
@@ -592,9 +590,21 @@ public class Loader extends Activity implements BarcodeReadListener
             case ADS_FUNC:
                adsFunc(b);
                break;
+            case ORIENTATION:
+               int o = b.getInt("orientation");
+               if ((o & 3) != 3)
+               {
+                  boolean isPort = (o & ORIENTATION_PORTRAIT) != 0;
+                  boolean isInv  = (o & ORIENTATION_INVERTED) != 0;
+                  setRequestedOrientation(isPort ? (isInv ? ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT: ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) : (isInv ? ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE));
+               }
+               break;
          }
       }
    }
+   private static final int ORIENTATION_PORTRAIT = 1;
+   //private static final int ORIENTATION_LANDSCAPE = 2;
+   private static final int ORIENTATION_INVERTED = 4;
    
    public enum Size
    {

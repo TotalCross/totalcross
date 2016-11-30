@@ -60,6 +60,13 @@ TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native publ
    windowSetDeviceTitle(p->obj[0]); // guich@tc113_32: changed 1 to 0
 #endif
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuW_setOrientation_i(NMParams p) // totalcross/ui/Window native public static void setOrientation(int orientation);
+{
+#ifdef ANDROID
+   windowSetOrientation(p->i32[0]);
+#endif
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "Window_test.h"

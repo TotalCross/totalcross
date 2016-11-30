@@ -182,6 +182,7 @@ totalcross/ui/MainWindow|native public static String getCommandLine();
 totalcross/ui/Window|native public static void pumpEvents();
 totalcross/ui/Window|native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
 totalcross/ui/Window|native public static void setDeviceTitle(String title);
+totalcross/ui/Window|native public static void setOrientation(int orientation);
 totalcross/sys/CharacterConverter|native public char[]bytes2chars(byte []bytes, int offset, int length);
 totalcross/sys/CharacterConverter|native public byte[] chars2bytes(char []chars, int offset, int length);
 totalcross/sys/UTF8CharacterConverter|native public char[]bytes2chars(byte []bytes, int offset, int length);

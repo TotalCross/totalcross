@@ -362,6 +362,16 @@ public class Window extends Container
    }
    native static void setDeviceTitle4D(String title);
    ////////////////////////////////////////////////////////////////////////////////////
+   /** Force the orientation during runtime. Use one of ORIENTATION_PORTRAIT / ORIENTATION_LANDSCAPE. Can be ored with ORIENTATION_INVERTED flag.
+    */
+   public static final int ORIENTATION_PORTRAIT = 1;
+   public static final int ORIENTATION_LANDSCAPE = 2;
+   public static final int ORIENTATION_INVERTED = 4;
+   final public static void setOrientation(int orientation)
+   {
+   }
+   native final public static void setOrientation4D(int orientation);
+   ////////////////////////////////////////////////////////////////////////////////////
    /** Sets the border borderStyle.
     * @see #NO_BORDER
     * @see #RECT_BORDER

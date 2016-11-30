@@ -26,3 +26,10 @@ static void windowSetDeviceTitle(TCObject titleObj)
    (*env)->CallStaticVoidMethod(env, applicationClass, m, s);
    (*env)->DeleteLocalRef(env, s);
 }
+
+static void windowSetOrientation(int32 o)
+{
+   JNIEnv* env = getJNIEnv();
+   jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setOrientation", "(I)V");
+   (*env)->CallStaticVoidMethod(env, applicationClass, m, o);
+}

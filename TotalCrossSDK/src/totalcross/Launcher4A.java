@@ -591,6 +591,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          .show();
       }});
    }
+
+
+   static void setOrientation(int orientation)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type",Loader.ORIENTATION);
+      b.putInt("orientation", orientation);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
+   }
    
    static void setDeviceTitle(String title)
    {
@@ -667,7 +678,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
-      b.putInt("type", Loader.ADS);
+      b.putInt("type", Loader.ADS_FUNC);
       b.putBoolean("show", show);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
