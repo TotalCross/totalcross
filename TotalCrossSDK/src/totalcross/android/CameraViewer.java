@@ -18,11 +18,9 @@
 
 package totalcross.android;
 
-import totalcross.*;
-
 import java.io.*;
 import java.lang.reflect.Method;
-
+import totalcross.AndroidUtils;
 import android.app.*;
 import android.content.*;
 import android.content.pm.*;
@@ -261,6 +259,8 @@ public class CameraViewer extends Activity // guich@tc126_34
       });
       
       final Button buttonClick = (Button) findViewById(R.id.buttonClick);
+      buttonClick.setText("Click");
+      buttonExit.setText("Exit");
       if (isMovie)
          buttonClick.setText("Start");
       buttonClick.setOnClickListener(new OnClickListener()
