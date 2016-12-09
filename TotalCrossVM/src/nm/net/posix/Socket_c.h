@@ -116,7 +116,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       {
          if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA)
             *isUnknownHost = true;
-         goto Error;
+         goto UnknownHost;
       }
       else
       {
@@ -177,6 +177,8 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 
 Error: // Close the socket.
    err = errno;
+UnknownHost:
+   err = EHOSTUNREACH;
 Finish:
    socketClose(&hostSocket);
    return err;
