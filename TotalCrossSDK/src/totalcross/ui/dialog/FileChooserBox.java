@@ -80,7 +80,6 @@ public class FileChooserBox extends Window
    protected String[] buttonCaptions;
    protected TreeModel tmodel;
    protected int selectedIndex;
-   protected Vector selectedNodes; // guich@tc115_4: used in multiple selections
    protected ComboBox cbRoot;
    protected Button btRefresh;
    protected ImageControl preview;
@@ -230,8 +229,6 @@ public class FileChooserBox extends Window
       add(pbg, RIGHT-2, BOTTOM - 2, PREFERRED+4, PREFERRED+4);
       tree = new LoadOnDemandTree();
       tree.multipleSelection = multipleSelection;
-      if (multipleSelection)
-         selectedNodes = new Vector();
       tree.setFont(font);
       add(tap = new Container(), LEFT+2,btRefresh == null ? TOP+2 : AFTER+2, FILL-2, FIT - 5, btRefresh);
       if (showPreview)
@@ -513,11 +510,6 @@ public class FileChooserBox extends Window
                            preview.setImage(null);
                            if (Settings.onJavaSE) ee.printStackTrace();
                         }                        
-                     if (multipleSelection)
-                        if (lastSelected.isChecked)
-                           selectedNodes.addElement(lastSelected);
-                        else
-                           selectedNodes.removeElement(lastSelected);
                   }
                }
                else
@@ -579,12 +571,16 @@ public class FileChooserBox extends Window
       if (buttonCaptions == defaultButtonCaptions && selectedIndex == 1) // canceled?
          return null;
       StringBuffer sbPath = new StringBuffer(256);
-      if ((multipleSelection && selectedNodes.size() > 0) || (!multipleSelection && lastSelected != null))
+      if (multipleSelection || lastSelected != null)
       {
          if (multipleSelection)
-            for (int i =0,n=selectedNodes.size(); i < n; i++)
-               appendPath(sbPath, (Node)selectedNodes.items[i]);
-         else
+            for (int i =0,n=tree.size(); i < n; i++)
+            {
+               Node no = (Node)tree.getItemAt(i);
+               if (no.isChecked)
+                  appendPath(sbPath, no);
+            }
+         if (!multipleSelection || sbPath.length() == 0)
             appendPath(sbPath, lastSelected);
       }
       return sbPath.toString().replace('\\','/');
