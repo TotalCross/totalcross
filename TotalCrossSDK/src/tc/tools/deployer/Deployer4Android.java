@@ -441,7 +441,8 @@ public class Deployer4Android
       int difActivity = singleApk ? 0 : (newActivity.length() - oldActivity.length()) * 2;
       int difSharedId = !singleApk ? 0 : (newSharedId.length() - oldSharedId.length()) * 2;
       int dif = difPackage + difVersion + difTitle + difActivity + difSharedId;
-      
+      String newTcPackage = "totalcross.and"+DeploySettings.applicationId.toLowerCase(); // totalcross.android -> totalcross.app.tctestwin
+
       // get the xml size
       bas.setPos(12); 
       int xmlsize = ds.readInt();
@@ -515,22 +516,46 @@ public class Deployer4Android
       for (int i = 0; i < len; i++)
       {
          String s = strings[i];
-         if (singleApk && s.startsWith(oldPackage))
-            strings[i] = newPackage+s.substring(oldPackage.length());
+         if (s.startsWith(oldPackage))
+         {
+            if (singleApk)
+            {
+               strings[i] = newPackage+s.substring(oldPackage.length());
+               System.out.println("1. Replacing "+s+" -> "+strings[i]);
+//            else
+//            if (s.endsWith("google_measurement_service"))
+//               strings[i] = newTcPackage+s.substring(oldPackage.length());
+            }
+         }
          if (oldPackage != null && s.equals(oldPackage))
+         {
             strings[i] = newPackage;
+            System.out.println("2. Replacing "+s+" -> "+strings[i]);
+         }
          else
          if (oldVersion != null && s.equals(oldVersion))
+         {
             strings[i] = newVersion;
+            System.out.println("3. Replacing "+s+" -> "+strings[i]);
+         }
          else
          if (oldTitle != null && s.equals(oldTitle))
+         {
             strings[i] = newTitle;
+            System.out.println("4. Replacing "+s+" -> "+strings[i]);
+         }
          else
          if (oldActivity != null && s.equals(oldActivity))
+         {
             strings[i] = newActivity;
+            System.out.println("5. Replacing "+s+" -> "+strings[i]);
+         }
          else
          if (oldSharedId != null && s.equals(oldSharedId))
+         {
             strings[i] = newSharedId;
+            System.out.println("6. Replacing "+s+" -> "+strings[i]);
+         }
       }
       // update the offsets table
       for (int i = 0; i < len; i++)
