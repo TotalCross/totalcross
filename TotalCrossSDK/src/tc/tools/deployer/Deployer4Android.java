@@ -516,6 +516,7 @@ public class Deployer4Android
       for (int i = 0; i < len; i++)
       {
          String s = strings[i];
+         System.out.println(i+": "+s);
          if (s.startsWith(oldPackage))
          {
             if (singleApk)
