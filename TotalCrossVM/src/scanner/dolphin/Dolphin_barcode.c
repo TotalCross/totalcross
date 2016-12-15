@@ -126,13 +126,14 @@ LRESULT ScanMonitorThread()
    running = true;
    while (running)
    {
-      Sleep(200);
+      Sleep(50);
       if (!running)
          break;
-      if (!scanning && GetAsyncKeyState(SCAN_KEY) < 0 && barcode[0] == 0)
+	  if (!scanning && GetAsyncKeyState(SCAN_KEY) < 0/* && barcode[0] == 0*/)
       {
          scanning = 1;
-         nResult = decWaitForDecodeProc(5000, (BYTE*) barcode, (BYTE*) &cCodeID,(BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, CheckOnSCAN);
+		 xmemzero(barcode, MAX_MESSAGE_LENGTH);
+         nResult = decWaitForDecodeProc(500, (BYTE*) barcode, (BYTE*) &cCodeID,(BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, CheckOnSCAN);
          if (nResult == RESULT_SUCCESS)
          {
             if (cCodeID == SYMID_EAN13 || cCodeID == SYMID_EAN8)
@@ -151,7 +152,7 @@ LRESULT ScanMonitorThread()
             }
             PostMessage(getMainWindowHandle(), UM_SCAN, nResult, (long) barcode);
             // clear read-ahead
-            while (decWaitForDecodeProc(100, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
+            while (decWaitForDecodeProc(50, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
          }
          scanning = 0;
       }
