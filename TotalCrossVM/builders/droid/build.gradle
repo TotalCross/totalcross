@@ -112,13 +112,6 @@ android {
 				fileName.replace('.', '_singleapk.')
 			}
 		}
-		copy {
-			from { 'build/intermediates/res/resources-standard-release.ap_' }
-			into '../../../../output/release/TotalCrossSDK/etc/launchers/android'
-			rename { String fileName ->
-				fileName.replace('resources-standard-release', 'resources')
-			}
-		}
 	}
 	
 	task blah {
