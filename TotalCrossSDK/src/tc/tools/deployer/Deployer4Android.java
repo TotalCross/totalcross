@@ -420,9 +420,9 @@ public class Deployer4Android
       }
       else
       {
-         oldPackage  = "totalcross.android";
-         oldTitle    = "TotalCross Virtual Machine";
-         oldActivity = "totalcross.android.Loader";
+         oldPackage  = "totalcross.app.stub";
+         oldTitle    = "Stub";
+         oldActivity = ".Stub";
       }
 
       String oldVersion  = "!1.0!";
@@ -499,7 +499,7 @@ public class Deployer4Android
       for (int i = 0; i < len; i++)
       {
          String s = strings[i];
-         //System.out.println(i+": "+s);
+         System.out.println(i+": "+s);
          if (isFullScreen && s.equals("fullscreen:0"))
             strings[i] = "fullscreen:1";
          else
@@ -526,7 +526,7 @@ public class Deployer4Android
          if (oldSharedId != null && s.equals(oldSharedId))
             strings[i] = newSharedId;
          
-         //if (!s.equals(strings[i])) System.out.println("*** "+s+" -> "+strings[i]);
+         if (!s.equals(strings[i])) System.out.println("*** "+s+" -> "+strings[i]);
       }
       // update the offsets table
       for (int i = 0; i < len; i++)
@@ -557,11 +557,17 @@ public class Deployer4Android
    private void insertResources_arsc(InputStream zis, OutputStream zos) throws Exception
    {
       byte[] all;
-      byte[] key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'n',(byte)0,'d',(byte)0,'r',(byte)0,'o',(byte)0,'i',(byte)0,'d',(byte)0};
+      byte[] key;
       if (singleApk)
+      {
+         key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'n',(byte)0,'d',(byte)0,'r',(byte)0,'o',(byte)0,'i',(byte)0,'d',(byte)0};
          all = Utils.loadFile(DeploySettings.etcDir+"tools/android/resources_singleapk.arsc",true);
+      }
       else
+      {
+         key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'p',(byte)0,'p',(byte)0,'.',(byte)0,'s',(byte)0,'t',(byte)0,'u',(byte)0,'b',(byte)0};
          all = readInputStream(zis).toByteArray();
+      }
       int ofs = Utils.indexOf(all, key, false);
       if (ofs == -1)
          throw new DeployerException("Could not find position for totalcross.android in arsc.");
