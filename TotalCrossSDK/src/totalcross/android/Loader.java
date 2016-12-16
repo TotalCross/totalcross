@@ -465,15 +465,12 @@ public class Loader extends Activity implements BarcodeReadListener
       }
       String appPath = ht.get("apppath");
       String fc = ht.get("fullscreen");
-      isFullScreen = fc != null && fc.equalsIgnoreCase("true"); // used before 3.3.3054
+      isFullScreen = fc != null && fc.equalsIgnoreCase("true"); // used without /p
       
       // now getting from extra meta data
       try
       {
-         Bundle bundle = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA).metaData;
-         String fs = bundle.getString("isFullScreen");
-         AndroidUtils.debug("fullscreen: "+fs);
-         if ("fullscreen:1".equals(fs))
+         if ("fullscreen:1".equals(getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA).metaData.getString("isFullScreen")))
             isFullScreen = true;
       }
       catch (NameNotFoundException e)
