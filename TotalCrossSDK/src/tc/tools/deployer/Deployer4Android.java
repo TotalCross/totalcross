@@ -499,7 +499,6 @@ public class Deployer4Android
       for (int i = 0; i < len; i++)
       {
          String s = strings[i];
-         System.out.println(i+": "+s);
          if (isFullScreen && s.equals("fullscreen:0"))
             strings[i] = "fullscreen:1";
          else
@@ -525,8 +524,6 @@ public class Deployer4Android
          else
          if (oldSharedId != null && s.equals(oldSharedId))
             strings[i] = newSharedId;
-         
-         if (!s.equals(strings[i])) System.out.println("*** "+s+" -> "+strings[i]);
       }
       // update the offsets table
       for (int i = 0; i < len; i++)
