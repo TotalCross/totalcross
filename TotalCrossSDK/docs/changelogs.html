@@ -1,4 +1,27 @@
 <h2>TotalCross 3.3</h2>   
+<h1>build 3054</h1>
+. prevent NPE in AnimationBox when parent window is null<br>
+. fixed Calendar's title not using the font set to Calendar.<br>
+. fixed deploy for android without /p<br>
+. stop throwing OutOfMemoryErrors when we receive low memory warning in iOS<br>
+. added ipv6 support for iOS<br>
+. Long implements comparable<br>
+. Working around a bug with negative scale with BigDecimal<br>
+. fixes compressed stream after updating a zlib<br>
+. now Vm.tweak(TWEAK_AUDIBLE_GC, true) will make the device vibrate, since beep no longer works on many platforms<br>
+. added AdMob support for TotalCross, using class totalcross.money.Ads<br>
+. added Sound.toText, which converts speech to text.<br>
+. fixed ZXing scanner not working with /p<br>
+. made MessageBox buttons a bit smaller<br>
+. changed MessageBox.onPopup to public<br>
+. added Window.setOrientation, to force rotation. Currently works only on android<br>
+. fixes return value for posix implementations when the host is not known or unreachable this caused the axtls library to hang during the connect<br>
+. TCBase.tcz now includes the conduit packages<br>
+. Changed how FileChooserBox handles answered files when multipleSelection is on: it returns now the checked files, or, if none, it returns the last selected item<br>
+. increased check width area in FileChooserBox<br>
+. set again the text for the Camera buttons since in android 4.x it was getting strange values<br>
+. fixed Dolphin barcode not reading more than one code.<br>
+. definitive fix to set application in fullscreen.<br>
 <h1>build 3037</h1>
 . deprecated ZipFile This class was never fully implemented. Use ZipStream instead.<br>
 . prevent SSLSocket getting stuck at the handshake<br>
