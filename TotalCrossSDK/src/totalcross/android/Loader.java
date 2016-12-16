@@ -23,6 +23,7 @@ import totalcross.android.gcm.*;
 import android.app.*;
 import android.content.*;
 import android.content.pm.*;
+import android.content.pm.PackageManager.*;
 import android.content.res.*;
 import android.database.*;
 import android.graphics.*;
@@ -464,7 +465,23 @@ public class Loader extends Activity implements BarcodeReadListener
       }
       String appPath = ht.get("apppath");
       String fc = ht.get("fullscreen");
-      isFullScreen = fc != null && fc.equalsIgnoreCase("true");
+      isFullScreen = fc != null && fc.equalsIgnoreCase("true"); // used before 3.3.3054
+      
+      // now getting from extra meta data
+      try
+      {
+         Bundle bundle = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA).metaData;
+         String fs = bundle.getString("isFullScreen");
+         AndroidUtils.debug("fullscreen: "+fs);
+         if ("fullscreen:1".equals(fs))
+            isFullScreen = true;
+      }
+      catch (NameNotFoundException e)
+      {
+         e.printStackTrace();
+      }
+      
+      
       setTitle(tczname);
       if (isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);

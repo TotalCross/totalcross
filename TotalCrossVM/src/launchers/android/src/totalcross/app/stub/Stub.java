@@ -69,7 +69,7 @@ public class Stub extends Activity
       ht.put("package", app.substring(0,dot));
       ht.put("tczname", tczName);
       ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
-      ht.put("fullscreen", (getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.theme & 0x1) == 0x1 ? "true" : "false");
+      ht.put("fullscreen", (getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.theme & 0x1) == 0x1 ? "true" : "false"); // no longer used
       // set commandline
       Bundle extras = getIntent().getExtras();
       if (extras != null && extras.containsKey("cmdline"))

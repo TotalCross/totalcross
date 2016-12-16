@@ -494,69 +494,39 @@ public class Deployer4Android
       int props = Utils.version2int(newVersion);
       dsbas.writeInt(props);
       
-      // if is full screen, search and replace TCThemeNC by TCThemeFS
-      // if this fails again, 
-      //    0. build and store original "G:\TotalCross\TotalCrossVM\builders\droid\build\outputs\apk\droid-singleApk-release.apk" / AndroidManifest.xml somewhere
-      //    1. open G:\TotalCross\TotalCrossVM\builders\droid\src\main\AndroidManifest.xml
-      //    2. replace android:theme="@style/TCThemeNS" by android:theme="@style/TCThemeFS"
-      //    3. build and store the changed AndroidManifest.xml inside the apk and then compare the differences.
-      if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
-      {
-         byte[] themeMark = singleApk ? new byte[]{(byte)0x00,(byte)0x00,(byte)0x01,(byte)0xA4} : new byte[]{(byte)0x00,(byte)0x00,(byte)0x03,(byte)0x7f};
-         ofs = Utils.indexOf(res, themeMark, false);
-         if (ofs == -1)
-            throw new DeployerException("Error: could not find position for theme");
-         if (singleApk)
-            res[ofs+3] = (byte)0xA3;
-         else
-            res[ofs] = 1; // set Fullscreen attribute: TCThemeNC -> TCThemeFS
-      }
-      
+      boolean isFullScreen = DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID); // guich@tc120_59
       // now, change the names accordingly
       for (int i = 0; i < len; i++)
       {
          String s = strings[i];
-         System.out.println(i+": "+s);
+         //System.out.println(i+": "+s);
+         if (isFullScreen && s.equals("fullscreen:0"))
+            strings[i] = "fullscreen:1";
+         else
          if (s.startsWith(oldPackage))
          {
             if (singleApk)
-            {
                strings[i] = newPackage+s.substring(oldPackage.length());
-               System.out.println("1. Replacing "+s+" -> "+strings[i]);
-//            else
-//            if (s.endsWith("google_measurement_service"))
-//               strings[i] = newTcPackage+s.substring(oldPackage.length());
-            }
+            else
+            if (s.endsWith("google_measurement_service"))
+               strings[i] = newTcPackage+s.substring(oldPackage.length());
          }
          if (oldPackage != null && s.equals(oldPackage))
-         {
             strings[i] = newPackage;
-            System.out.println("2. Replacing "+s+" -> "+strings[i]);
-         }
          else
          if (oldVersion != null && s.equals(oldVersion))
-         {
             strings[i] = newVersion;
-            System.out.println("3. Replacing "+s+" -> "+strings[i]);
-         }
          else
          if (oldTitle != null && s.equals(oldTitle))
-         {
             strings[i] = newTitle;
-            System.out.println("4. Replacing "+s+" -> "+strings[i]);
-         }
          else
          if (oldActivity != null && s.equals(oldActivity))
-         {
             strings[i] = newActivity;
-            System.out.println("5. Replacing "+s+" -> "+strings[i]);
-         }
          else
          if (oldSharedId != null && s.equals(oldSharedId))
-         {
             strings[i] = newSharedId;
-            System.out.println("6. Replacing "+s+" -> "+strings[i]);
-         }
+         
+         //if (!s.equals(strings[i])) System.out.println("*** "+s+" -> "+strings[i]);
       }
       // update the offsets table
       for (int i = 0; i < len; i++)

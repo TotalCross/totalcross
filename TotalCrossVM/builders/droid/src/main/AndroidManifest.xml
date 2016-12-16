@@ -8,6 +8,7 @@
 
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
          android:theme="@style/TCThemeNS">
+        <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
         android:windowSoftInputMode="adjustResize"
