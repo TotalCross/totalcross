@@ -96,6 +96,8 @@ public class SpinList extends Control
    public SpinList(String[] choices, boolean isVertical) throws InvalidNumberException
    {
       this.isVertical = isVertical;
+      if (!isVertical)
+         hAlign = CENTER;
       setChoices(choices);
    }
    
