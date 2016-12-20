@@ -63,6 +63,9 @@ public class ImageControl extends Control
    
    /** Set to true to scale the image to fit the bounds. */
    public boolean scaleToFit;
+   
+   /** Set to true, with scaleToFit, to strech the image. */
+   public boolean strechImage;
 
    /** Constructs an ImageControl using the given image. */
    public ImageControl(Image img)
@@ -98,6 +101,9 @@ public class ImageControl extends Control
          if (scaleToFit)
             try
             {
+               if (strechImage)
+                  this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
+               else
                if (width < height)
                   this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
                else
@@ -214,6 +220,9 @@ public class ImageControl extends Control
          {
             if (img0 == null)
                this.img = null;
+            else
+            if (strechImage)
+               this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
             else
             if (width < height)
                this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
