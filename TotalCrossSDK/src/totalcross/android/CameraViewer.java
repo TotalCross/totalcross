@@ -235,6 +235,7 @@ public class CameraViewer extends Activity // guich@tc126_34
    {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
+      setTitle("");
       Bundle b = getIntent().getExtras();
       fileName = b.getString("file");
       stillQuality = b.getInt("quality");
@@ -259,10 +260,8 @@ public class CameraViewer extends Activity // guich@tc126_34
       });
       
       final Button buttonClick = (Button) findViewById(R.id.buttonClick);
-      buttonClick.setText("Click");
+      buttonClick.setText(isMovie ? "Start" : "Click");
       buttonExit.setText("Exit");
-      if (isMovie)
-         buttonClick.setText("Start");
       buttonClick.setOnClickListener(new OnClickListener()
       {
          public void onClick(View v)
