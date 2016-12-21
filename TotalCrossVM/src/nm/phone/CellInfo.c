@@ -63,3 +63,32 @@ TC_API void tpCI_update(NMParams p) // totalcross/phone/CellInfo native public s
    CellInfo_signal(cellInfoClass) = signal;       
 #endif
 }
+
+#ifndef ANDROID
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_getHeightD_i(NMParams p) // totalcross/money/Ads native static int getHeightD(int size);
+{
+   p->retI = 0;
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_configureD_s(NMParams p) // totalcross/money/Ads native static void configureD(String id);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setSizeD_i(NMParams p) // totalcross/money/Ads native static void setSizeD(int s);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setPositionD_i(NMParams p) // totalcross/money/Ads native static void setPositionD(int p);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setVisibleD_b(NMParams p) // totalcross/money/Ads native static void setVisibleD(boolean b);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_isVisibleD(NMParams p) // totalcross/money/Ads native static boolean isVisibleD();
+{
+   p->retI = 0;
+}
+#endif

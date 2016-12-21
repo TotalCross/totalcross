@@ -541,13 +541,11 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_restore_ssp"), &tdsNDB_restore_ssp);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_column_metadata_l"), &tdsNDB_column_metadata_l);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB_load"), &tdsNDB_load);
-#ifdef ANDROID   
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_getHeightD_i"), &tmA_getHeightD_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_configureD_s"), &tmA_configureD_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setSizeD_i"), &tmA_setSizeD_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setPositionD_i"), &tmA_setPositionD_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_setVisibleD_b"), &tmA_setVisibleD_b);
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_isVisibleD"), &tmA_isVisibleD);
-#endif   
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }
