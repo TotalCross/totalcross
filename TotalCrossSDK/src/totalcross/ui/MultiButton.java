@@ -105,7 +105,8 @@ public class MultiButton extends Control
          }
          // without this, clicking will make the button fade out
          g.backColor = parent.getBackColor();
-         g.fillRect(0,0,width,height);
+         if (alphaValue == 255)
+            g.fillRect(0,0,width,height);
          
          NinePatch.tryDrawImage(g,npback,0,0);
          int w = width / tits.length;
