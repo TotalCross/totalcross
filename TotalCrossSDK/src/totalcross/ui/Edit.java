@@ -845,7 +845,7 @@ public class Edit extends Control implements TextControl
             g.drawImage(captionIcon, fmH, (height-captionIcon.getHeight())/2);
          }
             
-         if (!hasFocus) // guich@503_2: align the edit after it looses focus
+         if (!hasFocus && !drawCaption) // guich@503_2: align the edit after it looses focus
             switch (alignment)
             {
                case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
