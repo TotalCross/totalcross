@@ -1248,8 +1248,10 @@ end:
    if (lockOMM) UNLOCKVAR(omm);
    {
       int32 totalf = totalAllocated / 1024 / 1024, freef = getFreeMemory(USE_MAX_BLOCK) / 1024 / 1024, chunksf = tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0;
+#ifdef DEBUG
       if ((lastT != totalf) || (lastF != freef) || (lastC != chunksf))
          debug("%d gc u:%d->%d f:%d->%d, c:%d->%d tex:%d t:%X (%c) %dms", tcSettings.gcCount ? *tcSettings.gcCount : 0, total0, lastT = totalf, free0, lastF = freef, chunks0, lastC = chunksf, totalTextureLoaded, currentContext, currentContext == mainContext ? 'M' : currentContext == gcContext ? 'G' : 'T', endT - iniT);
+#endif /* DEBUG */
    }
 }
 

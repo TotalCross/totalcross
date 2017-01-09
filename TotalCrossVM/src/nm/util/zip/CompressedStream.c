@@ -50,7 +50,6 @@ typedef struct
    TCObject stream;
    Method rwMethod;
    z_stream c_stream; // compression stream
-   int lastError;
 } TZLibStreamRef, *ZLibStreamRef;
 
 //////////////////////////////////////////////////////////////////////////
@@ -63,6 +62,7 @@ TC_API void tuzCS_createInflate_s(NMParams p) // totalcross/util/zip/CompressedS
 
    if ((zstreamRefObj = createByteArray(p->currentContext, sizeof(TZLibStreamRef))) != null)
    {
+
       zstreamRef = (ZLibStreamRef) ARRAYOBJ_START(zstreamRefObj);
       zstreamRef->stream = stream;       
       setObjectLock(stream, LOCKED); // guich@tc310: must keep the stream locked
@@ -132,17 +132,20 @@ TC_API void tuzCS_readBytes_Bii(NMParams p) // totalcross/util/zip/CompressedStr
             zstreamRef->c_stream.avail_in = executeMethod(p->currentContext, zstreamRef->rwMethod, stream, streamBuffer, 0, ARRAYOBJ_LEN(streamBuffer)).asInt32;
             zstreamRef->c_stream.next_in = ARRAYOBJ_START(streamBuffer);
          }
+         if (zstreamRef->c_stream.avail_in < 0)
+         {
+            p->retI = -1;
+            break;
+         }
          zstreamRef->c_stream.next_out = ARRAYOBJ_START(buf) + start;
          toCopy = end - start;
          zstreamRef->c_stream.avail_out = toCopy;
          err = inflate(&zstreamRef->c_stream, Z_NO_FLUSH);
-         if (err != Z_OK && (err != Z_STREAM_END || zstreamRef->lastError == Z_STREAM_END))
+         if (err != Z_OK && err != Z_STREAM_END)
          {
-            throwException(p->currentContext, IOException, zstreamRef->lastError == Z_STREAM_END ? "End of stream" : zstreamRef->c_stream.msg);
+            throwException(p->currentContext, IOException, zstreamRef->c_stream.msg);
             break;
          }
-         if (err == Z_STREAM_END && zstreamRef->c_stream.avail_out == toCopy) // only assign if nothing was read from stream
-            zstreamRef->lastError = err;
          start += toCopy - zstreamRef->c_stream.avail_out;
          result += toCopy - zstreamRef->c_stream.avail_out;
       }
