@@ -1932,4 +1932,9 @@ public class Window extends Container
    {
       return shiftY != 0;
    }
+   
+   public static boolean isSipShown()
+   {
+      return isSipShown;
+   }
 }
