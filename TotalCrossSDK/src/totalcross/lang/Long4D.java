@@ -72,6 +72,6 @@ public class Long4D extends Number4D implements Comparable<Long4D>
    @Override
    public int compareTo(Long4D o)
    {
-      return (int) (this.v - o.v);
+      return this.v < o.v? -1: (this.v == o.v? 0: +1);
    }
 }
