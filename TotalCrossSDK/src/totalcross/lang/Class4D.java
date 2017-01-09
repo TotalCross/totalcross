@@ -78,6 +78,11 @@ public final class Class4D<T>
       return ncached = targetName;
    }
    
+   public String getCanonicalName()
+   {
+      return getName();
+   }
+   
    /** Returns the fully qualified name of this class. */
    public String toString()
    {
