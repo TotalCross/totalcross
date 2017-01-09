@@ -18,6 +18,8 @@
 
 package totalcross.lang;
 
+import java.util.ArrayList;
+
 /**
  * Base class of all Exceptions. 
  * <br><br>
@@ -49,6 +51,9 @@ public class Throwable4D
      * @since 1.4
      */
     private Throwable4D cause = this;
+
+	private ArrayList<Throwable4D> suppressed = new ArrayList<>();
+	private Throwable4D[] cachedSuppressedArray;
 
     /** Constructs an empty Exception. */
     public Throwable4D()
@@ -129,5 +134,20 @@ public class Throwable4D
     {
        this.cause = cause;
        return this;
+    }
+    
+    public final void addSuppressed(Throwable4D exception)
+    {
+        this.suppressed.add(exception);
+        cachedSuppressedArray = null;
+    }
+    
+    public final Throwable4D[] getSuppressed()
+    {
+        if (cachedSuppressedArray == null)
+        {
+            cachedSuppressedArray = this.suppressed.toArray(new Throwable4D[0]);
+        }
+        return cachedSuppressedArray;
     }
 }
