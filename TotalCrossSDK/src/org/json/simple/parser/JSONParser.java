@@ -28,9 +28,7 @@ import org.json.simple.JSONObject;
  * Parser for JSON text. Please note that JSONParser is NOT thread-safe.
  * 
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * @deprecated since 2.0.0, copied to a new package {@link org.json.simple.Jsoner}.
  */
-@Deprecated
 public class JSONParser {
 	/**
 	 * description omitted.

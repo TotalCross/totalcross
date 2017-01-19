@@ -24,9 +24,7 @@ import java.util.Map;
  * A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
  * 
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * @deprecated since 2.0.0, replaced by {@link org.json.simple.JsonObject}
  */
-@Deprecated
 public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAware{
 	
 	private static final long serialVersionUID = -503443796854799292L;

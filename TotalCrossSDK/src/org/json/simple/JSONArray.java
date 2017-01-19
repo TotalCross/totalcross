@@ -24,9 +24,7 @@ import java.util.Iterator;
  * A JSON array. JSONObject supports java.util.List interface.
  * 
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * @deprecated since 2.0.0, replaced by {@link org.json.simple.JsonArray}
  */
-@Deprecated
 public class JSONArray extends ArrayList implements JSONAware, JSONStreamAware {
 	private static final long serialVersionUID = 3957988303675231981L;
 	

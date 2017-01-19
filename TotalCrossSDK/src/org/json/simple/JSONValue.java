@@ -28,9 +28,7 @@ import org.json.simple.parser.ParseException;
 
 /**
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * @deprecated since 2.0.0, replaced by {@link org.json.simple.Jsoner}
  */
-@Deprecated
 public class JSONValue {
 	/**
 	 * Parse JSON text into java object from the input source. 
