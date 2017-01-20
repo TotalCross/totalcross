@@ -261,7 +261,16 @@ public final class TCMethod implements TCConstants
             }
             catch (ClassNotFoundException ee)
             {
-               throw new InvalidClassException("Class '"+className+"' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."+beAware);
+            	tcClassName  = "jdkcompat" + className.substring(4);
+                try {
+					int index = tcClassName.indexOf('$');
+					if (index < 0)
+					   c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+					else
+					   c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
+				} catch (ClassNotFoundException e1) {
+		               throw new InvalidClassException("Class '"+className+"' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."+beAware);
+				}
             }
          }
          // now checks if the method exists in the totalcross4D class
