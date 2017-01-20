@@ -179,6 +179,18 @@ public final class StringBuffer4D
    * @return    the StringBuffer itself, NOT a new one.
    */
    native public StringBuffer4D append(String str);
+   
+   /**
+    * Appends a String to the end of this buffer.
+    * @param str the String that has a part to be appended
+    * @param start the start index of the substring to be appended
+    * @param end the end index of the Substring to be appended
+    * @return    the StringBuffer itself, NOT a new one.
+    */
+    public StringBuffer4D append(String str, int start, int end)
+    {
+        return this.append(str.substring(start, end));
+    }
 
    /**
    * Appends an array of characters to the end of this buffer.
