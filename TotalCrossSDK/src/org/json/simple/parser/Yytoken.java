@@ -15,9 +15,7 @@ package org.json.simple.parser;
 
 /**
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * @deprecated since 2.0.0, copied to a new package.
  */
-@Deprecated
 public class Yytoken {
 	/**
 	 * description omitted.

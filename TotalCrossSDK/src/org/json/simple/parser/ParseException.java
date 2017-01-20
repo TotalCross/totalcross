@@ -17,10 +17,7 @@ package org.json.simple.parser;
  * ParseException explains why and where the error occurs in source JSON text.
  * 
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * 
- * @deprecated since 2.0.0, copied to a new package.
  */
-@Deprecated
 public class ParseException extends Exception {
 	private static final long serialVersionUID = -7880698968187728547L;
 	

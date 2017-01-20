@@ -10,7 +10,6 @@ package org.json.simple.parser;
  * <tt>/home/davinloegering/cliftonlabs/workspace/json-simple/src/main/lex/json.lex</tt>
  * 
  */
-@Deprecated
 class Yylex {
 
   /** This character denotes the end of file */

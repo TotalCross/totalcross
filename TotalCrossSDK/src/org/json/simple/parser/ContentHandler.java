@@ -22,9 +22,7 @@ import java.io.IOException;
  * @see org.json.simple.parser.JSONParser#parse(java.io.Reader, ContentHandler, boolean)
  * 
  * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
- * @deprecated since 2.0.0 it doesn't extend the SAX ContentHandler promoting bad practices and incompatible code.
  */
-@Deprecated
 public interface ContentHandler {
 	/**
 	 * Receive notification of the beginning of JSON processing.
