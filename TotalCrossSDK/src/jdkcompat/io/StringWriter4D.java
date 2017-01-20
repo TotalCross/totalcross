@@ -1,4 +1,4 @@
-package totalcross.io;
+package jdkcompat.io;
 
 import java.io.IOException;
 import java.io.Writer;

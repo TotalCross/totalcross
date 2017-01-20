@@ -1,4 +1,4 @@
-package totalcross.io;
+package jdkcompat.io;
 
 import java.io.Closeable;
 import java.io.Flushable;

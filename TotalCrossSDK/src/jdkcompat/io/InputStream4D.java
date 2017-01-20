@@ -36,7 +36,9 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package totalcross.io;
+package jdkcompat.io;
+
+import totalcross.io.IOException;
 
 /**
   * This abstract class forms the base of the hierarchy of classes that read

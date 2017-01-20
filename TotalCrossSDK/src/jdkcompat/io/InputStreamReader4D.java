@@ -37,7 +37,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package totalcross.io;
+package jdkcompat.io;
 
 //import gnu.classpath.SystemProperties;
 //import gnu.java.nio.charset.EncodingHelper;
@@ -51,6 +51,7 @@ import java.io.InputStream;
 //import java.nio.charset.CoderResult;
 //import java.nio.charset.CodingErrorAction;
 
+import totalcross.io.IOException;
 import totalcross.sys.CharacterConverter;
 import totalcross.sys.Vm;
 
