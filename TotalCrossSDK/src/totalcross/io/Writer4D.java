@@ -24,6 +24,18 @@ public abstract class Writer4D implements Closeable, Flushable {
 		str.getChars(offset, offset + length, dst, 0);
 		write(dst, 0, length);
 	}
+	
+	public void append(char c) throws IOException {
+		write(c);
+	}
+	
+	public void append(String str) throws IOException {
+		write(str);
+	}
+	
+	public void append(String str, int start, int end) throws IOException {
+		write(str.substring(start, end));
+	}
 
 	public abstract void write(char[] buff, int offset, int length) throws IOException;
 }
