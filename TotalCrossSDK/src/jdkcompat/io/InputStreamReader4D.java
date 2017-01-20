@@ -50,6 +50,7 @@ import java.io.InputStream;
 //import java.nio.charset.CharsetDecoder;
 //import java.nio.charset.CoderResult;
 //import java.nio.charset.CodingErrorAction;
+import java.io.Reader;
 
 import totalcross.io.IOException;
 import totalcross.sys.CharacterConverter;
@@ -101,7 +102,7 @@ import totalcross.sys.Vm;
  * @author Per Bothner (bothner@cygnus.com)
  * @date April 22, 1998.
  */
-public class InputStreamReader4D extends Reader4D
+public class InputStreamReader4D extends Reader
 {
   /**
    * The input stream.

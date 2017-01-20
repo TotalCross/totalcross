@@ -1,8 +1,9 @@
 package jdkcompat.io;
 
 import java.io.IOException;
+import java.io.Reader;
 
-public class StringReader4D extends Reader4D {
+public class StringReader4D extends Reader {
 	private final String baseString;
 	private final int len;
 	private int atual;
