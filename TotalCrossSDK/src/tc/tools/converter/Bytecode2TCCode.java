@@ -2027,8 +2027,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
    {
       if (name.startsWith("totalcross/lang/"))
          return "java/lang/" + name.substring(16);
-      if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/")) 
-         return name.replace("totalcross", "java");     
+      if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/"))
+         return name.replace("totalcross", "java");
       return name;
    }
 
