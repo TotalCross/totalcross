@@ -48,6 +48,4 @@ public class StringWriter4D extends Writer {
 		strBuffer.append(str, offset, offset + length);
 	}
 	
-	
-
 }
