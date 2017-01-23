@@ -377,37 +377,38 @@ public class InputStreamReader4D extends Reader
    */
   public int read(char[] buf, int offset, int length) throws java.io.IOException
   {
-		if (readCharLen == readCharPos) {
-			int readBytesLen = in.read(readBytesBuff, 0, BUFFER_SIZE);
-			
-			if (readBytesLen == -1) {
-				return -1;
+	  	synchronized (lock) {
+			if (readCharLen == readCharPos) {
+				int readBytesLen = in.read(readBytesBuff, 0, BUFFER_SIZE);
+				
+				if (readBytesLen == -1) {
+					return -1;
+				}
+				
+				readCharBuff = cconv.bytes2chars(readBytesBuff, 0, readBytesLen);
+				
+				readCharLen = readCharBuff.length;
+				readCharPos = 0;
 			}
 			
-			readCharBuff = cconv.bytes2chars(readBytesBuff, 0, readBytesLen);
+			// copia para a saída
+			int nRestanteBuff = readCharLen - readCharPos;
+			int nMaxSaida = length - offset;
+			int read;
 			
-			readCharLen = readCharBuff.length;
-			readCharPos = 0;
-		}
-		
-		// copia para a saída
-		int nRestanteBuff = readCharLen - readCharPos;
-		int nMaxSaida = length - offset;
-		int read;
-		
-		if (nRestanteBuff > nMaxSaida) { // caso seja maior no buffer de char que a saida
-			Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nMaxSaida);
-			
-			readCharPos += nMaxSaida;
-			read = nMaxSaida;
-		} else { // caso tenha mais espaço na saída do que no buffer de char
-			Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nRestanteBuff);
-			
-			readCharPos = readCharLen;
-			read = nRestanteBuff;
-		}
-
-		return read;
+			if (nRestanteBuff > nMaxSaida) { // caso seja maior no buffer de char que a saida
+				Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nMaxSaida);
+				
+				readCharPos += nMaxSaida;
+				read = nMaxSaida;
+			} else { // caso tenha mais espaço na saída do que no buffer de char
+				Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nRestanteBuff);
+				
+				readCharPos = readCharLen;
+				read = nRestanteBuff;
+			}
+	
+			return read;
 //    if (in == null)
 //        throw new java.io.IOException("Reader has been closed");
 //    if (isDone)
@@ -515,6 +516,7 @@ public class InputStreamReader4D extends Reader
 //          }
 //        return read;
 //    }
+	  	}
   }
 
   /**
