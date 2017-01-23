@@ -34,4 +34,14 @@ public class IOException extends Exception
    {
       super(msg);
    }
+
+   public IOException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
+
+   public IOException(Throwable cause)
+   {
+      super(cause);
+   }
 }
