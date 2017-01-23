@@ -377,10 +377,6 @@ public class InputStreamReader4D extends Reader
    */
   public int read(char[] buf, int offset, int length) throws java.io.IOException
   {
-		int read;
-
-		read = 0;// TODO
-		
 		if (readCharLen == readCharPos) {
 			int readBytesLen = in.read(readBytesBuff, 0, BUFFER_SIZE);
 			
@@ -397,15 +393,18 @@ public class InputStreamReader4D extends Reader
 		// copia para a saída
 		int nRestanteBuff = readCharLen - readCharPos;
 		int nMaxSaida = length - offset;
+		int read;
 		
 		if (nRestanteBuff > nMaxSaida) { // caso seja maior no buffer de char que a saida
 			Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nMaxSaida);
 			
 			readCharPos += nMaxSaida;
+			read = nMaxSaida;
 		} else { // caso tenha mais espaço na saída do que no buffer de char
 			Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nRestanteBuff);
 			
 			readCharPos = readCharLen;
+			read = nRestanteBuff;
 		}
 
 		return read;
