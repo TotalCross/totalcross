@@ -1,4 +1,46 @@
-<h2>TotalCross 3.3</h2>   
+<h2>TotalCross 3.3</h2>
+<h1>build 3070</h1>
+	<h2>bugfixes</h2>
+		<ul>
+			<li>avoiding overflow operations within Long.compareTo(Long)</li>
+			<li>end of stream treated properly in zlib, returns -1 instead of throwing an exception</li>
+			<li>iOS
+				<ul>
+					<li>fixes deploy to in-house distribution</li>
+				</ul>
+			</li>
+		</ul>
+	<h2>new features</h2>
+		<ul>
+			<li>implementing Class.getCanonicalName()</li>
+			<li>added Autocloseable interface to TotalCross</li>
+			<li>Window.isSipShown() tells wheter or not the keyboard is currently showing</li>
+			<li>added InputStream</li>
+			<li>totalcross.io.Stream can generate a InputStream</li>
+			<li>added Reader</li>
+			<li>added InputStreamReader</li>
+			<li>added StringReader</li>
+			<li>added Closeable interface</li>
+			<li>added Flushable interface</li>
+			<li>added Writer</li>
+			<li>added StringWriter</li>
+			<li>added StringBuffer.append(String, int, int) method</li>
+			<li><a href='https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html'>try-with-resources</a> statement supported</li>
+			<li>adding a SAX-like compiler for JSON, based on <a href='https://github.com/fangyidong/json-simple'>JSON-Simple</a> and its <a href='https://github.com/cliftonlabs/json-simple'>Cliftonlabs fork</a></li>
+		</ul>
+	<h2>deprecated</h2>
+		<ul>
+			<li>trying to get mac address in Android 6+ will return a constant 02:00:00:00:00:00 due <a href='https://developer.android.com/about/versions/marshmallow/android-6.0-changes.html#behavior-hardware-id'>to provide users with greater data protection</a></li>
+		</ul>
+	<h2>known bugs</h2>
+		<ul>
+			<li>Class.getCanonicalName() doesn't return the canonical name, but defaults to Class.getName()</li>
+			<li>iOS
+				<ul>
+					<li>deploy to store distribution is messy</li>
+				</ul>
+			</li>
+		</ul>
 <h1>build 3058</h1>
 . fixed android installation (single apk and non-single apk)<br>
 . fixed definetively full screen on android<br>
