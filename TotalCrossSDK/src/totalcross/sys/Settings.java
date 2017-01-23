@@ -365,7 +365,10 @@ public final class Settings
    
    /** The macAddress currently in use.
     * Currently works only on Android.
+    * 
+    * @deprecated due to provide users with greater data protection
     */
+   @Deprecated
    public static String macAddress;
 
    /** Field that represents if the PDA has a password and the user choosen to hide the secret records
