@@ -456,6 +456,12 @@ public class Control extends GfxSurface
       uitip.show();
    }
    
+   /** Shows a message using a global tip shared by all controls. */
+   public void showTip(String s, int duration, int y)
+   {
+	   Control.showTip(this, s, duration, y);
+   }
+   
    /** Posts a ControlEvent.PRESSED event with this control as target.
     * @since TotalCross 1.14 
     */
