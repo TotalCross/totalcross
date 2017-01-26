@@ -32,10 +32,12 @@ public class Base64DecoderStream extends InputStream {
 
 	@Override
 	public int read() throws IOException {
-		ensureFetch();
+		byte[] b = new byte[1];
 		
-		// TODO Auto-generated method stub
-		return 0;
+		if (read(b) != -1) {
+			return b[0];
+		}
+		return -1;
 	}
 
 	@Override
