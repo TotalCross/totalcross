@@ -152,7 +152,7 @@ public abstract class Stream extends Connection
 }
 
 class WrapInputStream extends InputStream {
-	private Stream stream;
+	Stream stream;
 
 	WrapInputStream(Stream stream) {
 		this.stream = stream;
