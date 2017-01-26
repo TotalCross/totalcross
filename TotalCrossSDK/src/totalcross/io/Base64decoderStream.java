@@ -6,7 +6,7 @@ import java.io.InputStream;
 import totalcross.net.Base64;
 import totalcross.sys.Vm;
 
-public class Base64DecoderStream extends InputStream {
+public class Base64decoderStream extends InputStream {
 	InputStream base64encodedStream;
 	
 	boolean eos = false;
@@ -22,7 +22,7 @@ public class Base64DecoderStream extends InputStream {
 	int decodedSize;
 	int decodedReadPos;
 	
-	public Base64DecoderStream(InputStream base64encodedStream) {
+	public Base64decoderStream(InputStream base64encodedStream) {
 		this.base64encodedStream = base64encodedStream;
 		
 		overflowSize = 0;
