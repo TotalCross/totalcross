@@ -40,10 +40,31 @@ public class Base64DecoderStream extends InputStream {
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		ensureFetch();
+		if (eos) {
+			return -1;
+		}
+		
+		int arraySize = b.length;
+		int maxReadable = Math.min(len, arraySize - off);
+		int remaining = maxReadable;
+		
+		int offsetUsed = off;
+		int totalRead = 0;
+		
+		while (remaining > 0) {
+			ensureFetch();
+			if (decodedSize <= 0) {
+				break;
+			}
+			int size = Math.min(remaining, decodedSize - decodedReadPos);
+			Vm.arrayCopy(bytesDecodedRead, decodedReadPos, b, offsetUsed, size);
+			decodedReadPos += size;
+			offsetUsed += size;
+			remaining -= size;
+			totalRead += size;
+		}
 
-		// TODO Auto-generated method stub
-		return super.read(b, off, len);
+		return totalRead;
 	}
 
 	@Override
