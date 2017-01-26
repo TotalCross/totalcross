@@ -394,18 +394,32 @@ public class InputStreamReader4D extends Reader
 			// copia para a saída
 			int nRestanteBuff = readCharLen - readCharPos;
 			int nMaxSaida = length - offset;
-			int read;
+			int read = 0;
 			
-			if (nRestanteBuff > nMaxSaida) { // caso seja maior no buffer de char que a saida
-				Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nMaxSaida);
-				
-				readCharPos += nMaxSaida;
-				read = nMaxSaida;
-			} else { // caso tenha mais espaço na saída do que no buffer de char
-				Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nRestanteBuff);
-				
-				readCharPos = readCharLen;
-				read = nRestanteBuff;
+			if (nMaxSaida < 0 || nRestanteBuff < 0) {
+				if (nRestanteBuff > nMaxSaida) { // caso seja maior no buffer de char que a saida
+					try {
+						Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nMaxSaida);
+					} catch (Throwable t) {
+						t.printStackTrace();
+						throw t;
+					}
+					
+					readCharPos += nMaxSaida;
+					read = nMaxSaida;
+				} else { // caso tenha mais espaço na saída do que no buffer de char
+					Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nRestanteBuff);
+					
+					readCharPos = readCharLen;
+					read = nRestanteBuff;
+				}
+			} else {
+				Vm.debug("nRestanteBuff " + nRestanteBuff);
+				Vm.debug("readCharLen " + readCharLen);
+				Vm.debug("readCharPos " + readCharPos);
+				Vm.debug("nMaxSaida " + nMaxSaida);
+				Vm.debug("length " + length);
+				Vm.debug("offset " + offset);
 			}
 	
 			return read;
