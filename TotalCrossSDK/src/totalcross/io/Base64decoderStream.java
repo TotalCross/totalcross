@@ -132,7 +132,13 @@ public class Base64decoderStream extends InputStream {
 				}
 				
 				int usableReadData = consideredRead - overflowSize;
-				decodedSize = Base64.decode(bytesEncodedRead, 0, usableReadData, bytesDecodedRead, 0);
+				if (usableReadData > 0) {
+					try {
+						decodedSize = Base64.decode(bytesEncodedRead, 0, usableReadData, bytesDecodedRead, 0);
+					} catch (ArrayIndexOutOfBoundsException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
