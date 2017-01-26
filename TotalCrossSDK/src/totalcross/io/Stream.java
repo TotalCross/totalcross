@@ -149,6 +149,13 @@ public abstract class Stream extends Connection
    public InputStream wrapInputStream() {
 	   return new WrapInputStream(this);
    }
+
+   public static Stream wrapInputStreamToStream(InputStream inputStream) {
+      if (inputStream instanceof WrapInputStream) {
+         return ((WrapInputStream) inputStream).stream;
+      }
+      return new WrapFromInputStream(inputStream);
+   }
 }
 
 class WrapInputStream extends InputStream {
@@ -176,5 +183,62 @@ class WrapInputStream extends InputStream {
 			throw new java.io.IOException(e);
 		}
 	}
+	
+}
+
+class WrapFromInputStream extends Stream {
+	InputStream inputStream;
+	
+	WrapFromInputStream(InputStream inputStream) {
+		this.inputStream = inputStream;
+	}
+	
+	@Override
+	public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
+		try {
+			return inputStream.read(buf, start, count);
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
+	@Override
+	public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't write to a wrapped input stream");
+	}
+	
+	@Override
+	public int writeBytes(byte[] buf) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't write to a wrapped input stream");
+	}
+	
+	@Override
+	public int writeBytes(String string) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't write to a wrapped input stream");
+	}
+	
+	@Override
+	public int skipBytes(int n) throws totalcross.io.IOException {
+		try {
+			return (int) inputStream.skip(n);
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
+	@Override
+	public InputStream wrapInputStream() {
+		return inputStream;
+	}
+	
+	@Override
+	public void close() throws totalcross.io.IOException {
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
 	
 }
