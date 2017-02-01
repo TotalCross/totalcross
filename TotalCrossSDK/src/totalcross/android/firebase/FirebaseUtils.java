@@ -1,5 +1,18 @@
 package totalcross.android.firebase;
 
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
+import totalcross.AndroidUtils;
+import totalcross.Launcher4A;
+
 public class FirebaseUtils
 {
    private static String vmPath(Context cnt)

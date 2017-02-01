@@ -9,7 +9,19 @@ package totalcross.android.firebase;
  The message is also sent as notification so, if the app is not running, it can be opened.
  
  */
- 
+
+import java.util.Map;
+
+import android.app.Notification; 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
+import totalcross.Launcher4A;
+import totalcross.AndroidUtils;
+
 /**
  * Mudanças baseadas em https://developers.google.com/cloud-messaging/android/android-migrate-fcm
  */
