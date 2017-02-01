@@ -1,2 +1,7 @@
 /.idea/
 /droid.iml
+/src/main/assets
+/gradlew
+/gradlew.bat
+/*.log
+/*.properties
