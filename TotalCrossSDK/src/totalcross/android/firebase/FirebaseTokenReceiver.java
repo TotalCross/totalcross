@@ -5,6 +5,9 @@ package totalcross.android.firebase;
  *  MUST BE INVOKED IN A SEPARATE SERVICE. 
  */
 
+import android.content.Intent;
+import android.content.IntentService;
+
 public class FirebaseTokenReceiver extends IntentService
 {
    public FirebaseTokenReceiver()
