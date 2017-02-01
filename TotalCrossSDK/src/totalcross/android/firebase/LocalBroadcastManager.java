@@ -76,7 +76,7 @@ public class LocalBroadcastManager {
         }
     }
 
-    private static final String TAG = "TotalCross";
+    public static final String TAG = "TotalCross";
     private static final boolean DEBUG = false;
 
     private final Context mAppContext;
