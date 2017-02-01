@@ -67,7 +67,7 @@ android {
     
     task buildAndroidNative(type:Exec) {
 		workingDir "../.." +  "/src"
-    	commandLine "cmd","/c",'P:/extlibs/android-ndk-r8b/ndk-build'
+    	commandLine 'cmd', '/c', ndkDir + '/ndk-build'
 
 		doLast{
 			copy {
