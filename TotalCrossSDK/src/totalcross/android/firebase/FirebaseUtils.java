@@ -96,7 +96,7 @@ public class FirebaseUtils
 
    public static void startGCMService(Context cnt)
    {
-      cnt.startService(new Intent(cnt, totalcross.android.gcm.GCMTokenReceiver.class));
+      cnt.startService(new Intent(cnt, totalcross.android.firebase.FirebaseTokenReceiver.class));
       // register broadcast receiver 
       LocalBroadcastManager.getInstance(cnt).registerReceiver(new BroadcastReceiver() 
       {
