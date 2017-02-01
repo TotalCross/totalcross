@@ -7,6 +7,7 @@ package totalcross.android.firebase;
 
 import android.content.Intent;
 import android.content.IntentService;
+import totalcross.Launcher4A;
 
 public class FirebaseTokenReceiver extends IntentService
 {
@@ -19,9 +20,9 @@ public class FirebaseTokenReceiver extends IntentService
    {
       try
       {
-         String pushTokenAndroid = FirebaseUtils.getToken(getApplicationContext());
-         String token = InstanceID.getInstance(this).getToken(pushTokenAndroid, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-         FirebaseUtils.writeToken(this, pushTokenAndroid, token);
+         //String pushTokenAndroid = FirebaseUtils.getToken(getApplicationContext());
+         //String token = InstanceID.getInstance(this).getToken(pushTokenAndroid, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+         //FirebaseUtils.writeToken(this, pushTokenAndroid, token);
          FirebaseUtils.sendBroadcast(this, Launcher4A.TOKEN_RECEIVED);
       }
       catch (Exception e)
