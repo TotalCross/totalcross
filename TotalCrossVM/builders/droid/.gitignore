@@ -4,4 +4,4 @@
 /gradlew
 /gradlew.bat
 /*.log
-/*.properties
+/local.properties
