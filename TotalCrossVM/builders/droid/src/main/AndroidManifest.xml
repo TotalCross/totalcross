@@ -48,7 +48,7 @@
         </service>
         <!-- receives the token - must be in a separate intent -->
         <service
-            android:name="totalcross.android.gcm.GCMTokenReceiver"
+            android:name="totalcross.android.firebase.FirebaseTokenReceiver"
             android:exported="false">
         </service>
     </application>
