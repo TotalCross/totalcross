@@ -33,13 +33,12 @@
         </activity>
         <!-- push notifications -->
         <!-- receives the message -->
-        <service
-            android:name="totalcross.android.gcm.GCMMessageReceiver"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-        </service>
+		<service
+			android:name="totalcross.android.gcm.FirebaseMessageReceiver">
+			<intent-filter>
+				<action android:name="com.google.firebase.MESSAGING_EVENT" />
+			</intent-filter>
+		</service>
         <!-- receives the token (2nd time on) -->
         <service
             android:name="totalcross.android.firebase.MyInstanceIDListenerService">
