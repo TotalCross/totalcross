@@ -86,5 +86,6 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.wifi" android:required="false"/>
-    <!-- push notifications -->
+	
+	<uses-feature android:glEsVersion="0x00020000" />
 </manifest>
