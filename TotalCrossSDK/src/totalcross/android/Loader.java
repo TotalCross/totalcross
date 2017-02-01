@@ -18,7 +18,7 @@ package totalcross.android;
 
 import totalcross.*;
 import totalcross.android.compat.*;
-import totalcross.android.gcm.*;
+import totalcross.android.firebase.FirebaseUtils;
 
 import android.app.*;
 import android.content.*;
@@ -716,10 +716,10 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       try
       {
-         if (command.equals("***REGISTER PUSH TOKEN***")) // start GCM service
+         if (command.equals("***REGISTER PUSH TOKEN***")) // start firebase service
          {
-            GCMUtils.setToken(this,args);
-            GCMUtils.startGCMService(this);
+            FirebaseUtils.setToken(this,args);
+            FirebaseUtils.startFirebaseService(this);
          }
          else
          if (command.equalsIgnoreCase("broadcast"))
