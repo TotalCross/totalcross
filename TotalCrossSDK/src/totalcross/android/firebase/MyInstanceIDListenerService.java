@@ -2,10 +2,13 @@ package totalcross.android.firebase;
 
 import static totalcross.android.firebase.LocalBroadcastManager.TAG;
 
+import java.io.IOException;
+
 import android.content.Intent;
 import android.util.Log;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 import com.google.firebase.iid.FirebaseInstanceId;
+import totalcross.AndroidUtils;
 
 public class MyInstanceIDListenerService extends FirebaseInstanceIdService
 {
@@ -30,8 +33,12 @@ public class MyInstanceIDListenerService extends FirebaseInstanceIdService
       // sendRegistrationToServer(refreshedToken);
 	  
 	  // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
-	  FirebaseUtils.writeToken(this, refreshedToken, refreshedToken);
-      startService(new Intent(this, FirebaseTokenReceiver.class));
+	  try {
+	     FirebaseUtils.writeToken(this, refreshedToken, refreshedToken);
+         startService(new Intent(this, FirebaseTokenReceiver.class));
+	  } catch (IOException e) {
+		 AndroidUtils.handleException(e,false);
+	  }
    }
 
 }
