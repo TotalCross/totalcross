@@ -35,18 +35,18 @@ public class FirebaseMessageReceiver extends FirebaseMessagingService {
 	 */
 	public void onMessageReceived(RemoteMessage message) {
 		String from = message.getFrom();
-		Map data = message.getData();
+		Map<String, String> data = message.getData();
 		if (data != null) {
 			try {
 				// get the parameters
-				String title = data.getString("title");
-				String text = data.getString("text");
-				String info = data.getString("info");
-				String ticker = data.getString("ticker");
+				String title = data.get("title");
+				String text = data.get("text");
+				String info = data.get("info");
+				String ticker = data.get("ticker");
 				if (ticker == null) {
 					ticker = title;
 				}
-				String appdata = data.getString("appdata");
+				String appdata = data.get("appdata");
 				if (appdata == null)  {
 					appdata = title;
 				}
