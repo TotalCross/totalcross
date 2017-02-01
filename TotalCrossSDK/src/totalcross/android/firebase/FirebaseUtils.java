@@ -1,6 +1,6 @@
 package totalcross.android.firebase;
 
-public class GCMUtils
+public class FirebaseUtils
 {
    private static String vmPath(Context cnt)
    {

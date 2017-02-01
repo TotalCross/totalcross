@@ -5,11 +5,11 @@ package totalcross.android.firebase;
  *  MUST BE INVOKED IN A SEPARATE SERVICE. 
  */
 
-public class GCMTokenReceiver extends IntentService
+public class FirebaseTokenReceiver extends IntentService
 {
-   public GCMTokenReceiver()
+   public FirebaseTokenReceiver()
    {
-      super("GCMTokenReceiver");
+      super("FirebaseTokenReceiver");
    }
 
    protected void onHandleIntent(Intent i)
@@ -18,8 +18,8 @@ public class GCMTokenReceiver extends IntentService
       {
          String pushTokenAndroid = GCMUtils.getToken(getApplicationContext());
          String token = InstanceID.getInstance(this).getToken(pushTokenAndroid, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-         GCMUtils.writeToken(this, pushTokenAndroid, token);
-         GCMUtils.sendBroadcast(this, Launcher4A.TOKEN_RECEIVED);
+         FirebaseUtils.writeToken(this, pushTokenAndroid, token);
+         FirebaseUtils.sendBroadcast(this, Launcher4A.TOKEN_RECEIVED);
       }
       catch (Exception e)
       {

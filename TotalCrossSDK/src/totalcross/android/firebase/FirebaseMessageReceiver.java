@@ -9,7 +9,7 @@ package totalcross.android.firebase;
  The message is also sent as notification so, if the app is not running, it can be opened.
  
  */
-public class GCMMessageReceiver extends GcmListenerService
+public class FirebaseMessageReceiver extends GcmListenerService
 {
    /**
     * Called when message is received. ex: 
@@ -32,16 +32,16 @@ public class GCMMessageReceiver extends GcmListenerService
             if (appdata == null) 
                appdata = title;
             
-            String classname = getClass().getName(); // totalcross.apptapi.gcm.GCMMessageReceiver
-            classname = classname.replace("gcm.GCMMessageReceiver", "Loader");
+            String classname = getClass().getName(); // totalcross.apptapi.firebase.FirebaseMessageReceiver
+            classname = classname.replace("firebase.FirebaseMessageReceiver", "Loader");
             
             if (appdata == null) throw new Exception("You must suply at least 'appdata' or 'title' parameter with the message");
             
             // write to the program
-            GCMUtils.writeMessage(this, classname, appdata);
+            FirebaseUtils.writeMessage(this, classname, appdata);
             
             // send a broadcast if the vm is running
-            GCMUtils.sendBroadcast(this, Launcher4A.MESSAGE_RECEIVED);
+            FirebaseUtils.sendBroadcast(this, Launcher4A.MESSAGE_RECEIVED);
             
             // prepare the notification
             if (title != null)
