@@ -62,28 +62,35 @@ public class FirebaseUtils
       c.getSharedPreferences("push_token",0).edit().putString("push_token", tok).commit();
    }
    
-   private static void writeChars(String name, boolean append, String msg) throws IOException
-   {
-      try
-      {
-         FileOutputStream f = null;
-         for (int tries = 100; --tries >= 0;)
-            try {f = new FileOutputStream(name, append);} catch (Exception e) {AndroidUtils.handleException(e,false); try{Thread.sleep(50);}catch (Exception ee) {}}
-         if (f == null)
-            AndroidUtils.debug("Cannot open output file "+name);
-         else
-         {
-            DataOutputStream ds = new DataOutputStream(f);
-            ds.writeShort(msg.length());
-            for (int i = 0, n = msg.length(); i < n; i++)
-               ds.writeChar(msg.charAt(i));
-            f.close();
-         }         
-      }
-      catch (FileNotFoundException fnfe)
-      {
-      }
-   }
+	private static void writeChars(String name, boolean append, String msg) throws IOException {
+		try {
+			FileOutputStream f = null;
+			for (int tries = 100; --tries >= 0;) {
+				try {
+					f = new FileOutputStream(name, append);
+					break;
+				} catch (Exception e) {
+					AndroidUtils.handleException(e,false);
+					try {
+						Thread.sleep(50);
+					} catch (Exception ee) {
+						
+					}
+				}
+			}
+			if (f == null) {
+				AndroidUtils.debug("Cannot open output file "+name);
+			} else {
+				DataOutputStream ds = new DataOutputStream(f);
+				ds.writeShort(msg.length());
+				for (int i = 0, n = msg.length(); i < n; i++) {
+					ds.writeChar(msg.charAt(i));
+				}
+				f.close();
+			}
+		} catch (FileNotFoundException fnfe) {
+		}
+	}
    
    // broadcast events
 
