@@ -150,6 +150,7 @@ dependencies {
 	compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
 	compile 'com.google.android.gms:play-services:8.3.0'
 	compile 'com.google.android.gms:play-services-ads:8.3.0'
+	compile "com.google.firebase:firebase-messaging:9.6.1"
 	
     // Supports Android 4.0.3 and later (API level 15)
     compile 'com.journeyapps:zxing-android-embedded:2.3.0@aar'
