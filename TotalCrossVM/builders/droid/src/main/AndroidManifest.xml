@@ -34,7 +34,7 @@
         <!-- push notifications -->
         <!-- receives the message -->
 		<service
-			android:name="totalcross.android.gcm.FirebaseMessageReceiver">
+			android:name="totalcross.android.firebase.FirebaseMessageReceiver">
 			<intent-filter>
 				<action android:name="com.google.firebase.MESSAGING_EVENT" />
 			</intent-filter>
