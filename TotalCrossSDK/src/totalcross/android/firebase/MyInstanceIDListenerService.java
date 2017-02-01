@@ -30,6 +30,7 @@ public class MyInstanceIDListenerService extends FirebaseInstanceIdService
       // sendRegistrationToServer(refreshedToken);
 	  
 	  // Fetch updated Instance ID token and notify our app's server of any changes (if applicable).
+	  FirebaseUtils.writeToken(this, refreshedToken, refreshedToken);
       startService(new Intent(this, FirebaseTokenReceiver.class));
    }
 
