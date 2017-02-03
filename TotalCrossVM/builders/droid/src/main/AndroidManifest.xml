@@ -46,11 +46,6 @@
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <!-- receives the token - must be in a separate intent -->
-        <service
-            android:name="totalcross.android.firebase.FirebaseTokenReceiver"
-            android:exported="false">
-        </service>
     </application>
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
