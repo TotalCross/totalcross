@@ -223,7 +223,6 @@ public class Deployer4Android
       {
     	 ZipEntry ze2;
          String name = ze.getName();
-         System.out.println("Putting resource (2) in apk: " + name);
          
          // keep all the metadata if possible
          if (ze.getMethod() != ZipEntry.STORED)
@@ -401,7 +400,6 @@ public class Deployer4Android
    
    private void copyEntryBytes(ZipEntry ze, byte[] bytes, ZipOutputStream dstZip) throws IOException {
 	   String zentryName = ze.getName();
-	   System.out.println("Putting resource in apk: " + zentryName);
 	   if (zentryName.endsWith(".ogg")) // for zxing beep.ogg file 
 	      {
 	         CRC32 crc = new CRC32();
