@@ -148,8 +148,10 @@ android {
 
 dependencies {
 	compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
-	compile 'com.google.android.gms:play-services:' + googleGmsVersion
 	compile 'com.google.android.gms:play-services-ads:' + googleGmsVersion
+	compile 'com.google.android.gms:play-services-location:' + googleGmsVersion
+	compile 'com.google.android.gms:play-services-maps:' + googleGmsVersion
+	compile 'com.google.firebase:firebase-core:' + googleGmsVersion
 	compile "com.google.firebase:firebase-messaging:" + googleGmsVersion
 	
     // Supports Android 4.0.3 and later (API level 15)
