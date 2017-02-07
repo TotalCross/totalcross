@@ -11,6 +11,8 @@
 
 package tc.tools.deployer;
 
+import java.io.OutputStream;
+
 import tc.tools.deployer.Bitmaps.Bmp;
 import totalcross.io.*;
 import totalcross.ui.gfx.Color;
@@ -398,7 +400,7 @@ public class Bitmaps
          copyBits(bmp32x32x8.pixels, bmp32x32x8.palette, loadPalette(bytes, iconOffset+40, 256), 32, bytes, iconOffset+40+1024, 32, -32, 8, iconOffset+32*32+40+1024,false, bmp32x32x8.shouldInvertY);
    }
 
-   public void saveAndroidIcon(java.util.zip.ZipOutputStream zos, int res) throws Exception // icon.png
+   public void saveAndroidIcon(OutputStream zos, int res) throws Exception // icon.png
    {
       Image img = IconStore.getSquareIcon(res);
       ByteArrayStream s = new ByteArrayStream(res * res);

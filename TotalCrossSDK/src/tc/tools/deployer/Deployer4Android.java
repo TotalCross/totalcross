@@ -15,8 +15,15 @@ import totalcross.util.*;
 
 import java.io.*;
 import java.lang.String;
-import java.util.zip.*;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.zip.Adler32;
+import java.util.zip.CRC32;
+
+import de.schlichtherle.truezip.zip.ZipEntry;
+import de.schlichtherle.truezip.zip.ZipFile;
+import de.schlichtherle.truezip.zip.ZipOutputStream;
 import tc.tools.converter.bb.*;
 import tc.tools.converter.bb.attribute.*;
 import tc.tools.converter.bb.constant.*;
@@ -169,22 +176,22 @@ public class Deployer4Android
          throw new DeployerException("File android/Launcher.jar not found!");
       jarOut = targetDir+fileName+".jar";
       
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(jarIn));
+      ZipFile zipf = new ZipFile(jarIn);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(jarOut));
-      ZipEntry ze;
 
-      while ((ze = zis.getNextEntry()) != null)
+      for (ZipEntry ze: getIterable(zipf.iterator()))
       {
          String name = convertName(ze.getName());
          if (DEBUG) System.out.println("=== Entry: "+name);
-         
+         InputStream zis = zipf.getInputStream(ze);
          zos.putNextEntry(new ZipEntry(name));
          if (name.endsWith(".class"))
             convertConstantPool(zis,zos);
          zos.closeEntry();
+         zis.close();
       }
 
-      zis.close();
+      zipf.close();
       zos.close();
    }
    
@@ -208,19 +215,20 @@ public class Deployer4Android
       if (ap == null)
          throw new DeployerException("File android/resources.ap_ not found!");
       String apk = targetDir+fileName+".apk";
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(ap));
+      ZipFile inf = new ZipFile(ap);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
-      ZipEntry ze,ze2;
-      
       // search the input zip file, convert and write each entry to the output zip file
-      while ((ze = zis.getNextEntry()) != null)
+      for (ZipEntry ze: getIterable(inf.iterator()))
       {
+    	 ZipEntry ze2;
          String name = ze.getName();
+         System.out.println("Putting resource (2) in apk: " + name);
+         
          // keep all the metadata if possible
          if (ze.getMethod() != ZipEntry.STORED)
          {
-            ze2 = new ZipEntry(ze);
+            ze2 = ze;
             // little trick to make the entry reusable
             ze2.setCompressedSize(-1);
          }
@@ -229,9 +237,9 @@ public class Deployer4Android
             // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
             ze2 = new ZipEntry(ze.getName());
          }
+         InputStream zis = inf.getInputStream(ze2);
          if (name.indexOf("tcfiles.zip") >= 0)
          {
-            zos.putNextEntry(ze2);
             insertTCFiles_zip(ze2, zos);
          }
          else
@@ -266,15 +274,14 @@ public class Deployer4Android
             }
             zos.putNextEntry(ze2);
             zos.write(bytes,0,bytes.length);
-            zis.closeEntry();
          }
          zos.closeEntry();
+         zis.close();
       }
       if (singleApk)
       {
          processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
-         for (int i = 0; i < extras.length; i++)
-            copyZipEntry(tcFolder+"TotalCross.apk", extras[i], zos);
+         copyZipEntries(tcFolder+"TotalCross.apk", "res", zos);
       }
       else
       {
@@ -291,8 +298,33 @@ public class Deployer4Android
       if (tcFolder != null)
          copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
       
-      zis.close();
-      zos.close();      
+      zos.close();
+   }
+
+   private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
+	   ZipFile zipf = new ZipFile(srcZip);
+	   for (ZipEntry zEntry: getIterable(zipf.iterator())) {
+		   String zentryName = zEntry.getName();
+		   InputStream zIn = zipf.getInputStream(zEntry);
+		   if (zentryName.endsWith("/") || zentryName.endsWith("\\")) {
+			   // it's a directory, just continue
+			   continue;
+		   }
+		   if (zentryName.startsWith(initPath)) {
+			   String fileName = "res/drawable-hdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png";
+		       if (fileName.equals(zentryName)) {
+		    	   zentryName = fileName;
+		       }
+			   byte[] bytes = Utils.readJavaInputStream(zIn);
+			   try {
+				   copyEntryBytes(zEntry, bytes, zos);
+			   } catch (IOException e) {
+				   System.out.println("entrada que deu problema? " + zentryName);
+				   throw e;
+			   }
+		   }
+		   zIn.close();
+	   }
    }
 
    // http://strazzere.com/blog/?p=3
@@ -363,21 +395,27 @@ public class Deployer4Android
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
       ZipEntry ze = new ZipEntry(fileName);
       
-      if (fileName.endsWith(".ogg")) // for zxing beep.ogg file 
-      {
-         CRC32 crc = new CRC32();
-         crc.update(bytes); 
-         ze.setCrc(crc.getValue());
-         ze.setMethod(ZipEntry.STORED);
-         ze.setCompressedSize(bytes.length);
-         ze.setSize(bytes.length);
-      }
-      
-      dstZip.putNextEntry(ze);
-      dstZip.write(bytes,0,bytes.length);
+      copyEntryBytes(ze, bytes, dstZip);
       dstZip.closeEntry();
    }
    
+   private void copyEntryBytes(ZipEntry ze, byte[] bytes, ZipOutputStream dstZip) throws IOException {
+	   String zentryName = ze.getName();
+	   System.out.println("Putting resource in apk: " + zentryName);
+	   if (zentryName.endsWith(".ogg")) // for zxing beep.ogg file 
+	      {
+	         CRC32 crc = new CRC32();
+	         crc.update(bytes); 
+	         ze.setCrc(crc.getValue());
+	         ze.setMethod(ZipEntry.STORED);
+	         ze.setCompressedSize(bytes.length);
+	         ze.setSize(bytes.length);
+	      }
+	   
+	      dstZip.putNextEntry(ze);
+	      dstZip.write(bytes,0,bytes.length);
+   }
+
    private void insertIcon_png(ZipOutputStream zos, String name) throws Exception
    {
       if (DeploySettings.bitmaps != null)
@@ -596,7 +634,6 @@ public class Deployer4Android
    private void insertTCFiles_zip(ZipEntry ze, ZipOutputStream z) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
-      ZipOutputStream zos = new ZipOutputStream(baos);
       
       // parse the android.pkg
       Hashtable ht = new Hashtable(13);
@@ -618,61 +655,8 @@ public class Deployer4Android
       }         
 
       Utils.preprocessPKG(vLocals,true);
-      for (int i =0, n = vLocals.size(); i < n; i++)
-      {
-         String []pathnames = totalcross.sys.Convert.tokenizeString((String)vLocals.items[i],',');
-         String pathname = pathnames[0];
-         String name = Utils.getFileName(pathname);
-         if (pathnames.length > 1)
-         {
-            name = totalcross.sys.Convert.appendPath(pathnames[1],name);
-            if (name.startsWith("/"))
-               name = name.substring(1);
-         }
-         // tcz's name must match the lowercase sharedid
-         if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
-            name = targetTCZ+".tcz";
-         FileInputStream fis;
-         try
-         {
-            fis = new FileInputStream(pathname);
-         }
-         catch (FileNotFoundException fnfe)
-         {
-            try
-            {
-               fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
-            }
-            catch (FileNotFoundException fnfe2)
-            {
-               String pp = Utils.findPath(pathname,true);
-               if (pp != null)
-                  fis = new FileInputStream(pp);
-               else
-               {
-                  System.out.println("File not found: "+pathname);
-                  continue;
-               }
-            }
-         }
-         byte[] bytes = new byte[fis.available()];
-         fis.read(bytes);
-         fis.close();
-         ZipEntry zze = new ZipEntry(name);
-         if (name.endsWith(".tcz")) // tcz files will be stored without compression so they can be read directly
-         {
-            CRC32 crc = new CRC32();
-            crc.update(bytes); 
-            zze.setCrc(crc.getValue());
-            zze.setMethod(ZipEntry.STORED);
-            zze.setCompressedSize(bytes.length);
-            zze.setSize(bytes.length);
-         }            
-         zos.putNextEntry(zze);
-         zos.write(bytes);
-         zos.closeEntry();
-      }
-      zos.close();
+      writeVlocals(baos, vector2list(vLocals, new ArrayList<String>()));
+      
       // add the file UNCOMPRESSED
       byte[] bytes = baos.toByteArray();
       CRC32 crc = new CRC32();
@@ -681,10 +665,81 @@ public class Deployer4Android
       ze.setMethod(ZipEntry.STORED);
       ze.setCompressedSize(bytes.length);
       ze.setSize(bytes.length);
+      z.putNextEntry(ze);
       z.write(bytes);
    }
 
-   private void convertConstantPool(ZipInputStream is, ZipOutputStream os) throws Exception
+	public static <E> List<E> vector2list(Vector vec, List<E> list) {
+		for (int i = 0,n = vec.size(); i < n; i++) {
+			@SuppressWarnings("unchecked")
+			E item = (E) vec.items[i];
+			list.add(item);
+		}
+		return list;
+	}
+
+	private void writeVlocals(ByteArrayOutputStream baos, List<String> vLocals) throws IOException {
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		for (String item: vLocals) {
+			String[] pathnames = totalcross.sys.Convert.tokenizeString(item, ',');
+			String pathname = pathnames[0];
+			String name = Utils.getFileName(pathname);
+			if (pathnames.length > 1) {
+				name = totalcross.sys.Convert.appendPath(pathnames[1], name);
+				if (name.startsWith("/")) {
+					name = name.substring(1);
+				}
+			}
+			// tcz's name must match the lowercase sharedid
+			if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) {
+				name = targetTCZ + ".tcz";
+			}
+			FileInputStream fis;
+			try {
+				fis = new FileInputStream(pathname);
+			} catch (FileNotFoundException fnfe) {
+				try {
+					fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+				} catch (FileNotFoundException fnfe2) {
+					String pp = Utils.findPath(pathname, true);
+					if (pp != null) {
+						fis = new FileInputStream(pp);
+					} else {
+						System.out.println("File not found: " + pathname);
+						continue;
+					}
+				}
+			}
+			int avaiable = fis.available();
+			byte[] buff = new byte[avaiable];
+			
+			ByteArrayOutputStream secondary = new ByteArrayOutputStream(avaiable);
+			int size;
+			while ((size = fis.read(buff)) >= 0) {
+				secondary.write(buff, 0, size);
+			}
+			byte[] bytes = secondary.toByteArray();
+			fis.close();
+			ZipEntry zze = new ZipEntry(name);
+			// tcz files will be stored without
+			// compression so they can be read
+			// directly
+			if (name.endsWith(".tcz")) { 
+				CRC32 crc = new CRC32();
+				crc.update(bytes);
+				zze.setCrc(crc.getValue());
+				zze.setMethod(ZipEntry.STORED);
+				zze.setCompressedSize(bytes.length);
+				zze.setSize(bytes.length);
+			}
+			zos.putNextEntry(zze);
+			zos.write(bytes);
+			zos.closeEntry();
+		}
+		zos.close();
+	}
+
+   private void convertConstantPool(InputStream is, ZipOutputStream os) throws Exception
    {
       totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(1024);
       totalcross.io.DataStream ds = new totalcross.io.DataStream(bas);
