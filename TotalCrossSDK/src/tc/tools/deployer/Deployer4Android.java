@@ -16,6 +16,7 @@ import totalcross.util.*;
 import java.io.*;
 import java.lang.String;
 import java.util.zip.*;
+import java.util.Iterator;
 import tc.tools.converter.bb.*;
 import tc.tools.converter.bb.attribute.*;
 import tc.tools.converter.bb.constant.*;
@@ -86,6 +87,16 @@ import tc.tools.converter.bb.constant.Integer;
 
 public class Deployer4Android
 {
+	private static <T> Iterable<T> getIterable(Iterator<T> iterator) {
+		return new Iterable<T>() {
+			Iterator<T> _iterator = iterator;
+
+			@Override
+			public Iterator<T> iterator() {
+				return _iterator;
+			}
+		};
+	}
    private static final boolean DEBUG = false;
    private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
    private String tcFolder;
