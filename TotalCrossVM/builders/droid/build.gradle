@@ -170,4 +170,7 @@ dependencies {
     // This mostly affects encoding, but you should test if you plan to support these versions.
     // Older versions e.g. 2.2 may also work if you need support for older Android versions.
     compile 'com.google.zxing:core:3.2.0'
+	
+	// Enabling Multidex for use of Firebase and etc
+	compile 'com.android.support:multidex:1.0.1'
 }

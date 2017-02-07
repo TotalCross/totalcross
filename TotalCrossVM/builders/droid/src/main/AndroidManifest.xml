@@ -7,7 +7,7 @@
     >
 
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
-         android:theme="@style/TCThemeNS">
+         android:theme="@style/TCThemeNS" android:name="android.support.multidex.MultiDexApplication">
         <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
         <activity android:name=".Loader" 
         android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
