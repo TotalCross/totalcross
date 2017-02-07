@@ -279,7 +279,7 @@ public class Deployer4Android
       }
       if (singleApk)
       {
-         processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
+    	 processClassesDexes(tcFolder+"TotalCross.apk", zos);
          copyZipEntries(tcFolder+"TotalCross.apk", "res", zos);
       }
       else
@@ -299,6 +299,16 @@ public class Deployer4Android
       
       zos.close();
    }
+
+	private void processClassesDexes(String baseApk, ZipOutputStream zos) throws Exception {
+		ZipFile zipf = new ZipFile(baseApk);
+
+		for (ZipEntry entry : getIterable(zipf.iterator())) {
+			if (entry.getName().matches("classes[0-9]*\\.dex")) {
+				processClassesDex(tcFolder + "TotalCross.apk", entry, zos);
+			}
+		}
+	}
 
    private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
 	   ZipFile zipf = new ZipFile(srcZip);
@@ -362,8 +372,9 @@ public class Deployer4Android
       bytes[11] = (byte)(sum >> 24); 
    }  
    
-   private void processClassesDex(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
+   private void processClassesDex(String srcZip, ZipEntry dexEntry, ZipOutputStream dstZip) throws Exception
    {
+	  String fileName = dexEntry.getName();
       dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
 
