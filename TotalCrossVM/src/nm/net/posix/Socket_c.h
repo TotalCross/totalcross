@@ -22,6 +22,11 @@
 #include <netinet/in.h>
 #endif
 
+#if defined (darwin)
+#include <arpa/inet.h>
+#include <err.h>
+#endif
+
 typedef int SOCKET;
 #define INVALID_SOCKET 0
 
@@ -68,45 +73,35 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 {
    Err err;
    int hostSocket;
-   int res, valopt;
+   int res;
 #ifndef darwin
    struct hostent *phostent;
    struct sockaddr_in destination_sin;
-#else
-   struct sockaddr_in6 destination_sin;
-#endif
    long arg;
    fd_set fdWriteSet;
    struct timeval timeout_val;
    socklen_t lon;
-
-   // Create socket
-   if ((hostSocket = socket(
-#ifndef darwin
-                            AF_INET,
+   int valopt;
 #else
-                            AF_INET6,
+   struct addrinfo hints;
+   struct addrinfo *currentAddrInfo;
+   struct addrinfo *addrInfoList;
 #endif
-                            SOCK_STREAM, 0)) < 0)
-      goto Error;
 
-   // Set non-blocking
-   arg = fcntl(hostSocket, F_GETFL, NULL);
-   arg |= O_NONBLOCK;
-   fcntl(hostSocket, F_SETFL, arg);
-
+   /*
+    * Resolve hostname
+    */
 #if defined (darwin)
-   res = iphoneSocket(hostname, (struct sockaddr_in6*) &destination_sin);
-   if (res < 0)
-   {
-      //debug("res: %d", res);
-      *isUnknownHost = true;
-      goto Error;
-   }
-   
-   // Convert to network ordering.
-   destination_sin.sin6_port = htons((uint16) port);
-#else   
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_DEFAULT;
+    if ((err = getaddrinfo(hostname, "http", &hints, &addrInfoList)) != 0) {
+        //debug("getaddrinfo %d, %s", error, gai_strerror(error));
+        /*NOTREACHED*/
+        goto Finish;
+    }
+#else
    // Fill out the server socket's address information.
    destination_sin.sin_family = AF_INET;
    //destination_sin.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -114,9 +109,10 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    {
       if ((phostent = gethostbyname(hostname)) == null)
       {
-         if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA)
+         if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA) {
             *isUnknownHost = true;
-         goto UnknownHost;
+         }
+         goto Error;
       }
       else
       {
@@ -124,17 +120,43 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          xmemmove(&(destination_sin.sin_addr.s_addr), phostent->h_addr, phostent->h_length);
       }
    }
-   
    // Convert to network ordering.
    destination_sin.sin_port = htons((uint16) port);
 #endif   
+   
+#if defined (darwin)
+    for (currentAddrInfo = addrInfoList; currentAddrInfo; currentAddrInfo = currentAddrInfo->ai_next) {
+        if ((hostSocket = socket(
+                 currentAddrInfo->ai_family, 
+                 currentAddrInfo->ai_socktype,
+                 currentAddrInfo->ai_protocol)) < 0) {
+            continue;
+        }
+ 
+        if ((res = connect(hostSocket, currentAddrInfo->ai_addr, currentAddrInfo->ai_addrlen)) < 0) {
+            close(hostSocket);
+            hostSocket = -1;
+            continue;
+        }
+ 
+        break;  /* okay we got one */
+    }
+   freeaddrinfo(addrInfoList);
+    if (hostSocket < 0) {
+        goto Error;
+        /*NOTREACHED*/
+    }
+#else   
+   if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+      goto Error;
+
+   // Set non-blocking
+   arg = fcntl(hostSocket, F_GETFL, NULL);
+   arg |= O_NONBLOCK;
+   fcntl(hostSocket, F_SETFL, arg);
 
    res = connect(hostSocket,
-#ifndef darwin
                  (struct sockaddr *)&destination_sin,
-#else
-                 (struct sockaddr_in6 *)&destination_sin,
-#endif
                  sizeof(destination_sin));
    if (res < 0)
    {
@@ -145,16 +167,18 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       timeout_val.tv_usec = (timeout<1000 ? timeout : timeout%1000)*1000;
       FD_ZERO(&fdWriteSet);
       FD_SET(hostSocket, &fdWriteSet);
-      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0)
+      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0) {
          goto Error;
+      }
       if (res == 0)
       {
          err = ETIMEDOUT;
          *timedOut = true;
          goto Finish;
       }
-      if (!FD_ISSET(hostSocket, &fdWriteSet))
+      if (!FD_ISSET(hostSocket, &fdWriteSet)) {
          goto Error;
+      }
       lon = sizeof(int);
       getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
       if (valopt)
@@ -171,14 +195,13 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       arg &= (~O_NONBLOCK);
       fcntl(hostSocket, F_SETFL, arg);
    */
+#endif
 
    *socketHandle = hostSocket;
    return NO_ERROR;
 
 Error: // Close the socket.
-   err = errno;
-UnknownHost:
-   err = EHOSTUNREACH;
+   err = (*isUnknownHost) ? EHOSTUNREACH : errno;
 Finish:
    socketClose(&hostSocket);
    return err;
