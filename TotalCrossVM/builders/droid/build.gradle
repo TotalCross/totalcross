@@ -4,6 +4,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.google.gms:google-services:3.0.0'
     }
 }
 apply plugin: 'android'
@@ -174,3 +175,5 @@ dependencies {
 	// Enabling Multidex for use of Firebase and etc
 	compile 'com.android.support:multidex:1.0.1'
 }
+
+apply plugin: 'com.google.gms.google-services'
