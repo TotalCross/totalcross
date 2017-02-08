@@ -94,7 +94,7 @@ import tc.tools.converter.bb.constant.Integer;
 
 public class Deployer4Android
 {
-	private static <T> Iterable<T> getIterable(Iterator<T> iterator) {
+	private static <T> Iterable<T> getIterable(final Iterator<T> iterator) {
 		return new Iterable<T>() {
 			Iterator<T> _iterator = iterator;
 
