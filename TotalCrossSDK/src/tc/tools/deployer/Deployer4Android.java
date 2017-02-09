@@ -16,7 +16,6 @@ import totalcross.util.*;
 import java.io.*;
 import java.lang.String;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
@@ -94,16 +93,6 @@ import tc.tools.converter.bb.constant.Integer;
 
 public class Deployer4Android
 {
-	private static <T> Iterable<T> getIterable(final Iterator<T> iterator) {
-		return new Iterable<T>() {
-			Iterator<T> _iterator = iterator;
-
-			@Override
-			public Iterator<T> iterator() {
-				return _iterator;
-			}
-		};
-	}
    private static final boolean DEBUG = false;
    private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
    private String tcFolder;
@@ -179,7 +168,7 @@ public class Deployer4Android
       ZipFile zipf = new ZipFile(jarIn);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(jarOut));
 
-      for (ZipEntry ze: getIterable(zipf.iterator()))
+      for (ZipEntry ze: zipf)
       {
          String name = convertName(ze.getName());
          if (DEBUG) System.out.println("=== Entry: "+name);
@@ -219,7 +208,7 @@ public class Deployer4Android
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
       // search the input zip file, convert and write each entry to the output zip file
-      for (ZipEntry ze: getIterable(inf.iterator()))
+      for (ZipEntry ze: inf)
       {
     	 ZipEntry ze2;
          String name = ze.getName();
@@ -324,7 +313,7 @@ public class Deployer4Android
 	private void processClassesDexes(String baseApk, ZipOutputStream zos) throws Exception {
 		ZipFile zipf = new ZipFile(baseApk);
 
-		for (ZipEntry entry : getIterable(zipf.iterator())) {
+		for (ZipEntry entry : zipf) {
 			if (entry.getName().matches("classes[0-9]*\\.dex")) {
 				processClassesDex(tcFolder + "TotalCross.apk", entry, zos);
 			}
@@ -335,7 +324,7 @@ public class Deployer4Android
 
    private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
 	   ZipFile zipf = new ZipFile(srcZip);
-	   for (ZipEntry zEntry: getIterable(zipf.iterator())) {
+	   for (ZipEntry zEntry: zipf) {
 		   String zentryName = zEntry.getName();
 		   InputStream zIn = zipf.getInputStream(zEntry);
 		   if (zentryName.endsWith("/") || zentryName.endsWith("\\")) {
