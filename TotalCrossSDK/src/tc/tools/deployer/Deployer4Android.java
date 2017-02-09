@@ -253,12 +253,7 @@ public class Deployer4Android
             byte[] bytes = Utils.readJavaInputStream(zis);
             if (name.endsWith(".ogg")) // for zxing beep.ogg file 
             {
-               CRC32 crc = new CRC32();
-               crc.update(bytes); 
-               ze2.setCrc(crc.getValue());
-               ze2.setMethod(ZipEntry.STORED);
-               ze2.setCompressedSize(bytes.length);
-               ze2.setSize(bytes.length);
+               setEntryAsStored(ze2, bytes);
             }
             zos.putNextEntry(ze2);
             zos.write(bytes,0,bytes.length);
@@ -417,12 +412,7 @@ public class Deployer4Android
 	   String zentryName = ze.getName();
 	   if (zentryName.endsWith(".ogg")) // for zxing beep.ogg file 
 	      {
-	         CRC32 crc = new CRC32();
-	         crc.update(bytes); 
-	         ze.setCrc(crc.getValue());
-	         ze.setMethod(ZipEntry.STORED);
-	         ze.setCompressedSize(bytes.length);
-	         ze.setSize(bytes.length);
+	         setEntryAsStored(ze, bytes);
 	      }
 	   
 	      dstZip.putNextEntry(ze);
@@ -672,12 +662,7 @@ public class Deployer4Android
       
       // add the file UNCOMPRESSED
       byte[] bytes = baos.toByteArray();
-      CRC32 crc = new CRC32();
-      crc.update(bytes); 
-      ze.setCrc(crc.getValue());
-      ze.setMethod(ZipEntry.STORED);
-      ze.setCompressedSize(bytes.length);
-      ze.setSize(bytes.length);
+      setEntryAsStored(ze, bytes);
       z.putNextEntry(ze);
       z.write(bytes);
    }
@@ -738,18 +723,22 @@ public class Deployer4Android
 			// compression so they can be read
 			// directly
 			if (name.endsWith(".tcz")) { 
-				CRC32 crc = new CRC32();
-				crc.update(bytes);
-				zze.setCrc(crc.getValue());
-				zze.setMethod(ZipEntry.STORED);
-				zze.setCompressedSize(bytes.length);
-				zze.setSize(bytes.length);
+				setEntryAsStored(zze, bytes);
 			}
 			zos.putNextEntry(zze);
 			zos.write(bytes);
 			zos.closeEntry();
 		}
 		zos.close();
+	}
+
+	private void setEntryAsStored(ZipEntry entry, byte[] content) {
+		CRC32 crc = new CRC32();
+		crc.update(content);
+		entry.setCrc(crc.getValue());
+		entry.setMethod(ZipEntry.STORED);
+		entry.setCompressedSize(content.length);
+		entry.setSize(content.length);
 	}
 
    private void convertConstantPool(InputStream is, ZipOutputStream os) throws Exception
