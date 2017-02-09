@@ -293,6 +293,26 @@ public class Deployer4Android
          zos.closeEntry();
          f.delete(); // delete original file
       }
+      try {
+    	  String google_services_json_path = Utils.findPath("google-services.json",true);
+    	  
+    	  if (google_services_json_path == null) {
+    		  throw new FileNotFoundException("can't find google-services.json in TotalCross deploy path");
+    	  }
+    	  File google_services_json_file = new File(Utils.findPath("google-services.json",true));
+    	  
+    	  FileInputStream jsonStream = new FileInputStream(google_services_json_file);
+    	  zos.putNextEntry(new ZipEntry("assets/google-services.json"));
+    	  int n;
+    	  while ((n = jsonStream.read(buf,0,buf.length)) > 0) {
+              zos.write(buf, 0, n);
+    	  }
+    	  zos.closeEntry();
+    	  
+    	  jsonStream.close();
+      } catch (FileNotFoundException e) {
+    	  System.out.println("Could not find 'google-services.json', thus Firebase will be ignored further on");
+      }
       // include the vm and litebase
       if (tcFolder != null)
          copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
