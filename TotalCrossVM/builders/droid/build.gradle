@@ -9,13 +9,13 @@ buildscript {
 apply plugin: 'android'
 
 android {
-	compileSdkVersion "Google Inc.:Google APIs:24"
-    buildToolsVersion '24.0.3'
+	compileSdkVersion "Google Inc.:Google APIs:22"
+    buildToolsVersion '23.0.2'
 	compileOptions.encoding = 'iso-8859-1'
 	
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 24
+        targetSdkVersion 22
 		applicationId 'totalcross.android'   
 		multiDexEnabled true
     }
