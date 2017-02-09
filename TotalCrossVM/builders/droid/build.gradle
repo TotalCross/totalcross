@@ -154,6 +154,8 @@ dependencies {
 	compile 'com.google.firebase:firebase-core:' + googleGmsVersion
 	compile "com.google.firebase:firebase-messaging:" + googleGmsVersion
 	
+	compile 'com.github.cliftonlabs:json-simple:2.1.2'
+	
     // Supports Android 4.0.3 and later (API level 15)
     compile 'com.journeyapps:zxing-android-embedded:2.3.0@aar'
 
