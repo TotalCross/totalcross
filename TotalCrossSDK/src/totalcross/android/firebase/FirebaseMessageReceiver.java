@@ -38,6 +38,7 @@ public class FirebaseMessageReceiver extends FirebaseMessagingService {
 		Map<String, String> data = message.getData();
 		if (data != null) {
 			try {
+				AndroidUtils.debug("data received\n" + data);
 				// get the parameters
 				String title = data.get("title");
 				String text = data.get("text");
@@ -55,7 +56,7 @@ public class FirebaseMessageReceiver extends FirebaseMessagingService {
 				classname = classname.replace("firebase.FirebaseMessageReceiver", "Loader");
 
 				if (appdata == null) {
-					throw new Exception("You must suply at least 'appdata' or 'title' parameter with the message");
+					throw new Exception("You must suply at least 'appdata' or 'title' parameter with the message; data received\n" + data);
 				}
 
 				// write to the program
