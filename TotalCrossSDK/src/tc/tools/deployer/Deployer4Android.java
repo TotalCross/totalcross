@@ -343,17 +343,8 @@ public class Deployer4Android
 			   continue;
 		   }
 		   if (zentryName.startsWith(initPath)) {
-			   String fileName = "res/drawable-hdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png";
-		       if (fileName.equals(zentryName)) {
-		    	   zentryName = fileName;
-		       }
 			   byte[] bytes = Utils.readJavaInputStream(zIn);
-			   try {
-				   copyEntryBytes(zEntry, bytes, zos);
-			   } catch (IOException e) {
-				   System.out.println("entrada que deu problema? " + zentryName);
-				   throw e;
-			   }
+			   copyEntryBytes(zEntry, bytes, zos);
 		   }
 		   zIn.close();
 	   }

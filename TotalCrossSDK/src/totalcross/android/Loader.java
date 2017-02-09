@@ -783,7 +783,6 @@ public class Loader extends Activity implements BarcodeReadListener
          if (command.equals("***REGISTER PUSH TOKEN***")) // start firebase service
          {
             FirebaseUtils.setToken(this,args);
-            //FirebaseUtils.startFirebaseService(this);
          }
          else
          if (command.equalsIgnoreCase("broadcast"))
