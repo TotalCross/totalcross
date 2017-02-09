@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
 
+import org.apache.commons.io.IOUtils;
+
 import de.schlichtherle.truezip.zip.ZipEntry;
 import de.schlichtherle.truezip.zip.ZipFile;
 import de.schlichtherle.truezip.zip.ZipOutputStream;
@@ -287,10 +289,7 @@ public class Deployer4Android
     	  
     	  FileInputStream jsonStream = new FileInputStream(google_services_json_file);
     	  zos.putNextEntry(new ZipEntry("assets/google-services.json"));
-    	  int n;
-    	  while ((n = jsonStream.read(buf,0,buf.length)) > 0) {
-              zos.write(buf, 0, n);
-    	  }
+    	  IOUtils.copy(jsonStream, zos);
     	  zos.closeEntry();
     	  
     	  jsonStream.close();
@@ -709,13 +708,9 @@ public class Deployer4Android
 				}
 			}
 			int avaiable = fis.available();
-			byte[] buff = new byte[avaiable];
 			
 			ByteArrayOutputStream secondary = new ByteArrayOutputStream(avaiable);
-			int size;
-			while ((size = fis.read(buff)) >= 0) {
-				secondary.write(buff, 0, size);
-			}
+			IOUtils.copy(fis, secondary);
 			byte[] bytes = secondary.toByteArray();
 			fis.close();
 			ZipEntry zze = new ZipEntry(name);
