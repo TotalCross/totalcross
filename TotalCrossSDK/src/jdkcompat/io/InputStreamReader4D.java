@@ -52,7 +52,6 @@ import java.io.InputStream;
 //import java.nio.charset.CodingErrorAction;
 import java.io.Reader;
 
-import totalcross.io.IOException;
 import totalcross.sys.CharacterConverter;
 import totalcross.sys.Vm;
 
@@ -104,6 +103,16 @@ import totalcross.sys.Vm;
  */
 public class InputStreamReader4D extends Reader
 {
+	boolean eos = false;
+	
+	private static final int BYTES_ENCODED_SIZE = 4 * 1024;
+	private static final int BYTES_DECODED_SIZE = 3 * 1024;
+	byte[] bytesEncodedRead = new byte[BYTES_ENCODED_SIZE];
+	char[] charsDecodedRead = new char[BYTES_DECODED_SIZE];
+	
+	byte[] overflowEncodedRead = new byte[4];
+	int decodedSize = 0;
+	int decodedReadPos = 0;
   /**
    * The input stream.
    */
@@ -356,183 +365,51 @@ public class InputStreamReader4D extends Reader
   private static final int BUFFER_SIZE = 16 * 1024;
   private byte[] readBytesBuff = new byte[BUFFER_SIZE];
   
-  private int readCharPos = 0;
-  private int readCharLen = 0;
-  private char[] readCharBuff = null;
-  
   private CharacterConverter cconv = new CharacterConverter();
-  
-  /**
-   * This method reads up to <code>length</code> characters from the stream into
-   * the specified array starting at index <code>offset</code> into the
-   * array.
-   *
-   * @param buf The character array to recieve the data read
-   * @param offset The offset into the array to start storing characters
-   * @param length The requested number of characters to read.
-   *
-   * @return The actual number of characters read, or -1 if end of stream.
-   *
-   * @exception IOException If an error occurs
-   */
-  public int read(char[] buf, int offset, int length) throws java.io.IOException
-  {
-	  	synchronized (lock) {
-			if (readCharLen == readCharPos) {
-				int readBytesLen = in.read(readBytesBuff, 0, BUFFER_SIZE);
-				
-				if (readBytesLen == -1) {
-					return -1;
-				}
-				
-				readCharBuff = cconv.bytes2chars(readBytesBuff, 0, readBytesLen);
-				
-				readCharLen = readCharBuff.length;
-				readCharPos = 0;
-			}
-			
-			// copia para a saída
-			int nRestanteBuff = readCharLen - readCharPos;
-			int nMaxSaida = length - offset;
-			int read = 0;
-			
-			if (nMaxSaida < 0 || nRestanteBuff < 0) {
-				if (nRestanteBuff > nMaxSaida) { // caso seja maior no buffer de char que a saida
-					try {
-						Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nMaxSaida);
-					} catch (Throwable t) {
-						t.printStackTrace();
-						throw t;
-					}
-					
-					readCharPos += nMaxSaida;
-					read = nMaxSaida;
-				} else { // caso tenha mais espaço na saída do que no buffer de char
-					Vm.arrayCopy(readCharBuff, readCharPos, buf, offset, nRestanteBuff);
-					
-					readCharPos = readCharLen;
-					read = nRestanteBuff;
-				}
-			} else {
-				Vm.debug("nRestanteBuff " + nRestanteBuff);
-				Vm.debug("readCharLen " + readCharLen);
-				Vm.debug("readCharPos " + readCharPos);
-				Vm.debug("nMaxSaida " + nMaxSaida);
-				Vm.debug("length " + length);
-				Vm.debug("offset " + offset);
-			}
-	
-			return read;
-//    if (in == null)
-//        throw new java.io.IOException("Reader has been closed");
-//    if (isDone)
-//      return -1;
-//    if(decoder != null)
-//      {
-//        int totalBytes = (int)((double) length * maxBytesPerChar);
-//        if (byteBuffer != null)
-//          totalBytes = Math.max(totalBytes, byteBuffer.remaining());
-//        byte[] bytes;
-//        // Fetch cached bytes array if available and big enough.
-//        synchronized(cacheLock)
-//          {
-//            bytes = bytesCache;
-//            if (bytes == null || bytes.length < totalBytes)
-//              bytes = new byte[totalBytes];
-//            else
-//              bytesCache = null;
-//          }
-//
-//        int remaining = 0;
-//        if(byteBuffer != null)
-//        {
-//            remaining = byteBuffer.remaining();
-//            byteBuffer.get(bytes, 0, remaining);
-//        }
-//        int read;
-//        if(totalBytes - remaining > 0)
-//          {
-//            read = in.read(bytes, remaining, totalBytes - remaining);
-//            if(read == -1){
-//              read = remaining;
-//              isDone = true;
-//            } else
-//              read += remaining;
-//          } else
-//            read = remaining;
-//        byteBuffer = ByteBuffer.wrap(bytes, 0, read);
-//        CharBuffer cb = CharBuffer.wrap(buf, offset, length);
-//        int startPos = cb.position();
-//
-//        if(hasSavedSurrogate){
-//            hasSavedSurrogate = false;
-//            cb.put(savedSurrogate);
-//            read++;
-//        }
-//
-//        CoderResult cr = decoder.decode(byteBuffer, cb, isDone);
-//        decoder.reset();
-//        // 1 char remains which is the first half of a surrogate pair.
-//        if(cr.isOverflow() && cb.hasRemaining()){
-//            CharBuffer overflowbuf = CharBuffer.allocate(2);
-//            cr = decoder.decode(byteBuffer, overflowbuf, isDone);
-//            overflowbuf.flip();
-//            if(overflowbuf.hasRemaining())
-//            {
-//              cb.put(overflowbuf.get());
-//              savedSurrogate = overflowbuf.get();
-//              hasSavedSurrogate = true;
-//              isDone = false;
-//            }
-//        }
-//
-//        if(byteBuffer.hasRemaining()) {
-//            byteBuffer.compact();
-//            byteBuffer.flip();
-//            isDone = false;
-//        } else
-//            byteBuffer = null;
-//
-//        read = cb.position() - startPos;
-//
-//        // Put cached bytes array back if we are finished and the cache
-//        // is null or smaller than the used bytes array.
-//        synchronized (cacheLock)
-//          {
-//            if (byteBuffer == null
-//                && (bytesCache == null || bytesCache.length < bytes.length))
-//              bytesCache = bytes;
-//          }
-//        return (read <= 0) ? -1 : read;
-//      }
-//    else
-//      {
-//        byte[] bytes;
-//        // Fetch cached bytes array if available and big enough.
-//        synchronized (cacheLock)
-//          {
-//            bytes = bytesCache;
-//            if (bytes == null || length < bytes.length)
-//              bytes = new byte[length];
-//            else
-//              bytesCache = null;
-//          }
-//
-//        int read = in.read(bytes);
-//        for(int i=0;i<read;i++)
-//          buf[offset+i] = (char)(bytes[i]&0xFF);
-//
-//        // Put back byte array into cache if appropriate.
-//        synchronized (cacheLock)
-//          {
-//            if (bytesCache == null || bytesCache.length < bytes.length)
-//              bytesCache = bytes;
-//          }
-//        return read;
-//    }
-	  	}
-  }
 
+	/**
+	 * This method reads up to <code>length</code> characters from the stream into
+	 * the specified array starting at index <code>offset</code> into the
+	 * array.
+	 *
+	 * @param buf The character array to recieve the data read
+	 * @param offset The offset into the array to start storing characters
+	 * @param length The requested number of characters to read.
+	 *
+	 * @return The actual number of characters read, or -1 if end of stream.
+	 *
+	 * @exception IOException If an error occurs
+	 */
+	public int read(char[] b, int off, int len) throws java.io.IOException {
+		synchronized (lock) {
+			if (eos) {
+				return -1;
+			}
+
+			int arraySize = b.length;
+			int maxReadable = Math.min(len, arraySize - off);
+			int remaining = maxReadable;
+
+			int offsetUsed = off;
+			int totalRead = 0;
+
+			while (remaining > 0) {
+				ensureFetch();
+				if (decodedSize <= 0) {
+					break;
+				}
+				int size = Math.min(remaining, decodedSize - decodedReadPos);
+				Vm.arrayCopy(charsDecodedRead, decodedReadPos, b, offsetUsed, size);
+				decodedReadPos += size;
+				offsetUsed += size;
+				remaining -= size;
+				totalRead += size;
+			}
+
+			return totalRead;
+		}
+	}
+  
   /**
    * Reads an char from the input stream and returns it
    * as an int in the range of 0-65535.  This method also will return -1 if
@@ -569,4 +446,39 @@ public class InputStreamReader4D extends Reader
 
      return super.skip(count);
    }
+   
+   private void ensureFetch() throws java.io.IOException {
+		if (eos) {
+			markEos();
+			return;
+		}
+		// If read position equals size, then it must fetch more data
+		if (decodedReadPos == decodedSize) {
+			int readFromStream = in.read(readBytesBuff, 0, BUFFER_SIZE);
+			
+			if (readFromStream == -1) {
+				markEos();
+				return;
+			}
+			
+			// Has reached end of stream?
+			if (readFromStream < 0) {
+				markEos();
+			} else if (readFromStream > 0) {
+				try {
+					charsDecodedRead = cconv.bytes2chars(readBytesBuff, 0, readFromStream);
+					decodedReadPos = 0;
+					decodedSize = charsDecodedRead.length;
+				} catch (ArrayIndexOutOfBoundsException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void markEos() {
+		eos = true;
+		decodedReadPos = -1;
+		decodedSize = -1;
+	}	
 }
