@@ -90,7 +90,7 @@ public class FirebaseMessageReceiver extends FirebaseMessagingService {
 					builder.setTicker(ticker);
 					notificationManager.notify(13121971, builder.getNotification());
 				}
-			} catch (Throwable t) {
+			} catch (Exception t) {
 				AndroidUtils.handleException(t, false);
 			}
 		}
