@@ -65,7 +65,7 @@ public class FirebaseUtils
 	private static void writeChars(String name, boolean append, String msg) throws IOException {
 		try {
 			FileOutputStream f = null;
-			for (int tries = 100; --tries >= 0;) {
+			for (int tries = 0; tries < 100; tries++) {
 				try {
 					f = new FileOutputStream(name, append);
 					break;
