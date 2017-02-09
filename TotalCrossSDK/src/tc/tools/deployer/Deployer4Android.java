@@ -298,6 +298,7 @@ public class Deployer4Android
          copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
       
       zos.close();
+      inf.close();
    }
 
 	private void processClassesDexes(String baseApk, ZipOutputStream zos) throws Exception {
@@ -308,6 +309,8 @@ public class Deployer4Android
 				processClassesDex(tcFolder + "TotalCross.apk", entry, zos);
 			}
 		}
+		
+		zipf.close();
 	}
 
    private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
@@ -334,6 +337,7 @@ public class Deployer4Android
 		   }
 		   zIn.close();
 	   }
+	   zipf.close();
    }
 
    // http://strazzere.com/blog/?p=3
