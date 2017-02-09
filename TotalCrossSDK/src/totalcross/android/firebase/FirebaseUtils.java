@@ -101,25 +101,4 @@ public class FirebaseUtils
       LocalBroadcastManager.getInstance(cnt).sendBroadcast(in);
    }
 
-   /*public static void startFirebaseService(Context cnt)
-   {
-      cnt.startService(new Intent(cnt, totalcross.android.firebase.FirebaseTokenReceiver.class));
-      // register broadcast receiver 
-      LocalBroadcastManager.getInstance(cnt).registerReceiver(new BroadcastReceiver() 
-      {
-         public void onReceive(Context context, Intent intent) 
-         {
-            try
-            {
-               final int event = intent.getIntExtra("event", 0);
-               if (event != 0)
-                  Launcher4A.eventThread.pushEvent(event, 0, 0, 0, 0, 0);
-            }
-            catch (Throwable t)
-            {
-               AndroidUtils.handleException(t, false);
-            }
-         }
-      }, new IntentFilter("totalcross.MESSAGE_EVENT"));
-   }*/
 }
