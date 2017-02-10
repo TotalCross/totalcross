@@ -963,7 +963,8 @@ public final class Settings
    /** The activation key used during deploy */
    public static String activationKey;
 
-   /** The push token used for Android */
+   /** No longer used; put the 'google-services.json' so that the deploy will send it to the app, and it will*/
+   @Deprecated
    public static String pushTokenAndroid;
 
    /** The due date of the iOS certificate. You can use it to inform your costumers when its time to update the software. */

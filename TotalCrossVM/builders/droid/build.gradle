@@ -3,19 +3,20 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.1.3'
+		classpath 'com.google.gms:google-services:3.0.0'
     }
 }
 apply plugin: 'android'
 
 android {
-	compileSdkVersion "Google Inc.:Google APIs:22"
-    buildToolsVersion '23.0.2'
+	compileSdkVersion "Google Inc.:Google APIs:24"
+    buildToolsVersion '24.0.3'
 	compileOptions.encoding = 'iso-8859-1'
 	
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 22
+        targetSdkVersion 24
 		applicationId 'totalcross.android'   
 		multiDexEnabled true
     }
@@ -67,7 +68,7 @@ android {
     
     task buildAndroidNative(type:Exec) {
 		workingDir "../.." +  "/src"
-    	commandLine "cmd","/c",'P:/extlibs/android-ndk-r8b/ndk-build'
+    	commandLine 'cmd', '/c', ndkDir + '/ndk-build'
 
 		doLast{
 			copy {
@@ -148,8 +149,13 @@ android {
 
 dependencies {
 	compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
-	compile 'com.google.android.gms:play-services:8.3.0'
-	compile 'com.google.android.gms:play-services-ads:8.3.0'
+	compile 'com.google.android.gms:play-services-ads:' + googleGmsVersion
+	compile 'com.google.android.gms:play-services-location:' + googleGmsVersion
+	compile 'com.google.android.gms:play-services-maps:' + googleGmsVersion
+	compile 'com.google.firebase:firebase-core:' + googleGmsVersion
+	compile "com.google.firebase:firebase-messaging:" + googleGmsVersion
+	
+	compile 'com.github.cliftonlabs:json-simple:2.1.2'
 	
     // Supports Android 4.0.3 and later (API level 15)
     compile 'com.journeyapps:zxing-android-embedded:2.3.0@aar'
@@ -167,4 +173,7 @@ dependencies {
     // This mostly affects encoding, but you should test if you plan to support these versions.
     // Older versions e.g. 2.2 may also work if you need support for older Android versions.
     compile 'com.google.zxing:core:3.2.0'
+	
+	// Enabling Multidex for use of Firebase and etc
+	compile 'com.android.support:multidex:1.0.1'
 }

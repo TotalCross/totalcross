@@ -15,7 +15,16 @@ import totalcross.util.*;
 
 import java.io.*;
 import java.lang.String;
-import java.util.zip.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.Adler32;
+import java.util.zip.CRC32;
+
+import org.apache.commons.io.IOUtils;
+
+import de.schlichtherle.truezip.zip.ZipEntry;
+import de.schlichtherle.truezip.zip.ZipFile;
+import de.schlichtherle.truezip.zip.ZipOutputStream;
 import tc.tools.converter.bb.*;
 import tc.tools.converter.bb.attribute.*;
 import tc.tools.converter.bb.constant.*;
@@ -158,22 +167,22 @@ public class Deployer4Android
          throw new DeployerException("File android/Launcher.jar not found!");
       jarOut = targetDir+fileName+".jar";
       
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(jarIn));
+      ZipFile zipf = new ZipFile(jarIn);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(jarOut));
-      ZipEntry ze;
 
-      while ((ze = zis.getNextEntry()) != null)
+      for (ZipEntry ze: zipf)
       {
          String name = convertName(ze.getName());
          if (DEBUG) System.out.println("=== Entry: "+name);
-         
+         InputStream zis = zipf.getInputStream(ze);
          zos.putNextEntry(new ZipEntry(name));
          if (name.endsWith(".class"))
             convertConstantPool(zis,zos);
          zos.closeEntry();
+         zis.close();
       }
 
-      zis.close();
+      zipf.close();
       zos.close();
    }
    
@@ -197,19 +206,19 @@ public class Deployer4Android
       if (ap == null)
          throw new DeployerException("File android/resources.ap_ not found!");
       String apk = targetDir+fileName+".apk";
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(ap));
+      ZipFile inf = new ZipFile(ap);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
 
-      ZipEntry ze,ze2;
-      
       // search the input zip file, convert and write each entry to the output zip file
-      while ((ze = zis.getNextEntry()) != null)
+      for (ZipEntry ze: inf)
       {
+    	 ZipEntry ze2;
          String name = ze.getName();
+         
          // keep all the metadata if possible
          if (ze.getMethod() != ZipEntry.STORED)
          {
-            ze2 = new ZipEntry(ze);
+            ze2 = ze;
             // little trick to make the entry reusable
             ze2.setCompressedSize(-1);
          }
@@ -218,9 +227,9 @@ public class Deployer4Android
             // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
             ze2 = new ZipEntry(ze.getName());
          }
+         InputStream zis = inf.getInputStream(ze2);
          if (name.indexOf("tcfiles.zip") >= 0)
          {
-            zos.putNextEntry(ze2);
             insertTCFiles_zip(ze2, zos);
          }
          else
@@ -246,24 +255,18 @@ public class Deployer4Android
             byte[] bytes = Utils.readJavaInputStream(zis);
             if (name.endsWith(".ogg")) // for zxing beep.ogg file 
             {
-               CRC32 crc = new CRC32();
-               crc.update(bytes); 
-               ze2.setCrc(crc.getValue());
-               ze2.setMethod(ZipEntry.STORED);
-               ze2.setCompressedSize(bytes.length);
-               ze2.setSize(bytes.length);
+               setEntryAsStored(ze2, bytes);
             }
             zos.putNextEntry(ze2);
             zos.write(bytes,0,bytes.length);
-            zis.closeEntry();
          }
          zos.closeEntry();
+         zis.close();
       }
       if (singleApk)
       {
-         processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
-         for (int i = 0; i < extras.length; i++)
-            copyZipEntry(tcFolder+"TotalCross.apk", extras[i], zos);
+    	 processClassesDexes(tcFolder+"TotalCross.apk", zos);
+         copyZipEntries(tcFolder+"TotalCross.apk", "res", zos);
       }
       else
       {
@@ -276,12 +279,59 @@ public class Deployer4Android
          zos.closeEntry();
          f.delete(); // delete original file
       }
+      try {
+    	  String google_services_json_path = Utils.findPath("google-services.json",true);
+    	  
+    	  if (google_services_json_path == null) {
+    		  throw new FileNotFoundException("can't find google-services.json in TotalCross deploy path");
+    	  }
+    	  File google_services_json_file = new File(Utils.findPath("google-services.json",true));
+    	  
+    	  FileInputStream jsonStream = new FileInputStream(google_services_json_file);
+    	  zos.putNextEntry(new ZipEntry("assets/google-services.json"));
+    	  IOUtils.copy(jsonStream, zos);
+    	  zos.closeEntry();
+    	  
+    	  jsonStream.close();
+      } catch (FileNotFoundException e) {
+    	  System.out.println("Could not find 'google-services.json', thus Firebase will be ignored further on");
+      }
       // include the vm and litebase
       if (tcFolder != null)
          copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
       
-      zis.close();
-      zos.close();      
+      zos.close();
+      inf.close();
+   }
+
+	private void processClassesDexes(String baseApk, ZipOutputStream zos) throws Exception {
+		ZipFile zipf = new ZipFile(baseApk);
+
+		for (ZipEntry entry : zipf) {
+			if (entry.getName().matches("classes[0-9]*\\.dex")) {
+				processClassesDex(tcFolder + "TotalCross.apk", entry, zos);
+			}
+		}
+		
+		zipf.close();
+	}
+
+   private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
+	   ZipFile zipf = new ZipFile(srcZip);
+	   for (ZipEntry zEntry: zipf) {
+		   String zentryName = zEntry.getName();
+		   InputStream zIn = zipf.getInputStream(zEntry);
+		   if (zentryName.endsWith("/") || zentryName.endsWith("\\")) {
+			   // it's a directory, just continue
+			   continue;
+		   }
+		   if (zentryName.startsWith(initPath)) {
+			   byte[] bytes = Utils.readJavaInputStream(zIn);
+			   copyEntryBytes(zEntry, bytes, zos);
+		   }
+		   zIn.close();
+	   }
+	   zipf.close();
    }
 
    // http://strazzere.com/blog/?p=3
@@ -320,8 +370,9 @@ public class Deployer4Android
       bytes[11] = (byte)(sum >> 24); 
    }  
    
-   private void processClassesDex(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
+   private void processClassesDex(String srcZip, ZipEntry dexEntry, ZipOutputStream dstZip) throws Exception
    {
+	  String fileName = dexEntry.getName();
       dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
 
@@ -352,21 +403,21 @@ public class Deployer4Android
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
       ZipEntry ze = new ZipEntry(fileName);
       
-      if (fileName.endsWith(".ogg")) // for zxing beep.ogg file 
-      {
-         CRC32 crc = new CRC32();
-         crc.update(bytes); 
-         ze.setCrc(crc.getValue());
-         ze.setMethod(ZipEntry.STORED);
-         ze.setCompressedSize(bytes.length);
-         ze.setSize(bytes.length);
-      }
-      
-      dstZip.putNextEntry(ze);
-      dstZip.write(bytes,0,bytes.length);
+      copyEntryBytes(ze, bytes, dstZip);
       dstZip.closeEntry();
    }
    
+   private void copyEntryBytes(ZipEntry ze, byte[] bytes, ZipOutputStream dstZip) throws IOException {
+	   String zentryName = ze.getName();
+	   if (zentryName.endsWith(".ogg")) // for zxing beep.ogg file 
+	      {
+	         setEntryAsStored(ze, bytes);
+	      }
+	   
+	      dstZip.putNextEntry(ze);
+	      dstZip.write(bytes,0,bytes.length);
+   }
+
    private void insertIcon_png(ZipOutputStream zos, String name) throws Exception
    {
       if (DeploySettings.bitmaps != null)
@@ -585,7 +636,6 @@ public class Deployer4Android
    private void insertTCFiles_zip(ZipEntry ze, ZipOutputStream z) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
-      ZipOutputStream zos = new ZipOutputStream(baos);
       
       // parse the android.pkg
       Hashtable ht = new Hashtable(13);
@@ -607,73 +657,86 @@ public class Deployer4Android
       }         
 
       Utils.preprocessPKG(vLocals,true);
-      for (int i =0, n = vLocals.size(); i < n; i++)
-      {
-         String []pathnames = totalcross.sys.Convert.tokenizeString((String)vLocals.items[i],',');
-         String pathname = pathnames[0];
-         String name = Utils.getFileName(pathname);
-         if (pathnames.length > 1)
-         {
-            name = totalcross.sys.Convert.appendPath(pathnames[1],name);
-            if (name.startsWith("/"))
-               name = name.substring(1);
-         }
-         // tcz's name must match the lowercase sharedid
-         if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
-            name = targetTCZ+".tcz";
-         FileInputStream fis;
-         try
-         {
-            fis = new FileInputStream(pathname);
-         }
-         catch (FileNotFoundException fnfe)
-         {
-            try
-            {
-               fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
-            }
-            catch (FileNotFoundException fnfe2)
-            {
-               String pp = Utils.findPath(pathname,true);
-               if (pp != null)
-                  fis = new FileInputStream(pp);
-               else
-               {
-                  System.out.println("File not found: "+pathname);
-                  continue;
-               }
-            }
-         }
-         byte[] bytes = new byte[fis.available()];
-         fis.read(bytes);
-         fis.close();
-         ZipEntry zze = new ZipEntry(name);
-         if (name.endsWith(".tcz")) // tcz files will be stored without compression so they can be read directly
-         {
-            CRC32 crc = new CRC32();
-            crc.update(bytes); 
-            zze.setCrc(crc.getValue());
-            zze.setMethod(ZipEntry.STORED);
-            zze.setCompressedSize(bytes.length);
-            zze.setSize(bytes.length);
-         }            
-         zos.putNextEntry(zze);
-         zos.write(bytes);
-         zos.closeEntry();
-      }
-      zos.close();
+      writeVlocals(baos, vector2list(vLocals, new ArrayList<String>()));
+      
       // add the file UNCOMPRESSED
       byte[] bytes = baos.toByteArray();
-      CRC32 crc = new CRC32();
-      crc.update(bytes); 
-      ze.setCrc(crc.getValue());
-      ze.setMethod(ZipEntry.STORED);
-      ze.setCompressedSize(bytes.length);
-      ze.setSize(bytes.length);
+      setEntryAsStored(ze, bytes);
+      z.putNextEntry(ze);
       z.write(bytes);
    }
 
-   private void convertConstantPool(ZipInputStream is, ZipOutputStream os) throws Exception
+	public static <E> List<E> vector2list(Vector vec, List<E> list) {
+		for (int i = 0,n = vec.size(); i < n; i++) {
+			@SuppressWarnings("unchecked")
+			E item = (E) vec.items[i];
+			list.add(item);
+		}
+		return list;
+	}
+
+	private void writeVlocals(ByteArrayOutputStream baos, List<String> vLocals) throws IOException {
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		for (String item: vLocals) {
+			String[] pathnames = totalcross.sys.Convert.tokenizeString(item, ',');
+			String pathname = pathnames[0];
+			String name = Utils.getFileName(pathname);
+			if (pathnames.length > 1) {
+				name = totalcross.sys.Convert.appendPath(pathnames[1], name);
+				if (name.startsWith("/")) {
+					name = name.substring(1);
+				}
+			}
+			// tcz's name must match the lowercase sharedid
+			if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) {
+				name = targetTCZ + ".tcz";
+			}
+			FileInputStream fis;
+			try {
+				fis = new FileInputStream(pathname);
+			} catch (FileNotFoundException fnfe) {
+				try {
+					fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+				} catch (FileNotFoundException fnfe2) {
+					String pp = Utils.findPath(pathname, true);
+					if (pp != null) {
+						fis = new FileInputStream(pp);
+					} else {
+						System.out.println("File not found: " + pathname);
+						continue;
+					}
+				}
+			}
+			int avaiable = fis.available();
+			
+			ByteArrayOutputStream secondary = new ByteArrayOutputStream(avaiable);
+			IOUtils.copy(fis, secondary);
+			byte[] bytes = secondary.toByteArray();
+			fis.close();
+			ZipEntry zze = new ZipEntry(name);
+			// tcz files will be stored without
+			// compression so they can be read
+			// directly
+			if (name.endsWith(".tcz")) { 
+				setEntryAsStored(zze, bytes);
+			}
+			zos.putNextEntry(zze);
+			zos.write(bytes);
+			zos.closeEntry();
+		}
+		zos.close();
+	}
+
+	private void setEntryAsStored(ZipEntry entry, byte[] content) {
+		CRC32 crc = new CRC32();
+		crc.update(content);
+		entry.setCrc(crc.getValue());
+		entry.setMethod(ZipEntry.STORED);
+		entry.setCompressedSize(content.length);
+		entry.setSize(content.length);
+	}
+
+   private void convertConstantPool(InputStream is, ZipOutputStream os) throws Exception
    {
       totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(1024);
       totalcross.io.DataStream ds = new totalcross.io.DataStream(bas);
@@ -807,678 +870,4 @@ public class Deployer4Android
       return value;
    }
 
-   String[] extras = 
-   {
-      "res/anim/abc_fade_in.xml",
-      "res/anim/abc_fade_out.xml",
-      "res/anim/abc_grow_fade_in_from_bottom.xml",
-      "res/anim/abc_popup_enter.xml",
-      "res/anim/abc_popup_exit.xml",
-      "res/anim/abc_shrink_fade_out_from_bottom.xml",
-      "res/anim/abc_slide_in_bottom.xml",
-      "res/anim/abc_slide_in_top.xml",
-      "res/anim/abc_slide_out_bottom.xml",
-      "res/anim/abc_slide_out_top.xml",
-      "res/color/abc_background_cache_hint_selector_material_dark.xml",
-      "res/color/abc_background_cache_hint_selector_material_light.xml",
-      "res/color/abc_primary_text_disable_only_material_dark.xml",
-      "res/color/abc_primary_text_disable_only_material_light.xml",
-      "res/color/abc_primary_text_material_dark.xml",
-      "res/color/abc_primary_text_material_light.xml",
-      "res/color/abc_search_url_text.xml",
-      "res/color/abc_secondary_text_material_dark.xml",
-      "res/color/abc_secondary_text_material_light.xml",
-      "res/color/common_google_signin_btn_text_dark.xml",
-      "res/color/common_google_signin_btn_text_light.xml",
-      "res/color/common_plus_signin_btn_text_dark.xml",
-      "res/color/common_plus_signin_btn_text_light.xml",
-      "res/color/switch_thumb_material_dark.xml",
-      "res/color/switch_thumb_material_light.xml",
-      "res/color/wallet_primary_text_holo_light.xml",
-      "res/color/wallet_secondary_text_holo_dark.xml",
-      "res/color-v11/abc_background_cache_hint_selector_material_dark.xml",
-      "res/color-v11/abc_background_cache_hint_selector_material_light.xml",
-      "res/drawable/abc_btn_borderless_material.xml",
-      "res/drawable/abc_btn_check_material.xml",
-      "res/drawable/abc_btn_default_mtrl_shape.xml",
-      "res/drawable/abc_btn_radio_material.xml",
-      "res/drawable/abc_cab_background_internal_bg.xml",
-      "res/drawable/abc_cab_background_top_material.xml",
-      "res/drawable/abc_dialog_material_background_dark.xml",
-      "res/drawable/abc_dialog_material_background_light.xml",
-      "res/drawable/abc_edit_text_material.xml",
-      "res/drawable/abc_item_background_holo_dark.xml",
-      "res/drawable/abc_item_background_holo_light.xml",
-      "res/drawable/abc_list_selector_background_transition_holo_dark.xml",
-      "res/drawable/abc_list_selector_background_transition_holo_light.xml",
-      "res/drawable/abc_list_selector_holo_dark.xml",
-      "res/drawable/abc_list_selector_holo_light.xml",
-      "res/drawable/abc_ratingbar_full_material.xml",
-      "res/drawable/abc_spinner_textfield_background_material.xml",
-      "res/drawable/abc_switch_thumb_material.xml",
-      "res/drawable/abc_tab_indicator_material.xml",
-      "res/drawable/abc_textfield_search_material.xml",
-      "res/drawable/cast_ic_notification_connecting.xml",
-      "res/drawable/common_google_signin_btn_icon_dark.xml",
-      "res/drawable/common_google_signin_btn_icon_light.xml",
-      "res/drawable/common_google_signin_btn_text_dark.xml",
-      "res/drawable/common_google_signin_btn_text_light.xml",
-      "res/drawable/common_plus_signin_btn_icon_dark.xml",
-      "res/drawable/common_plus_signin_btn_icon_light.xml",
-      "res/drawable/common_plus_signin_btn_text_dark.xml",
-      "res/drawable/common_plus_signin_btn_text_light.xml",
-      "res/drawable/launcher_icon.png",
-      "res/drawable/mr_ic_media_route_connecting_mono_dark.xml",
-      "res/drawable/mr_ic_media_route_connecting_mono_light.xml",
-      "res/drawable/mr_ic_media_route_mono_dark.xml",
-      "res/drawable/mr_ic_media_route_mono_light.xml",
-      "res/drawable/mr_ic_pause_dark.xml",
-      "res/drawable/mr_ic_pause_light.xml",
-      "res/drawable/mr_ic_play_dark.xml",
-      "res/drawable/mr_ic_play_light.xml",
-      "res/drawable/mr_ic_settings_dark.xml",
-      "res/drawable/mr_ic_settings_light.xml",
-      "res/drawable/share_via_barcode.png",
-      "res/drawable/shopper_icon.png",
-      "res/drawable-hdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_btn_check_to_on_mtrl_000.png",
-      "res/drawable-hdpi-v4/abc_btn_check_to_on_mtrl_015.png",
-      "res/drawable-hdpi-v4/abc_btn_radio_to_on_mtrl_000.png",
-      "res/drawable-hdpi-v4/abc_btn_radio_to_on_mtrl_015.png",
-      "res/drawable-hdpi-v4/abc_btn_rating_star_off_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_btn_rating_star_on_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png",
-      "res/drawable-hdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png",
-      "res/drawable-hdpi-v4/abc_cab_background_top_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_clear_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_commit_search_api_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_go_search_api_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_menu_share_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_search_api_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png",
-      "res/drawable-hdpi-v4/abc_list_divider_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_list_focused_holo.9.png",
-      "res/drawable-hdpi-v4/abc_list_longpressed_holo.9.png",
-      "res/drawable-hdpi-v4/abc_list_pressed_holo_dark.9.png",
-      "res/drawable-hdpi-v4/abc_list_pressed_holo_light.9.png",
-      "res/drawable-hdpi-v4/abc_list_selector_disabled_holo_dark.9.png",
-      "res/drawable-hdpi-v4/abc_list_selector_disabled_holo_light.9.png",
-      "res/drawable-hdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png",
-      "res/drawable-hdpi-v4/abc_popup_background_mtrl_mult.9.png",
-      "res/drawable-hdpi-v4/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_switch_track_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_tab_indicator_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_textfield_activated_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_textfield_default_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/abc_text_cursor_mtrl_alpha.9.png",
-      "res/drawable-hdpi-v4/cast_ic_notification_0.png",
-      "res/drawable-hdpi-v4/cast_ic_notification_1.png",
-      "res/drawable-hdpi-v4/cast_ic_notification_2.png",
-      "res/drawable-hdpi-v4/cast_ic_notification_on.png",
-      "res/drawable-hdpi-v4/common_full_open_on_phone.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_light_focused.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_light_normal.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_dark_focused.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_dark_normal.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_light_disabled.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_light_focused.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_light_normal.9.png",
-      "res/drawable-hdpi-v4/common_google_signin_btn_text_light_pressed.9.png",
-      "res/drawable-hdpi-v4/common_ic_googleplayservices.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_focused.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_normal.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_focused.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_normal.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_light_disabled.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_light_focused.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_light_normal.9.png",
-      "res/drawable-hdpi-v4/common_plus_signin_btn_text_light_pressed.9.png",
-      //"res/drawable-hdpi-v4/icon.png",
-      "res/drawable-hdpi-v4/ic_cast_dark.png",
-      "res/drawable-hdpi-v4/ic_cast_disabled_light.png",
-      "res/drawable-hdpi-v4/ic_cast_light.png",
-      "res/drawable-hdpi-v4/ic_cast_off_light.png",
-      "res/drawable-hdpi-v4/ic_cast_on_0_light.png",
-      "res/drawable-hdpi-v4/ic_cast_on_1_light.png",
-      "res/drawable-hdpi-v4/ic_cast_on_2_light.png",
-      "res/drawable-hdpi-v4/ic_cast_on_light.png",
-      "res/drawable-hdpi-v4/ic_media_pause.png",
-      "res/drawable-hdpi-v4/ic_media_play.png",
-      "res/drawable-hdpi-v4/ic_media_route_disabled_mono_dark.png",
-      "res/drawable-hdpi-v4/ic_media_route_off_mono_dark.png",
-      "res/drawable-hdpi-v4/ic_media_route_on_0_mono_dark.png",
-      "res/drawable-hdpi-v4/ic_media_route_on_1_mono_dark.png",
-      "res/drawable-hdpi-v4/ic_media_route_on_2_mono_dark.png",
-      "res/drawable-hdpi-v4/ic_media_route_on_mono_dark.png",
-      "res/drawable-hdpi-v4/ic_pause_dark.png",
-      "res/drawable-hdpi-v4/ic_pause_light.png",
-      "res/drawable-hdpi-v4/ic_play_dark.png",
-      "res/drawable-hdpi-v4/ic_play_light.png",
-      "res/drawable-hdpi-v4/ic_plusone_medium_off_client.png",
-      "res/drawable-hdpi-v4/ic_plusone_small_off_client.png",
-      "res/drawable-hdpi-v4/ic_plusone_standard_off_client.png",
-      "res/drawable-hdpi-v4/ic_plusone_tall_off_client.png",
-      "res/drawable-hdpi-v4/ic_setting_dark.png",
-      "res/drawable-hdpi-v4/ic_setting_light.png",
-      "res/drawable-hdpi-v4/launcher_icon.png",
-      "res/drawable-hdpi-v4/mr_ic_audio_vol.png",
-      "res/drawable-hdpi-v4/powered_by_google_dark.png",
-      "res/drawable-hdpi-v4/powered_by_google_light.png",
-      "res/drawable-hdpi-v4/shopper_icon.png",
-      "res/drawable-ldrtl-hdpi-v17/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-hdpi-v17/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-hdpi-v17/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-ldrtl-hdpi-v17/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-ldrtl-mdpi-v17/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-mdpi-v17/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-mdpi-v17/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-ldrtl-mdpi-v17/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-ldrtl-xhdpi-v17/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-xhdpi-v17/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-xhdpi-v17/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-ldrtl-xhdpi-v17/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-ldrtl-xxhdpi-v17/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-xxhdpi-v17/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-xxhdpi-v17/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-ldrtl-xxhdpi-v17/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-ldrtl-xxxhdpi-v17/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-xxxhdpi-v17/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-ldrtl-xxxhdpi-v17/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-ldrtl-xxxhdpi-v17/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_btn_check_to_on_mtrl_000.png",
-      "res/drawable-mdpi-v4/abc_btn_check_to_on_mtrl_015.png",
-      "res/drawable-mdpi-v4/abc_btn_radio_to_on_mtrl_000.png",
-      "res/drawable-mdpi-v4/abc_btn_radio_to_on_mtrl_015.png",
-      "res/drawable-mdpi-v4/abc_btn_rating_star_off_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_btn_rating_star_on_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png",
-      "res/drawable-mdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png",
-      "res/drawable-mdpi-v4/abc_cab_background_top_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_clear_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_commit_search_api_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_go_search_api_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_menu_share_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_search_api_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png",
-      "res/drawable-mdpi-v4/abc_list_divider_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_list_focused_holo.9.png",
-      "res/drawable-mdpi-v4/abc_list_longpressed_holo.9.png",
-      "res/drawable-mdpi-v4/abc_list_pressed_holo_dark.9.png",
-      "res/drawable-mdpi-v4/abc_list_pressed_holo_light.9.png",
-      "res/drawable-mdpi-v4/abc_list_selector_disabled_holo_dark.9.png",
-      "res/drawable-mdpi-v4/abc_list_selector_disabled_holo_light.9.png",
-      "res/drawable-mdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png",
-      "res/drawable-mdpi-v4/abc_popup_background_mtrl_mult.9.png",
-      "res/drawable-mdpi-v4/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_switch_track_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_tab_indicator_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_textfield_activated_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_textfield_default_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/abc_text_cursor_mtrl_alpha.9.png",
-      "res/drawable-mdpi-v4/cast_ic_notification_0.png",
-      "res/drawable-mdpi-v4/cast_ic_notification_1.png",
-      "res/drawable-mdpi-v4/cast_ic_notification_2.png",
-      "res/drawable-mdpi-v4/cast_ic_notification_on.png",
-      "res/drawable-mdpi-v4/common_full_open_on_phone.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_light_focused.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_light_normal.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_dark_focused.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_dark_normal.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_light_disabled.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_light_focused.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_light_normal.9.png",
-      "res/drawable-mdpi-v4/common_google_signin_btn_text_light_pressed.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_light_focused.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_light_normal.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_dark_focused.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_dark_normal.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_light_disabled.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_light_focused.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_light_normal.9.png",
-      "res/drawable-mdpi-v4/common_plus_signin_btn_text_light_pressed.9.png",
-      "res/drawable-mdpi-v4/ic_cast_dark.png",
-      "res/drawable-mdpi-v4/ic_cast_disabled_light.png",
-      "res/drawable-mdpi-v4/ic_cast_light.png",
-      "res/drawable-mdpi-v4/ic_cast_off_light.png",
-      "res/drawable-mdpi-v4/ic_cast_on_0_light.png",
-      "res/drawable-mdpi-v4/ic_cast_on_1_light.png",
-      "res/drawable-mdpi-v4/ic_cast_on_2_light.png",
-      "res/drawable-mdpi-v4/ic_cast_on_light.png",
-      "res/drawable-mdpi-v4/ic_media_pause.png",
-      "res/drawable-mdpi-v4/ic_media_play.png",
-      "res/drawable-mdpi-v4/ic_media_route_disabled_mono_dark.png",
-      "res/drawable-mdpi-v4/ic_media_route_off_mono_dark.png",
-      "res/drawable-mdpi-v4/ic_media_route_on_0_mono_dark.png",
-      "res/drawable-mdpi-v4/ic_media_route_on_1_mono_dark.png",
-      "res/drawable-mdpi-v4/ic_media_route_on_2_mono_dark.png",
-      "res/drawable-mdpi-v4/ic_media_route_on_mono_dark.png",
-      "res/drawable-mdpi-v4/ic_pause_dark.png",
-      "res/drawable-mdpi-v4/ic_pause_light.png",
-      "res/drawable-mdpi-v4/ic_play_dark.png",
-      "res/drawable-mdpi-v4/ic_play_light.png",
-      "res/drawable-mdpi-v4/ic_plusone_medium_off_client.png",
-      "res/drawable-mdpi-v4/ic_plusone_small_off_client.png",
-      "res/drawable-mdpi-v4/ic_plusone_standard_off_client.png",
-      "res/drawable-mdpi-v4/ic_plusone_tall_off_client.png",
-      "res/drawable-mdpi-v4/ic_setting_dark.png",
-      "res/drawable-mdpi-v4/ic_setting_light.png",
-      "res/drawable-mdpi-v4/mr_ic_audio_vol.png",
-      "res/drawable-mdpi-v4/powered_by_google_dark.png",
-      "res/drawable-mdpi-v4/powered_by_google_light.png",
-      "res/drawable-tvdpi-v4/common_full_open_on_phone.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_light_focused.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_light_normal.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_dark_focused.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_dark_normal.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_light_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_light_focused.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_light_normal.9.png",
-      "res/drawable-tvdpi-v4/common_google_signin_btn_text_light_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_light_focused.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_light_normal.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_dark_focused.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_dark_normal.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_light_disabled.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_light_focused.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_light_normal.9.png",
-      "res/drawable-tvdpi-v4/common_plus_signin_btn_text_light_pressed.9.png",
-      "res/drawable-tvdpi-v4/ic_plusone_medium_off_client.png",
-      "res/drawable-tvdpi-v4/ic_plusone_small_off_client.png",
-      "res/drawable-tvdpi-v4/ic_plusone_standard_off_client.png",
-      "res/drawable-tvdpi-v4/ic_plusone_tall_off_client.png",
-      "res/drawable-v11/abc_textfield_search_material.xml",
-      "res/drawable-xhdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_btn_check_to_on_mtrl_000.png",
-      "res/drawable-xhdpi-v4/abc_btn_check_to_on_mtrl_015.png",
-      "res/drawable-xhdpi-v4/abc_btn_radio_to_on_mtrl_000.png",
-      "res/drawable-xhdpi-v4/abc_btn_radio_to_on_mtrl_015.png",
-      "res/drawable-xhdpi-v4/abc_btn_rating_star_off_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_btn_rating_star_on_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png",
-      "res/drawable-xhdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png",
-      "res/drawable-xhdpi-v4/abc_cab_background_top_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_clear_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_commit_search_api_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_go_search_api_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_menu_share_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_search_api_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png",
-      "res/drawable-xhdpi-v4/abc_list_divider_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_list_focused_holo.9.png",
-      "res/drawable-xhdpi-v4/abc_list_longpressed_holo.9.png",
-      "res/drawable-xhdpi-v4/abc_list_pressed_holo_dark.9.png",
-      "res/drawable-xhdpi-v4/abc_list_pressed_holo_light.9.png",
-      "res/drawable-xhdpi-v4/abc_list_selector_disabled_holo_dark.9.png",
-      "res/drawable-xhdpi-v4/abc_list_selector_disabled_holo_light.9.png",
-      "res/drawable-xhdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png",
-      "res/drawable-xhdpi-v4/abc_popup_background_mtrl_mult.9.png",
-      "res/drawable-xhdpi-v4/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_switch_track_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_tab_indicator_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_textfield_activated_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_textfield_default_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/abc_text_cursor_mtrl_alpha.9.png",
-      "res/drawable-xhdpi-v4/cast_ic_notification_0.png",
-      "res/drawable-xhdpi-v4/cast_ic_notification_1.png",
-      "res/drawable-xhdpi-v4/cast_ic_notification_2.png",
-      "res/drawable-xhdpi-v4/cast_ic_notification_on.png",
-      "res/drawable-xhdpi-v4/common_full_open_on_phone.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_light_focused.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_light_normal.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_dark_focused.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_dark_normal.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_light_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_light_focused.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_light_normal.9.png",
-      "res/drawable-xhdpi-v4/common_google_signin_btn_text_light_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_light_focused.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_light_normal.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_dark_focused.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_dark_normal.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_light_disabled.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_light_focused.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_light_normal.9.png",
-      "res/drawable-xhdpi-v4/common_plus_signin_btn_text_light_pressed.9.png",
-      //"res/drawable-xhdpi-v4/icon.png",
-      "res/drawable-xhdpi-v4/ic_cast_dark.png",
-      "res/drawable-xhdpi-v4/ic_cast_disabled_light.png",
-      "res/drawable-xhdpi-v4/ic_cast_light.png",
-      "res/drawable-xhdpi-v4/ic_cast_off_light.png",
-      "res/drawable-xhdpi-v4/ic_cast_on_0_light.png",
-      "res/drawable-xhdpi-v4/ic_cast_on_1_light.png",
-      "res/drawable-xhdpi-v4/ic_cast_on_2_light.png",
-      "res/drawable-xhdpi-v4/ic_cast_on_light.png",
-      "res/drawable-xhdpi-v4/ic_media_pause.png",
-      "res/drawable-xhdpi-v4/ic_media_play.png",
-      "res/drawable-xhdpi-v4/ic_media_route_disabled_mono_dark.png",
-      "res/drawable-xhdpi-v4/ic_media_route_off_mono_dark.png",
-      "res/drawable-xhdpi-v4/ic_media_route_on_0_mono_dark.png",
-      "res/drawable-xhdpi-v4/ic_media_route_on_1_mono_dark.png",
-      "res/drawable-xhdpi-v4/ic_media_route_on_2_mono_dark.png",
-      "res/drawable-xhdpi-v4/ic_media_route_on_mono_dark.png",
-      "res/drawable-xhdpi-v4/ic_pause_dark.png",
-      "res/drawable-xhdpi-v4/ic_pause_light.png",
-      "res/drawable-xhdpi-v4/ic_play_dark.png",
-      "res/drawable-xhdpi-v4/ic_play_light.png",
-      "res/drawable-xhdpi-v4/ic_plusone_medium_off_client.png",
-      "res/drawable-xhdpi-v4/ic_plusone_small_off_client.png",
-      "res/drawable-xhdpi-v4/ic_plusone_standard_off_client.png",
-      "res/drawable-xhdpi-v4/ic_plusone_tall_off_client.png",
-      "res/drawable-xhdpi-v4/ic_setting_dark.png",
-      "res/drawable-xhdpi-v4/ic_setting_light.png",
-      "res/drawable-xhdpi-v4/launcher_icon.png",
-      "res/drawable-xhdpi-v4/mr_ic_audio_vol.png",
-      "res/drawable-xhdpi-v4/powered_by_google_dark.png",
-      "res/drawable-xhdpi-v4/powered_by_google_light.png",
-      "res/drawable-xxhdpi-v4/abc_ab_share_pack_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_btn_check_to_on_mtrl_000.png",
-      "res/drawable-xxhdpi-v4/abc_btn_check_to_on_mtrl_015.png",
-      "res/drawable-xxhdpi-v4/abc_btn_radio_to_on_mtrl_000.png",
-      "res/drawable-xxhdpi-v4/abc_btn_radio_to_on_mtrl_015.png",
-      "res/drawable-xxhdpi-v4/abc_btn_rating_star_off_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_btn_rating_star_on_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png",
-      "res/drawable-xxhdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png",
-      "res/drawable-xxhdpi-v4/abc_cab_background_top_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_clear_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_commit_search_api_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_go_search_api_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_menu_share_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_search_api_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png",
-      "res/drawable-xxhdpi-v4/abc_list_divider_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_list_focused_holo.9.png",
-      "res/drawable-xxhdpi-v4/abc_list_longpressed_holo.9.png",
-      "res/drawable-xxhdpi-v4/abc_list_pressed_holo_dark.9.png",
-      "res/drawable-xxhdpi-v4/abc_list_pressed_holo_light.9.png",
-      "res/drawable-xxhdpi-v4/abc_list_selector_disabled_holo_dark.9.png",
-      "res/drawable-xxhdpi-v4/abc_list_selector_disabled_holo_light.9.png",
-      "res/drawable-xxhdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png",
-      "res/drawable-xxhdpi-v4/abc_popup_background_mtrl_mult.9.png",
-      "res/drawable-xxhdpi-v4/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_switch_track_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_tab_indicator_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_textfield_activated_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_textfield_default_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/abc_text_cursor_mtrl_alpha.9.png",
-      "res/drawable-xxhdpi-v4/cast_ic_notification_0.png",
-      "res/drawable-xxhdpi-v4/cast_ic_notification_1.png",
-      "res/drawable-xxhdpi-v4/cast_ic_notification_2.png",
-      "res/drawable-xxhdpi-v4/cast_ic_notification_on.png",
-      "res/drawable-xxhdpi-v4/common_full_open_on_phone.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_light_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_light_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_dark_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_dark_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_light_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_light_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_light_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_google_signin_btn_text_light_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_dark_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_dark_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_dark_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_dark_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_light_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_light_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_light_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_icon_light_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_dark_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_dark_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_dark_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_dark_pressed.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_light_disabled.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_light_focused.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_light_normal.9.png",
-      "res/drawable-xxhdpi-v4/common_plus_signin_btn_text_light_pressed.9.png",
-      //"res/drawable-xxhdpi-v4/icon.png",
-      "res/drawable-xxhdpi-v4/ic_cast_dark.png",
-      "res/drawable-xxhdpi-v4/ic_cast_disabled_light.png",
-      "res/drawable-xxhdpi-v4/ic_cast_light.png",
-      "res/drawable-xxhdpi-v4/ic_cast_off_light.png",
-      "res/drawable-xxhdpi-v4/ic_cast_on_0_light.png",
-      "res/drawable-xxhdpi-v4/ic_cast_on_1_light.png",
-      "res/drawable-xxhdpi-v4/ic_cast_on_2_light.png",
-      "res/drawable-xxhdpi-v4/ic_cast_on_light.png",
-      "res/drawable-xxhdpi-v4/ic_media_pause.png",
-      "res/drawable-xxhdpi-v4/ic_media_play.png",
-      "res/drawable-xxhdpi-v4/ic_media_route_disabled_mono_dark.png",
-      "res/drawable-xxhdpi-v4/ic_media_route_off_mono_dark.png",
-      "res/drawable-xxhdpi-v4/ic_media_route_on_0_mono_dark.png",
-      "res/drawable-xxhdpi-v4/ic_media_route_on_1_mono_dark.png",
-      "res/drawable-xxhdpi-v4/ic_media_route_on_2_mono_dark.png",
-      "res/drawable-xxhdpi-v4/ic_media_route_on_mono_dark.png",
-      "res/drawable-xxhdpi-v4/ic_pause_dark.png",
-      "res/drawable-xxhdpi-v4/ic_pause_light.png",
-      "res/drawable-xxhdpi-v4/ic_play_dark.png",
-      "res/drawable-xxhdpi-v4/ic_play_light.png",
-      "res/drawable-xxhdpi-v4/ic_plusone_medium_off_client.png",
-      "res/drawable-xxhdpi-v4/ic_plusone_small_off_client.png",
-      "res/drawable-xxhdpi-v4/ic_plusone_standard_off_client.png",
-      "res/drawable-xxhdpi-v4/ic_plusone_tall_off_client.png",
-      "res/drawable-xxhdpi-v4/ic_setting_dark.png",
-      "res/drawable-xxhdpi-v4/ic_setting_light.png",
-      "res/drawable-xxhdpi-v4/launcher_icon.png",
-      "res/drawable-xxhdpi-v4/mr_ic_audio_vol.png",
-      "res/drawable-xxhdpi-v4/powered_by_google_dark.png",
-      "res/drawable-xxhdpi-v4/powered_by_google_light.png",
-      "res/drawable-xxxhdpi-v4/abc_btn_check_to_on_mtrl_000.png",
-      "res/drawable-xxxhdpi-v4/abc_btn_check_to_on_mtrl_015.png",
-      "res/drawable-xxxhdpi-v4/abc_btn_radio_to_on_mtrl_000.png",
-      "res/drawable-xxxhdpi-v4/abc_btn_radio_to_on_mtrl_015.png",
-      "res/drawable-xxxhdpi-v4/abc_btn_switch_to_on_mtrl_00001.9.png",
-      "res/drawable-xxxhdpi-v4/abc_btn_switch_to_on_mtrl_00012.9.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_ab_back_mtrl_am_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_clear_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_menu_copy_mtrl_am_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_menu_cut_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_menu_moreoverflow_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_menu_paste_mtrl_am_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_menu_selectall_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_menu_share_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_search_api_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_ic_voice_search_api_mtrl_alpha.png",
-      "res/drawable-xxxhdpi-v4/abc_spinner_mtrl_am_alpha.9.png",
-      "res/drawable-xxxhdpi-v4/abc_switch_track_mtrl_alpha.9.png",
-      "res/drawable-xxxhdpi-v4/abc_tab_indicator_mtrl_alpha.9.png",
-      //"res/drawable-xxxhdpi-v4/icon.png",
-      "res/drawable-xxxhdpi-v4/powered_by_google_dark.png",
-      "res/drawable-xxxhdpi-v4/powered_by_google_light.png",
-      "res/layout/abc_action_bar_title_item.xml",
-      "res/layout/abc_action_bar_up_container.xml",
-      "res/layout/abc_action_bar_view_list_nav_layout.xml",
-      "res/layout/abc_action_menu_item_layout.xml",
-      "res/layout/abc_action_menu_layout.xml",
-      "res/layout/abc_action_mode_bar.xml",
-      "res/layout/abc_action_mode_close_item_material.xml",
-      "res/layout/abc_activity_chooser_view.xml",
-      "res/layout/abc_activity_chooser_view_list_item.xml",
-      "res/layout/abc_alert_dialog_material.xml",
-      "res/layout/abc_dialog_title_material.xml",
-      "res/layout/abc_expanded_menu_layout.xml",
-      "res/layout/abc_list_menu_item_checkbox.xml",
-      "res/layout/abc_list_menu_item_icon.xml",
-      "res/layout/abc_list_menu_item_layout.xml",
-      "res/layout/abc_list_menu_item_radio.xml",
-      "res/layout/abc_popup_menu_item_layout.xml",
-      "res/layout/abc_screen_content_include.xml",
-      "res/layout/abc_screen_simple.xml",
-      "res/layout/abc_screen_simple_overlay_action_mode.xml",
-      "res/layout/abc_screen_toolbar.xml",
-      "res/layout/abc_search_dropdown_item_icons_2line.xml",
-      "res/layout/abc_search_view.xml",
-      "res/layout/abc_select_dialog_material.xml",
-      "res/layout/abc_simple_dropdown_hint.xml",
-      "res/layout/app_picker_list_item.xml",
-      "res/layout/bookmark_picker_list_item.xml",
-      "res/layout/capture.xml",
-      "res/layout/encode.xml",
-      "res/layout/help.xml",
-      "res/layout/history_list_item.xml",
-      "res/layout/main.xml",
-      "res/layout/mr_media_route_chooser_dialog.xml",
-      "res/layout/mr_media_route_controller_material_dialog_b.xml",
-      "res/layout/mr_media_route_list_item.xml",
-      "res/layout/notification_media_action.xml",
-      "res/layout/notification_media_cancel_action.xml",
-      "res/layout/notification_template_big_media.xml",
-      "res/layout/notification_template_big_media_narrow.xml",
-      "res/layout/notification_template_lines.xml",
-      "res/layout/notification_template_media.xml",
-      "res/layout/notification_template_part_chronometer.xml",
-      "res/layout/notification_template_part_time.xml",
-      "res/layout/route.xml",
-      "res/layout/search_book_contents.xml",
-      "res/layout/search_book_contents_header.xml",
-      "res/layout/search_book_contents_list_item.xml",
-      "res/layout/select_dialog_item_material.xml",
-      "res/layout/select_dialog_multichoice_material.xml",
-      "res/layout/select_dialog_singlechoice_material.xml",
-      "res/layout/share.xml",
-      "res/layout/support_simple_spinner_dropdown_item.xml",
-      "res/layout/zxinglegacy_capture.xml",
-      "res/layout/zxing_capture.xml",
-      "res/layout-land/encode.xml",
-      "res/layout-land/share.xml",
-      "res/layout-land-v11/encode.xml",
-      "res/layout-land-v11/share.xml",
-      "res/layout-ldpi-v11/capture.xml",
-      "res/layout-ldpi-v4/capture.xml",
-      "res/layout-ldpi-v4/zxinglegacy_capture.xml",
-      "res/layout-v11/bookmark_picker_list_item.xml",
-      "res/layout-v11/capture.xml",
-      "res/layout-v11/encode.xml",
-      "res/layout-v11/history_list_item.xml",
-      "res/layout-v11/search_book_contents_header.xml",
-      "res/layout-v11/search_book_contents_list_item.xml",
-      "res/layout-v11/share.xml",
-      "res/layout-v17/abc_alert_dialog_material.xml",
-      "res/layout-v17/abc_dialog_title_material.xml",
-      "res/layout-v17/abc_search_view.xml",
-      "res/layout-v17/mr_media_route_list_item.xml",
-      "res/layout-v17/notification_template_big_media.xml",
-      "res/layout-v17/notification_template_big_media_narrow.xml",
-      "res/layout-v17/notification_template_lines.xml",
-      "res/layout-v17/notification_template_media.xml",
-      "res/layout-v17/notification_template_part_chronometer.xml",
-      "res/layout-v17/notification_template_part_time.xml",
-      "res/layout-v21/abc_screen_toolbar.xml",
-      "res/menu/capture.xml",
-      "res/menu/encode.xml",
-      "res/menu/history.xml",
-      "res/menu-v11/capture.xml",
-      "res/menu-v11/encode.xml",
-      "res/menu-v11/history.xml",
-      "res/raw/beep.ogg",
-      "res/raw/gtm_analytics",
-      "res/raw/zxinglegacy_beep.ogg",
-      "res/raw/zxing_beep.ogg",
-      "res/xml/preferences.xml",
-      "res/xml/zxinglegacy_preferences.xml",
-      "res/xml/zxing_preferences.xml",   
-   };
 }

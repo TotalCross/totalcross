@@ -18,7 +18,7 @@ package totalcross.android;
 
 import totalcross.*;
 import totalcross.android.compat.*;
-import totalcross.android.gcm.*;
+import totalcross.android.firebase.FirebaseUtils;
 
 import android.app.*;
 import android.content.*;
@@ -38,11 +38,18 @@ import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
 import android.widget.*;
 import com.google.android.gms.ads.*;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.zxing.integration.android.*;
 import com.intermec.aidc.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Loader extends Activity implements BarcodeReadListener
 {
@@ -407,10 +414,67 @@ public class Loader extends Activity implements BarcodeReadListener
       return !AndroidUtils.pinfo.sharedUserId.equals("totalcross.app.sharedid");
    }
    
+	private boolean myFirebasePackageName(String packageNameCandidate) {
+		String pkgName = getApplicationContext().getPackageName();
+		return pkgName.equals(packageNameCandidate);
+	}
+   
+	private void initializeFirebase() {
+		AssetManager assetManager = getResources().getAssets();
+		
+		try (InputStream stream = assetManager.open("google-services.json")) {
+			JSONObject obj = (JSONObject) new JSONParser().parse(new InputStreamReader(stream));
+			
+			JSONObject projectInfo = (JSONObject)obj.get("project_info");
+			String gcm_defaultSenderId = (String)projectInfo.get("project_number");
+			String firebase_database_url = (String)projectInfo.get("firebase_url");
+			String storage_bucket = (String)projectInfo.get("storage_bucket");
+			
+			JSONArray clients = (JSONArray)obj.get("client");
+			boolean foundFirebaseClient = false; 
+			String package_name = null;
+			String mobilesdk_app_id = null;
+			String current_api_key = null;
+			
+			for (Object clientObj: clients) {
+				JSONObject client = (JSONObject) clientObj;
+				JSONObject clientInfo = (JSONObject)client.get("client_info");
+				JSONObject android_client_info = (JSONObject) clientInfo.get("android_client_info");
+				package_name = (String) android_client_info.get("package_name");
+				
+				if (myFirebasePackageName(package_name)) {
+					foundFirebaseClient = true;
+					mobilesdk_app_id = (String) clientInfo.get("mobilesdk_app_id");
+					JSONArray api_key = (JSONArray) client.get("api_key");
+					JSONObject api_key0 = (JSONObject) api_key.get(0);
+					current_api_key = (String) api_key0.get("current_key");
+					break;
+				}
+			}
+			
+			if (foundFirebaseClient) {
+				FirebaseOptions.Builder builder = new FirebaseOptions.Builder();
+				builder.setGcmSenderId(gcm_defaultSenderId);//<string name="gcm_defaultSenderId" translatable="false">462748528174</string>
+				builder.setStorageBucket(storage_bucket);//<string name="google_storage_bucket" translatable="false">totalcrossfirebaseteste.appspot.com</string>
+				builder.setDatabaseUrl(firebase_database_url);//<string name="firebase_database_url" translatable="false">https://totalcrossfirebaseteste.firebaseio.com</string>
+				builder.setApplicationId(mobilesdk_app_id);//<string name="google_app_id" translatable="false">1:462748528174:android:d1696eef73864aa2</string>
+				builder.setApiKey(current_api_key);//<string name="google_api_key" translatable="false">AIzaSyCiU3EE9ckkvlzvyC8_dc7Z9MiC8NGgfHI</string>
+				
+				FirebaseApp.initializeApp(getApplicationContext(), builder.build());
+			} else {
+				AndroidUtils.debug("Could not initialize Firebase, can't find your package in google-services.json");
+			}
+		} catch (ParseException | IOException e) {
+			AndroidUtils.debug("Could not initialize Firebase, probably 'google-services.json' isn't deployed or it isn't a valid json for google services");
+			AndroidUtils.handleException(e,false);
+		}
+   }
+   
    private void runVM()
    {
       if (runningVM) return;
       runningVM = true;
+	  initializeFirebase();
       Hashtable<String,String> ht = AndroidUtils.readVMParameters();
       String tczname = tcz = ht.get("tczname");
       boolean isSingleAPK = false;
@@ -716,10 +780,9 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       try
       {
-         if (command.equals("***REGISTER PUSH TOKEN***")) // start GCM service
+         if (command.equals("***REGISTER PUSH TOKEN***")) // start firebase service
          {
-            GCMUtils.setToken(this,args);
-            GCMUtils.startGCMService(this);
+            FirebaseUtils.setToken(this,args);
          }
          else
          if (command.equalsIgnoreCase("broadcast"))

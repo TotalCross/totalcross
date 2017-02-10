@@ -25,7 +25,6 @@ import android.net.wifi.*;
 import android.telephony.*;
 import java.net.*;
 import java.util.*;
-import org.apache.http.conn.util.*;
 
 import totalcross.*;
 
@@ -188,8 +187,10 @@ public class ConnectionManager4A
             for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) 
             {
                InetAddress inetAddress = enumIpAddr.nextElement();
+			   
                // for getting IPV4 format
-               if (!inetAddress.isLoopbackAddress() && InetAddressUtils.isIPv4Address(ipv4 = inetAddress.getHostAddress())) 
+               if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) 
+                  ipv4 = inetAddress.getHostAddress();
                   return ipv4;
             }
          }
