@@ -55,33 +55,54 @@ public class Base64
     */
    public static void decode(ByteArrayStream in, ByteArrayStream out)
    {
-      int from = 0;
-      int to = 0;
       int tuples = in.getPos()>>2; // 4 bytes-group
       out.setSize(tuples*3,false); // final output size
       // get direct access to the buffers to improve performance
       byte []fromBytes = in.getBuffer();
       byte []toBytes = out.getBuffer();
 
-      while (tuples-- > 0)
-      {
-          int tri = (toBase10[fromBytes[from++]] << 18) +
-                    (toBase10[fromBytes[from++]] << 12) +
-                    (toBase10[fromBytes[from++]] << 6)  +
-                    (toBase10[fromBytes[from++]]);
-
-          toBytes[to++] = (byte)((tri>>16) & 0xFF);
-          toBytes[to++] = (byte)((tri>>8) & 0xFF);
-          toBytes[to++] = (byte)(tri & 0xFF);
-      }
-      // remove padding
-      if (fromBytes[from-1] == '=')
-         to--;
-      if (fromBytes[from-2] == '=')
-         to--;
+      int writtenData = decode(fromBytes, 0, tuples * 4, toBytes, 0);
+      
       // set the current size
       out.reset();
-      out.skipBytes(to);
+      out.skipBytes(writtenData);
+   }
+   
+   /** 
+    * Decodes a given base 64 data into a base 10 data.<BR>
+    * Important: error detection is NOT made, so you must be sure that no invalid characters are given!<br>
+    * Important: it does not check if the destiny has the proper size
+    *
+    * @param src The base 64 input data.
+    * @param dest The base 10 output data.
+    * @param srcStart First position from the source
+    * @param srcLength How many bytes should be read?
+    * @param destStart First position to be written in the destiny
+    * @return The amount of bytes written in the destiny
+    */
+   public static int decode(byte[] src, int srcStart, int srcLength, byte[] dest, int destStart)
+   {
+      int from = srcStart;
+      int to = destStart;
+      int tuples = srcLength >> 2; // 4 bytes-group
+
+      while (tuples-- > 0)
+      {
+          int tri = (toBase10[src[from++]] << 18) +
+                    (toBase10[src[from++]] << 12) +
+                    (toBase10[src[from++]] << 6)  +
+                    (toBase10[src[from++]]);
+
+          dest[to++] = (byte)((tri>>16) & 0xFF);
+          dest[to++] = (byte)((tri>>8) & 0xFF);
+          dest[to++] = (byte)(tri & 0xFF);
+      }
+      // remove padding
+      if (src[from-1] == '=')
+         to--;
+      if (src[from-2] == '=')
+         to--;
+      return to - destStart;
    }
 
    /** 
