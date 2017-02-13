@@ -96,7 +96,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
     hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_DEFAULT;
-    if ((err = getaddrinfo(hostname, "http", &hints, &addrInfoList)) != 0) {
+    if ((err = getaddrinfo(hostname, null, &hints, &addrInfoList)) != 0) {
         //debug("getaddrinfo %d, %s", error, gai_strerror(error));
         /*NOTREACHED*/
         goto Finish;
