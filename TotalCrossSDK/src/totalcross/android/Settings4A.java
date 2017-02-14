@@ -26,6 +26,7 @@ import android.provider.*;
 import android.telephony.*;
 import java.lang.reflect.*;
 import java.util.*;
+import java.net.NetworkInterface;
 
 import totalcross.*;
 
@@ -88,6 +89,32 @@ public final class Settings4A
 	{
 	   
 	}
+	
+	public static String getMacAddr() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+ 
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+ 
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(Integer.toHexString(b & 0xFF) + ":");
+                }
+ 
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "02:00:00:00:00:00";
+    }
 	
 	static void fillSettings()
 	{
@@ -213,6 +240,11 @@ public final class Settings4A
                   try {Thread.sleep(100);} catch (Exception e) {}
                wifiMan.setWifiEnabled(false);
                macAddress = wifiMan.getConnectionInfo().getMacAddress();
+            }
+            
+            // Work around for Android 6 mac address, although not reliable...
+            if ("02:00:00:00:00:00".equals(macAddress)) {
+            	macAddress = getMacAddr();
             }
          }
       }
