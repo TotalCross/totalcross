@@ -352,6 +352,10 @@ public class HttpStream extends Stream
       {
          postHeaders.put("Cookie",cookies.dumpKeysValues(new StringBuffer(512), "=","; ").toString());
       }
+      
+      String createBasicAuthString(String user, String password) {
+    	  return "Basic " + Base64.encode((user + ":" + password).getBytes());
+      }
 
       /**
        * Base64 encodes the username and password given for basic server authentication
@@ -366,7 +370,7 @@ public class HttpStream extends Stream
          if (user == null || password == null) {
             postHeaders.remove("Authorization");
          } else {
-            postHeaders.put("Authorization", "Basic " + Base64.encode((user + ":" + password).getBytes()));
+            postHeaders.put("Authorization", createBasicAuthString(user, password));
          }
       }
       
@@ -384,7 +388,7 @@ public class HttpStream extends Stream
          if (user == null || password == null) {
             postHeaders.remove("Proxy-Authorization");
          } else {
-            postHeaders.put("Proxy-Authorization", "Basic "+ Base64.encode((user + ":" + password).getBytes()));
+            postHeaders.put("Proxy-Authorization", createBasicAuthString(user, password));
          }
       }
       
