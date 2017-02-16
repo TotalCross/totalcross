@@ -366,7 +366,7 @@ public class HttpStream extends Stream
          if (user == null || password == null)
             postHeaders.remove("Authorization");
          else
-            postHeaders.put("Authorization", Base64.encode((user + ":" + password).getBytes()));
+            postHeaders.put("Authorization", "Basic " + Base64.encode((user + ":" + password).getBytes()));
       }
       
       /**
