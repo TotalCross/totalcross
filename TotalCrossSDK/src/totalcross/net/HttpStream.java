@@ -363,10 +363,11 @@ public class HttpStream extends Stream
        */
       public void setBasicAuthentication(String user, String password)
       {
-         if (user == null || password == null)
+         if (user == null || password == null) {
             postHeaders.remove("Authorization");
-         else
+         } else {
             postHeaders.put("Authorization", "Basic " + Base64.encode((user + ":" + password).getBytes()));
+         }
       }
       
       /**
@@ -380,10 +381,11 @@ public class HttpStream extends Stream
        */
       public void setBasicProxyAuthorization(String user, String password)
       {
-         if (user == null || password == null)
+         if (user == null || password == null) {
             postHeaders.remove("Proxy-Authorization");
-         else
+         } else {
             postHeaders.put("Proxy-Authorization", "Basic "+ Base64.encode((user + ":" + password).getBytes()));
+         }
       }
       
       /** Part that contains the Multipart content to be used by HttpStream */
