@@ -94,7 +94,9 @@ public final class Settings4A
         try {
             List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface nif : all) {
-                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+                if (!nif.getName().equalsIgnoreCase("wlan0")) {
+                    continue;
+                }
  
                 byte[] macBytes = nif.getHardwareAddress();
                 if (macBytes == null) {
