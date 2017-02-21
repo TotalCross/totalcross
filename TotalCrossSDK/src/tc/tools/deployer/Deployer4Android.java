@@ -321,8 +321,8 @@ public class Deployer4Android
 	   for (ZipEntry zEntry: zipf) {
 		   String zentryName = zEntry.getName();
 		   InputStream zIn = zipf.getInputStream(zEntry);
-		   if (zentryName.endsWith("/") || zentryName.endsWith("\\")) {
-			   // it's a directory, just continue
+		   if (zentryName.endsWith("/") || zentryName.endsWith("\\") || zentryName.indexOf("icon.png") >= 0) {
+			   // it's a directory or an old icon, just continue
 			   continue;
 		   }
 		   if (zentryName.startsWith(initPath)) {
