@@ -1,0 +1,4 @@
+- [ ] Exemplo de código (GitHub)
+- [ ] Por no companion
+- [ ] Por no changelog
+- [ ] JavaDoc
