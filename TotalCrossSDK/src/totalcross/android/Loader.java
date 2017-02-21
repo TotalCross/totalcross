@@ -992,7 +992,7 @@ public class Loader extends Activity implements BarcodeReadListener
       }
       catch (ActivityNotFoundException a)
       {
-         Toast.makeText(getApplicationContext(), "Fala no suportada", Toast.LENGTH_SHORT).show();
+         Toast.makeText(getApplicationContext(), "Text to Speech is not supported", Toast.LENGTH_SHORT).show();
       }
    }
 }
