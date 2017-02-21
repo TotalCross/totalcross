@@ -165,6 +165,7 @@ public class Loader extends Activity implements BarcodeReadListener
             break;
          case EXTCAMERA_RETURN:
          {
+             Uri capturedImageURI = data.<Uri>getParcelableExtra(MediaStore.EXTRA_OUTPUT);
             if (capturedImageURI == null)
             {
                AndroidUtils.debug("capturedImageURI is null!");
@@ -354,7 +355,7 @@ public class Loader extends Activity implements BarcodeReadListener
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
             values.put (MediaStore.Images.Media.IS_PRIVATE, 1);
-            capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            Uri capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);  
             intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);  
             startActivityForResult(intent, EXTCAMERA_RETURN);
@@ -771,7 +772,6 @@ public class Loader extends Activity implements BarcodeReadListener
       Launcher4A.adsRet = ret;
    }
    
-   Uri capturedImageURI;
    // Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,false): launches a url
    // Vm.exec("totalcross.app.UIGadgets",null,0,false): launches another TotalCross' application
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
@@ -992,7 +992,7 @@ public class Loader extends Activity implements BarcodeReadListener
       }
       catch (ActivityNotFoundException a)
       {
-         Toast.makeText(getApplicationContext(), "Fala não suportada", Toast.LENGTH_SHORT).show();
+         Toast.makeText(getApplicationContext(), "Fala no suportada", Toast.LENGTH_SHORT).show();
       }
    }
 }
