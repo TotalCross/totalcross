@@ -10,15 +10,15 @@ buildscript {
 apply plugin: 'android'
 
 android {
-	compileSdkVersion "Google Inc.:Google APIs:24"
-    buildToolsVersion '24.0.3'
-	compileOptions.encoding = 'iso-8859-1'
+    compileSdkVersion "Google Inc.:Google APIs:24"
+    buildToolsVersion '23.0.2'
+    compileOptions.encoding = 'iso-8859-1'
 	
     defaultConfig {
         minSdkVersion 10
-        targetSdkVersion 24
-		applicationId 'totalcross.android'   
-		multiDexEnabled true
+        targetSdkVersion 22
+        applicationId 'totalcross.android'   
+        multiDexEnabled true
     }
     
 	productFlavors {
