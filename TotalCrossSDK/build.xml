@@ -283,7 +283,8 @@ target: desktop
   <mkdir dir="${dist}" />
   <delete file="${dist}/tc_desktop.jar"/>
   <delete file="${dist}/tc_deploy.jar"/>
-  <jar destfile="${dist}/tc_desktop.jar" compress="no" update="no">
+  <delete file="${dist}/tc_deploy_intermediario.jar"/>
+  <jar destfile="${dist}/tc_deploy_intermediario.jar" compress="no" update="no">
     <fileset dir="${output}/classes_desktop"
     excludes="totalcross/**,tc/samples/**,*.tcz"
     />
@@ -316,12 +317,12 @@ target: desktop
          <method name="finalize" />
        </keepclassmembernames>
 
-       <injar path="${dist}/tc_desktop.jar" />
-   	 <libraryjar path ="${java.home}/lib/rt.jar"/>
+       <injar path="${dist}/tc_deploy_intermediario.jar" />
+       <libraryjar path ="${java.home}/lib/rt.jar"/>
        <outjar path="${dist}/tc_deploy.jar" />
    </proguard>
 
-  <delete file="${dist}/tc_desktop.jar"/>
+  <delete file="${dist}/tc_deploy_intermediario.jar"/>
 
   <!-- we have to jar the totalcross api separately because proguard changes the method's access and breaks Litebase generation. -->
   <jar destfile="${dist}/tc_desktop.jar" compress="yes" update="yes" includes="totalcross/**">
