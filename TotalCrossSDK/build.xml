@@ -286,6 +286,7 @@ target: desktop
   <delete file="${dist}/tc_deploy_intermediario.jar"/>
   <jar destfile="${dist}/tc_deploy_intermediario.jar" compress="no" update="no">
     <fileset dir="${output}/classes_desktop"
+    includes="tc/**"
     excludes="totalcross/**,tc/samples/**,*.tcz"
     />
   </jar>
@@ -325,7 +326,7 @@ target: desktop
   <delete file="${dist}/tc_deploy_intermediario.jar"/>
 
   <!-- we have to jar the totalcross api separately because proguard changes the method's access and breaks Litebase generation. -->
-  <jar destfile="${dist}/tc_desktop.jar" compress="yes" update="yes" includes="totalcross/**">
+  <jar destfile="${dist}/tc_desktop.jar" compress="yes" update="yes" includes="totalcross/**,org/json/simple/**">
     <fileset dir="${output}/classes_desktop"
     excludes="tc/**,*.tcz"
     />  
