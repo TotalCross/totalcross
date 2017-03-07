@@ -86,6 +86,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    struct addrinfo hints;
    struct addrinfo *currentAddrInfo;
    struct addrinfo *addrInfoList;
+   in_port_t* portPtr;
 #endif
 
    /*
@@ -126,6 +127,22 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    
 #if defined (darwin)
     for (currentAddrInfo = addrInfoList; currentAddrInfo; currentAddrInfo = currentAddrInfo->ai_next) {
+      // Set the port we want to connect to
+      switch (currentAddrInfo->ai_family) {
+         case AF_INET: {  
+            portPtr = &((struct sockaddr_in *) currentAddrInfo->ai_addr)->sin_port;  
+         } break;  
+         case AF_INET6: {  
+            portPtr = &((struct sockaddr_in6 *) currentAddrInfo->ai_addr)->sin6_port;  
+         } break;
+         default: {  
+            portPtr = NULL;  
+        } break; 
+      }
+      if (portPtr != NULL && ((*portPtr) == 0 || ((*portPtr) != htons((uint16) port)))) {
+         (*portPtr) = htons((uint16) port);
+      }
+      
         if ((hostSocket = socket(
                  currentAddrInfo->ai_family, 
                  currentAddrInfo->ai_socktype,
