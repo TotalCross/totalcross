@@ -67,6 +67,8 @@ public class Loader extends Activity implements BarcodeReadListener
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
+   Uri capturedImageURI;
+   
    private static boolean onCreateCalled; //
    /** Called when the activity is first created. */
    public void onCreate(Bundle savedInstanceState)
@@ -165,7 +167,6 @@ public class Loader extends Activity implements BarcodeReadListener
             break;
          case EXTCAMERA_RETURN:
          {
-             Uri capturedImageURI = data.<Uri>getParcelableExtra(MediaStore.EXTRA_OUTPUT);
             if (capturedImageURI == null)
             {
                AndroidUtils.debug("capturedImageURI is null!");
@@ -355,7 +356,7 @@ public class Loader extends Activity implements BarcodeReadListener
             ContentValues values = new ContentValues();
             values.put(MediaStore.Images.Media.TITLE, "tctemp.jpg");
             values.put (MediaStore.Images.Media.IS_PRIVATE, 1);
-            Uri capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            capturedImageURI = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);  
             intent.putExtra(MediaStore.EXTRA_OUTPUT, capturedImageURI);  
             startActivityForResult(intent, EXTCAMERA_RETURN);
