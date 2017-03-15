@@ -151,8 +151,12 @@ LRESULT ScanMonitorThread()
                barcode[uBarcodeLen + 1] = 0;
             }
             PostMessage(getMainWindowHandle(), UM_SCAN, nResult, (long) barcode);
-            // clear read-ahead
-            while (decWaitForDecodeProc(50, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
+            // clear read-ahead - guich@tc330 - removed this because the scanner will keep on while the user is looking at a barcode
+            // while (decWaitForDecodeProc(50, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
+
+			// wait until the user release the key
+			while (GetAsyncKeyState(SCAN_KEY) < 0)
+				Sleep(50);
          }
          scanning = 0;
       }
@@ -306,4 +310,8 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
       p->retI = false;  // throw exception on error?
    else
       p->retI = true;
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
+{
 }

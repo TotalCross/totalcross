@@ -21,6 +21,6 @@
 	<classpathentry kind="lib" path="etc/libs/truezip/truezip-file-7.5.1.jar"/>
 	<classpathentry kind="lib" path="etc/libs/truezip/truezip-kernel-7.5.1.jar"/>
 	<classpathentry kind="lib" path="etc/libs/truezip/truezip-swing-7.5.1.jar"/>
-	<classpathentry kind="lib" path="P:/android-sdk-windows-5.0/extras/google/google_play_services/libproject/google-play-services_lib/libs/google-play-services.jar"/>
+	<classpathentry kind="lib" path="P:/android-sdk-windows-5.0/google-play-services.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

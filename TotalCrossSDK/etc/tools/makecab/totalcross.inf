@@ -18,9 +18,8 @@ InstallDir = "\TotalCross"
 ;==================================================
 
 [CEDevice]
-ProcessorType   = 2577
 VersionMin = 3.0
-VersionMax = 6.99
+VersionMax = 7.99
 UnsupportedPlatforms = "HPC","Jupiter"
 BuildMax=0xE000000
 

@@ -101,9 +101,9 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles=""
+				AdditionalFiles="$(OutDir)\Dolphin.dll"
 			/>
 			<DebuggerTool
 			/>

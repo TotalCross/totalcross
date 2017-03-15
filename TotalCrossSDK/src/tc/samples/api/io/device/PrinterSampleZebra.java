@@ -127,6 +127,7 @@ public class PrinterSampleZebra extends PrinterSampleBase
       pcx.createPCX(pcxBAS);
       int pcxLen = pcxBAS.getPos();
 
+      // CPCL commands - https://www.dkkm.ru/download/042be86b2be411e680c294de8021eb34/
       ByteArrayStream bas = new ByteArrayStream(pcxLen+100);
       bas.writeBytes("! 0 200 200 " + (h+50) + " 1\r\n");
       bas.writeBytes("PCX 0 0\r\n");
@@ -134,6 +135,9 @@ public class PrinterSampleZebra extends PrinterSampleBase
       bas.writeBytes("ENDPCX.LBL\r\n");
       bas.writeBytes("PRINT\r\n");
       s.writeBytes(bas.getBuffer(),0,bas.getPos());
+      
+      // LINE BELOW IS REQUIRED TO PRINT ON ZEBRA iMZ320
+      s.writeBytes(new byte[8*1024]); // make sure everything is filled
    }
 
    private void prepareImage(Image img) throws Exception

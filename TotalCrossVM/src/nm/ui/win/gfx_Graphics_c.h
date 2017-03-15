@@ -146,7 +146,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 #endif
 
 #endif
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(WINCE)
    SetProcessAffinityMask(GetCurrentProcess(), 1);
 #endif
    return true;

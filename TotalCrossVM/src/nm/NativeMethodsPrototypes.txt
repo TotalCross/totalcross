@@ -492,7 +492,17 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
+TC_API void tidsS_scannerActivate(NMParams p);
+TC_API void tidsS_setBarcodeParam_ib(NMParams p);
+TC_API void tidsS_setParam_iii(NMParams p);
+TC_API void tidsS_commitBarcodeParams(NMParams p);
+TC_API void tidsS_setBarcodeLength_iiii(NMParams p);
+TC_API void tidsS_getData(NMParams p);
+TC_API void tidsS_getScanManagerVersion(NMParams p);
+TC_API void tidsS_getScanPortDriverVersion(NMParams p);
+TC_API void tidsS_deactivate(NMParams p);
 TC_API void tidsS_readBarcode_s(NMParams p);
+TC_API void tidsS_setParam_ss(NMParams p);
 TC_API void tdsNDB__open_si(NMParams p);
 TC_API void tdsNDB__close(NMParams p);
 TC_API void tdsNDB__exec_s(NMParams p);
@@ -2516,7 +2526,47 @@ TC_API void tuBI_intLength_Ii(NMParams p) // totalcross/util/BigInteger native s
 {
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_scannerActivate(NMParams p) // totalcross/io/device/scanner/Scanner native static boolean scannerActivate();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setBarcodeParam_ib(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeParam(int barcodeType, boolean enable);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_iii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setParam(int type, int barcodeType, int value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_commitBarcodeParams(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean commitBarcodeParams();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setBarcodeLength_iiii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getData();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getScanManagerVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanManagerVersion();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getScanPortDriverVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanPortDriverVersion();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean deactivate();
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
 {
 }
 //////////////////////////////////////////////////////////////////////////
