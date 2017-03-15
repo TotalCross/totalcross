@@ -379,18 +379,13 @@ public class AndroidUtils
        return output.toByteArray();
    }
 
+   @Deprecated
    public static boolean copyFile(String in, String out, boolean deleteOriginal)
    {
       try
       {
-         byte[] buf = new byte[4096];
-         FileInputStream fin = new FileInputStream(in);
-         FileOutputStream fout = new FileOutputStream(out);
-         int r;
-         while ((r=fin.read(buf,0,buf.length)) > 0)
-            fout.write(buf,0,r);
-         fin.close();
-         fout.close();
+         copyFile(in, out);
+         
          if (deleteOriginal)
             new File(in).delete();
          return true;
@@ -400,5 +395,21 @@ public class AndroidUtils
          handleException(e,false);
          return false;
       }
+   }
+   
+   public static void copyFile(String in, String out) throws IOException {
+      FileInputStream fin = new FileInputStream(in);
+      copyStreamToFile(fin, out);
+      fin.close();
+   }
+   
+   // Não fecha a InputStream enviada...
+   public static void copyStreamToFile(InputStream inputStream, String out) throws IOException {
+      byte[] buf = new byte[4096];
+      FileOutputStream fout = new FileOutputStream(out);
+      int r;
+      while ((r=inputStream.read(buf,0,buf.length)) > 0)
+         fout.write(buf,0,r);
+      fout.close();
    }
 }
