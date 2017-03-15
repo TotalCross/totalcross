@@ -28,6 +28,9 @@ public class Scanner4A
    static boolean scannerActivate()
    {
       String id = Settings4A.deviceId.toLowerCase();
+      if (id.contains("honeywell"))
+         scanner = new HoneywellScanner();
+      else
       if (id.equalsIgnoreCase("intermec") || id.contains("foxconn"))
          scanner = new IntermecScanner();
       else
@@ -39,6 +42,12 @@ public class Scanner4A
    static boolean setBarcodeParam(int barcodeType, boolean enable)
    {
       return scanner != null && scanner.setBarcodeParam(barcodeType, enable);
+   }
+   
+   static void setParam(String what, String value)
+   {
+      if (scanner != null)
+         scanner.setParam(what, value);
    }
    
    static String getData()

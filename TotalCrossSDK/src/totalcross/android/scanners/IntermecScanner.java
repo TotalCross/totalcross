@@ -350,4 +350,8 @@ public class IntermecScanner implements IScanner
    {
       return false;
    }
+
+   public void setParam(String what, String value)
+   {
+   }
 }

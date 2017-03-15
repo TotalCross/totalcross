@@ -466,8 +466,11 @@ public class Loader extends Activity implements BarcodeReadListener
 			} else {
 				AndroidUtils.debug("Could not initialize Firebase, can't find your package in google-services.json");
 			}
-		} catch (ParseException | IOException e) {
-			AndroidUtils.debug("Could not initialize Firebase, probably 'google-services.json' isn't deployed or it isn't a valid json for google services");
+		}
+		catch (java.io.FileNotFoundException fnfe) { // ignore
+		}
+		catch (ParseException | IOException e) {
+		   AndroidUtils.debug("Could not initialize Firebase, probably 'google-services.json' isn't deployed or it isn't a valid json for google services");
 			AndroidUtils.handleException(e,false);
 		}
    }

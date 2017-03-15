@@ -298,9 +298,9 @@ public class Deployer4WinCE
             //-----------------------------------------------
 
             "[CEDevice]\n" +
-            "ProcessorType   = 2577\n" +
+//            "ProcessorType   = 2577\n" +
             "VersionMin = 3.0\n" +
-            "VersionMax = 6.99\n" +
+            "VersionMax = 7.99\n" +    // support wm compact 7
             "BuildMax=0xE0000000\n"+
             "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
 
@@ -385,7 +385,7 @@ public class Deployer4WinCE
       }
 
       // delete the temp files
-      deleteTemp(!infFileGiven);
+      if (!keepExe) deleteTemp(!infFileGiven);
       if (vLocals != null) deleteCopiedFiles(vLocals);
       if (vGlobals != null) deleteCopiedFiles(vGlobals);
       

@@ -97,5 +97,7 @@ public class MotorolaScanner implements IScanner
       return scanning;
    }
 
-   
+   public void setParam(String what, String value)
+   {
+   }
 }

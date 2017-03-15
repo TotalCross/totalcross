@@ -9,4 +9,5 @@ public interface IScanner
    public String getData();
    public boolean deactivate();
    public boolean checkScanner(KeyEvent event);
+   public void setParam(String what, String value);
 }

@@ -497,7 +497,17 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_gcd_IIi"), &tuBI_gcd_IIi);
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_intLength_i"), &tuBI_intLength_i);
    htPutPtr(&htNativeProcAddresses, hashCode("tuBI_intLength_Ii"), &tuBI_intLength_Ii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_scannerActivate"), &tidsS_scannerActivate);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeParam_ib"), &tidsS_setBarcodeParam_ib);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_iii"), &tidsS_setParam_iii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_commitBarcodeParams"), &tidsS_commitBarcodeParams);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setBarcodeLength_iiii"), &tidsS_setBarcodeLength_iiii);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getData"), &tidsS_getData);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getScanManagerVersion"), &tidsS_getScanManagerVersion);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_getScanPortDriverVersion"), &tidsS_getScanPortDriverVersion);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_deactivate"), &tidsS_deactivate);
    htPutPtr(&htNativeProcAddresses, hashCode("tidsS_readBarcode_s"), &tidsS_readBarcode_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tidsS_setParam_ss"), &tidsS_setParam_ss);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__open_si"), &tdsNDB__open_si);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__close"), &tdsNDB__close);
    htPutPtr(&htNativeProcAddresses, hashCode("tdsNDB__exec_s"), &tdsNDB__exec_s);

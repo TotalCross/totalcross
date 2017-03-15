@@ -30,6 +30,10 @@
            <action android:name="totalcross.zxing.client.android.SCAN"/>
            <category android:name="android.intent.category.DEFAULT"/>
          </intent-filter>
+         <intent-filter>
+           <action android:name="android.intent.action.AUTOMATICBARCODEACTIVITY" />
+           <category android:name="android.intent.category.DEFAULT" />
+         </intent-filter>         
         </activity>
         <!-- push notifications -->
         <!-- receives the message -->
@@ -81,6 +85,7 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.wifi" android:required="false"/>
+    <uses-permission android:name="com.honeywell.decode.permission.DECODE" android:required="false"/>
 	
 	<uses-feature android:glEsVersion="0x00020000" />
 </manifest>

@@ -60,6 +60,7 @@ import totalcross.ui.dialog.*;
  * if (!Scanner.deactivate())
  *    return;
  * </pre>
+ * Note: to generate an installation for the SYMBOL MC32, you must deploy using -WINCE (creates cab without compression), and not -WINMO (creates cab with compression).
  */
 
 public class Scanner
@@ -313,4 +314,23 @@ public class Scanner
       return null;
    }
    native public static String readBarcode4D(String mode);
+   
+   /** Used in the Honeywell Android barcode scanners.
+    * See the totalcross.io.device.scanner.Honeywell constants.
+    * For example:
+    * <pre>
+    * Scanner.setParam(Honeywell.START_BATCH,"true");
+    * ... set other parameters
+    * Scanner.setParam(Honeywell.END_BATCH,"true");
+    * </pre>
+    * 
+    * Dont forget the start and end batch, otherwise it won't work!
+    * 
+    * For boolean parameters, use "true" or "false".
+    * For integer parameters, use the integer passed as String.
+    */
+   public static void setParam(String what, String value)
+   {
+   }
+   native public static void setParam4D(String what, String value);
 }

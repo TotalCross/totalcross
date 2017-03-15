@@ -75,7 +75,7 @@ public class ScannerInternal extends BaseContainer
       add(lblScanManagerVersion = new Label("", CENTER), LEFT, AFTER);
       add(new Label("Rom serial number:"), CENTER, AFTER);
       add(lblRomSerialNumber = new Label("", CENTER), LEFT, AFTER);
-      add(chkScanner = new Check("Scan"), LEFT, AFTER + 10);
+      add(chkScanner = new Check("Scan enabled"), LEFT, AFTER + 10);
       addLog(LEFT,AFTER + 10,FILL,FILL,null); 
 
       // tell scanner that we are the control that is listening the events.
@@ -92,7 +92,18 @@ public class ScannerInternal extends BaseContainer
 
    private static boolean setDefaultAndroidParams()
    {
-      return Scanner.setBarcodeParam(Intermec.CODE_128, true)
+      if (Settings.deviceId.toLowerCase().contains("honeywell"))
+      {
+         Scanner.setParam(Honeywell.START_BATCH,"true");
+         Scanner.setParam(Honeywell.PROPERTY_CODE_128_ENABLED, "true");
+         Scanner.setParam(Honeywell.PROPERTY_CODABAR_ENABLED, "true");
+         Scanner.setParam(Honeywell.PROPERTY_EAN_13_ENABLED, "true");
+         Scanner.setParam(Honeywell.PROPERTY_EAN_8_ENABLED, "true");
+         Scanner.setParam(Honeywell.END_BATCH,"true");
+         return true;
+      }
+      else
+         return Scanner.setBarcodeParam(Intermec.CODE_128, true)
             && Scanner.setBarcodeParam(Intermec.CODABAR, true) && Scanner.setBarcodeParam(Intermec.EAN_UPC_UPC_E, true)
             && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_13, true) && Scanner.setBarcodeParam(Intermec.EAN_UPC_EAN_8, true);
    }
