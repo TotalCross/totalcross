@@ -132,11 +132,13 @@ public class Loader extends Activity implements BarcodeReadListener
             if (resultCode == RESULT_OK)
             {
                Uri selectedImageUri = data.getData();
-               String selectedImagePath = getImagePath(selectedImageUri);
-               if (selectedImagePath == null)
-                  resultCode = RESULT_OK+1;
-               else
-                  AndroidUtils.copyFile(selectedImagePath,imageFN,false);
+               try (InputStream inputStream = getContentResolver().openInputStream(selectedImageUri)) {
+        		   AndroidUtils.copyStreamToFile(inputStream, imageFN);
+               } catch (IOException ioe) {
+            	   AndroidUtils.handleException(ioe,false);
+            	   // pois eh... mesmo assim falhou i.i
+            	   resultCode = RESULT_OK+1;
+               }
             }
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
