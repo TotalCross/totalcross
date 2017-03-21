@@ -293,6 +293,8 @@ public class HttpStream extends Stream
        * Charset encoding UTF-8
        */
       public static final String CHARSET_UTF8 = "UTF-8";
+      
+      protected boolean sendData = false;
 
       /**
        * Charset encoding to be used by HttpStream. Defaults to CHARSET_ISO88591.
@@ -408,6 +410,14 @@ public class HttpStream extends Stream
             partContent = new Part();
          partContent.setContent(multipart);
       }
+
+	public void setSendData(boolean sendData) {
+		this.sendData = sendData;
+	}
+	
+	public boolean mustSendData() {
+		return sendData;
+	}
    }
 
    /** This makes a sleep during the send of a file.
@@ -629,7 +639,8 @@ public class HttpStream extends Stream
          sb.append(options.httpType);
       
       String serverPath = useProxy ? uri.toString() : uri.path.toString(); //flsobral@tc126: had problems with a proxy that would only reply if we send the whole url on the post/get line.
-      if (POST.equals(options.httpType) || options.doPost)
+      
+      if (shouldSendData(options))
       {
          if (options.httpType == null) sb.append("POST ");
          // server path
@@ -667,7 +678,7 @@ public class HttpStream extends Stream
       options.requestHeaders.dumpKeysValues(sb, ": ", Convert.CRLF);
       sb.append(Convert.CRLF);
 
-      if (options.partContent == null && (POST.equals(options.httpType) || options.doPost))
+      if (options.partContent == null && shouldSendData(options))
       {
          int len = 0;
          if (options.postPrefix != null)
@@ -714,6 +725,10 @@ public class HttpStream extends Stream
       if (state != 6 && Settings.onJavaSE) // flsobral@tc115: some cleaning.
          Vm.debug("HTTP: " + getStatus()); // flsobral@tc110_95: No longer stop reading the header when a bad response code is found, so we can get the error cause.
    }
+   
+   protected boolean shouldSendData(Options options) {
+	   return POST.equals(options.httpType) || options.doPost || options.sendData;
+   }
 
    protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
    {
@@ -721,7 +736,7 @@ public class HttpStream extends Stream
       writeBytes(bytes, 0, bytes.length);
       bytes = null;
 
-      if (POST.equals(options.httpType) || options.doPost)
+      if (shouldSendData(options))
       {
          if (options.postPrefix != null)
          {
