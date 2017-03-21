@@ -282,7 +282,7 @@ class WrapFromInputStream extends Stream {
 	}
 	
 	@Override
-	public InputStream wrapInputStream() {
+	public InputStream asInputStream() {
 		return inputStream;
 	}
 	
@@ -326,7 +326,7 @@ class WrapFromOutputStream extends Stream {
 	}
 	
 	@Override
-	public OutputStream wrapOutputStream() {
+	public OutputStream asOutputStream() {
 		return outputStream;
 	}
 	
