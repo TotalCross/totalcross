@@ -328,4 +328,3 @@ TC_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanne
 {
 }
 #endif
-

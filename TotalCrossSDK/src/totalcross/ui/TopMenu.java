@@ -17,9 +17,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    }
    /** The percentage of the area used for the icon and the caption */
    public static int percIcon = 20, percCap = 80;
-   private Control []items;
+   protected Control []items;
    private int animDir;
-   private int selected=-1;
+   protected int selected=-1;
    /** Set to false to disable the close when pressing in a button of the menu. */
    public boolean autoClose = true;
    /** Defines the animation delay */
