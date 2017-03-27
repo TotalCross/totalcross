@@ -130,13 +130,17 @@ TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/N
    UNLOCKDB
 }
 
+int32 utf8len(JCharP chars, int32 length);
+void utf8chars2bytesBuf(JCharP chars, int32 length, uint8* bytes); // CharacterConverter.c
+
 static CharP newSafeString(TCObject strObj)
 {
    JCharP js = String_charsStart(strObj);
    int32 len = String_charsLen(strObj);
-   CharP ret = (CharP)xmalloc(len+16); // put 8 bytes before and 8 after the string
+   int32 utflen = utf8len(js, len);
+   CharP ret = (CharP)xmalloc(utflen+16); // put 8 bytes before and 8 after the string
    ret += 8;
-   JCharP2CharPBuf(js, len, ret);
+   utf8chars2bytesBuf(js, len, ret);
    return ret;
 }
 
@@ -397,14 +401,22 @@ TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB n
 }
 
 TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_text(long stmt, int col);
-{
+{                                                
    TRACE("tdsNDB_column_text_li")
    int64 stmt = p->i64[0];
    int32 col = p->i32[0];
    LOCKDB
    char* str = (char*)sqlite3_column_text(toref(stmt), col);
-   UNLOCKDB
-   setObjectLock(p->retO = str ? createStringObjectFromCharP(p->currentContext, str,-1) : null, UNLOCKED);
+   UNLOCKDB                                                                                 
+   if (!str)
+      p->retO = null;
+   else
+   {
+      TCObject charArray = utf8bytes2chars(p->currentContext, str, xstrlen(str)); // unlocked on return
+      JCharP chars = (JCharP)ARRAYOBJ_START(charArray);
+      int32 len = ARRAYOBJ_LEN(charArray);
+      setObjectLock(p->retO = createStringObjectFromJCharP(p->currentContext, chars, len), UNLOCKED);
+   }
 }
 
 TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);

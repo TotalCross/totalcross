@@ -114,7 +114,7 @@ TCObject utf8bytes2chars(Context currentContext, uint8* bytes, int32 length)
    return charArray;
 }
 
-static int32 utf8len(JCharP chars, int32 length)
+int32 utf8len(JCharP chars, int32 length)
 {
    int r = 0;
    while (length-- > 0)
@@ -131,32 +131,35 @@ static int32 utf8len(JCharP chars, int32 length)
    return r;
 }
 
+void utf8chars2bytesBuf(JCharP chars, int32 length, uint8* bytes)
+{
+   JCharP end = chars + length;
+   while (chars < end)
+   {
+      int32 r = *chars++;
+      if (r < 0x80)                       // 1 byte sequence
+         *bytes++ = (uint8)r;
+      else
+      if (r < 0x800)                      // 2 bytes sequence?
+      {
+         *bytes++ = (uint8)(0xC0 | (r >> 6));
+         *bytes++ = (uint8)(0x80 | (r & 0x3F));
+      }
+      else                                     // 3 bytes sequence.
+      {
+         *bytes++ = (uint8)(0xE0 | (r >> 12));
+         *bytes++ = (uint8)(0x80 | ((r >> 6) & 0x3F));
+         *bytes++ = (uint8)(0x80 | (r & 0x3F));
+      }
+   }
+}
 TCObject utf8chars2bytes(Context currentContext, JCharP chars, int32 length)
 {
    TCObject byteArray = createByteArray(currentContext, utf8len(chars, length)); // find the exact length, since it can be max 3*length
    if (byteArray != null)
    {
       uint8* bytes = ARRAYOBJ_START(byteArray);
-      JCharP end = chars + length;
-
-      while (chars < end)
-      {
-         int32 r = *chars++;
-         if (r < 0x80)                       // 1 byte sequence
-            *bytes++ = (uint8)r;
-         else
-         if (r < 0x800)                      // 2 bytes sequence?
-         {
-            *bytes++ = (uint8)(0xC0 | (r >> 6));
-            *bytes++ = (uint8)(0x80 | (r & 0x3F));
-         }
-         else                                     // 3 bytes sequence.
-         {
-            *bytes++ = (uint8)(0xE0 | (r >> 12));
-            *bytes++ = (uint8)(0x80 | ((r >> 6) & 0x3F));
-            *bytes++ = (uint8)(0x80 | (r & 0x3F));
-         }
-      }
+      utf8chars2bytesBuf(chars, length, bytes);      
       setObjectLock(byteArray, UNLOCKED);
    }
    return byteArray;
