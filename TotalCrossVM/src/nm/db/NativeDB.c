@@ -35,6 +35,13 @@ static TCClass pclass;
 #define TRACE(x)
 //#define TRACE(x) bool xxx = debug("%s: i64: %X, obj: %X",x,(int)p->i64[0],(int)p->obj[0]);
 
+/* Definicoes */
+int32 utf8len(JCharP chars, int32 length);
+void utf8chars2bytesBuf(JCharP chars, int32 length, uint8* bytes);
+TCObject utf8bytes2chars(Context currentContext, JCharP chars, int32 length);
+// CharacterConverter.c
+
+
 static void * toref(int64 value)
 {
     return (void *) value;
@@ -129,9 +136,6 @@ TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/N
 	p->retI = sqlite3_enable_load_extension(gethandle(p->currentContext, this_), enable);
    UNLOCKDB
 }
-
-int32 utf8len(JCharP chars, int32 length);
-void utf8chars2bytesBuf(JCharP chars, int32 length, uint8* bytes); // CharacterConverter.c
 
 static CharP newSafeString(TCObject strObj)
 {
