@@ -378,24 +378,6 @@ public class AndroidUtils
            output.write(buffer, 0, bytesRead);
        return output.toByteArray();
    }
-
-   @Deprecated
-   public static boolean copyFile(String in, String out, boolean deleteOriginal)
-   {
-      try
-      {
-         copyFile(in, out);
-         
-         if (deleteOriginal)
-            new File(in).delete();
-         return true;
-      }
-      catch (Exception e)
-      {
-         handleException(e,false);
-         return false;
-      }
-   }
    
    public static void copyFile(String in, String out) throws IOException {
       FileInputStream fin = new FileInputStream(in);
