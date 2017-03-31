@@ -3,7 +3,7 @@ package totalcross.sql;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 
-public interface Statement
+public interface Statement extends AutoCloseable
 {
    public ResultSet executeQuery(String sql) throws SQLException;
    

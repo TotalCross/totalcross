@@ -7,7 +7,7 @@ import totalcross.util.Date;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 
-public interface ResultSet
+public interface ResultSet extends AutoCloseable
 {
    public static final int FETCH_FORWARD = 1000;
    public static final int FETCH_REVERSE = 1001;
