@@ -81,6 +81,7 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_entries"), &tuzZF_entries);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntry_s"), &tuzZF_getEntry_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tuzZF_getEntryStream_s"), &tuzZF_getEntryStream_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tumS_fromText_s"), &tumS_fromText_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_toText_s"), &tumS_toText_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_play_s"), &tumS_play_s);
    htPutPtr(&htNativeProcAddresses, hashCode("tumS_beep"), &tumS_beep);

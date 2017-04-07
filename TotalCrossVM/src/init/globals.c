@@ -239,7 +239,7 @@ TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 // media_Sound.c
 TSoundSettings soundSettings;
 #ifdef ANDROID
-jmethodID jtone, jsoundToText;
+jmethodID jtone, jsoundToText, jsoundFromText;
 jmethodID jsoundEnable,jsoundPlay;
 #endif
 

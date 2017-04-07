@@ -122,13 +122,46 @@ public final class Sound
    {
    }
    
-   /** Activates speech and let the user dictate something that will be returned. The params can be currently only:
+   /** Activates speech and let the user dictate something that will be returned. The params can be:
     * <pre>
-    * title=title to show to user
+    * title:title to show to user
+    * timeout: timeout in millis that will be waiten to return after dictation finishes 
+    * </pre>
+    * If you pass more than one parameter, separate them with | (pipe).
+    * 
+    * So, for example:
+    * <pre>
+    * String ret = Sound.toText("title:Answer|timeout:500");
     * </pre>
     */
    public static String toText(String params)
    {
       return "";
+   }
+
+   
+   /** Activates speech and let the user hear the given text.
+    * The very first time it is used in the device, Android will ask you to install a high definition 
+    * language package (and you should install it because the difference is impressive).
+    * 
+    * The first time it is called, you can pass some parameters:
+    * <pre>
+    * languages: shows in adb's logcat the available languages. For example, in the Samsung S4 mini, it shows: [spa_MEX_f00, tur_TUR_l02, jpn_JPN_f00, kor_KOR_f00, por_PRT_f00, eng_USA_f00, rus_RUS_f00, eng_GBR_f00, por_BRA_f00, fra_FRA_f00, por_BRA_l01, ita_ITA_f00, deu_DEU_f00, zho_CHN_f00, spa_ESP_f00]
+    * locale: the locale to be used. You can pass, for example, spa_ESP or spa_ESP_f00
+    * speech: the speech speed. The standard is 1.0. A lower value will decrease the speed, a higher value will increase it.
+    * quit: quits the speech engine. 
+    * </pre>
+    * Note that the method call blocks until the text dictation finishes.
+    * 
+    * This is a sample to use Brazilian portuguese:
+    * <pre>
+    * Sound.fromText("locale:por_BRA,speech:0.75");
+    * Sound.fromText("você é homem ou mulher?");
+    * String ret = Sound.toText("title:Responda|timeout:500");
+    * lab.setText("Answer: "+ret);
+    * </pre>
+    */
+   public static void fromText(String text)
+   {
    }
 }

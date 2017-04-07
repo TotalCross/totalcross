@@ -33,5 +33,6 @@ public final class Sound4D
       int freq = (int)Math.round(440.0 * Math.pow (2, ((double)midiNoteNumber-69.0) / 12));
       tone(freq,duration);
    }
-   native public static String toText4D(String params);
+   native public static String toText(String params);
+   native public static void fromText(String text);
 }
