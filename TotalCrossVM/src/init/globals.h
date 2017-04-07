@@ -207,7 +207,7 @@ extern TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 // media_Sound.c
 extern TSoundSettings soundSettings;
 #ifdef ANDROID
-extern jmethodID jtone,jsoundEnable,jsoundPlay, jsoundToText;
+extern jmethodID jtone,jsoundEnable,jsoundPlay, jsoundToText, jsoundFromText;
 #endif
 
 // money

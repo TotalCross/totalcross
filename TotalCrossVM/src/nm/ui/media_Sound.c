@@ -94,6 +94,13 @@ TC_API void tumS_toText_s(NMParams p) // totalcross/ui/media/Sound native public
    soundToText(p);
 #endif
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_fromText_s(NMParams p) // totalcross/ui/media/Sound native public static void fromText(String text);
+{
+#if defined(ANDROID)
+   soundFromText(p);
+#endif
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "media_Sound_test.h"

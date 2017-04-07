@@ -1501,15 +1501,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       String text = null;
       try 
       {
-         String title = "";
          if (params == null) params = "";
-         if (params.startsWith("title:"))
-            title = params.substring(6);
          soundResult = null;
          callingSound = true;
          Message msg = loader.achandler.obtainMessage();
          Bundle b = new Bundle();
-         b.putString("title", title);
+         b.putString("title", params);
          b.putInt("type",Loader.TOTEXT);
          msg.setData(b);
          loader.achandler.sendMessage(msg);
@@ -1523,6 +1520,29 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          text = "***EXCEPTION";
       }
       return text;
+   }
+
+   public static void soundFromText(String text)
+   {
+      try 
+      {
+         if (text == null) text = "";
+         soundResult = null;
+         callingSound = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("text", text);
+         b.putInt("type",Loader.FROMTEXT);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingSound)
+            try {Thread.sleep(5);} catch (Exception e) {}
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION";
+      }
    }
 
    public static int getFreeMemory()

@@ -61,3 +61,11 @@ static void soundToText(NMParams p)
    p->retO = o;
    
 }
+static void soundFromText(NMParams p)
+{
+   JNIEnv* env = getJNIEnv();         
+   TCObject params = p->obj[0];
+   jstring jparams = params == null ? null : (*env)->NewString(env, (jchar*) String_charsStart(params), String_charsLen(params));
+   (*env)->CallStaticVoidMethod(env, applicationClass, jsoundFromText, jparams);
+   if (jparams != null) (*env)->DeleteLocalRef(env, jparams);
+}

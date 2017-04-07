@@ -107,6 +107,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
    jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
    jsoundToText      = (*env)->GetStaticMethodID(env, applicationClass, "soundToText", "(Ljava/lang/String;)Ljava/lang/String;");
+   jsoundFromText    = (*env)->GetStaticMethodID(env, applicationClass, "soundFromText", "(Ljava/lang/String;)V");
    jadsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "adsFunc", "(IILjava/lang/String;)I");
 }
 

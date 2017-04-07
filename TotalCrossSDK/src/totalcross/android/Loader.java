@@ -16,6 +16,7 @@
 
 package totalcross.android;
 
+import android.speech.tts.TextToSpeech;
 import totalcross.*;
 import totalcross.android.compat.*;
 import totalcross.android.firebase.FirebaseUtils;
@@ -51,7 +52,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-public class Loader extends Activity implements BarcodeReadListener
+public class Loader extends Activity implements BarcodeReadListener, TextToSpeech.OnInitListener
 {
    public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
@@ -63,7 +64,7 @@ public class Loader extends Activity implements BarcodeReadListener
    private static final int EXTCAMERA_RETURN = 1234324334;
    private static final int SELECT_PICTURE = 1234324335;
    private static final int CAMERA_PIC_REQUEST = 1337;
-   private static final int TEXT_TO_SPEECH = 1234324336;
+   private static final int SPEECH_TO_TEXT = 1234324336;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -123,7 +124,7 @@ public class Loader extends Activity implements BarcodeReadListener
    {
       switch (requestCode)
       {
-         case TEXT_TO_SPEECH:
+         case SPEECH_TO_TEXT:
             Launcher4A.soundResult = resultCode == RESULT_OK ? data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS).get(0) : null;
             Launcher4A.callingSound = false;
             break;
@@ -429,6 +430,7 @@ public class Loader extends Activity implements BarcodeReadListener
    public static final int ADS_FUNC = 11;
    public static final int TOTEXT = 12;
    public static final int ORIENTATION = 13;
+   public static final int FROMTEXT = 14;
    
    public static String tcz;
    private String totalcrossPKG = "totalcross.android";
@@ -659,6 +661,10 @@ public class Loader extends Activity implements BarcodeReadListener
             case TOTEXT:
                String title = b.getString("title");
                promptSpeechInput(title.isEmpty() ? null : title);
+               break;
+            case FROMTEXT:
+               String text = b.getString("text");
+               promptSpeechOutput(text);
                break;
             case ADS_FUNC:
                adsFunc(b);
@@ -1004,17 +1010,102 @@ public class Loader extends Activity implements BarcodeReadListener
       super.onNewIntent(i);
    }
 
+   private TextToSpeech tts;
+   private String textInitParams;
+   public void promptSpeechOutput(String text)
+   {
+      if (tts == null)
+      {
+         textInitParams = text;
+         tts = new TextToSpeech(this, this);
+         tts.setOnUtteranceProgressListener(new TTSListener());
+      }
+      else
+      if (text.equals("quit") && tts != null)
+      {
+         tts.shutdown();
+         Launcher4A.callingSound = false;
+      }
+      else
+      {
+         HashMap<String, String> myHashAlarm = new HashMap<String, String>();
+         myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_STREAM, String.valueOf(AudioManager.STREAM_ALARM));
+         myHashAlarm.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "myid");
+         tts.speak(text, TextToSpeech.QUEUE_FLUSH, myHashAlarm);
+      }
+   }
+   
+   // UtteranceProgressListener
+   class TTSListener extends android.speech.tts.UtteranceProgressListener
+   {
+      public void onDone(String utteranceId)
+      {
+         Launcher4A.callingSound = false;
+      }
+      public void onStart(String utteranceId)
+      {
+      }
+      public void onError(String utteranceId)
+      {
+      }
+   }
+   
+   // OnInitListener
+   public void onInit(int arg0)
+   {
+      for (String t : textInitParams.split(","))
+      {
+         if (t.startsWith("locale:")) // por_BRA or por_BRA_f00
+         {
+            String[] p = t.substring(7).split("_");
+            if (p.length == 2)
+               tts.setLanguage(new Locale(p[0],p[1]));
+            else
+            if (p.length == 3)
+               tts.setLanguage(new Locale(p[0],p[1],p[2]));
+         }
+         else
+         if (t.startsWith("speech:")) // float value
+         {
+            float v = Float.valueOf(t.substring(7));
+            if (v != 0)
+               tts.setSpeechRate(v);
+         }
+         else
+         if (t.startsWith("languages"))
+         {
+            Set<Locale> av = tts.getAvailableLanguages();
+            if (av != null)
+               AndroidUtils.debug("Available languages: "+av);
+         }
+      }
+      Launcher4A.callingSound = false;
+   }
+
+   
    public void promptSpeechInput(String caption) // http://stackoverflow.com/questions/16228817/android-speech-recognition-app-without-pop-up
    {
+      String title="";
+      int timeout = 2000;
+      if (caption != null && !caption.isEmpty())
+         for (String t : caption.split("|"))
+         {
+            if (t.startsWith("title:"))
+               title = t.substring(6);
+            else
+            if (t.startsWith("timeout:"))
+               timeout = Integer.parseInt(t.substring(8));
+         }
+
       Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
+      intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, timeout);
       //intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
-      intent.putExtra(RecognizerIntent.EXTRA_PROMPT, caption);
+      intent.putExtra(RecognizerIntent.EXTRA_PROMPT, title);
       try
       {
-         startActivityForResult(intent, TEXT_TO_SPEECH);
+         startActivityForResult(intent, SPEECH_TO_TEXT);
       }
       catch (ActivityNotFoundException a)
       {
