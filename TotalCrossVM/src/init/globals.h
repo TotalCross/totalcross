@@ -200,6 +200,10 @@ extern int32 oldAutoOffValue; // if not 0, the device is in NEVER-SLEEP mode, an
 extern jmethodID jclipboard;
 #endif
 
+// Convert.c
+extern TCObject *charConverterPtr;
+extern TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
+
 // media_Sound.c
 extern TSoundSettings soundSettings;
 #ifdef ANDROID
