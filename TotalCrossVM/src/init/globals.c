@@ -232,6 +232,10 @@ int32 oldAutoOffValue = 0;
 jmethodID jclipboard;
 #endif
 
+// Convert.c
+TCObject *charConverterPtr;
+TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
+
 // media_Sound.c
 TSoundSettings soundSettings;
 #ifdef ANDROID

@@ -166,28 +166,11 @@ TCObject utf8chars2bytes(Context currentContext, JCharP chars, int32 length)
 }
 
 ///////////////
-
-static TCObject *charConverterPtr, lastCharConverter;
-static TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 static Method chars2bytesMtd;
+static TCObject lastCharConverter;
 
 TCObject chars2bytes(Context currentContext, JCharP chars, int32 length)
 {
-   if (charConverterPtr == null)
-   {
-      TCClass c = loadClass(currentContext, "totalcross.sys.Convert", true);
-      if (c == null)
-         return null;
-      charConverterPtr = getStaticFieldObject(currentContext, c, "charConverter");
-      if (charConverterPtr == null)
-         return null;
-      ISO88591CharacterConverter = loadClass(currentContext, "totalcross.sys.CharacterConverter", true);
-      if (ISO88591CharacterConverter == null)
-         return null;
-      UTF8CharacterConverter = loadClass(currentContext, "totalcross.sys.UTF8CharacterConverter", true);
-      if (UTF8CharacterConverter == null)
-         return null;
-   }
    if (OBJ_CLASS(*charConverterPtr) == ISO88591CharacterConverter)
       return iso88591chars2bytes(currentContext, chars, length);
    if (OBJ_CLASS(*charConverterPtr) == UTF8CharacterConverter)

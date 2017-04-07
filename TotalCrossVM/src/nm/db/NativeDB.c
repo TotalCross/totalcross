@@ -141,10 +141,21 @@ static CharP newSafeString(TCObject strObj)
 {
    JCharP js = String_charsStart(strObj);
    int32 len = String_charsLen(strObj);
-   int32 utflen = utf8len(js, len);
-   CharP ret = (CharP)xmalloc(utflen+16); // put 8 bytes before and 8 after the string
-   ret += 8;
-   utf8chars2bytesBuf(js, len, ret);
+   CharP ret;
+   
+   if (OBJ_CLASS(*charConverterPtr) == UTF8CharacterConverter)
+   {
+      int32 utflen = utf8len(js, len);
+      ret = (CharP)xmalloc(utflen+16); // put 8 bytes before and 8 after the string
+      ret += 8;
+      utf8chars2bytesBuf(js, len, ret);
+   }
+   else
+   {
+      ret = (CharP)xmalloc(len+16); // put 8 bytes before and 8 after the string
+      ret += 8;
+      JCharP2CharPBuf(js, len, ret);      
+   }
    return ret;
 }
 
@@ -411,9 +422,12 @@ TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB n
    int32 col = p->i32[0];
    LOCKDB
    char* str = (char*)sqlite3_column_text(toref(stmt), col);
-   UNLOCKDB                                                                                 
+   UNLOCKDB
    if (!str)
       p->retO = null;
+   else
+   if (OBJ_CLASS(*charConverterPtr) != UTF8CharacterConverter)
+      setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, str,-1), UNLOCKED);
    else
    {
       TCObject charArray = utf8bytes2chars(p->currentContext, str, xstrlen(str)); // unlocked on return

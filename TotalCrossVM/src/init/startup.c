@@ -487,6 +487,10 @@ jumpArgument:
    floatTYPE   = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Float",     false), "TYPE");
    doubleTYPE  = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Double",    false), "TYPE");
    charTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Character", false), "TYPE");
+   // used in convert
+   charConverterPtr = getStaticFieldObject(currentContext, loadClass(currentContext, "totalcross.sys.Convert", false), "charConverter");
+   ISO88591CharacterConverter = loadClass(currentContext, "totalcross.sys.CharacterConverter", false);
+   UTF8CharacterConverter = loadClass(currentContext, "totalcross.sys.UTF8CharacterConverter", false);
 
    cloneable = loadClass(currentContext, "java.lang.Cloneable", false); // Loads the Cloneable interface.
 
