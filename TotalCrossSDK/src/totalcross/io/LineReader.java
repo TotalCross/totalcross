@@ -20,8 +20,7 @@ package totalcross.io;
 
 import totalcross.io.device.PortConnector;
 import totalcross.net.Socket;
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
+import totalcross.sys.*;
 
 /**
  * Used to read lines ending with \r\n (enter/linefeed) or \n (linefeed) from a stream. Consecutive newlines are skipped. 
@@ -200,7 +199,7 @@ public class LineReader
                      len = ii - ofs;
                   }
                   // allocate the new String and return
-                  String s = new String(buf, ofs, len);
+                  String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
                   ofs = i;
                   return s;
                }
@@ -227,7 +226,7 @@ public class LineReader
                   while (len > lastOfs && buf[len-1] <= ' ')
                      len--;
                }
-               String s = new String(buf, lastOfs, len-lastOfs);
+               String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
                return s;
             }
             return null;
