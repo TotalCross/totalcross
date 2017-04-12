@@ -38,7 +38,7 @@ static TCClass pclass;
 /* Definicoes */
 int32 utf8len(JCharP chars, int32 length);
 void utf8chars2bytesBuf(JCharP chars, int32 length, uint8* bytes);
-TCObject utf8bytes2chars(Context currentContext, JCharP chars, int32 length);
+TCObject utf8bytes2chars(Context currentContext, uint8* bytes, int32 length);
 // CharacterConverter.c
 
 
@@ -137,7 +137,7 @@ TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/N
    UNLOCKDB
 }
 
-static CharP newSafeString(TCObject strObj)
+static CharP newSafeString(TCObject strObj, int32 *outlen)
 {
    JCharP js = String_charsStart(strObj);
    int32 len = String_charsLen(strObj);
@@ -146,12 +146,14 @@ static CharP newSafeString(TCObject strObj)
    if (OBJ_CLASS(*charConverterPtr) == UTF8CharacterConverter)
    {
       int32 utflen = utf8len(js, len);
+      if (outlen) *outlen = utflen;
       ret = (CharP)xmalloc(utflen+16); // put 8 bytes before and 8 after the string
       ret += 8;
       utf8chars2bytesBuf(js, len, ret);
    }
    else
    {
+      if (outlen) *outlen = len;
       ret = (CharP)xmalloc(len+16); // put 8 bytes before and 8 after the string
       ret += 8;
       JCharP2CharPBuf(js, len, ret);      
@@ -182,7 +184,7 @@ TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protect
         return;
     }
 
-    str = newSafeString(file);
+    str = newSafeString(file, null);
     ret = sqlite3_open_v2(str, &db, flags, NULL);
     if (ret) 
     {
@@ -234,10 +236,11 @@ TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protec
    TCObject sql = p->obj[1];
     sqlite3* db = gethandle(p->currentContext, this_);
     sqlite3_stmt* stmt;
+    int32 len;
 
-    char *strsql = newSafeString(sql);
+    char *strsql = newSafeString(sql, &len);
    LOCKDB
-    int32 status = sqlite3_prepare_v2(db, strsql, -1, &stmt, 0);
+    int32 status = sqlite3_prepare_v2(db, strsql, len, &stmt, 0);
    UNLOCKDB
     freeSafeString(strsql);
 
@@ -264,7 +267,7 @@ TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protecte
 	}
    else
    {
-    char *strsql = newSafeString(sql);
+    char *strsql = newSafeString(sql, null);
     LOCKDB
     int status = sqlite3_exec(db, strsql, 0, 0, &errorMsg);
     UNLOCKDB
@@ -536,9 +539,10 @@ TC_API void tdsNDB_bind_text_lis(NMParams p) // totalcross/db/sqlite/NativeDB na
    int64 stmt = p->i64[0];
    int32 pos = p->i32[0];
    TCObject v = p->obj[1];
-   char *chars = newSafeString(v);
+   int32 len;
+   char *chars = newSafeString(v, &len);
    LOCKDB
-   int rc = sqlite3_bind_text(toref(stmt), pos, chars, String_charsLen(v), SQLITE_TRANSIENT);
+   int rc = sqlite3_bind_text(toref(stmt), pos, chars, len, SQLITE_TRANSIENT);
    UNLOCKDB
    freeSafeString(chars);
    p->retI = rc;
@@ -736,8 +740,8 @@ TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nativ
 
   pDb = gethandle(p->currentContext, this_);
 
-  dFileName = newSafeString(destFileName);
-  dDBName = newSafeString(dbName);
+  dFileName = newSafeString(destFileName, null);
+  dDBName = newSafeString(dbName, null);
 
   /* Open the database file identified by dFileName. */
   rc = sqlite3_open(dFileName, &pFile);
@@ -785,8 +789,8 @@ TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB nati
 
   pDb = gethandle(p->currentContext, this_);
 
-  dFileName = newSafeString(sourceFileName);
-  dDBName = newSafeString(dbName);
+  dFileName = newSafeString(sourceFileName, null);
+  dDBName = newSafeString(dbName, null);
 
   /* Open the database file identified by dFileName. */
   rc = sqlite3_open(dFileName, &pFile);
