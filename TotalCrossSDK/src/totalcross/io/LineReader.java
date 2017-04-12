@@ -164,6 +164,7 @@ public class LineReader
    {
       byte[] buf = readBuf.getBuffer();
       int size = readBuf.getPos();
+      boolean foundEnter = false;
 
       // skip starting control chars
       if (!returnEmptyLines)
@@ -184,6 +185,7 @@ public class LineReader
          {
             if (buf[i] == '\n') // found an enter? - guich@tc123_31
             {
+               foundEnter = true;
                int len = i - ofs; // guich@552_28: verify if the length is not 0
                if (i > 0 && buf[i-1] == '\r') // guich@tc123_47: is the previous character a \r?
                   len--;
@@ -217,7 +219,7 @@ public class LineReader
             int len = i - lastOfs;
             if (len > 0 || (foundMore && returnEmptyLines)) // any remaining string on the buffer?
             {
-               ofs = len;
+               if (foundEnter) ofs = len;
                lastOfs = 0;
                if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
                {
@@ -227,6 +229,7 @@ public class LineReader
                      len--;
                }
                String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
+               ofs = len;
                return s;
             }
             return null;
