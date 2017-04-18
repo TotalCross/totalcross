@@ -6,6 +6,26 @@ import java.io.InputStream;
 import totalcross.net.Base64;
 import totalcross.sys.Vm;
 
+/**
+ * Receive a stream of base64 encoded bytes and decode to the original.
+ * <p/>
+ * Given a base 64 encoded image (img64), one may use:
+ * <pre>
+ * Image createImage(String img64) {
+ * 		ByteArrayStream bas = new ByteArrayStream(img64.getBytes()); // get a Stream to read the String
+ * 		InputStream stringInput = bas.asInputStream(); // use ByteArrayStream as a java.io.InputStream compliant object
+ *    
+ * 		Base64decoderStream decoder = new Base64decoderStream(stringInput); // now we can read the original bytes
+ * 		Stream imgSource = Stream.asStream(decoder); // use Base64decoderStream as a totalcross.io.Stream compliant object
+ * 		return new Image(imgSource); // passing the stream directly to the image for the sake of memory
+ * }
+ * </pre>
+ * 
+ * @see {@link totalcross.io.Stream#asInputStream()}
+ * @see {@link totalcross.io.Stream#asStream(java.io.InputStream)}
+ * 
+ * @author Jefferson Quesado
+ */
 public class Base64decoderStream extends InputStream {
 	InputStream base64encodedStream;
 	
@@ -69,9 +89,12 @@ public class Base64decoderStream extends InputStream {
 		return totalRead;
 	}
 
+	/**
+	 * Unable to skip. Will throw {@link IOException}
+	 */
 	@Override
 	public long skip(long n) throws IOException {
-		throw new UnsupportedOperationException("totalcross.io.Base64Decoder.skip use is not supported");
+		throw new IOException(new UnsupportedOperationException("totalcross.io.Base64Decoder.skip use is not supported"));
 		// TODO Auto-generated method stub
 		// return super.skip(n);
 	}

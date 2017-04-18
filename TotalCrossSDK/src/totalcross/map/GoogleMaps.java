@@ -18,11 +18,14 @@ import totalcross.util.*;
 
 /** Shows a Google Maps viewer on a separate screen. 
  * Pressing back returns to the application.
- * 
+ * <p/>
  * Internet connection is required.
- * 
+ * <p/>
  * Currently works in Android and iOS only.
  * 
+ * @see {@link Circle}
+ * @see {@link Shape}
+ * @see {@link Place}
  * @since TotalCross 1.3
  */
 public class GoogleMaps
@@ -33,7 +36,11 @@ public class GoogleMaps
     * address. Note that the destination address is NOT used. */
    public static final int USE_WAZE = 2;
    
-   /** An abstract class used to group an array of map items. */
+   /** An abstract class used to group an array of map items.
+    * @see {@link Circle}
+    * @see {@link Shape}
+    * @see {@link Place}
+    */
    public abstract static class MapItem
    {
       abstract void serialize(StringBuffer sb);
@@ -99,6 +106,16 @@ public class GoogleMaps
    }
    /** A map item that represents a place in the map. It shows with a pin, and above it, a balloon with a text. 
     * <pre>
+    * GoogleMaps.Place p1 = new GoogleMaps.Place();
+	* p1.lat = -3.778284;
+	* p1.lon = -38.482617;
+	* p1.backColor = Color.WHITE;
+    * p1.capColor = Color.BLACK;
+    * p1.detColor = 0x444444;
+    * p1.pinColor = Color.RED;
+    * p1.caption = "TotalCross MGP";
+    * p1.fontPerc = 150;
+    * p1.detail = "Av Norte 2920\nLuciano Cavalcante\nCeará - Brazil";
     * </pre>
     */
    public static class Place extends MapItem
@@ -183,7 +200,12 @@ public class GoogleMaps
    native static boolean showRoute4D(String addressI, String addressF, String traversedPoints, int flags) throws NotInstalledException;
 
    /** Shows an array of MapItem elements in the map. The map is zommed in a way that all coordinates are visible.
-    * See the Circle, Shape and Place map items.
+    * <p/>
+    * If one may pass multiple overlapping items (let's say, items[0], items[1] and items[2]), one item will cover all the previous items (item[1] will be over item[0]; item[2] will be over item[1] and item[0]).
+    * 
+    * @see {@link Circle}
+    * @see {@link Shape}
+    * @see {@link Place}
     */
    public static boolean showMap(MapItem[] items, boolean showSatellitePhotos)
    {

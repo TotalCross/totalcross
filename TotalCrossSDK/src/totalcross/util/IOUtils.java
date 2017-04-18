@@ -8,10 +8,10 @@ import java.io.Reader;
 import java.io.Writer;
 
 /**
- * Largely based on https://commons.apache.org/proper/commons-io/javadocs/api-2.5/src-html/org/apache/commons/io/IOUtils.html
- * 
+ * Largely based on <a href="https://commons.apache.org/proper/commons-io/javadocs/api-2.5/src-html/org/apache/commons/io/IOUtils.html"> Apache IOUtils</a>
+ * <p/>
  * Only needed methods copied, like copy InputStream -> OutoutStream and copy Reader -> Writer
- * 
+ * <p/>
  * Javadoc maintained where possible, but the "since" tag was largely removed
  */
 public final class IOUtils {
