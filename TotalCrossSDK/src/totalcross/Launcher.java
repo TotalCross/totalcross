@@ -459,11 +459,11 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       try {return Double.parseDouble(s);} catch (Exception e) {return 0;}
    }
    
-   protected void parseArguments(String[] args) {
+   protected void parseArguments(String... args) {
       parseArguments(args[args.length - 1], Arrays.copyOf(args, args.length - 1));
    }
 
-   protected void parseArguments(String clazz, String[] args)
+   protected void parseArguments(String clazz, String... args)
    {
       int n = args.length,i=0;
       String newDataPath = null;
@@ -2380,7 +2380,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    public void componentShown(ComponentEvent arg0)
    {
    }
-   boolean ignoreNextResize; // guich@tc168: ignore when using F9   public void componentResized(ComponentEvent ev)
+   boolean ignoreNextResize; // guich@tc168: ignore when using F9
+   public void componentResized(ComponentEvent ev)
    {
       if (ignoreNextResize)
       {
