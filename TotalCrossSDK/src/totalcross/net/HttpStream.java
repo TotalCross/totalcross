@@ -44,7 +44,11 @@ import totalcross.util.Hashtable;
  * }
  * </pre>
  *
- * At this case, the page legalizePalm verifies login and passwd, returning "yes" if it's ok, and "no" otherwise.
+ * At this case, the page legalizePalm verifies login and passwd, returning "yes" if it's ok, and "no" otherwise.<p/>
+ * 
+ * See also the <a href="https://github.com/TotalCross/tc-utilities/blob/master/src/main/java/com/tc/utils/utilities/io/HttpConn.java">HttpConn</a>
+ * wrapper and the <a href="https://github.com/TotalCross/tc-utilities/blob/master/src/main/java/com/tc/utils/utilities/io/HttpMethod.java">enumeration of common HTTP methods</a>.
+ * HttpConn abstracts dozens of stuff and is totally free to use and modify.
  */
 
 public class HttpStream extends Stream
@@ -264,9 +268,19 @@ public class HttpStream extends Stream
        * options.postData = "xml=<root><update login=\""+state.login+"\" password=\""+state.pass+"\" dayofsync=\""+state.dayOfSync+"\"/></root>";
        * XmlReadableSocket stream = new XmlReadableSocket(new URI(conn),options);
        * </pre>       
-       * The default type is GET.<br><br>
+       * The default type is GET.</p>
        * You can also define a custom type, like if you want to use restful services. In this case,
-       * the header will be set to what you store in the httpType String.
+       * the header will be set to what you store in the httpType String. Note that, to use another http method, append a space.
+       * 
+       * <pre>
+       * HttpStream.Options options = new HttpStream.Options();
+       * options.httpType = "PUT ";
+       * </pre>
+       * 
+       * * <pre>
+       * HttpStream.Options options = new HttpStream.Options();
+       * options.httpType = "CUSTOMMETHOD ";
+       * </pre>
        * @see #GET
        * @see #POST
        * @since TotalCross 1.23
