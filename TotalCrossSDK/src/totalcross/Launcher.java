@@ -20,14 +20,53 @@
 
 package totalcross;
 
-import totalcross.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Panel;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowListener;
+import java.awt.image.DirectColorModel;
+import java.awt.image.MemoryImageSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.zip.ZipInputStream;
 import totalcross.io.IOException;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
+import totalcross.io.Stream;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
+import totalcross.sys.Time;
+import totalcross.sys.Vm;
+import totalcross.ui.Control;
+import totalcross.ui.MainWindow;
+import totalcross.ui.UIColors;
 import totalcross.ui.event.KeyEvent;
-import totalcross.util.*;
-import totalcross.util.zip.*;
+import totalcross.ui.event.MultiTouchEvent;
+import totalcross.ui.event.PenEvent;
+import totalcross.util.Hashtable;
+import totalcross.util.IntHashtable;
+import totalcross.util.zip.TCZ;
 
 /*
  * Note: Everything that calls TotalCross code in these classes must be
@@ -39,18 +78,6 @@ import totalcross.util.zip.*;
  * they can't deadlock the program in any way. If we moved the synchronization
  * into TotalCross code, we would have the possibility of deadlock.
  */
-
-import java.awt.*;
-import java.awt.Insets;
-import java.awt.event.*;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowListener;
-import java.awt.image.*;
-import java.io.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.*;
-import java.util.zip.*;
 
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
@@ -377,7 +404,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       }
    }
 
-   private static void showInstructions()
+   static void showInstructions()
    {
       System.out.println("Possible Arguments (in any order and case insensitive). Default is marked as *");
       System.out.println("   /scr WIDTHxHEIGHT     : sets the width and height");
@@ -431,14 +458,18 @@ final public class Launcher extends java.applet.Applet implements WindowListener
    {
       try {return Double.parseDouble(s);} catch (Exception e) {return 0;}
    }
+   
+   protected void parseArguments(String[] args) {
+      parseArguments(args[args.length - 1], Arrays.copyOf(args, args.length - 1));
+   }
 
-   protected void parseArguments(String[] args)
+   protected void parseArguments(String clazz, String[] args)
    {
-      int n = args.length-1,i=0;
+      int n = args.length,i=0;
       String newDataPath = null;
       try
       {
-         className = args[n];
+         className = clazz;
          for (i = 0; i < n; i++)
          {
             if (args[i].equalsIgnoreCase("/fontsize"))
