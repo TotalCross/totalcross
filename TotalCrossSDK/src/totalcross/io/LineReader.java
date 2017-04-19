@@ -202,6 +202,7 @@ public class LineReader
                   }
                   // allocate the new String and return
                   String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
+                  ofs = i;
                   return s;
                }
                ofs++; // guich@552_28: strip the cr/lf from the string
@@ -219,6 +220,7 @@ public class LineReader
             if (len > 0 || (foundMore && returnEmptyLines)) // any remaining string on the buffer?
             {
                if (foundEnter) ofs = len;
+               int len0 = len;
                lastOfs = 0;
                if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
                {
@@ -228,6 +230,7 @@ public class LineReader
                      len--;
                }
                String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
+               ofs = len0;
                return s;
             }
             return null;
