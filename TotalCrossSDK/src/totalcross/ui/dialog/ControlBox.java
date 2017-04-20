@@ -136,7 +136,7 @@ public class ControlBox extends Window
       int he = prefH == PREFERRED ? cb.getPreferredHeight(): prefH;
       int captionH = titleFont.fm.height+10;
 
-      int h = captionH + hb + hm + he;
+      int h = captionH + hb + hm + he + fmH;
       if (uiAndroid) h += fmH;
       int w = Math.max(Math.max(Math.max(wb,wm),we),titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
@@ -149,7 +149,7 @@ public class ControlBox extends Window
       if (btns != null) btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
       msg.setBackForeColors(backColor, foreColor);
       int gap = we == FILL ? fmH/2 : 0;
-      cb.setRect(we==FILL ? LEFT+gap : CENTER,AFTER+2,we-gap,he,msg);
+      cb.setRect(we==FILL ? LEFT+gap : CENTER,AFTER+fmH/2,we-gap,he,msg);
    }
 
    /** handle scroll buttons and normal buttons */
