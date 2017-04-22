@@ -134,9 +134,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       super.popup();
    }
    
-   private void setRect(boolean screenResized)
+   protected void setRect(boolean screenResized)
    {
-      int ww = widthInPixels != 0 ? widthInPixels : SCREENSIZE+(percWidth > 0 ? percWidth : 50);
+      int ww = setW = widthInPixels != 0 ? widthInPixels : SCREENSIZE+(percWidth > 0 ? percWidth : 50);
       switch (animDir)
       {
          case LEFT:
@@ -153,7 +153,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    {
       int gap = 2;
       int n = items.length;
-      int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height-4) : fmH*2;
+      int itemH = n == 1 ? Math.max(items[0].getPreferredHeight(),getClientRect().height) : fmH*2;
       int prefH = n * itemH + gap * n;
       boolean isLR = animDir == LEFT || animDir == RIGHT;
       ScrollContainer sc = new ScrollContainer(false,true);
@@ -226,6 +226,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          if (items[i].asContainer != null)
          {
             Control []c = items[i].asContainer.getChildren();
+            if (c != null)
             for (int j = c.length; --j >= 0;)
                c[j].reposition();
          }
