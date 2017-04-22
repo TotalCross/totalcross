@@ -1110,7 +1110,6 @@ public class Edit extends Control implements TextControl
    {
       if (Window.isSipShown) // non-default keyboards gets here
       {
-         Vm.debug("==== fechando teclado 3 ====");
          Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);
       }
