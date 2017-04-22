@@ -31,7 +31,7 @@
         setup all build process properties.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
 	
-<property name="src"                    value="${sdk.root}/src"/>
+<property name="src"                    value="${sdk.root}/src/main/java"/>
 <property name="etc"                    value="${sdk.root}/etc"/>
 <property name="docs"                   value="${sdk.root}/docs"/>
 <property name="fonts"                  value="${etc}/fonts"/>

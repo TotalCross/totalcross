@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="etc/fonts"/>
-	<classpathentry excluding="tc/samples/pimal/|tc/samples/xml/rpc/server/|tc/test/converter/testfiles/|tc/tools/PostInstall.java|totalcross/Launcher4A.java|totalcross/android/|totalcross/pim/|totalcross/zxing/" kind="src" path="src"/>
+	<classpathentry excluding="tc/tools/PostInstall.java" kind="src" path="src/main/java"/>
 	<classpathentry kind="lib" path="etc/tools/jdeb/lib/ant.jar"/>
 	<classpathentry kind="lib" path="etc/tools/jdeb/jdeb-0.7.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
