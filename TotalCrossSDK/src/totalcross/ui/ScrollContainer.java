@@ -302,7 +302,6 @@ public class ScrollContainer extends Container implements Scrollable
    }
 
    /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
-   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
    public void resize(int maxX, int maxY)
    {
       bagSetRect(bag.x, bag.y, maxX, maxY,false);
