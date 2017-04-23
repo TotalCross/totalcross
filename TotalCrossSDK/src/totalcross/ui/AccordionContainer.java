@@ -16,7 +16,7 @@ import java.util.*;
  * ac.maxH = fmH*10;
  * add(ac, LEFT+50,TOP+100,FILL-50,ac.minH);
  * ac.add(ac.new Caption("Type text"), LEFT,TOP,FILL,PREFERRED);
- * ac.add(new MultiEdit(),LEFT+50,AFTER+50,FILL-50,fmH*7);
+ * ac.add(new MultiEdit(),LEFT+50,AFTER+50,FILL-50,FONTSIZE+700);
  * </pre> 
  * 
  * Note that when the container is changing its height, it calls <code>parent.reposition</code> to open space for its growth.
@@ -38,6 +38,9 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       }
    }
    
+   /** The minH defines the height of this container when it is collapsed.
+    * If defined as a negative value, the minimum height will be computed as -minH * font_height
+    */
    public int minH = fmH + Edit.prefH;
    private Group group;
    
@@ -143,11 +146,16 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       }
    }
    
+   public void collapseNoAnim()
+   {
+      setPos(0, getPreferredHeight());      
+   }
+   
    public void collapse()
    {
       try
       {
-         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, minH, this, ANIMATION_TIME);
+         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
          p.useOffscreen = false;
          p.setpos = this;
          p.start();
@@ -160,7 +168,7 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    
    public boolean isExpanded()
    {
-      return this.height != minH;
+      return this.height != getPreferredHeight();
    }
    
 
@@ -192,6 +200,6 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    
    public int getPreferredHeight()
    {
-      return minH;
+      return minH < 0 ? (fmH+Edit.prefH) * -minH : minH;
    }
 }
