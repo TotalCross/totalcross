@@ -86,9 +86,12 @@ public class HoneywellScanner implements IScanner, BarcodeReader.BarcodeListener
    public boolean deactivate()
    {
       if (barcodeReader != null)
+      {
          barcodeReader.removeBarcodeListener(this);
-      barcodeReader.close();
-      barcodeReader = null;
+         barcodeReader.release();
+         barcodeReader.close();
+         barcodeReader = null;
+      }
       manager.close();
       manager = null;
       return true;
