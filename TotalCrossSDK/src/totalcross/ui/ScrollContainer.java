@@ -176,9 +176,7 @@ public class ScrollContainer extends Container implements Scrollable
 
          if (oldValue != lastH)
          {
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-            bag.setRect(LEFT - lastH, KEEP,KEEP,KEEP);
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+            bagSetRect(LEFT - lastH, KEEP,KEEP,KEEP,false);
             scrolled = true;
             if (!fromFlick) sbH.tempShow();
          }
@@ -191,9 +189,7 @@ public class ScrollContainer extends Container implements Scrollable
 
          if (oldValue != lastV)
          {
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-            bag.setRect(KEEP, TOP - lastV, KEEP, KEEP);
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+            bagSetRect(KEEP, TOP - lastV, KEEP, KEEP,false);
             scrolled = true;
             if (!fromFlick) sbV.tempShow();
          }
@@ -239,18 +235,12 @@ public class ScrollContainer extends Container implements Scrollable
    {
       bag0.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
       if (sbH == null && sbV == null && shrink2size)
-      {
-         bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-         bag.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
-         bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
-      }
+         bagSetRect(LEFT, TOP, FILL, FILL, screenChanged);
       else if (sbH == null || sbV == null)
       {
          int w = FILL - (sbV != null && !Settings.fingerTouch ? sbV.getPreferredWidth() : 0); // guich@tc152: set original size to the parent's one, so user can use FILL and PARENTSIZE
          int h = FILL - (sbH != null && !Settings.fingerTouch ? sbH.getPreferredHeight() : 0);
-         bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-         bag.setRect(LEFT, TOP, w, h, null, screenChanged);
-         bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+         bagSetRect(LEFT, TOP, w, h, screenChanged);
       }
    }
 
@@ -268,6 +258,14 @@ public class ScrollContainer extends Container implements Scrollable
       }
    }
 
+   protected void bagSetRect(int x, int y, int w, int h, boolean screenChanged)
+   {
+      boolean old = bag.uiAdjustmentsBasedOnFontHeightIsSupported;
+      bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
+      bag.setRect(x, y, w, h, null, screenChanged);
+      bag.uiAdjustmentsBasedOnFontHeightIsSupported = old;
+   }
+   
    /** This method resizes the control to the needed bounds, based on added childs. 
     * Must be called if you're controlling reposition by your own, after you repositioned the controls inside of it. */
    public void resize()
@@ -304,12 +302,9 @@ public class ScrollContainer extends Container implements Scrollable
    }
 
    /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
-   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
    public void resize(int maxX, int maxY)
    {
-      bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-      bag.setRect(bag.x, bag.y, maxX, maxY);
-      bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+      bagSetRect(bag.x, bag.y, maxX, maxY,false);
       if (sbV != null)
          super.remove(sbV);
       if (sbH != null)
@@ -431,17 +426,13 @@ public class ScrollContainer extends Container implements Scrollable
             if (event.target == sbV && sbV.value != lastV)
             {
                lastV = sbV.value;
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-               bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+               bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
             }
             else
             if (event.target == sbH && sbH.value != lastH)
             {
                lastH = sbH.value;
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-               bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+               bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
             }
             break;
          case PenEvent.PEN_DOWN:
@@ -541,9 +532,7 @@ public class ScrollContainer extends Container implements Scrollable
          if (lastH != sbH.value)
          {
             lastH = sbH.value;
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-            bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+            bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
          }
       }
       else
@@ -553,9 +542,7 @@ public class ScrollContainer extends Container implements Scrollable
          if (lastV != sbV.value)
          {
             lastV = sbV.value;
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-            bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
-            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+            bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
          }
       }
       if (flick != null && flick.pagepos != null)
@@ -597,9 +584,7 @@ public class ScrollContainer extends Container implements Scrollable
             if (lastH != sbH.value)
             {
                lastH = sbH.value;
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-               bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+               bagSetRect(LEFT-lastH,bag.y,bag.width,bag.height,false);
             }
          }
          // vertical
@@ -613,9 +598,7 @@ public class ScrollContainer extends Container implements Scrollable
             if (lastV != sbV.value)
             {
                lastV = sbV.value;
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-               bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+               bagSetRect(bag.x,TOP-lastV,bag.width,bag.height,false);
             }
          }
       }
