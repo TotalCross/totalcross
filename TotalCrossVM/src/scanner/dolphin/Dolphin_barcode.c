@@ -111,6 +111,10 @@ BOOL CheckOnSCAN(void)
 {
    return scanning;
 }
+static bool isScanKeyDown()
+{
+   return GetAsyncKeyState(SCAN_KEY) < 0 || GetAsyncKeyState(193) < 0 || GetAsyncKeyState(195) < 0 || GetAsyncKeyState(194) < 0; // last three are for dolphin 6510
+}
 
 LRESULT ScanMonitorThread()
 {
@@ -129,7 +133,7 @@ LRESULT ScanMonitorThread()
       Sleep(50);
       if (!running)
          break;
-	  if (!scanning && GetAsyncKeyState(SCAN_KEY) < 0/* && barcode[0] == 0*/)
+	  if (!scanning && isScanKeyDown())
       {
          scanning = 1;
 		 xmemzero(barcode, MAX_MESSAGE_LENGTH);
@@ -155,7 +159,7 @@ LRESULT ScanMonitorThread()
             // while (decWaitForDecodeProc(50, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
 
 			// wait until the user release the key
-			while (GetAsyncKeyState(SCAN_KEY) < 0)
+			while (isScanKeyDown())
 				Sleep(50);
          }
          scanning = 0;
