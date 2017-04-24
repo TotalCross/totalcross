@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 
 ## 3.30.3206 - 2017-03-16
 
+### Added
+- Support to IPV6 in iOS
+
+### Changed
+- Refactoring basic HTTP authentication so that `Proxy Authentication` and `Authentication` uses the same logic int `HttpStream`
+- Treating gracefully cancelled photo
+- Compiling TotalCross VM in Andorid to API level 23
+
+### Fixed
+- Fixed basic authentication in `HttpStream`
+- Do not deploy placeholder icon, but icon informed icon (Android)
+- Workaround to get mac address in Android 6+
+- Fixed possible invalid access to free an OpenGL texture
+- Fixed issue with sacenners:
+  - Honeywell (Android)
+  - Dolphin (WinCE)
+- Fixed open Gallery photo
+
 ## 3.30.3098 - 2017-02-14
 
 ## 3.30.3071 - 2017-01-23
