@@ -25,6 +25,20 @@ All notable changes to this project will be documented in this file.
 
 ## 3.30.3098 - 2017-02-14
 
+### Added
+- Implementing base 64 decode stream
+  - Check example at [GitHub](https://github.com/totalcross/totalcross-big-file)
+    - [Use it like a stream](https://github.com/TotalCross/totalcross-big-file/blob/master/src/main/java/com/tc/sample/bigfile/ui/Utils.java#L15)
+- Using [Firebase](https://firebase.google.com/) for push messages in Android
+  -  Download _google-services.json_, put in within the project and it will automogically works
+
+### Deprecated
+- GCM is [deprecated by Google itself](https://developers.google.com/cloud-messaging/)
+- There is no longer use for `totalcross.sys.Settings.pushTokenAndroid`
+
+### Known issue
+- There is no reliable way _yet_ to treat Firebase notifications in the app
+
 ## 3.30.3071 - 2017-01-23
 
 ### Added
