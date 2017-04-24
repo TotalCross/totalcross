@@ -183,7 +183,17 @@ public class Control extends GfxSurface
     * @since TotalCross 2.0
     */
    public static final int PARENTSIZEMAX = 21*UICONST;
-   /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
+   /** Constant used in param width (will use parent's width) and height (will use the current font size/height) in setRect.
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. FONTSIZE + constant: it will use as a PERCENTAGE of the parent's size. For example, FONTSIZE+20 in width will result in 20% of font's size.<br>
+    * 2. FONTSIZE - constant: it will use as a FRACTION of the parent's size. For example, FONTSIZE-4 in width will result in 1/4 of font's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the font's width/height. So, FONTSIZE and FONTSIZE+100 is the same.
+    * @since TotalCross 1.52
+    */
+   public static final int FONTSIZE = 22*UICONST;
+  /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
     * Container c;
@@ -632,6 +642,7 @@ public class Control extends GfxSurface
      * @see #PARENTSIZE
      * @see #PARENTSIZEMIN
      * @see #PARENTSIZEMAX
+     * @see #FONTSIZE
      * @see Container#add(Control, int, int)
      * @see Container#add(Control, int, int, Control)
      */
@@ -696,18 +707,20 @@ public class Control extends GfxSurface
             if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;} else
             if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;} else
-            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;} 
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= width && width  <= (FONTSIZE+RANGE)) {width -= FONTSIZE; if (width < 0) width = fmH / -width; else if (width == 0) width = fmH; else width = width * fmH / 100;} 
             tempW = width;
             // non-dependant height
             if (height < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
-            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
+            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;} else
             if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;} else
             if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;} else
-            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= height && height <= (FONTSIZE+RANGE)) {height -= FONTSIZE; if (height < 0) height = fmH / -height; else if (height == 0) height = fmH; else height = height * fmH / 100;} 
             // x
             if (x < MAXABSOLUTECOORD) {} else
             if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x = parent.lastX + parent.lastW +(x-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
@@ -753,24 +766,26 @@ public class Control extends GfxSurface
             // non-dependant width
             if (width < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
-            if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
+            if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;} else
             if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;} else
             if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;} else
-            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= width && width  <= (FONTSIZE+RANGE)) {width -= FONTSIZE; if (width < 0) width = fmH / -width; else if (width == 0) width = fmH; else width = width * fmH / 100;}
             tempW = width;
             // non-dependant height
             if (height < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
-            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
+            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; else // can't be moved from here!
             if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;} else
             if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
             if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;} else
             if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;} else
-            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
+            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= height && height  <= (FONTSIZE+RANGE)) {height -= FONTSIZE; if (height < 0) height = fmH / -height; else if (height == 0) height = fmH; else height = height * fmH / 100;}
             // x
             if (x < MAXABSOLUTECOORD) {} else
             if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type

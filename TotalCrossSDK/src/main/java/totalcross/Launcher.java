@@ -971,7 +971,7 @@ final public class Launcher extends java.applet.Applet implements WindowListener
          mmsb.setLength(0);
          if (frameTitle != null)
             mmsb.append(frameTitle).append(" (");
-         mmsb.append(event.getX()).append(",").append(event.getY());
+         mmsb.append((int)(event.getX()/toScale)).append(",").append((int)(event.getY()/toScale));
          if (frameTitle != null)
             mmsb.append(")");
          frame.setTitle(mmsb.toString());
