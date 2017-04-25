@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-## 3.40.3206 - 2017-04-25
+## 3.40.3256 - 2017-04-25
 
 ### Added
 - Added support to Java 8 Lambda through the usage of [Retrolambda](https://github.com/orfjackal/retrolambda)!
