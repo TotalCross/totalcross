@@ -516,8 +516,9 @@ final public class Launcher extends java.applet.Applet implements WindowListener
                activationKey = args[++i].toUpperCase();
                if (activationKey.startsWith("%"))
                   activationKey = System.getenv(activationKey.substring(1,activationKey.length()-1));
-               if (activationKey == null || activationKey.length() != 24)
-                  throw new RuntimeException("Invalid registration key");
+               if (activationKey == null || activationKey.length() != 24) {
+                  throw new RuntimeException("Invalid registration key: " + activationKey);
+               }
             }
             else
             if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -616,11 +617,12 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       catch (Exception e)
       {
          showInstructions();
-         System.out.println("Invalid or incomplete argument at position "+i+": "+args[i]);
+         System.err.println("Invalid or incomplete argument at position "+i+": "+args[i]);
          String s = "";
          for (i = 0; i < args.length; i++)
             s += " "+args[i];
-         System.out.println("Full command line:\n"+s.trim());
+         System.err.println(e.getMessage());
+         System.err.println("Full command line:\n"+s.trim());
          exit(-1);
          return;
       }
@@ -648,8 +650,10 @@ final public class Launcher extends java.applet.Applet implements WindowListener
       if (isApplication && !className.equals("tc.Help") && (activationKey == null || activationKey.length() != 24))
       {
          if (activationKey != null)
-            System.out.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
-         System.out.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments! If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a FREE user, the key was sent to the email that you used to download the SDK.");
+            System.err.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
+         System.err.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
+         System.err.println("If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown.");
+         System.err.println("If you're a FREE user, the key was sent to the email that you used to download the SDK.");
          System.exit(0);
          return;
       }
