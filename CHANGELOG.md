@@ -4,27 +4,28 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 ### Added
+- Added support to Java 8 Lambda through the usage of [Retrolambda](https://github.com/orfjackal/retrolambda)!
+    - [Documentation](https://gitlab.com/totalcross/TotalCross/wikis/retrolambda) on how to use it and [sample](https://github.com/TotalCross/HelloTC) are available.
 - Added support to refer to a non-TotalCross-recognized HTTP method and forces
 to send the data
-- Adds new class `totalcross.TotalCrossApplication` which can be used as a main
-entry point for the application
+- Added class `totalcross.TotalCrossApplication` which can be used as a main
+entry point for the application. Check example at [GitHub](https://github.com/TotalCross/HelloTC)
 - Added `FONTSIZE` on relative positioning constants
 - Added `AccordionContainer.collapseNoAnim`
 
 ### Changed
 - `totacross.sql.ResultSet` and `totalcross.sql.Statement` interfaces extends
 `Autocloseable`
-- Handling cancelled photo gracefully
 - `LineReader` now uses the current `CharacterConverter`
 - Increased height of `ControlBox` to add a few more distance between the
 message, the control and the buttons
-- `TopMenu.setRect` is protected now
+- `TopMenu.setRect` visibility changed to protected
 -  Now if you set `minH` to a negative value, the value will be computed as
 `-minH * fmH` (font height); this is useful when the font changes dynamically
 
 ### Fixed
 - SQLite handling correctly UTF8 (if asked to)
-- Added `Sound.fromText` (Andoird only)
+- Added `Sound.fromText` (Android only)
   - Check the snippet $1657156 
 - `Socket` open timeout in Java working properly
 - Fixed `LineReader` reading of a single non-`\n`-terminanted string
@@ -34,7 +35,7 @@ rotation the old value is used instead
 - Fixed item's height when a single control is used
 - Fixed issue when you set
 `ScrollContainer.uiAdjustmentsBasedOnFontHeightIsSupported` to false and then
-the ScrollContainer reset it to true
+the ScrollContainer reseta it to true
 - Fixed some issues with Honeywell and Dolphin scanner
 
 ## 3.30.3206 - 2017-03-16
