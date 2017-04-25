@@ -45,7 +45,7 @@ public class FaceBookUI extends MainWindow implements FBConstants
          
          FBImages.load(fmH);
          FBDB.db.loadActiveUser();
-         add(new FBTitleBar(), LEFT,TOP,FILL,fmH*5/2);
+         add(new FBTitleBar(), LEFT,TOP,FILL,FONTSIZE+250);
          add(bar = new FBButtonBar(), LEFT,AFTER,FILL,SAME);
          String[] tits = {"1","2","3","4","5"};
          tc = new TabbedContainer(tits);

@@ -33,7 +33,7 @@ public class ListScreen extends TranslucentBaseContainer
          Label l;
          setTranslucent(TranslucentShape.LESS_ROUND);
          int gap = fmH/2;
-         add(photo, LEFT+gap,TOP+gap,FILL-gap,fmH*3);
+         add(photo, LEFT+gap,TOP+gap,FILL-gap,FONTSIZE+300);
          l = new Label(description);
          setTranslucentProps(l);
          add(l,LEFT+gap,AFTER+gap/2); 
@@ -70,7 +70,7 @@ public class ListScreen extends TranslucentBaseContainer
 
          Button t4 = createTransBarButton("ui/images/bt_back.png");
          t4.setBackColor(Color.BLACK);
-         add(t4, RIGHT,TOP,fmH*2,fmH*2);
+         add(t4, RIGHT,TOP,FONTSIZE+200,FONTSIZE+200);
          t4.addPressListener(new PressListener() {public void controlPressed(ControlEvent e) {goback();}});
          
          Label l = new Label("Products List",CENTER,Color.WHITE, true);

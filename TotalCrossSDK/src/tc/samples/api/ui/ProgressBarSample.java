@@ -57,7 +57,7 @@ public class ProgressBarSample extends BaseContainer
          pbzh.max = 50;
          pbzh.drawText = false;
          pbzh.setBackForeColors(Color.DARK,Color.RED);
-         sc.add(pbzh,LEFT,AFTER+gap,FILL,fmH/2);
+         sc.add(pbzh,LEFT,AFTER+gap,FILL,FONTSIZE+50);
          
          final int max = Settings.onJavaSE ? 2000 : 200;
          // vertical ones
@@ -76,7 +76,7 @@ public class ProgressBarSample extends BaseContainer
          pbzv.drawText = false;
          pbzv.setBackForeColors(Color.RED,Color.DARK);
          
-         sc.add(pbzv,BEFORE-gap,SAME,fmH/2,SAME);
+         sc.add(pbzv,BEFORE-gap,SAME,FONTSIZE+50,SAME);
       }
       catch (Exception ee)
       {

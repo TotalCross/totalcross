@@ -22,7 +22,7 @@ public class SearchScreen extends TranslucentBaseContainer
          
          setBackgroundImage(1);
          
-         add(createTransEdit("Filter"), CENTER,PARENTSIZE+15,PARENTSIZE+80,fmH*2);
+         add(createTransEdit("Filter"), CENTER,PARENTSIZE+15,PARENTSIZE+80,FONTSIZE+200);
 
          final Switch sw = new Switch(false);
          setTranslucentProps(sw);
@@ -66,7 +66,7 @@ public class SearchScreen extends TranslucentBaseContainer
 
          Button[] bar = {t1, t2};
          for (int i = 0, n = bar.length; i < n; i++)
-            add(bar[i], i == 0 ? LEFT : AFTER,BOTTOM, PARENTSIZE-n,fmH*3);         
+            add(bar[i], i == 0 ? LEFT : AFTER,BOTTOM, PARENTSIZE-n,FONTSIZE+300);         
       }
       catch (Exception ee)
       {

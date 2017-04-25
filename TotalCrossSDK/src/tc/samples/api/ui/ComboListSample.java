@@ -56,7 +56,7 @@ public class ComboListSample extends BaseContainer
 
          ListBox l = new ListBox(items);
          l.setBackColor(SELCOLOR);
-         sc.add(l,LEFT,AFTER+gap,FILL,fmH*7+4);
+         sc.add(l,LEFT,AFTER+gap,FILL,FONTSIZE+725);
     
          sc.add(new Label("Multi-items"),LEFT,AFTER+gap);
          sc.add(new ComboBox(new MultiListBox(items)),SAME,AFTER+gap,PREFERRED+gap,PREFERRED);
