@@ -28,7 +28,7 @@ public class PSProduct extends Container implements PSConstants
       Label l;
       setBackColor(CNT_BACKCOLOR);
       // add photo image at top
-      add(photo, LEFT+50,TOP+50,FILL-50,fmH*3);
+      add(photo, LEFT+50,TOP+50,FILL-50,FONTSIZE+300);
       // add description after
       add(l = new Label(description),LEFT+50,AFTER+25); l.transparentBackground = true;
       // and then the price

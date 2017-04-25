@@ -35,13 +35,13 @@ public class AccordionSample extends BaseContainer
       int gap = fmH/2;
       sc.add(ac, LEFT+gap,TOP,FILL-gap,PREFERRED);
       ac.add(ac.new Caption("Type text 1"), LEFT,TOP,FILL,PREFERRED);
-      ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
+      ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
 
       // using +- from Awesome font
       ac = new AccordionContainer(gr);
       sc.add(ac, LEFT+gap,AFTER,FILL-gap,PREFERRED);
       ac.add(ac.new Caption(new Label("Type text 2"),setAwesome(new Button("\uf146",Button.BORDER_NONE),fmH), setAwesome(new Button("\uf0fe",Button.BORDER_NONE),fmH)), LEFT,AFTER,FILL,PREFERRED);
-      ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
+      ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
       
       try
       {
@@ -55,7 +55,7 @@ public class AccordionSample extends BaseContainer
          img.applyColor2(Color.GREEN);
          Button b2 = new Button(img, Button.BORDER_NONE);
          ac.add(ac.new Caption(new Label("Type text 3"),b1,b2), LEFT,AFTER,FILL,PREFERRED);
-         ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,fmH*7);
+         ac.add(new MultiEdit(),LEFT+gap,AFTER+gap,FILL-gap,FONTSIZE+700);
       }
       catch (Exception e)
       {

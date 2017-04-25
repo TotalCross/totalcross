@@ -477,7 +477,7 @@ public class Bar extends Container
          }
          if (spinner != null)
          {
-            add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,fmH,fmH,this.title);
+            add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,FONTSIZE,FONTSIZE,this.title);
             spinner.setVisible(false);
          }
       }

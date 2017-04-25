@@ -39,7 +39,7 @@ public class SpinnerSample extends BaseContainer
          
          triplex = new Image("ui/images/triplex.gif");
          sp = new Spinner(Spinner.IPHONE);
-         add(sp,CENTER,AFTER+fmH*2,fmH*2,fmH*2);
+         add(sp,CENTER,AFTER+fmH*2,FONTSIZE+200,FONTSIZE+200);
 
          add(bt = new Button("Start"),CENTER,TOP+gap,PARENTSIZE+50,PREFERRED);
          add(new Label("(a random color is used at each Start)"),CENTER,BOTTOM);

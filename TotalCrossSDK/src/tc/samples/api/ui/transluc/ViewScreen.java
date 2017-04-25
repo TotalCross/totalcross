@@ -34,7 +34,7 @@ public class ViewScreen extends TranslucentBaseContainer
 
          Button[] bar = {t1, t2};
          for (int i = 0, n = bar.length; i < n; i++)
-            add(bar[i], i == 0 ? LEFT : AFTER,BOTTOM, PARENTSIZE-n,fmH*3);
+            add(bar[i], i == 0 ? LEFT : AFTER,BOTTOM, PARENTSIZE-n,FONTSIZE+300);
       }
       catch (Exception ee)
       {

@@ -193,7 +193,7 @@ public class Control extends GfxSurface
     * @since TotalCross 1.52
     */
    public static final int FONTSIZE = 22*UICONST;
-  /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
+   /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
     * Container c;
