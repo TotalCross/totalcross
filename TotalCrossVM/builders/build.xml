@@ -63,7 +63,7 @@
 <property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
 <property name="sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK/src/main/java"/>
-<property name="source.sdk.path.android"   value="${basedir}/../../TotalCrossSDK/src/main/android"/>
+<property name="source.sdk.path.android"   value="${basedir}/../../TotalCrossSDK/src/android/java"/>
 <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="etc"               value="${sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
