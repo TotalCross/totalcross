@@ -61,9 +61,10 @@
 <property name="source.vm.path"    value="${basedir}/.."/>
 <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 <property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
+<property name="sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK/src/main/java"/>
 <property name="base.temp.path"    value="${basedir}/../../../temp"/>
-<property name="etc"               value="${source.sdk.path}/etc"/>
+<property name="etc"               value="${sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
 
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
@@ -76,14 +77,14 @@
 <!-- builder and iphone information -->
 <property file="${rootpath}/buildserver.properties"/>
 
-<mkdir dir="${source.sdk.path}/dist" />
+<mkdir dir="${sdk.path}/dist" />
 	
 <property name="BRANCH" value="master" />
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  getVersion
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
-<loadfile srcfile="${source.sdk.path}/src/totalcross/sys/Settings.java" property="tc.version">
+<loadfile srcfile="${source.sdk.path}/totalcross/sys/Settings.java" property="tc.version">
 	<filterchain>
 		<linecontains>
 			<contains value="versionStr"/>
@@ -117,7 +118,7 @@ target: makeNativeHT - updates the native methods hash table.
    <mkdir dir="${path.to.prototypeGenerator}" />
 
    <javac
-      srcdir="${source.sdk.path}/src/tc/tools/"
+      srcdir="${source.sdk.path}/tc/tools/"
       encoding="ISO-8859-1"
       debug="${compile.debug}"
       optimize="${compile.optimize}"
@@ -155,10 +156,10 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <tstamp />
    <echo message="Compiler date: ${DSTAMP}" />
    <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
-   <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+   <concat destfile="${source.sdk.path}/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
 
-   <replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
-   <replace file="${source.sdk.path}/src/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path}/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path}/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -171,11 +172,11 @@ target: createSkeleton - Create the folders from scratch
 
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
-      <fileset dir="${source.sdk.path}"
+      <fileset dir="${sdk.path}"
          excludes=".*,.settings/**,etc/tools/jdeb/**,src/tc/samples/app/activation/**,src/totalcross/zxing/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
       </copy>
-   <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
-   <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
+   <copy todir="${target.sdk.path}" file="${sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
    <replaceregexp file="${target.sdk.path}/src/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 </target>
 
@@ -186,38 +187,38 @@ target: buildSkeleton - Build the folders
 <target name="buildSkeleton" >
    <!-- try to delete this, it may be blocked by the classpath referencing it -->
    <delete failonerror="true">
-      <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
+      <fileset dir="${sdk.path}/dist" includes="*.jar"/>
       </delete>
 
    <echo message="Building TotalCross SDK build ${buildNumber}"/>
-   <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false">
+   <ant antfile="build.xml" dir="${sdk.path}" target="clean"           inheritAll="false"/>
+   <ant antfile="build.xml" dir="${sdk.path}" target="build"           inheritAll="false"/>
+   <ant antfile="build.xml" dir="${sdk.path}" target="javadoc"         inheritAll="false">
       <property name="buildNumber" value="${buildNumber}"/>
    </ant>
 
    <!-- copy the changed files to the release folder -->
    <mkdir dir="${target.sdk.path}/dist/vm" />
-   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
-   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
-   <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
-   <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tcweb.jar" />
+   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${sdk.path}/docs/html" /></copy>
+   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${sdk.path}/dist/vm" includes="*.tcz" /></copy>
+   <copy todir="${target.sdk.path}/dist" file="${sdk.path}/dist/tc.jar" />
+   <copy todir="${target.sdk.path}/dist" file="${sdk.path}/dist/tcweb.jar" />
 </target>
 
 <target name="buildSamples_sdk" >
-	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
-	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
+	<ant antfile="build.xml" dir="${sdk.path}" target="samples"         inheritAll="false"/>
+	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${sdk.path}/dist/samples" /></copy>
 </target>
 
 <target name="buildJava_sdk" >
 
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="clean" inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="desktop" inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="desktop_web" inheritAll="false"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="device" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="clean" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="desktop" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="desktop_web" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${sdk.path}" target="device" inheritAll="false"/>
 
   <copy toDir="${target.sdk.path}/dist">
-   <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
+   <fileset dir="${sdk.path}/dist" includes="*.jar"/>
   </copy>
 
 </target>
@@ -267,8 +268,8 @@ target: buildInstalls - run installshield to create the SDK and Samples
    <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
    <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
    
-   <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
-   <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
+   <copy todir="${target.sdk3.path}" file="${sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
    
    <antcall target="reorganizeSamples" />
 
@@ -368,10 +369,10 @@ target: IPhone builds
       <param name="build.name"      value="xcode" />
       <param name="build.includes"  value="TotalCross/TotalCrossVM/src/**, TotalCross/TotalCrossVM/builders/xcode/**, Litebase/LitebaseSDK/src/native/**, Litebase/LitebaseSDK/builders/xcode/**" />
       <param name="copy.from"       value="build/Release-iphoneos/TotalCross.ipa" />
-      <param name="copy.to"         value="${source.sdk.path}/dist/vm/ios" />
+      <param name="copy.to"         value="${sdk.path}/dist/vm/ios" />
    </antcall>
    <antcall target="invalidate-ipas">
-      <param name="ipa.files"      value="${source.sdk.path}/dist/vm/ios/TotalCross.ipa" />
+      <param name="ipa.files"      value="${sdk.path}/dist/vm/ios/TotalCross.ipa" />
    </antcall>
 </target>
 
@@ -381,7 +382,7 @@ target: IPhone builds
    <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa" />
 
    <javac
-      srcdir="${source.sdk.path}/src/tc/tools/"
+      srcdir="${source.sdk.path}/tc/tools/"
       encoding="ISO-8859-1"
       debug="${compile.debug}"
       optimize="${compile.optimize}"
@@ -467,7 +468,7 @@ target: Linux builds
 </target>
 
 <target name="copyLinuxLauncher_sdk" >
-  <scp file="${buildserver.tc.linux.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/linux" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${buildserver.tc.linux.path}/demo/Launcher" todir="${sdk.path}/etc/launchers/linux" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 </target>
 
 <target name="packageLinux" >
@@ -485,9 +486,9 @@ target: Linux builds
       <arg line="-v ${tc.version}"/>
       <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
       <arg line="-t ${target.path}/dist/vm/linux"/>
-      <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-      <arg value="${source.sdk.path}/dist/vm/TCUI.tcz"/>
-      <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
+      <arg value="${sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${sdk.path}/dist/vm/TCUI.tcz"/>
+      <arg value="${sdk.path}/etc/fonts/TCFont.tcz"/>
     </java>
 </target>
 
@@ -594,10 +595,10 @@ target: checks if we must update the versions of the files prior to a build.
 <target name="buildPostInstall" >
 
   <property name="temp" value="${base.temp.path}/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
+  <javac srcdir="${source.sdk.path}/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
-	<env key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
+	<env key="TOTALCROSS_HOME" value="${sdk.path}"/>
    <classpath>
      <pathelement location="${temp}"/>
    </classpath>
@@ -627,7 +628,7 @@ target: buildWinCE
             <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
         </exec>
         <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
-          <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+          <fileset dir="${sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
         </copy>
         <delete failonerror="no">
             <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
