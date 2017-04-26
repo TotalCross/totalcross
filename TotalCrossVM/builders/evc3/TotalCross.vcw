@@ -51,7 +51,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Litebase"=..\..\..\..\Litebase\LitebaseSDK\builders\evc3\Litebase.vcp - Package Owner=<4>
+Project: "Litebase"=..\..\..\TotalCross\LitebaseSDK\builders\evc3\Litebase.vcp - Package Owner=<4>
 
 Package=<5>
 {{{

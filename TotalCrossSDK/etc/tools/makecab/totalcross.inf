@@ -34,7 +34,7 @@ CopyFiles	= VMfiles
 [SourceDisksNames]
 2 =, "Libraries",,..\..\..\dist\vm
 3 =, "Fonts",,..\..\fonts
-4 =, "LitebaseLib",,..\..\..\..\..\Litebase\LitebaseSDK\dist\lib
+4 =, "LitebaseLib",,..\..\..\..\TotalCross\LitebaseSDK\dist\lib
 5 =, "LitebaseBinary",,..\..\..\..\..\output\vc2008\Pocket PC 2003 (ARMV4)\NO RAS Release
 
 [SourceDisksNames.PocketPC_ARM]

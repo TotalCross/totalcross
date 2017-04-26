@@ -34,7 +34,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -54,7 +54,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="WIN32;LITTLE_ENDIAN;NDEBUG;_WINDOWS;LB_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -154,7 +154,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LITTLE_ENDIAN;LB_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;ENABLE_DEMO"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LB_EXPORTS;LITTLE_ENDIAN;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -366,7 +366,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LITTLE_ENDIAN;LB_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL"
 				StringPooling="true"
 				RuntimeLibrary="1"
@@ -457,7 +457,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -477,7 +477,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LB_EXPORTS;LITTLE_ENDIAN;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;ENABLE_TEST_SUITE"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -581,7 +581,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LB_EXPORTS;LITTLE_ENDIAN;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="1"
@@ -672,7 +672,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -692,7 +692,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="WIN32;LITTLE_ENDIAN;NDEBUG;_WINDOWS;LB_EXPORTS;_CRT_SECURE_NO_WARNINGS;ENABLE_DEMO"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -792,7 +792,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LITTLE_ENDIAN;LB_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;ENABLE_DEMO"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -900,7 +900,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LB_EXPORTS;LITTLE_ENDIAN;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;ENABLE_DEMO"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -1005,7 +1005,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LITTLE_ENDIAN;LB_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;ENABLE_DEMO"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -1097,7 +1097,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -1117,7 +1117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="WIN32;LITTLE_ENDIAN;NDEBUG;_WINDOWS;LB_EXPORTS;_CRT_SECURE_NO_WARNINGS;DISABLE_RAS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -1217,7 +1217,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LITTLE_ENDIAN;LB_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;NO_RAS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -1305,7 +1305,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -1325,7 +1325,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LB_EXPORTS;LITTLE_ENDIAN;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;DISABLE_RAS"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
@@ -1429,7 +1429,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../../../LitebaseSDK/src/native&quot;;&quot;$(SolutionDir)/../../../LitebaseSDK/src/native/parser&quot;;&quot;$(SolutionDir)/../../src/nm/io&quot;;&quot;$(SolutionDir)/../../src/nm/lang&quot;;&quot;$(SolutionDir)/../../src/util&quot;;&quot;$(SolutionDir)/../../src/tcvm&quot;"
 				PreprocessorDefinitions="LITTLE_ENDIAN;LB_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;NO_RAS"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -1514,111 +1514,111 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Index.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Key.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\lbFile.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Litebase.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\LitebaseGlobals.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\LitebaseLex.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\LitebaseMessage.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\LitebaseParser.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\MarkBits.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\MemoryFile.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\NativeMethods.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Node.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\NormalFile.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\PlainDB.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\PreparedStatement.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\ResultSet.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClause.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLColumnListClause.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLDeleteStatement.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLInsertStatement.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLSelectStatement.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLUpdateStatement.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\SQLValue.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Table.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\TCVMLib.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c"
+				RelativePath="..\..\..\LitebaseSDK\src\native\UtilsLB.c"
 				>
 			</File>
 		</Filter>
@@ -1627,123 +1627,123 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Constants.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Index.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Key.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Litebase.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\LitebaseGlobals.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\LitebaseLex.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\LitebaseMessage.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\LitebaseParser.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\LitebaseTypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\MarkBits.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\MemoryFile.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\NativeMethods.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Node.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\NormalFile.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\PlainDB.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\PreparedStatement.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\ResultSet.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClause.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLColumnListClause.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLInsertStatement.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLSelectStatement.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\SQLValue.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Table.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\TCVMLib.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\UtilsLB.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"
+				RelativePath="..\..\..\LitebaseSDK\src\native\Value.h"
 				>
 			</File>
 		</Filter>
@@ -1751,7 +1751,7 @@
 			Name="Extras"
 			>
 			<File
-				RelativePath="..\..\..\..\Litebase\LitebaseSDK\src\LitebaseParser.y"
+				RelativePath="..\..\..\LitebaseSDK\src\LitebaseParser.y"
 				>
 			</File>
 		</Filter>

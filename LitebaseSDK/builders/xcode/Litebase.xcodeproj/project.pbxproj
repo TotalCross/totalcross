@@ -422,10 +422,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm",
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/util",
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/io",
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/lang",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/tcvm",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/util",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/nm/io",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/nm/lang",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
@@ -433,7 +433,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm/tcvm.h";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../TotalCrossVM/src/tcvm/tcvm.h";
 			};
 			name = Debug;
 		};
@@ -457,10 +457,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm",
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/util",
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/io",
-					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/lang",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/tcvm",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/util",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/nm/io",
+					"$(PROJECT_DIR)/../../../TotalCrossVM/src/nm/lang",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
@@ -468,7 +468,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm/tcvm.h";
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../TotalCrossVM/src/tcvm/tcvm.h";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

@@ -5,7 +5,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "Launcher.vcproj
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCVM", "TCVM.vcproj", "{B6DC7204-DD8B-4A7B-995F-368B82F630DE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Litebase", "..\..\..\..\Litebase\LitebaseSDK\builders\vc2008\Litebase.vcproj", "{66EE456C-E926-4933-8F55-C2F572CE7444}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Litebase", "..\..\..\LitebaseSDK\builders\vc2008\Litebase.vcproj", "{66EE456C-E926-4933-8F55-C2F572CE7444}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Conduit", "Conduit.vcproj", "{46D32E55-2F3C-48E1-9E52-2A88C0AE7817}"
 	ProjectSection(ProjectDependencies) = postProject

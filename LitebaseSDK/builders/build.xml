@@ -59,7 +59,7 @@ target: init
   <property name="compile.debug"           value="yes"/>
   <property name="compile.optimize"        value="yes"/>
 
-  <property name="tc.base.path"			value="${basedir}/../../../TotalCross"/>
+  <property name="tc.base.path"			value="${basedir}/../.."/>
   <!-- IDEs and compilers project files -->
   <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc2008"/>
   <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
@@ -69,13 +69,14 @@ target: init
   <property name="android.temp"      value="${android.project.path}/apps/litebase/deploy" />
 
   <!-- properties regarding the TC paths -->
-  <property name="source.tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
+  <property name="tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
+  <property name="source.tc.sdk.path" value="${tc.sdk.path}/src/main/java"/>
   <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
   <property name="source.lb.path"     value="${basedir}/.."/>
    <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 	<property name="base.target.path"  value="${basedir}/../../../output/release"/>
   <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
-  <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
+  <property name="tools"              value="${tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
   <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
@@ -127,7 +128,7 @@ target: makeNativeHT - updates the native methods hash table.
    <mkdir dir="${path.to.prototypeGenerator}" />
 
    <javac
-      srcdir="${source.tc.sdk.path}/src/tc/tools/"
+      srcdir="${source.tc.sdk.path}/tc/tools/"
       encoding="ISO-8859-1"
       debug="${compile.debug}"
       optimize="${compile.optimize}"
@@ -430,10 +431,6 @@ target: build targets
 <target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk" description="builds sdk" />
     
-<target name="buildBB_sdk" />
-<target name="buildBB_vms" />
-<target name="buildPalmOS5_sdk" />
-<target name="buildPalmOS5_vms" />
 <target name="buildWinCE_vms" />
 <target name="buildWinCE_sdk" />
 <target name="buildWinCECabsSingle" />

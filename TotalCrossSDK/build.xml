@@ -32,6 +32,7 @@
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
 	
 <property name="src"                    value="${sdk.root}/src/main/java"/>
+<property name="resources"              value="${sdk.root}/src/main/resources"/>
 <property name="etc"                    value="${sdk.root}/etc"/>
 <property name="docs"                   value="${sdk.root}/docs"/>
 <property name="fonts"                  value="${etc}/fonts"/>
@@ -39,7 +40,7 @@
 <property name="output"                 value="${sdk.root}/../../temp"/>
 <property name="target"                 value="${sdk.root}/../../output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
-<property name="lb.src"                 value="${sdk.root}/../../Litebase/LitebaseSDK/src/java"/>
+<property name="lb.src"                 value="${sdk.root}/../LitebaseSDK/src/java"/>
 <property name="sqlite-jdbc"            value="sqlite-jdbc-3.8.7"/>
 
 <!-- defined alxjoin task -->	
@@ -266,6 +267,7 @@ target: compile
   <!-- copy some other files to the classes folder -->
   <copy todir="${output}/classes_desktop">
      <fileset dir="${src}" includes="**/*.png,**/*.gif"/>
+     <fileset dir="${resources}" includes="**/*.png,**/*.gif"/>
   </copy>
 
 </target>
@@ -562,6 +564,7 @@ target: device
     includes="totalcross/res/**,totalcross/ui/*.class,totalcross/ui/chart/*.class,totalcross/ui/event/*.class,totalcross/ui/font/*.class,totalcross/ui/gfx/*.class,totalcross/ui/html/*.class,totalcross/ui/image/*.class,totalcross/ui/media/*.class,totalcross/ui/anim/*.class,totalcross/ui/html/ui/*.class,totalcross/ui/tree/*.class,totalcross/ui/dialog/*.class"
     />
     <fileset dir="${src}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.gif,totalcross/res/**/*.png" />
+  	<fileset dir="${resources}" includes="totalcross/res/**/*.mp3,totalcross/res/**/*.gif,totalcross/res/**/*.png" />
   </jar>
 
    <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="false" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/device_${versionStr}.map">
@@ -612,6 +615,7 @@ target: samples
    <property name="samples.includes" value="tc/samples"/>
    <copy todir="${output}/classes" verbose="true">
       <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.pkg, **/*.mp3, **/*.tcz, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
+   	<fileset dir="${resources}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.pkg, **/*.mp3, **/*.tcz, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt, **/*.htm*"/>
    </copy>
 
    <subant target="deploy-app" inheritall="yes">
@@ -648,5 +652,4 @@ target: samples
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
 
-<target name="bb-codesign" />
 </project>

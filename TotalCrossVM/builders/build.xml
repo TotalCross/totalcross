@@ -648,12 +648,6 @@ target: build targets
 
 <target name="copyIPhoneLauncher_sdk" />
 <target name="copyIPhoneTCVM" />
-<target name="buildBB_sdk" />
-<target name="buildBB_vms" />
-<target name="buildBB_vms_noras" />
-<target name="buildPalmOS5_sdk" />
-<target name="buildPalmOS5_vms" />
-<target name="buildPalmOS5_vms_noras" />
 <target name="buildWin32_vms" />
 <target name="buildWin32_vms_noras" />
 <target name="buildInstalls_vms" />

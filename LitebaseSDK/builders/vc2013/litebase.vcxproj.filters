@@ -10,99 +10,99 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Index.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Key.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Litebase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\LitebaseGlobals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\LitebaseLex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\LitebaseMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\LitebaseParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\LitebaseTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\MarkBits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\MemoryFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\NativeMethods.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\NormalFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\PlainDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\PreparedStatement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\ResultSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLBooleanClause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLColumnListClause.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLDeleteStatement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLInsertStatement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLSelectStatement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\parser\SQLUpdateStatement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\SQLValue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\TCVMLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\UtilsLB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h">
+    <ClInclude Include="..\..\LitebaseSDK\src\native\Value.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\Litebase\LitebaseSDK\src\LitebaseParser.y">
+    <None Include="..\..\LitebaseSDK\src\LitebaseParser.y">
       <Filter>Extras</Filter>
     </None>
   </ItemGroup>

@@ -154,7 +154,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -256,7 +256,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -274,7 +274,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -292,7 +292,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>8Bytes</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -310,7 +310,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -331,7 +331,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -352,7 +352,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalUsingDirectories>$(WindowsSDK_MetadataPath);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <CompileAsWinRT>true</CompileAsWinRT>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native;$(SolutionDir)/../../../../Litebase/LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../../src/nm/lang;$(SolutionDir)/../../src/dx;$(SolutionDir)/../../src/tcvm/wp8;$(SolutionDir)/../../src/launchers/wp8;$(SolutionDir)/../../src/util;$(SolutionDir)/../../src/nm/ui/wp8;$(SolutionDir)/../../src/init;$(SolutionDir)/../../src/tcvm;$(SolutionDir)/../../src/zlib;$(SolutionDir)/../../src/axtls;$(SolutionDir)/../../src/nm;$(SolutionDir)/../../src/nm/io;$(SolutionDir)/../../../LitebaseSDK/src/native;$(SolutionDir)/../../../LitebaseSDK/src/native/parser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -502,7 +502,7 @@
     <ClInclude Include="..\..\..\..\..\src\zlib\zutil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Index.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -525,7 +525,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Key.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -548,7 +548,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\lbFile.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -571,7 +571,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Litebase.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -594,7 +594,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\LitebaseGlobals.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -617,7 +617,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\MarkBits.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -640,7 +640,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\MemoryFile.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -663,7 +663,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\NativeMethods.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -686,7 +686,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Node.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -709,7 +709,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\NormalFile.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -732,7 +732,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\LitebaseLex.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -755,7 +755,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\LitebaseMessage.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -778,7 +778,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\LitebaseParser.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -801,7 +801,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -824,7 +824,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -847,7 +847,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -870,7 +870,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -893,7 +893,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -916,7 +916,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -939,7 +939,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -962,7 +962,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\PlainDB.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -985,7 +985,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\PreparedStatement.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -1008,7 +1008,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\ResultSet.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -1031,7 +1031,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\SQLValue.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -1054,7 +1054,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Table.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -1077,7 +1077,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\TCVMLib.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
@@ -1100,7 +1100,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='RAS Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\UtilsLB.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</CompileAsWinRT>
