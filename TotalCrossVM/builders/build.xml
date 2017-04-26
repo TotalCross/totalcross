@@ -63,6 +63,7 @@
 <property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
 <property name="sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK/src/main/java"/>
+<property name="source.sdk.path.android"   value="${basedir}/../../TotalCrossSDK/src/main/android"/>
 <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="etc"               value="${sdk.path}/etc"/>
 <property name="tools"             value="${etc}/tools"/>
@@ -159,7 +160,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
    <concat destfile="${source.sdk.path}/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
 
    <replace file="${source.sdk.path}/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
-   <replace file="${source.sdk.path}/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path.android}/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
