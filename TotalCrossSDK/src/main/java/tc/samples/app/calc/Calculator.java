@@ -76,7 +76,7 @@ public class Calculator extends MainWindow
             }
          }
       });
-      add(bar,LEFT,0,FILL,fmH*3/2);
+      add(bar,LEFT,0,FILL,FONTSIZE+150);
       // add a menubar
       MenuItem col0[] = {
             new MenuItem(" File "),

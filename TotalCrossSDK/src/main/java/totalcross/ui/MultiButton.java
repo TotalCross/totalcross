@@ -12,7 +12,7 @@ import totalcross.ui.image.*;
  * <pre>
  * MultiButton b = new MultiButton(new String[]{"+","-"});
    b.setBackColor(Color.CYAN);
-   add(b,LEFT+50,TOP+50,200,fmH*3/2);
+   add(b,LEFT+50,TOP+50,200,FONTSIZE+150);
  * </pre>
  * @since TotalCross 2.0
  */

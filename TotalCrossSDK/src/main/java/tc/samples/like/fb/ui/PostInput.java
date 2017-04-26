@@ -33,14 +33,14 @@ public class PostInput extends FBContainer
       {
          Container c = new Container();
          c.setBackColor(CNT_BACK);
-         add(c,LEFT+50,TOP+50,fmH*2,fmH*2);
+         add(c,LEFT+50,TOP+50,FONTSIZE+200,FONTSIZE+200);
       }
       med = createEdit("What's on your mind?");
       add(med, AFTER+50,SAME,FILL-100,PREFERRED);
       
-      add(btStat = createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(btPhot = createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
-      add(btChIn = createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
+      add(btStat = createButton("STATUS", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,FONTSIZE+150);
+      add(btPhot = createButton("PHOTO", FBImages.photo, fmH),AFTER,BOTTOM,PARENTSIZE-3,FONTSIZE+150);
+      add(btChIn = createButton("CHECK-IN", FBImages.checkin, fmH),AFTER,BOTTOM,FILL,FONTSIZE+150);
       
       add(createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
    }

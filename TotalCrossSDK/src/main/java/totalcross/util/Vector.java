@@ -152,6 +152,28 @@ public class Vector
          throw new IllegalArgumentException();
    }
 
+   /** Returns the last object, removing it, or the given default value
+    */
+   public Object pop(Object def)
+   {
+      if (count > 0)
+      {
+         Object o = items[--count];
+         items[count] = null; // let gc do their work
+         return o;
+      }
+      return def;
+   }
+
+   /** Returns the last object, without removing it, or the given default value.
+    * 
+    */
+   public Object peek(Object def)
+   {
+      return count > 0 ? items[count-1] : def;
+   }
+
+
    /** Returns if this Vector is empty.
     * @since TotalCross 1.0.
     */

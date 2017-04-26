@@ -81,8 +81,8 @@ public class ChartSample extends BaseContainer
       sc.add(is3D, AFTER + 2, SAME);
 
       int r = width - is3D.getRect().x2()-6;
-      sc.add(sh = new Slider(),AFTER+2,SAME,r/2,fmH);
-      sc.add(sv = new Slider(),AFTER+2,SAME,r/2,fmH);
+      sc.add(sh = new Slider(),AFTER+2,SAME,r/2,FONTSIZE);
+      sc.add(sv = new Slider(),AFTER+2,SAME,r/2,FONTSIZE);
       sh.setMinimum(-6); sh.setMaximum(6); sv.setMaximum(6);
       sh.drawTicks = sv.drawTicks = true;
       sh.drawFilledArea = sv.drawFilledArea = false;

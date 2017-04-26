@@ -10,7 +10,6 @@ public class TotalCrossApplication
    }
    
    public static void run(Class<? extends MainWindow> clazz, String... args) {
-      Launcher.showInstructions();
       if (clazz == null || (args.length > 0 && args[0].equals("/help"))) {
          clazz = Help.class;
          args = new String[]{"/scr","android","/fontsize","20", "/fingertouch"};

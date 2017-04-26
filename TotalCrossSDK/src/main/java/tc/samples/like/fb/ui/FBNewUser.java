@@ -31,7 +31,7 @@ public class FBNewUser extends FBContainer
          
          add(btPhoto = createButton(null,FBImages.regPhoto,fmH),LEFT+50,TOP+50);         
          add(edMed = createEdit("Please type your username"), AFTER+50,SAME,FILL-100,PREFERRED);         
-         add(btSave = createButton("SAVE", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(btSave = createButton("SAVE", FBImages.status, fmH),LEFT,BOTTOM,PARENTSIZE-3,FONTSIZE+150);
          add(createRuler(Ruler.HORIZONTAL),LEFT+100,BEFORE,FILL-100,1);
       }
       catch (Throwable t)

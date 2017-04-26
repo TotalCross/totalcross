@@ -43,7 +43,7 @@ public class PostData extends FBContainer
          {
             Container c = new Container();
             c.setBackColor(CNT_BACK);
-            add(c,LEFT+50,TOP+50,fmH*2,fmH*2);
+            add(c,LEFT+50,TOP+50,FONTSIZE+200,FONTSIZE+200);
          }
          Label lname = new Label(name);
          lname.setFont(Font.getFont(true, fmH*8/10));
@@ -59,18 +59,18 @@ public class PostData extends FBContainer
          {
             ImageControl ic = new ImageControl(photo);
             ic.scaleToFit = true;
-            add(ic, LEFT+50,AFTER+25,FILL-50,fmH*8);
+            add(ic, LEFT+50,AFTER+25,FILL-50,FONTSIZE+800);
          }
          
          Label llikes = new Label(likes+" likes");
          llikes.setFont(Font.getFont(false, fmH*8/10));
          add(llikes,LEFT+50,AFTER+25);
    
-         add(createButton("Like", FBImages.like, fmH),LEFT,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(createButton("Like", FBImages.like, fmH),LEFT,BOTTOM,PARENTSIZE-3,FONTSIZE+150);
          add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
-         add(createButton("Comment", FBImages.comment, fmH),AFTER,BOTTOM,PARENTSIZE-3,fmH*3/2);
+         add(createButton("Comment", FBImages.comment, fmH),AFTER,BOTTOM,PARENTSIZE-3,FONTSIZE+150);
          add(createRuler(Ruler.VERTICAL),AFTER,SAME,1,FILL);
-         add(createButton("Share", FBImages.share, fmH),AFTER,BOTTOM,FILL,fmH*3/2);
+         add(createButton("Share", FBImages.share, fmH),AFTER,BOTTOM,FILL,FONTSIZE+150);
          
          add(createRuler(Ruler.HORIZONTAL),0,BEFORE,PARENTSIZE+100,1);
       }

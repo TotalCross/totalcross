@@ -33,16 +33,6 @@ public class FontSample extends BaseContainer
          g.backColor = 0;
          g.fillRect(0,0,width,height);
       }
-      
-      public int getPreferredWidth()
-      {
-         return fmH;
-      }
-      
-      public int getPreferredHeight()
-      {
-         return fmH;
-      }
    }
 
    class Samples extends ScrollContainer
@@ -71,7 +61,7 @@ public class FontSample extends BaseContainer
          add(new Radio("Male",rgSexo),AFTER,SAME,PREFERRED,SAME);
          add(new Radio("Female",rgSexo),AFTER+3,SAME,PREFERRED,SAME);
          add(ch = new Check("Married?"),LEFT,AFTER+5); ch.setChecked(true); if (uiAndroid) ch.checkColor = Color.CYAN;
-         add(new FontBox(),AFTER+fmH*3,CENTER_OF);
+         add(new FontBox(),AFTER+fmH*3,CENTER_OF,FONTSIZE,FONTSIZE);
          rgSexo.getRadio(0).leftJustify = true;
 
          edname.setText("João da Silva");

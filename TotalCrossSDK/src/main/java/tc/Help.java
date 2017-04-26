@@ -80,7 +80,7 @@ public class Help extends MainWindow
          l.transparentBackground = rPt.transparentBackground = rEn.transparentBackground = true;
 
          Spinner.spinnerType = Spinner.IPHONE;
-         c0.add(spin = new Spinner(), LEFT+50,SAME-50,fmH*3/2,fmH*3/2); spin.setVisible(false);
+         c0.add(spin = new Spinner(), LEFT+50,SAME-50,FONTSIZE+150,FONTSIZE+150); spin.setVisible(false);
 
          c0.add(new Label(x("Class name: ","Nome da classe: ")),LEFT,AFTER+25);
          c0.add(edclass = new Edit(),AFTER,SAME); tip(edclass, "Type the full class name of the class that extends MainWindow. Don't forget to include the package.", "Digite o nome (com o pacote) da classe que estende MainWindow");
@@ -95,7 +95,7 @@ public class Help extends MainWindow
          lstatus.setBackForeColors(Color.brighter(COLOR,32),0);
          lstatus.setFont(font.asBold());
          lstatus.autoSplit = true;
-         c0.add(lstatus,LEFT,BOTTOM,FILL,fmH*2);
+         c0.add(lstatus,LEFT,BOTTOM,FILL,FONTSIZE+200);
          
          tc = new TabbedContainer(new String[]{x("Run","Executar"),x("Deploy","Empacotar"),"Console"});
          tc.useBorder2 = true;
@@ -648,7 +648,7 @@ public class Help extends MainWindow
          BorderContainer c = new BorderContainer(x("Screen settings","Configurações da janela"));
          c.borderColor = COLOR;
          c.fillW = true;
-         add(c,LEFT,TOP+50,FILL,fmH*9);
+         add(c,LEFT,TOP+50,FILL,FONTSIZE+900);
          
          BorderContainer bc1 = new BorderContainer(x("Position","Posição"));
          c.add(bc1, LEFT,AFTER);
