@@ -20,6 +20,54 @@
 
 package totalcross;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Panel;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowListener;
+import java.awt.image.DirectColorModel;
+import java.awt.image.MemoryImageSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.zip.ZipInputStream;
+import totalcross.io.IOException;
+import totalcross.io.Stream;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
+import totalcross.sys.Time;
+import totalcross.sys.Vm;
+import totalcross.ui.Control;
+import totalcross.ui.MainWindow;
+import totalcross.ui.UIColors;
+import totalcross.ui.event.KeyEvent;
+import totalcross.ui.event.MultiTouchEvent;
+import totalcross.ui.event.PenEvent;
+import totalcross.util.Hashtable;
+import totalcross.util.IntHashtable;
+import totalcross.util.zip.TCZ;
+
 /*
  * Note: Everything that calls TotalCross code in these classes must be
  * synchronized with respect to the Applet uiLock object to allow TotalCross
@@ -31,30 +79,9 @@ package totalcross;
  * into TotalCross code, we would have the possibility of deadlock.
  */
 
-import java.awt.*;
-import java.awt.Insets;
-import java.awt.event.*;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowListener;
-import java.awt.image.*;
-import java.io.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.*;
-import java.util.zip.*;
-
-import totalcross.io.*;
-import totalcross.io.IOException;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.event.KeyEvent;
-import totalcross.util.*;
-import totalcross.util.zip.*;
-
 /** Represents the applet or application used as a Java Container to make possible run TotalCross at the desktop. */
 
-public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseMotionListener, ComponentListener
+final public class Launcher extends java.applet.Applet implements WindowListener, KeyListener, java.awt.event.MouseListener, MouseWheelListener, MouseMotionListener, ComponentListener
 {
    public static Launcher instance;
    public static boolean isApplication;
@@ -84,7 +111,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private int[] screenPixels = new int[0];
    private int lookupR[], lookupG[], lookupB[], lookupGray[];
    private int pal685[];
-   private Class _class; // used by the openInputStream method.
+   private Class<?> _class; // used by the openInputStream method.
    protected MemoryImageSource screenMis;
    protected java.awt.Image screenImg;
    private AlertBox alert;
@@ -94,13 +121,16 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private TCEventThread eventThread;
    private boolean isMainClass;
    private boolean isDemo;
+   private String activationKey;
+   private boolean fastScale;
 
+   @SuppressWarnings("deprecation")
    public Launcher()
    {
-      totalcross.sys.Settings.showDesktopMessages = false; // guich@500_1: avoid messages when calling retroguard
       instance  = this;
       addKeyListener(this);
       addMouseListener(this);
+      addMouseWheelListener(this);
       addMouseMotionListener(this);
       try {Runtime.runFinalizersOnExit(true);} catch (Throwable t) {}
       //try {System.runFinalizersOnExit(true);} catch (Throwable t) {} // guich@300_31
@@ -126,22 +156,20 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private void runtimeInstructions()
    {
       System.out.println("Current path: "+System.getProperty("user.dir"));
+      System.out.println("TotalCross "+Settings.versionStr+"."+Settings.buildNumber);
       // print instructions
       System.out.println("===================================");
       System.out.println("Device key emulations:");
-      System.out.println("F1-F4 : HARD1 to HARD4");
-      System.out.println("F5 : COMMAND");
+      System.out.println("F2 : TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER");
       System.out.println("F6 : MENU");
-      System.out.println("F7 : CALC");
-      System.out.println("F8 : FIND");
+      System.out.println("F7 : BACK (ESCAPE)");
       System.out.println("F9 : CHANGE ORIENTATION");
-      System.out.println("F10: LAUNCH (HOME)");
       System.out.println("F11: OPEN KEYBOARD");
-      System.out.println("F12: ACTION (Center button press)"); // guich@400
       System.out.println("===================================");
    }
 
-   public void init()
+   @SuppressWarnings("static-access")
+   final public void init()
    {
       boolean showInstructionsOnError = true;
       appletInitialized = true; // guich@500_1
@@ -161,6 +189,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          }
 
          fillSettings();
+         if (isApplication && !className.equals("tc.Help"))
+            Class.forName("tc.tools.RegisterSDK").getConstructor(String.class).newInstance(activationKey);
 
          try
          {
@@ -170,7 +200,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                className = className.substring(0,className.length()-6);
             className = className.replace('/','.');
 
-            Class c = _class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
+            Class<?> c = _class.forName(className); // guich@200b2: applets dont let you specify the path. it must be set in the codebase param - guich@520_9: changed from Class. to getClass
             showInstructionsOnError = false;
             isMainClass = checkIfMainClass(c); // guich@tc122_4
             if (!isMainClass)
@@ -220,14 +250,20 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       catch (Exception ee)
       {
+         String name = ee.getClass().getSimpleName();
+         if (name.equals("RegisterSDKException"))
+         {
+            System.out.println("SDK registration returned: "+ee.getMessage());
+            exit(-2);
+         }
          if (showInstructionsOnError) showInstructions();
          ee.printStackTrace();
       } // guich@120
    }
 
-   private static boolean checkIfMainClass(Class c)
+   private static boolean checkIfMainClass(Class<?> c)
    {
-      Class []interfaces = c.getInterfaces();
+      Class<?> []interfaces = c.getInterfaces();
       if (interfaces != null)
          for (int i = 0; i < interfaces.length; i++)
             if (interfaces[i].getName().equals("totalcross.MainClass"))
@@ -328,7 +364,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       void setInterval(int millis)
       {
          //System.out.println("setInterval "+millis);
-         interval = millis<55 ? 55 : millis; // guich@230_3
+         interval = millis<10 ? 10 : millis; // guich@230_3
          interrupt();
       }
 
@@ -355,59 +391,58 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          {
            eventThread.invokeInEventThread(true, new Runnable()
            {
-             public void run() { while (mainWindow == null) Vm.sleep(1); mainWindow.appStarting(isDemo ? 80 : -1); } // guich@200b4_107 - guich@570_3: check if mainWindow is not null to avoid problems when running on Linux. seems that the paint event is being generated before the start one.
+             public void run() 
+             { 
+                while (mainWindow == null) 
+                   Vm.sleep(1); 
+                mainWindow.appStarting(isDemo ? 80 : -1);
+                if (isApplication) new Thread() {public void run() {try {new URL("http://www.superwaba.net/SDKRegistrationService/PingService?CHAVE="+activationKey).openConnection().getInputStream().close();} catch (Throwable e) {}}}.start(); // keep track of TC usage
+             } // guich@200b4_107 - guich@570_3: check if mainWindow is not null to avoid problems when running on Linux. seems that the paint event is being generated before the start one.
            });
          } catch (Throwable e) {e.printStackTrace();}
          started = true;
       }
    }
 
-   private static void showInstructions()
+   static void showInstructions()
    {
       System.out.println("Possible Arguments (in any order and case insensitive). Default is marked as *");
       System.out.println("   /scr WIDTHxHEIGHT     : sets the width and height");
       System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel (8, 16, 24 or 32)");
-      System.out.println("   /scr PalmLo      : Palm OS low     (same of /scr 160x160x8)");
-      System.out.println("*  /scr PalmHI      : Palm OS high    (same of /scr 320x320x16)");
-      System.out.println("   /scr PalmTall    : Palm OS tall    (same of /scr 320x480x16)");
-      System.out.println("   /scr PalmWide    : Palm OS wide    (same of /scr 480x320x16)");
-      System.out.println("   /scr WinCE       : Windows CE      (same of /scr 240x320x16)");
       System.out.println("   /scr Win32       : Windows 32      (same of /scr 240x320x24)");
-      System.out.println("   /scr bbLo        : BlackBerry low  (same of /scr 320x240x16)");
-      System.out.println("   /scr bbBold      : BlackBerry Bold (same of /scr 480x360x16)");
-      System.out.println("   /scr bbStorm     : BlackBerry Storm(same of /scr 480x320x16)");
-      System.out.println("   /scr iPhone      : iPhone          (same of /scr 320x480x24)");
-      System.out.println("   /scr android     : Android         (same of /scr 320x480x16)");
+      System.out.println("   /scr iPhone      : iPhone          (same of /scr 640x960x24)");
+      System.out.println("*  /scr android     : Android         (same of /scr 320x480x24)");
       System.out.println("   /pos x,y         : Sets the openning position of the application");
-      System.out.println("*  /uiStyle WinCE   : Windows CE user interface style");
-      System.out.println("   /uiStyle PalmOS  : Palm OS user interface style");
       System.out.println("   /uiStyle Flat    : Flat user interface style");
-      System.out.println("   /uiStyle Vista   : Vista user interface style");
-      System.out.println("   /uiStyle Android : Android user interface style");
+      System.out.println("*  /uiStyle Vista   : Vista user interface style");
+      System.out.println("   /uiStyle Android : Android 4 user interface style");
+      System.out.println("   /uiStyle Holo    : Android 5 user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
       System.out.println("   /geofocus        : enables geographical focus.");
-      System.out.println("   /keypadOnly      : acts as a device that has only the 0-9*# keys");
       System.out.println("   /virtualKeyboard : shows the virtual keyboard when in an Edit or a MultiEdit");
       System.out.println("   /showmousepos    : shows the mouse position.");
       System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256 colors)");
       System.out.println("   /bpp 16          : emulates 16 bits per pixel screens (64K colors)");
       System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M colors)");
       System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M colors without transparency)");
-      System.out.println("   /scale <0.1 to 4>: scales the screen, magnifying the contents using a smooth scale.");
+      System.out.println("   /scale <0.1 to 8>: scales the screen, magnifying the contents using a smooth scale.");
+      System.out.println("   /fastscale <0.1 to 8>: scales the screen, magnifying the contents using a fast scale.");
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
       System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
+      System.out.println("   /r <key>         : specify a registration key to be used to activate TotalCross when required. You may use %key%, where key is an environment variable");
       System.out.println("The class name that extends MainWindow must always be the last argument");
    }
 
    public static void main(String args[])
    {
-      if (args.length == 0)
+      if (args.length == 0 || args[0].equals("/help"))
       {
-         showInstructions();
-         return;
+         if (args.length == 0)
+            showInstructions();
+         args = new String[]{"/scr","480x620x32","/fontsize","16","tc.Help"};
       }
       isApplication = true;
       Launcher app = new Launcher();
@@ -423,14 +458,18 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       try {return Double.parseDouble(s);} catch (Exception e) {return 0;}
    }
+   
+   protected void parseArguments(String... args) {
+      parseArguments(args[args.length - 1], Arrays.copyOf(args, args.length - 1));
+   }
 
-   protected void parseArguments(String[] args)
+   protected void parseArguments(String clazz, String... args)
    {
-      int n = args.length-1,i=0;
+      int n = args.length,i=0;
       String newDataPath = null;
       try
       {
-         className = args[n];
+         className = clazz;
          for (i = 0; i < n; i++)
          {
             if (args[i].equalsIgnoreCase("/fontsize"))
@@ -445,46 +484,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/scr")) /* /scr 320x320  or  /scr 320x320x8 */
             {
                String next = args[++i];
-               if (next.equalsIgnoreCase("palmLo"))
-               {
-                  toWidth = toHeight = 160; toBpp = 8;
-               }
-               else
-               if (next.equalsIgnoreCase("palmHi"))
-               {
-                  toWidth = toHeight = 320; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("bbLo"))
-               {
-                  toWidth = 320; toHeight = 240; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("bbBold"))
-               {
-                  toWidth = 480; toHeight = 320; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("bbStorm"))
-               {
-                  toWidth = 480; toHeight = 360; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("palmTall"))
-               {
-                  toWidth = 320; toHeight = 480; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("palmWide"))
-               {
-                  toWidth = 480; toHeight = 320; toBpp = 16;
-               }
-               else
-               if (next.equalsIgnoreCase("wince"))
-               {
-                  toWidth = 240; toHeight = 320; toBpp = 16;
-               }
-               else
                if (next.equalsIgnoreCase("win32"))
                {
                   toWidth = 240; toHeight = 320; toBpp = 24;
@@ -492,12 +491,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                else
                if (next.equalsIgnoreCase("iPhone"))
                {
-                  toWidth = 320; toHeight = 480; toBpp = 24;
+                  toWidth = 640; toHeight = 960; toBpp = 24;
                }
                else
                if (next.equalsIgnoreCase("android"))
                {
-                  toWidth = 320; toHeight = 480; toBpp = 16;
+                  toWidth = 320; toHeight = 480; toBpp = 24;
                }
                else
                {
@@ -510,6 +509,16 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                      toBpp = toInt(scr[2]);
                }
                System.out.println("Screen is "+toWidth+"x"+toHeight+"x"+toBpp);
+            }
+            else
+            if (args[i].equalsIgnoreCase("/r"))
+            {
+               activationKey = args[++i].toUpperCase();
+               if (activationKey.startsWith("%"))
+                  activationKey = System.getenv(activationKey.substring(1,activationKey.length()-1));
+               if (activationKey == null || activationKey.length() != 24) {
+                  throw new RuntimeException("Invalid registration key: " + activationKey);
+               }
             }
             else
             if (args[i].equalsIgnoreCase("/pos")) /* x,y */
@@ -533,20 +542,17 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/uiStyle"))
             {
                String next = args[++i];
-               if (next.equalsIgnoreCase("PalmOS"))
-                  toUI = Settings.PalmOS;
-               else
                if (next.equalsIgnoreCase("Flat"))
                   toUI = Settings.Flat;
                else
                if (next.equalsIgnoreCase("Vista"))
                   toUI = Settings.Vista;
                else
-               if (next.equalsIgnoreCase("WinCE")) // guich@580_33
-                  toUI = Settings.WinCE;
-               else
                if (next.equalsIgnoreCase("Android")) // guich@580_33
                   toUI = Settings.Android;
+               else
+               if (next.equalsIgnoreCase("Holo")) // guich@580_33
+                  toUI = Settings.Holo;
                else
                   throw new Exception();
                System.out.println("UI style is "+toUI);
@@ -576,12 +582,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                System.out.println("Geographical focus is on");
             }
             else
-            if (args[i].equalsIgnoreCase("/keypadOnly")) // guich@573_20
-            {
-               Settings.keypadOnly = true;
-               System.out.println("Keypad only is on");
-            }
-            else
             if (args[i].equalsIgnoreCase("/virtualKeyboard")) // bruno@tc110
             {
                Settings.virtualKeyboard = true;
@@ -591,15 +591,16 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (args[i].equalsIgnoreCase("/bpp"))
             {
                toBpp = toInt(args[++i]);
-               if (toBpp != 4 && toBpp != 8 && toBpp != 16 && toBpp != 24 && toBpp != 32) // guich@450_4
+               if (toBpp != 8 && toBpp != 16 && toBpp != 24 && toBpp != 32) // guich@450_4
                   throw new Exception();
                System.out.println("Bpp is "+toBpp);
             }
             else
-            if (args[i].equalsIgnoreCase("/scale"))
+            if (args[i].equalsIgnoreCase("/scale") || args[i].equalsIgnoreCase("/fastscale"))
             {
+               fastScale = args[i].equalsIgnoreCase("/fastscale");
                toScale = toDouble(args[++i]); // guich@tc126_74: use a 
-               if (toScale < 0 || toScale > 4)
+               if (toScale < 0 || toScale > 8)
                   throw new Exception();
                System.out.println("Scale is "+toScale);
             }
@@ -616,11 +617,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       catch (Exception e)
       {
          showInstructions();
-         System.out.println("Invalid or incomplete argument at position "+i+": "+args[i]);
+         System.err.println("Invalid or incomplete argument at position "+i+": "+args[i]);
          String s = "";
          for (i = 0; i < args.length; i++)
             s += " "+args[i];
-         System.out.println("Full command line:\n"+s.trim());
+         System.err.println(e.getMessage());
+         System.err.println("Full command line:\n"+s.trim());
          exit(-1);
          return;
       }
@@ -629,7 +631,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (toWidth == -1 || toHeight == -1) // if no width specified, use the lowest one
       {
          if (isApplication)
-            toWidth = toHeight = 320; // guich@tc100b5_35: now default is palm hi
+         {
+            toWidth = 320;
+            toHeight = 480; // guich@tc100b5_35: now default is palm hi
+         }
          else
          {
             toWidth = getSize().width;
@@ -642,8 +647,18 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          toBpp = isApplication ? 16 : 32;
 
       Settings.dataPath = newDataPath;
+      if (isApplication && !className.equals("tc.Help") && (activationKey == null || activationKey.length() != 24))
+      {
+         if (activationKey != null)
+            System.err.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
+         System.err.println("Error: you must provide a registration key with /r in totalcross.Launcher arguments!");
+         System.err.println("If you're a PROFESSIONAL user, go to the TotalCross site and login into your account; the SDK key will be shown.");
+         System.err.println("If you're a FREE user, the key was sent to the email that you used to download the SDK.");
+         System.exit(0);
+         return;
+      }
    }
-
+   
    private String[] tokenizeString(String string, char c)
    {
       java.util.StringTokenizer st = new java.util.StringTokenizer(string, ""+c);
@@ -697,15 +712,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    }
 
    private int modifiers;
-
-   private boolean isIntercepting(int key)
-   {
-      int[] k = Vm.keysBeingIntercepted;
-      for (int i = (k == null ? 0 : k.length)-1; i >= 0; i--)
-         if (k[i] == key)
-            return true;
-      return false;
-   }
 
    private void updateModifiers(java.awt.event.KeyEvent event)
    {
@@ -768,17 +774,17 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             case java.awt.event.KeyEvent.VK_PAGE_UP:    key = SpecialKeys.PAGE_UP;    keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_DOWN,0); break; // don't let down/up simultanealy
             case java.awt.event.KeyEvent.VK_PAGE_DOWN:  key = SpecialKeys.PAGE_DOWN;  keysPressed.put(key,1); keysPressed.put(java.awt.event.KeyEvent.VK_PAGE_UP,0);   break;
             // guich@120 - emulate more keys
-            case java.awt.event.KeyEvent.VK_F1:         if (isIntercepting(SpecialKeys.HARD1)) {key = SpecialKeys.HARD1; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F2:         if (isIntercepting(SpecialKeys.HARD2)) {key = SpecialKeys.HARD2; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F3:         if (isIntercepting(SpecialKeys.HARD3)) {key = SpecialKeys.HARD3; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F4:         if (isIntercepting(SpecialKeys.HARD4)) {key = SpecialKeys.HARD4; keysPressed.put(key,1);} break;
-            case java.awt.event.KeyEvent.VK_F5:         key = SpecialKeys.COMMAND; break;
+            case java.awt.event.KeyEvent.VK_F1:         break;
+            case java.awt.event.KeyEvent.VK_F2:         takeScreenShot(); break;
+            case java.awt.event.KeyEvent.VK_F3:         break;
+            case java.awt.event.KeyEvent.VK_F4:         break;
+            case java.awt.event.KeyEvent.VK_F5:         break;
             case java.awt.event.KeyEvent.VK_F6:         key = SpecialKeys.MENU; break;
-            case java.awt.event.KeyEvent.VK_F7:         if (isIntercepting(SpecialKeys.CALC)) key = SpecialKeys.CALC; break;
-            case java.awt.event.KeyEvent.VK_F8:         if (isIntercepting(SpecialKeys.FIND)) key = SpecialKeys.FIND; break;
-            case java.awt.event.KeyEvent.VK_F10:        if (isIntercepting(SpecialKeys.LAUNCH)) key = SpecialKeys.LAUNCH; break;
-            case java.awt.event.KeyEvent.VK_F11:        key = SpecialKeys.KEYBOARD_123; break;
-            case java.awt.event.KeyEvent.VK_F12:        key = SpecialKeys.ACTION; break; // guich@400_64
+            case java.awt.event.KeyEvent.VK_F7:         key = SpecialKeys.ESCAPE; break;
+            case java.awt.event.KeyEvent.VK_F8:         break;
+            case java.awt.event.KeyEvent.VK_F10:        break;
+            case java.awt.event.KeyEvent.VK_F11:        key = SpecialKeys.KEYBOARD_ABC; break;
+            case java.awt.event.KeyEvent.VK_F12:        break;
             case java.awt.event.KeyEvent.VK_F9:
                if (isApplication && !Settings.disableScreenRotation && Settings.screenWidth != Settings.screenHeight && eventThread != null) // guich@tc: changed orientation?
                {
@@ -787,6 +793,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                   toHeight = t;
                   screenResized(Settings.screenHeight,Settings.screenWidth,true);
                   key = 0;
+                  ignoreNextResize = true;
                }
                break;
             default: key = 0; break;
@@ -800,6 +807,23 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             final String msg = "Key code: " + (key == 0 ? event.getKeyCode() : key) + ", Modifier: " + modifiers;
             new Thread() {public void run() {Vm.alert(msg);}}.start(); // must place this in a separate thread, or the vm dies
          }
+      }
+   }
+   
+   private void takeScreenShot()
+   {
+      try
+      {
+         totalcross.ui.image.Image img = MainWindow.getScreenShot();
+         String name = totalcross.sys.Settings.appPath+new Time().getTimeLong()+".png";
+         totalcross.io.File f = new totalcross.io.File(name,totalcross.io.File.CREATE_EMPTY);
+         img.createPng(f);
+         f.close();
+         System.out.println("Saved at "+name);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
       }
    }
    
@@ -826,10 +850,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (event.isActionKey())
          switch (event.getKeyCode())
          {
-            case java.awt.event.KeyEvent.VK_F1:        keysPressed.put(SpecialKeys.HARD1,0); break;
-            case java.awt.event.KeyEvent.VK_F2:        keysPressed.put(SpecialKeys.HARD2,0); break;
-            case java.awt.event.KeyEvent.VK_F3:        keysPressed.put(SpecialKeys.HARD3,0); break;
-            case java.awt.event.KeyEvent.VK_F4:        keysPressed.put(SpecialKeys.HARD4,0); break;
+//            case java.awt.event.KeyEvent.VK_F1:        keysPressed.put(SpecialKeys.HARD1,0); break;
+//            case java.awt.event.KeyEvent.VK_F2:        keysPressed.put(SpecialKeys.HARD2,0); break;
+//            case java.awt.event.KeyEvent.VK_F3:        keysPressed.put(SpecialKeys.HARD3,0); break;
+//            case java.awt.event.KeyEvent.VK_F4:        keysPressed.put(SpecialKeys.HARD4,0); break;
             case java.awt.event.KeyEvent.VK_PAGE_UP:   keysPressed.put(SpecialKeys.PAGE_UP,0); break;
             case java.awt.event.KeyEvent.VK_PAGE_DOWN: keysPressed.put(SpecialKeys.PAGE_DOWN,0); break;
          }
@@ -852,28 +876,72 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
    }
 
+   boolean isRightButton;
+   int startPY;
    public void mousePressed(java.awt.event.MouseEvent event)
    {
+      int px = (int)(event.getX()/toScale);
+      int py = (int)(event.getY()/toScale);
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
-         eventThread.pushEvent(PenEvent.PEN_DOWN, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
+         eventThread.pushEvent(PenEvent.PEN_DOWN, 0, px,py, modifiers, Vm.getTimeStamp());
+      if (isRightButton = (event.getButton() & 2) != 0)
+         eventThread.pushEvent(MultiTouchEvent.SCALE, 1, px,startPY = py, modifiers, Vm.getTimeStamp());
    }
 
    public void mouseReleased(java.awt.event.MouseEvent event)
    {
+      int px = (int)(event.getX()/toScale);
+      int py = (int)(event.getY()/toScale);
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
-         eventThread.pushEvent(PenEvent.PEN_UP, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
+         eventThread.pushEvent(PenEvent.PEN_UP, 0, px,py, modifiers, Vm.getTimeStamp());
+      if ((event.getButton() & 2) != 0)
+         eventThread.pushEvent(MultiTouchEvent.SCALE, 2, px,py, modifiers, Vm.getTimeStamp());
    }
 
    public void mouseDragged(java.awt.event.MouseEvent event)
    {
+      int px = (int)(event.getX()/toScale);
+      int py = (int)(event.getY()/toScale);
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
-         eventThread.pushEvent(PenEvent.PEN_DRAG, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+      {
+         if ((event.getButton() & 2) != 0 || isRightButton)
+         {
+            double scale = py < startPY ? 1.05 : 0.95;
+            long l = Double.doubleToLongBits(scale);
+            int x = (int)(l >>> 32);
+            int y = (int)l;
+            if (!eventThread.hasEvent(MultiTouchEvent.SCALE))
+               eventThread.pushEvent(MultiTouchEvent.SCALE, 0, x,y, modifiers, Vm.getTimeStamp());
+         }
+         else
+         if (!eventThread.hasEvent(PenEvent.PEN_DRAG))
+            eventThread.pushEvent(PenEvent.PEN_DRAG, 0, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+      }
+   }
+
+   public void mouseWheelMoved(MouseWheelEvent e)
+   {
+      if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
+      {
+         int ev = totalcross.ui.event.MouseEvent.MOUSE_WHEEL;
+         if (!eventThread.hasEvent(ev))
+         {
+            int px = (int)(e.getX()/toScale);
+            int py = (int)(e.getY()/toScale);
+            eventThread.pushEvent(ev, e.getWheelRotation() < 0 ? totalcross.ui.event.DragEvent.UP : totalcross.ui.event.DragEvent.DOWN, px, py, modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
+         }
+      }
    }
 
    public void windowClosing(java.awt.event.WindowEvent event)
    {
-      destroy();
-      exit(0);
+      if (Settings.closeButtonType == Settings.NO_BUTTON)
+         eventThread.pushEvent(totalcross.ui.event.KeyEvent.SPECIAL_KEY_PRESS, SpecialKeys.MENU, 0,0,0, Vm.getTimeStamp());
+      else
+      {
+         destroy();
+         exit(0);
+      }
    }
 
    public void mouseEntered(java.awt.event.MouseEvent event)
@@ -907,7 +975,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          mmsb.setLength(0);
          if (frameTitle != null)
             mmsb.append(frameTitle).append(" (");
-         mmsb.append(event.getX()).append(",").append(event.getY());
+         mmsb.append((int)(event.getX()/toScale)).append(",").append((int)(event.getY()/toScale));
          if (frameTitle != null)
             mmsb.append(")");
          frame.setTitle(mmsb.toString());
@@ -934,7 +1002,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void pumpEvents()
    {
-      eventThread.pumpEvents();
+      if (eventThread != null) eventThread.pumpEvents();
    }
    
    public void update(java.awt.Graphics g) {}
@@ -983,8 +1051,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       int b = p & 0xFF;
       switch (toBpp)
       {
-         case 4:
-            return ((((r << 5) + (g << 6) + (b << 2)) / 100) >> 4) * 0x111111;
          case 8:
             if (lookupR == null)
                createColorPaletteLookupTables();
@@ -995,11 +1061,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
    }
 
-   public void updateScreen(int transitionEffect)
+   public void updateScreen()
    {
-      if (transitionEffect == -1)
-         transitionEffect = totalcross.ui.Container.TRANSITION_NONE;
-
       //int ini = totalcross.sys.Vm.getTimeStamp();
       int[] pixels = (int[])totalcross.ui.gfx.Graphics.mainWindowPixels;
       int n = Settings.screenWidth * Settings.screenHeight;
@@ -1011,18 +1074,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       // convert to the target bpp on-the-fly
       switch (toBpp)
       {
-         case 4:
-         {
-            while (--n >= 0)
-            {
-               int p = pixels[n];
-               int r = (p >> 16) & 0xFF;
-               int g = (p >> 8) & 0xFF;
-               int b = p & 0xFF;
-               screenPixels[n] = ((((r << 5) + (g << 6) + (b << 2)) / 100) >> 4) * 0x111111;
-            }
-            break;
-         }
          case 8:
          {
             if (lookupR == null)
@@ -1074,59 +1125,27 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          g.setClip(0,0,ww,yy);         // limit drawing area
          g.translate(0,-(int)(shiftY*toScale));
       }
-      switch (transitionEffect)
+      if (toScale != 1) // guich@tc126_74 - guich@tc130 
       {
-         case totalcross.ui.Container.TRANSITION_CLOSE:
-         case totalcross.ui.Container.TRANSITION_OPEN:
+         if (!MainWindow.isMainThread())
+            g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
+         else
          {
-            n = Math.min(w,h);
-            int mx = w/2,mw=1,mh=1;
-            int my = h/2;
-            float incX=1,incY=1;
-            if (w > h)
-               {incX = (float)w/h; mw = (int)incX+1;}
-             else
-               {incY = (float)h/w; mh = (int)incY+1;}
-            int i0 = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? n : 0;
-            int iinc = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? -1 : 1;
-            for (int i =i0; --n >= 0; i+=iinc)
-            {
-               int minx = (int)(mx - i*incX);
-               int miny = (int)(my - i*incY);
-               int maxx = (int)(mx + i*incX);
-               int maxy = (int)(my + i*incY);
-               drawImageLine(g,minx-mw,miny-mh,maxx+mw,miny+mh);
-               drawImageLine(g,minx-mw,miny-mh,minx+mw,maxy+mh);
-               drawImageLine(g,maxx-mw,miny-mh,maxx+mw,maxy+mh);
-               drawImageLine(g,minx-mw,maxy-mh,maxx+mw,maxy+mh);
-               Vm.sleep(1);
-            }
-            if (toScale == 1)
-               break;
+            Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale && !fastScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
+            g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
+            img.flush();
          }
-         case totalcross.ui.Container.TRANSITION_NONE:
-            if (toScale != 1) // guich@tc126_74 - guich@tc130 
-            {
-               Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
-               g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
-               img.flush();
-            }
-            else
-            if (g != null)
-               g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
-            break;
       }
+      else
+      if (g != null)
+         g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
       if (shiftY != 0)
       {
          g.translate(0,(int)(shiftY*toScale));
          g.setClip(0,0,ww,hh);
       }
-      //System.out.println(++count+" total in "+(totalcross.sys.Vm.getTimeStamp()-ini)+"ms");
-      //try {throw new Exception();} catch (Exception e) {e.printStackTrace();}
-   }
-   private void drawImageLine(Graphics g, int minx, int miny, int maxx, int maxy)
-   {
-      g.drawImage(screenImg, (int)(minx*toScale),(int)(miny*toScale),(int)(maxx*toScale),(int)(maxy*toScale), minx,miny,maxx,maxy, this); // this is faster than use img.getScaledInstance
+      // make the emulator work like OpenGL: erase the screen to instruct the user that everything must be drawn always
+      //java.util.Arrays.fill(pixels, getScreenColor(UIColors.shiftScreenColor));
    }
 
    //static int count;
@@ -1282,9 +1301,25 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                {
                   InputStream is = (InputStream)_class.getResourceAsStream("/"+path);
                   if (is != null)
-                  {
                      stream = readJavaInputStream(is);
-                  }
+               } catch (Throwable tt) {if (tt.getMessage() != null) System.out.println(tt.getMessage());}
+            }
+            String sjar;
+            if (stream == null && !path.endsWith(".class") && (sjar=getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).contains(".jar")) // guich@330 - let tc.Help work from inside a jar
+            {
+               sread += "#4b - "+sjar.substring(1)+"\n";
+               try
+               {
+                  URL url = getClass().getProtectionDomain().getCodeSource().getLocation();
+                  ZipInputStream zIn = new ZipInputStream(url.openStream());
+                  String spath = "/"+path;
+                  for (java.util.zip.ZipEntry zEntry = zIn.getNextEntry(); zEntry != null; zEntry = zIn.getNextEntry())
+                     if (zEntry.getName().endsWith(spath))
+                     {
+                        stream = readJavaInputStream(zIn);
+                        break;
+                     }
+                  zIn.close();
                } catch (Throwable tt) {if (tt.getMessage() != null) System.out.println(tt.getMessage());}
             }
             if (stream == null && htAttachedFiles.size() > 0) // guich@tc100: load from attached libraries too
@@ -1708,7 +1743,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          totalcross.sys.Settings.screenWidthInDPI = 96;
       }
       totalcross.sys.Settings.romVersion = 0x02000000;
-      totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.WinCE;
+      totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.Vista;
       totalcross.sys.Settings.screenWidth = toWidth;
       totalcross.sys.Settings.screenHeight = toHeight;
       totalcross.sys.Settings.onJavaSE = true;
@@ -1737,13 +1772,15 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       } catch (SecurityException se) {totalcross.sys.Settings.userName = null;}
    }
 
+   @SuppressWarnings("deprecation")
    public void settingsRefresh(boolean callStoreSettings) // guich@tc115_81
    {
-      java.util.Calendar cal = java.util.Calendar.getInstance();
-      totalcross.sys.Settings.daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0; // guich@tc112_1
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33
-      totalcross.sys.Settings.timeZone = tz.getRawOffset() / (60*60*1000);
-      totalcross.sys.Settings.timeZoneStr = java.util.TimeZone.getDefault().getID(); //flsobral@tc115_54: added field Settings.timeZoneStr
+      Settings.daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      Settings.daylightSavings = Settings.daylightSavingsMinutes != 0;
+      Settings.timeZone = tz.getRawOffset() / (60*60000);
+      Settings.timeZoneMinutes = tz.getRawOffset() / 60000;
+      Settings.timeZoneStr = java.util.TimeZone.getDefault().getID();
       if (callStoreSettings)
          try
          {
@@ -1752,11 +1789,53 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    }
 
    ////  font and font metrics //////////////////////////////////////////////////////
+   static final int AA_NO = 0;
+   static final int AA_4BPP = 1;
+   static final int AA_8BPP = 2;
+   static int []realSizes = {7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80};
    private totalcross.util.Hashtable htLoadedFonts = new totalcross.util.Hashtable(31);
+   static Hashtable htBaseFonts = new Hashtable(5); // 
+   static totalcross.ui.font.Font getBaseFont(String name, boolean bold, int size, String suffix)
+   {
+      String key = name+"|"+bold+"|"+size+"|"+suffix;
+      totalcross.ui.font.Font f = (totalcross.ui.font.Font)htBaseFonts.get(key);
+      if (f == null)
+      {
+         int i;
+         if (!name.endsWith("noaa"))
+            for (i = 0; i < realSizes.length-1; i++)
+               if (size <= realSizes[i])
+               {
+                  size = realSizes[i];
+                  break;
+               }
+      
+         int idx = Integer.parseInt(suffix.substring(suffix.indexOf('u') + 1));
+         totalcross.ui.font.Font.baseChar = (char)idx;
+         f = totalcross.ui.font.Font.getFont(name,bold,size);
+         totalcross.ui.font.Font.baseChar = ' ';
+         if (f != null) 
+         {
+            f.removeFromCache();
+            htBaseFonts.put(key,f); 
+         }         
+      }
+      
+      return f;
+   }
+
    private UserFont loadUF(String fontName, String suffix)
    {
       try
       {
+         if (totalcross.ui.font.Font.baseChar == ' ' && !fontName.endsWith("noaa")) // test if there's another 8bpp native font.
+         {
+            boolean bold = suffix.charAt(1) == 'b';
+            int size = Integer.parseInt(suffix.substring(2,suffix.indexOf('u')));
+            totalcross.ui.font.Font base = getBaseFont(fontName, bold, size, suffix);
+            if (base != null)
+               return new UserFont(fontName, suffix, size, base);
+         }
          return new UserFont(fontName, suffix);
       }
       catch (Exception e) 
@@ -1818,7 +1897,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          
          if (uf != null)
          {
-            htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
+            if (totalcross.ui.font.Font.baseChar == ' ')
+               htLoadedFonts.put(key,uf); // note that we will use the original key to avoid entering all exception handlers.
             f.name = uf.fontName; // update the name, the font may have been replaced.
          }
          else
@@ -1827,7 +1907,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          else
          if (appletInitialized) // guich@500_1: when retroguard is loaded, Applet.init is never called, so we just skip here.
          {
-            System.err.println("No fonts found! be sure to place the file "+totalcross.ui.font.Font.DEFAULT+".tcz in the same directory from where you're running your application"+(isApplication ? " or put a reference to TotalCrossSDK/etc folder in the classpath!" : "or in your applet's codebase or in a jar file!"));
+            System.err.println("No fonts found! be sure to place the file "+totalcross.ui.font.Font.DEFAULT+".tcz in the same directory from where you're running your application"+(isApplication ? " or put a reference to TotalCross3/etc folder in the classpath!" : "or in your applet's codebase or in a jar file!"));
             System.exit(2);
          }
       } catch (Exception e) {System.out.println(""+e);}
@@ -1842,30 +1922,55 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       public byte[] charBitmapTable;
       public int offset;          // offset relative to the bitmap table
       public int width;
+      public int index;
+      public totalcross.ui.image.Image img;
    }
 
    private static Hashtable loadedTCZs = new Hashtable(31);
    public class UserFont
    {
-      public Object nativeFont;    // stores the system font in some platforms
-      public boolean antialiased;  // true if its antialiased
+      // 25/120 14/70 4/25 2/15
+      public UserFont ubase;
+      public totalcross.ui.image.Image[] nativeFonts;     // stores the system font in some platforms
+      public int antialiased;      // AA_ flags
       public int firstChar;        // ASCII code of first character
       public int lastChar;         // ASCII code of last character
       public int spaceWidth;       // width of the space char
-      public int maxWidth;         // width of font rectangle
+      public int maxWidth;         // width of font rectangle - unused
       public int maxHeight;        // height of font rectangle
-      public int owTLoc;           // offset to offset/width table
+      public int owTLoc;           // offset to offset/width table - unused
       public int ascent;           // ascent
       public int descent;          // descent
-      public int rowWords;         // row width of bit image / 2
+      public int rowWords;         // row width of bit image / 2 - used only to compute rowWidthInBytes
 
-      public int   rowWidthInBytes;
-      public int   bitmapTableSize;
-      public byte  []bitmapTable;
-      public int []bitIndexTable;
-      public String fontName;
-      public int numberWidth;
+      private int rowWidthInBytes;
+      private byte []bitmapTable;
+      private int []bitIndexTable;
+      private String fontName;
+      private int numberWidth;
+      private int minusW;
 
+      private UserFont(String fontName, String sufix, int size, totalcross.ui.font.Font base) throws Exception
+      {
+         UserFont ubase = (UserFont)base.hv_UserFont;
+         this.ubase = ubase;
+         this.maxHeight = size;
+         this.rowWidthInBytes = ubase.rowWidthInBytes * maxHeight / ubase.maxHeight;
+         this.bitIndexTable = new int[ubase.bitIndexTable.length];
+         for (int i = 0; i < bitIndexTable.length; i++) // compute the target size using the rule of three
+            this.bitIndexTable[i] = ubase.bitIndexTable[i] * maxHeight / ubase.maxHeight;
+         this.nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
+         this.fontName = fontName;
+         this.firstChar = ubase.firstChar;
+         this.lastChar = ubase.lastChar;
+         this.antialiased = ubase.antialiased;
+         this.descent = ubase.descent * maxHeight / ubase.maxHeight;
+         this.ascent = size - this.descent;
+         this.numberWidth = ubase.numberWidth * maxHeight / ubase.maxHeight;
+         this.spaceWidth = ubase.spaceWidth * maxHeight / ubase.maxHeight;
+         this.minusW = ubase.minusW;
+      }
+      
       private UserFont(String fontName, String sufix) throws Exception
       {
          this.fontName = fontName;
@@ -1878,7 +1983,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                is = openInputStream("vm/"+fileName); // for the release sdk, there's no etc/fonts. the tcfont.tcz is located at dist/vm/tcfont.tcz
                if (is == null)
-                  throw new Exception("file "+fileName+" not found"); // loaded = false
+               {
+                  is = openInputStream("etc/fonts/"+fileName); // if looking for the default font when debugging, use etc/fonts
+                  if (is == null)
+                     throw new Exception("file "+fileName+" not found"); // loaded = false
+               }
             }
             z = new TCZ(new IS2S(is));
             totalcross.io.ByteArrayStream fontChunks[];
@@ -1900,7 +2009,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          totalcross.io.ByteArrayStream bas = ((totalcross.io.ByteArrayStream[])z.bag)[index];
          bas.reset();
          totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
-         antialiased = ds.readUnsignedShort()==1;
+         antialiased = ds.readUnsignedShort();
          firstChar   = ds.readUnsignedShort();
          lastChar    = ds.readUnsignedShort();
          spaceWidth  = ds.readUnsignedShort();
@@ -1911,8 +2020,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          descent     = ds.readUnsignedShort();
          rowWords    = ds.readUnsignedShort();
 
-         rowWidthInBytes = rowWords << (antialiased ? 3 : 1);
-         bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
+         rowWidthInBytes = 2 * rowWords * (antialiased == AA_NO ? 1 : antialiased == AA_4BPP ? 4 : 8);
+         int bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
 
          bitmapTable     = new byte[bitmapTableSize];
          ds.readBytes(bitmapTable);
@@ -1920,23 +2029,53 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
          //
+         minusW = antialiased == AA_8BPP && fontName.equals("TCFont") ? 1 : 0;
          if (firstChar <= '0' && '0' <= lastChar)
          {
             index = (int)'0' - (int)firstChar;
-            numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
+            numberWidth = bitIndexTable[index+1] - bitIndexTable[index] - minusW;
          }
+         if (antialiased == AA_8BPP)
+            nativeFonts = new totalcross.ui.image.Image[bitIndexTable.length];
       }
-
+      
+      private totalcross.ui.image.Image getBaseCharImage(int index) throws totalcross.ui.image.ImageException // called only in ubase instances
+      {
+         if (bitmapTable == null && ubase != null) // fixes trying to print "D\u0101" (where the font does not have \u0101 available)
+            return ubase.getBaseCharImage(index);
+         int offset = bitIndexTable[index];
+         int width = bitIndexTable[index+1] - offset - minusW;
+         totalcross.ui.image.Image img = new totalcross.ui.image.Image(width,maxHeight);
+         int[] pixels = img.getPixels();
+         for (int y = 0,idx=0; y < maxHeight; y++)
+            for (int x = 0; x < width; x++,idx++)
+               pixels[idx] = bitmapTable[y * rowWidthInBytes + x + offset] << 24;
+         return img;
+      }
+      
       // Get the source x coordinate and width of the character
       public void setCharBits(char ch, CharBits bits)
       {
          if (firstChar <= ch && ch <= lastChar)
          {
             int index = (int)ch - (int)firstChar;
+            bits.index = index;
             bits.rowWIB = rowWidthInBytes;
             bits.charBitmapTable = bitmapTable;
             bits.offset = bitIndexTable[index];
-            bits.width = bitIndexTable[index+1] - bits.offset;
+            bits.width = bitIndexTable[index+1] - bits.offset - minusW;
+            if (bits.width == 0) bits.width += minusW;
+            if (ubase != null && ubase.nativeFonts != null)
+               try
+               {
+                  if (ubase.nativeFonts[index] == null) // character at original size
+                     ubase.nativeFonts[index] = ubase.getBaseCharImage(index);
+                  if (nativeFonts[index] == null) // character at the target size
+                     nativeFonts[index] = ubase.nativeFonts[index].getHwScaledInstance(bits.width,maxHeight);
+                  bits.img = nativeFonts[index];
+                  bits.rowWIB = bits.width;
+               }
+               catch (Exception e) {e.printStackTrace();}
          }
          else
          {
@@ -1956,7 +2095,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       if (ch < ' ')
          return (ch == '\t') ? font.spaceWidth * totalcross.ui.font.Font.TAB_SIZE : 0; // guich@tc100: handle tabs
       int index = (int)ch - (int)font.firstChar;
-      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] : font.spaceWidth;
+      return (font.firstChar <= ch && ch <= font.lastChar) ? font.bitIndexTable[index+1] - font.bitIndexTable[index] - font.minusW : font.spaceWidth;
    }
    
 
@@ -2197,7 +2336,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    
    public void vibrate(final int millis)
    {
-      if (isApplication)
+      if (isApplication && frame != null)
       {
          new Thread() {
             public void run()
@@ -2244,10 +2383,19 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void componentShown(ComponentEvent arg0)
    {
-   }   public void componentResized(ComponentEvent ev)
+   }
+   boolean ignoreNextResize; // guich@tc168: ignore when using F9
+   public void componentResized(ComponentEvent ev)
    {
+      if (ignoreNextResize)
+      {
+         ignoreNextResize = false;
+         return;
+      }
       int w = frame.getWidth()-frame.insets.left-frame.insets.right;
       int h = frame.getHeight()-frame.insets.top-frame.insets.bottom;
+      w /= toScale; // guich@tc168: consider scale
+      h /= toScale;
       if (w < toWidth || h < toHeight)
          screenResized(w >= toWidth ? w : toWidth,h >= toHeight ? h : toHeight,true);
       else

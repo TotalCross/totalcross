@@ -1,0 +1,179 @@
+buildscript {
+    repositories {           
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.3'
+		classpath 'com.google.gms:google-services:3.0.0'
+    }
+}
+apply plugin: 'android'
+
+android {
+    compileSdkVersion "Google Inc.:Google APIs:23"
+    buildToolsVersion '23.0.2'
+    compileOptions.encoding = 'iso-8859-1'
+	
+    defaultConfig {
+        minSdkVersion 10
+        targetSdkVersion 22
+        applicationId 'totalcross.android'   
+        multiDexEnabled true
+    }
+    
+	productFlavors {
+		standard {
+		}
+		
+		singleApk {
+		}
+	}
+	
+    sourceSets {
+        main {
+			java.srcDirs = files(
+				fileTree(dir: '../../../TotalCrossSDK/src').matching { include 'totalcross/android/**', 'totalcross/zxing/**', 'totalcross/*4A.java', 'totalcross/MainClass.java', 'totalcross/TCEventThread.java' }, 
+				fileTree(dir: '../../src/launchers/android/src').matching { include 'totalcross/AndroidUtils.*' }
+				)
+            assets.srcDirs = ['src/main/assets']
+			jniLibs.srcDirs = ['src/main/libs']
+        }
+    }
+	
+    signingConfigs {
+        release {
+            storeFile file('tcandroidkey.keystore')
+            storePassword '@ndroid$w'
+            keyAlias 'tcandroidkey'
+            keyPassword '@ndroidsw'
+        }
+    }
+	
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+			signingConfig signingConfigs.release
+        }
+    }
+    
+	task configureEnvironment() {
+	    def envVars = [:]
+	
+	    envVars['TYPE']="demo"
+	    envVars['NDK_OUT']= "." + "/../../../temp/android/TotalCross/" + "demo"
+	
+	    tasks.withType(Exec) { environment << envVars }
+	}
+    
+    task buildAndroidNative(type:Exec) {
+		workingDir "../.." +  "/src"
+    	commandLine 'cmd', '/c', ndkDir + '/ndk-build'
+
+		doLast{
+			copy {
+				from "." + "/../../../../temp/android/TotalCross/" + "demo" + "/libs"
+				into 'src/main/libs'
+				include '**/*'
+			}
+		}
+    }
+    
+	task assembleAssets(type:Zip) {
+		outputs.upToDateWhen { false }
+		from ('../../../TotalCrossSDK/dist/vm') {
+			include 'TCBase.tcz'
+			include 'TCUI.tcz'
+		}
+		from ('../../../TotalCrossSDK/etc/fonts') {
+			include 'TCFont.tcz'
+		}
+		from ('../../../../Litebase/LitebaseSDK/dist/lib/') {
+			include 'LitebaseLib.tcz'
+		}
+		entryCompression ZipEntryCompression.STORED
+		baseName 'tcfiles'
+		destinationDir file('src/main/assets') // directory that you want your archive to be placed in
+	}
+	
+	task copyApk << {
+		copy {
+			from { 'build/outputs/apk' }
+			into '../../../../output/release/TotalCrossSDK/dist/vm/android'
+			include '**/droid-standard-release.apk'
+			rename { String fileName ->
+				fileName.replace('droid-standard-release', 'TotalCross')
+			}
+		}
+		copy {
+			from { zipTree('build/outputs/apk/droid-singleApk-release.apk') }
+			into '../../../../output/release/TotalCrossSDK/etc/tools/android'
+			include 'AndroidManifest.xml', 'resources.arsc'
+			rename { String fileName ->
+				fileName.replace('.', '_singleapk.')
+			}
+		}
+	}
+	
+	task blah {
+		println archivesBaseName
+	}
+	/*
+	assembleDebug {}.doLast{
+    	tasks.copySupportFiles.execute()
+	}
+	*/
+	assembleDebug.mustRunAfter buildAndroidNative, assembleAssets
+	assembleRelease.mustRunAfter buildAndroidNative, assembleAssets
+	copyApk.mustRunAfter assembleRelease
+    
+    task buildAndroid_sdkNoClean(dependsOn: ['buildAndroidNative', 'assembleAssets', 'assembleDebug']) << {
+    }
+    
+    project.afterEvaluate{
+	    applicationVariants.all { com.android.build.gradle.api.ApplicationVariant variant ->
+		    for (flavor in variant.productFlavors) {
+		    	def prepareReleaseDependencies = project.tasks.getByName("prepare${flavor.name.capitalize()}ReleaseDependencies")
+        		prepareReleaseDependencies.dependsOn(['buildAndroidNative', 'assembleAssets'])
+		    }
+		}
+	}
+}
+
+ repositories { 
+     jcenter()
+     maven {
+         url "https://maven.java.net/content/groups/public/"
+     }
+ }
+
+dependencies {
+	compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
+	compile 'com.google.android.gms:play-services-ads:' + googleGmsVersion
+	compile 'com.google.android.gms:play-services-location:' + googleGmsVersion
+	compile 'com.google.android.gms:play-services-maps:' + googleGmsVersion
+	compile 'com.google.firebase:firebase-core:' + googleGmsVersion
+	compile "com.google.firebase:firebase-messaging:" + googleGmsVersion
+	
+	compile 'com.github.cliftonlabs:json-simple:2.1.2'
+	
+    // Supports Android 4.0.3 and later (API level 15)
+    compile 'com.journeyapps:zxing-android-embedded:2.3.0@aar'
+
+    // Supports Android 2.1 and later (API level 7), but not optimal for later Android versions.
+    // If you only plan on supporting Android 4.0.3 and up, you don't need to include this.
+    compile 'com.journeyapps:zxing-android-legacy:2.3.0@aar'
+
+    // Convenience library to launch the scanning Activities.
+    // It automatically picks the best scanning library from the above two, depending on the
+    // Android version and what is available.
+    compile 'com.journeyapps:zxing-android-integration:2.3.0@aar'
+
+    // Version 3.0.x of zxing core contains some code that is not compatible on Android 2.2 and earlier.
+    // This mostly affects encoding, but you should test if you plan to support these versions.
+    // Older versions e.g. 2.2 may also work if you need support for older Android versions.
+    compile 'com.google.zxing:core:3.2.0'
+	
+	// Enabling Multidex for use of Firebase and etc
+	compile 'com.android.support:multidex:1.0.1'
+}

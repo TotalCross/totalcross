@@ -14,7 +14,7 @@
 TESTCASE(jlSB_aensureCapacity_i) // java/lang/StringBuffer native public void ensureCapacity(int minimumCapacity);
 {
    TNMParams p;
-   Object sb;
+   TCObject sb;
    int32 i;
 
    tzero(p);
@@ -35,7 +35,7 @@ TESTCASE(jlSB_aensureCapacity_i) // java/lang/StringBuffer native public void en
 TESTCASE(jlSB_setLength_i) // java/lang/StringBuffer native public void setLength(int newLength);
 {
    TNMParams p;
-   Object sb;
+   TCObject sb;
    int32 i,i1;
    int32 *STARTING_SIZE;
 
@@ -73,7 +73,7 @@ TESTCASE(jlSB_setLength_i) // java/lang/StringBuffer native public void setLengt
 TESTCASE(jlSB_append_s) // java/lang/StringBuffer native public StringBuffer append(String str);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    char buf[100];
 
    tzero(p);
@@ -117,7 +117,7 @@ TESTCASE(jlSB_append_s) // java/lang/StringBuffer native public StringBuffer app
 TESTCASE(jlSB_append_C) // java/lang/StringBuffer native public StringBuffer append(char []str);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    char buf[50];
 
    tzero(p);
@@ -165,7 +165,7 @@ TESTCASE(jlSB_append_C) // java/lang/StringBuffer native public StringBuffer app
 TESTCASE(jlSB_append_Cii) // java/lang/StringBuffer native public StringBuffer append(char []str, int offset, int len);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    int32 is[2];
    char buf[50];
 
@@ -214,7 +214,7 @@ TESTCASE(jlSB_append_Cii) // java/lang/StringBuffer native public StringBuffer a
 TESTCASE(jlSB_append_c) // java/lang/StringBuffer native public StringBuffer append(char c);
 {
    TNMParams p;
-   Object sb;
+   TCObject sb;
    int32 i,c,n;
    CharP text = "A Barbara e' a cara do pai";
    JChar jtext[30];
@@ -242,7 +242,7 @@ TESTCASE(jlSB_append_c) // java/lang/StringBuffer native public StringBuffer app
    finish: ;
 }
 
-static CharP sbAppend(Context currentContext, CharP buf, Object sb, TValue v, RegType t)
+static CharP sbAppend(Context currentContext, CharP buf, TCObject sb, TValue v, RegType t)
 {
    TNMParams p;
 
@@ -262,7 +262,7 @@ static CharP sbAppend(Context currentContext, CharP buf, Object sb, TValue v, Re
 TESTCASE(jlSB_append_i) // java/lang/StringBuffer native public StringBuffer append(int i);
 {
    char buf[50];
-   Object sb;
+   TCObject sb;
    TValue v;
 
    xmemzero(buf, sizeof(buf));
@@ -280,7 +280,7 @@ TESTCASE(jlSB_append_i) // java/lang/StringBuffer native public StringBuffer app
 TESTCASE(jlSB_append_l) // java/lang/StringBuffer native public StringBuffer append(long l)
 {
    char buf[50];
-   Object sb;
+   TCObject sb;
    TValue v;
 
    xmemzero(buf, sizeof(buf));
@@ -298,8 +298,8 @@ TESTCASE(jlSB_append_l) // java/lang/StringBuffer native public StringBuffer app
 }
 TESTCASE(jlSB_append_d) // java/lang/StringBuffer native public StringBuffer append(double d);
 {
-   char buf[50];
-   Object sb;
+   char buf[128];
+   TCObject sb;
    TValue v;
 
    xmemzero(buf, sizeof(buf));
@@ -307,12 +307,35 @@ TESTCASE(jlSB_append_d) // java/lang/StringBuffer native public StringBuffer app
    setObjectLock(sb, UNLOCKED);
    ASSERT1_EQUALS(NotNull, sb);
 
-   v.asDouble = 0             ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.0");
-   v.asDouble = 1234          ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0");
-   v.asDouble = -5321         ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.0");
-   v.asDouble = 0.5432424234  ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.00.5432424234");
-   v.asDouble = -13132.5153513; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.00.5432424234-13132.5153513");
-   v.asDouble = 1E300         ; ASSERT2_EQUALS(Sz, sbAppend(currentContext, buf, sb, v, RegD), "0.01234.0-5321.00.5432424234-13132.51535131.0E300");
+   v.asDouble = 0;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 3;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.0");
+
+   v.asDouble = 1234;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 9;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0");
+
+   v.asDouble = -5321;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 16;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.0");
+
+   v.asDouble = 0.5432424234;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 28;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.00.5432424234");
+   
+   v.asDouble = -13132.5153513;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 42;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.00.5432424234-13132.5153513");
+
+   v.asDouble = 1E300;
+   sbAppend(currentContext, buf, sb, v, RegD);
+   StringBuffer_count(sb) = 49;
+   ASSERT2_EQUALS(Sz, JCharP2CharPBuf(StringBuffer_charsStart(sb), StringBuffer_count(sb), buf), "0.01234.0-5321.00.5432424234-13132.51535131.0E300");
 
    finish: ;
 }

@@ -119,7 +119,6 @@ public class InputBox extends Window
       this.allSameWidth = allSameWidth;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       this.originalText = text;
       ed = new Edit("@@@@@@@@@@");
@@ -257,5 +256,10 @@ public class InputBox extends Window
    public Edit getEdit() // guich@310_23
    {
       return ed;
+   }
+   /** Sets the Edit to the given one. */
+   public void setEdit(Edit ed)
+   {
+      this.ed = ed;
    }
 }

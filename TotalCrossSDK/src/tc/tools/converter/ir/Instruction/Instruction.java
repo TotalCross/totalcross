@@ -538,6 +538,8 @@ public class Instruction implements TCConstants
          case THROW:
          case MONITOR_Enter:
          case MONITOR_Exit:
+         case MONITOR_Enter2:
+         case MONITOR_Exit2:
          {
             Reg inst = (Reg) this;
             bits[2].on(inst.reg);
@@ -1121,6 +1123,8 @@ public class Instruction implements TCConstants
          case THROW:
          case MONITOR_Enter:
          case MONITOR_Exit:
+         case MONITOR_Enter2:
+         case MONITOR_Exit2:
          {
             Reg inst = (Reg) this;
             inst.reg = adjListO[inst.reg].color;

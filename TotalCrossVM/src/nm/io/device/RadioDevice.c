@@ -13,9 +13,7 @@
 
 #include "RadioDevice.h"
 
-#if defined (PALMOS)
- //#include "palm/RadioDevice_c.h"
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/RadioDevice_c.h"
 #elif defined (ANDROID)
  #include "android/RadioDevice_c.h"
@@ -28,10 +26,15 @@ TC_API void tidRD_isSupported_i(NMParams p) // totalcross/io/device/RadioDevice 
 {
    int32 type = p->i32[0];
    
+   if (type < WIFI || type > BLUETOOTH)
+      throwIllegalArgumentException(p->currentContext, null);
+   else
 #if defined (WINCE)
-   p->retI = RdIsSupported(type);
+      p->retI = RdIsSupported(type);
 #elif defined (ANDROID)
-   p->retI = RdIsSupported(p->currentContext, type);
+      p->retI = RdIsSupported(p->currentContext, type);
+#elif defined WP8
+      p->retI = true;
 #else
    p->retI = false;
 #endif
@@ -49,6 +52,8 @@ TC_API void tidRD_getState_i(NMParams p) // totalcross/io/device/RadioDevice nat
       p->retI = RdGetState(type);
 #elif defined (ANDROID)
       p->retI = RdGetState(p->currentContext, type);
+#elif defined (WP8)
+      p->retI = rdGetStateCPP(type);
 #else
       p->retI = RADIO_STATE_DISABLED;
 #endif      

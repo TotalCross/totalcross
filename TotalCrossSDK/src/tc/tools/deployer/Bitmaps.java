@@ -11,6 +11,8 @@
 
 package tc.tools.deployer;
 
+import java.io.OutputStream;
+
 import tc.tools.deployer.Bitmaps.Bmp;
 import totalcross.io.*;
 import totalcross.ui.gfx.Color;
@@ -240,7 +242,7 @@ public class Bitmaps
          height          = readInt(offset);   offset += 4;
          /*planes      = */readShort(offset); offset += 2;
          bitsPerPixel    = readShort(offset); offset += 2;
-         if (bitsPerPixel > 8) throw new IllegalArgumentException("Bitmaps cannot be 24bpp!");
+         if (bitsPerPixel > 8) throw new IllegalArgumentException("Bitmaps "+width+"x"+(height/2)+" cannot be 24bpp!");
          compression     = readInt(offset);   offset += 4;
          if (compression != 0)
            new Exception("The bitmap used to create icons can't be compressed (RLE)!");
@@ -378,55 +380,6 @@ public class Bitmaps
       }
    }
 
-   /** In PalmOS prc file, the icon is stored as an icon-family, with the first
-     * icon being the 1bpp and the 2nd icon being the 256 color icon. First there
-     * is a 16 bytes header.<p>
-     * Id: 1000 - 22x22
-     *   first icon  (1bpp)
-     *   second icon (8bpp)
-     *   third  icon (1bpp/double density)
-     *   fourth icon (8bpp/double density)
-     * Id: 1001 - 15x9
-     *   first icon  (1bpp)
-     *   gap: 2 bytes
-     *   second icon (8bpp)
-     *   third icon  (1bpp/double density)
-	 *   gap: 2 bytes
-	 *   fourth icon (8bpp/double density)
-    * @throws ImageException 
-    * @throws IOException 
-     */
-   public void savePalmOSIcons(byte[] bytes, int offset1000, int offset1001) throws ImageException, IOException
-   {
-      int realSize;
-
-      // get the 22x22x8
-      offset1000 += 16; // skip next header
-      realSize = 22 * 22; // tc note: pilrc uses 22x22 as the real size, while codewarrior uses 22x32
-      Bmp bmp22x22x8 = IconStore.getBmp(22, -22, 8);
-      copyBits(bmp22x22x8.pixels, bmp22x22x8.palette, palette256, 24, bytes, offset1000, 22, 22, 8, -1, false,
-            bmp22x22x8.shouldInvertY);
-      // get the 44x44x8
-      offset1000 += realSize; // skip first icon size
-      offset1000 += 40; // skip next header
-      Bmp bmp44x44x8 = IconStore.getBmp(44, -44, 8);
-      copyBits(bmp44x44x8.pixels, bmp44x44x8.palette, palette256, 44, bytes, offset1000, 44, 44, 8, -1, false,
-            bmp44x44x8.shouldInvertY);
-
-      // get the 15x9x8
-      offset1001 += 16; // skip next header
-      realSize = 16 * 9;
-      Bmp bmp15x9x8 = IconStore.getBmp(15, -9, 8);
-      copyBits(bmp15x9x8.pixels, bmp15x9x8.palette, palette256, 16, bytes, offset1001, 16, 9, 8, -1, false,
-            bmp15x9x8.shouldInvertY);
-      // get the 30x18x8
-      offset1001 += realSize; // skip first icon size
-      offset1001 += 40; // skip next header
-      Bmp bmp30x18x8 = IconStore.getBmp(30, -18, 8);
-      copyBits(bmp30x18x8.pixels, bmp30x18x8.palette, palette256, 32, bytes, offset1001, 30, 18, 8, -1, false,
-            bmp30x18x8.shouldInvertY);
-   }
-
    public void saveWinCEIcons(byte []bytes, int bitmap16x16x8_Offset, int bitmap32x32x8_Offset, int bitmap48x48x8_Offset) throws ImageException, IOException
    {
       Bmp bmp16x16x8 = IconStore.getBmp(16, 16, 8);
@@ -447,25 +400,14 @@ public class Bitmaps
          copyBits(bmp32x32x8.pixels, bmp32x32x8.palette, loadPalette(bytes, iconOffset+40, 256), 32, bytes, iconOffset+40+1024, 32, -32, 8, iconOffset+32*32+40+1024,false, bmp32x32x8.shouldInvertY);
    }
 
-   public void saveAndroidIcon(java.util.zip.ZipOutputStream zos) throws Exception // 72x72 png
+   public void saveAndroidIcon(OutputStream zos, int res) throws Exception // icon.png
    {
-      Image img = IconStore.getSquareIcon(72);
-      ByteArrayStream s = new ByteArrayStream(72 * 72);
+      Image img = IconStore.getSquareIcon(res);
+      ByteArrayStream s = new ByteArrayStream(res * res);
       img.createPng(s);
       zos.write(s.getBuffer(), 0, s.getPos());
    }
    
-   public void saveBlackBerryIcon(Stream s) throws Exception
-   {
-      Image img;
-      byte[] b = IconStore.getImageData("80x80");
-      if (b != null)
-         img = new Image(b);
-      else
-         img = IconStore.getSquareIcon(60);
-      img.createPng(s);
-   }
-
    private static final int TOLERANCE = 16;
    private static IntVector fillCoords = new IntVector(10000); // guich@tc110_57: use a stack and static variables instead of a method recursion to avoid stack overflows
    private static boolean fillVisited[];
@@ -521,7 +463,7 @@ public class Bitmaps
       fillW = img.getWidth();
       fillH = img.getHeight();
       fillPixels = (int[])img.getPixels();
-      fillOldColor = img.transparentColor != Image.NO_TRANSPARENT_COLOR ? img.transparentColor : fillPixels[0];
+      fillOldColor = /*img.transparentColor != Image.NO_TRANSPARENT_COLOR ? img.transparentColor : */fillPixels[0];
       fillNewColor = 0;
       fillVisited = new boolean[fillW*fillH];
 
@@ -550,8 +492,6 @@ public class Bitmaps
       return palette;
    }
 
-   static final int IPHONE_DEB = 60;
-
    static final Image4iOS[] IOS_ICONS =
    {
          new Image4iOS("Icon.png", 57),
@@ -563,60 +503,68 @@ public class Bitmaps
          new Image4iOS("Icon-Small-iPad.png", 50),
          new Image4iOS("Icon-Small-iPad@2x.png", 100),
          new Image4iOS("Icon-Small-iPad.png", 50),
-         new Image4iOS("Icon-Small-iPad@2x.png", 100)
-   };
-
-   static final Image4iOS[] ITUNES_ICONS =
-   {
-         new Image4iOS("iTunesArtwork", 512),
-         new Image4iOS("iTunesArtwork@2x", 1024)
+         new Image4iOS("Icon-Small-iPad@2x.png", 100),
+         new Image4iOS("Default-568h@2x.png", 640, 1136),
+         // ios 7
+         new Image4iOS("Icon76.png", 76),
+         new Image4iOS("Icon152.png", 152),
+         new Image4iOS("Icon120.png", 120),
    };
 
    static class Image4iOS
    {
       final String name;
-      final int size;
+      final int width;
+      final int height;
 
       private Image4iOS(String name, int size)
       {
          this.name = name;
-         this.size = size;
+         this.width = size;
+         this.height = size;
       }
-   }
 
-   public byte[] getIPhoneIcon(int size)
-   {
-      byte[] b = null;
-      try
+      private Image4iOS(String name, int width, int height)
       {
-         Image img = IconStore.getSquareIcon(size);
-         // guich@tc100b5_11: flood fill with tolerance
-         floodFill(img, 0);
-         ByteArrayStream bas = new ByteArrayStream(size * size);
-         img.createPng(bas);
-         b = bas.toByteArray();
+         this.name = name;
+         this.width = width;
+         this.height = height;
       }
-      catch (Exception e)
+
+      public byte[] getImage()
       {
-         e.printStackTrace();
+         byte[] b = null;
+         try
+         {
+            Image img = width == height ? IconStore.getSquareIcon(width) : IconStore.getSplashImage(width, height);
+            // guich@tc100b5_11: flood fill with tolerance
+            floodFill(img, 0);
+            ByteArrayStream bas = new ByteArrayStream(width * height);
+            img.createPng(bas);
+            b = bas.toByteArray();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+         return b;
       }
-      return b;
    }
 }
 
 class IconStore extends Hashtable
 {
    private Image largestSquareIcon;
+   private Image largestSplashImage;
    private static IconStore instance;
 
    private IconStore() throws IOException
    {
       super(30);
       if (DeploySettings.classPath != null && DeploySettings.classPath.length > 0)
-      {
          for (int i = DeploySettings.classPath.length - 1 ; i >= 0 ; i--)
-            addFrom(DeploySettings.classPath[i]);
-      }
+            if (DeploySettings.classPath[i].length() > 0)
+               addFrom(DeploySettings.classPath[i]);
       addFrom(DeploySettings.mainClassDir);
       addFrom(DeploySettings.baseDir);
       addFrom(".");
@@ -643,6 +591,23 @@ class IconStore extends Hashtable
       return b != null ? DeploySettings.bitmaps.new Bmp(b) : DeploySettings.bitmaps.new Bmp(width, height);
    }
 
+   public static Image getSplashImage(int width, int height) throws ImageException, IOException
+   {
+      Image img;
+      IconStore store = getInstance();
+      byte[] b = (byte[]) store.get(width + "x" + height);
+      if (b != null)
+         img = new Image(b);
+      else
+      if (store.largestSplashImage == null)
+         img =  whiteImage(width,height);
+      else
+         img = store.largestSplashImage.getSmoothScaledInstance(width, height);
+      if (img.getHeight() != height || img.getWidth() != width)
+         throw new ImageException("splash" + img.getHeight() + "x" + img.getWidth() + " must be " + width + "x" + height);
+      return img;
+   }
+
    public static Image getSquareIcon(int size) throws ImageException, IOException
    {
       Image img;
@@ -651,18 +616,49 @@ class IconStore extends Hashtable
       if (b != null)
          img = new Image(b);
       else
-         img = store.largestSquareIcon.getSmoothScaledInstance(size, size, store.largestSquareIcon.transparentColor);
+      if (store.largestSquareIcon == null)
+         img =  whiteImage(size,size);
+      else
+         img = store.largestSquareIcon.getSmoothScaledInstance(size, size);
       if (img.getHeight() != size || img.getWidth() != size)
-         throw new ImageException("icon" + size + "x" + size + " must be " + size + "x" + size);
+         throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + size + "x" + size);
+      return img;
+   }
+   
+   public static Image getIcon(int width, int height) throws ImageException, IOException
+   {
+      Image img;
+      IconStore store = getInstance();
+      byte[] b = (byte[]) store.get(width + "x" + height);
+      if (b != null)
+         img = new Image(b);
+      else
+      if (store.largestSquareIcon == null)
+         img =  whiteImage(width,height);
+      else
+         img = store.largestSquareIcon.getSmoothScaledInstance(width, height);
+      if (img.getHeight() != height || img.getWidth() != width)
+         throw new ImageException("icon" + img.getHeight() + "x" + img.getWidth() + " must be " + height + "x" + width);
+      return img;
+   }
+
+   private static Image whiteImage(int w, int h) throws ImageException
+   {
+      Image img = new Image(w,h);
+      Graphics g = img.getGraphics();
+      g.backColor = Color.WHITE;
+      g.fillRect(0,0,w,h);
       return img;
    }
 
    private void addFrom(String path) throws IOException
    {
       int largestIconSize = 0;
+      int largestSplashSize = 0;
 
       if (path != null && new File(path).isDir())
       {
+         path = path.trim();
          String[] files = File.listFiles(path, false);
          if (files != null)
          {
@@ -671,6 +667,11 @@ class IconStore extends Hashtable
                String name = null;
                String file = files[i].toLowerCase();
                if (file.endsWith("appicon.gif"))
+               {
+                  System.out.println("*** Warning: appicon.gif is deprecated. Convert it to a 256x256 png with transparency");
+                  name = "appicon";
+               }
+               else if (file.endsWith("appicon.png"))
                   name = "appicon";
                else if (file.endsWith(".bmp") || file.endsWith(".png"))
                {
@@ -678,6 +679,12 @@ class IconStore extends Hashtable
                   int idxIconName = file.indexOf("icon");
                   if (idxLastSlash != -1 && idxIconName != -1)
                      name = file.substring(idxIconName + 4, file.lastIndexOf('.'));
+                  else
+                  {
+                     int idxSplashName = file.indexOf("splash");
+                     if (idxLastSlash != -1 && idxSplashName != -1)
+                        name = file.substring(idxIconName + 6, file.lastIndexOf('.'));
+                  }
                }
 
                if (name != null)
@@ -685,6 +692,11 @@ class IconStore extends Hashtable
                   try
                   {
                      byte[] b = Utils.loadFile(files[i], false);
+                     if (b == null)
+                     {
+                        System.out.println("File not found: "+files[i]);
+                        continue;
+                     }
                      Image img = new Image(b);
                      if (img.getWidth() == img.getHeight())
                      {
@@ -693,6 +705,15 @@ class IconStore extends Hashtable
                         {
                            largestIconSize = imgSize;
                            largestSquareIcon = img;
+                        }
+                     }
+                     else
+                     {
+                        int imgSize = img.getWidth() * img.getHeight();
+                        if (imgSize > largestSplashSize)
+                        {
+                           largestSplashSize = imgSize;
+                           largestSplashImage = img;
                         }
                      }
                      if (name.length() > 1)

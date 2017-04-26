@@ -53,7 +53,7 @@ public class ImageTest extends ImageComparisionTest
    private void test(int rgb, String s256, String s65536, String title)
    {
       try {it = new ImageTester("etc/images/ImageTest"+title+".bmp");} catch (ImageException e) {fail(e.getMessage());} catch (IOException e) {fail(e.getMessage());}
-      assert(s256, s65536, title);
+      assertOK(s256, s65536, title);
    }
 
    String []imageNames = // just to let deployer include them automagically

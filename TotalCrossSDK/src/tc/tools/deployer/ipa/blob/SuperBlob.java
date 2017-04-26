@@ -7,7 +7,7 @@ import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public class SuperBlob extends BlobCore
 {
-   Vector index = new Vector();
+   Vector<BlobIndex> index = new Vector<BlobIndex>();
 
    protected SuperBlob(long magic)
    {

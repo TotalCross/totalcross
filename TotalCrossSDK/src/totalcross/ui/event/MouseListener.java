@@ -29,13 +29,19 @@ public interface MouseListener
     */
    public void mouseMove(MouseEvent e);
    
-   /** A MOUSE_MOVE event was dispatched when the mouse was going into a control.
+   /** A MOUSE_IN event was dispatched when the mouse was going into a control.
     * @see PenEvent 
     */
    public void mouseIn(MouseEvent e);
    
-   /** A MOUSE_MOVE event was dispatched when the mouse was going out of a control.
+   /** A MOUSE_OUT event was dispatched when the mouse was going out of a control.
     * @see PenEvent 
     */
    public void mouseOut(MouseEvent e);
+   
+   /** The event type for a mouse wheel moving down.
+    * This is a hardware event. 
+    */
+   public void mouseWheel(MouseEvent e);
+
 }

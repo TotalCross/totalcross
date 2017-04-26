@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsT_update(NMParams p) // totalcross/sys/Time native void update();
 {
-   Object time = p->obj[0];
+   TCObject time = p->obj[0];
    int32 year,month,day,hour,minute,second,millis;
    
    getDateTime(&year,&month,&day,&hour,&minute,&second,&millis);

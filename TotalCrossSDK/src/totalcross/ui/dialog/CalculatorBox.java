@@ -28,6 +28,36 @@ import totalcross.sys.*;
 
 public class CalculatorBox extends Window
 {
+   /** Implement this interface to check if the given value is a valid value to be returned.
+    * Return null if the value is correct, or a message that will be displayed to the user if not.
+    * 
+    * Note that the range check only occurs when the user do NOT press Cancel.
+    * 
+    * <pre>
+    *  Edit ed = new Edit();
+    *  ed.rangeCheck = new CalculatorBox.RangeCheck()
+    *  {
+    *     public String check(double value)
+    *     {
+    *        if (value > 0 && value < 10)
+    *           return null;
+    *        return "The value must be between 0 and 10";
+    *     }
+    *  };
+    *  ed.setMode(Edit.CURRENCY,true);
+    *  add(ed,LEFT,TOP);
+    * </pre>
+    * 
+    * @since TotalCross 2.0
+    */
+   public static interface RangeCheck
+   {
+      public String check(double value);
+   }
+   
+   /** The RangeCheck instance that will be called before the user closes the box. */
+   public RangeCheck rangeCheck;
+   
    /** The Edit used to show the number. */
    public Edit edNumber;
    private PushButtonGroup pbgAction,numericPad,pbgArrows,pbgOp,pbgOp2,pbgEq;
@@ -60,6 +90,9 @@ public class CalculatorBox extends Window
    /** The control that had focus when this CalculatorBox was popped up. */
    public Control cOrig;
    
+   /** The desired control that will be the original one. */
+   public Control cOrigDefault;
+   
    /** Set to true to don't replace the original value in the Edit if user pressed Ok. */
    public boolean keepOriginalValue;
    
@@ -86,7 +119,7 @@ public class CalculatorBox extends Window
       super(defaultTitle,uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = started = true;
+      started = true;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       backspace = new KeyEvent(); backspace.type = KeyEvent.SPECIAL_KEY_PRESS; backspace.key = SpecialKeys.BACKSPACE;
       this.showOperations = showOperations;
@@ -222,7 +255,7 @@ public class CalculatorBox extends Window
    public void onPopup()
    {
       Control c = topMost.getFocus();
-      cOrig = c instanceof Edit || c instanceof SpinList ? (Control)c : null;
+      cOrig = cOrigDefault != null ? cOrigDefault : c instanceof Edit || c instanceof SpinList ? (Control)c : null;
       setupUI(false);
       clear();
       if (cOrig != null)
@@ -386,17 +419,23 @@ public class CalculatorBox extends Window
       }
    }
    
-   private void ok()
+   private void ok() throws InvalidNumberException
    {
       answer = unformat(edNumber.getTextWithoutMask());
-      if (cOrig != null && !keepOriginalValue)
+      String msg;
+      if (answer != null && answer.length() > 0 && rangeCheck != null && (msg = rangeCheck.check(Convert.toDouble(answer))) != null)
+         new MessageBox(title,msg).popup();
+      else
       {
-         if (cOrig instanceof Edit)
-            ((Edit)cOrig).setText(answer,true);
-         else
-            ((SpinList)cOrig).setSelectedItem(answer);
+         if (cOrig != null && !keepOriginalValue)
+         {
+            if (cOrig instanceof Edit)
+               ((Edit)cOrig).setText(answer,true);
+            else
+               ((SpinList)cOrig).setSelectedItem(answer);
+         }
+         unpop();
       }
-      unpop();
    }
 
    public void reposition()

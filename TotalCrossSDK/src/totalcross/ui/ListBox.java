@@ -96,6 +96,9 @@ public class ListBox extends Container implements Scrollable
     */
    public int iconGap;
    
+   /** Set to false to disable border drawing. */
+   public boolean drawBorder = true;
+   
    /** Used to show an icon and a text. You can mix IconItem with other item types in the
     * ListBox. Example:
     * <pre>
@@ -112,8 +115,8 @@ public class ListBox extends Container implements Scrollable
     */
    public static class IconItem
    {
-      String text;
-      Image icon;
+      public String text;
+      public Image icon;
 
       public IconItem(String text, Image icon)
       {
@@ -125,6 +128,38 @@ public class ListBox extends Container implements Scrollable
       {
          return text;
       }
+   }
+
+   /** An interface that makes easier to draw custom items.
+    * Example:
+    * <pre>
+      class ItemSeek implements ListBox.CustomDrawingItem
+      {
+         int tpsinc;
+         boolean admin;
+         String plat,date;
+         
+         ItemSeek(String s)
+         {
+            // 21Wi2014/12/05
+            tpsinc = s.charAt(0)-'0';
+            admin = s.charAt(1) == '1';
+            plat = s.substring(2,4);
+            date = s.substring(4);
+         }
+   
+         public void onItemPaint(Graphics g, int dx, int dy, int w, int h)
+         {
+            g.drawText(data,dx,dy);
+            // and also other items
+         }
+      }
+    * </pre>
+    * @since TotalCross 3.1 
+    */
+   public static interface CustomDrawingItem
+   {
+      public void onItemPaint(Graphics g, int dx, int dy, int w, int h);
    }
 
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
@@ -191,7 +226,7 @@ public class ListBox extends Container implements Scrollable
     */ 
    public static double itemHeightFactor = uiAndroid ? DEFAULT_ITEM_HEIGHT_FACTOR : 1;
    
-   private double ihFactor = itemHeightFactor;
+   protected double ihFactor = itemHeightFactor;
    
    /** Used by the DBListBox to store the data column that is displayed. */
    protected int dataCol=-1;
@@ -205,7 +240,6 @@ public class ListBox extends Container implements Scrollable
    /** Creates a Listbox with the given items. */
    public ListBox(Object []items)
    {
-      started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
       sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
       sbar.focusTraversable = false;
@@ -219,7 +253,10 @@ public class ListBox extends Container implements Scrollable
       sbar.setMaximum(itemCount);
       this.focusTraversable = true; // kmeehl@tc100
       if (Settings.fingerTouch)
+      {
          flick = new Flick(this);
+         flick.shortestFlick = 50; // make the listbox more responsive
+      }
       iconGap = fmH*4/3;
    }
    
@@ -246,7 +283,7 @@ public class ListBox extends Container implements Scrollable
       return false;
    }
    
-   public boolean scrollContent(int xDelta, int yDelta)
+   public boolean scrollContent(int xDelta, int yDelta, boolean fromFlick)
    {
       boolean hFlick = xDelta != 0 && ivWidths != null;
       boolean vFlick = yDelta != 0;
@@ -296,6 +333,7 @@ public class ListBox extends Container implements Scrollable
                   vFlick = false;
                else
                {
+                  if (!fromFlick) sbar.tempShow();
                   offset = newOffset;
                   Window.needsPaint = true;
                }
@@ -346,8 +384,8 @@ public class ListBox extends Container implements Scrollable
          xOffset = xOffsetMin;
       if (btnLeft != null)
       {
-         btnLeft.setEnabled(enabled && xOffset < 0);
-         btnRight.setEnabled(enabled && xOffset > xOffsetMin);
+         btnLeft.setEnabled(isEnabled() && xOffset < 0);
+         btnRight.setEnabled(isEnabled() && xOffset > xOffsetMin);
       }
    }
 
@@ -388,7 +426,7 @@ public class ListBox extends Container implements Scrollable
             verifyItemWidth(m);
          }
       }
-      sbar.setEnabled(enabled && visibleItems < itemCount);
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
       sbar.setMaximum(itemCount); // guich@210_12: forgot this line!
    }
 
@@ -403,7 +441,7 @@ public class ListBox extends Container implements Scrollable
          verifyItemWidth(w);
       }
       itemCount++;
-      sbar.setEnabled(enabled && visibleItems < itemCount);
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
       sbar.setMaximum(itemCount);
    }
    
@@ -434,7 +472,7 @@ public class ListBox extends Container implements Scrollable
          verifyItemWidth(w);
       }
       itemCount++;
-      sbar.setEnabled(enabled && visibleItems < itemCount);
+      sbar.setEnabled(isEnabled() && visibleItems < itemCount);
       sbar.setMaximum(itemCount);
    }
 
@@ -484,7 +522,7 @@ public class ListBox extends Container implements Scrollable
             }
          }
          sbar.setMaximum(itemCount);
-         sbar.setEnabled(enabled && visibleItems < itemCount);
+         sbar.setEnabled(isEnabled() && visibleItems < itemCount);
 
          if (selectedIndex == itemCount) // last item was removed?
             setSelectedIndex(selectedIndex-1);
@@ -571,6 +609,12 @@ public class ListBox extends Container implements Scrollable
    /** Select the given index and scroll to it if necessary. */
    public void setSelectedIndex(int i)
    {
+      setSelectedIndex(i, Settings.sendPressEventOnChange);
+   }
+   
+   /** Select the given index and scroll to it if necessary, sending or not the pressed event. */
+   public void setSelectedIndex(int i, boolean sendPressEvent)
+   {
       if (0 <= i && i < itemCount && i != selectedIndex/* && height != 0*/) // guich@tc100: commented height!=0 otherwise Watch's combobox will not be set properly
       {
          int vi = sbar.getVisibleItems();
@@ -592,7 +636,7 @@ public class ListBox extends Container implements Scrollable
             sbar.setValue(offset);
          }
          Window.needsPaint = true;
-         if (Settings.sendPressEventOnChange)
+         if (sendPressEvent)
             postPressedEvent();
       }
       else
@@ -605,7 +649,7 @@ public class ListBox extends Container implements Scrollable
             sbar.setValue(0);
             Window.needsPaint = true;
          }
-         if (Settings.sendPressEventOnChange)
+         if (sendPressEvent)
             postPressedEvent();
       }
    }
@@ -615,9 +659,16 @@ public class ListBox extends Container implements Scrollable
     */
    public void selectLast()
    {
+      selectLast(true);
+   }
+
+   /** Selects the last item added to this listbox, doing a scroll if needed, and sending or not the event. Calls repaintNow.
+    */
+   public void selectLast(boolean sendPressEvent)
+   {
       if (itemCount > 0)
       {
-         setSelectedIndex(itemCount-1);
+         setSelectedIndex(itemCount-1, sendPressEvent);
          repaintNow();
       }
    }
@@ -680,8 +731,6 @@ public class ListBox extends Container implements Scrollable
       int m = uiFlat?0:simpleBorder?1:2,n=0;
       visibleItems = (height-m-2) / getItemHeight(0);
       btnX = width - m - btnW;
-      if (uiPalm)
-         {btnX--; m++;}
       btnX0 = btnX;
       if (!sbar.isVisible())
          btnX = width-1;
@@ -696,11 +745,6 @@ public class ListBox extends Container implements Scrollable
             btnRight.focusTraversable = btnLeft.focusTraversable = false;
             tabOrder.removeElement(btnRight); // guich@572_6: remove them from the tabOrder, otherwise it will block the control navigation in some situations (AllTests)
             tabOrder.removeElement(btnLeft);
-            if (uiPalm) // guich@554_31
-            {
-               btnRight.setBorder(Button.BORDER_NONE);
-               btnLeft.setBorder(Button.BORDER_NONE);
-            }
             onColorsChanged(true); // guich@tc111_6
          }
          n = (btnRight.getPreferredHeight() + extraHorizScrollButtonHeight + extraHB) << 1;
@@ -772,7 +816,7 @@ public class ListBox extends Container implements Scrollable
    public void onEvent(Event event)
    {
       PenEvent pe;
-      if (enabled)
+      if (isEnabled())
       switch (event.type)
       {
          case ControlEvent.PRESSED:
@@ -844,14 +888,14 @@ public class ListBox extends Container implements Scrollable
             {
                if (isScrolling)
                {
-                  scrollContent(-de.xDelta, -de.yDelta);
+                  scrollContent(-de.xDelta, -de.yDelta, true);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   event.consumed = true;
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta, true))
                      isScrolling = scScrolled = true;
                }
             }
@@ -892,25 +936,23 @@ public class ListBox extends Container implements Scrollable
          }
          else
          {
-            Graphics g = getGraphics();
-            if (selectedIndex >= 0)
-               drawCursor(g,selectedIndex,false);
+            //Graphics g = getGraphics();
+            //if (selectedIndex >= 0)
+            //   drawCursor(g,selectedIndex,false);
             selectedIndex = newSelection;
-            drawCursor(g,selectedIndex,true);
+            Window.needsPaint = true;
+            //drawCursor(g,selectedIndex,true);
          }
       }
    }
 
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled,false))
       {
-         this.enabled = enabled;
-         onColorsChanged(false);
          sbar.setEnabled(enabled && visibleItems < itemCount);
          if (btnLeft != null)
             enableButtons();
-         Window.needsPaint = true; // now the controls have different l&f for disabled states
       }
    }
 
@@ -922,7 +964,7 @@ public class ListBox extends Container implements Scrollable
       back1  = customCursorColor!=-1 ? customCursorColor : (back0 != Color.WHITE) ? backColor : Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
       if (fColor == back1) // guich@200b4_206: ops! same color?
          fColor = foreColor;
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
       if (btnRight != null)
       {
          btnRight.setBackForeColors(uiVista?back0:backColor, foreColor);
@@ -934,43 +976,48 @@ public class ListBox extends Container implements Scrollable
 
    public void onPaint(Graphics g)
    {
-      int i;
       // Draw background and borders
       g.backColor = uiAndroid ? parent.backColor : back0;
       if (!transparentBackground) // guich@tc115_18
          g.fillRect(0,0,width,height); // guich@tc115_77: fill till end because the scrollbar may not being shown
-      if (uiAndroid)
+      if (drawBorder)
       {
-         if (npback == null)
-            try
-            {
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false,true);
-            }
-         catch (ImageException e) {}
-         g.drawImage(npback, 0,0);
+         if (uiAndroid)
+         {
+            if (npback == null)
+               try
+               {
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.LISTBOX, width, height, isEnabled() ? back0 : Color.interpolate(back0,parent.backColor), false);
+                  npback.alphaMask = alphaValue;
+               }
+               catch (ImageException e) {}
+            NinePatch.tryDrawImage(g,npback,0,0);
+         }
+         g.foreColor = foreColor;
+         if (!uiAndroid)
+            g.draw3dRect(0,0,width,height,Graphics.R3D_CHECK,false,false,fourColors);
       }
-      g.foreColor = foreColor;
-      if (!uiAndroid)
-         if (simpleBorder && uiCE)
-            g.drawRect(0,0,width,height);
-         else
-            g.draw3dRect(0,0,width,height,uiPalm?Graphics.R3D_SHADED:Graphics.R3D_CHECK,false,false,fourColors);
       g.foreColor = fColor;
 
       int dx = 2; // guich@580_41: changed from 3 to 2
       int dy = 3;
-      if (uiPalm || uiFlat) dy--;
+      if (uiFlat) dy--;
       if (simpleBorder) {dx--; dy--;}
 
       setTextAreaClip(g,dx,dy); // guich@tc100b4_5
       dx += xOffset;
       int greatestVisibleItemIndex = Math.min(itemCount, visibleItems+offset); // code corrected by Bjoem Knafla
       dx++;
-      for (i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
+      drawItems(g, dx, dy, greatestVisibleItemIndex); 
+   }
+   
+   protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex)
+   {
+      for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
          drawItem(g,i,dx,dy); // guich@200b4: let the user extend ListBox and draw the items himself
       drawSelectedItem(g, offset, greatestVisibleItemIndex);
    }
-   
+
    protected int getItemHeight(int i)
    {
       return Settings.fingerTouch ? (int)(fmH*ihFactor) : fmH;
@@ -978,8 +1025,8 @@ public class ListBox extends Container implements Scrollable
 
    protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
    {
-      int yy = dy-(uiCE?1:0);
-      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiCE||uiPalm||uiAndroid?2:1)-yy,getItemHeight(0)*visibleItems + (uiPalm||uiAndroid?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
+      int yy = dy;
+      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiAndroid?2:1)-yy,getItemHeight(0)*visibleItems + (uiAndroid?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
    }
    
    protected void drawSelectedItem(Graphics g, int from, int to)
@@ -997,6 +1044,12 @@ public class ListBox extends Container implements Scrollable
    protected void drawItem(Graphics g, int index, int dx, int dy)
    {
       Object obj = items.items[index];
+      if (obj == null) return;
+      if (obj instanceof CustomDrawingItem)
+      {
+         ((CustomDrawingItem)obj).onItemPaint(g, dx, dy, width, getItemHeight(index));
+         return;
+      }
       if (obj instanceof IconItem)
       {
          g.drawImage(((IconItem)obj).icon,dx,dy);
@@ -1020,19 +1073,19 @@ public class ListBox extends Container implements Scrollable
    /** You can extend ListBox and overide this method to draw the items */
    protected void drawSelectedItem(Graphics g, int index, int dx, int dy)
    {
-      g.drawText(getText(),dx,dy, textShadowColor != -1, textShadowColor);
+      g.drawText(getText(),dx,dy, textShadowColor != -1, textShadowColor);         
    }
    /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
    protected int getItemWidth(int index)
    {
       Object obj = items.items[index];
-      return fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
+      return obj == null ? 0 : fm.stringWidth(obj.toString()) + (obj instanceof IconItem ? iconGap : 0);
    }
 
    int getIndexY(int sel)
    {
       int dy = 3;
-      if (uiPalm || uiFlat) dy--;
+      if (uiFlat) dy--;
       if (simpleBorder) dy--;
       int ih = getItemHeight(sel);
       dy += (sel-offset) * ih;
@@ -1049,7 +1102,7 @@ public class ListBox extends Container implements Scrollable
 
          int dx = 3; // guich@580_41: cursor must be drawn at 3 or will overwrite the border on a combobox with PalmOS style
          int dy = 3;
-         if (uiPalm || uiFlat) dy--;
+         if (uiFlat) dy--;
          if (simpleBorder) {dx--; dy--;}
 
          setTextAreaClip(g,dx-1,dy); // guich@tc100b4_5
@@ -1060,9 +1113,9 @@ public class ListBox extends Container implements Scrollable
          int sw;
          if (useFullWidthOnSelection || (sw = getItemWidth(sel)) == 0) // guich@500_16: use the full text width due to the horizontal scroll - guich@200final_5: if item is a zero length string, invert the complete row.
             sw = btnX-4;
-         g.fillRect(dx-1, dy-1, sw+2, ih+fm.descent); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
+         g.fillRect(dx-1, dy-1, sw+2, ih+2); // pgr@520_4: if this is an image or an antialiased font, using eraseRect will make it ugly. - guich@552_7: added -1 to fix cursor not overwriting border.
          drawItem(g, sel, dx, dy); // pgr@520_4
-         if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
+         //if (on && getParentWindow() instanceof ComboBoxDropDown && !(this instanceof MultiListBox)) Window.updateScreen(); // guich@tc114_80: update screen before the combobox closes. not comparing with ComboBoxDropDown results in screen FLICKERing - guich@tc115_89: prevent flicker in MultiListBox
       }
    }
    
@@ -1129,7 +1182,7 @@ public class ListBox extends Container implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // any change here must synchronize with MultiListBox'

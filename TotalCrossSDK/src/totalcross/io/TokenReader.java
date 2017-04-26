@@ -31,10 +31,10 @@ import totalcross.util.*;
  * </pre>
  * Using this class takes less memory, because the line is read in tokens. For example, suppose a line contains 200 chars, 
  * and splitting them contains 10 tokens of 20 chars each. Using the first approach (readline/tokenizeString), the readline will
- * create a String with 200 chars, then that String will be tokenized into 10 smaller strings of 20 chars each.<br><br>
- * Using this class, it will read the 10 tokens of 20 chars each directly, no longer having to create the temporary String of 200 chars.
+ * create a string with 200 chars, then that String will be tokenized into 10 smaller strings of 20 chars each.<br><br>
+ * Using this class, it will read the 10 tokens of 20 chars each directly, no longer having to create the temporary string of 200 chars.
  * <br><br>
- * The delimiter can be any character except the \r and \n. Note that two consecutive delimiters are considered a single token. So
+ * The delimiter can be any character except for \r and \n. Note that two consecutive delimiters are considered a single token. So
  * <code>;a;;</code> is returned as <code>{"","a","",""}</code>.
  * <br><br>
  * Here's a sample that parses the input from a file:
@@ -47,7 +47,7 @@ import totalcross.util.*;
  *    ... do whatever you want with the tokens.
  * }
  * </pre>
- * And here's another sample that parses from a String:
+ * And here's another sample that parses from a string:
  * <pre>
  * String lines = "a;;;a;\na;;;a; \nb;;b;b;b \nb;;b;b;b;\nb\nb;\n;b\n;\n b ;\n b \n  b \n b  \nb  \n  b";
  * String ll[] = Convert.tokenizeString(lines,'\n');
@@ -128,7 +128,7 @@ import totalcross.util.*;
  * 0: 'b'
  * </pre>
  * Note that this class already uses a buffer for faster detection of the newline and delimiters.
- * Don't use TokenReader with a BufferedStream, its nonsense and it will throw a warning at desktop.
+ * Don't use TokenReader with a BufferedStream, it's nonsense and it will throw a warning on the desktop.
  *
  * @author Guilherme Campos Hazan (guich)
  * @since TotalCross 1.23
@@ -140,7 +140,7 @@ public class TokenReader extends LineReader
    
    /**
     * Constructs a new TokenReader and sets maxTries accordingly to the type of
-    * class: 10 if its a Socket or a PortConnector, 0 otherwise.
+    * class: 10 if its a Socket or a PortConnector; 0, otherwise.
     *
     * @throws totalcross.io.IOException
     */
@@ -173,7 +173,7 @@ public class TokenReader extends LineReader
    }
    
    /**
-    * Returns the next tokens available on this stream or null if none. Empty
+    * Returns the next tokens available in this stream or null if none. Empty
     * lines are skipped.
     *
     * @throws totalcross.io.IOException

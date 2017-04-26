@@ -49,12 +49,13 @@ public class Random
    private static final int IR = 2836;
    private static final int ZERO_SEED_REPLACEMENT = 234123;  // whatever
 
-   private int seed;
+   private int seed,seed0;
 
    /** The only reasonable seeds are between 0 and 2^31 inclusive; if
        you're negative, it'll get the absolute value of it. */
    public Random(int _seed)
    {
+      seed0 = _seed;
       // strip out the minus-sign if any
       seed = (_seed << 1) >>> 1;
       // if seed is 0, it's invalid, we need another seed
@@ -65,7 +66,7 @@ public class Random
    public Random()
    {
       totalcross.sys.Time t = new totalcross.sys.Time(); // guich@300_30
-      seed = t.hour*60*60 + t.minute*60 + t.second + 100*t.millis; // hope this value never gets < 0 !
+      seed0 = seed = t.hour*60*60 + t.minute*60 + t.second + 100*t.millis; // hope this value never gets < 0 !
    }
 
    /** Bits should be <= 31 */
@@ -129,5 +130,11 @@ public class Random
       else
 		if (s == e) e++;
       return s + nextInt(e - s + 1);
+	}
+	
+	/** Returns the first seed used */
+	public int getSeed()
+	{
+	   return seed0;
 	}
 }

@@ -1,5 +1,70 @@
 
+TC_API void jlC_forName_s(NMParams p);
+TC_API void jlC_newInstance(NMParams p);
+TC_API void jlC_isInstance_o(NMParams p);
+TC_API void jlC_isAssignableFrom_c(NMParams p);
+TC_API void jlC_isInterface(NMParams p);
+TC_API void jlC_isArray(NMParams p);
+TC_API void jlC_isPrimitive(NMParams p);
+TC_API void jlC_getSuperclass(NMParams p);
+TC_API void jlC_getInterfaces(NMParams p);
+TC_API void jlC_getComponentType(NMParams p);
+TC_API void jlC_getModifiers(NMParams p);
+TC_API void jlC_getFields(NMParams p);
+TC_API void jlC_getMethods(NMParams p);
+TC_API void jlC_getConstructors(NMParams p);
+TC_API void jlC_getField_s(NMParams p);
+TC_API void jlC_getMethod_sC(NMParams p);
+TC_API void jlC_getConstructor_C(NMParams p);
+TC_API void jlC_getDeclaredFields(NMParams p);
+TC_API void jlC_getDeclaredMethods(NMParams p);
+TC_API void jlC_getDeclaredConstructors(NMParams p);
+TC_API void jlC_getDeclaredField_s(NMParams p);
+TC_API void jlC_getDeclaredMethod_sC(NMParams p);
+TC_API void jlC_getDeclaredConstructor_C(NMParams p);
+TC_API void jlrA_newInstance_ci(NMParams p);
+TC_API void jlrA_newInstance_cI(NMParams p);
+TC_API void jlrA_getLength_o(NMParams p);
+TC_API void jlrA_get_oi(NMParams p);
+TC_API void jlrA_getBoolean_oi(NMParams p);
+TC_API void jlrA_getByte_oi(NMParams p);
+TC_API void jlrA_getChar_oi(NMParams p);
+TC_API void jlrA_getShort_oi(NMParams p);
+TC_API void jlrA_getInt_oi(NMParams p);
+TC_API void jlrA_getLong_oi(NMParams p);
+TC_API void jlrA_getFloat_oi(NMParams p);
+TC_API void jlrA_getDouble_oi(NMParams p);
+TC_API void jlrA_set_oio(NMParams p);
+TC_API void jlrA_setBoolean_oib(NMParams p);
+TC_API void jlrA_setByte_oib(NMParams p);
+TC_API void jlrA_setChar_oic(NMParams p);
+TC_API void jlrA_setShort_ois(NMParams p);
+TC_API void jlrA_setInt_oii(NMParams p);
+TC_API void jlrA_setLong_oil(NMParams p);
+TC_API void jlrA_setFloat_oid(NMParams p);
+TC_API void jlrA_setDouble_oid(NMParams p);
+TC_API void jlrM_invoke_oO(NMParams p);
+TC_API void jlrC_newInstance_O(NMParams p);
+TC_API void jlrF_get_o(NMParams p);
+TC_API void jlrF_getBoolean_o(NMParams p);
+TC_API void jlrF_getByte_o(NMParams p);
+TC_API void jlrF_getChar_o(NMParams p);
+TC_API void jlrF_getShort_o(NMParams p);
+TC_API void jlrF_getInt_o(NMParams p);
+TC_API void jlrF_getLong_o(NMParams p);
+TC_API void jlrF_getFloat_o(NMParams p);
+TC_API void jlrF_getDouble_o(NMParams p);
+TC_API void jlrF_set_oo(NMParams p);
+TC_API void jlrF_setBoolean_ob(NMParams p);
+TC_API void jlrF_setByte_ob(NMParams p);
+TC_API void jlrF_setChar_oc(NMParams p);
+TC_API void jlrF_setShort_os(NMParams p);
+TC_API void jlrF_setInt_oi(NMParams p);
+TC_API void jlrF_setLong_ol(NMParams p);
+TC_API void jlrF_setFloat_od(NMParams p);
+TC_API void jlrF_setDouble_od(NMParams p);
 TC_API void tmGM_showAddress_sb(NMParams p);
+TC_API void tmGM_showRoute_sssi(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);
@@ -11,6 +76,9 @@ TC_API void tuzZF_close(NMParams p);
 TC_API void tuzZF_entries(NMParams p);
 TC_API void tuzZF_getEntry_s(NMParams p);
 TC_API void tuzZF_getEntryStream_s(NMParams p);
+TC_API void tumS_fromText_s(NMParams p);
+TC_API void tumS_toText_s(NMParams p);
+TC_API void tumS_play_s(NMParams p);
 TC_API void tumS_beep(NMParams p);
 TC_API void tumS_tone_ii(NMParams p);
 TC_API void tumS_setEnabled_b(NMParams p);
@@ -33,11 +101,17 @@ TC_API void tuiI_setCurrentFrame_i(NMParams p);
 TC_API void tuiI_applyColor_i(NMParams p);
 TC_API void tuiI_nativeEquals_i(NMParams p);
 TC_API void tuiI_applyColor2_i(NMParams p);
-TC_API void tugG_dither_iiiii(NMParams p);
+TC_API void tuiI_setTransparentColor_i(NMParams p);
+TC_API void tuiI_applyChanges(NMParams p);
+TC_API void tuiI_freeTexture(NMParams p);
+TC_API void tuiI_applyFade_i(NMParams p);
+TC_API void tuiI_createJpg_si(NMParams p);
+TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p);
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p);
+TC_API void tugG_dither_iiii(NMParams p);
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p);
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
-TC_API void tugG_drawDottedCursor_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);
 TC_API void tugG_fillEllipse_iiii(NMParams p);
 TC_API void tugG_drawArc_iiidd(NMParams p);
@@ -50,22 +124,17 @@ TC_API void tugG_drawCircle_iii(NMParams p);
 TC_API void tugG_fillCircle_iii(NMParams p);
 TC_API void tugG_getPixel_ii(NMParams p);
 TC_API void tugG_setPixel_ii(NMParams p);
-TC_API void tugG_eraseRect_iiii(NMParams p);
 TC_API void tugG_drawLine_iiii(NMParams p);
 TC_API void tugG_drawDots_iiii(NMParams p);
-TC_API void tugG_fillCursor_iiii(NMParams p);
-TC_API void tugG_drawCursor_iiii(NMParams p);
 TC_API void tugG_drawRect_iiii(NMParams p);
 TC_API void tugG_fillRect_iiii(NMParams p);
-TC_API void tugG_drawDottedRect_iiii(NMParams p);
 TC_API void tugG_fillPolygon_IIi(NMParams p);
+TC_API void tugG_drawDottedRect_iiii(NMParams p);
 TC_API void tugG_drawPolygon_IIi(NMParams p);
 TC_API void tugG_drawPolyline_IIi(NMParams p);
 TC_API void tugG_drawText_sii(NMParams p);
 TC_API void tugG_drawText_Ciiii(NMParams p);
-TC_API void tugG_drawText_siiii(NMParams p);
 TC_API void tugG_drawText_siii(NMParams p);
-TC_API void tugG_drawText_siiiii(NMParams p);
 TC_API void tugG_drawHatchedRect_iiiibb(NMParams p);
 TC_API void tugG_fillHatchedRect_iiiibb(NMParams p);
 TC_API void tugG_drawRoundRect_iiiii(NMParams p);
@@ -73,16 +142,14 @@ TC_API void tugG_fillRoundRect_iiiii(NMParams p);
 TC_API void tugG_setClip_iiii(NMParams p);
 TC_API void tugG_clip_r(NMParams p);
 TC_API void tugG_copyRect_giiiiii(NMParams p);
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p);
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p);
-TC_API void tugG_drawImage_iiiiib(NMParams p);
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p);
+TC_API void tugG_drawImage_iiib(NMParams p);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p);
 TC_API void tugG_setPixels_IIi(NMParams p);
 TC_API void tugG_refresh_iiiiiif(NMParams p);
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p);
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p);
-TC_API void tugG_eraseRect_iiiiiii(NMParams p);
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p);
 TC_API void tugG_drawArrow_iiibbi(NMParams p);
 TC_API void tugG_drawImage_iii(NMParams p);
 TC_API void tugG_fillEllipseGradient_iiii(NMParams p);
@@ -98,6 +165,7 @@ TC_API void tugG_drawText_siiiibi(NMParams p);
 TC_API void tugG_drawText_siiiiibi(NMParams p);
 TC_API void tugG_drawText_siibi(NMParams p);
 TC_API void tugG_drawText_siiibi(NMParams p);
+TC_API void tugG_drawThickLine_iiiii(NMParams p);
 TC_API void tufF_fontCreate(NMParams p);
 TC_API void tufFM_fontMetricsCreate(NMParams p);
 TC_API void tufFM_charWidth_c(NMParams p);
@@ -116,11 +184,12 @@ TC_API void tuMW_getCommandLine(NMParams p);
 TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
-TC_API void tuC_transitionEffectChanged_i(NMParams p);
+TC_API void tuW_setOrientation_i(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);
 TC_API void tsUTF8CC_chars2bytes_Cii(NMParams p);
+TC_API void tsC_equals_BB(NMParams p);
 TC_API void tsC_toInt_s(NMParams p);
 TC_API void tsC_toString_c(NMParams p);
 TC_API void tsC_doubleToIntBits_d(NMParams p);
@@ -184,6 +253,7 @@ TC_API void tsV_getStackTrace_t(NMParams p);
 TC_API void tsV_showKeyCodes_b(NMParams p);
 TC_API void tsV_turnScreenOn_b(NMParams p);
 TC_API void tsV_vibrate_i(NMParams p);
+TC_API void tsV_identityHashCode_o(NMParams p);
 TC_API void tsR_getInt_iss(NMParams p);
 TC_API void tsR_getString_iss(NMParams p);
 TC_API void tsR_getBlob_iss(NMParams p);
@@ -251,12 +321,10 @@ TC_API void tpD_number_s(NMParams p);
 TC_API void tpD_hangup(NMParams p);
 TC_API void tpSMS_send_ss(NMParams p);
 TC_API void tpSMS_receive(NMParams p);
-TC_API void jlC_forName_s(NMParams p);
-TC_API void jlC_newInstance(NMParams p);
-TC_API void jlC_isInstance_o(NMParams p);
 TC_API void jlO_toStringNative(NMParams p);
 TC_API void jlO_nativeHashCode(NMParams p);
 TC_API void jlO_getClass(NMParams p);
+TC_API void jlO_clone(NMParams p);
 TC_API void jlS_toUpperCase(NMParams p);
 TC_API void jlS_toLowerCase(NMParams p);
 TC_API void jlS_valueOf_d(NMParams p);
@@ -425,9 +493,329 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
+TC_API void tidsS_scannerActivate(NMParams p);
+TC_API void tidsS_setBarcodeParam_ib(NMParams p);
+TC_API void tidsS_setParam_iii(NMParams p);
+TC_API void tidsS_commitBarcodeParams(NMParams p);
+TC_API void tidsS_setBarcodeLength_iiii(NMParams p);
+TC_API void tidsS_getData(NMParams p);
+TC_API void tidsS_getScanManagerVersion(NMParams p);
+TC_API void tidsS_getScanPortDriverVersion(NMParams p);
+TC_API void tidsS_deactivate(NMParams p);
+TC_API void tidsS_readBarcode_s(NMParams p);
+TC_API void tidsS_setParam_ss(NMParams p);
+TC_API void tdsNDB__open_si(NMParams p);
+TC_API void tdsNDB__close(NMParams p);
+TC_API void tdsNDB__exec_s(NMParams p);
+TC_API void tdsNDB_shared_cache_b(NMParams p);
+TC_API void tdsNDB_enable_load_extension_b(NMParams p);
+TC_API void tdsNDB_interrupt(NMParams p);
+TC_API void tdsNDB_busy_timeout_i(NMParams p);
+TC_API void tdsNDB_prepare_s(NMParams p);
+TC_API void tdsNDB_errmsg(NMParams p);
+TC_API void tdsNDB_libversion(NMParams p);
+TC_API void tdsNDB_changes(NMParams p);
+TC_API void tdsNDB_total_changes(NMParams p);
+TC_API void tdsNDB_finalize_l(NMParams p);
+TC_API void tdsNDB_step_l(NMParams p);
+TC_API void tdsNDB_reset_l(NMParams p);
+TC_API void tdsNDB_clear_bindings_l(NMParams p);
+TC_API void tdsNDB_bind_parameter_count_l(NMParams p);
+TC_API void tdsNDB_column_count_l(NMParams p);
+TC_API void tdsNDB_column_type_li(NMParams p);
+TC_API void tdsNDB_column_decltype_li(NMParams p);
+TC_API void tdsNDB_column_table_name_li(NMParams p);
+TC_API void tdsNDB_column_name_li(NMParams p);
+TC_API void tdsNDB_column_text_li(NMParams p);
+TC_API void tdsNDB_column_blob_li(NMParams p);
+TC_API void tdsNDB_column_double_li(NMParams p);
+TC_API void tdsNDB_column_long_li(NMParams p);
+TC_API void tdsNDB_column_int_li(NMParams p);
+TC_API void tdsNDB_bind_null_li(NMParams p);
+TC_API void tdsNDB_bind_int_lii(NMParams p);
+TC_API void tdsNDB_bind_long_lil(NMParams p);
+TC_API void tdsNDB_bind_double_lid(NMParams p);
+TC_API void tdsNDB_bind_text_lis(NMParams p);
+TC_API void tdsNDB_bind_blob_liB(NMParams p);
+TC_API void tdsNDB_result_null_l(NMParams p);
+TC_API void tdsNDB_result_text_ls(NMParams p);
+TC_API void tdsNDB_result_blob_lB(NMParams p);
+TC_API void tdsNDB_result_double_ld(NMParams p);
+TC_API void tdsNDB_result_long_ll(NMParams p);
+TC_API void tdsNDB_result_int_li(NMParams p);
+TC_API void tdsNDB_backup_ssp(NMParams p);
+TC_API void tdsNDB_restore_ssp(NMParams p);
+TC_API void tdsNDB_column_metadata_l(NMParams p);
+TC_API void tdsNDB_load(NMParams p);
+TC_API void tmA_getHeightD_i(NMParams p);
+TC_API void tmA_configureD_s(NMParams p);
+TC_API void tmA_setSizeD_i(NMParams p);
+TC_API void tmA_setPositionD_i(NMParams p);
+TC_API void tmA_setVisibleD_b(NMParams p);
+TC_API void tmA_isVisibleD(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
+TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isAssignableFrom_c(NMParams p) // java/lang/Class public native boolean isAssignableFrom(Class cls);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isInterface(NMParams p) // java/lang/Class public native boolean isInterface();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isArray(NMParams p) // java/lang/Class public native boolean isArray();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_isPrimitive(NMParams p) // java/lang/Class public native boolean isPrimitive();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getSuperclass(NMParams p) // java/lang/Class public native Class getSuperclass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getInterfaces(NMParams p) // java/lang/Class public native java.lang.Class[] getInterfaces();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getComponentType(NMParams p) // java/lang/Class public native Class getComponentType();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getModifiers(NMParams p) // java/lang/Class public native int getModifiers();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredFields(NMParams p) // java/lang/Class public native java.lang.reflect.Field[] getDeclaredFields() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethods(NMParams p) // java/lang/Class public native java.lang.reflect.Method[] getDeclaredMethods() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructors(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor[] getDeclaredConstructors() throws SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredField_s(NMParams p) // java/lang/Class public native java.lang.reflect.Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredMethod_sC(NMParams p) // java/lang/Class public native java.lang.reflect.Method getDeclaredMethod(String name, Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlC_getDeclaredConstructor_C(NMParams p) // java/lang/Class public native java.lang.reflect.Constructor getDeclaredConstructor(Class []parameterTypes) throws NoSuchMethodException, SecurityException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_newInstance_ci(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int length) throws NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_newInstance_cI(NMParams p) // java/lang/reflect/Array public static native Object newInstance(Class componentType, int []dimensions) throws IllegalArgumentException, NegativeArraySizeException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getLength_o(NMParams p) // java/lang/reflect/Array public static native int getLength(Object array) throws IllegalArgumentException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_get_oi(NMParams p) // java/lang/reflect/Array public static native Object get(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getBoolean_oi(NMParams p) // java/lang/reflect/Array public static native boolean getBoolean(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getByte_oi(NMParams p) // java/lang/reflect/Array public static native byte getByte(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getChar_oi(NMParams p) // java/lang/reflect/Array public static native char getChar(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getShort_oi(NMParams p) // java/lang/reflect/Array public static native short getShort(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getInt_oi(NMParams p) // java/lang/reflect/Array public static native int getInt(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getLong_oi(NMParams p) // java/lang/reflect/Array public static native long getLong(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getFloat_oi(NMParams p) // java/lang/reflect/Array public static native double getFloat(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_getDouble_oi(NMParams p) // java/lang/reflect/Array public static native double getDouble(Object array, int index) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_set_oio(NMParams p) // java/lang/reflect/Array public static native void set(Object array, int index, Object value) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setBoolean_oib(NMParams p) // java/lang/reflect/Array public static native void setBoolean(Object array, int index, boolean z) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setByte_oib(NMParams p) // java/lang/reflect/Array public static native void setByte(Object array, int index, byte b) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setChar_oic(NMParams p) // java/lang/reflect/Array public static native void setChar(Object array, int index, char c) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setShort_ois(NMParams p) // java/lang/reflect/Array public static native void setShort(Object array, int index, short s) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setInt_oii(NMParams p) // java/lang/reflect/Array public static native void setInt(Object array, int index, int i) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setLong_oil(NMParams p) // java/lang/reflect/Array public static native void setLong(Object array, int index, long l) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setFloat_oid(NMParams p) // java/lang/reflect/Array public static native void setFloat(Object array, int index, double f) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrA_setDouble_oid(NMParams p) // java/lang/reflect/Array public static native void setDouble(Object array, int index, double d) throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrM_invoke_oO(NMParams p) // java/lang/reflect/Method public native Object invoke(Object obj, Object []args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrC_newInstance_O(NMParams p) // java/lang/reflect/Constructor public native Object newInstance(Object []initargs) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_get_o(NMParams p) // java/lang/reflect/Field public native Object get(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getBoolean_o(NMParams p) // java/lang/reflect/Field public native boolean getBoolean(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getByte_o(NMParams p) // java/lang/reflect/Field public native byte getByte(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getChar_o(NMParams p) // java/lang/reflect/Field public native char getChar(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getShort_o(NMParams p) // java/lang/reflect/Field public native short getShort(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getInt_o(NMParams p) // java/lang/reflect/Field public native int getInt(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getLong_o(NMParams p) // java/lang/reflect/Field public native long getLong(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getFloat_o(NMParams p) // java/lang/reflect/Field public native double getFloat(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_getDouble_o(NMParams p) // java/lang/reflect/Field public native double getDouble(Object obj) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_set_oo(NMParams p) // java/lang/reflect/Field public native void set(Object obj, Object value) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setBoolean_ob(NMParams p) // java/lang/reflect/Field public native void setBoolean(Object obj, boolean z) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setByte_ob(NMParams p) // java/lang/reflect/Field public native void setByte(Object obj, byte b) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setChar_oc(NMParams p) // java/lang/reflect/Field public native void setChar(Object obj, char c) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setShort_os(NMParams p) // java/lang/reflect/Field public native void setShort(Object obj, short s) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setInt_oi(NMParams p) // java/lang/reflect/Field public native void setInt(Object obj, int i) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setLong_ol(NMParams p) // java/lang/reflect/Field public native void setLong(Object obj, long l) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setFloat_od(NMParams p) // java/lang/reflect/Field public native void setFloat(Object obj, double f) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlrF_setDouble_od(NMParams p) // java/lang/reflect/Field public native void setDouble(Object obj, double d) throws IllegalArgumentException, IllegalAccessException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmGM_showRoute_sssi(NMParams p) // totalcross/map/GoogleMaps native static boolean showRoute(String addressI, String addressF, String traversedPoints, int flags);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -472,6 +860,18 @@ TC_API void tuzZF_getEntry_s(NMParams p) // totalcross/util/zip/ZipFile native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile native public totalcross.io.Stream getEntryStream(String name) throws IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_fromText_s(NMParams p) // totalcross/ui/media/Sound native public static void fromText(String text);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_toText_s(NMParams p) // totalcross/ui/media/Sound native public static String toText(String params);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumS_play_s(NMParams p) // totalcross/ui/media/Sound native public static void play(String filename);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -563,7 +963,35 @@ TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native p
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_dither_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native public void applyFade(int fadeValue);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p) // totalcross/ui/gfx/Graphics native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -576,10 +1004,6 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -631,23 +1055,11 @@ TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native pu
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawCursor_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -659,11 +1071,11 @@ TC_API void tugG_fillRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
+TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -683,15 +1095,7 @@ TC_API void tugG_drawText_Ciiii(NMParams p) // totalcross/ui/gfx/Graphics native
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawText_siiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawText_siiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -723,19 +1127,15 @@ TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics nati
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawHighLightFrame_iiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawImage_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_copyImageRect_iiiiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
+TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -755,11 +1155,7 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_eraseRect_iiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void tugG_fillVistaRect_iiiibbI(NMParams p) // totalcross/ui/gfx/Graphics native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
+TC_API void tugG_fillVistaRect_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -820,6 +1216,10 @@ TC_API void tugG_drawText_siibi(NMParams p) // totalcross/ui/gfx/Graphics native
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siiibi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -895,7 +1295,7 @@ TC_API void tuW_setDeviceTitle_s(NMParams p) // totalcross/ui/Window native publ
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tuC_transitionEffectChanged_i(NMParams p) // totalcross/ui/Container native static void transitionEffectChanged(int t);
+TC_API void tuW_setOrientation_i(NMParams p) // totalcross/ui/Window native public static void setOrientation(int orientation);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -912,6 +1312,10 @@ TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p) // totalcross/sys/UTF8Character
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsUTF8CC_chars2bytes_Cii(NMParams p) // totalcross/sys/UTF8CharacterConverter native public byte[] chars2bytes(char []chars, int offset, int length);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsC_equals_BB(NMParams p) // totalcross/sys/Convert native public static boolean equals(byte []b1, byte []b2);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1164,6 +1568,10 @@ TC_API void tsV_turnScreenOn_b(NMParams p) // totalcross/sys/Vm native public st
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static void vibrate(int millis);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsV_identityHashCode_o(NMParams p) // totalcross/sys/Vm native public static int identityHashCode(Object o);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -1435,18 +1843,6 @@ TC_API void tpSMS_receive(NMParams p) // totalcross/phone/SMS native public stat
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void jlC_forName_s(NMParams p) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_newInstance(NMParams p) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-}
-//////////////////////////////////////////////////////////////////////////
-TC_API void jlC_isInstance_o(NMParams p) // java/lang/Class native public boolean isInstance(Object obj);
-{
-}
-//////////////////////////////////////////////////////////////////////////
 TC_API void jlO_toStringNative(NMParams p) // java/lang/Object native private String toStringNative();
 {
 }
@@ -1456,6 +1852,10 @@ TC_API void jlO_nativeHashCode(NMParams p) // java/lang/Object native private in
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlO_getClass(NMParams p) // java/lang/Object native public final Class getClass();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void jlO_clone(NMParams p) // java/lang/Object native protected Object clone() throws CloneNotSupportedException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2130,2134 +2530,243 @@ TC_API void tuBI_intLength_i(NMParams p) // totalcross/util/BigInteger native st
 TC_API void tuBI_intLength_Ii(NMParams p) // totalcross/util/BigInteger native static int intLength(int []words, int len);
 {
 }
-
-TESTCASE(tmGM_showAddress_sb) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_scannerActivate(NMParams p) // totalcross/io/device/scanner/Scanner native static boolean scannerActivate();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tucL_create) // totalcross/util/concurrent/Lock native void create();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setBarcodeParam_ib(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeParam(int barcodeType, boolean enable);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tucL_destroy) // totalcross/util/concurrent/Lock native void destroy();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_iii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setParam(int type, int barcodeType, int value);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZL_deflate_ssiib) // totalcross/util/zip/ZLib native public static int deflate(totalcross.io.Stream in, totalcross.io.Stream out, int compressionLevel, int strategy, boolean noWrap) throws IOException;
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_commitBarcodeParams(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean commitBarcodeParams();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZL_inflate_ssib) // totalcross/util/zip/ZLib native public static int inflate(totalcross.io.Stream in, totalcross.io.Stream out, int sizeIn, boolean noWrap) throws IOException, ZipException;
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setBarcodeLength_iiii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZE_setTime_l) // totalcross/util/zip/ZipEntry native public void setTime(long time);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getData();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZE_getTime) // totalcross/util/zip/ZipEntry native public long getTime();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getScanManagerVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanManagerVersion();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZF_createZipFile_f) // totalcross/util/zip/ZipFile native private totalcross.util.zip.ZipFile createZipFile(totalcross.io.File file) throws totalcross.io.IOException;
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getScanPortDriverVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanPortDriverVersion();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZF_close) // totalcross/util/zip/ZipFile native public void close() throws totalcross.io.IOException;
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean deactivate();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZF_entries) // totalcross/util/zip/ZipFile native public String[] entries();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scanner native public static String readBarcode(String fileName);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZF_getEntry_s) // totalcross/util/zip/ZipFile native public String getEntry(String name);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuzZF_getEntryStream_s) // totalcross/util/zip/ZipFile native public totalcross.io.Stream getEntryStream(String name) throws IOException;
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB__open_si(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _open(String file, int openFlags) throws SQLException;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumS_beep) // totalcross/ui/media/Sound native public static void beep();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB__close(NMParams p) // totalcross/db/sqlite/NativeDB protected native void _close() throws SQLException;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumS_tone_ii) // totalcross/ui/media/Sound native public static void tone(int freq, int duration);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB__exec_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native int _exec(String sql) throws SQLException;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumS_setEnabled_b) // totalcross/ui/media/Sound native public static void setEnabled(boolean on);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_shared_cache_b(NMParams p) // totalcross/db/sqlite/NativeDB native int shared_cache(boolean enable);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumMC_create) // totalcross/ui/media/MediaClip native private void create();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_enable_load_extension_b(NMParams p) // totalcross/db/sqlite/NativeDB native int enable_load_extension(boolean enable);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumMC_nativeStart) // totalcross/ui/media/MediaClip native private void nativeStart();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_interrupt(NMParams p) // totalcross/db/sqlite/NativeDB native void interrupt();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumMC_stop) // totalcross/ui/media/MediaClip native public void stop();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_busy_timeout_i(NMParams p) // totalcross/db/sqlite/NativeDB native void busy_timeout(int ms);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumMC_reset) // totalcross/ui/media/MediaClip native public void reset();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_prepare_s(NMParams p) // totalcross/db/sqlite/NativeDB protected native long prepare(String sql) throws SQLException;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumMC_nativeClose) // totalcross/ui/media/MediaClip native private void nativeClose();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_errmsg(NMParams p) // totalcross/db/sqlite/NativeDB native String errmsg();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumMC_record_iib) // totalcross/ui/media/MediaClip native public void record(int samplesPerSecond, int bitsPerSample, boolean stereo);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_libversion(NMParams p) // totalcross/db/sqlite/NativeDB native String libversion();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumC_nativeClick) // totalcross/ui/media/Camera native private String nativeClick();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int changes();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumC_initCamera) // totalcross/ui/media/Camera native private void initCamera();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_total_changes(NMParams p) // totalcross/db/sqlite/NativeDB native int total_changes();
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumC_nativeFinalize) // totalcross/ui/media/Camera native private void nativeFinalize();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_finalize_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int finalize(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tumC_getNativeResolutions) // totalcross/ui/media/Camera static native private String getNativeResolutions();
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_step_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int step(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imageLoad(String path);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_reset_l(NMParams p) // totalcross/db/sqlite/NativeDB protected native int reset(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_imageParse_sB) // totalcross/ui/image/Image native private void imageParse(totalcross.io.Stream in, byte []buf);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_clear_bindings_l(NMParams p) // totalcross/db/sqlite/NativeDB native int clear_bindings(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_changeColors_ii) // totalcross/ui/image/Image native public void changeColors(int from, int to);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_parameter_count_l(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_parameter_count(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_getPixelRow_Bi) // totalcross/ui/image/Image native protected void getPixelRow(byte []fillIn, int y);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_count_l(NMParams p) // totalcross/db/sqlite/NativeDB native int column_count(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_getModifiedInstance_iiiiiii) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_type_li(NMParams p) // totalcross/db/sqlite/NativeDB native int column_type(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_setCurrentFrame_i) // totalcross/ui/image/Image native public void setCurrentFrame(int nr);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_decltype_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_decltype(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_applyColor_i) // totalcross/ui/image/Image native public void applyColor(int color);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_table_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_table_name(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_nativeEquals_i) // totalcross/ui/image/Image native private boolean nativeEquals(totalcross.ui.image.Image other);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_name_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_name(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tuiI_applyColor2_i) // totalcross/ui/image/Image native public void applyColor2(int color);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_text_li(NMParams p) // totalcross/db/sqlite/NativeDB native String column_text(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_dither_iiiii) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h, int ignoreColor);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_blob_li(NMParams p) // totalcross/db/sqlite/NativeDB native byte[] column_blob(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawCylindricShade_iiiiii) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_double_li(NMParams p) // totalcross/db/sqlite/NativeDB native double column_double(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawWindowBorder_iiiiiiiiii) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_long_li(NMParams p) // totalcross/db/sqlite/NativeDB native long column_long(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_create_g) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_int_li(NMParams p) // totalcross/db/sqlite/NativeDB native int column_int(long stmt, int col);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawDottedCursor_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedCursor(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_null_li(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_null(long stmt, int pos);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawEllipse_iiii) // totalcross/ui/gfx/Graphics native public void drawEllipse(int xc, int yc, int rx, int ry);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_int_lii(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_int(long stmt, int pos, int v);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillEllipse_iiii) // totalcross/ui/gfx/Graphics native public void fillEllipse(int xc, int yc, int rx, int ry);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_long_lil(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_long(long stmt, int pos, long v);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawArc_iiidd) // totalcross/ui/gfx/Graphics native public void drawArc(int xc, int yc, int r, double startAngle, double endAngle);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_double_lid(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_double(long stmt, int pos, double v);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawPie_iiidd) // totalcross/ui/gfx/Graphics native public void drawPie(int xc, int yc, int r, double startAngle, double endAngle);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_text_lis(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_text(long stmt, int pos, String v);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillPie_iiidd) // totalcross/ui/gfx/Graphics native public void fillPie(int xc, int yc, int r, double startAngle, double endAngle);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_bind_blob_liB(NMParams p) // totalcross/db/sqlite/NativeDB native int bind_blob(long stmt, int pos, byte []v);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawEllipticalArc_iiiidd) // totalcross/ui/gfx/Graphics native public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_null_l(NMParams p) // totalcross/db/sqlite/NativeDB native void result_null(long context);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawEllipticalPie_iiiidd) // totalcross/ui/gfx/Graphics native public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_text_ls(NMParams p) // totalcross/db/sqlite/NativeDB native void result_text(long context, String val);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillEllipticalPie_iiiidd) // totalcross/ui/gfx/Graphics native public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_blob_lB(NMParams p) // totalcross/db/sqlite/NativeDB native void result_blob(long context, byte []val);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawCircle_iii) // totalcross/ui/gfx/Graphics native public void drawCircle(int xc, int yc, int r);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_double_ld(NMParams p) // totalcross/db/sqlite/NativeDB native void result_double(long context, double val);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillCircle_iii) // totalcross/ui/gfx/Graphics native public void fillCircle(int xc, int yc, int r);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_long_ll(NMParams p) // totalcross/db/sqlite/NativeDB native void result_long(long context, long val);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_getPixel_ii) // totalcross/ui/gfx/Graphics native public int getPixel(int x, int y);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_result_int_li(NMParams p) // totalcross/db/sqlite/NativeDB native void result_int(long context, int val);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_setPixel_ii) // totalcross/ui/gfx/Graphics native public void setPixel(int x, int y);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_backup_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int backup(String dbName, String destFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_eraseRect_iiii) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_restore_ssp(NMParams p) // totalcross/db/sqlite/NativeDB native int restore(String dbName, String sourceFileName, totalcross.db.sqlite.DB.ProgressObserver observer) throws SQLException;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawLine_iiii) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_column_metadata_l(NMParams p) // totalcross/db/sqlite/NativeDB native boolean[][] column_metadata(long stmt);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawDots_iiii) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tdsNDB_load(NMParams p) // totalcross/db/sqlite/NativeDB native static void load() throws Exception;
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillCursor_iiii) // totalcross/ui/gfx/Graphics native public void fillCursor(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_getHeightD_i(NMParams p) // totalcross/money/Ads native static int getHeightD(int size);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawCursor_iiii) // totalcross/ui/gfx/Graphics native public void drawCursor(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_configureD_s(NMParams p) // totalcross/money/Ads native static void configureD(String id);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawRect_iiii) // totalcross/ui/gfx/Graphics native public void drawRect(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setSizeD_i(NMParams p) // totalcross/money/Ads native static void setSizeD(int s);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillRect_iiii) // totalcross/ui/gfx/Graphics native public void fillRect(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setPositionD_i(NMParams p) // totalcross/money/Ads native static void setPositionD(int p);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_drawDottedRect_iiii) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setVisibleD_b(NMParams p) // totalcross/money/Ads native static void setVisibleD(boolean b);
 {
-   TEST_SKIP;
-   finish: ;
 }
-TESTCASE(tugG_fillPolygon_IIi) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_isVisibleD(NMParams p) // totalcross/money/Ads native static boolean isVisibleD();
 {
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawPolygon_IIi) // totalcross/ui/gfx/Graphics native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawPolyline_IIi) // totalcross/ui/gfx/Graphics native public void drawPolyline(int []xPoints, int []yPoints, int nPoints);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_sii) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_Ciiii) // totalcross/ui/gfx/Graphics native public void drawText(char []chars, int start, int count, int x, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiii) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siii) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiiii) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawHatchedRect_iiiibb) // totalcross/ui/gfx/Graphics native public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillHatchedRect_iiiibb) // totalcross/ui/gfx/Graphics native public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawRoundRect_iiiii) // totalcross/ui/gfx/Graphics native public void drawRoundRect(int x, int y, int width, int height, int r);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillRoundRect_iiiii) // totalcross/ui/gfx/Graphics native public void fillRoundRect(int x, int y, int width, int height, int r);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_setClip_iiii) // totalcross/ui/gfx/Graphics native public void setClip(int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_clip_r) // totalcross/ui/gfx/Graphics native public boolean clip(totalcross.ui.gfx.Rect r);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_copyRect_giiiiii) // totalcross/ui/gfx/Graphics native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawHighLightFrame_iiiiiib) // totalcross/ui/gfx/Graphics native public void drawHighLightFrame(int x, int y, int w, int h, int topLeftColor, int bottomRightColor, boolean yMirror);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawRoundGradient_iiiiiiiii) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawImage_iiiiib) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, int drawOp, int backColor, boolean doClip);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_copyImageRect_iiiiiiib) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_setPixels_IIi) // totalcross/ui/gfx/Graphics native public void setPixels(int []xPoints, int []yPoints, int nPoints);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_refresh_iiiiiif) // totalcross/ui/gfx/Graphics native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawVistaRect_iiiiiiii) // totalcross/ui/gfx/Graphics native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_draw3dRect_iiiibbbI) // totalcross/ui/gfx/Graphics native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_eraseRect_iiiiiii) // totalcross/ui/gfx/Graphics native public void eraseRect(int x, int y, int w, int h, int fromColor, int toColor, int textColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillVistaRect_iiiibbI) // totalcross/ui/gfx/Graphics native private void fillVistaRect(int x, int y, int width, int height, boolean invert, boolean rotate, int []colors);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawArrow_iiibbi) // totalcross/ui/gfx/Graphics native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawImage_iii) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillEllipseGradient_iiii) // totalcross/ui/gfx/Graphics native public void fillEllipseGradient(int xc, int yc, int rx, int ry);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillPieGradient_iiidd) // totalcross/ui/gfx/Graphics native public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillEllipticalPieGradient_i) // totalcross/ui/gfx/Graphics native public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillCircleGradient_iii) // totalcross/ui/gfx/Graphics native public void fillCircleGradient(int xc, int yc, int r);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fillPolygonGradient_IIi) // totalcross/ui/gfx/Graphics native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_getRGB_Iiiiii) // totalcross/ui/gfx/Graphics native public int getRGB(int []data, int offset, int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_setRGB_Iiiiii) // totalcross/ui/gfx/Graphics native public int setRGB(int []data, int offset, int x, int y, int w, int h);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_fadeScreen_i) // totalcross/ui/gfx/Graphics native public static void fadeScreen(int fadeValue);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_Ciiiibi) // totalcross/ui/gfx/Graphics native public void drawText(char []chars, int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiiibi) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiiiibi) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siibi) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tugG_drawText_siiibi) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufF_fontCreate) // totalcross/ui/font/Font native void fontCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_fontMetricsCreate) // totalcross/ui/font/FontMetrics native void fontMetricsCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_charWidth_c) // totalcross/ui/font/FontMetrics native public int charWidth(char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_stringWidth_s) // totalcross/ui/font/FontMetrics native public int stringWidth(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_stringWidth_Cii) // totalcross/ui/font/FontMetrics native public int stringWidth(char []chars, int start, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_sbWidth_s) // totalcross/ui/font/FontMetrics native public int sbWidth(StringBuffer s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_sbWidth_sii) // totalcross/ui/font/FontMetrics native public int sbWidth(StringBuffer s, int start, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tufFM_charWidth_si) // totalcross/ui/font/FontMetrics native public int charWidth(StringBuffer s, int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tueE_isAvailable) // totalcross/ui/event/Event native public static boolean isAvailable();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuC_updateScreen) // totalcross/ui/Control native public static void updateScreen();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuMW_exit_i) // totalcross/ui/MainWindow native public static final void exit(int exitCode);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuMW_setTimerInterval_i) // totalcross/ui/MainWindow native void setTimerInterval(int n);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuMW_minimize) // totalcross/ui/MainWindow native public final void minimize();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuMW_restore) // totalcross/ui/MainWindow native public final void restore();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuMW_getCommandLine) // totalcross/ui/MainWindow native public static String getCommandLine();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuW_pumpEvents) // totalcross/ui/Window native public static void pumpEvents();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuW_setSIP_icb) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuW_setDeviceTitle_s) // totalcross/ui/Window native public static void setDeviceTitle(String title);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuC_transitionEffectChanged_i) // totalcross/ui/Container native static void transitionEffectChanged(int t);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsCC_bytes2chars_Bii) // totalcross/sys/CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsCC_chars2bytes_Cii) // totalcross/sys/CharacterConverter native public byte[] chars2bytes(char []chars, int offset, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsUTF8CC_bytes2chars_Bii) // totalcross/sys/UTF8CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsUTF8CC_chars2bytes_Cii) // totalcross/sys/UTF8CharacterConverter native public byte[] chars2bytes(char []chars, int offset, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toInt_s) // totalcross/sys/Convert native public static int toInt(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toString_c) // totalcross/sys/Convert native public static String toString(char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_doubleToIntBits_d) // totalcross/sys/Convert native public static int doubleToIntBits(double d);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_intBitsToDouble_i) // totalcross/sys/Convert native public static double intBitsToDouble(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toString_i) // totalcross/sys/Convert native public static String toString(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toString_di) // totalcross/sys/Convert native public static String toString(double d, int precision);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toDouble_s) // totalcross/sys/Convert native public static double toDouble(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toString_si) // totalcross/sys/Convert native public static String toString(String doubleValue, int n);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_doubleToLongBits_d) // totalcross/sys/Convert native public static long doubleToLongBits(double value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_longBitsToDouble_l) // totalcross/sys/Convert native public static double longBitsToDouble(long bits);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toLowerCase_c) // totalcross/sys/Convert native public static char toLowerCase(char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toUpperCase_c) // totalcross/sys/Convert native public static char toUpperCase(char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_unsigned2hex_ii) // totalcross/sys/Convert native public static String unsigned2hex(int b, int places);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_hashCode_s) // totalcross/sys/Convert native public static int hashCode(StringBuffer sb);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_getBreakPos_fsiib) // totalcross/sys/Convert native public static int getBreakPos(totalcross.ui.font.FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_insertAt_sic) // totalcross/sys/Convert native public static void insertAt(StringBuffer sb, int pos, char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_append_sci) // totalcross/sys/Convert native public static void append(StringBuffer sb, char c, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toString_l) // totalcross/sys/Convert native public static String toString(long l);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_toLong_s) // totalcross/sys/Convert native public static long toLong(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Ciic) // totalcross/sys/Convert native public static void fill(char []a, int from, int to, char value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Biib) // totalcross/sys/Convert native public static void fill(boolean []a, int from, int to, boolean value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Iiii) // totalcross/sys/Convert native public static void fill(int []a, int from, int to, int value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Diid) // totalcross/sys/Convert native public static void fill(double []a, int from, int to, double value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Siii) // totalcross/sys/Convert native public static void fill(short []a, int from, int to, int value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Biii) // totalcross/sys/Convert native public static void fill(byte []a, int from, int to, int value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Liil) // totalcross/sys/Convert native public static void fill(long []a, int from, int to, long value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_fill_Oiio) // totalcross/sys/Convert native public static void fill(Object []a, int from, int to, Object value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_replace_sss) // totalcross/sys/Convert native public static String replace(String source, String from, String to);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_getBytes_s) // totalcross/sys/Convert native public static byte[] getBytes(StringBuffer sb);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_numberOf_sc) // totalcross/sys/Convert native public static int numberOf(String s, char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_zeroPad_si) // totalcross/sys/Convert native public static String zeroPad(String s, int size);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_zeroPad_ii) // totalcross/sys/Convert native public static String zeroPad(int s, int size);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_dup_ci) // totalcross/sys/Convert native public static String dup(char c, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_spacePad_sib) // totalcross/sys/Convert native public static String spacePad(String what, int count, boolean before);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_numberPad_si) // totalcross/sys/Convert native public static String numberPad(String s, int size);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsC_numberPad_ii) // totalcross/sys/Convert native public static String numberPad(int s, int size);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsT_update) // totalcross/sys/Time native void update();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsS_refresh) // totalcross/sys/Settings native public static void refresh();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_preallocateArray_oi) // totalcross/sys/Vm native public static void preallocateArray(Object sample, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_getTimeStamp) // totalcross/sys/Vm native public static int getTimeStamp();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_exitAndReboot) // totalcross/sys/Vm native public static void exitAndReboot();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_exec_ssib) // totalcross/sys/Vm native public static int exec(String command, String args, int launchCode, boolean wait);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_setAutoOff_b) // totalcross/sys/Vm native public static void setAutoOff(boolean enable);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_sleep_i) // totalcross/sys/Vm native public static void sleep(int millis);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_getFreeMemory) // totalcross/sys/Vm native public static int getFreeMemory();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_gc) // totalcross/sys/Vm native public static void gc();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_interceptSpecialKeys_I) // totalcross/sys/Vm native public static void interceptSpecialKeys(int []keys);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_debug_s) // totalcross/sys/Vm native public static void debug(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_alert_s) // totalcross/sys/Vm native public static void alert(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_clipboardCopy_s) // totalcross/sys/Vm native public static void clipboardCopy(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String clipboardPaste();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_attachLibrary_s) // totalcross/sys/Vm native public static boolean attachLibrary(String name);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_privateAttachNativeLibrary_s) // totalcross/sys/Vm native private static boolean privateAttachNativeLibrary(String name);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_isKeyDown_i) // totalcross/sys/Vm native public static boolean isKeyDown(int key);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_getFile_s) // totalcross/sys/Vm native public static byte[] getFile(String name);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_getRemainingBattery) // totalcross/sys/Vm native public static int getRemainingBattery();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_tweak_ib) // totalcross/sys/Vm native public static void tweak(int param, boolean set);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_getStackTrace_t) // totalcross/sys/Vm native public static String getStackTrace(Throwable t);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_showKeyCodes_b) // totalcross/sys/Vm native public static void showKeyCodes(boolean on);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_turnScreenOn_b) // totalcross/sys/Vm native public static boolean turnScreenOn(boolean on);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsV_vibrate_i) // totalcross/sys/Vm native public static void vibrate(int millis);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_getInt_iss) // totalcross/sys/Registry native public static int getInt(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_getString_iss) // totalcross/sys/Registry native public static String getString(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_getBlob_iss) // totalcross/sys/Registry native public static byte[] getBlob(int hk, String key, String value) throws totalcross.util.ElementNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_set_issi) // totalcross/sys/Registry native public static void set(int hk, String key, String value, int data) throws Exception;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_set_isss) // totalcross/sys/Registry native public static void set(int hk, String key, String value, String data) throws Exception;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_set_issB) // totalcross/sys/Registry native public static void set(int hk, String key, String value, byte []data) throws Exception;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_delete_iss) // totalcross/sys/Registry native public static boolean delete(int hk, String key, String value);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tsR_list_is) // totalcross/sys/Registry native public static String[] list(int hk, String key);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_NewContact) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String NewContact();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_GetAllContacts) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String GetAllContacts();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_ViewAllContacts) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String ViewAllContacts();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_getIContactString_s) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String getIContactString(String oid);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_removeIContact_s) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static void removeIContact(String oid);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_editIContact_sssssssss) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static int editIContact(String oid, String title, String firstName, String middleName, String lastName, String suffix, String jobTitle, String department, String company, String workTel, String workTel2, String homeTel, String homeTel2, String mobileTel, String pager, String carTel, String workFax, String homeFax, String assistantTel, String radioTel, String email, String email2, String email3, String webPage, String workStreet, String workCity, String workState, String workZip, String workCountry, String officeLoc, String homeStreet, String homeCity, String homeState, String homeZip, String homeCountry, String otherStreet, String otherCity, String otherState, String otherZip, String otherCountry, String categories, String assistant, String birthdayAsDateHelperGenericDateString, String anniversaryAsDateHelperGenericDateString, String spouse, String children, String note);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_newAppointment) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String newAppointment();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_GetAllAppointments) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String GetAllAppointments();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_ViewAllAppointments) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String ViewAllAppointments();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_getIAppointmentString_) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String getIAppointmentString(String oid);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_removeIAppointment_s) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static void removeIAppointment(String oid);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_editIAppointment_sssss) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static int editIAppointment(String oid, String subject, String location, String categories, String reminderSoundFile, String note, String startDate, String endDate, String duration, String meetingStatus, String sensitivity, String busyStatus, String reminderOptions, String reminderMinutesBeforeStart, String allDayEvent, String isRecurring, String reminderIsSet, String recurrenceType, String occurrences, String interval, String dayOfWeek, String dayOfMonth, String weekOfMonth, String monthOfYear, String patternStartDate, String patternEndDate, String startTime, String endTime, String noEndDate, String recipients);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_ViewAllTasks) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String ViewAllTasks();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_GetAllTasks) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String GetAllTasks();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_newTask) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String newTask();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_getITaskString_s) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String getITaskString(String oid);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_removeITask_s) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static void removeITask(String oid);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpcbIPOIC_editITask_ssssssssssss) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static int editITask(String restriction, String subject, String categories, String startDate, String dueDate, String importance, String complete, String isRecurring, String duration, String recurrenceType, String occurrences, String interval, String dayOfWeek, String dayOfMonth, String weekOfMonth, String monthOfYear, String patternStartDate, String patternEndDate, String startTime, String endTime, String noEndDate, String sensitivity, String teamTask, String reminderIsSet, String reminderOptions, String reminderTime, String note);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_dispose) // totalcross/net/ssl/SSL native public void dispose();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_handshakeStatus) // totalcross/net/ssl/SSL native public int handshakeStatus();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_getCipherId) // totalcross/net/ssl/SSL native public byte getCipherId();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_getSessionId) // totalcross/net/ssl/SSL native public byte[] getSessionId();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_getCertificateDN_i) // totalcross/net/ssl/SSL native public String getCertificateDN(int component);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_read_s) // totalcross/net/ssl/SSL native public int read(totalcross.net.ssl.SSLReadHolder rh);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_write_Bi) // totalcross/net/ssl/SSL native public int write(byte []out_data, int len);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_verifyCertificate) // totalcross/net/ssl/SSL native public int verifyCertificate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSL_renegotiate) // totalcross/net/ssl/SSL native public int renegotiate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_create_ii) // totalcross/net/ssl/SSLCTX native public void create(int options, int num_sessions);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_dispose) // totalcross/net/ssl/SSLCTX native public void dispose();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_find_s) // totalcross/net/ssl/SSLCTX native public totalcross.net.ssl.SSL find(totalcross.net.Socket s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_objLoad_iss) // totalcross/net/ssl/SSLCTX native public int objLoad(int obj_type, totalcross.io.Stream material, String password);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_objLoad_iBis) // totalcross/net/ssl/SSLCTX native public int objLoad(int obj_type, byte []data, int len, String password);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_newClient_sB) // totalcross/net/ssl/SSLCTX native public totalcross.net.ssl.SSL newClient(totalcross.net.Socket s, byte []session_id);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLCTX_newServer_s) // totalcross/net/ssl/SSLCTX native public totalcross.net.ssl.SSL newServer(totalcross.net.Socket s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLU_getConfig_i) // totalcross/net/ssl/SSLUtil native public static int getConfig(int which);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLU_displayError_i) // totalcross/net/ssl/SSLUtil native public static void displayError(int error_code);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnsSSLU_version) // totalcross/net/ssl/SSLUtil native public static String version();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_loadResources) // totalcross/net/ConnectionManager native private void loadResources();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_setDefaultConfiguration_is) // totalcross/net/ConnectionManager native public static void setDefaultConfiguration(int type, String cfg) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_open) // totalcross/net/ConnectionManager native public static void open() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_open_i) // totalcross/net/ConnectionManager native public static void open(int type) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_nativeClose) // totalcross/net/ConnectionManager native private static void nativeClose() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_getHostAddress_s) // totalcross/net/ConnectionManager native public static String getHostAddress(String host) throws totalcross.net.UnknownHostException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_getHostName_s) // totalcross/net/ConnectionManager native public static String getHostName(String host) throws totalcross.net.UnknownHostException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_getLocalHost) // totalcross/net/ConnectionManager native public static String getLocalHost() throws totalcross.net.UnknownHostException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_isAvailable_i) // totalcross/net/ConnectionManager native public static boolean isAvailable(int type) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnCM_releaseResources) // totalcross/net/ConnectionManager native private void releaseResources();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnS_socketCreate_siib) // totalcross/net/Socket native void socketCreate(final String host, final int port, final int timeout, final boolean noLinger);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnS_nativeClose) // totalcross/net/Socket native private void nativeClose() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnS_readWriteBytes_Biib) // totalcross/net/Socket native private int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnSS_serversocketCreate_iiis) // totalcross/net/ServerSocket native void serversocketCreate(int port, int backlog, int timeout, String host) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tnSS_nativeClose) // totalcross/net/ServerSocket native private void nativeClose() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpCI_loadResources) // totalcross/phone/CellInfo native private void loadResources();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpCI_releaseResources) // totalcross/phone/CellInfo native private void releaseResources();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpCI_update) // totalcross/phone/CellInfo native public static void update();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpD_number_s) // totalcross/phone/Dial native public static void number(String number);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpD_hangup) // totalcross/phone/Dial native public static void hangup();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpSMS_send_ss) // totalcross/phone/SMS native public static void send(String destination, String message) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tpSMS_receive) // totalcross/phone/SMS native public static String[] receive() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_newInstance) // java/lang/Class native public Object newInstance() throws java.lang.InstantiationException, java.lang.IllegalAccessException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlC_isInstance_o) // java/lang/Class native public boolean isInstance(Object obj);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlO_toStringNative) // java/lang/Object native private String toStringNative();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlO_nativeHashCode) // java/lang/Object native private int nativeHashCode();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlO_getClass) // java/lang/Object native public final Class getClass();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_toLowerCase) // java/lang/String native public String toLowerCase();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_valueOf_d) // java/lang/String native public static String valueOf(double d);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_valueOf_c) // java/lang/String native public static String valueOf(char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_valueOf_i) // java/lang/String native public static String valueOf(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, int startIndex);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object obj);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_copyChars_CiCii) // java/lang/String native static boolean copyChars(char []srcArray, int srcStart, char []dstArray, int dstStart, int length);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c, int startIndex);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_indexOf_s) // java/lang/String native public int indexOf(String c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_hashCode) // java/lang/String native public int hashCode();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_startsWith_si) // java/lang/String native public boolean startsWith(String prefix, int to);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_startsWith_s) // java/lang/String native public boolean startsWith(String prefix);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_endsWith_s) // java/lang/String native public boolean endsWith(String suffix);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equalsIgnoreCase(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_replace_cc) // java/lang/String native public String replace(char oldChar, char newChar);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(int c, int startIndex);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(int c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_trim) // java/lang/String native public String trim();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_valueOf_l) // java/lang/String native public static String valueOf(long l);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_lastIndexOf_s) // java/lang/String native public int lastIndexOf(String s);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_lastIndexOf_si) // java/lang/String native public int lastIndexOf(String s, int startIndex);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlS_getBytes) // java/lang/String native public byte []getBytes();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_ensureCapacity_i) // java/lang/StringBuffer native public void ensureCapacity(int minimumCapacity);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_setLength_i) // java/lang/StringBuffer native public void setLength(int newLength);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_s) // java/lang/StringBuffer native public StringBuffer append(String str);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_C) // java/lang/StringBuffer native public StringBuffer append(char []str);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_Cii) // java/lang/StringBuffer native public StringBuffer append(char []str, int offset, int len);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_c) // java/lang/StringBuffer native public StringBuffer append(char c);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_i) // java/lang/StringBuffer native public StringBuffer append(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_l) // java/lang/StringBuffer native public StringBuffer append(long l);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_append_d) // java/lang/StringBuffer native public StringBuffer append(double d);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlSB_delete_ii) // java/lang/StringBuffer native public StringBuffer delete(int start, int end);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlT_printStackTraceNative) // java/lang/Throwable native private void printStackTraceNative();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlT_yield) // java/lang/Thread native public static void yield();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlT_start) // java/lang/Thread native public void start();       
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(jlT_currentThread) // java/lang/Thread native public static java.lang.Thread currentThread();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidRD_isSupported_i) // totalcross/io/device/RadioDevice native public static boolean isSupported(int type) throws IllegalArgumentException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidRD_getState_i) // totalcross/io/device/RadioDevice native public static int getState(int type) throws IllegalArgumentException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidRD_setState_ii) // totalcross/io/device/RadioDevice native public static void setState(int type, int state) throws IllegalArgumentException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidPC_create_iiiii) // totalcross/io/device/PortConnector native void create(int number, int baudRate, int bits, int parity, int stopBits);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidPC_nativeClose) // totalcross/io/device/PortConnector native private void nativeClose();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidPC_setFlowControl_b) // totalcross/io/device/PortConnector native public boolean setFlowControl(boolean on);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidPC_readCheck) // totalcross/io/device/PortConnector native public int readCheck();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_nativeDiscoveryAgent) // totalcross/io/device/bluetooth/DiscoveryAgent native private void nativeDiscoveryAgent();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_cancelInquiry_d) // totalcross/io/device/bluetooth/DiscoveryAgent native public boolean cancelInquiry(totalcross.io.device.bluetooth.DiscoveryListener listener);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_cancelServiceSearch_i) // totalcross/io/device/bluetooth/DiscoveryAgent native public boolean cancelServiceSearch(int transID);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_retrieveDevices_i) // totalcross/io/device/bluetooth/DiscoveryAgent native public totalcross.io.device.bluetooth.RemoteDevice []retrieveDevices(int option);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_nativeSearchServices_IUrd) // totalcross/io/device/bluetooth/DiscoveryAgent native public int nativeSearchServices(int []attrSet, totalcross.io.device.bluetooth.UUID []uuidSet, totalcross.io.device.bluetooth.RemoteDevice btDev, totalcross.io.device.bluetooth.DiscoveryListener discListener) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_selectService_uib) // totalcross/io/device/bluetooth/DiscoveryAgent native public String selectService(totalcross.io.device.bluetooth.UUID uuid, int security, boolean master) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbDA_startInquiry_id) // totalcross/io/device/bluetooth/DiscoveryAgent native public boolean startInquiry(int accessCode, totalcross.io.device.bluetooth.DiscoveryListener listener) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPS_createSerialPortServer_s) // totalcross/io/device/bluetooth/SerialPortServer native private void createSerialPortServer(String uuid, String []params) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPS_accept) // totalcross/io/device/bluetooth/SerialPortServer native public totalcross.io.Stream accept() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPS_close) // totalcross/io/device/bluetooth/SerialPortServer native public void close() throws throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPC_createSerialPortClient_s) // totalcross/io/device/bluetooth/SerialPortClient native private void createSerialPortClient(String address, int port, String []params) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPC_readBytes_Bii) // totalcross/io/device/bluetooth/SerialPortClient native public int readBytes(byte []b, int offset, int count) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPC_writeBytes_Bii) // totalcross/io/device/bluetooth/SerialPortClient native public int writeBytes(byte []b, int offset, int count) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidbSPC_close) // totalcross/io/device/bluetooth/SerialPortClient native public void close() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidgGPS_startGPS) // totalcross/io/device/gps/GPS native private boolean startGPS() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidgGPS_updateLocation) // totalcross/io/device/gps/GPS native private int updateLocation();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tidgGPS_stopGPS) // totalcross/io/device/gps/GPS native private void stopGPS();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_create_sssi) // totalcross/io/PDBFile native private void create(String name, String creator, String type, int mode) throws totalcross.io.FileNotFoundException, totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_rename_s) // totalcross/io/PDBFile native public void rename(String newName) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_addRecord_i) // totalcross/io/PDBFile native public int addRecord(int size) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_addRecord_ii) // totalcross/io/PDBFile native public int addRecord(int size, int pos) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_resizeRecord_i) // totalcross/io/PDBFile native public void resizeRecord(int size) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_nativeClose) // totalcross/io/PDBFile native private void nativeClose();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_delete) // totalcross/io/PDBFile native public boolean delete() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_listPDBs_ii) // totalcross/io/PDBFile native public static String []listPDBs(int creatorId, int type);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_deleteRecord) // totalcross/io/PDBFile native public void deleteRecord() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_getRecordCount) // totalcross/io/PDBFile native public int getRecordCount();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_setRecordPos_i) // totalcross/io/PDBFile native public boolean setRecordPos(int pos) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_readWriteBytes_Biib) // totalcross/io/PDBFile native int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_inspectRecord_Bii) // totalcross/io/PDBFile native public int inspectRecord(byte []buf, int recordPos, int offsetInRec) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_getRecordAttributes_i) // totalcross/io/PDBFile native public byte getRecordAttributes(int recordPos);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_setRecordAttributes_ib) // totalcross/io/PDBFile native public void setRecordAttributes(int recordPos, byte attr);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_getAttributes) // totalcross/io/PDBFile native public int getAttributes();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_setAttributes_i) // totalcross/io/PDBFile native public void setAttributes(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int searchBytes(byte []toSearch, int length, int offsetInRec);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_getDeviceAlias) // totalcross/io/File native private static String getDeviceAlias();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String path, int mode, int slot) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_isCardInserted_i) // totalcross/io/File native public static boolean isCardInserted(int slot);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_createDir) // totalcross/io/File native public void createDir() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_delete) // totalcross/io/File native public boolean delete() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_exists) // totalcross/io/File native public boolean exists();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_isDir) // totalcross/io/File native public boolean isDir();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_listFiles) // totalcross/io/File native public String []listFiles() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_readBytes_Bii) // totalcross/io/File native public int readBytes(byte []b, int off, int len) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_rename_s) // totalcross/io/File native public boolean rename(String path) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_setPos_i) // totalcross/io/File native public void setPos(int pos) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(byte []b, int off, int len) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_setAttributes_i) // totalcross/io/File native public void setAttributes(int attr) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_getAttributes) // totalcross/io/File native public int getAttributes() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte whichTime, totalcross.sys.Time time) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_getTime_b) // totalcross/io/File native public totalcross.sys.Time getTime(byte whichTime) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_setSize_i) // totalcross/io/File native public void setSize(int newSize) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_getCardSerialNumber_i) // totalcross/io/File native public static String getCardSerialNumber(int slot) throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_flush) // totalcross/io/File native public void flush() throws totalcross.io.IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_listRoots) // totalcross/io/File native public static String []listRoots()
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_isEmpty) // totalcross/io/File native public boolean isEmpty() throws IOException
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tiF_chmod_i) // totalcross/io/File native public int chmod(int mod) throws IOException
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzCS_createInflate_s) // totalcross/util/zip/CompressedStream native protected Object createInflate(totalcross.io.Stream stream) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzCS_createDeflate_si) // totalcross/util/zip/CompressedStream native protected Object createDeflate(totalcross.io.Stream stream, int compressionType) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzCS_readBytes_Bii) // totalcross/util/zip/CompressedStream native public int readBytes(byte []buf, int start, int count) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzCS_writeBytes_Bii) // totalcross/util/zip/CompressedStream native public int writeBytes(byte []buf, int start, int count) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzCS_close) // totalcross/util/zip/CompressedStream native public void close() throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_createInflate_s) // totalcross/util/zip/ZipStream native protected Object createInflate(totalcross.io.Stream stream);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_createDeflate_si) // totalcross/util/zip/ZipStream native protected Object createDeflate(totalcross.io.Stream stream, int compressionType);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_available) // totalcross/util/zip/ZipStream native public int available() throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_getNextEntry) // totalcross/util/zip/ZipStream native public totalcross.util.zip.ZipEntry getNextEntry() throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_putNextEntry_z) // totalcross/util/zip/ZipStream native public void putNextEntry(totalcross.util.zip.ZipEntry zipEntry) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_closeEntry) // totalcross/util/zip/ZipStream native public void closeEntry() throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_readBytes_Bii) // totalcross/util/zip/ZipStream native public int readBytes(byte []buf, int start, int count) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_writeBytes_Bii) // totalcross/util/zip/ZipStream native public int writeBytes(byte []buf, int start, int count) throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuzZS_close) // totalcross/util/zip/ZipStream native public void close() throws IOException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(txXT_resolveCharacterReference_B) // totalcross/xml/XmlTokenizer native public static char resolveCharacterReference(byte []input, int offset, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(txXT_setCdataContents_Bii) // totalcross/xml/XmlTokenizer native protected void setCdataContents(byte []input, int offset, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(txXT_tokenizeBytes_B) // totalcross/xml/XmlTokenizer native private void tokenizeBytes(byte []input) throws SyntaxException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(txXT_endTokenize_B) // totalcross/xml/XmlTokenizer native private void endTokenize(byte []input) throws SyntaxException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(txXT_nativeCreate) // totalcross/xml/XmlTokenizer native private void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcdMD5D_nativeCreate) // totalcross/crypto/digest/MD5Digest native void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcdMD5D_process_B) // totalcross/crypto/digest/MD5Digest native protected final byte[] process(byte []data);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcdSHA1D_nativeCreate) // totalcross/crypto/digest/SHA1Digest native void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcdSHA1D_process_B) // totalcross/crypto/digest/SHA1Digest native protected final byte[] process(byte []data);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcdSHA256D_nativeCreate) // totalcross/crypto/digest/SHA256Digest native void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcdSHA256D_process_B) // totalcross/crypto/digest/SHA256Digest native protected final byte[] process(byte []data);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccAESC_nativeCreate) // totalcross/crypto/cipher/AESCipher native void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccAESC_doReset) // totalcross/crypto/cipher/AESCipher native protected final void doReset() throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccAESC_process_B) // totalcross/crypto/cipher/AESCipher native protected byte[] process(byte []data) throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccRSAC_nativeCreate) // totalcross/crypto/cipher/RSACipher native void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccRSAC_finalize) // totalcross/crypto/cipher/RSACipher native protected final void finalize();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccRSAC_doReset) // totalcross/crypto/cipher/RSACipher native protected final void doReset() throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tccRSAC_process_B) // totalcross/crypto/cipher/RSACipher native protected byte[] process(byte []data) throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcsPKCS1S_nativeCreate) // totalcross/crypto/signature/PKCS1Signature native void nativeCreate();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcsPKCS1S_finalize) // totalcross/crypto/signature/PKCS1Signature native protected final void finalize();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcsPKCS1S_doReset) // totalcross/crypto/signature/PKCS1Signature native protected final void doReset() throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcsPKCS1S_doSign_B) // totalcross/crypto/signature/PKCS1Signature native protected final byte[] doSign(byte []data) throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tcsPKCS1S_doVerify_BB) // totalcross/crypto/signature/PKCS1Signature native protected final boolean doVerify(byte []data, byte []signature) throws totalcross.crypto.CryptoException;
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(rU_getConfigInfo) // ras/Utils native public static totalcross.util.Hashtable getConfigInfo();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(rU_getProductInfo) // ras/Utils native public static totalcross.util.Hashtable getProductInfo();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(rU_getDeviceInfo) // ras/Utils native public static totalcross.util.Hashtable getDeviceInfo();
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_add_1_IIii) // totalcross/util/BigInteger native static int add_1(int []dest, int []x, int size, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_add_n_IIIi) // totalcross/util/BigInteger native static int add_n(int []dest, int []x, int []y, int len);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_sub_n_IIIi) // totalcross/util/BigInteger native static int sub_n(int []dest, int []x, int []y, int size);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_mul_1_IIii) // totalcross/util/BigInteger native static int mul_1(int []dest, int []x, int len, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_mul_IIiIi) // totalcross/util/BigInteger native static void mul(int []dest, int []x, int xlen, int []y, int ylen);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_udiv_qrnnd_li) // totalcross/util/BigInteger native static long udiv_qrnnd(long n, int d);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_divmod_1_IIii) // totalcross/util/BigInteger native static int divmod_1(int []quotient, int []dividend, int len, int divisor);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_submul_1_IiIii) // totalcross/util/BigInteger native static int submul_1(int []dest, int offset, int []x, int len, int y);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_divide_IiIi) // totalcross/util/BigInteger native static void divide(int []zds, int nx, int []y, int ny);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_chars_per_word_i) // totalcross/util/BigInteger native static int chars_per_word(int radix);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_count_leading_zeros_i) // totalcross/util/BigInteger native static int count_leading_zeros(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_set_str_IBii) // totalcross/util/BigInteger native static int set_str(int []dest, byte []str, int str_len, int base);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_cmp_IIi) // totalcross/util/BigInteger native static int cmp(int []x, int []y, int size);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_cmp_IiIi) // totalcross/util/BigInteger native static int cmp(int []x, int xlen, int []y, int ylen);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_rshift_IIiii) // totalcross/util/BigInteger native static int rshift(int []dest, int []x, int x_start, int len, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_rshift0_IIiii) // totalcross/util/BigInteger native static void rshift0(int []dest, int []x, int x_start, int len, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_rshift_long_Iii) // totalcross/util/BigInteger native static long rshift_long(int []x, int len, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_lshift_IiIii) // totalcross/util/BigInteger native static int lshift(int []dest, int d_offset, int []x, int len, int count);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_findLowestBit_i) // totalcross/util/BigInteger native static int findLowestBit(int word);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_findLowestBit_I) // totalcross/util/BigInteger native static int findLowestBit(int []words);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_gcd_IIi) // totalcross/util/BigInteger native static int gcd(int []x, int []y, int len);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_intLength_i) // totalcross/util/BigInteger native static int intLength(int i);
-{
-   TEST_SKIP;
-   finish: ;
-}
-TESTCASE(tuBI_intLength_Ii) // totalcross/util/BigInteger native static int intLength(int []words, int len);
-{
-   TEST_SKIP;
-   finish: ;
 }

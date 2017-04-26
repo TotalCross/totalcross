@@ -18,12 +18,15 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
-import totalcross.util.concurrent.*;
+import totalcross.ui.image.*;
 
 /** Spinner is a control that shows an image indicating that something is running in
- * the background. It has two styles: IPHONE and ANDROID. Its used in the ProgressBox.
+ * the background. 
  * 
  * To start the spin call the start method, and to stop it call the stop method.
+ * 
+ * If you try to run a spinner inside a tight loop, be sure to call <code>spinner.update()</code> or the spinner will not be
+ * updated. Without this, it will work in Java but not on devices. 
  * 
  * @since TotalCross 1.3
  */
@@ -33,113 +36,117 @@ public class Spinner extends Control implements Runnable
    public static final int IPHONE = 1;
    /** Used in the type field */
    public static final int ANDROID = 2;
+   /** Used in the type field */
+   public static final int SYNC = 3;
    
    /** Defines the type of spinner for all instances. Defaults for IPHONE when running in iPhone and
     * ANDROID for all other platforms. 
     */
    public static int spinnerType = Settings.isIOS() ? IPHONE : ANDROID;
    
-   private Coord []coords;
-   private int []colors;
-   private int slots, slot0, size, type;
+   private static Image[] loaded = new Image[4];
+   private static String[] files =
+   {
+      null,
+      "totalcross/res/spinner_iphone.gif",      
+      "totalcross/res/spinner_android.gif",      
+      "totalcross/res/spinner_sync.gif",      
+   };
    private boolean running;
-   private Lock lock;
+   private Image anim,anim0;
    
+   /** Creates a spinner with the defined spinnerType. */
    public Spinner()
    {
-      type = spinnerType;
-      slots = 8;
-      if (UIColors.spinnerBack != -1) backColor = UIColors.spinnerBack;
-      foreColor = UIColors.spinnerFore;
-      lock = new Lock();
+      this(spinnerType);
+   }
+
+   /** Creates a spinner of the given type. */
+   public Spinner(int type)
+   {
+      setType(type);
    }
    
+   /** Changes the Spinner to one of the predefined types. */
+   public void setType(int t)
+   {
+      if (t < IPHONE || t > SYNC)
+         throw new IllegalArgumentException("Invalid type");
+      try 
+      {
+         anim0 = loaded[t] == null ? loaded[t] = new Image(files[t]) : loaded[t];
+         anim = null;
+      } 
+      catch (Exception e) 
+      {
+         if (Settings.onJavaSE) 
+            e.printStackTrace();
+      }
+   }
+
+   /** Creates a spinner from an animated GIF.
+    * You can download additional animations from: <a href='http://preloaders.net/en'>here</a>. 
+    * Change only the given settings:
+    * <ul>
+    *  <li> Image type: GIF
+    *  <li> Transparent background: Yes
+    *  <li> Foreground color: FFFFFF if the animation is only black, 000000 if it has fade.
+    *  <li> Background color: 000000
+    *  <li> Keep size 128 x 128
+    * </ul>
+    * Then press Generate preloader and download the gif file that will appear at the right pane.
+    * If the spinner is moving counterclockwise, you can make it go clickwise by changing also, under the  Advanced options:
+    * <ul>
+    *  <li> Flip image: Hor
+    *  <li> Reverse animation: Yes
+    * </ul>
+    * The image is colorized with the foreground color. 
+    * If it appears not filled, try selecting the "Invert colors" option, and use 000000 as foreground color.
+    */
+
+   public Spinner(Image anim)
+   {
+      this.anim0 = anim;
+      if (UIColors.spinnerBack != -1) backColor = UIColors.spinnerBack;
+      foreColor = UIColors.spinnerFore;
+   }
+   
+   /** Changes the gif image of this Spinner */
+   public void setImage(Image anim)
+   {
+      this.anim0 = anim;
+      this.anim = null;
+   }
+
    public void onBoundsChanged(boolean screenChanged)
    {
-      size = width < height ? width : height;
-      if ((size % 2) == 0) size--;
-      
-      if (!screenChanged || coords == null)
-      {
-         int xyc = size/2;
-         // find the number of slots
-         int bestn=0;
-         switch (type)
-         {
-            case IPHONE: 
-               bestn = height >= 24 ? 16 : 12;
-               break;
-            case ANDROID: 
-               bestn = height >= 21 ? 12 : 8; 
-               break;
-         }
-         if (slots != bestn)
-         {
-            slots = bestn;
-            onColorsChanged(true);
-         }
-         
-         if (type == ANDROID)
-            return;
-         
-         int astep = 360 / slots;
-         int a = 0;
-         
-         Graphics g = getGraphics();
-         coords = new Coord[slots*3];
-         for (int i = 0; i < coords.length;)
-         {
-            g.getAnglePoint(xyc,xyc,xyc+1,xyc+1,a-1,coords[i++] = new Coord());
-            g.getAnglePoint(xyc,xyc,xyc,  xyc,  a,  coords[i++] = new Coord());
-            g.getAnglePoint(xyc,xyc,xyc+1,xyc+1,a+1,coords[i++] = new Coord());
-            a += astep;
-         }
-      }
+      anim = null;
    }
    
    public void onColorsChanged(boolean changed)
    {
-      if (changed || colors == null)
-      {
-         if (colors == null || colors.length != slots)
-            colors = new int[slots];
-         for (int i = 0; i < slots; i++) 
-            colors[i] = Color.interpolate(backColor,foreColor,100*i/slots);
-      }
+      anim = null;
    }
    
    public void onPaint(Graphics g)
    {
-      synchronized (lock)
+      if (!Settings.isOpenGL)
       {
-         g.useAA = true;
-         
-         int astep = 360/slots;
-         int a = 360;
-         
-         int div = type == IPHONE ? 3 : 1;
-         int xyc = size/2;
-         for (int i = slots * div; --i >= 0;)
-         {
-            int idx = (i/div+slot0)%slots;
-            switch (type)
-            {
-               case ANDROID:
-                  g.backColor = colors[idx];
-                  g.foreColor = backColor;
-                  g.fillPie(xyc,xyc,xyc,a-astep,a);
-                  //g.drawPie(xyc,xyc,xyc,a-astep,a);
-                  a -= astep;
-                  break;
-               case IPHONE:
-                  g.backColor = g.foreColor = colors[idx];
-                  g.drawLine(coords[i].x,coords[i].y,xyc,xyc);
-                  break;
-            }
-            g.backColor = backColor;
-            g.fillCircle(xyc,xyc,xyc/2);
-         }
+         g.backColor = backColor;
+         g.fillRect(0,0,width,height);
       }
+      if (anim == null) checkAnim();
+      if (anim != null)
+         g.drawImage(anim, (width-anim.getWidth())/2,(height-anim.getHeight())/2);
+   }
+   
+   private void checkAnim()
+   {
+      try
+      {
+         anim = anim0.smoothScaledFixedAspectRatio(width < height ? width : height,true);
+         anim.applyColor2(getForeColor() | 0xAA000000);
+      } catch (Exception e) {anim = null;}
    }
    
    /** Starts the spinning thread. */
@@ -162,18 +169,37 @@ public class Spinner extends Control implements Runnable
    {
       return running;
    }
+
+   private void step()
+   {
+      if (anim == null) checkAnim();
+      if (getParentWindow() == Window.topMost && anim != null) // don't update if we loose focus
+      {
+         anim.nextFrame();
+         safeRepaintNow();
+      }
+   }
    
    public void run()
    {
-      Window w = getParentWindow();
       while (running)
       {
-         if (w == Window.topMost) // don't update if we loose focus
-         {
-            slot0++;
-            repaintNow();
-         }
-         Vm.sleep(120); // with safeSleep, the vm starts to behave slowly and strangely
+         step();
+         Vm.sleep(anim != null ? 80 : 120); // with safeSleep, the vm starts to behave slowly and strangely
       }      
+   }
+   
+   int last;
+   /** Updates the spinner; call this when using the spinner inside a loop. */
+   public void update()
+   {
+      int now = Vm.getTimeStamp();
+      if ((now - last) > (anim != null ? 80 : 120)) // prevents calling pumpEvents too fast
+      {
+         step();
+         if (!MainWindow.isMainThread())
+            Vm.sleep(1);
+         last = now;
+      }
    }
 }

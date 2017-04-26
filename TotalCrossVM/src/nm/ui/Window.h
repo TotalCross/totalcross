@@ -16,7 +16,7 @@
 
 #include "tcvm.h"
 
-enum
+enum TCSIP
 {
    SIP_HIDE    = 10000, /** Used to hide the virtual keyboard */
    SIP_TOP     = 10001, /** Used to place the keyboard on top of screen */

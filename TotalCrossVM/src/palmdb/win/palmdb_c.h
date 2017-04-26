@@ -20,12 +20,12 @@
 
 typedef HANDLE PDBFileRef;
 
-Err inline PDBGetLastErr()
+Err PDBGetLastErr()
 {
    return GetLastError();
 }
 
-bool inline PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
+bool PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFileRef* fileRef)
 {
    return (*fileRef = CreateFile(fullPath,
       readOnly ? GENERIC_READ:(GENERIC_READ|GENERIC_WRITE), // font files must be open in readonly, or two instances will not be able to run
@@ -36,49 +36,87 @@ bool inline PDBCreateFile(TCHARP fullPath, bool createIt, bool readOnly, PDBFile
       null)) != INVALID_HANDLE_VALUE;
 }
 
-bool inline PDBCloseFile(PDBFileRef fileRef)
+bool PDBCloseFile(PDBFileRef fileRef)
 {
    return CloseHandle(fileRef);
 }
 
-bool inline PDBRename(TCHARP oldName, TCHARP newName)
+bool PDBRename(TCHARP oldName, TCHARP newName)
 {
-   return MoveFile(oldName, newName);
+#if defined (WP8)
+   return MoveFileEx(oldName, newName, 0);
+#else
+	return MoveFile(oldName, newName);
+#endif
 }
 
-bool inline PDBRemove(TCHARP fileName)
+bool PDBRemove(TCHARP fileName)
 {
    return DeleteFile(fileName);
 }
 
-bool inline PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
+bool PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 {
    return ReadFile(fileRef, buf, size, read, null);
 }
 
-bool inline PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
+bool PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8
+   LARGE_INTEGER off = { 0 }, cur;
+   off.LowPart = offset;
+   return (SetFilePointerEx(fileRef, off, &cur, FILE_BEGIN) != 0) ? PDBRead(fileRef, buf, size, read) : false;
+#else
    return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBRead(fileRef, buf, size, read) : false;
+#endif
 }
 
-bool inline PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
+bool PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 {
    return WriteFile(fileRef, buf, size, written, null);
 }
 
-bool inline PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
+bool PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8
+   LARGE_INTEGER off = { 0 }, cur;
+   off.LowPart = offset;
+   return (SetFilePointerEx(fileRef, off, &cur, FILE_BEGIN) != 0) ? PDBWrite(fileRef, buf, size, written) : false;
+#else
    return (SetFilePointer(fileRef, offset, null, FILE_BEGIN) != 0xFFFFFFFFL) ? PDBWrite(fileRef, buf, size, written) : false;
+#endif
 }
 
-bool inline PDBGetFileSize (PDBFileRef fileRef, int32* size)
+bool PDBGetFileSize (PDBFileRef fileRef, int32* size)
 {
+#ifndef WP8
    return (*size = GetFileSize(fileRef, null)) != 0xFFFFFFFFL;
+#else
+   FILE_STANDARD_INFO finfo = { 0 };
+   *size = 0xFFFFFFFF;
+   if (GetFileInformationByHandleEx(fileRef, FileStandardInfo, &finfo, sizeof(finfo)) == 0)
+   {
+      return false;
+   }
+
+   // Size cannot exceed 32 bits
+   *size = finfo.EndOfFile.LowPart;
+   return true;
+#endif
 }
 
-bool inline PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
+bool PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 {
+   // Must use SetFilePointerEx when running on the WP8 emulator, but not on device
+#if defined WP8
+   LARGE_INTEGER off = { 0 }, cur;
+   off.LowPart = oldSize + growSize;
+   return (SetFilePointerEx(fileRef, off, &cur, FILE_BEGIN)) ? SetEndOfFile(fileRef) : false;
+#else
    return (SetFilePointer(fileRef, oldSize + growSize, null, FILE_BEGIN) != 0xFFFFFFFFL) ? SetEndOfFile(fileRef) : false;
+#endif
 }
 
 bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType proc, VoidP userVars)
@@ -106,7 +144,7 @@ bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType pro
       if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && recursive)
       {
 #if defined (WIN32) && !defined (WINCE)
-         if (xstrcmp(findFileData.cFileName, ".") && xstrcmp(findFileData.cFileName, ".."))
+         if (tcscmp(findFileData.cFileName, TEXT(".")) && tcscmp(findFileData.cFileName, TEXT("..")))
          {
 #endif
             tcscpy(searchPath+pathLen+1, findFileData.cFileName);

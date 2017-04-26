@@ -16,14 +16,12 @@
 static uint32 getSecretKeyCreator(uint32 crtr);
 // made these static to prevent them from being changed by a malicious library. the activation depends on these.
 static char romSerialNumber[128];
-static char imei[64];
+static char imei[64],imei2[64];
 static char iccid[30];
 static char deviceId[128];
 
 #if defined (WINCE) || defined (WIN32)
  #include "win/settings_c.h"
-#elif defined(PALMOS)
- #include "palm/settings_c.h"
 #else
  #include "posix/settings_c.h"
 #endif
@@ -33,15 +31,16 @@ TC_API void getRomSerialNumber(CharP outBuf)
    xstrcpy(outBuf, romSerialNumber);
 }
 
+TC_API void getDeviceId(CharP outBuf)
+{
+   xstrcpy(outBuf, deviceId);
+}
+
 TC_API void getImei(CharP outBuf)
 {
    xstrcpy(outBuf, imei);
 }
 
-TC_API void getDeviceId(CharP outBuf)
-{
-   xstrcpy(outBuf, deviceId);
-}
 
 static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
 {
@@ -60,10 +59,10 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.romVersionPtr               = getStaticFieldInt(settingsClass, "romVersion");
    tcSettings.virtualKeyboardPtr          = getStaticFieldInt(settingsClass, "virtualKeyboard");
    tcSettings.daylightSavingsPtr          = getStaticFieldInt(settingsClass, "daylightSavings");
+   tcSettings.daylightSavingsMinutesPtr   = getStaticFieldInt(settingsClass, "daylightSavingsMinutes");
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
+   tcSettings.timeZoneMinutesPtr          = getStaticFieldInt(settingsClass, "timeZoneMinutes");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
-   tcSettings.nvfsVolumePtr               = getStaticFieldInt(settingsClass, "nvfsVolume");
-   tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
    tcSettings.keyboardFocusTraversablePtr = getStaticFieldInt(settingsClass, "keyboardFocusTraversable");
    tcSettings.closeButtonTypePtr          = getStaticFieldInt(settingsClass, "closeButtonType");
    tcSettings.isFullScreenPtr             = getStaticFieldInt(settingsClass, "isFullScreen");
@@ -73,24 +72,27 @@ static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
    tcSettings.gcCount                     = getStaticFieldInt(settingsClass, "gcCount");
    tcSettings.gcTime                      = getStaticFieldInt(settingsClass, "gcTime");
    tcSettings.chunksCreated               = getStaticFieldInt(settingsClass, "chunksCreated");    *tcSettings.chunksCreated = 3;
-   tcSettings.appSettingsPtr              = getStaticFieldObject(settingsClass, "appSettings");
-   tcSettings.appSecretKeyPtr             = getStaticFieldObject(settingsClass, "appSecretKey");
-   tcSettings.appSettingsBinPtr           = getStaticFieldObject(settingsClass, "appSettingsBin");
+   tcSettings.appSettingsPtr              = getStaticFieldObject(currentContext,settingsClass, "appSettings");
+   tcSettings.appSecretKeyPtr             = getStaticFieldObject(currentContext,settingsClass, "appSecretKey");
+   tcSettings.appSettingsBinPtr           = getStaticFieldObject(currentContext,settingsClass, "appSettingsBin");
    tcSettings.showMemoryMessagesAtExit    = getStaticFieldInt(settingsClass, "showMemoryMessagesAtExit");
-   tcSettings.timeZoneStrPtr              = getStaticFieldObject(settingsClass, "timeZoneStr");
+   tcSettings.timeZoneStrPtr              = getStaticFieldObject(currentContext,settingsClass, "timeZoneStr");
    tcSettings.fingerTouchPtr              = getStaticFieldInt(settingsClass, "fingerTouch");
    tcSettings.disableDebug                = getStaticFieldInt(loadClass(currentContext, "totalcross.sys.Vm", true), "disableDebug");
-   tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(settingsClass, "fullScreenPlatforms");
+   tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(currentContext,settingsClass, "fullScreenPlatforms");
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
    tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
-   tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
-   tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
+   tcSettings.iccidPtr                    = getStaticFieldObject(currentContext,settingsClass, "iccid");
    tcSettings.resizableWindow             = getStaticFieldInt(settingsClass, "resizableWindow");
    tcSettings.windowFont                  = getStaticFieldInt(settingsClass, "windowFont");
+   tcSettings.isOpenGL                    = getStaticFieldInt(settingsClass, "isOpenGL");
+   tcSettings.lineNumber                  = getStaticFieldObject(currentContext,settingsClass, "lineNumber");
+   tcSettings.unmovableSIP                = getStaticFieldInt(settingsClass, "unmovableSIP");
+   tcSettings.bugreportEmail              = getStaticFieldObject(currentContext,settingsClass, "bugreportEmail");
+   tcSettings.appVersion                  = getStaticFieldObject(currentContext,settingsClass, "appVersion");
    if (loadedTCZ != null)
    {
       *tcSettings.windowFont = (loadedTCZ->header->attr & ATTR_WINDOWFONT_DEFAULT) != 0;
-      *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
    }
 }
 
@@ -121,10 +123,6 @@ static void getDefaultCrid(CharP name, CharP creat)
    }
 }
 
-#ifdef ANDROID
-extern int32 deviceFontHeight;
-#endif
-
 bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTCZ)
 {
    xstrcpy(mainClassName, mainClassNameP);
@@ -136,11 +134,10 @@ bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTC
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
-#elif defined(ANDROID)
-   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
 #endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
+   vistaFadeStepP = getStaticFieldInt(uiColorsClass, "vistaFadeStep");
    return true;
 }
 
@@ -164,7 +161,7 @@ static bool inSerialNumberExclusionList() // empties the serial number in device
 }
 
 bool retrieveSettings(Context currentContext, CharP mainClassName)
-{
+{      
    dataPath[0] = 0;
    if (!fillSettings(currentContext)) // platform dependent function
       return false;
@@ -175,29 +172,39 @@ bool retrieveSettings(Context currentContext, CharP mainClassName)
    // sets the default creator id - it may be changed in the application's static initializer
    getDefaultCrid(mainClassName, applicationIdStr);
    applicationId = *((int32*)applicationIdStr);
-#ifdef PALMOS
-   applicationId = SWAP32_FORCED(applicationId);
-#endif
 
-   setObjectLock(*getStaticFieldObject(settingsClass, "applicationId")   = createStringObjectFromCharP(currentContext, applicationIdStr, -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "applicationId")   = createStringObjectFromCharP(currentContext, applicationIdStr, -1), UNLOCKED);
 #if !defined darwin
-   setObjectLock(*getStaticFieldObject(settingsClass, "platform")        = createStringObjectFromCharP(currentContext, platform        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "platform")        = createStringObjectFromCharP(currentContext, platform        , -1), UNLOCKED);
 #endif
-   setObjectLock(*getStaticFieldObject(settingsClass, "userName")        = createStringObjectFromCharP(currentContext, userName        , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "romSerialNumber") = createStringObjectFromCharP(currentContext, romSerialNumber , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "deviceId")        = createStringObjectFromCharP(currentContext, deviceId        , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "imei")            = createStringObjectFromCharP(currentContext, imei            , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "appPath")         = createStringObjectFromCharP(currentContext, appPath         , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "dataPath")        = createStringObjectFromCharP(currentContext, dataPath        , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "vmPath")          = createStringObjectFromCharP(currentContext, vmPath          , -1), UNLOCKED);
-   setObjectLock(*getStaticFieldObject(settingsClass, "iccid")           = createStringObjectFromCharP(currentContext, iccid           , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "userName")        = createStringObjectFromCharP(currentContext, userName        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "romSerialNumber") = createStringObjectFromCharP(currentContext, romSerialNumber , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "deviceId")        = createStringObjectFromCharP(currentContext, deviceId        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "imei")            = createStringObjectFromCharP(currentContext, imei            , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "appPath")         = createStringObjectFromCharP(currentContext, appPath         , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "dataPath")        = createStringObjectFromCharP(currentContext, dataPath        , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "vmPath")          = createStringObjectFromCharP(currentContext, vmPath          , -1), UNLOCKED);
+   setObjectLock(*getStaticFieldObject(currentContext,settingsClass, "iccid")           = createStringObjectFromCharP(currentContext, iccid           , -1), UNLOCKED);
+      
+   if (imei[0] || imei2[0])
+   {
+      TCObject *imeisArrayObj = getStaticFieldObject(currentContext,settingsClass, "imeis");
+      *imeisArrayObj = createStringArray(currentContext, imei[0] && imei2[0] ? 2 : 1);
+      if (*imeisArrayObj)
+      {
+         TCObject *imeis = (TCObjectArray) ARRAYOBJ_START(*imeisArrayObj);
+         if (imei [0]) setObjectLock(*imeis++ = createStringObjectFromCharP(currentContext, imei, -1), UNLOCKED);
+         if (imei2[0]) setObjectLock(*imeis++ = createStringObjectFromCharP(currentContext, imei2,-1), UNLOCKED);
+         setObjectLock(*imeisArrayObj, UNLOCKED);
+      }
+   }   
 
    return true;
 }
 
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 {
-   Object appId = *getStaticFieldObject(settingsClass, "applicationId");
+   TCObject appId = *getStaticFieldObject(currentContext,settingsClass, "applicationId");
    JCharP c = String_charsStart(appId);
 
    applicationIdStr[0] = (char)c[0];
@@ -216,7 +223,7 @@ void retrieveSettingsChangedAtStaticInitializer(Context currentContext)
 
 static void updateEntry(char *name, uint32 crtr, bool bin, bool isHKLM)
 {
-   Object obj = *getStaticFieldObject(settingsClass, name);
+   TCObject obj = *getStaticFieldObject(mainContext,settingsClass, name);
    if (obj == NULL || ARRAYOBJ_LEN(obj) == 0) // if string null, delete it - guich@240_3: first condition added.
       deleteAppSettings(crtr,bin,isHKLM);      
    else                                      
@@ -233,7 +240,7 @@ void storeSettings(bool quittingApp) // guich@230_22
    if (quittingApp)
    {
    restoreSoundSettings();
-#if defined(PALMOS) || defined(WINCE)
+#if defined(WINCE)
    restoreVKSettings();
 #endif
    }
@@ -241,18 +248,22 @@ void storeSettings(bool quittingApp) // guich@230_22
 
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
 {
-   int32 maxColors = bpp < 32 ? (1<<bpp) : (1<<24);
-
    *tcSettings.screenWidthPtr = width;
    *tcSettings.screenHeightPtr = height;
    *tcSettings.screenWidthInDPIPtr = hRes;
    *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
+   *tcSettings.isOpenGL = true;
+#endif
+#if defined(ANDROID) || defined(darwin)
+   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+#endif
 }
 
 TC_API bool getDataPath(CharP storeInto)
 {
-   Object dataPathObj = *getStaticFieldObject(settingsClass, "dataPath");
+   TCObject dataPathObj = *getStaticFieldObject(null,settingsClass, "dataPath");
    if (dataPathObj == null)
       return false;
    String2CharPBuf(dataPathObj, storeInto);

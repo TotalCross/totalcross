@@ -29,7 +29,6 @@ public class Level
 
 	private Tile tiles[][];
    public int tilesLeft;
-   protected boolean dirty;
 
 	private static int[][] LAYOUTS =
 	{
@@ -127,11 +126,11 @@ public class Level
      			if (color > 0) tilesLeft++;
          }
   		}
-      dirty = true;
    }
 
    public boolean collide(Ball ball)
    {
+      boolean dirty = false;
       int brickCellY = (ball.centerY - offsetY) / incY;
       int brickCellX = (ball.centerX - offsetX) / incX;
 
@@ -143,9 +142,7 @@ public class Level
          if (ctile.color > 0 && ctile.collide(ball))
          {
             if (ctile.hit(ball))
-            {
                tilesLeft--;
-            }
             dirty = true;
          }
       }
@@ -160,26 +157,9 @@ public class Level
          for (int c = COLUMNS-1; c >= 0; c--)
          {
             Tile ctile = row[c];
-   			if(ctile.color >= 0 && ctile.dirty)
-            {
+   			if(ctile.color >= 0)
                ctile.show();
-            }
          }
 		}
-     	dirty = false;
 	}
-   public void setDirty()
-   {
-      for (int r = 0; r < ROWS; r++)
-      {
-         Tile row[] = tiles[r];
-         for (int c = 0; c < COLUMNS; c++)
-         {
-            Tile ctile = row[c];
-            if(ctile.color >= 0)
-               ctile.dirty = true;
-         }
-      }
-      dirty = true;
-   }
 }

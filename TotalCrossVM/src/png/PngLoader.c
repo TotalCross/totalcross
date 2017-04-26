@@ -12,6 +12,9 @@
 
 
 #include "png.h"
+#include "tcvm.h"
+#include "pngstruct.h"
+#include "pnginfo.h"
 
 static void row_callback(png_structp, png_bytep, png_uint_32, int);
 static void info_callback(png_structp png_ptr, png_infop info);
@@ -20,11 +23,11 @@ static void error_callback(png_structp, png_const_charp);
 typedef struct
 {
    Heap heap;
-   Object imageObj;
+   TCObject imageObj;
    Pixel* pixels;
    TCZFile tcz; // if filled, we're reading from a tcz file, otherwise, from a totalcross.io.Stream
    // for fetching data
-   Object inputStreamObj,bufObj,pixelsObj;
+   TCObject inputStreamObj, bufObj, pixelsObj;
    Method readBytesMethod;
    TValue params[4];
    // the first 4 bytes
@@ -55,7 +58,7 @@ int pngRead(void *buff, int count, UserData *in)
    else
    {
       uint8* start = (uint8*)buff;
-      Object bufObj = in->params[1].asObj;
+      TCObject bufObj = in->params[1].asObj;
       int tempBufSize = ARRAYOBJ_LEN(bufObj);
       uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
 
@@ -70,14 +73,14 @@ int pngRead(void *buff, int count, UserData *in)
          cur += n;
          count -= n;
       }
-      return cur - start;
+      return (int32)(cur - start);
    }
 }
 
 static png_voidp usermalloc(png_structp png_ptr, png_size_t size)
 {
    Heap h = (Heap)png_ptr->mem_ptr;
-   return heapAlloc(h, size);
+   return heapAlloc(h, (int)size);
 }
 void userfree(png_structp png_ptr, png_voidp ptr)
 {
@@ -88,12 +91,15 @@ void userfree(png_structp png_ptr, png_voidp ptr)
    //heapFree(userData->heap, ptr);
 }
 
+void setTransparentColor(TCObject obj, Pixel color);
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4)
+void pngLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
 {
    Heap heap;
    int32 count;
    uint8 buffer[512];
+   int32 transp = -1;
+   bool isAlpha = false;
 
    UserData userData;
    png_structp png_ptr;
@@ -149,54 +155,53 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
    png_set_progressive_read_fn(png_ptr,&userData,info_callback,row_callback,null);
 
    /* Create decompressor output buffer. */
-   while (!userData.quit && (count=pngRead(buffer, 512, &userData)) > 0)
-   {
+   while (!userData.quit && (count=pngRead(buffer, sizeof(buffer), &userData)) > 0)
       png_process_data(png_ptr, info_ptr, buffer, count);
-   }
 
    // guich@tc100: check if a comment came with the png
    if (info_ptr->text && strEq("Comment",info_ptr->text->key))
    {
-      Image_comment(imageObj) = createStringObjectFromCharP(currentContext, info_ptr->text->text, info_ptr->text->text_length);
+      Image_comment(imageObj) = createStringObjectFromCharP(currentContext, info_ptr->text->text, (int)info_ptr->text->text_length);
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
-   if (png_ptr->color_type == 6)
-   {
-      Image_useAlpha(imageObj) = true;
-      Image_transparentColor(imageObj) = -1;
-   }
-   else
    // guich@tc100: set the transparent color
+   if (png_ptr->color_type == 6)
+      isAlpha = true;
+   else
    if (png_ptr->num_trans > 0)
-   {
+   {             
       if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) // palettized?
       {
          int32 i;
          if (png_ptr->num_trans == 256 && png_ptr->color_type == 3)
-            Image_useAlpha(imageObj) = true;
+            isAlpha = true;
          for (i = png_ptr->num_trans; --i >= 0;) // guich@tc120_60: must find the entry that has 0 in trans array
-            if (png_ptr->trans[i] == 0)
+            if (png_ptr->trans_alpha[i] == 0)
             {
                png_color c = png_ptr->palette[i];
-               Image_transparentColor(imageObj) = (c.red << 16) | (c.green << 8) | c.blue;
+               transp = (c.red << 16) | (c.green << 8) | c.blue;
+               isAlpha = false;
                break;
             }
       }
       else
-         Image_transparentColor(imageObj) = (info_ptr->trans_values.red << 16) | (info_ptr->trans_values.green << 8) | info_ptr->trans_values.blue;
+         transp = (info_ptr->trans_color.red << 16) | (info_ptr->trans_color.green << 8) | info_ptr->trans_color.blue;
    }
 
    // Finish decompression and release memory. Do it in this order because output module
    // has allocated memory of lifespan JPOOL_IMAGE; it needs to finish before releasing memory.
    if (userData.upixels) png_free(png_ptr, userData.upixels);
-   png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
    Image_width(imageObj) = userData.width;
    Image_height(imageObj) = userData.height;
    if (tcz != null)
       tczClose(tcz);
    heapDestroy(heap);
+
+//   if (!isAlpha && transp != -1) // guich@tc200rc1: added a test for -1, otherwise a png with rgb will apply a pink mask to the image
+//      setTransparentColor(imageObj, (Pixel)transp);
 }
 
 /**   do any setup here, including setting any of the transformations
@@ -218,7 +223,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    UserData * userData = (UserData *)png_get_progressive_ptr(png_ptr);
 
    png_get_IHDR(png_ptr,info_ptr,&width,&height,&bit_depth,&color_type,&interlace_type,&compression_type,&filter_method);
-
+   
    /*
    | set up transformation params:
    | expand images of all color-type and bit-depth to 3x8 bit RGB images
@@ -238,14 +243,14 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
    png_read_update_info(png_ptr, info_ptr);
    if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE && png_ptr->num_trans != 0) // we don't support transparent palettes
       png_set_strip_alpha(png_ptr);
-   userData->width = width;
-   userData->height = height;
-   userData->bytesPerRow = png_get_rowbytes(png_ptr, info_ptr);
+   userData->width = (int32)width;
+   userData->height = (int32)height;
+   userData->bytesPerRow = (int32)png_get_rowbytes(png_ptr, info_ptr);
    userData->upixels = png_malloc(png_ptr, userData->bytesPerRow);
    if (width > 65535 || height > 65535)  // bad width/height?
       HEAP_ERROR(userData->heap, 998);
 
-   Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, width*height);
+   Image_pixels(userData->imageObj) = userData->pixelsObj = createIntArray(userData->currentContext, (int32)(width*height));
    if (!userData->pixelsObj)
       HEAP_ERROR(userData->heap, 997);
    setObjectLock(Image_pixels(userData->imageObj), UNLOCKED);

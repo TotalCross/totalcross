@@ -14,22 +14,22 @@
 #include "tcvm.h"
 #include "ImagePrimitives_c.h"
 
-void jpegLoad(Context currentContext, Object imageInstance, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4);
-void pngLoad(Context currentContext, Object imageInstance, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4);
+void jpegLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
+void pngLoad(Context currentContext, TCObject imageInstance, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4);
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native private void imageLoad(String path);
 {
    char path[256];
-   Object imageObj = p->obj[0];
-   Object pathObj = p->obj[1];
+   TCObject imageObj = p->obj[0];
+   TCObject pathObj = p->obj[1];
    TCZFile tcz;
 
    String2CharPBuf(pathObj, path);
    tcz = tczGetFile(path, false);
    if (tcz != null)
    {
-      uint8 magic[4]; // read the magic to find if its a png or a jpeg (note that jpeg has no magic)
+      char magic[4]; // read the magic to find if its a png or a jpeg (note that jpeg has no magic)
       tczRead(tcz, magic, 4);
       if (magic[1] == 'P' && magic[2] == 'N' && magic[3] == 'G')
          pngLoad(p->currentContext, imageObj, null, null, tcz, magic);
@@ -40,9 +40,9 @@ TC_API void tuiI_imageLoad_s(NMParams p) // totalcross/ui/image/Image native pri
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native private void imageParse(totalcross.io.Stream in, byte []buf);
 {
-   Object imageObj = p->obj[0];
-   Object streamObj = p->obj[1];
-   Object bufObj = p->obj[2];
+   TCObject imageObj = p->obj[0];
+   TCObject streamObj = p->obj[1];
+   TCObject bufObj = p->obj[2];
    uint8* buf = ARRAYOBJ_START(bufObj);
    char magic[4];
    xmove4(magic, buf); // buf already comes filled from Java with the first 4 bytes
@@ -54,18 +54,18 @@ TC_API void tuiI_imageParse_sB(NMParams p) // totalcross/ui/image/Image native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_changeColors_ii(NMParams p) // totalcross/ui/image/Image native public void changeColors(int from, int to);
 {
-   Object thisObj = p->obj[0];
-   Pixel from = makePixelRGB(p->i32[0]);
-   Pixel to = makePixelRGB(p->i32[1]);
+   TCObject thisObj = p->obj[0];
+   Pixel from = makePixelARGB(p->i32[0]);
+   Pixel to = makePixelARGB(p->i32[1]);
    changeColors(thisObj, from, to);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_getPixelRow_Bi(NMParams p) // totalcross/ui/image/Image native protected void getPixelRow(byte []fillIn, int y);
 {
-   Object thisObj = p->obj[0];
-   Object fillIn = p->obj[1];
+   TCObject thisObj = p->obj[0];
+   TCObject fillIn = p->obj[1];
    int32 y = p->i32[0];
-   getPixelRow(thisObj, fillIn, y);
+   getPixelRow(p->currentContext,thisObj, fillIn, y);
 }
 //////////////////////////////////////////////////////////////////////////
 typedef enum
@@ -74,15 +74,16 @@ typedef enum
    SMOOTH_SCALED_INSTANCE,
    ROTATED_SCALED_INSTANCE,
    TOUCHEDUP_INSTANCE,
-   FADED_INSTANCE
+   FADED_INSTANCE,
+   ALPHA_INSTANCE
 } FuncType;
 TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 {
-   Object thisObj = p->obj[0];
-   Object newObj = p->obj[1];
+   TCObject thisObj = p->obj[0];
+   TCObject newObj = p->obj[1];
    int32 percScale = p->i32[0];
    int32 angle = p->i32[1];
-   Pixel color = makePixelRGB(p->i32[2]);
+   Pixel color = p->i32[2] == 0 ? (Pixel)0 : makePixelRGB(p->i32[2]);
    FuncType type = (FuncType)p->i32[5];
    switch (type)
    {
@@ -90,8 +91,7 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
          getScaledInstance(thisObj, newObj);
          break;
       case SMOOTH_SCALED_INSTANCE:
-         Image_transparentColor(newObj) = p->i32[2]; // replace transparent color
-         if (!getSmoothScaledInstance(thisObj, newObj, color))
+         if (!getSmoothScaledInstance(thisObj, newObj))
             throwException(p->currentContext, OutOfMemoryError, null);
          break;
       case ROTATED_SCALED_INSTANCE:
@@ -103,34 +103,76 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
       case FADED_INSTANCE: // guich@tc110_50
          getFadedInstance(thisObj, newObj, color);
          break;
+      case ALPHA_INSTANCE: // guich@tc200
+         getAlphaInstance(thisObj, newObj, p->i32[2]);
+         break;
    }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_setCurrentFrame_i(NMParams p) // totalcross/ui/image/Image native public void setCurrentFrame(int nr);
 {
-   Object obj = p->obj[0];
+   TCObject obj = p->obj[0];
    setCurrentFrame(obj, p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColor_i(NMParams p) // totalcross/ui/image/Image native public void applyColor(int color);
 {
-   Object thisObj = p->obj[0];
+   TCObject thisObj = p->obj[0];
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor(thisObj, color);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_nativeEquals_i(NMParams p) // totalcross/ui/image/Image native private boolean nativeEquals(totalcross.ui.image.Image other);
 {
-   Object thisObj = p->obj[0];
-   Object otherObj = p->obj[1];
+   TCObject thisObj = p->obj[0];
+   TCObject otherObj = p->obj[1];
    p->retI = nativeEquals(thisObj, otherObj);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native public void applyColor2(int color);
 {
-   Object thisObj = p->obj[0];
-   Pixel color = makePixelRGB(p->i32[0]);
+   TCObject thisObj = p->obj[0];
+   Pixel color = makePixelARGB(p->i32[0]);
    applyColor2(thisObj, color);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_setTransparentColor_i(NMParams p) // totalcross/ui/image/Image native public totalcross.ui.image.Image setTransparentColor(int color);
+{
+   TCObject thisObj = p->obj[0];
+   Pixel color = makePixelRGB(p->i32[0]);
+   setTransparentColor(thisObj, color);
+   p->retO = thisObj;
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyChanges(NMParams p) // totalcross/ui/image/Image native public void applyChanges();
+{
+#ifdef __gl2_h_    
+   TCObject thisObj = p->obj[0];
+   applyChanges(p->currentContext,thisObj);
+#endif    
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_freeTexture(NMParams p) // totalcross/ui/image/Image native private void freeTexture();
+{  
+#ifdef __gl2_h_                         
+   freeTexture(p->obj[0]);
+#endif   
+}
+//////////////////////////////////////////////////////////////////////////
+bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality); // JpegLoader.c
+TC_API void tuiI_createJpg_si(NMParams p) // totalcross/ui/image/Image native public void createJpg(totalcross.io.Stream s, int quality);
+{
+   TCObject thisObj = p->obj[0];
+   TCObject stream = p->obj[1];
+   int32 quality = p->i32[0];
+   /*bool ret = */image2jpeg(p->currentContext, thisObj, stream, quality);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyFade_i(NMParams p) // totalcross/ui/image/Image native public void applyFade(int fadeValue);
+{
+   TCObject thisObj = p->obj[0];
+   int32 fadeValue = p->i32[0];
+   applyFade(thisObj, fadeValue);
 }
 
 #ifdef ENABLE_TEST_SUITE

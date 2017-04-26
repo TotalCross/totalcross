@@ -78,9 +78,10 @@ static void propertyListenerCallback (
 		//	This delay is required to ensure that the AudioPlayer class, and the
 		//	underlying audio queue object, are not destroyed while they are still
 		//	doing work.
-		[player.notificationDelegate	performSelector: @selector (updateUserInterfaceOnAudioQueueStateChange:)
-										withObject: player
-										afterDelay: 0];
+   // guich: all this is probably no longer used
+		//[player.notificationDelegate	performSelector: @selector (updateUserInterfaceOnAudioQueueStateChange:)
+		//								withObject: player
+		//								afterDelay: 0];
 	}
 }
 
@@ -319,11 +320,8 @@ static void propertyListenerCallback (
 
 
 - (void) dealloc {
-
-	AudioQueueDispose (
-		queueObject,
-		YES
-	);
+	AudioQueueDispose (queueObject,YES);
+   [super dealloc];
 }
 
 @end

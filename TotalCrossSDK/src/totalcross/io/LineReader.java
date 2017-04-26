@@ -20,8 +20,7 @@ package totalcross.io;
 
 import totalcross.io.device.PortConnector;
 import totalcross.net.Socket;
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
+import totalcross.sys.*;
 
 /**
  * Used to read lines ending with \r\n (enter/linefeed) or \n (linefeed) from a stream. Consecutive newlines are skipped. 
@@ -38,7 +37,7 @@ import totalcross.sys.Vm;
  * }
  * </pre>
  * Note that this class already uses a buffer for faster detection of the newline.
- * Don't use LineReader with a BufferedStream, its nonsense and it will throw a warning at desktop.
+ * Don't use LineReader with a BufferedStream, it's nonsense and it will throw a warning on the desktop.
  *
  * @author Guilherme Campos Hazan (guich)
  * @since SuperWaba 5.12
@@ -50,11 +49,11 @@ public class LineReader
    protected int ofs;
    /**
     * The number of times it tries to read more data if none is available.
-    * Defaults to 10 if the Stream is a Socket or a PortConnector, 0 otherwise.
+    * Defaults to 10 if the Stream is a Socket or a PortConnector; 0, otherwise.
     */
    public int maxTries;
    
-   /** Set to true to apply a trim in the String that is returned.
+   /** Set to true to apply a trim in the string that is returned.
     * @since TotalCross 1.23
     */
    public boolean doTrim; // guich@tc123_37
@@ -77,7 +76,7 @@ public class LineReader
 
    /**
     * Constructs a new LineReader and sets maxTries accordingly to the type of
-    * class: 10 if its a Socket or a PortConnector, 0 otherwise.
+    * class: 10 if its a Socket or a PortConnector; 0, otherwise.
     * The given buffer contents are added to the internal buffer to start reading from them.
     *
     * @throws totalcross.io.IOException
@@ -157,7 +156,7 @@ public class LineReader
 
    /**
     * Returns the next line available on this stream or null if none. Empty
-    * lines are skipped.
+    * lines are skipped by default.
     *
     * @throws totalcross.io.IOException
     */
@@ -165,6 +164,7 @@ public class LineReader
    {
       byte[] buf = readBuf.getBuffer();
       int size = readBuf.getPos();
+      boolean foundEnter = false;
 
       // skip starting control chars
       if (!returnEmptyLines)
@@ -185,6 +185,7 @@ public class LineReader
          {
             if (buf[i] == '\n') // found an enter? - guich@tc123_31
             {
+               foundEnter = true;
                int len = i - ofs; // guich@552_28: verify if the length is not 0
                if (i > 0 && buf[i-1] == '\r') // guich@tc123_47: is the previous character a \r?
                   len--;
@@ -200,7 +201,7 @@ public class LineReader
                      len = ii - ofs;
                   }
                   // allocate the new String and return
-                  String s = new String(buf, ofs, len);
+                  String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
                   ofs = i;
                   return s;
                }
@@ -216,9 +217,10 @@ public class LineReader
          if (!foundMore)
          {
             int len = i - lastOfs;
-            if (len > 0 || returnEmptyLines) // any remaining string on the buffer?
+            if (len > 0 || (foundMore && returnEmptyLines)) // any remaining string on the buffer?
             {
-               ofs = len;
+               if (foundEnter) ofs = len;
+               int len0 = len;
                lastOfs = 0;
                if (doTrim && len > 0 && (buf[0] <= ' ' || buf[len-1] <= ' ')) // guich@tc123_37
                {
@@ -227,7 +229,8 @@ public class LineReader
                   while (len > lastOfs && buf[len-1] <= ' ')
                      len--;
                }
-               String s = new String(buf, lastOfs, len-lastOfs);
+               String s = new String(Convert.charConverter.bytes2chars(buf, ofs, len));
+               ofs = len0;
                return s;
             }
             return null;

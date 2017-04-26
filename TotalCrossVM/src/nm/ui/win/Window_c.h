@@ -83,7 +83,21 @@ static bool loadSip6()
 
 static void windowSetSIP(int32 sipOption)
 {
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined(WIN32) && !defined(WINCE)
+   switch (sipOption)
+   {
+      case SIP_HIDE:
+         {
+         HWND iHandle = FindWindow("IPTIP_Main_Window", "");
+         if (iHandle > 0)
+            SendMessage(iHandle, WM_SYSCOMMAND, SC_CLOSE, 0);
+         break;
+         }
+      default:
+         ShellExecute(NULL, "open", "C:\\Program Files\\Common Files\\Microsoft Shared\\ink\\TabTip.exe", NULL, NULL, SW_SHOWNORMAL);
+         break;
+   }
+#elif defined (WINCE) && _WIN32_WCE >= 300
    CLSID Clsid;
    RECT sipRect;
    int32 scrW = GetSystemMetrics(SM_CXSCREEN);
@@ -189,7 +203,7 @@ static void windowSetSIP(int32 sipOption)
 #endif
 }
 
-static void windowSetDeviceTitle(Object titleObj)
+static void windowSetDeviceTitle(TCObject titleObj)
 {
    TCHAR buf[30];
    JCharP2TCHARPBuf(String_charsStart(titleObj), min32(String_charsLen(titleObj),29), buf); // guich@tc113_32: limit to buf's size (and reduced to 30 chars)

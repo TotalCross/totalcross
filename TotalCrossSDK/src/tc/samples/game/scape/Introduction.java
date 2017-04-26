@@ -18,23 +18,17 @@
 
 package tc.samples.game.scape;
 
-import totalcross.game.Animation;
-import totalcross.io.IOException;
-import totalcross.sys.Vm;
-import totalcross.ui.Button;
-import totalcross.ui.Check;
-import totalcross.ui.ComboBox;
-import totalcross.ui.Container;
-import totalcross.ui.Label;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.image.ImageException;
+import totalcross.game.*;
+import totalcross.io.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 final class Introduction extends Container implements ProdConfig
 {
    private Check chkSound;
    private Button btnNewGame;
-   private Button btnQuit;
    private static Animation anim;
    private ComboBox levelSelect;
 
@@ -43,9 +37,7 @@ final class Introduction extends Container implements ProdConfig
    static void swapTo()
    {
       if (singleton == null)
-      {
          singleton = new Introduction();
-      }
       Scape.game.swap(singleton);
       if (!anim.isPlaying)
          anim.start(Animation.LOOPS_UNLIMITED);
@@ -60,30 +52,24 @@ final class Introduction extends Container implements ProdConfig
    {
       setRect(Scape.game.getRect());
 
-      add(new Label("Scape v" + PC_VERSION), CENTER, TOP + 5);
-      add(new Label("written by Frank Diebolt."), CENTER, AFTER + 4);
+      add(new Label("Scape - written by Frank Diebolt"), CENTER, TOP + 5);
       add(new Label("__________________"), CENTER, AFTER);
 
-      add(btnQuit = new Button("Game exit"), RIGHT - 20, BOTTOM - 10);
-      add(btnNewGame = new Button("start Game"), SAME, BEFORE - 7);
-
-      add(anim, RIGHT - 10, BEFORE - 15, btnNewGame);
+      add(anim, CENTER,AFTER+fmH*2);
       anim.enableEvents(Animation.eventNone);
-      anim.start(15);
+      anim.start(Animation.LOOPS_UNLIMITED);
 
-      chkSound = new Check("Sound enabled");
-      add(chkSound, BEFORE - 10, SAME, anim);
+      chkSound = new Check("Sound enabled    ");
+      add(chkSound, LEFT,AFTER+fmH,PREFERRED,PREFERRED+fmH/2);
       chkSound.setChecked(Scape.optSound.value);
 
-      Label difficulty = new Label("Level");
-      add(difficulty, SAME, AFTER + 7, chkSound);
-
-      levelSelect = new ComboBox(new String[]
-      {
-            "easy", "medium", "hard"
-      });
-      add(levelSelect, AFTER + 3, SAME, difficulty);
+      levelSelect = new ComboBox(new String[]{"easy", "medium", "hard"});
+      add(levelSelect, RIGHT, SAME,PREFERRED,PREFERRED+fmH/2);
       levelSelect.setSelectedIndex(Scape.optDifficulty.value);
+      add(new Label("Level "), BEFORE,SAME,PREFERRED,PREFERRED+fmH/2);
+      
+      add(btnNewGame = new Button("Start Game"), CENTER, BOTTOM - fmH, PARENTSIZE+80,SAME);
+      btnNewGame.setBackColor(Color.ORANGE);
    }
 
    public void onEvent(Event event)
@@ -96,23 +82,17 @@ final class Introduction extends Container implements ProdConfig
       if (event.target == levelSelect)
       {
          Scape.optDifficulty.value = levelSelect.getSelectedIndex();
-         if (DEBUG) Vm.debug("level is " + Scape.optDifficulty.value);
       }
       else if (event.target == chkSound)
       {
          Scape.optSound.value = !Scape.optSound.value;
          chkSound.setChecked(Scape.optSound.value);
-         if (DEBUG) Vm.debug("sound is " + Scape.optSound.value);
       }
       else if (event.target == btnNewGame)
       {
          anim.stop();
          game.blankScreen();
          game.start();
-      }
-      else if (event.target == btnQuit)
-      {
-         totalcross.ui.MainWindow.exit(0);
       }
    }
 }

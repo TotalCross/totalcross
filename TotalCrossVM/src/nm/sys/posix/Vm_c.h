@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
-static void vmSetTime(Object time)
+static void vmSetTime(TCObject time)
 {
    struct tm tm;
    struct timeval tv;
@@ -44,6 +44,7 @@ void rebootDevice()
 //   ExitWindowsEx(EWX_REBOOT,0);
 }
 
+#ifndef darwin // implemented in Vm_c.m
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
    int32 ret = -1;
@@ -74,6 +75,7 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    
    return ret;
 }
+#endif
 
 void vmSetAutoOff(bool enable)
 {
@@ -109,17 +111,26 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
 }
 //////////// END OF KEY INTERCEPTION FUNCTIONS
 
+#ifdef darwin
+void vmClipboardCopy(JCharP string, int32 sLen); // in mainview.m
+unsigned short* ios_ClipboardPaste();
+TCObject vmClipboardPaste(Context currentContext)
+{
+   unsigned short* chars = ios_ClipboardPaste();
+   return !chars ? null : createStringObjectFromJCharP(currentContext, chars,-1);
+}
+#else
 static void vmClipboardCopy(JCharP string, int32 sLen) // JCharP
 {
    //dfb_clipboard_set()
 }
 
-static Object vmClipboardPaste(Context currentContext)
+static TCObject vmClipboardPaste(Context currentContext)
 {
    //dfb_clipboard_get()
    return createStringObjectFromTCHAR(currentContext, "", 0);
 }
-
+#endif
 static bool vmIsKeyDown(int32 key)
 {
    return 0;
@@ -169,7 +180,7 @@ static bool vmTurnScreenOn(bool on)
 }
 
 #ifndef darwin // implemented in Vm_c.m
-static void vmVibrate(int32 ms)
+void vmVibrate(int32 ms)
 {
 }
 #endif

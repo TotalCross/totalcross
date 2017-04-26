@@ -14,19 +14,25 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net;
 
-/** */
-
+/** 
+ * Exception thrown when an authentication fails.
+ */
 public class AuthenticationException extends Exception
 {
+   /**
+    * Constructs an empty exception.
+    */
    public AuthenticationException()
    {
    }
    
-   /** Constructs an exception with the given message. */
+   /** 
+    * Constructs an exception with the given message.
+    * 
+    * @param msg The error message.
+    */
    public AuthenticationException(String msg)
    {
       super(msg);

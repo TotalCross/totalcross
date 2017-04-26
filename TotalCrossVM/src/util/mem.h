@@ -18,14 +18,9 @@
 extern "C" {
 #endif
 
-#ifdef PALMOS
- typedef long jmp_buf[16];		 // saved registers (see below for order)
- int __setjmp(jmp_buf env);
- #define setjmp(env) __setjmp(env)
- void longjmp(jmp_buf env, int val);
-#else
 #include <setjmp.h>
-#endif
+
+#include "../tcvm/tcapi.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Atomic memory allocation
@@ -39,15 +34,17 @@ extern "C" {
 // To free the symbol, use:
 // xfree(s);
 
-#if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
+#if !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
 #define malloc dlmalloc
 #define free dlfree
 #define realloc dlrealloc
+#define calloc dlcalloc
 #endif
 
 #define xmalloc(size) TCAPI_FUNC(privateXmalloc)(size,__FILE__,__LINE__)
 #define xfree(p) do {if (p) TCAPI_FUNC(privateXfree)(p,__FILE__,__LINE__); p = null;} while (0)
 #define xrealloc(ptr, size) TCAPI_FUNC(privateXrealloc)(ptr, size,__FILE__,__LINE__)
+#define xcalloc(NumOfElements, SizeOfElements) TCAPI_FUNC(privateXcalloc)(NumOfElements,SizeOfElements,__FILE__,__LINE__)
 
 TC_API uint8* privateXmalloc(uint32 size, const char *file, int line); // allocate and zero the memory region
 typedef uint8* (*privateXmallocFunc)(uint32 size, const char *file, int line);
@@ -55,6 +52,8 @@ TC_API void privateXfree(void *ptr, const char *file, int line); // never use pr
 typedef void (*privateXfreeFunc)(void *ptr, const char *file, int line);
 TC_API uint8* privateXrealloc(uint8* ptr, uint32 size, const char *file, int line); // allocate and zero the memory region
 typedef uint8* (*privateXreallocFunc)(uint8* ptr, uint32 size, const char *file, int line);
+TC_API uint8* privateXcalloc(uint32 NumOfElements, uint32 SizeOfElements, const char *file, int line); // allocate and zero the memory region
+typedef uint8* (*privateXcallocFunc)(uint32 NumOfElements, uint32 SizeOfElements, const char *file, int line);
 #define newX(x) (x)xmalloc(sizeof(T##x))
 #define newXH(x,p) (x)heapAlloc(p, sizeof(T##x))
 
@@ -62,6 +61,8 @@ TC_API void setCountToReturnNull(int32 n); // defines a number that, when reache
 typedef void (*setCountToReturnNullFunc)(int32 n);
 TC_API int32 getCountToReturnNull(); // returns the current count. check this after you run the test; a value greater than 0 means that you reached the maximum number of xmalloc called by your routine and the memory test should end.
 typedef int32 (*getCountToReturnNullFunc)();
+
+uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks, const char *file, int line); // only if not defined "darwin"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Heap memory allocation
@@ -92,11 +93,7 @@ struct TMemBlock
    struct TMemBlock *next;
 };
 
-#ifdef PALMOS
-typedef char CExceptionFileCharBuf[16];
-#else
 typedef char CExceptionFileCharBuf[64];
-#endif
 
 /**
  Structure used to save all informations about a C Exception (simulated with setjmp/longjmp.
@@ -130,11 +127,11 @@ struct THeap
 };
 
 /// create a memory heap, with an optional finalizer
-TC_API Heap privateHeapCreate(const char *file, int32 line);
-typedef Heap (*privateHeapCreateFunc)(const char *file, int32 line);
+TC_API Heap privateHeapCreate(bool add2list, const char *file, int32 line);
+typedef Heap(*privateHeapCreateFunc)(bool add2list, const char *file, int32 line);
 /// destroy the heap and all pointers inside it
-TC_API void heapDestroyPrivate(Heap m);
-typedef void (*heapDestroyPrivateFunc)(Heap m);
+TC_API void heapDestroyPrivate(Heap m, bool added2list);
+typedef void(*heapDestroyPrivateFunc)(Heap m, bool added2list);
 /// alloc a pointer inside the heap
 TC_API void* heapAlloc(Heap m, uint32 size);
 typedef void* (*heapAllocFunc)(Heap m, uint32 size);
@@ -154,9 +151,11 @@ TC_API int32 privateHeapSetJump(Heap m, const char *file, int32 line);
 typedef int32 (*privateHeapSetJumpFunc)(Heap m, const char *file, int32 line);
 
 /// important: m must be set to null before calling the destroy, otherwise strange errors will occur in windows.
-#define heapDestroy(m) do {Heap mm = m; m = null; TCAPI_FUNC(heapDestroyPrivate)(mm);} while (0)
+#define heapDestroy(m) do {Heap mm = m; m = null; TCAPI_FUNC(heapDestroyPrivate)(mm,true);} while (0)
+#define heapDestroyB(m,b) do {Heap mm = m; m = null; TCAPI_FUNC(heapDestroyPrivate)(mm,b);} while (0)
 
-#define heapCreate() TCAPI_FUNC(privateHeapCreate)(__FILE__,__LINE__)
+#define heapCreate() TCAPI_FUNC(privateHeapCreate)(true,__FILE__,__LINE__)
+#define heapCreateB(b) TCAPI_FUNC(privateHeapCreate)(b,__FILE__,__LINE__)
 #define HEAP_ERROR(heap, errorCode) TCAPI_FUNC(privateHeapError)(heap, errorCode, __FILE__,__LINE__)
 #define IF_HEAP_ERROR(heap) if (!heap || TCAPI_FUNC(privateHeapSetJump)(heap, __FILE__,__LINE__) || setjmp(heap->ex.errorJump) != 0)
 

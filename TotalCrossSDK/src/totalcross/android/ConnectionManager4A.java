@@ -18,15 +18,15 @@
 
 package totalcross.android;
 
-import totalcross.*;
-
-import java.net.*;
-
 import android.content.*;
 import android.database.*;
 import android.net.*;
 import android.net.wifi.*;
 import android.telephony.*;
+import java.net.*;
+import java.util.*;
+
+import totalcross.*;
 
 public class ConnectionManager4A
 {
@@ -76,12 +76,12 @@ public class ConnectionManager4A
          case GPRS:
          {
             int id = -1;
-            ContentResolver contentResolver = Launcher4A.getAppContext().getContentResolver();
+            ContentResolver contentResolver = Launcher4A.loader.getContentResolver();
             Cursor cursor = contentResolver.query(CONTENT_URI, new String[] { "_id" },
                   "apn = ? and user = ? and password = ?", new String[] { "tim.br", "tim", "tim" }, null);
             if (cursor == null || cursor.getCount() <= 0)
             {
-               TelephonyManager tel = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+               TelephonyManager tel = (TelephonyManager) Launcher4A.loader.getSystemService(Context.TELEPHONY_SERVICE);
                String networkOperator = tel.getNetworkOperator();
 
                if (networkOperator != null && networkOperator.length() > 0) 
@@ -158,7 +158,7 @@ public class ConnectionManager4A
       {
          return InetAddress.getByName(hostName).getHostAddress();
       }
-      catch (UnknownHostException e)
+      catch (Exception e)
       {
          return null;
       }
@@ -170,29 +170,56 @@ public class ConnectionManager4A
       {
          return InetAddress.getByName(hostAddress).getHostName();
       }
-      catch (UnknownHostException e)
+      catch (Exception e)
       {
          return null;
       }
    }
+   
+   public static String getLocalIpAddress() 
+   {
+      String ipv4=null;
+      try 
+      {
+         for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) 
+         {
+            NetworkInterface intf = en.nextElement();
+            for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) 
+            {
+               InetAddress inetAddress = enumIpAddr.nextElement();
+			   
+               // for getting IPV4 format
+               if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) 
+                  ipv4 = inetAddress.getHostAddress();
+                  return ipv4;
+            }
+         }
+      } 
+      catch (Exception ex) 
+      {
+         AndroidUtils.debug("IP Address"+ex.toString());
+      }
+      return null;
+  }
 
    public static String getLocalHost()
    {
       try
       {
-         ConnectivityManager connMgr = (ConnectivityManager) Launcher4A.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+         ConnectivityManager connMgr = (ConnectivityManager) Launcher4A.loader.getSystemService(Context.CONNECTIVITY_SERVICE);
          int type = connMgr.getActiveNetworkInfo().getType();
          if (type == ConnectivityManager.TYPE_WIFI)
          {
-            WifiManager wifiMgr = (WifiManager) Launcher4A.getAppContext().getSystemService(Context.WIFI_SERVICE);
+            WifiManager wifiMgr = (WifiManager) Launcher4A.loader.getSystemService(Context.WIFI_SERVICE);
             return ipAddressToString(wifiMgr.getDhcpInfo().ipAddress);
          }
-         return InetAddress.getLocalHost().getHostAddress();
+         String ip = getLocalIpAddress();
+         return ip != null ? ip : InetAddress.getLocalHost().getHostAddress();
       }
-      catch (UnknownHostException e)
+      catch (Exception e)
       {
-         return new String("127.0.0.1");
       }
+      return "127.0.0.1";
    }
 
    public static boolean isAvailable(int type)

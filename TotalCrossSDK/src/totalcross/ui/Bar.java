@@ -23,13 +23,13 @@ import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /** 
- * Bar is a class that provides a title area and a button area (at right).
- * The title and the button are optional, although it doesn't make sense to have a Bar
- * without title and buttons.
+ * This class provides a title area and a button area (at right). The title and the button are optional, although it doesn't make sense to have a 
+ * <code>Bar</code> without title and buttons.
  * 
  * You can add or remove buttons, and change the title text; the title text can have an icon at left.
  * 
- * Here's an example of how to use it, taken from the UIGadgets sample:
+ * Here's an example of how to use it, taken from the old UIGadgets sample:
+ *
  * <pre>
  * final Bar h1,h2;
  * Font f = Font.getFont(true,Font.NORMAL_SIZE+2);
@@ -41,13 +41,11 @@ import totalcross.util.*;
  * h1.addButton(new Image("ic_dialog_info.png"));
  * add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the default menu area
  * </pre>
- * A ControlEvent.PRESSED is sent to the caller, and the button index can be retrieved using 
- * <code>getSelectedIndex</code> method.
  * 
- * By default, the background is shaded. You can change it to plain using
- * <code>h1.backgroundStyle = BACKGROUND_SOLID;</code> 
+ * A <code>ControlEvent.PRESSED</code> is sent to the caller, and the button index can be retrieved using the <code>getSelectedIndex()</code> method.
+ * 
+ * By default, the background is shaded. You can change it to plain using <code>h1.backgroundStyle = BACKGROUND_SOLID;</code>. 
  */
-
 public class Bar extends Container
 {
    private BarButton title;
@@ -57,13 +55,29 @@ public class Bar extends Container
    private int c1,c2,c3,c4,tcolor,pcolor;
    private Spinner spinner;
    
-   /** Set to true to allow the title to be selected and send events. */
+   /** 
+    * Set to <code>true</code> to allow the title to be selected and send events. 
+    */
    public boolean canSelectTitle;
    
-   /** The title horizontal alignment (LEFT, CENTER, RIGHT). Defaults to LEFT. */
+   /** 
+    * The title horizontal alignment (<code>LEFT</code>, <code>CENTER</code>, or <code>RIGHT</code>). Defaults to <code>LEFT</code>. 
+    */
    public int titleAlign = LEFT;
    
-   private class BarButton extends Control
+   /** The preferred height on portrait or landscape, in pixels. */
+   public int portraitPrefH,landscapePrefH;
+   
+   /** A Bar's button. You can create an extension of this class using:
+    * <pre>
+      Bar b = new Bar();
+      b.new BarButton("Hi",null)
+      {
+         ... other methods
+      };
+    * </pre>
+    */
+   public class BarButton extends Control
    {
       String title;
       Image icon0,icon;
@@ -73,11 +87,16 @@ public class Bar extends Container
       int autoRepeatRate;
       private TimerEvent repeatTimer;
       private int startRepeat;
+      public int buttonTitleAlign=-1;
+      public boolean buttonCanSelectTitle;
+      public boolean isShadedText;
       
-      BarButton(String title, Image icon) // title or icon
+      public BarButton(String title, Image icon) // title or icon
       {
          this.title = title;
          this.icon0 = icon;
+         buttonCanSelectTitle = canSelectTitle;
+         isShadedText = backgroundStyle != Container.BACKGROUND_SOLID;
       }
       
       public void onFontChanged()
@@ -89,16 +108,16 @@ public class Bar extends Container
                try
                {
                   leftIcon = null;
-                  leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH,leftIcon0.useAlpha ? -1 : backColor);
-               } catch (ImageException e) {icon = icon0;}
+                  leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH);
+               } catch (Exception e) {icon = icon0;}
          }
          else
          try
          {
             icon = null;
             if (icon0 != null)
-               icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,icon0.useAlpha ? -1 : backColor);
-         } catch (ImageException e) {icon = icon0;}
+               icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH);
+         } catch (Exception e) {icon = icon0;}
       }
       
       public void onBoundsChanged(boolean b)
@@ -106,7 +125,8 @@ public class Bar extends Container
          onFontChanged();
          if (title != null)
          {
-            px = titleAlign == LEFT ? gap : titleAlign == CENTER ? (width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
+            int a = buttonTitleAlign != -1 ? buttonTitleAlign : titleAlign;
+            px = a== LEFT ? gap+1 : a== CENTER ? 2+(width-fm.stringWidth(title))/2 : (width-fm.stringWidth(title)-gap);
             py = (height-fmH)/2;
          }
          else
@@ -119,21 +139,27 @@ public class Bar extends Container
       
       public void onPaint(Graphics g)
       {
+         int fc = Bar.this.foreColor;
+         int bc = Bar.this.backColor;
+         
          int w = width;
          int h = height;
          
          if (pressed)
-            g.fillShadedRect(0,0,w,h,true,false,foreColor,pcolor,30);
+            g.fillShadedRect(0,0,w,h,true,false,fc,pcolor,30);
          
          // draw borders
-         g.foreColor = c1; g.drawLine(0,0,w,0);
-         g.foreColor = c3; g.drawLine(w-1,0,w-1,h);
-         g.foreColor = c4; g.drawLine(0,h-1,w,h-1);
-         g.foreColor = c2; 
-         if (backgroundStyle == BACKGROUND_SHADED) 
-            g.fillShadedRect(0,1,1,h-2,true,false,foreColor,c2,30); // drawLine causes an unexpected effect on shaded backgrounds
-         else
-            g.drawLine(0,0,0,h); 
+         if (uiAndroid || uiVista || uiFlat)
+         {
+            g.foreColor = c1; g.drawLine(0,0,w,0);
+            g.foreColor = c3; g.drawLine(w-1,0,w-1,h);
+            g.foreColor = c4; g.drawLine(0,h-1,w,h-1);
+            g.foreColor = c2; 
+            if (backgroundStyle == BACKGROUND_SHADED) 
+               g.fillShadedRect(0,1,1,h-2,true,false,fc,c2,30); // drawLine causes an unexpected effect on shaded backgrounds
+            else
+               g.drawLine(0,0,0,h);
+         }
 
          // draw contents
          if (title != null)
@@ -142,16 +168,18 @@ public class Bar extends Container
             int tx = px;
             if (leftIcon != null)
             {
-               g.drawOp = leftIcon.useAlpha ? Graphics.DRAW_PAINT : Graphics.DRAW_SPRITE;
                g.drawImage(leftIcon,px,(height-leftIcon.getHeight())/2);
                tx += leftIcon.getWidth()+gap;
             }
             
-            g.foreColor = tcolor;
-            g.drawText(title, tx+1,py-1);
-            g.foreColor = backColor;
-            g.drawText(title, tx-1,py+1);
-            g.foreColor = foreColor;
+            if (isShadedText)
+            {
+               g.foreColor = tcolor;
+               g.drawText(title, tx+1,py-1);
+               g.foreColor = bc;
+               g.drawText(title, tx-1,py+1);
+            }
+            g.foreColor = fc;
             g.drawText(title, tx,py);
          }
          else
@@ -161,7 +189,7 @@ public class Bar extends Container
       
       public void onEvent(Event e)
       {
-         if ((!canSelectTitle && title != null) || Flick.currentFlick != null)
+         if ((!buttonCanSelectTitle && title != null) || Flick.currentFlick != null)
             return;
          
          switch (e.type)
@@ -172,6 +200,9 @@ public class Bar extends Container
                   if (startRepeat-- <= 0)
                   {
                      selected = appId;
+                     if (selected > 1000) selected -= 1000;
+                     if (listeners != null)
+                        postPressedEvent();
                      parent.postPressedEvent();
                   }                     
                }
@@ -189,12 +220,17 @@ public class Bar extends Container
                if (pressed)
                {
                   selected = appId;
+                  if (selected > 1000) selected -= 1000;
                   boolean fired = repeatTimer != null && startRepeat <= 0;
                   pressed = false;
                   if (repeatTimer != null)
                      removeTimer(repeatTimer);
                   if (!fired)
+                  {
+                     if (listeners != null)
+                        postPressedEvent();
                      parent.postPressedEvent();
+                  }
                }
                else 
                {
@@ -217,32 +253,42 @@ public class Bar extends Container
             }
             case KeyEvent.ACTION_KEY_PRESS:
                selected = appId;
+               if (selected > 1000) selected -= 1000;
                parent.postPressedEvent();
                break;
          }
       }
    }
    
-   /** Constructs a Bar class without a title. Note that if 
-    * you call the setTitle method, a RuntimeException will be thrown. 
+   /** 
+    * Constructs a <code>Bar</code> object without a title. Note that if you call the <code>setTitle()</code> method, a <code>RuntimeException</code> 
+    * will be thrown. 
     *
-    * If you want to change the title later, use the other constructor and pass an empty String ("").
+    * If you want to change the title later, use the other constructor and pass an empty string (<code>""</code>).
     */
    public Bar()
    {
       this(null);
    }
    
-   /** Constructs a Bar class with the given title. */
+   /** 
+    * Constructs a <code>Bar</code> object with the given title. 
+    *
+    * @param title The bar title.
+    */
    public Bar(String title)
    {
       this.title = title != null ? new BarButton(title,null) : null;
       this.backgroundStyle = BACKGROUND_SHADED;
+      //this.ignoreInsets = true;
       setFont(font.asBold());
    }
    
-   /** An image icon that can be placed at left of the title. It only shows if there's a title set. 
-    * Pass null to remove the icon, if previously set. 
+   /** 
+    * An image icon that can be placed at the left of the title. It only shows if there's a title set. Pass <code>null</code> to remove the icon if 
+    * it was previously set.
+    * 
+    * @param icon The image icon.
     */
    public void setIcon(Image icon)
    {
@@ -253,8 +299,18 @@ public class Bar extends Container
          if (initialized) initUI();
       }
    }
+   
+   /** Returns the icon set (and possibly resized) with setIcon, or null if none was set */
+   public Image getIcon()
+   {
+      return title != null ? title.leftIcon : null;
+   }
 
-   /** Changes the title to the given one. */
+   /** 
+    * Changes the title to the given one. 
+    *
+    * @param newTitle The bar new title.
+    */
    public void setTitle(String newTitle)
    {
       if (this.title == null)
@@ -264,74 +320,178 @@ public class Bar extends Container
       Window.needsPaint = true;
    }
    
-   /** Retrieves the current title. */
+   /** 
+    * Retrieves the current title. 
+    *
+    * @return The bar title.
+    */
    public String getTitle()
    {
       return this.title == null ? "" : title.title;
    }
    
-   /** Adds an image Button */
-   public void addButton(Image icon)
+   /** 
+    * Adds an image button at right. 
+    *
+    * @param icon The image to the add to a button in the bar.
+    * @return The button index
+    */
+   public int addButton(Image icon)
    {
-      addControl(new BarButton(null,icon));
+      return addButton(icon,true);
    }
    
-   /** Sets the given button with an auto-repeat interval of the given ms. */
+   /** 
+    * Adds an image button at the given position. 
+    *
+    * @param icon The image to the add to a button in the bar.
+    * @param atRight if true, button is added at right; if false, button is added at left.
+    * @return The button index
+    */
+   public int addButton(Image icon, boolean atRight)
+   {
+      return addControl(new BarButton(null,icon), atRight);
+   }
+   
+   /** 
+    * Sets the given button with an auto-repeat interval in the given milliseconds. 
+    *
+    * @param idx The index of the button in the bar.
+    * @param ms The auto-repeat interval in milliseconds.
+    */
    public void setButtonRepeatRate(int idx, int ms)
    {
       ((BarButton)icons.items[idx]).autoRepeatRate = ms;
    }
    
-   /** Adds a Control. Not all types of controls are supported. */
-   public void addControl(Control c)
+   /** 
+    * Adds a control to the bar at right. Not all types of controls are supported. 
+    *
+    * @param c The control to be added.
+    * @return The button index
+    */
+   public int addControl(Control c)
    {
-      icons.addElement(c);
-      for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1; // update appId used for selection
-      if (initialized) initUI();
+      return addControl(c, true);
    }
    
-   /** Removes a Button at the given index, starting at 1. */
+   /** 
+    * Adds a control to the bar. Not all types of controls are supported. 
+    *
+    * @param atRight if true, button is added at right; if false, button is added at left.
+    * @param c The control to be added.
+    * @return The button index
+    */
+   public int addControl(Control c, boolean atRight)
+   {
+      icons.addElement(c);
+      for (int i = icons.size(); --i >= 0;) 
+      {
+         Control cc = (Control)icons.items[i];
+         cc.appId = cc.appId == 0 ? (atRight ? 1000 : 0) : (cc.appId > 1000 ? 1000 : 0); // update appId used for selection
+         cc.appId += i+1;
+      }
+      if (initialized) initUI();
+      return icons.size();
+   }
+   
+   /** 
+    * Removes a button at the given index, starting at 1. 
+    *
+    * @param index The index of the button to be removed.
+    */
    public void removeButton(int index)
    {
       icons.removeElementAt(index-1);
-      for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1;
+      for (int i = icons.size(); --i >= 0;)
+      {
+         Control c = (Control)icons.items[i];
+         c.appId = (c.appId > 1000 ? 1000 : 0) + i+1;
+      }
       if (initialized) initUI();
    }
    
-   /** Returns the selected button, or -1 if none was selected.
+   /** 
+    * Returns the selected button, or -1 if none was selected.
     * 
-    * The title is always index 0 (even if there's no title), and the buttons start at index 1. 
+    * The title always has index 0 (even if there's no title), and the button' index start at index 1.
+    * 
+    * @return The index of the selected button.
     */
    public int getSelectedIndex()
    {
       return selected;
    }
    
+   /**
+    * Called to initialize the user interface of this container. 
+    */
    public void initUI()
    {
       removeAll();
       int n = icons.size();
+      if (n == 1 && !(icons.items[0] instanceof BarButton))
+         add((Control)icons.items[0],LEFT,TOP,FILL,FILL);
+      else
       if (title == null) // if there's no title, make the icons take the whole size of the container
       {
          for (int i = n; --i > 0;)
-            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, width/n, FILL);
+            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, PARENTSIZE-n, FILL);
+         if (n == 1) // surely is a BarButton, otherwise would fall on first test above
+            add((Control)icons.items[0], RIGHT, TOP,PREFERRED,FILL);
+         else
          if (n > 0)
             add((Control)icons.items[0], LEFT, TOP, n == 1 ? FILL : FIT, FILL);
       }
       else
       {
+         Control lastAtRight = null, lastAtLeft = null;
          for (int i = n; --i >= 0;)
-            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, height, FILL);
-         add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL);
+         {
+            Control c = (Control)icons.items[i];
+            boolean atRight = c.appId >= 1000;
+            int posX;
+            Control rel = null;
+            if (atRight)
+            {
+               posX = lastAtRight == null ? RIGHT : BEFORE;
+               rel = lastAtRight;
+               lastAtRight = c;
+            }
+            else
+            {
+               posX = lastAtLeft == null ? LEFT : AFTER;
+               rel = lastAtLeft;
+               lastAtLeft = c;
+            }
+            add(c, posX, TOP, height, FILL, rel);
+         }
+         if (n == 0)
+            add(title, n == 0 ? LEFT : AFTER, TOP, FILL, FILL);
+         else
+         {
+            Spacer spl = new Spacer(0,0), spr = new Spacer(0,0);
+            add(spl,lastAtLeft != null ? AFTER : LEFT,SAME,lastAtLeft);
+            add(spr,lastAtRight != null ? BEFORE : RIGHT,SAME,lastAtRight);
+            add(title, AFTER, TOP, FIT, FILL,spl);
+         }
          if (spinner != null)
          {
-            add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,fmH,fmH,this.title);
+            add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,FONTSIZE,FONTSIZE,this.title);
             spinner.setVisible(false);
          }
       }
       initialized = true;
    }
    
+   /**
+    * Called after a <code>setEnabled()</code>, <code>setForeColor()</code>, or <code>setBackColor()</code>; or when a control has been added to a 
+    * container. If <code>colorsChanged</code> is <code>true</code>, it was called from <code>setForeColor()</code>/<code>setBackColor()</code>/
+    * <code>Container.add()</code>; otherwise, it was called from <code>setEnabled()</code>.
+    *
+    * @param colorsChanged Indicates if the control colors have changed, which happens after a <code>setForeColor()</code>, 
+    * <code>setBackColor()</code>, or <code>Container.add()</code>. 
+    */
    public void onColorsChanged(boolean colorsChanged)
    {
       c1 = Color.brighter(backColor,30);
@@ -342,18 +502,30 @@ public class Bar extends Container
       pcolor = Color.interpolate(backColor,foreColor);
    }
    
+   /** 
+    * Returns the preferred width of this control. 
+    * 
+    * @return The preferred width of this control.
+    */
    public int getPreferredWidth()
    {
       return parent == null ? FILL : parent.width;
    }
    
+   /**
+    * Returns the preferred height of this control. 
+    *
+    * @return The preferred height of this control.
+    */
    public int getPreferredHeight()
    {
-      return fmH*2;
+      return Settings.isLandscape() ? (landscapePrefH != 0 ? landscapePrefH : fmH*2) : (portraitPrefH != 0 ? portraitPrefH : fmH*2);
    }
    
-   /** Shows and starts the spinner (if one has been assigned to the spinner field)
-    *  @see #spinner
+   /** 
+    * Shows and starts the spinner (if one has been assigned to the <code>spinner</code> field).
+    * 
+    * @see #spinner
     */
    public void startSpinner()
    {
@@ -361,8 +533,18 @@ public class Bar extends Container
       spinner.start();
    }
    
-   /** Stops and hides the spinner (if one has been assigned to the spinner field)
-    *  @see #spinner
+   /** Updates the spinner; sets it visible if not yet. */
+   public void updateSinner()
+   {
+      if (!spinner.visible)
+         spinner.setVisible(true);
+      spinner.update();
+   }
+   
+   /** 
+    * Stops and hides the spinner (if createSpinner or setSpinner was called before)
+    * 
+    * @see #spinner
     */
    public void stopSpinner()
    {
@@ -370,17 +552,22 @@ public class Bar extends Container
       spinner.setVisible(false);
    }
    
+   /**
+    * Repositions this control, calling again <code>setRect()</code> with the original parameters. 
+    */
    public void reposition()
    {
       super.reposition();
       initUI();
    }
    
-   /** Assigns the BACK key on Android (mapped to SpecialKeys.ESCAPE) to the given button.
-    * This can only be called after the Bar has been added to a Container.
+   /** 
+    * Assigns the BACK key on Android (mapped to <code>SpecialKeys.ESCAPE</code>) to the given button. This can only be called after the bar has been 
+    * added to a container.
     * 
-    * For example, if Button 0 is assigned with <code>totalcross.res.Resources.back</code>, call
-    * <code>assignBackKeyToButton(0);</code>.
+    * For example, if button 1 is assigned with <code>totalcross.res.Resources.back</code>, call <code>assignBackKeyToButton(1);</code>.
+    *
+    * @param idx The index of the bar button, starting at 1.
     */
    public void assignBackKeyToButton(int idx)
    {
@@ -396,6 +583,7 @@ public class Bar extends Container
             {
                e.consumed = true;
                selected = ((BarButton)icons.items[i]).appId;
+               if (selected > 1000) selected -= 1000;
                postPressedEvent();
             }
          }
@@ -403,13 +591,21 @@ public class Bar extends Container
       w.callListenersOnAllTargets = true;
    }
 
-   /** Creates a Spinner with the following color.
-    * The Spinner will be placed at the right of the title
-    * (only works if there's a title)
+   /** 
+    * Creates a spinner with the following color. The spinner will be placed at the right of the title (it only works if there's a title).
+    *
+    * @param color The spinner color.
     */
    public void createSpinner(int color)
    {
       spinner = new Spinner();
       spinner.setForeColor(color);
+   }
+
+   /** Sets the spinner to the given one. 
+    */
+   public void setSpinner(Spinner s)
+   {
+      spinner = s;
    }
 }

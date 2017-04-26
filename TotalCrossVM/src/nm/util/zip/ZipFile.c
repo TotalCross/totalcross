@@ -17,7 +17,7 @@
 #include "../../../minizip/unzip.h"
 #include "../../../minizip/ioapi.h"
 
-static bool initializeZipNative(Context currentContext, ZipNativeP zipNativeP, Object streamObj)
+static bool initializeZipNative(Context currentContext, ZipNativeP zipNativeP, TCObject streamObj)
 {
    zipNativeP->streamRead  = getMethod(OBJ_CLASS(streamObj), true, "readBytes", 3, BYTE_ARRAY, J_INT, J_INT);
    zipNativeP->streamWrite = getMethod(OBJ_CLASS(streamObj), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
@@ -49,9 +49,9 @@ static void zfree(voidpf opaque, voidpf address)
 //TC_API void tuzZF_createZipFile_s(NMParams p) // totalcross/util/zip/ZipFile native private totalcross.util.zip.ZipFile createZipFile(String name) throws totalcross.io.IOException;
 TC_API void tuzZF_createZipFile_f(NMParams p) // totalcross/util/zip/ZipFile native private totalcross.util.zip.ZipFile createZipFile(totalcross.io.File file) throws totalcross.io.IOException;
 {
-   Object zipFile = p->obj[0];
-   Object streamObj = p->obj[1];
-   Object zipNativeObj;
+   TCObject zipFile = p->obj[0];
+   TCObject streamObj = p->obj[1];
+   TCObject zipNativeObj;
    ZipNativeP zipNativeP;
    unz_global_info unzGlobalInfo;
    Err err;
@@ -61,23 +61,26 @@ TC_API void tuzZF_createZipFile_f(NMParams p) // totalcross/util/zip/ZipFile nat
    else
    {
       zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
-      initializeZipNative(p->currentContext, zipNativeP, streamObj);
-
-      fill_fopen_filefunc(&zipNativeP->zlib_def);
-      zipNativeP->zlib_def.opaque = p->currentContext;
-
-      zipNativeP->zipFile = unzOpen2((char*) streamObj, &zipNativeP->zlib_def);
-
-      if (zipNativeP->zipFile != null)
+      if (!initializeZipNative(p->currentContext, zipNativeP, streamObj))
+         throwException(p->currentContext, IOException, "Failed to initialize zip context");
+      else
       {
-         err = unzGetGlobalInfo(zipNativeP->zipFile, &unzGlobalInfo);
-         if (err == UNZ_OK)
-         {
-            ZipFile_nativeFile(zipFile) = zipNativeObj;
-            ZipFile_size(zipFile) = unzGlobalInfo.number_entry;
-            setObjectLock(zipNativeObj, UNLOCKED);
+         fill_fopen_filefunc(&zipNativeP->zlib_def);
+         zipNativeP->zlib_def.opaque = zipNativeP;
 
-            p->retO = zipFile;
+         zipNativeP->zipFile = unzOpen2((char*)streamObj, &zipNativeP->zlib_def);
+
+         if (zipNativeP->zipFile != null)
+         {
+            err = unzGetGlobalInfo(zipNativeP->zipFile, &unzGlobalInfo);
+            if (err == UNZ_OK)
+            {
+               ZipFile_nativeFile(zipFile) = zipNativeObj;
+               ZipFile_size(zipFile) = (int32)unzGlobalInfo.number_entry;
+               setObjectLock(zipNativeObj, UNLOCKED);
+
+               p->retO = zipFile;
+            }
          }
       }
    }
@@ -85,8 +88,8 @@ TC_API void tuzZF_createZipFile_f(NMParams p) // totalcross/util/zip/ZipFile nat
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZF_close(NMParams p) // totalcross/util/zip/ZipFile native public void close() throws totalcross.io.IOException;
 {
-   Object zipFile = p->obj[0];
-   Object nativeFile = ZipFile_nativeFile(zipFile);
+   TCObject zipFile = p->obj[0];
+   TCObject nativeFile = ZipFile_nativeFile(zipFile);
    
    if (nativeFile != null)
    {
@@ -98,14 +101,14 @@ TC_API void tuzZF_close(NMParams p) // totalcross/util/zip/ZipFile native public
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZF_entries(NMParams p) // totalcross/util/zip/ZipFile native public String[] entries();
 {
-   Object zipFile = p->obj[0];
-   Object nativeFile = ZipFile_nativeFile(zipFile);
+   TCObject zipFile = p->obj[0];
+   TCObject nativeFile = ZipFile_nativeFile(zipFile);
    unzFile* unzipFile = (unzFile*) ARRAYOBJ_START(nativeFile);
    int32 size = ZipFile_size(zipFile);
    CharPs* list = null;
    int32 count = 0;
-   volatile Object arrayObj = null;
-   ObjectArray start, end;
+   volatile TCObject arrayObj = null;
+   TCObjectArray start, end;
    volatile Heap h;
    Err err;
    int32 i;
@@ -142,11 +145,11 @@ TC_API void tuzZF_entries(NMParams p) // totalcross/util/zip/ZipFile native publ
    {
       if ((p->retO = arrayObj = createArrayObject(p->currentContext, "[totalcross.util.zip.ZipEntry", count)) != null)
       {
-         start = (ObjectArray) ARRAYOBJ_START(arrayObj);
+         start = (TCObjectArray) ARRAYOBJ_START(arrayObj);
          end = start + ARRAYOBJ_LEN(arrayObj);
          for (; start < end; start++, list = list->next) // stop also if OutOfMemoryError
          {
-            Object name = createStringObjectFromCharP(p->currentContext, list->value, -1);
+            TCObject name = createStringObjectFromCharP(p->currentContext, list->value, -1);
             *start = createObject(p->currentContext, "totalcross.util.zip.ZipEntry");
 
             ZipEntry_name(*start) = name;
@@ -168,29 +171,23 @@ TC_API void tuzZF_getEntry_s(NMParams p) // totalcross/util/zip/ZipFile native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile native public totalcross.io.Stream getEntryStream(String name) throws IOException;
 {
-   Object zipFile = p->obj[0];
-   Object nativeFile = ZipFile_nativeFile(zipFile);
+   TCObject zipFile = p->obj[0];
+   TCObject nativeFile = ZipFile_nativeFile(zipFile);
    unzFile* unzipFile = (unzFile*) ARRAYOBJ_START(nativeFile);
-   Object name = p->obj[1];
+   TCObject name = p->obj[1];
    CharP szName = String2CharP(name);
 
    if (unzLocateFile(*unzipFile, szName, 0) == UNZ_OK)
    {
-	   z_stream c_stream; // compression stream
-	   c_stream.zalloc = zalloc;
-	   c_stream.zfree = zfree;
-	   c_stream.opaque = (voidpf) 0;
-
-      if (unzOpenCurrentFile(*unzipFile, &c_stream) == UNZ_OK)
+      if (unzOpenCurrentFile(*unzipFile) == UNZ_OK)
       {
-         Object zipStream = createObject(p->currentContext, "totalcross.util.zip.ZipStream");
+         TCObject zipStream = createObject(p->currentContext, "totalcross.util.zip.ZipStream");
          //ZipStream_zipFile(zipStream) = zipFile;
          CompressedStream_mode(zipStream) = 2;
          p->retO = zipStream;
          setObjectLock(zipStream, UNLOCKED);
       }
    }
-
    xfree(szName);
 }
 
@@ -199,9 +196,9 @@ TC_API void tuzZF_getEntryStream_s(NMParams p) // totalcross/util/zip/ZipFile na
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_createInflate_s(NMParams p) // totalcross/util/zip/ZipStream native protected Object createInflate(totalcross.io.Stream stream);
 {
-   Object zipStream = p->obj[0];
-   Object streamObj = p->obj[1];
-   Object zipNativeObj;
+   TCObject zipStream = p->obj[0];
+   TCObject streamObj = p->obj[1];
+   TCObject zipNativeObj;
    ZipNativeP zipNativeP;
 
    if (streamObj == null)
@@ -229,9 +226,9 @@ TC_API void tuzZS_createInflate_s(NMParams p) // totalcross/util/zip/ZipStream n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_createDeflate_si(NMParams p) // totalcross/util/zip/ZipStream native protected Object createDeflate(totalcross.io.Stream stream, int compressionType);
 {
-   Object zipStream = p->obj[0];
-   Object streamObj = p->obj[1];
-   Object zipNativeObj;
+   TCObject zipStream = p->obj[0];
+   TCObject streamObj = p->obj[1];
+   TCObject zipNativeObj;
    ZipNativeP zipNativeP;
 
    if (streamObj == null)
@@ -259,9 +256,9 @@ TC_API void tuzZS_createDeflate_si(NMParams p) // totalcross/util/zip/ZipStream 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_available(NMParams p) // totalcross/util/zip/ZipStream native public int available() throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipFile = *ZipStream_nativeZip(zipStream);
-   Object nativeFile = ZipFile_nativeFile(zipFile);
+   TCObject zipStream = p->obj[0];
+   TCObject zipFile = *ZipStream_nativeZip(zipStream);
+   TCObject nativeFile = ZipFile_nativeFile(zipFile);
    unzFile* unzipFile = (unzFile*) ARRAYOBJ_START(nativeFile);
    unz_file_info file_info;
    Err err;
@@ -269,28 +266,23 @@ TC_API void tuzZS_available(NMParams p) // totalcross/util/zip/ZipStream native 
    if ((err = unzGetCurrentFileInfo(*unzipFile, &file_info, null, 0, null, 0, null, 0)) != UNZ_OK)
       throwException(p->currentContext, IOException, null);
    else
-      p->retI = file_info.compressed_size - unztell(*unzipFile);
+      p->retI = (int)(file_info.compressed_size - unztell(*unzipFile));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream native public totalcross.util.zip.ZipEntry getNextEntry() throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipNativeObj = *ZipStream_nativeZip(zipStream);
+   TCObject zipStream = p->obj[0];
+   TCObject zipNativeObj = *ZipStream_nativeZip(zipStream);
    ZipNativeP zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
    int32 mode = CompressedStream_mode(zipStream);
-   Object zipEntryObj = null;
-   Object zipEntryNameObj = null;
-   Object zipEntryCommentObj = null;
-   Object zipEntryExtraObj = null;
+   TCObject zipEntryObj = null;
+   TCObject zipEntryNameObj = null;
+   TCObject zipEntryCommentObj = null;
+   TCObject zipEntryExtraObj = null;
    char zipEntryName[MAX_PATHNAME];
    CharP zipEntryCommentP = null;
    unz_file_info file_info;
    Err err;
-
-   z_stream c_stream; // compression stream
-   c_stream.zalloc = zalloc;
-   c_stream.zfree = zfree;
-   c_stream.opaque = (voidpf) 0;
 
    if (mode != 2) // INFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in INFLATE mode.");
@@ -309,31 +301,31 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
          throwException(p->currentContext, IOException, "Failed to retrieve details for the next entry");
       else if ((zipEntryObj = createObject(p->currentContext, "totalcross.util.zip.ZipEntry")) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if ((zipEntryNameObj = createStringObjectFromCharP(p->currentContext, zipEntryName, file_info.size_filename)) == null)
+      else if ((zipEntryNameObj = createStringObjectFromCharP(p->currentContext, zipEntryName, (int)file_info.size_filename)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if (file_info.size_file_comment > 0 && (zipEntryCommentP = xmalloc(file_info.size_file_comment)) == null)
+      else if (file_info.size_file_comment > 0 && (zipEntryCommentP = (CharP)xmalloc((int)file_info.size_file_comment)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if (file_info.size_file_extra > 0 && (zipEntryExtraObj = createByteArray(p->currentContext, file_info.size_file_extra)) == null)
+      else if (file_info.size_file_extra > 0 && (zipEntryExtraObj = createByteArray(p->currentContext, (int)file_info.size_file_extra)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
       else if ((err = unzGetCurrentFileInfo(zipNativeP->zipFile, &file_info, zipEntryName, MAX_PATHNAME, 
          zipEntryCommentP, file_info.size_file_comment, 
-         file_info.size_file_comment > 0 ? ARRAYOBJ_START(zipEntryCommentObj) : null, file_info.size_file_extra)) != UNZ_OK) // guich@tc126_31: check for comment length
+         file_info.size_file_comment > 0 ? (CharP)ARRAYOBJ_START(zipEntryCommentObj) : null, file_info.size_file_extra)) != UNZ_OK) // guich@tc126_31: check for comment length
          throwException(p->currentContext, IOException, "Failed to retrieve details for the next entry");
-      else if ((zipEntryCommentObj = createStringObjectFromCharP(p->currentContext, zipEntryCommentP, file_info.size_file_comment)) == null)
+      else if ((zipEntryCommentObj = createStringObjectFromCharP(p->currentContext, zipEntryCommentP, (int)file_info.size_file_comment)) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
-      else if (unzOpenCurrentFile(zipNativeP->zipFile, &c_stream) != UNZ_OK)
+      else if (unzOpenCurrentFile(zipNativeP->zipFile) != UNZ_OK)
          throwException(p->currentContext, IOException, "Failed to open the next entry");
       else
       {
          zipNativeP->isFirstFile = false;
          ZipEntry_name(zipEntryObj) = zipEntryNameObj;
-         ZipEntry_time(zipEntryObj) = file_info.dosDate;
-         ZipEntry_method(zipEntryObj) = file_info.compression_method;
+         ZipEntry_time(zipEntryObj) = (int32)file_info.dosDate;
+         ZipEntry_method(zipEntryObj) = (int32)file_info.compression_method;
          ZipEntry_comment(zipEntryObj) = zipEntryCommentObj;
          ZipEntry_extra(zipEntryObj) = zipEntryExtraObj;
-         ZipEntry_crc(zipEntryObj) = file_info.crc;
-         ZipEntry_size(zipEntryObj) = file_info.uncompressed_size;
-         ZipEntry_csize(zipEntryObj) = file_info.compressed_size;
+         ZipEntry_crc(zipEntryObj) = (int32)file_info.crc;
+         ZipEntry_size(zipEntryObj) = (int32)file_info.uncompressed_size;
+         ZipEntry_csize(zipEntryObj) = (int32)file_info.compressed_size;
          p->retO = zipEntryObj;
       }
       setObjectLock(zipEntryCommentObj, UNLOCKED);
@@ -347,14 +339,14 @@ TC_API void tuzZS_getNextEntry(NMParams p) // totalcross/util/zip/ZipStream nati
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_putNextEntry_z(NMParams p) // totalcross/util/zip/ZipStream native public void putNextEntry(totalcross.util.zip.ZipEntry zipEntry) throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipNativeObj = *ZipStream_nativeZip(zipStream);
-   Object lastEntryObj = *ZipStream_lastEntry(zipStream);
+   TCObject zipStream = p->obj[0];
+   TCObject zipNativeObj = *ZipStream_nativeZip(zipStream);
+   TCObject lastEntryObj = *ZipStream_lastEntry(zipStream);
    ZipNativeP zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
-   Object zipEntryObj = p->obj[1];
-   Object zipEntryNameObj;
-   Object zipEntryCommentObj;
-   Object zipEntryExtraObj;
+   TCObject zipEntryObj = p->obj[1];
+   TCObject zipEntryNameObj;
+   TCObject zipEntryCommentObj;
+   TCObject zipEntryExtraObj;
    char zipEntryName[MAX_PATHNAME];
    CharP zipEntryNameP = null;
    CharP zipEntryCommentP = null;
@@ -455,9 +447,9 @@ TC_API void tuzZS_putNextEntry_z(NMParams p) // totalcross/util/zip/ZipStream na
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_closeEntry(NMParams p) // totalcross/util/zip/ZipStream native public void closeEntry() throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipNativeObj = *ZipStream_nativeZip(zipStream);
-   Object lastEntryObj = *ZipStream_lastEntry(zipStream);
+   TCObject zipStream = p->obj[0];
+   TCObject zipNativeObj = *ZipStream_nativeZip(zipStream);
+   TCObject lastEntryObj = *ZipStream_lastEntry(zipStream);
    ZipNativeP zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
    int32 mode = CompressedStream_mode(zipStream);
    Err err;
@@ -492,16 +484,19 @@ TC_API void tuzZS_closeEntry(NMParams p) // totalcross/util/zip/ZipStream native
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_readBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream native public int readBytes(byte []buf, int start, int count) throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipNativeObj = *ZipStream_nativeZip(zipStream);
+   TCObject zipStream = p->obj[0];
+   TCObject zipNativeObj = *ZipStream_nativeZip(zipStream);
    ZipNativeP zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
    int32 mode = CompressedStream_mode(zipStream);
-   Object buf = p->obj[1];
+   TCObject buf = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    uint8* bufP = ARRAYOBJ_START(buf);
    int32 ret;
 
+   if (zipNativeObj == null)
+      throwException(p->currentContext, IOException, "Stream not initialized.");
+   else
    if (mode != 2) // INFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in INFLATE mode.");
    else if ((ret = unzReadCurrentFile(zipNativeP->zipFile, bufP + start, count)) < 0)
@@ -512,16 +507,19 @@ TC_API void tuzZS_readBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream nat
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream native public int writeBytes(byte []buf, int start, int count) throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipNativeObj = *ZipStream_nativeZip(zipStream);
+   TCObject zipStream = p->obj[0];
+   TCObject zipNativeObj = *ZipStream_nativeZip(zipStream);
    ZipNativeP zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
    int32 mode = CompressedStream_mode(zipStream);
-   Object buf = p->obj[1];
+   TCObject buf = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    uint8* bufP = ARRAYOBJ_START(buf);
    Err err;
 
+   if (zipNativeObj == null)
+      throwException(p->currentContext, IOException, "Stream not initialized.");
+   else
    if (mode != 1) // DEFLATE
       throwException(p->currentContext, IOException, "This operation can only be performed in DEFLATE mode.");
    else if ((err = zipWriteInFileInZip(zipNativeP->zipFile, bufP + start, count)) != ZIP_OK)
@@ -532,13 +530,19 @@ TC_API void tuzZS_writeBytes_Bii(NMParams p) // totalcross/util/zip/ZipStream na
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZS_close(NMParams p) // totalcross/util/zip/ZipStream native public void close() throws IOException;
 {
-   Object zipStream = p->obj[0];
-   Object zipNativeObj = *ZipStream_nativeZip(zipStream);
-   Object lastEntryObj = *ZipStream_lastEntry(zipStream);
+   TCObject zipStream = p->obj[0];
+   TCObject zipNativeObj = *ZipStream_nativeZip(zipStream);
+   TCObject lastEntryObj = *ZipStream_lastEntry(zipStream);
    ZipNativeP zipNativeP = (ZipNativeP) ARRAYOBJ_START(zipNativeObj);
    int32 mode = CompressedStream_mode(zipStream);
    Err err;
 
+   if (zipNativeObj == null)
+   {
+      CompressedStream_mode(zipStream) = 0;
+      throwException(p->currentContext, IOException, "Stream not initialized.");
+      return;
+   }
    executeMethod(p->currentContext, zipNativeP->streamTell, CompressedStream_streamRef(zipStream));
    if (p->currentContext->thrownException != null)
    {

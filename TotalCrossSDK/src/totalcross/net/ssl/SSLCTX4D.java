@@ -51,7 +51,7 @@ public class SSLCTX4D
    /**
     * A reference to the real client/server context. For internal use only.
     */
-   protected int m_ctx;
+   protected long m_ctx;
    
    boolean dontFinalize; //flsobral@tc114_36: finalize support.
    

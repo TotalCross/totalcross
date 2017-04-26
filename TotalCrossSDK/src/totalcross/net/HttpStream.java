@@ -44,11 +44,44 @@ import totalcross.util.Hashtable;
  * }
  * </pre>
  *
- * At this case, the page legalizePalm verifies login and passwd, returning "yes" if it's ok, and "no" otherwise.
+ * At this case, the page legalizePalm verifies login and passwd, returning "yes" if it's ok, and "no" otherwise.<p/>
+ * 
+ * See also the <a href="https://github.com/TotalCross/tc-utilities/blob/master/src/main/java/com/tc/utils/utilities/io/HttpConn.java">HttpConn</a>
+ * wrapper and the <a href="https://github.com/TotalCross/tc-utilities/blob/master/src/main/java/com/tc/utils/utilities/io/HttpMethod.java">enumeration of common HTTP methods</a>.
+ * HttpConn abstracts dozens of stuff and is totally free to use and modify.
  */
 
 public class HttpStream extends Stream
 {
+   /** Can be overloaded by classes to late-init the data. */
+   protected HttpStream()
+   {
+   }
+   
+   /**
+    * Constructor for a HttpStream with the default options.
+    *
+    * @param uri to connect to
+    * @see Options
+    */
+   public HttpStream(URI uri) throws totalcross.net.UnknownHostException, totalcross.io.IOException
+   {
+      init(uri, new Options());
+   }
+
+   /**
+   * Constructor for a HttpStream with specific variant options.
+   * Options must have been filled before called this constructor.
+   *
+   * @param uri to connect to
+   * @param options the specific options for this HttpStream
+   * @see Options
+   */
+   public HttpStream(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
+   {
+      init(uri, options);
+   }
+
    /** Set to true to print the header to the debug console. */
    public static boolean debugHeader;
    /** READ-ONLY should be one of the 20x. Used in the response. */
@@ -235,9 +268,19 @@ public class HttpStream extends Stream
        * options.postData = "xml=<root><update login=\""+state.login+"\" password=\""+state.pass+"\" dayofsync=\""+state.dayOfSync+"\"/></root>";
        * XmlReadableSocket stream = new XmlReadableSocket(new URI(conn),options);
        * </pre>       
-       * The default type is GET.<br><br>
+       * The default type is GET.</p>
        * You can also define a custom type, like if you want to use restful services. In this case,
-       * the header will be set to what you store in the httpType String.
+       * the header will be set to what you store in the httpType String. Note that, to use another http method, append a space.
+       * 
+       * <pre>
+       * HttpStream.Options options = new HttpStream.Options();
+       * options.httpType = "PUT ";
+       * </pre>
+       * 
+       * * <pre>
+       * HttpStream.Options options = new HttpStream.Options();
+       * options.httpType = "CUSTOMMETHOD ";
+       * </pre>
        * @see #GET
        * @see #POST
        * @since TotalCross 1.23
@@ -255,6 +298,23 @@ public class HttpStream extends Stream
        */
       public SocketFactory socketFactory = SocketFactory.getDefault();
 
+      /**
+       * Charset encoding ISO-8859-1
+       */
+      public static final String CHARSET_ISO88591 = "ISO-8859-1";
+
+      /**
+       * Charset encoding UTF-8
+       */
+      public static final String CHARSET_UTF8 = "UTF-8";
+      
+      protected boolean sendData = false;
+
+      /**
+       * Charset encoding to be used by HttpStream. Defaults to CHARSET_ISO88591.
+       */
+      private String encoding = CHARSET_ISO88591;
+
       /** Constructs a new Options class, from where you change the behaviour of an Http connection.
        * Sets the <code>postHeaders</code> to:
        * <pre>
@@ -267,7 +327,33 @@ public class HttpStream extends Stream
       public Options()
       {
          requestHeaders.put("User-Agent",Settings.platform+" / "+Settings.deviceId); // flsobral@tc110_104: this is a request header, not a post header.
-         postHeaders.put("Content-Type","application/x-www-form-urlencoded");
+         postHeaders.put("Content-Type", "application/x-www-form-urlencoded");
+      }
+
+      /**
+       * Sets the charset encoding to be used by HttpStream.
+       * 
+       * @param encoding
+       *           the cjarset encoding to be set. Must be either "ISO-8859-1" or "UTF-8".
+       */
+      public void setCharsetEncoding(String encoding)
+      {
+         if (encoding == CHARSET_ISO88591 || CHARSET_ISO88591.equals(encoding))
+            this.encoding = CHARSET_ISO88591;
+         else if (encoding == CHARSET_UTF8 || CHARSET_UTF8.equals(encoding))
+            this.encoding = CHARSET_UTF8;
+         else
+            throw new IllegalArgumentException();
+      }
+
+      /**
+       * Returns the currently set charset encoding.
+       * 
+       * @return the charset encoding
+       */
+      public String getCharsetEncoding()
+      {
+         return this.encoding;
       }
 
       /** Replaces the default Content-Type (<code>application/x-www-form-urlencoded</code>) by the given one. */
@@ -282,6 +368,10 @@ public class HttpStream extends Stream
       {
          postHeaders.put("Cookie",cookies.dumpKeysValues(new StringBuffer(512), "=","; ").toString());
       }
+      
+      String createBasicAuthString(String user, String password) {
+    	  return "Basic " + Base64.encode((user + ":" + password).getBytes());
+      }
 
       /**
        * Base64 encodes the username and password given for basic server authentication
@@ -293,10 +383,11 @@ public class HttpStream extends Stream
        */
       public void setBasicAuthentication(String user, String password)
       {
-         if (user == null || password == null)
+         if (user == null || password == null) {
             postHeaders.remove("Authorization");
-         else
-            postHeaders.put("Authorization", Base64.encode((user + ":" + password).getBytes()));
+         } else {
+            postHeaders.put("Authorization", createBasicAuthString(user, password));
+         }
       }
       
       /**
@@ -310,10 +401,11 @@ public class HttpStream extends Stream
        */
       public void setBasicProxyAuthorization(String user, String password)
       {
-         if (user == null || password == null)
+         if (user == null || password == null) {
             postHeaders.remove("Proxy-Authorization");
-         else
-            postHeaders.put("Proxy-Authorization", "Basic "+ Base64.encode((user + ":" + password).getBytes()));
+         } else {
+            postHeaders.put("Proxy-Authorization", createBasicAuthString(user, password));
+         }
       }
       
       /** Part that contains the Multipart content to be used by HttpStream */
@@ -332,6 +424,14 @@ public class HttpStream extends Stream
             partContent = new Part();
          partContent.setContent(multipart);
       }
+
+	public void setSendData(boolean sendData) {
+		this.sendData = sendData;
+	}
+	
+	public boolean mustSendData() {
+		return sendData;
+	}
    }
 
    /** This makes a sleep during the send of a file.
@@ -391,36 +491,10 @@ public class HttpStream extends Stream
 
    private int writeBytesSize;
 
-   private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
+   /** Returns true if the response code represents an error. */
+   public boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
-   /** Can be overloaded by classes to late-init the data. */
-   protected HttpStream()
-   {
-   }
-   
-   /**
-    * Constructor for a HttpStream with the default options.
-    *
-    * @param uri to connect to
-    * @see Options
-    */
-   public HttpStream(URI uri) throws totalcross.net.UnknownHostException, totalcross.io.IOException
-   {
-      init(uri, new Options());
-   }
-
-   /**
-   * Constructor for a HttpStream with specific variant options.
-   * Options must have been filled before called this constructor.
-   *
-   * @param uri to connect to
-   * @param options the specific options for this HttpStream
-   * @see Options
-   */
-   public HttpStream(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
-   {
-      init(uri, options);
-   }
+   private CharacterConverter cc = new CharacterConverter();
 
    public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
@@ -554,6 +628,16 @@ public class HttpStream extends Stream
          if (header != null)
             options.partContent.addHeader("Cookie", header);
       }
+      else
+      {
+         String contentType = (String) options.postHeaders.get("Content-Type");
+         if (contentType != null && contentType.indexOf("charset") != -1)
+            options.postHeaders.put("Content-Type", contentType + ";charset=\"" + options.encoding + "\"");
+         if (options.encoding == Options.CHARSET_ISO88591)
+            cc = new CharacterConverter();
+         else if (options.encoding == Options.CHARSET_UTF8)
+            cc = new UTF8CharacterConverter();
+      }
       
       if (GET.equals(options.httpType))
          {options.doGet = true; options.doPost = false;}
@@ -569,7 +653,8 @@ public class HttpStream extends Stream
          sb.append(options.httpType);
       
       String serverPath = useProxy ? uri.toString() : uri.path.toString(); //flsobral@tc126: had problems with a proxy that would only reply if we send the whole url on the post/get line.
-      if (POST.equals(options.httpType) || options.doPost)
+      
+      if (shouldSendData(options))
       {
          if (options.httpType == null) sb.append("POST ");
          // server path
@@ -607,13 +692,18 @@ public class HttpStream extends Stream
       options.requestHeaders.dumpKeysValues(sb, ": ", Convert.CRLF);
       sb.append(Convert.CRLF);
 
-      if (options.partContent == null && (POST.equals(options.httpType) || options.doPost))
+      if (options.partContent == null && shouldSendData(options))
       {
-         int len1 = options.postPrefix == null ? 0 : options.postPrefix.length();
-         int len2 = options.postDataSB == null ? 0 : options.postDataSB.length();
-         int len3 = options.postData   == null ? 0 : options.postData.length();
-         int len4 = options.postSuffix == null ? 0 : options.postSuffix.length();
-         int len = len1+len2+len3+len4; // note: this can lead to problems if the Strings contains unicode characters, because in this case, string.length != string.getBytes.length
+         int len = 0;
+         if (options.postPrefix != null)
+            len += cc.chars2bytes(options.postPrefix.toCharArray(), 0, options.postPrefix.length()).length;
+         if (options.postDataSB != null)
+            len += cc.chars2bytes(options.postDataSB.toString().toCharArray(), 0, options.postDataSB.length()).length;
+         if (options.postData != null)
+            len += cc.chars2bytes(options.postData.toCharArray(), 0, options.postData.length()).length;
+         if (options.postSuffix != null)
+            len += cc.chars2bytes(options.postSuffix.toCharArray(), 0, options.postSuffix.length()).length;
+
          if (len > 0) //luciana@570_119: avoids null pointer exception if the post has no data
             options.postHeaders.put("Content-Length", Convert.toString(len));
       }
@@ -630,7 +720,7 @@ public class HttpStream extends Stream
          writeResponseRequest(sb, options); //flsobral@tc120_17: fixed bug with HttpStream connection over BIS transport on BlackBerry.
       else
       {
-         byte[] bytes = Convert.getBytes(sb);
+         byte[] bytes = cc.chars2bytes(sb.toString().toCharArray(), 0, sb.length());
          writeBytes(bytes, 0, bytes.length);
          try
          {
@@ -649,67 +739,46 @@ public class HttpStream extends Stream
       if (state != 6 && Settings.onJavaSE) // flsobral@tc115: some cleaning.
          Vm.debug("HTTP: " + getStatus()); // flsobral@tc110_95: No longer stop reading the header when a bad response code is found, so we can get the error cause.
    }
+   
+   protected boolean shouldSendData(Options options) {
+	   return POST.equals(options.httpType) || options.doPost || options.sendData;
+   }
 
    protected void writeResponseRequest(StringBuffer sb, Options options) throws totalcross.io.IOException
    {
-      byte[] bytes = Convert.getBytes(sb);
+      byte[] bytes = cc.chars2bytes(sb.toString().toCharArray(), 0, sb.length());
       writeBytes(bytes, 0, bytes.length);
       bytes = null;
 
-      if (POST.equals(options.httpType) || options.doPost)
+      if (shouldSendData(options))
       {
          if (options.postPrefix != null)
          {
-            bytes = options.postPrefix.getBytes();
+            bytes = cc.chars2bytes(options.postPrefix.toCharArray(), 0, options.postPrefix.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
          if (options.postDataSB != null)
          {
-            bytes = Convert.getBytes(options.postDataSB);
+            bytes = cc.chars2bytes(options.postDataSB.toString().toCharArray(), 0, options.postDataSB.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
          if (options.postData != null)
          {
-            bytes = options.postData.getBytes();
+            bytes = cc.chars2bytes(options.postData.toCharArray(), 0, options.postData.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
          if (options.postSuffix != null)
          {
-            bytes = options.postSuffix.getBytes();
+            bytes = cc.chars2bytes(options.postSuffix.toCharArray(), 0, options.postSuffix.length());
             writeBytes(bytes, 0, bytes.length);
             bytes = null;
          }
       }
    }
    
-   protected void writeResponseRequest4B(StringBuffer sb, Options options) throws totalcross.io.IOException
-   {
-      if (POST.equals(options.httpType) || options.doPost)
-      {
-         if (options.postPrefix != null)
-            sb.append(options.postPrefix);
-         if (options.postDataSB != null)
-            sb.append(options.postDataSB.toString());
-         if (options.postData != null)
-            sb.append(options.postData);
-         if (options.postSuffix != null)
-            sb.append(options.postSuffix);
-      }
-      
-      //flsobral@tc120_17
-      // Here is the real difference between the regular and the BlackBerry implementation:
-      // All data is written over the socket at once, no buffer is used, that's all!
-      //
-      // Apparently some BlackBerry devices have problems when sockets are used in a write-write-read sequence.
-      // This problem is probably related with the Nagle algorithm, and seems to occur more often with socket connections over BIS.
-      // It does not happen on BlackBerry Bold though, maybe it happens only on previous OS versions or only on devices that support networks slower than 3G.
-      // I tried using the socket options to disable the Nagle algorithm, but (just like the keep-alive) it didn't work.
-      socket.writeBytes(sb);      
-   }
-
    /**
    * Tell if this HttpStream is functioning properly.
    *
@@ -951,7 +1020,7 @@ public class HttpStream extends Stream
       switch (type)
       {
          case -1:
-            headers.put(new String(buffer,start1,end1-start1), new String(buffer,start, end-start));
+            headers.put(new String(cc.bytes2chars(buffer,start1,end1-start1)), new String(cc.bytes2chars(buffer,start, end-start)));
             break;
          case 0:
             contentType = getContentType(start, end-start);

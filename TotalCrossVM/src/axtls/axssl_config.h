@@ -12,8 +12,6 @@
 #define CONFIG_PLATFORM_WIN32 1
 #elif defined(PALMOS)
 #define CONFIG_PLATFORM_PALMOS 1
-#elif defined(__SYMBIAN32__)
-#define CONFIG_PLATFORM_SYMBIAN 1
 #else
 #error "not supported platform"
 #endif
@@ -36,6 +34,9 @@
 #define CONFIG_VISUAL_STUDIO_8_0_BASE ""
 #define CONFIG_EXTRA_CFLAGS_OPTIONS ""
 #define CONFIG_EXTRA_LDFLAGS_OPTIONS ""
+#define CONFIG_SSL_PRIVATE_KEY_LOCATION ""
+#define CONFIG_SSL_PRIVATE_KEY_PASSWORD ""
+#define CONFIG_SSL_X509_CERT_LOCATION ""
 
 /*
  * SSL Library

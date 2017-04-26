@@ -14,6 +14,10 @@
 #ifndef OBJECTMEMORYMANAGER_H
 #define OBJECTMEMORYMANAGER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum
 {
    UNLOCKED,
@@ -21,32 +25,32 @@ typedef enum
 } LockState;
 
 /// ALWAYS call createObject instead of this one, unless you will call another constructor besides of the default one
-TC_API void preallocateArray(Context currentContext, Object sample, int32 length);
-typedef void (*preallocateArrayFunc)(Context currentContext, Object sample, int32 length);
-TC_API Object createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className);
-typedef Object (*createObjectWithoutCallingDefaultConstructorFunc)(Context currentContext, CharP className);
-TC_API Object createObject(Context currentContext, CharP className);
-typedef Object (*createObjectFunc)(Context currentContext, CharP className);
-TC_API Object allocObject(Context currentContext, uint32 size);
-typedef Object (*allocObjectFunc)(Context currentContext, uint32 size);
-TC_API Object createArrayObject(Context currentContext, CharP type, int32 len);
-typedef Object (*createArrayObjectFunc)(Context currentContext, CharP type, int32 len);
-TC_API Object createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
-typedef Object (*createArrayObjectMultiFunc)(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
+TC_API void preallocateArray(Context currentContext, TCObject sample, int32 length);
+typedef void (*preallocateArrayFunc)(Context currentContext, TCObject sample, int32 length);
+TC_API TCObject createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className);
+typedef TCObject (*createObjectWithoutCallingDefaultConstructorFunc)(Context currentContext, CharP className);
+TC_API TCObject createObject(Context currentContext, CharP className);
+typedef TCObject (*createObjectFunc)(Context currentContext, CharP className);
+TC_API TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line);
+typedef TCObject (*createByteArrayObjectFunc)(Context currentContext, int32 len);
+TC_API TCObject createArrayObject(Context currentContext, CharP type, int32 len);
+typedef TCObject (*createArrayObjectFunc)(Context currentContext, CharP type, int32 len);
+TC_API TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
+typedef TCObject (*createArrayObjectMultiFunc)(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI); // always call passing target as a held variable!
 /// only allocate space, you must transfer the char array by your own
-TC_API Object createStringObjectWithLen(Context currentContext, int32 len);
-typedef Object (*createStringObjectWithLenFunc)(Context currentContext, int32 len);
+TC_API TCObject createStringObjectWithLen(Context currentContext, int32 len);
+typedef TCObject (*createStringObjectWithLenFunc)(Context currentContext, int32 len);
 /// if len<0, len is computed from srcChars length
-TC_API Object createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len);
-typedef Object (*createStringObjectFromJCharPFunc)(Context currentContext, JCharP srcChars, int32 len);
+TC_API TCObject createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len);
+typedef TCObject (*createStringObjectFromJCharPFunc)(Context currentContext, JCharP srcChars, int32 len);
 /// if len<0, len is computed from srcChars length
-TC_API Object createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len);
-typedef Object (*createStringObjectFromTCHARPFunc)(Context currentContext, TCHARP srcChars, int32 len);
+TC_API TCObject createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len);
+typedef TCObject (*createStringObjectFromTCHARPFunc)(Context currentContext, TCHARP srcChars, int32 len);
 /// if len<0, len is computed from srcChars length
-TC_API Object createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len);
-typedef Object (*createStringObjectFromCharPFunc)(Context currentContext, CharP srcChars, int32 len);
+TC_API TCObject createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len);
+typedef TCObject (*createStringObjectFromCharPFunc)(Context currentContext, CharP srcChars, int32 len);
 /// if len<0, len is computed from srcChars length, use when creating code for both WinCE and Win32
-#if defined(WINCE)
+#if defined(UNICODE)
 #define createStringObjectFromTCHAR createStringObjectFromJCharP
 #else
 #define createStringObjectFromTCHAR createStringObjectFromCharP
@@ -55,9 +59,9 @@ typedef Object (*createStringObjectFromCharPFunc)(Context currentContext, CharP 
 /// Creates an array of Java chars
 #define createCharArray(currentContext, len)   TCAPI_FUNC(createArrayObject)(currentContext, CHAR_ARRAY, len) // these are
 /// Creates an array of Java bytes
-#define createByteArray(currentContext, len)   TCAPI_FUNC(createArrayObject)(currentContext, BYTE_ARRAY, len) // java types
+#define createByteArray(currentContext, len)   TCAPI_FUNC(createByteArrayObject)(currentContext, len,__FILE__,__LINE__) // java types
 /// Creates an array of Java ints
-#define createIntArray(currentContext, len)    TCAPI_FUNC(createArrayObject)(currentContext, INT_ARRAY, len) // java types
+#define createIntArray(currentContext, len)    TCAPI_FUNC(createArrayObject)(currentContext, INT_ARRAY, len)
 /// Creates an array of Java Strings
 #define createStringArray(currentContext, len) TCAPI_FUNC(createArrayObject)(currentContext, "[java.lang.String", len)
 
@@ -68,17 +72,19 @@ typedef void (*gcFunc)(Context currentContext);
 bool initObjectMemoryManager();
 void destroyObjectMemoryManager();
 void runFinalizers();
+void visitImages(VisitElementFunc onImage, int32 param);
 
 /// Changes the object lock state, in a NON-RECURSIVE way.
 /// Locking an object: The object will be removed from the used list and will never be garbage collected.
 /// Unlocking an object: The object will be placed back in the used list and will be eligible to be garbage collected
 /// If you lock an object, all objects inside of it are still visited during a GC, so you have to lock only the root of
 /// an object tree to keep all them in memory.
-TC_API void setObjectLock(Object o, LockState lock);
-typedef void (*setObjectLockFunc)(Object o, LockState lock);
+TC_API void setObjectLock(TCObject o, LockState lock);
+typedef void (*setObjectLockFunc)(TCObject o, LockState lock);
 
 /// Returns a pointer to the Object properties given an Object
 #define OBJ_PROPERTIES(o) ((ObjectProperties)(((uint8*)(o))-sizeof(TObjectProperties)))
+#define OBJ_ISLOCKED(o)     (OBJ_PROPERTIES(o)->lock  == 1)
 
 /** A Java Object is a Class instance.
  *
@@ -92,12 +98,15 @@ typedef void (*setObjectLockFunc)(Object o, LockState lock);
 struct TObjectProperties
 {
    TCClass class_;
-   Object next,prev;
+   TCObject next,prev;
    struct
    {
       uint32 size: 30; // object's size
       uint32 lock: 1;  // lock the object, preventing it from being gc'd. The initial purpose of locking an object was to lock all constant pool strings and speedup the garbage collector process.
       uint32 mark: 1;  // mark the object during a garbage collect.
+#if TBITS==64
+      uint32 dumb;
+#endif
    };
 };
 
@@ -109,6 +118,12 @@ typedef uint8* Chunk;
 /// Gets the length of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
 #define ARRAYOBJ_LEN(o) ((o)->arrayLen)
 /// Gets the start of a Java array Object. The array's type is stored in the OBJ_CLASS(o)->name ("[&B","[java.lang.String", etc)
-#define ARRAYOBJ_START(o) (((uint8*)(o))+4)
+#define ARRAYOBJ_START(o) (((uint8*)(o))+TSIZE)
 
+// Gets the size in bytes of an array. Added to support 64-bit without needing to change tcz structure
+#define TC_ARRAYSIZE(c, len) (c->flags.isObjectArray ? len * TSIZE : len << c->flags.bits2shift)
+
+#ifdef __cplusplus
+}
+#endif
 #endif

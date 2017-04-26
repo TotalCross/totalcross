@@ -9,66 +9,90 @@
 #include "mainview.h"
 #include "gfx_ex.h"
 #import <QuartzCore/CALayer.h>
+#import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 #define LKLayer CALayer
 
 bool allowMainThread();
 int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
+extern int32 iosScale;
+extern bool isIpad;
 
-@implementation SSize
+@implementation MainViewController
 
-- (id)set:(CGSize)size
+bool initGLES(ScreenSurface screen)
 {
-   ssize = size;
-   return self;
+   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
+   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
+   isIpad = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
+   // initialize the screen bitmap with the full width and height
+   CGRect rect = [[UIScreen mainScreen] bounds];
+   window = [[UIWindow alloc] initWithFrame: rect];
+   window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
+   window.autoresizesSubviews = YES; // IOS 8 - make didLayoutSubviews be called
+   [window makeKeyAndVisible];
+   [DEVICE_CTX->_childview setScreenValues: screen];
+   [DEVICE_CTX->_childview createGLcontext];
+   return true;
 }
-
-- (CGSize)get
+- (BOOL)shouldAutorotate // ios 6
 {
-   return ssize;
-}
-
-@end
-
-//--------------------------------------------------------------------------------------------------------
-
-@implementation MainView
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-   [UIView setAnimationsEnabled:NO];
-   [self destroySIP];
+// [UIView setAnimationsEnabled:NO];
+ //  [self destroySIP]; - commented out because its the reason why the keyboard wont close on app launch
+   [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationNone];
    return YES;
 }
 
-- (void)viewDidLoad
+- (NSUInteger)supportedInterfaceOrientations // ios 6
 {
-   [super viewDidLoad];
-   DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
-   [self initEvents];
-   self.view = child_view;
+   return UIInterfaceOrientationMaskAll;
+}
+
+- (void) setFirstOrientation
+{
+   lastOrientationSentToVM = [child_view getOrientation];
+}
+
+bool iosLowMemory;
+- (void)didReceiveMemoryWarning
+{
+   [super didReceiveMemoryWarning];
+   iosLowMemory = true;
+}
+
+- (void)viewDidLayoutSubviews
+{
+   //NSLog(@"*** view will layout subviews");
+   int orientation = [child_view getOrientation];
+   if (orientation != lastOrientationSentToVM)
+   {
+      [self destroySIP];
+      lastOrientationSentToVM = orientation;
+      child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
+      CGSize res = [child_view getResolution];
+      [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
+                        [NSNumber numberWithInt: res.width], @"width",
+                        [NSNumber numberWithInt: res.height], @"height", nil] ];
+   }
+}
+
+- (void)loadView
+{
+   self.view = DEVICE_CTX->_childview = child_view = [[ChildView alloc] init: self];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShow:) name: UIKeyboardDidShowNotification object:nil];
+   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidHide:) name: UIKeyboardDidHideNotification object:nil];
 
    kbd = [[UITextView alloc] init];
    kbd.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
-   kbd.autocapitalizationType = UITextAutocapitalizationTypeWords;
+   kbd.autocapitalizationType = UITextAutocapitalizationTypeNone;
    kbd.returnKeyType = UIReturnKeyDone;
    kbd.keyboardAppearance = UIKeyboardAppearanceAlert;
-   [kbd setAutocorrectionType: UITextAutocorrectionTypeNo];
-   [kbd setDelegate: self];
-}
-
-- (void)initEvents
-{
-   //_lock = [[NSLock alloc] init];
-
-   [[NSNotificationCenter defaultCenter] addObserver:self
-      selector:@selector (keyboardDidShow:)
-      name: UIKeyboardDidShowNotification object:nil];
- 
-   [[NSNotificationCenter defaultCenter] addObserver:self 
-      selector:@selector (keyboardDidHide:)
-      name: UIKeyboardDidHideNotification object:nil];
+   kbd.autocorrectionType = UITextAutocorrectionTypeNo;
+   kbd.delegate = self;
 }
 
 - (void)destroySIP
@@ -83,6 +107,7 @@ void Sleep(int ms);
       [ self destroySIP ];
    else
    {
+      [ self setFirstOrientation ];
       [ child_view addSubview: kbd ];
       [ kbd becomeFirstResponder ];
    }
@@ -90,6 +115,11 @@ void Sleep(int ms);
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
+   if ([text isEqualToString:@" "])
+   {
+      [self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt: ' '], @"key", nil]];
+      return NO;
+   }
    // Any new character added is passed in as the "text" parameter
    if ([text isEqualToString:@"\n"]) // Be sure to test for equality using the "isEqualToString" message
    {
@@ -98,8 +128,11 @@ void Sleep(int ms);
       return FALSE; // Return FALSE so that the final '\n' character doesn't get added
    }
    if ([text length] == 0)
+   {
+      lastRange.length = -1; // guich: fixed bug when pressing backspace and the next key was being ignored
       [self addEvent:[[NSDictionary alloc] initWithObjectsAndKeys: @"keyPress", @"type", [NSNumber numberWithInt:(int)'\b'], @"key", nil]];
-   else 
+   }
+   else
    if (lastRange.location <= 0 || !NSEqualRanges(range, lastRange)) //flsobral@tc126: avoid adding the same character twice.
    {
       lastRange.location = range.location;
@@ -114,7 +147,8 @@ void Sleep(int ms);
 
 - (bool)isEventAvailable;
 {
-   unsigned int num = [_events count];
+   int num = (int)[_events count];
+   Sleep(5); // prevent 100% cpu as shown in XCode. 5ms=0%cpu, 2ms=3%cpu
    return num > 0;
 }
 
@@ -125,6 +159,10 @@ void Sleep(int ms);
    return events;
 }
 
+- (bool)hasEvents
+{
+   return _events != nil && _events.count > 0;
+}
 - (void)addEvent:(NSDictionary*)event
 {
    if(_events == nil)
@@ -141,7 +179,7 @@ void Sleep(int ms);
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
    CGSize keyboardSize = [aValue CGRectValue].size;
-   keyboardH = keyboardSize.height;
+   keyboardH = keyboardSize.height * iosScale;
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif
@@ -164,11 +202,21 @@ void Sleep(int ms);
       NSURL *url = [NSURL URLWithString:number];
       [[UIApplication sharedApplication] openURL:url];
    });
+   [self updateLayout];
+}
+
+-(void) updateLayout
+{
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      lastOrientationSentToVM = -1;
+      [self viewDidLayoutSubviews];
+   });
 }
 
 static bool callingCamera;
 
--(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
+-(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t
 {
    callingCamera = true;
    imageFileName = fileName;
@@ -176,25 +224,32 @@ static bool callingCamera;
    imageH = h;
    dispatch_sync(dispatch_get_main_queue(), ^
    {
-      UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
-      if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      imagePicker = [[UIImagePickerController alloc] init];
+      if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      {
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+         imagePicker.allowsEditing = NO;
+      }
       else
          [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
       [imagePicker setDelegate:self];
-      [self presentModalViewController:imagePicker animated:YES];
+      [self presentModalViewController:imagePicker animated:NO];
    });
    while (callingCamera)
       Sleep(100);
+   UIDeviceOrientation o = [child_view getOrientation];
+   if (o != UIDeviceOrientationLandscapeLeft && o != UIDeviceOrientationLandscapeRight) // when the camera comes back from landscape and we call updateLayout, the screen gets painted as if it was in portrait. this hack makes the screen a bit better, but still buggy.
+      [self updateLayout];
    return imageFileName != null;
-}   
+}
 
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-   [[picker parentViewController] dismissModalViewControllerAnimated:YES];
+   [self->imagePicker dismissModalViewControllerAnimated:NO];
    imageFileName = null;
    callingCamera = false;
 }
+
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
    UIImage* finalImage = [info objectForKey:UIImagePickerControllerOriginalImage];
@@ -204,13 +259,23 @@ static bool callingCamera;
    {
       int w = finalImage.size.width;
       int h = finalImage.size.height;
+      if (h > w && imageW > imageH) // if user selected a landscape resolution and the photo was taken in portrait, swap the resolution
+      {
+         int t = imageW; imageW = imageH; imageH = t;
+      }
       if (imageW != 0 && imageH != 0 && (w >= imageW || h >= imageH))
       {
-         int ww=imageW,hh;
+         int ww,hh;
          if (w < h)
-            hh = (int)(imageW * w / h);
+         {
+            hh = imageH;
+            ww = (int)(imageH * w / h);
+         }
          else
+         {
+            ww = imageW;
             hh = (int)(imageW * h / w);
+         }
          CGRect imageRect = CGRectMake(0, 0, ww,hh);
          UIGraphicsBeginImageContext(imageRect.size);
          [finalImage drawInRect:imageRect];
@@ -221,30 +286,36 @@ static bool callingCamera;
       NSData* data = UIImageJPEGRepresentation(finalImage, 0.8);
       [data writeToFile:imageFileName atomically:NO];
    }
-   [self dismissModalViewControllerAnimated:YES];
+   [self dismissModalViewControllerAnimated:NO];
    callingCamera = false;
 }
 
-- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+#define SHOW_SAT 1
+#define USE_WAZE 2
+- (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;
 {
    NSString *stringURL;
    char c = [address characterAtIndex:0];
-   NSString* type = showSat ? @"&t=h" : @"&t=m";
+   NSString* type = (flags & SHOW_SAT) != 0 ? @"&t=h" : @"&t=m";
+   if ((flags & USE_WAZE) != 0 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"waze://"]])
+      stringURL = [NSString stringWithFormat:@"waze://?q=%@&navigate=yes", address];
+   else
    if ([address length] == 0) // not working yet
    {
 //      CLLocationCoordinates2D cl = [self getCurrentLocation];
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%20Location&z=14%@%",type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%%20Location&z=14%@",type];
    }
    else
    if (c == '@')
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address substringFromIndex:1],type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%%&z=14%@", [address substringFromIndex:1],type];
    else
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%%&z=14%@", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
    dispatch_sync(dispatch_get_main_queue(), ^
    {
       NSURL *url = [NSURL URLWithString:stringURL];
       [[UIApplication sharedApplication] openURL:url];
    });
+   [self updateLayout];
    return TRUE;
 }
 
@@ -267,8 +338,8 @@ static bool callingCamera;
    locationPDOP = newLocation.horizontalAccuracy;
    locationVeloc = newLocation.speed;
    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:newLocation.timestamp];
-   locationDate = [components day] + [components month] * 100 + [components year] * 10000;
-   locationTime = [components second] + [components minute] * 100 + [components hour] * 10000;
+   locationDate = (int)([components day] + [components month] * 100 + [components year] * 10000);
+   locationTime = (int)([components second] + [components minute] * 100 + [components hour] * 10000);
 }
 
 - (int) gpsStart
@@ -279,6 +350,8 @@ static bool callingCamera;
          locationManager = [[CLLocationManager alloc] init];
          locationManager.delegate = self;
          locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+         if ([locationManager respondsToSelector:@selector(requestAlwaysAuthorization)])
+            [locationManager requestAlwaysAuthorization];
          [locationManager startUpdatingLocation];
          locationCount = 0;
       });
@@ -297,72 +370,54 @@ static bool callingCamera;
    });
 }
 
+- (int) gpsUpdateLocation
+{
+   return 0;
+}
+
+
+-(IBAction)closeWebView:(id)sender
+{
+   self.view = child_view;
+   webView = nil;
+}
+
 //--------------------------------------------------------------------------------------------------------
 
 @end
 
-void orientationChanged() {} // called by the UI
 void privateFullscreen(bool on) {}
-void privateScreenChange(int32 w, int32 h) {}
 
-bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
+void graphicsUpdateScreenIOS()
+{                
+   [DEVICE_CTX->_childview updateScreen];
+}
+void graphicsIOSdoRotate()
 {
-   deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
-   memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
-   // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds];
-   DEVICE_CTX->_window = window = [[UIWindow alloc] initWithFrame: rect];
-   window.rootViewController = [(DEVICE_CTX->_mainview = [MainView alloc]) init];
-   [window makeKeyAndVisible];
-   
-   [ DEVICE_CTX->_childview updateScreen: screen ];
-   screen->pixels = (void*)1;
-   return true;
+   [DEVICE_CTX->_childview doRotate];
 }
 
-bool graphicsCreateScreenSurface(ScreenSurface screen)
+void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, int* timeZonePtr, int* timeZoneMinutesPtr, char* timeZoneStrPtr, int sizeofTimeZoneStr)
 {
-   screen->extension = deviceCtx;
-   return true;
-}
-
-BOOL invalidated;
-void Sleep(int ms);
-
-void graphicsUpdateScreen(void* currentContext, ScreenSurface screen, int32 transitionEffect)
-{								  
-   ChildView* vw = (ChildView*)DEVICE_CTX->_childview;
-   if (allowMainThread())
+   NSTimeZone* tz = [NSTimeZone systemTimeZone];
+   *daylightSavingsPtr = [tz isDaylightSavingTime];
+   *daylightSavingsMinutesPtr = (int)([tz daylightSavingTimeOffset] / 60);
+   *timeZoneMinutesPtr = (int)(tz.secondsFromGMT / 60) - *daylightSavingsMinutesPtr; // as of 22/10/2013, android returns -180/60 and ios returns -120/60
+   *timeZonePtr = *timeZoneMinutesPtr / 60;
+   NSString *name = tz.name;
+   if (name != nil)
    {
-      invalidated = FALSE;
-      [vw invalidateScreen:screen withContext:currentContext];
-      while (!invalidated) Sleep(10);
-   }      
-}
-
-void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
-{
-   if (isScreenChange)
-     screen->extension = NULL;
-   else
-   {
-      if (screen->extension)
-        free(screen->extension);
-     deviceCtx = screen->extension = NULL;
+      const char* s = [name cStringUsingEncoding:NSASCIIStringEncoding];
+      strncpy(timeZoneStrPtr, s, sizeofTimeZoneStr-1);
    }
-}
-
-bool graphicsLock(ScreenSurface screen, bool on)
-{
-   return true;
 }
 
 //////////////// interface to mainview methods ///////////////////
 
-bool iphone_mapsShowAddress(char* addr, bool showSatellitePhotos)
+bool iphone_mapsShowAddress(char* addr, int flags)
 {
    NSString* string = [NSString stringWithFormat:@"%s", addr];
-   return [DEVICE_CTX->_mainview mapsShowAddress:string showSatellitePhotos:showSatellitePhotos];
+   return [DEVICE_CTX->_mainview mapsShowAddress:string flags:flags];
 }
 
 void iphone_dialNumber(char* number)
@@ -371,15 +426,15 @@ void iphone_dialNumber(char* number)
    [DEVICE_CTX->_mainview dialNumber:string];
 }
 
-int iphone_cameraClick(int w, int h, char* fileName)
+int iphone_cameraClick(int w, int h, int t, char* fileName)
 {
    NSString* string = [NSString stringWithFormat:@"%s", fileName];
-   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
+   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h type:t];
 }
 
 int iphone_gpsStart()
 {
-   return [DEVICE_CTX->_mainview gpsStart];
+   return ![CLLocationManager locationServicesEnabled] ? 2 : [DEVICE_CTX->_mainview gpsStart];
 }
 void iphone_gpsStop()
 {
@@ -387,7 +442,7 @@ void iphone_gpsStop()
 }
 int iphone_gpsUpdateLocation(BOOL *flags, int *date, int *time, int* sat, double *veloc, double* pdop, double* dir, double* lat, double* lon)
 {   
-   MainView* mw = DEVICE_CTX->_mainview;
+   MainViewController* mw = DEVICE_CTX->_mainview;
    *flags = 0;
    if (mw->locationManager == NULL)
       return 1;
@@ -406,3 +461,16 @@ int iphone_gpsUpdateLocation(BOOL *flags, int *date, int *time, int* sat, double
    return 0;
 }
 
+//////////////////// clipboard //////////////////////
+
+void vmClipboardCopy(JCharP string, int32 sLen) // from Vm.c
+{
+   UIPasteboard *pb = [UIPasteboard generalPasteboard];
+   [pb setString:[[[NSString alloc] initWithCharacters:string length:sLen] autorelease]];
+}
+unsigned short* ios_ClipboardPaste()
+{
+   UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+   NSString *text = pasteboard.string;
+   return !text ? NULL : (unsigned short*)[text cStringUsingEncoding: NSUnicodeStringEncoding];
+}

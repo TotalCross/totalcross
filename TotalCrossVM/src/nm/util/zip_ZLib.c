@@ -25,7 +25,6 @@ enum
    COMPRESS_GZIP = 16
 };
 
-#define deflateInit4TC(a, b, c, d, e)  deflateInit2(a, b, Z_DEFLATED, (c == COMPRESS_GZIP ? (c + MAX_WBITS) : (e ? -MAX_WBITS : MAX_WBITS)), DEF_MEM_LEVEL, d) //flsobral@tc123b_68: GZIP negative window bits is for "no wrap", GZIP uses its own value.
 
 static voidpf zalloc(voidpf opaque, uInt items, uInt size)
 {
@@ -39,10 +38,10 @@ static void zfree(voidpf opaque, voidpf address)
 	xfree(address);
 }
 
-static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 buffersize, int32 levelOrSizeIn, int32 strategy, bool noWrap, Object in, Object out)
+static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 buffersize, int32 levelOrSizeIn, int32 strategy, bool noWrap, TCObject in, TCObject out)
 {
-   Object inByteArray = null;
-   Object outByteArray = null;
+   TCObject inByteArray = null;
+   TCObject outByteArray = null;
 	CharP inArray, outArray;
 	Method readMethod, writeMethod;
 	int32 err = Z_OK;
@@ -55,7 +54,15 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
 	c_stream.zfree = zfree;
 	c_stream.opaque = (voidpf) 0;
 
-	if ((err = compress != UNCOMPRESS ? deflateInit4TC(&c_stream, levelOrSizeIn, compress, strategy, noWrap) : inflateInit(&c_stream)) != Z_OK)
+   if (compress == UNCOMPRESS)
+      err = inflateInit2(&c_stream, 32 + MAX_WBITS); // windowBits can also be greater than 15 for optional gzip decoding. Add 32 to windowBits to enable zlib and gzip decoding with automatic header detection, or add 16 to decode only the gzip format(the zlib format will return a Z_DATA_ERROR).
+   else
+   {
+      int32 bits = compress == COMPRESS_GZIP ? (compress + MAX_WBITS) : (noWrap ? -MAX_WBITS : MAX_WBITS); // flsobral@tc123b_68: GZIP negative window bits is for "no wrap", GZIP uses its own value.
+      err = deflateInit2(&c_stream, levelOrSizeIn, Z_DEFLATED, bits, DEF_MEM_LEVEL, strategy);
+   }
+
+   if (err != Z_OK)
    {
       if (err == Z_MEM_ERROR)
          throwException(currentContext, OutOfMemoryError, null);
@@ -77,7 +84,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
    writeMethod = getMethod((TCClass) OBJ_CLASS(out), true, "writeBytes", 3, BYTE_ARRAY, J_INT, J_INT);
 
    c_stream.avail_out = buffersize;
-   c_stream.next_out = outArray;
+   c_stream.next_out = (Bytef*)outArray;
    c_stream.avail_in = 0;
 
    do
@@ -94,7 +101,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
          } while (wrote != count && currentContext->thrownException == null);
          if (currentContext->thrownException != null)
             goto error;
-         c_stream.next_out = outArray;
+         c_stream.next_out = (Bytef*)outArray;
          c_stream.avail_out = buffersize;
       }
 
@@ -106,7 +113,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
          if (currentContext->thrownException != null)
             goto error;
          if (count <= 0) break;
-         c_stream.next_in = inArray;
+         c_stream.next_in = (Bytef*)inArray;
          c_stream.avail_in = count;
          if (levelOrSizeIn > 0)
             levelOrSizeIn -= count;
@@ -154,7 +161,7 @@ static int32 commonDeflateInflate(Context currentContext, int32 compress, int32 
          } while (wrote != count && currentContext->thrownException == null);
          if (currentContext->thrownException != null)
             goto error;
-         c_stream.next_out = outArray;
+         c_stream.next_out = (Bytef*)outArray;
          c_stream.avail_out = buffersize;
       }
    }
@@ -179,8 +186,8 @@ error:
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZL_deflate_ssiib(NMParams p) // totalcross/util/zip/ZLib native public static int deflate(totalcross.io.Stream in, totalcross.io.Stream out, int compressionLevel, int strategy, boolean noWrap) throws IOException;
 {
-   Object streamIn = p->obj[0];
-   Object streamOut = p->obj[1];
+   TCObject streamIn = p->obj[0];
+   TCObject streamOut = p->obj[1];
    int32 level = p->i32[0];
    int32 strategy = p->i32[1];
    bool noWrap = p->i32[2];
@@ -208,8 +215,8 @@ TC_API void tuzZL_deflate_ssiib(NMParams p) // totalcross/util/zip/ZLib native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuzZL_inflate_ssib(NMParams p) // totalcross/util/zip/ZLib native public static int inflate(totalcross.io.Stream in, totalcross.io.Stream out, int sizeIn, boolean noWrap) throws IOException, ZipException;
 {
-   Object streamIn = p->obj[0];
-   Object streamOut = p->obj[1];
+   TCObject streamIn = p->obj[0];
+   TCObject streamOut = p->obj[1];
    int32 sizeIn = p->i32[0];
    bool noWrap = p->i32[1];
 

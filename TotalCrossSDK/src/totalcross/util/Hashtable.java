@@ -57,6 +57,8 @@ modifications.
 *     if (n != null) 
 *        // "two = " + Convert.toInt(n);
 * </pre>
+* This Hashtable class does not support Generics; use the HashMap class instead.
+
 */
 public class Hashtable
 {
@@ -397,7 +399,12 @@ public class Hashtable
       if (table != null)
          for (int i = 0; i < table.length; i++)
             for (Entry entry = table[i]; entry != null; entry = entry.next)
-               target.put(entry.key, entry.value);
+            {
+               if (entry.key != null)
+                  target.put(entry.key, entry.value);
+               else
+                  target.put(entry.hash, entry.value);
+            }
    }
    
    /**

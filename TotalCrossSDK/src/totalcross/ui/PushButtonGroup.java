@@ -56,7 +56,7 @@ public class PushButtonGroup extends Control
    private int cellH,rowH;
    private int lastSel=-1;
    private int maxWidth=-1;
-   private boolean simpleBorder = uiPalm || uiFlat; // guich@552_22: added uiFlat
+   private boolean simpleBorder = uiFlat; // guich@552_22: added uiFlat
    /** The bounds of each of the buttons. Never change this directly. */
    public Rect rects[];
    private int count;
@@ -67,7 +67,6 @@ public class PushButtonGroup extends Control
    private int userCursorColor=-1;
    private int []btnFColors,btnBColors;
    private int nullNames;
-   private Rect clip;
    
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
     * Works only when the type is BUTTON.
@@ -151,8 +150,6 @@ public class PushButtonGroup extends Control
          this.cols++;
       hidden = new boolean[count];
       onFontChanged();
-      if (uiAndroid)
-         clip = new Rect();
       colspan = new int[count];
       rowspan = new int[count];
    }
@@ -218,7 +215,7 @@ public class PushButtonGroup extends Control
    /** Uses a border with a single line (not 3d and not Android's) */
    public void setSimpleBorder(boolean simple)
    {
-      this.simpleBorder = simple || uiPalm || uiFlat || uiVista; // guich@552_22: added uiFlat - // guich@573_6: added uiVista
+      this.simpleBorder = simple || uiFlat || uiVista; // guich@552_22: added uiFlat - // guich@573_6: added uiVista
    }
    /** Returns the index of the selected button, or -1 if none is selected. */
    public int getSelectedIndex()
@@ -298,12 +295,12 @@ public class PushButtonGroup extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (!enabled && autoRepeatTimer != null)
+      if (!isEnabled() && autoRepeatTimer != null)
          disableAutoRepeat();
       if (colorsChanged) // backColor has changed
          dColor = userCursorColor >= 0 ? userCursorColor : Color.getCursorColor(backColor);
       fColor = getForeColor();
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    protected void onBoundsChanged(boolean screenChanged)
@@ -358,16 +355,10 @@ public class PushButtonGroup extends Control
       boolean uiAndroid = Control.uiAndroid && !simpleBorder;
 
       g.foreColor = fColor;
-      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
-      if (!drawEachBack || uiAndroid)
+      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiAndroid || (uiVista && isEnabled())) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
+      if (!drawEachBack && !uiAndroid)
       {
-         if (!uiAndroid)
-            g.backColor = backColor;
-         else
-         {
-            g.getClip(clip);
-            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
-         }
+         g.backColor = backColor;
          g.fillRect(0,0,width,height);
       }
       g.backColor = backColor;
@@ -389,7 +380,9 @@ public class PushButtonGroup extends Control
    
                   if (uiAndroid)
                   {
-                     g.drawImage(getAndroidButton(r.width,r.height,enabled ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
+                     Image img = getAndroidButton(r.width,r.height,isEnabled() ? back : Color.interpolate(back,parent.backColor), i == sel);
+                     img.alphaMask = alphaValue;
+                     NinePatch.tryDrawImage(g,img, r.x,r.y);
                      continue;
                   }
                   else
@@ -403,41 +396,45 @@ public class PushButtonGroup extends Control
                   }
                }
                catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
-            if (simpleBorder)
-               g.drawRect(r.x,r.y,r.width,r.height);
-            else
-               g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?((uiCE || uiVista) && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:((uiCE || uiVista) && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
+            if (!uiAndroid) // if uiAndroid with transparentBackground, dont draw the old borders
+               if (simpleBorder)
+                  g.drawRect(r.x,r.y,r.width,r.height);
+               else
+                  g.draw3dRect(r.x,r.y,r.width,r.height,actLikeCheck && !checkAppearsRaised?(uiVista && i==sel)?Graphics.R3D_RAISED:Graphics.R3D_CHECK:(uiVista && i==sel)?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors);
          }
       g.foreColor = fColor;
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
+            if (i == selectedIndex)
+            {
+               g.clearClip();
+               int bb = g.backColor; g.backColor = dColor;
+               int k = simpleBorder?1:2;
+               g.fillRect(r.x+k,r.y+k,r.width-k-k,r.height-k-k);
+               g.backColor = bb;
+            }
             int ty = (r.height-fmH) / 2; // nopt
             boolean useCustomColor = btnFColors != null && btnFColors[i] >= 0; // guich@573_37
             g.setClip(r.x+1,r.y+1,r.width-2,r.height-2);
             if (useCustomColor) g.foreColor = btnFColors[i];
-            if (uiPalm || uiFlat || i != sel)
+            if (uiFlat || i != sel)
                g.drawText(names[i], tX[i], r.y+ty, textShadowColor != -1, textShadowColor); // tX[i]: if allSameWidth, center the label in the button
             else
             {
-               int shift = uiAndroid ? 0 : (uiCE&&actLikeCheck && !checkAppearsRaised?-1:1);
+               int shift = uiAndroid ? 0 : 1;
                g.drawText(names[i], tX[i]+shift, r.y+ty+shift, textShadowColor != -1, textShadowColor);
             }
             if (useCustomColor) g.foreColor = fColor;
          }
       g.clearClip();
-      if ((uiFlat || uiPalm) && selectedIndex != -1 && (r = rects[selectedIndex]) != null && !hidden[selectedIndex])
-      {
-         int k = simpleBorder?1:2;
-         g.eraseRect(r.x+k,r.y+k,r.width-k-k,r.height-k-k,backColor,dColor,foreColor);
-      }
    }
 
    private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
    {
-      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
+      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false);
       if (selected)
-         img = NinePatch.getInstance().getPressedInstance(img, color, -1, true);
+         img = NinePatch.getInstance().getPressedInstance(img, color, -1);
       return img;
    }
 
@@ -509,7 +506,7 @@ public class PushButtonGroup extends Control
             if (actLikeButton && autoRepeat) 
                autoRepeatTimer = addTimer(INITIAL_DELAY);
          case PenEvent.PEN_DRAG:
-            if (!enabled || (actLikeButton && Settings.fingerTouch))
+            if (!isEnabled() || (actLikeButton && Settings.fingerTouch))
                break;
             if (sel != selectedIndex && (!atLeastOne || sel != -1))
                setSelectedIndex(sel);
@@ -573,12 +570,12 @@ public class PushButtonGroup extends Control
          case PenEvent.PEN_UP:
             if (autoRepeat && autoRepeatTimer != null)
                disableAutoRepeat();
-            if (enabled && (!Settings.fingerTouch || !hadParentScrolled()))
+            if (isEnabled() && (!Settings.fingerTouch || !hadParentScrolled()))
             {
                if (actLikeButton && Settings.fingerTouch)
                {
                   setSelectedIndex(sel);
-                  updateScreen();
+                  repaintNow();
                }
                setSelectedIndex(sel,Settings.fingerTouch);
             }

@@ -15,6 +15,8 @@
 #define DATASTRUCTURES_H
 
 #include "tcclass.h"
+#include "tcapi.h"
+#include "xtypes.h"
 
 // Here we concentrate all data structures used, like hashtable, array, list, etc.
 // Must turn on "32bit ints" for the target platform
@@ -22,9 +24,15 @@
 /////////////////////////////////////////////////////////////////////////
 // Hashtable
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef size_t HTKey; // 64-bit hardware
+   
 typedef struct HTEntryType
 {
-   int32 key;
+   HTKey key;
    union
    {
       int32 i32;
@@ -43,32 +51,35 @@ typedef struct
 } Hashtable;
 
 typedef void (*VisitElementFunc)(int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
+typedef void (*VisitElementKeyFunc)(HTKey key, int32 i32, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 typedef bool (*VisitElementContextFunc)(Context context, VoidP ptr); // i32 is an union with ptr, so be sure to access what you really stored!
 
 TC_API  Hashtable   htNew     (int32 count, Heap heap); // heap is optional; if passed, the rehash function will not be called if the hashtable gets too big (in this case, remember to initialize the hashtable with a value big enough to hold all items)
 typedef Hashtable (*htNewFunc)(int32 count, Heap heap);
-TC_API  int32   htGet32           (Hashtable *iht, int32 key);  // returns 0 if the key was not found
-typedef int32 (*htGet32Func)      (Hashtable *iht, int32 key);
-TC_API  int32   htGet32Inv        (Hashtable *iht, int32 key);  // returns -1 if the key was not found
-typedef int32 (*htGet32InvFunc)   (Hashtable *iht, int32 key);
-TC_API  VoidP   htGetPtr          (Hashtable *iht, int32 key);
-typedef VoidP (*htGetPtrFunc)     (Hashtable *iht, int32 key);
-TC_API  bool    htPut32           (Hashtable *iht, int32 key, int32 value);  // replaces the key if it exists
-typedef bool  (*htPut32Func)      (Hashtable *iht, int32 key, int32 value);
-TC_API  bool    htPut32IfNew      (Hashtable *iht, int32 key, int32 value);  // keeps the old key if it exists
-typedef bool  (*htPut32IfNewFunc) (Hashtable *iht, int32 key, int32 value);
-TC_API  bool    htPutPtr          (Hashtable *iht, int32 key, VoidP value);  // replaces the key if it exists
-typedef bool  (*htPutPtrFunc)     (Hashtable *iht, int32 key, VoidP value);
-TC_API  bool    htPutPtrIfNew     (Hashtable *iht, int32 key, VoidP value);  // keeps the old key if it exists
-typedef bool  (*htPutPtrIfNewFunc)(Hashtable *iht, int32 key, VoidP value);
-TC_API  void    htRemove          (Hashtable *iht, int32 key);
-typedef void  (*htRemoveFunc)     (Hashtable *iht, int32 key);               // removes the key from the table. If there's a heap, the pointer is NOT freed
+TC_API  int32   htGet32           (Hashtable *iht, HTKey key);  // returns 0 if the key was not found
+typedef int32 (*htGet32Func)      (Hashtable *iht, HTKey key);
+TC_API  int32   htGet32Inv        (Hashtable *iht, HTKey key);  // returns -1 if the key was not found
+typedef int32 (*htGet32InvFunc)   (Hashtable *iht, HTKey key);
+TC_API  VoidP   htGetPtr          (Hashtable *iht, HTKey key);
+typedef VoidP (*htGetPtrFunc)     (Hashtable *iht, HTKey key);
+TC_API  bool    htPut32           (Hashtable *iht, HTKey key, int32 value);  // replaces the key if it exists
+typedef bool  (*htPut32Func)      (Hashtable *iht, HTKey key, int32 value);
+TC_API  bool    htPut32IfNew      (Hashtable *iht, HTKey key, int32 value);  // keeps the old key if it exists
+typedef bool  (*htPut32IfNewFunc) (Hashtable *iht, HTKey key, int32 value);
+TC_API  bool    htPutPtr          (Hashtable *iht, HTKey key, VoidP value);  // replaces the key if it exists
+typedef bool  (*htPutPtrFunc)     (Hashtable *iht, HTKey key, VoidP value);
+TC_API  bool    htPutPtrIfNew     (Hashtable *iht, HTKey key, VoidP value);  // keeps the old key if it exists
+typedef bool  (*htPutPtrIfNewFunc)(Hashtable *iht, HTKey key, VoidP value);
+TC_API  void    htRemove          (Hashtable *iht, HTKey key);
+typedef void  (*htRemoveFunc)     (Hashtable *iht, HTKey key);               // removes the key from the table. If there's a heap, the pointer is NOT freed
 TC_API  void    htFree     (Hashtable *iht, VisitElementFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
 typedef void  (*htFreeFunc)(Hashtable *iht, VisitElementFunc freeElement);
 TC_API  bool    htFreeContext     (Context context, Hashtable *iht, VisitElementContextFunc freeElement); // if there's a heap, the structures are not freed; you must free them by destroying the heap yourself
 typedef bool  (*htFreeContextFunc)(Context context, Hashtable *iht, VisitElementContextFunc freeElement);
+TC_API  bool    htInc             (Hashtable *iht, HTKey key, int32 incValue);  // holds a count of something
+typedef bool  (*htIncFunc)        (Hashtable *iht, HTKey key, int32 incValue);
 void htTraverse(Hashtable *iht, VisitElementFunc visitElement);
-
+void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement);
 ///////////////////////////////////////////////////////////////////////////
 // Linked list
 // Defines a template for a circular list that will be used for many types.
@@ -115,6 +126,7 @@ typedef struct type##s                                 \
 } type##s;                                             \
 type##s* type##sAdd(type##s *l, type value, Heap h);   \
 type##s* type##sRemove(type##s *l, type value, Heap h);\
+bool type##sContains(type##s *l, type value);          \
 void type##sDestroy(type##s *l, Heap h);
 
 // List implementation
@@ -186,6 +198,20 @@ type##s* type##sRemove(type##s *l, type value, Heap h)\
          l = l->next;                               \
       } while (head != l);                          \
    return head;                                     \
+}                                                   \
+bool type##sContains(type##s *l, type value)        \
+{                                                   \
+   type##s* head = l;                               \
+   if (head)                                        \
+      do                                            \
+      {                                             \
+         if (l == null)                             \
+            return false;                           \
+      	if (l->value == value)                     \
+      		return true;                            \
+         l = l->next;                               \
+      } while (head != l);                          \
+   return false;                                    \
 }
 
 // Returns the number of elements added to this list.
@@ -224,13 +250,14 @@ DeclareList(VoidP); // VoidPs
 #define newArray(sizeofElem,len,mp) privateNewArray(sizeofElem,len,mp,__FILE__,__LINE__)
 void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, int line);
 
-#define freeArray(p) do {if (p) {uint8* b = ((uint8*)p)-4; xfree(b); p = null;}} while (0)
-#define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*)p)-4; heapFree(heap, b); p = null;}} while (0)
+#define freeArray(p) do {if (p) {uint8* b = ((uint8*)p)-TSIZE; xfree(b); p = null;}} while (0)
+#define heapFreeArray(heap,p) do {if (p) {uint8* b = ((uint8*)p)-TSIZE; heapFree(heap, b); p = null;}} while (0)
 
 #define newArrayOf(type, len, heap) (type)newArray(sizeof(T##type), len, heap)
-#define newPtrArrayOf(type, len, heap) (type##Array)newArray(sizeof(type), len, heap) // used for primitive types, Object and (J)CharP arrays
+#define newPtrArrayOf(type, len, heap) (type##Array)newArray(sizeof(type), len, heap) // used for primitive types, TCObject and (J)CharP arrays
 
-#define ARRAYLEN(x) (((uint32*)x)[-1])
+#define SET_ARRAYLEN(x) (((size_t*)x)[-1])
+#define ARRAYLEN(x) ((int32)(((size_t*)x)[-1]))
 #define ARRAYLENV(x) ((x)?ARRAYLEN(x):0) // checks if x is null, returning 0 if yes
 
 ///////////////////////////////////////////////////////////////////////////
@@ -251,12 +278,16 @@ typedef struct
 
 TC_API Stack newStack(int32 elemCount, int32 elemSize, Heap defHeap);
 typedef Stack (*newStackFunc)(int32 elemCount, int32 elemSize, Heap defHeap);
-TC_API inline bool stackPop(Stack s, VoidP out);
+TC_API bool stackPop(Stack s, VoidP out);
 typedef bool (*stackPopFunc)(Stack s, VoidP out);
-TC_API inline void stackPush(Stack s, VoidP in);
+TC_API void stackPush(Stack s, VoidP in);
 typedef void (*stackPushFunc)(Stack s, VoidP in);
 
 #define stackPeek(s) *s->pos
 #define stackDestroy(s) heapDestroy(s->heap)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DATASTRUCTURES_H

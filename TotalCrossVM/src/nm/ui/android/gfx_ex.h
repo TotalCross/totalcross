@@ -14,7 +14,7 @@
 #ifndef GFX_EX_H
 #define GFX_EX_H
 
-#define ANDROID_BPP 16 // can be 32 also. should be tested in new devices to see if appearance is better.
+#define ANDROID_BPP 32 
 
 #define SETPIXEL32(r,g,b) (((b) << 16) | ((g) << 8) | (r) | 0xFF000000)           // 00RRGGBB
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3))) // bits RRRRRGGGGGGBBBBB
@@ -22,8 +22,18 @@
 
 typedef struct
 {
-   jfieldID mNativeBitmapID;
-   jobject mBitmap;
+   
 } TScreenSurfaceEx, *ScreenSurfaceEx;
+
+#define NO_GRAPHICS_LOCK_NEEDED
+#define graphicsLock(screenSurface, on) true
+
+typedef enum
+{
+   INVTEX_INVALIDATE,
+   INVTEX_DEL_ALL,
+   INVTEX_DEL_ONLYOLD
+} INVTEX;
+void invalidateTextures(INVTEX it); // imagePrimitives_c.h
 
 #endif

@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -90,7 +102,7 @@ static const uint8_t PADDING[64] =
 /**
  * MD5 initialization - begins an MD5 operation, writing a new ctx.
  */
-EXP_FUNC void STDCALL MD5Init(MD5_CTX *ctx)
+EXP_FUNC void STDCALL MD5_Init(MD5_CTX *ctx)
 {
     ctx->count[0] = ctx->count[1] = 0;
 
@@ -105,7 +117,7 @@ EXP_FUNC void STDCALL MD5Init(MD5_CTX *ctx)
 /**
  * Accepts an array of octets as the next portion of the message.
  */
-EXP_FUNC void STDCALL MD5Update(MD5_CTX *ctx, const uint8_t * msg, int len)
+EXP_FUNC void STDCALL MD5_Update(MD5_CTX *ctx, const uint8_t * msg, int len)
 {
     uint32_t x;
     int i, partLen;
@@ -141,7 +153,7 @@ EXP_FUNC void STDCALL MD5Update(MD5_CTX *ctx, const uint8_t * msg, int len)
 /**
  * Return the 128-bit message digest into the user's array
  */
-EXP_FUNC void STDCALL MD5Final(MD5_CTX *ctx, uint8_t *digest)
+EXP_FUNC void STDCALL MD5_Final(uint8_t *digest, MD5_CTX *ctx)
 {
     uint8_t bits[8];
     uint32_t x, padLen;
@@ -153,10 +165,10 @@ EXP_FUNC void STDCALL MD5Final(MD5_CTX *ctx, uint8_t *digest)
      */
     x = (uint32_t)((ctx->count[0] >> 3) & 0x3f);
     padLen = (x < 56) ? (56 - x) : (120 - x);
-    MD5Update(ctx, PADDING, padLen);
+    MD5_Update(ctx, PADDING, padLen);
 
     /* Append length (before padding) */
-    MD5Update(ctx, bits, 8);
+    MD5_Update(ctx, bits, 8);
 
     /* Store state in digest */
     Encode(digest, ctx->state, MD5_SIZE);

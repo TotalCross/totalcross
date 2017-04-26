@@ -16,10 +16,10 @@ TC_API void tsT_update(NMParams p);
 TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
 {
    TNMParams p;
-   Object objArray[2];
+   TCObject objArray[2];
    int32 i32[3];
    int8 *pBytes, *pBytes2;
-   Object *pStrings, *pStrings2;
+   TCObject *pStrings, *pStrings2;
 
    tzero(p);
    p.currentContext = currentContext;
@@ -138,7 +138,7 @@ TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean 
    objArray[0] = createStringArray(currentContext, 15);
    setObjectLock(objArray[0], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objArray[0]);
-   pStrings = (ObjectArray)ARRAYOBJ_START(objArray[0]);
+   pStrings = (TCObjectArray)ARRAYOBJ_START(objArray[0]);
    pStrings[0] = createStringObjectFromCharP(currentContext, "1", -1);
    setObjectLock(pStrings[0], UNLOCKED);
    pStrings[1] = createStringObjectFromCharP(currentContext, "2", -1);
@@ -152,7 +152,7 @@ TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean 
    objArray[1] = createStringArray(currentContext, 5);
    setObjectLock(objArray[1], UNLOCKED);
    ASSERT1_EQUALS(NotNull, objArray[1]);
-   pStrings2 = (ObjectArray)ARRAYOBJ_START(objArray[1]);
+   pStrings2 = (TCObjectArray)ARRAYOBJ_START(objArray[1]);
    pStrings2[0] = createStringObjectFromCharP(currentContext, "a", -1);
    setObjectLock(pStrings2[0], UNLOCKED);
    pStrings2[1] = createStringObjectFromCharP(currentContext, "b", -1);
@@ -195,11 +195,11 @@ TESTCASE(tsV_getTimeStamp) // totalcross/sys/Vm native public static int getTime
 }
 TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
 {
-#if defined (WIN32) //|| (PALMOS)
+#if defined (WIN32) && !defined (WP8)
    TNMParams p;
-   Object currentTime;
-   Object testTime;
-   Object checkTime;
+   TCObject currentTime;
+   TCObject testTime;
+   TCObject checkTime;
 
    currentTime = createObject(currentContext, "totalcross.sys.Time");
    setObjectLock(currentTime, UNLOCKED);
@@ -238,8 +238,8 @@ TESTCASE(tsV_setTime_t) // totalcross/sys/Vm native public static void setTime(t
    finish:
       p.obj = &currentTime;
       tsV_setTime_t(&p);
+
 #else
-   TEST_SKIP;
    finish: ;
 #endif
 }
@@ -260,32 +260,9 @@ TESTCASE(tsV_exec_ssib) // totalcross/sys/Vm native public static int exec(Strin
    TEST_CANNOT_RUN;
    // Vm.exec testcase cannot be created because there are no ways to sublaunch a process in most devices
 
-#elif defined (PALMOS)
-   TNMParams p;
-   Object obj[2];
-   int32 i32buf[2];
-
-   p.currentContext = currentContext;
-   p.obj = obj;
-   p.i32 = i32buf;
-
-   p.obj[0] = createStringObjectFromCharP("Filez", -1);
-   p.obj[1] = createStringObjectFromCharP("param1", -1);
-   p.i32[0] = sysAppLaunchCmdFind;
-   p.i32[1] = (int32)true;
-   tsV_exec_ssib(&p);
-   ASSERT2_EQUALS(I32, p.retI, 0);
-
-   p.obj[0] = createStringObjectFromCharP("Note Pad", -1);
-   p.obj[1] = createStringObjectFromCharP("param1", -1);
-   p.i32[0] = sysAppLaunchCmdNormalLaunch;
-   p.i32[1] = (int32)false;
-   tsV_exec_ssib(&p);
-   ASSERT2_EQUALS(I32, p.retI, 0);
-
 #elif defined(WIN32)
    TNMParams p;
-   Object obj[2];
+   TCObject obj[2];
    int32 i32buf[2];
 
    p.currentContext = currentContext;
@@ -348,27 +325,7 @@ TESTCASE(tsV_exec_ssib) // totalcross/sys/Vm native public static int exec(Strin
 }
 TESTCASE(tsV_setAutoOff_b) // totalcross/sys/Vm native public static void setAutoOff(boolean enable);
 {
-#ifdef PALMOS
-   TNMParams p;
-   int32 i32buf[1];
-
-   tzero(p);
-   p.currentContext = currentContext;
-   p.i32 = i32buf;
-
-   // Set the new auto off to 60 seconds
-   p.i32[0] = true;
-   tsV_setAutoOff_b(&p);
-   // check if the old value was > 0 (0 means: never sleep, and should not be the case for a PDA)
-   ASSERT_BETWEEN(I32, 1, oldAutoOffValue, 100000000);
-   // set the old value back again
-   p.i32[0] = false;
-   tsV_setAutoOff_b(&p);
-   // now, 0 must have been returned, since the auto-off is now disabled
-   ASSERT2_EQUALS(I32, 0, oldAutoOffValue);
-#else
    TEST_SKIP;
-#endif
    finish: ;
 }
 TESTCASE(tsV_sleep_i) // totalcross/sys/Vm native public static void sleep(int millis);
@@ -430,7 +387,7 @@ TESTCASE(tsV_interceptSpecialKeys_I) // totalcross/sys/Vm native public static v
 TESTCASE(tsV_debug_s) // totalcross/sys/Vm native public static void debug(String s);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;
@@ -445,7 +402,7 @@ TESTCASE(tsV_debug_s) // totalcross/sys/Vm native public static void debug(Strin
 TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String clipboardPaste();
 {
    TNMParams p1, p2;
-   Object copied, pasted;
+   TCObject copied, pasted;
 
    tzero(p1);
    tzero(p2);
@@ -458,13 +415,17 @@ TESTCASE(tsV_clipboardPaste) // totalcross/sys/Vm native public static String cl
    ASSERT1_EQUALS(NotNull, copied);
    // copy
    tsV_clipboardCopy_s(&p1);
+   
+#ifndef WP8   //XXX ver se dá para fazer isso de outro modo
    // paste
    tsV_clipboardPaste(&p2);
    ASSERT1_EQUALS(NotNull, p2.retO);
    pasted = p2.retO;
    ASSERT2_EQUALS(I32, String_charsLen(pasted), String_charsLen(copied));
    ASSERT3_EQUALS(Block, String_charsStart(pasted), String_charsStart(copied), String_charsLen(pasted));
-
+#else
+   TEST_CANNOT_RUN;
+#endif
    finish: ;
 }
 TESTCASE(tsV_attachLibrary_s) // totalcross/sys/Vm native public static boolean attachLibrary(String name);
@@ -491,7 +452,7 @@ TESTCASE(tsV_isKeyDown_i) // totalcross/sys/Vm native public static boolean isKe
 TESTCASE(tsV_getFile_s) // totalcross/sys/Vm native public static byte[] getFile(String name);
 {
    TNMParams p;
-   Object obj[3];
+   TCObject obj[3];
    int32 i32buf[3];
    int32 ret;
    CharP pRet;
@@ -534,8 +495,8 @@ TESTCASE(tsV_getRemainingBattery) // totalcross/sys/Vm native public static int 
    tzero(p);
    p.currentContext = currentContext;
 
-   tsV_getRemainingBattery(&p);
-#if defined WIN32 && !defined WINCE
+   tsV_getRemainingBattery(&p);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+#if defined WIN32 && !defined WINCE && !defined WP8
    ASSERT2_EQUALS(I32, p.retI, 100);
 #else
    ASSERT_BETWEEN(I32, 0, p.retI,100);

@@ -13,9 +13,9 @@
 
 #include "tcvm.h"
 
-static bool ensureCapacity(Context currentContext, Object obj, int32 minimumCapacity)
+static bool ensureCapacity(Context currentContext, TCObject obj, int32 minimumCapacity)
 {
-   Object charArrayObjSrc, charArrayObjDest;
+   TCObject charArrayObjSrc, charArrayObjDest;
    JCharP srcPtr,destPtr;
    int32 len, maxCapacity, newCapacity;
 
@@ -24,6 +24,9 @@ static bool ensureCapacity(Context currentContext, Object obj, int32 minimumCapa
       return false;
    len = StringBuffer_count(obj);
    maxCapacity = ARRAYOBJ_LEN(charArrayObjSrc);
+   if (max32(minimumCapacity,len) <= maxCapacity)
+      return true;
+
    newCapacity = (maxCapacity + 1) * 3 / 2; // grow at 50%
    if (minimumCapacity > newCapacity)
       newCapacity = minimumCapacity;
@@ -41,7 +44,7 @@ static bool ensureCapacity(Context currentContext, Object obj, int32 minimumCapa
    return true;
 }
 
-TC_API Object appendJCharP(Context currentContext, Object obj, JCharP srcPtr, int32 len)
+TC_API TCObject appendJCharP(Context currentContext, TCObject obj, JCharP srcPtr, int32 len)
 {
    int32 count, bufferLen;
    JCharP destPtr;
@@ -59,7 +62,7 @@ TC_API Object appendJCharP(Context currentContext, Object obj, JCharP srcPtr, in
    return obj;
 }
 
-TC_API Object appendCharP(Context currentContext, Object obj, CharP srcPtr)
+TC_API TCObject appendCharP(Context currentContext, TCObject obj, CharP srcPtr)
 {
    int32 count, bufferLen, len;
    JCharP destPtr;
@@ -80,7 +83,7 @@ TC_API Object appendCharP(Context currentContext, Object obj, CharP srcPtr)
    return obj;
 }
 
-void SB_delete(Object obj, int32 start, int32 end)
+void SB_delete(TCObject obj, int32 start, int32 end)
 {
    int32 count = StringBuffer_count(obj);
 
@@ -101,7 +104,7 @@ void SB_delete(Object obj, int32 start, int32 end)
       }
    }
 }
-void SB_insert(Context currentContext, Object obj, JCharP what, int32 pos, int32 wlen)
+void SB_insert(Context currentContext, TCObject obj, JCharP what, int32 pos, int32 wlen)
 {
    int32 remain = StringBuffer_count(obj) - pos;
    // first we append it
@@ -118,7 +121,7 @@ void SB_insert(Context currentContext, Object obj, JCharP what, int32 pos, int32
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_ensureCapacity_i(NMParams p) // java/lang/StringBuffer native public void ensureCapacity(int minimumCapacity);
 {
-   Object obj = p->obj[0];
+   TCObject obj = p->obj[0];
    int32 minimumCapacity = p->i32[0];
    ensureCapacity(p->currentContext, obj, minimumCapacity);
    p->retO = obj;
@@ -126,7 +129,7 @@ TC_API void jlSB_ensureCapacity_i(NMParams p) // java/lang/StringBuffer native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_setLength_i(NMParams p) // java/lang/StringBuffer native public void setLength(int newLength);
 {
-   Object obj = p->obj[0]; // class object
+   TCObject obj = p->obj[0]; // class object
    int32 newLength = p->i32[0];
    int32 remain = StringBuffer_count(obj);
 
@@ -149,8 +152,8 @@ TC_API void jlSB_setLength_i(NMParams p) // java/lang/StringBuffer native public
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_s(NMParams p) // java/lang/StringBuffer native public StringBuffer append(String str);
 {
-   Object obj = p->obj[0]; // class object
-   Object str = p->obj[1];
+   TCObject obj = p->obj[0]; // class object
+   TCObject str = p->obj[1];
    if (str == null)
       p->retO = appendCharP(p->currentContext, obj, "null");
    else
@@ -159,15 +162,15 @@ TC_API void jlSB_append_s(NMParams p) // java/lang/StringBuffer native public St
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_C(NMParams p) // java/lang/StringBuffer native public StringBuffer append(char []str);
 {
-   Object obj = p->obj[0]; // class object
-   Object str = p->obj[1];
+   TCObject obj = p->obj[0]; // class object
+   TCObject str = p->obj[1];
    p->retO = appendJCharP(p->currentContext, obj, (JCharP)ARRAYOBJ_START(str), ARRAYOBJ_LEN(str));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_Cii(NMParams p) // java/lang/StringBuffer native public StringBuffer append(char []str, int offset, int len);
 {
-   Object obj = p->obj[0]; // class object
-   Object str = p->obj[1];
+   TCObject obj = p->obj[0]; // class object
+   TCObject str = p->obj[1];
    int32 offset = p->i32[0];
    int32 len = p->i32[1];
    if (checkArrayRange(p->currentContext, str, offset, len))
@@ -179,14 +182,14 @@ TC_API void jlSB_append_Cii(NMParams p) // java/lang/StringBuffer native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_c(NMParams p) // java/lang/StringBuffer native public StringBuffer append(char c);
 {
-   Object obj = p->obj[0]; // class object
+   TCObject obj = p->obj[0]; // class object
    JChar c = (JChar)p->i32[0];
    p->retO = appendJCharP(p->currentContext, obj, &c, 1);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_i(NMParams p) // java/lang/StringBuffer native public StringBuffer append(int i);
 {
-   Object obj = p->obj[0]; // class object
+   TCObject obj = p->obj[0]; // class object
    int32 i = p->i32[0];
    IntBuf ib;
    CharP ret = int2str(i,ib);
@@ -195,7 +198,7 @@ TC_API void jlSB_append_i(NMParams p) // java/lang/StringBuffer native public St
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_d(NMParams p) // java/lang/StringBuffer native public StringBuffer append(double d);
 {
-   Object obj = p->obj[0]; // class object
+   TCObject obj = p->obj[0]; // class object
    double d = p->dbl[0];
    DoubleBuf db;
    CharP ret = double2str(d, -1, db);
@@ -204,7 +207,7 @@ TC_API void jlSB_append_d(NMParams p) // java/lang/StringBuffer native public St
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlSB_append_l(NMParams p) // java/lang/StringBuffer native public StringBuffer append(long l)
 {
-   Object obj = p->obj[0]; // class object
+   TCObject obj = p->obj[0]; // class object
    int64 i = p->i64[0];
    LongBuf lb;
    CharP ret = long2str(i, lb);
@@ -213,7 +216,7 @@ TC_API void jlSB_append_l(NMParams p) // java/lang/StringBuffer native public St
 //////////////////////////////////////////////////////////////////////////
 TC_API void SB_insertAt_sic(NMParams p) // totalcross/sys/Convert native public static void insertAt(StringBuffer sb, int pos, char c)
 {
-   Object obj = p->obj[0], sb;
+   TCObject obj = p->obj[0], sb;
    int32 pos = p->i32[0];
    JChar c = (JChar)p->i32[1];
    if (obj == null)
@@ -241,7 +244,7 @@ TC_API void SB_insertAt_sic(NMParams p) // totalcross/sys/Convert native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_append_sci(NMParams p) // totalcross/sys/Convert native public static void append(StringBuffer sb, char c, int count);
 {
-   Object obj = p->obj[0];
+   TCObject obj = p->obj[0];
    int32 count = p->i32[1];
    JChar c = (JChar)p->i32[0];
    if (obj == null)

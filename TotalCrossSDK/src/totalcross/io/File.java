@@ -18,6 +18,7 @@
 package totalcross.io;
 
 import java.net.URISyntaxException;
+
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -44,12 +45,13 @@ import totalcross.util.*;
  * <li>BlackBerry - "/store/home/user/"
  * <li>Java - "/" (current directory)
  * <li>Win32 - "/" (root of the current drive)
- * <li>iPhone - "/private/var/" (root of big partition)
- * <li>Android - "/data/data/totalcross.app.&lt;mainclass name&gt;"
+ * <li>iOS - "/private/var/" in a installation using .deb (on a jailbroken device) or in the documents folder of the application in a installation 
+ * using .ipa
+ * <li>Android - "/data/data/totalcross.app.&lt;mainclass name&gt;" or "/data/data/totalcross.app.&lt;application id&gt; if using single package 
  * </ul>
  * The alias is ALWAYS relative to the built in storage, regardless of the value passed to the argument slot.<br>
  * 
- * In iOS and Android, if you don't specify a path, the file will be open in device/ path. 
+ * On iOS and Android, if you don't specify a path, the file will be open in device/ path. 
  */
 
 public class File extends RandomAccessStream
@@ -71,7 +73,7 @@ public class File extends RandomAccessStream
 
    public static final int INVALID = 0;
    /**
-    * The DONT_OPEN mode allows the exists(), rename(), delete(), listFiles(), createDir() and isDir() methods to be
+    * The DONT_OPEN mode allows the exists(), rename(), delete(), listFiles(), createDir(), and isDir() methods to be
     * called without requiring the file to be open for reading or writing.
     * 
     * @see #File(String)
@@ -185,7 +187,8 @@ public class File extends RandomAccessStream
    /**
     * Opens a file with the given name, mode and in the given card number.
     * <p>
-    * Note that the filename must not contain accentuated characters. Also, the slash / MUST be the path separator. Note
+    * Note that it's not advised to use accentuated characters in the file name. Also, the slash / MUST be the path separator. It is not forbidden 
+    * to use the backslash \, but its support might be discontinued in the future to increase performance. Note
     * also that some OSes may not allow the creation of files in the ROOT directory.
     * 
     * @param path
@@ -217,6 +220,7 @@ public class File extends RandomAccessStream
     * @see #CREATE
     * @see #CREATE_EMPTY
     * @see totalcross.sys.Settings#nvfsVolume
+    * @deprecated TotalCross 2 no longer uses slot
     */
    public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
@@ -232,7 +236,7 @@ public class File extends RandomAccessStream
 
       path = Convert.normalizePath(path);
       if (path.startsWith("device/")) // flsobral@tc110_108: added support for the alias "device/".
-         path = path.substring(6);
+         path = Convert.appendPath(Settings.appPath,path.substring(6)); // guich@tc310: in desktop was using the root folder of current drive
 
       this.path = path;
       this.mode = mode; // remove the sequential flag
@@ -330,15 +334,15 @@ public class File extends RandomAccessStream
              * Attempts to get an exclusive lock for this file, using reflection to call methods from JDK 1.4
              * ((java.io.RandomAccessFile) fileEx).getChannel().tryLock();
              */
-            if (mode == READ_WRITE)
+            if (mode != READ_ONLY)
             try
             {
                // RandomAccessFile.getChannel()
-               java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel", null);
-               Object fileChannel = getChannel.invoke(fileEx, null);
+               java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel");
+               Object fileChannel = getChannel.invoke(fileEx);
                // FileChannel.tryLock() -> returns null if the file is already locked.
-               java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock", null);
-               if (tryLock.invoke(fileChannel, null) == null) 
+               java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock");
+               if (tryLock.invoke(fileChannel) == null) 
                {
                   // close everything and throw IOException.
                   ((java.io.RandomAccessFile) fileEx).close();
@@ -390,7 +394,7 @@ public class File extends RandomAccessStream
    }
 
    /**
-    * Can be used to verify if a card is inserted into the given slot. Only works in Palm OS and Android devices. In all
+    * Can be used to verify if a card is inserted into the given slot. Only works on Palm OS and Android devices. In all
     * other platforms, always returns true.
     * 
     * @param slot
@@ -441,7 +445,7 @@ public class File extends RandomAccessStream
 
    /**
     * Flushes a file. This causes any pending data to be written to disk. Calling this method too much may decrease the
-    * performance. Has no effect in JavaSE.
+    * performance. Has no effect on JavaSE.
     */
    public void flush() throws IOException
    {
@@ -493,7 +497,7 @@ public class File extends RandomAccessStream
 
    /**
     * Deletes the file or directory (which must be empty). The file is automatically closed before it is deleted. The
-    * file could have been open in any of the available modes, except READ_ONLY. Example:
+    * file could have been opened in any of the available modes, except READ_ONLY. Example:
     * 
     * <pre>
     * new File(&quot;/my/file.c&quot;).delete();
@@ -587,7 +591,7 @@ public class File extends RandomAccessStream
             return 1024 * 1024; // 1mb
          }
       if (mode == DONT_OPEN)
-         throw new IOException("File is not a root directory");
+         throw new IOException("The file can't be open in the DONT_OPEN mode to get its size.");
 
       java.io.File fileRef4Java = (java.io.File) fileRef;
       try
@@ -647,7 +651,7 @@ public class File extends RandomAccessStream
 
    /**
     * Lists the files contained in a directory. The strings returned are the names of the files and directories
-    * contained within this directory. Volume labels are returned between [], and paths are suffixed by a slash.
+    * contained within this directory. Paths are suffixed by a slash.
     */
    final public String[] listFiles() throws IOException
    {
@@ -778,7 +782,7 @@ public class File extends RandomAccessStream
     * </pre>
     * 
     * Note: if you plan to change the file size using setPos, you must write something on the new size to effectively
-    * change the size. For example, in some devices if you call setPos and then read (assuming that the new pos is past
+    * change the size. For example, on some devices if you call setPos and then read (assuming that the new pos is past
     * the end of the file, the read method will fail. Here's a code that will change the size for sure:
     * 
     * <pre>
@@ -892,7 +896,8 @@ public class File extends RandomAccessStream
     * <ul>
     * <li>JDK - This method has no effect on any file when running on JDK, it only checks if the object state and the
     * received argument are valid.
-    * <li>LINUX, IPHONE and ANDROID - The attributes <code>ATTR_HIDDEN</code> and <code>ATTR_ARCHIVE</code> are not
+    * <li>BLACKBERRY - Supports only <code>ATTR_HIDDEN</code> and <code>ATTR_READ_ONLY</code>.
+    * <li>LINUX, IPHONE, and ANDROID - The attributes <code>ATTR_HIDDEN</code> and <code>ATTR_ARCHIVE</code> are not
     * supported by Unix based systems. Using them will not throw an exception, but it will have no effect on the file.
     * <li>PALMOS - Avoid using the attribute <code>ATTR_READ_ONLY</code> on files located in the device's internal
     * storage. Marking a file as read only affects also its attributes, which means it can't be undone. The only way to
@@ -940,11 +945,14 @@ public class File extends RandomAccessStream
    }
 
    /**
-    * Sets the time attribute of the opened filed - cannot be used with <code>DONT_OPEN</code>.<br>
+    * Sets the time attribute of the opened filed - cannot be used with <code>DONT_OPEN</code> or <code>READ_ONLY</code>.<br>
     * Platform specific notes:
     * <ul>
     * <li>JDK - This method has no effect on any file when running on JDK, it only checks if the object state and the
     * received arguments are valid.
+    * <li>WINCE - Supports only <code>TIME_MODIFIED</code> if the file is stored on the device's non-volatile memory. If the file is stored in an 
+    * external FAT storage, it also supports <code>TIME_CREATED</code>.
+    * <li>BLACKBERRY - Not supported.
     * <li>LINUX, IPHONE and ANDROID - Unix based systems do not keep record of the file's creation time. Attempting to
     * do so will not thrown an exception, but it will have no effect on the file.
     * </ul>
@@ -978,6 +986,9 @@ public class File extends RandomAccessStream
     * <ul>
     * <li>JDK - If the object state and the received argument are valid, it will always return the time of the last
     * modification.
+    * <li>WINCE - Supports only <code>TIME_MODIFIED</code> if the file is stored on the device's non-volatile memory. If the file is stored in an 
+    * external FAT storage, it also supports <code>TIME_CREATED</code>.
+    * <li>BLACKBERRY - Supports only <code>TIME_MODIFIED</code>.
     * <li>LINUX, IPHONE and ANDROID - Unix based systems do not keep record of the file's creation time. Using the
     * constant <code>TIME_CREATED</code> will return the last time the file was changed, which is updated when changes
     * are made to the file's inode (owner, permissions, etc.), and also when the contents of the file are modified.<br>
@@ -1011,34 +1022,19 @@ public class File extends RandomAccessStream
    }
 
    /**
-    * Returns the volume File for the Windows CE and Pocket PC devices. In these devices, the volume has a special
+    * Returns the volume File for the Windows CE and Pocket PC, and BlackBerry devices. On these devices, the volume has a special
     * folder name, but since there's no system call that informs this, we must just test the existence of each folder,
-    * returning the first one that exists. You can set the winceVols string to the ones you want to be searched. <br>
+    * returning the first one that exists. You can set the winceVols string array to the ones you want to be searched. <br>
     * <br>
-    * To access the card in Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
-    * Some android devices have more than one sdcard, an internal and an external ones. In such devices, the /sdcard is the internal one; to find the external path, you must get into the device
-    * because there's no api to get it. For example, in Galaxy devices, it is /mnt/extSdCard.
+    * To access the card on Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
+    * Some android devices have more than one sdcard, an internal and an external ones. On such devices, /sdcard is the internal one; to find the external path, you must get into the device
+    * because there's no API to get it. For example, on Galaxy devices, it is /mnt/extSdCard.
     * 
     * @return The File object which references the volume, ended with backslash, or null if none found.
     * @see #winceVols
     */
    final public static File getCardVolume() throws IOException
    {
-      if (totalcross.sys.Settings.isWindowsDevice())
-      {
-         File f;
-         for (int i = winceVols.length - 1; i >= 0; i--)
-         {
-            try
-            {
-               if ((f = new File(winceVols[i])).isDir())
-                  return f;
-            }
-            catch (FileNotFoundException e)
-            {
-            }
-         }
-      }
       return null;
    }
 
@@ -1074,7 +1070,7 @@ public class File extends RandomAccessStream
    /**
     * Returns the card serial number for the given slot.
     * <p>
-    * This method does not work at desktop.
+    * This method only works on Palm OS.
     * 
     * @param slot
     *           The slot number, or -1 to use the last slot (which is usually an external card if the device has such
@@ -1125,7 +1121,7 @@ public class File extends RandomAccessStream
    }
 
    /**
-    * Returns a recursive list of all files inside the given directory (including it). The vector is sorted upon return.
+    * Returns a recursive list of all files inside the given directory (including it). The array is sorted upon return.
     * 
     * @since TotalCross 1.15
     */
@@ -1135,11 +1131,10 @@ public class File extends RandomAccessStream
    }
 
    /**
-    * Lists all the files in the specified directory, and also the files in the subdirectories recursive is true.
+    * Lists all the files in the specified directory, and also the files in the subdirectories if recursive is true.
     * 
     * @param dir
     * @param recursive
-    * @return
     * @throws IOException
     */
    public static String[] listFiles(String dir, boolean recursive) throws IOException
@@ -1148,7 +1143,7 @@ public class File extends RandomAccessStream
       dir = Convert.appendPath(dir, "/");
       files.addElement(dir);
       listFiles(dir, files, recursive);
-      files.qsort();
+      files.qsort(Convert.SORT_STRING_NOCASE);
       return (String[]) files.toObjectArray();
    }
 
@@ -1167,7 +1162,7 @@ public class File extends RandomAccessStream
    }
    
    /** List the root drives. If there are no roots, returns null.
-    * Works on Win32 and Java platforms.
+    * Works on Win32, Java, and Blackberry platforms.
     * @since TotalCross 1.22
     */
    public static String[] listRoots() // fabio@tc122_14
@@ -1197,8 +1192,6 @@ public class File extends RandomAccessStream
     */
    public void copyTo(File dest) throws IOException // guich@tc126_8
    {
-      try {setPos(0);} catch (IOException ioe) {}
-      try {dest.setPos(0);} catch (IOException ioe) {}
       byte[] buf = new byte[4096];
       int n = 0;
       while ((n=readBytes(buf, 0, buf.length)) > 0)
@@ -1206,7 +1199,7 @@ public class File extends RandomAccessStream
    }
    
    /** Moves the current file to the given one (the original file is deleted). 
-    * You must explicitly close both files after this operation is done.
+    * You must explicitly close the destination file after this operation is done.
     * Here's a sample of how to move a file:
     * <pre>
       File src = new File(srcFileName,File.READ_WRITE);
@@ -1228,7 +1221,7 @@ public class File extends RandomAccessStream
    }
    
    /** A handy method to call copyTo creating two File instances and closing them.
-    * The target file is erased if exists.
+    * The target file is erased if it exists.
     * This method is thread-safe. If you want to have more control, use the copyTo method
     * @see #copyTo(File)
     * @since TotalCross 1.27
@@ -1250,7 +1243,7 @@ public class File extends RandomAccessStream
    }
    
    /** A handy method to call moveTo creating two File instances and closing them.
-    * The target file is erased if exists.
+    * The target file is erased if it exists.
     * This method is thread-safe. If you want to have more control, use the other moveTo method
     * @see #moveTo(File)
     * @since TotalCross 1.27
@@ -1270,7 +1263,7 @@ public class File extends RandomAccessStream
       }
    }
    
-   /** Applies the given permissions to this file. Works only on linux-based operating systems: Android, iPhone. Under JDK 1.6, the first number (user) is applied to all groups.
+   /** Applies the given permissions to this file. Works only on Unix-based operating systems: Linux, Android, and iOS. On JDK 1.6, the first number (user) is applied to all groups.
     * Below you see a table with some chmod values (r = read, w = write, x = execute).
     * <pre>
     * Number   Permission
@@ -1320,7 +1313,7 @@ public class File extends RandomAccessStream
          
          // testing in a file
          String name = "test";
-         f = new File(Settings.appPath+"/"+name,File.CREATE_EMPTY);
+         f = new File(Settings.appPath+'/'+name,File.CREATE_EMPTY);
          int m0 = f.chmod(777); // change it
          int m1 = f.chmod(-1); // retrieve the changed value
          add(new Label("mods of "+name+" = "+m0+" -> "+m1+" (777)"),CENTER,AFTER+5);
@@ -1331,7 +1324,7 @@ public class File extends RandomAccessStream
       }
     * </pre>
     * @param mod The modifiers you want to set in DECIMAL, or -1 to just return the current ones.
-    * @return The modifiers that were set before you called this method (or the current modifiers, if -1 is being passed). Some platforms may return more than 3 digits, indicating extra attributes (for example, if its a file or a directory).
+    * @return The modifiers that were set before you called this method (or the current modifiers, if -1 is being passed). Some platforms may return more than 3 digits, indicating extra attributes (for example, if it's a file or a directory).
     * @since TotalCross 1.27
     */
    public int chmod(int mod) throws IOException // guich@tc126_16
@@ -1368,10 +1361,63 @@ public class File extends RandomAccessStream
     */
    public byte[] readAndClose() throws IOException
    {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         close();
+      }
+   }
+
+   /** Reads the entire file into a byte array and DELETES itself. A handy method that can be used like this:
+    * <pre>
+    * byte[] bytes = new File(...,File.READ_ONLY).readAndDelete();
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public byte[] readAndDelete() throws IOException
+   {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         delete();
+      }
+   }
+
+   /** Writes byte array to this file and closes itself. A handy method that can be used like this:
+    * <pre>
+    * new File(...,File.CREATE_EMPTY).writeAndClose(Vm.getFile("myfile.txt"));
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      try
+      {
+         writeBytes(bytes, 0, bytes.length);
+      }
+      finally
+      {
+         close();
+      }
+   }
+
+   /** Reads the file and returns a byte array with its contents.
+    * @since TotalCross 3.1
+    */
+   public byte[] read() throws IOException
+   {
       int len = getSize();
       byte[] ret = new byte[len];
+      setPos(0);
       readBytes(ret,0,len);
-      close();
       return ret;
    }
 }

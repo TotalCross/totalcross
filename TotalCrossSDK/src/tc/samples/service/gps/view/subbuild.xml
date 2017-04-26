@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+
+
+-->
+
+<project name="GPSLoggerViewer" basedir=".">
+
+<property name="app.srcdir" value="service/gps/view"/>
+<property name="app.name" value="${ant.project.name}"/>
+<import file="${sdk.root}/build.xml"/>
+
+<property name="supportedPlatforms" value="-wince -android"/>
+</project>

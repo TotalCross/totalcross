@@ -35,7 +35,7 @@ public class XmlReadableFile extends XmlReadableByteArray
    /**
    * Constructor
    *
-   * @param f The file you want to read. Be sure to open it with CREATE, CREATE_EMPTY or READ_WRITE modes.
+   * @param f The file you want to read. Be sure to don't open it with DONT_OPEN mode.
    * @throws IOException
    */
    public XmlReadableFile(File f) throws totalcross.io.IOException

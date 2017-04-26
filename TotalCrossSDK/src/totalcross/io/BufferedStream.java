@@ -74,14 +74,17 @@ public class BufferedStream extends Stream
     * @param bufferSize The buffer size.
     * @throws IllegalArgumentIOException if the mode is invalid or the bufferSize is not
     * a positive number.
+    * @throws NullPointerException if stream is null.
     */
-   public BufferedStream(Stream stream, int mode, int bufferSize) throws IllegalArgumentIOException
+   public BufferedStream(Stream stream, int mode, int bufferSize) throws IllegalArgumentIOException, NullPointerException
    {
       if (mode != READ && mode != WRITE)
          throw new IllegalArgumentIOException("mode", Convert.toString(mode));
       if (bufferSize < 0)
          throw new IllegalArgumentIOException("bufferSize", Convert.toString(bufferSize));
-
+      if (stream == null)
+         throw new NullPointerException("Argument 'stream' cannot be null");
+      
       this.stream = stream;
       this.mode = mode;
 
@@ -90,15 +93,17 @@ public class BufferedStream extends Stream
       size = mode == READ ? 0 : bufferSize;
    }
 
-   public final int readBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException
+   public final int readBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException, NullPointerException
    {
       if (mode != READ)
          throw new IOException("Operation can only be used in READ mode");
       if (start < 0)
          throw new IllegalArgumentIOException("start", Convert.toString(start));
-      if (count <= 0)
+      if (count < 0)
          throw new IllegalArgumentIOException("count", Convert.toString(count));
-
+      if (buf == null)
+         throw new NullPointerException("Argument 'buf' cannot be null");
+      
       int r = 0, step, max;
       if (pos == size) // read next block, if needed
       {
@@ -129,15 +134,17 @@ public class BufferedStream extends Stream
       return r;
    }
 
-   public final int writeBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException
+   public final int writeBytes(byte[] buf, int start, int count) throws IllegalArgumentIOException, IOException, NullPointerException
    {
       if (mode != WRITE)
          throw new IOException("Operation can only be used in WRITE mode");
       if (start < 0)
          throw new IllegalArgumentIOException("start", Convert.toString(start));
-      if (count <= 0)
+      if (count < 0)
          throw new IllegalArgumentIOException("count", Convert.toString(count));
-
+      if (buf == null)
+         throw new NullPointerException("Argument 'buf' cannot be null");
+      
       int w = 0, step, max;
       while (w != count)
       {
@@ -174,18 +181,20 @@ public class BufferedStream extends Stream
          stream.writeBytes(buffer, 0, pos);
    }
 
-   /** Change the initial Stream to the attached one.
+   /** Changes the initial Stream to the attached one.
     * Reusing a BufferedStream throught this method can preserve memory.
     * @since TotalCross 1.23
     */
-   public void setStream(Stream f) throws IOException // guich@tc123_34
+   public void setStream(Stream f) throws IOException, NullPointerException // guich@tc123_34
    {
+      if (f == null)
+         throw new NullPointerException("Argument 'f' cannot be null");
       this.stream = f;
       pos = 0;
       size = mode == READ ? 0 : buffer.length;
    }
    
-   /** Returns the Stream attached to this LineReader.
+   /** Returns the Stream attached to this BufferedStream.
     * @since TotalCross 1.23
     */
    public Stream getStream()
@@ -194,11 +203,11 @@ public class BufferedStream extends Stream
    }
 
    /**
-    * Reads a line of text from this socket. Any char lower than space
+    * Reads a line of text from this BufferedStream. Any char lower than space
     * is considered a new line separator. This method correctly handles newlines
     * with \\n or \\r\\n.
     * <br><br>Note: this method is VERY slow since it reads a single character per time. Consider using 
-    * new LineReader(socket) instead.
+    * LineReader instead.
     *
     * @return the read line or <code>null</code> if nothing was read.
     * @throws totalcross.io.IOException

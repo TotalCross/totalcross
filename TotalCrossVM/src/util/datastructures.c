@@ -33,8 +33,8 @@ TC_API Hashtable htNew(int32 count, Heap heap)
 
    iht.size = 0;
    iht.heap = heap;
-   iht.items = heap ? (HtEntry**)heapAlloc(heap, count*PTRSIZE) : (HtEntry**)xmalloc(count*PTRSIZE);
-   // already done in xmalloc - xmemzero(iht.items,count*PTRSIZE);
+   iht.items = heap ? (HtEntry**)heapAlloc(heap, count*TSIZE) : (HtEntry**)xmalloc(count*TSIZE);
+   // already done in xmalloc - xmemzero(iht.items,count*TSIZE);
    iht.hash  = count-1;
    iht.threshold = count;// * 75 / 100;
    return iht;
@@ -43,7 +43,7 @@ TC_API Hashtable htNew(int32 count, Heap heap)
 /* Gets the stored item with the given key. If the key is not found,
  * returns null.
  */
-static HtEntry* htGet(Hashtable *iht, int32 key)
+static HtEntry* htGet(Hashtable *iht, HTKey key)
 {
    if (iht && iht->items && iht->size > 0) // guich@tc113_14: check size
    {
@@ -56,19 +56,19 @@ static HtEntry* htGet(Hashtable *iht, int32 key)
    return null;
 }
 
-TC_API int32 htGet32(Hashtable *iht, int32 key)
+TC_API int32 htGet32(Hashtable *iht, HTKey key)
 {
    HtEntry* h = htGet(iht, key);
    return h ? h->i32 : 0;
 }
 
-TC_API int32 htGet32Inv(Hashtable *iht, int32 key)
+TC_API int32 htGet32Inv(Hashtable *iht, HTKey key)
 {
    HtEntry* h = htGet(iht, key);
    return h ? h->i32 : (int32) 0xFFFFFFFF;
 }
 
-TC_API VoidP htGetPtr(Hashtable *iht, int32 key)
+TC_API VoidP htGetPtr(Hashtable *iht, HTKey key)
 {
    HtEntry* h = htGet(iht, key);
    return h ? h->ptr : null;
@@ -84,7 +84,7 @@ static bool htRehash(Hashtable *table)
       int32 oldCapacity = table->hash+1, i, index;
       HtEntry **oldTable = table->items, *e, *old;
       int32 newCapacity = oldCapacity << 1; // in C: for faster hashes, we must always double the hashtable. (((oldCapacity << 1) + oldCapacity) >> 1) + 1;
-      HtEntry **newTable = (HtEntry **)xmalloc(PTRSIZE*newCapacity);
+      HtEntry **newTable = (HtEntry **)xmalloc(TSIZE*newCapacity);
       //xmemzero(newTable,4*newCapacity);
 
       if (!newTable)
@@ -111,7 +111,7 @@ static bool htRehash(Hashtable *table)
 /* Puts the given pair of key/value in the Hashtable.
  * If the key already exists, the value will be replaced.
  */
-static bool htPut(Hashtable *iht, int32 key, int32 i32, VoidP ptr, bool isI32, bool ignoreIfNotNew)
+static bool htPut(Hashtable *iht, HTKey key, int32 i32, VoidP ptr, bool isI32, bool ignoreIfNotNew)
 {
    HtEntry *e;
    int32 index;
@@ -156,28 +156,33 @@ static bool htPut(Hashtable *iht, int32 key, int32 i32, VoidP ptr, bool isI32, b
    return true;
 }
 
-TC_API bool htPut32(Hashtable *iht, int32 key, int32 value)
+TC_API bool htPut32(Hashtable *iht, HTKey key, int32 value)
 {
    return htPut(iht, key, value, null, true,false);
 }
 
-TC_API bool htPutPtr(Hashtable *iht, int32 key, void* value)
+TC_API bool htPutPtr(Hashtable *iht, HTKey key, void* value)
 {
    return htPut(iht, key, 0, value, false, false);
 }
 
-TC_API bool htPut32IfNew(Hashtable *iht, int32 key, int32 value)
+TC_API bool htInc(Hashtable *iht, HTKey key, int32 incValue)
+{
+   return htPut32(iht, key, incValue + htGet32(iht, key));
+}
+
+TC_API bool htPut32IfNew(Hashtable *iht, HTKey key, int32 value)
 {
    return htPut(iht, key, value, null, true, true);
 }
 
-TC_API bool htPutPtrIfNew(Hashtable *iht, int32 key, void* value)
+TC_API bool htPutPtrIfNew(Hashtable *iht, HTKey key, void* value)
 {
    return htPut(iht, key, 0, value, false, true);
 }
 
 /* Removes the given key from the hashtable. */
-TC_API void htRemove(Hashtable *iht, int32 key)
+TC_API void htRemove(Hashtable *iht, HTKey key)
 {
    HtEntry **tab = iht->items;
    HtEntry *e,*prev;
@@ -201,22 +206,25 @@ TC_API void htRemove(Hashtable *iht, int32 key)
  */
 TC_API void htFree(Hashtable *iht, VisitElementFunc freeElement)
 {
-   HtEntry **tab = iht->items;
-   HtEntry *e,*next;
-   int32 n = iht->hash;
-   if (tab == null)
-      return;
-   while (n-- >= 0)
-      for (e = *tab++; e != null ;)
-      {
-         next = e->next;
-         if (freeElement)
-            freeElement(e->i32, e->ptr);
-         if (iht->heap == null) xfree(e);
-         e = next;
-      }
-   if (iht->heap == null) xfree(iht->items);
-   iht->size = 0;
+   if (iht)
+   {
+      HtEntry **tab = iht->items;
+      HtEntry *e,*next;
+      int32 n = iht->hash;
+      if (tab == null)
+         return;
+      while (n-- >= 0)
+         for (e = *tab++; e != null ;)
+         {
+            next = e->next;
+            if (freeElement)
+               freeElement(e->i32, e->ptr);
+            if (iht->heap == null) xfree(e);
+            e = next;
+         }
+      if (iht->heap == null) xfree(iht->items);
+      iht->size = 0;
+   }
 }
 
 /* Frees the hashtable. An optional function can be passed as parameter
@@ -254,6 +262,18 @@ void htTraverse(Hashtable *iht, VisitElementFunc visitElement)
    while (n-- >= 0)
       for (e = *tab++; e != null ;e = e->next)
          visitElement(e->i32, e->ptr);
+}
+
+void htTraverseWithKey(Hashtable *iht, VisitElementKeyFunc visitElement)
+{
+   HtEntry **tab = iht->items;
+   HtEntry *e;
+   int32 n = iht->hash;
+   if (tab == null || visitElement == null)
+      return;
+   while (n-- >= 0)
+      for (e = *tab++; e != null ;e = e->next)
+         visitElement(e->key, e->i32, e->ptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -322,12 +342,12 @@ void* privateNewArray(int32 sizeofElem, int32 len, Heap mp, const char *file, in
 {
    if (len)
    {
-      int32 size = (len*sizeofElem)+4;
+      int32 size = (len*sizeofElem)+TSIZE;
       uint8* p = mp ? heapAlloc(mp, size) : xmalloc(size);
       if (p)
       {
-         p += 4;
-         ARRAYLEN(p) = len;
+         p += TSIZE;
+         SET_ARRAYLEN(p) = len;
          return p;
       }
       else

@@ -14,6 +14,10 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /// Exception enumeration that can be used in some throwException functions.
 typedef enum
 {
@@ -45,6 +49,14 @@ typedef enum
    InvalidNumberException,
    ElementNotFoundException,
    CryptoException,
+   SQLException,
+   SQLWarning,
+   NegativeArraySizeException,
+   InvocationTargetException,
+   NoSuchMethodException,
+   NoSuchFieldException,
+   NotInstalledException,
+   GPSDisabledException,
    ThrowableCount,
 } Throwable;
 
@@ -75,10 +87,10 @@ typedef void (*throwFileNotFoundExceptionFunc)(Context currentContext, TCHARP pa
 TC_API void throwNullArgumentException(Context currentContext, CharP argName);
 typedef void (*throwNullArgumentExceptionFunc)(Context currentContext, CharP argName);
 /// Create an exception Object of the given throwable. The message passed must have total size < 1024!
-TC_API Object createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...);
-typedef Object (*createExceptionFunc)(Context currentContext, Throwable t, bool fillStack, CharP message, ...);
+TC_API TCObject createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...);
+typedef TCObject (*createExceptionFunc)(Context currentContext, Throwable t, bool fillStack, CharP message, ...);
 /// fills the stack trace into the currently thrown exception
-void fillStackTrace(Context currentContext, Object exception, int32 pc, VoidPArray callStack);
+void fillStackTrace(Context currentContext, TCObject exception, int32 pc, VoidPArray callStack);
 /// Returns the line number based on the given PC
 int32 locateLine(Method m, int32 pc);
 /// prints the current stack trace to the console
@@ -89,4 +101,9 @@ CharP errorMessage(int32 code);
 
 /// Shows the exception in context->thrownException in an alert
 void showUnhandledException(Context context, bool useAlert);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

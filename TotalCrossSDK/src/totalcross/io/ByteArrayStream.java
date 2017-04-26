@@ -39,7 +39,9 @@ public class ByteArrayStream extends RandomAccessStream
     */
    public ByteArrayStream(byte []buffer)
    {
-      this.len = buffer.length; //flsobral@tc100b4: fail-fast, throws NPE.
+      if (buffer == null)
+         throw new IllegalArgumentException("Argument 'buffer' cannot be null");
+      this.len = buffer.length;
       this.buffer = buffer;
       pos = 0;
    }
@@ -50,9 +52,11 @@ public class ByteArrayStream extends RandomAccessStream
    public ByteArrayStream(byte []buffer, int len)
    {
       if (buffer == null)
-         throw new NullPointerException("Argument 'buffer' cannot be null");
-      if (len <= 0)
-         throw new IllegalArgumentException("Argument 'len' must be greater than 0");
+         throw new IllegalArgumentException("Argument 'buffer' cannot be null");
+      if (len < 0)
+         throw new IllegalArgumentException("Argument 'len' must be greater or equal than 0");
+      if (len > buffer.length)
+          throw new IllegalArgumentException("Argument 'len' must not be greater than 'buffer.length'");
       this.len = len;
       this.buffer = buffer;
       pos = 0;
@@ -110,7 +114,9 @@ public class ByteArrayStream extends RandomAccessStream
     */
    public void setBuffer(byte[] buffer)
    {
-      len = buffer.length; //flsobral@tc100b4: fail-fast, throws NPE.
+      if (buffer == null)
+         throw new IllegalArgumentException("Argument 'buffer' cannot be null");
+      len = buffer.length;
       this.buffer = buffer;
       pos = 0;
    }
@@ -132,6 +138,8 @@ public class ByteArrayStream extends RandomAccessStream
    public int readBytes(byte buf[], int start, int count)
    {
       int remains = len - pos;
+      if (count < 0)
+         throw new IllegalArgumentException();
       if (count > remains)
       {
          if (remains <= 0)
@@ -165,12 +173,12 @@ public class ByteArrayStream extends RandomAccessStream
     */
    public int skipBytes(int n)
    {
-      int off = pos + n;
+      int off = pos + n; // This here is for performance reason
 
-      if (off < 0)
+      if (off < 0) // pos + n < 0 --> if the new position would be negative
          off = -pos;
-      else if (off > len)
-         off = len - pos - 1;
+      else if (off > len) // pos + n > len --> if the new position would be out of bounds
+         off = len - pos; // jeffque@tc200: skip to the end of the buffer, not the last readable byte
       else
          off = n;
       pos += off;
@@ -253,9 +261,10 @@ public class ByteArrayStream extends RandomAccessStream
 
       if (newPos < 0)
          throw new IOException();
-      this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
-      if (newPos >= this.len)
+      if (newPos >= this.len) {
+         this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
          setSize(newPos + 1, true);
+      }
       this.pos = newPos;
    }
 
@@ -263,9 +272,11 @@ public class ByteArrayStream extends RandomAccessStream
    {
       if (newPos < 0)
          throw new IOException();
-      this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
-      if (newPos >= this.len)
+
+      if (newPos >= this.len) {
+         this.pos = this.len; //flsobral@tc120: ensure the current data is copy by setSize.
          setSize(newPos + 1, true);
+      }
       this.pos = newPos;
    }
 

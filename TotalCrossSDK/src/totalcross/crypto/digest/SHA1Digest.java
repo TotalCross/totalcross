@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.digest;
 
 import java.security.MessageDigest;
@@ -28,6 +26,8 @@ public class SHA1Digest extends Digest
 {
    /**
     * Creates a new SHA1Digest object.
+    * 
+    * @throws NoSuchAlgorithmException If no Provider supports a <code>MessageDigestSpi</code> implementation for the specified algorithm.
     */
    public SHA1Digest() throws NoSuchAlgorithmException
    {
@@ -41,16 +41,31 @@ public class SHA1Digest extends Digest
       }
    }
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return "SHA-1".
+    */
    public final String getAlgorithm()
    {
       return "SHA-1";
    }
    
+   /**
+    * Returns the block length.
+    * 
+    * @return 64.
+    */
    public final int getBlockLength()
    {
       return 64;
    }
    
+   /**
+    * Returns the message digest length.
+    * 
+    * @return 20.
+    */
    public final int getDigestLength()
    {
       return 20;

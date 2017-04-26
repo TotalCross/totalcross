@@ -33,7 +33,7 @@ public class Ball extends Sprite
 
    public Ball() throws ImageException, IOException
    {
-      super(new Image("tc/samples/game/scape/ball.png").getSmoothScaledInstance(26*Math.min(Settings.screenWidth,Settings.screenHeight)/320*7, 26*Math.min(Settings.screenWidth,Settings.screenHeight)/320, GameEngine.getMainWindow().getBackColor()),
+      super(new Image("tc/samples/game/scape/ball.png").getSmoothScaledInstance(26*Math.min(Settings.screenWidth,Settings.screenHeight)/320*7, 26*Math.min(Settings.screenWidth,Settings.screenHeight)/320),
             7, Color.WHITE, Scape.SPRITE_BKGD_SAVING, null);
 
       this.doClip = false;

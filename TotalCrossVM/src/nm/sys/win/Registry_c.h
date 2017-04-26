@@ -125,7 +125,11 @@ static void privateSetInt(Context c, int32 hk, TCHARP key, TCHARP value, int32 d
 
 static void privateSetString(Context c, int32 hk, TCHARP key, TCHARP value, CharP data)
 {
-   set(c, hk, key, value, REG_SZ, data, xstrlen(data));
+   int32 len = xstrlen(data);
+   TCHARP wdata = CharP2TCHARP(data);
+   if (wdata)
+      set(c, hk, key, value, REG_SZ, wdata, len*2);
+   xfree(wdata);
 }
 
 static void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, int32 len)
@@ -144,13 +148,13 @@ static bool privateDelete(int32 hk, TCHARP key, TCHARP value)
              RegCloseKey(handle) == NO_ERROR;
 }
 
-static Object privateList(Context currentContext, int32 hk, TCHARP key)
+static TCObject privateList(Context currentContext, int32 hk, TCHARP key)
 {
    HKEY handle;
    LONG ret;
    DWORD count=0,i;
-   Object arrayObj = null;
-   Object *array = null;
+   TCObject arrayObj = null;
+   TCObject *array = null;
    TCHAR buf[256];
    DWORD bufSize=255;
 
@@ -162,7 +166,7 @@ static Object privateList(Context currentContext, int32 hk, TCHARP key)
       arrayObj = createArrayObject(currentContext, "[java.lang.String", count);
       if (arrayObj != null)
       {
-         array = (Object*) ARRAYOBJ_START(arrayObj);
+         array = (TCObject*) ARRAYOBJ_START(arrayObj);
          for (i = 0; i < count; i++, bufSize = 255)
             if (RegEnumKeyEx(handle, i, buf, &bufSize, 0, 0, 0, 0) == NO_ERROR)
             {

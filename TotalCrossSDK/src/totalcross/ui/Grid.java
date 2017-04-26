@@ -203,7 +203,7 @@ public class Grid extends Container implements Scrollable
     * Defaults to 3 on pen devices, and 5 on touch devices (must be ODD!)
     * @since TotalCross 1.22
     */
-   public static int columnResizeMargin = Settings.fingerTouch ? 13 : 3; // guich@tc122_27
+   public static int columnResizeMargin = Settings.fingerTouch ? Font.NORMAL_SIZE / 2 + Font.NORMAL_SIZE % 2 : 3;  // the %2 to keep it ODD
    
    /**
     * The column captions. Can be directly assigned, but always make sure it has the same
@@ -335,6 +335,16 @@ public class Grid extends Container implements Scrollable
     */
    public boolean titleMayBeClipped;
    
+   /** A way to mix Images and Strings at the caption. The array's length must be the same of the caption's
+    * passed in the constructor, but the indices that are an image will have it drawn. For example:
+    * <pre>
+    * String[] tits = {"","Add","Minus",""};
+    * captionImages = {img1, null,null, img2};
+    * </pre>
+    * @since TotalCross 3.1
+    */
+   public Image[] captionImages;
+   
    // private members
    private Hashtable htImages;
    private int checkedCount;
@@ -432,6 +442,7 @@ public class Grid extends Container implements Scrollable
 
          protected boolean willOpenKeyboard()
          {
+            if (lastPE == null) return false;
             int px = lastPE.x;
             int py = lastPE.y;
             int line = py / lineH - 1;
@@ -524,7 +535,7 @@ public class Grid extends Container implements Scrollable
    }
    
    private int lastV,lastH;
-   public boolean scrollContent(int dx, int dy)
+   public boolean scrollContent(int dx, int dy, boolean fromFlick)
    {
       boolean scrolled = false;
 
@@ -543,6 +554,7 @@ public class Grid extends Container implements Scrollable
          {
             gridOffset = lastV;
             refreshDataSource();
+            if (!fromFlick) sbVert.tempShow();
          }
       }
       if (flickDirection == HORIZONTAL && dx != 0 && sbHoriz != null)
@@ -552,6 +564,7 @@ public class Grid extends Container implements Scrollable
          sbHoriz.setValue(hbarX0 + hbarDX);
          lastH = sbHoriz.getValue();
 
+         if (!fromFlick) sbHoriz.tempShow();
          scrolled = true;
          if (oldValue != lastH)
             xOffset = -lastH;
@@ -640,7 +653,6 @@ public class Grid extends Container implements Scrollable
       {
          controls[col] = new Edit();
          ed = (Edit)controls[col];
-         ed.alwaysDrawAll = true;
          ed.hasBorder = false;
          ed.autoSelect = true;
          add(ed);
@@ -1074,15 +1086,11 @@ public class Grid extends Container implements Scrollable
          try
          {
             if (npcapt == null)
-               npcapt = NinePatch.getInstance().getNormalInstance(NinePatch.GRID_CAPTION,width,lineH+5,captionsBackColor,false,true);
+               npcapt = NinePatch.getInstance().getNormalInstance(NinePatch.GRID_CAPTION,width,lineH+5,captionsBackColor,false);
             // draw top
             g.setClip(0,0,width,lineH);
-            g.drawImage(npcapt,0,0);
-            // draw bottom
-            Graphics gg = parent.getGraphics();
-            gg.setClip(this.x,this.y+height-5,width,5);
-            gg.drawImage(npcapt,this.x,this.y+height-lineH-5);
-            gg.clearClip();
+            NinePatch.tryDrawImage(g,npcapt,0,0);
+            g.clearClip();
          }
          catch (ImageException ie)
          {
@@ -1100,17 +1108,14 @@ public class Grid extends Container implements Scrollable
             // draw the caption borders
             if (!uiAndroid)
             {
-               if (uiVista && enabled) // guich@573_6
+               if (uiVista && isEnabled()) // guich@573_6
                   g.fillVistaRect(kx, 0, w + 1, lineH,captionsBackColor,true,false);
                else
                   g.fillRect(kx, 0, w + 1, lineH);
                if (uiFlat)
                   g.drawRect(kx, 0, w + 1, lineH + 1);
                else
-               if (!uiPalm) // guich@554_31
                   g.draw3dRect(kx, 0, w + 1, lineH, Graphics.R3D_RAISED, false, false, fourColors);
-               else
-                  g.drawLine(i == 0 ? 0 : kx, 0, kx, lineH);
             }
 
             // draw the lines in the body of the Grid
@@ -1136,11 +1141,16 @@ public class Grid extends Container implements Scrollable
             if (i > 0 || !this.checkEnabled)
             {
                int yy = (lineH-fmH)/2;
-               int capw = captionWidths[i];
-               boolean greater = capw > w;
-               if (greater) g.setClip(kx+2,yy,w-4,fmH);
-               g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
-               if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
+               if (captionImages != null && captionImages[i] != null)
+                  g.drawImage(captionImages[i],kx+(w-captionImages[i].getWidth())/2,yy);
+               else
+               {
+                  int capw = captionWidths[i];
+                  boolean greater = capw > w;
+                  if (greater) g.setClip(kx+2,yy,w-4,fmH);
+                  g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
+                  if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
+               }
             }
 
             kx += w;
@@ -1148,8 +1158,6 @@ public class Grid extends Container implements Scrollable
 
       }
       g.clearClip();
-      if (uiPalm) // guich@554_31
-         g.drawRect(0, 0, width+1, lineH+1);
    }
 
    private Image npCheckBack,npCheck;
@@ -1170,7 +1178,7 @@ public class Grid extends Container implements Scrollable
             {
                int hh = drawCheckBox ? rBox.height : lineH;
                if (npCheck == null)
-                  npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+                  npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled());
                g.drawImage(npCheck, xOffset + (drawCheckBox ? rBox.x : 1), y + (drawCheckBox ? rBox.y : 0));
             }
          }
@@ -1215,7 +1223,7 @@ public class Grid extends Container implements Scrollable
    protected void onColorsChanged(boolean colorsChanged)
    {
       npCheck = npCheckBack = null;
-      if (!uiPalm && !uiAndroid) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
       if (colorsChanged) // guich@tc100
       {
          if (sbVert != null)   sbVert  .setBackForeColors(backColor, foreColor);
@@ -1244,8 +1252,8 @@ public class Grid extends Container implements Scrollable
             try
             {
                if (npback == null)
-                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.GRID,width,height,captionsBackColor,false,true);
-               parent.getGraphics().drawImage(npback,this.x,this.y);
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.GRID,width,height,captionsBackColor,false);
+               NinePatch.tryDrawImage(g,npback,0,0);
             }
             catch (ImageException ie)
             {
@@ -1294,7 +1302,7 @@ public class Grid extends Container implements Scrollable
             ty = lineH;
             if (w > 0 && cx+w > 0 && cx <= maxX) // ignore columns not being shown
             {
-               int cw = Math.min(w-1, width - cx+(uiCE?0:1));
+               int cw = Math.min(w-1, width - cx+1);
                g.setClip(cx-1, uiAndroid ? ty : ty+1, cw, lineH * linesPerPage); // guich@580_32: fixed clip rect based on GridTest.CellControl tab
                if (checkDrawn)
                {
@@ -1343,7 +1351,7 @@ public class Grid extends Container implements Scrollable
                            g.fillRect(cx-1+borderGap,ty+borderGap,w-1-borderGap-borderGap,lineH-borderGap-borderGap);
                         }
                         if (cc != null && (cf = cc.getForeColor(currentRow,j)) != -1)
-                           g.foreColor = enabled ? cf : Color.interpolate(cf, g.backColor); // guich@tc139: shade color if not enabled
+                           g.foreColor = isEnabled() ? cf : Color.interpolate(cf, g.backColor); // guich@tc139: shade color if not enabled
                      }
                      if (columnImg != null)
                         g.drawImage(columnImg,tx, ty+(lineH-fmH)/2);
@@ -1381,9 +1389,16 @@ public class Grid extends Container implements Scrollable
 
       g.clearClip();
       if (!uiAndroid)
-         g.drawRect(0, lineH, width + (uiCE?0:1), height - lineH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
-      //if (selectedLine != -1)
-        // drawCursor(g, selectedLine, true);  // guich@555_8: avoid erasing the current sel line, bc the repaint already did it.
+         g.drawRect(0, lineH, width + 1, height - lineH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
+      else
+      {
+         // draw bottom
+         g.expandClipLimits(0,0,0,5);
+         g.setClip(0,height-5,width,5);
+         g.drawImage(npcapt,0,height-lineH-5);
+         g.expandClipLimits(0,0,0,-5);
+         g.clearClip();
+      }
    }
 
    /**
@@ -1488,8 +1503,8 @@ public class Grid extends Container implements Scrollable
       }
       else
       {
-         btnLeft.setEnabled(enabled && xOffset < 0);
-         btnRight.setEnabled(enabled && xOffset > maxOffset);
+         btnLeft.setEnabled(isEnabled() && xOffset < 0);
+         btnRight.setEnabled(isEnabled() && xOffset > maxOffset);
       }
    }
 
@@ -1508,7 +1523,7 @@ public class Grid extends Container implements Scrollable
          if (uiAndroid)
             add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getPreferredWidth()), FILL-4); // guich@554_31: +1
          else
-            add(bag, 0,0,FILL+(uiPalm?1:0), FILL); // guich@554_31: +1
+            add(bag, 0,0,FILL, FILL); // guich@554_31: +1
          
       if (sbHoriz != null)
          sbHoriz.setBackForeColors(backColor, foreColor);
@@ -1517,11 +1532,6 @@ public class Grid extends Container implements Scrollable
          int hh = 3 * lineH / 11;
          add(btnRight = new ArrowButton(Graphics.ARROW_RIGHT, hh, foreColor));
          add(btnLeft  = new ArrowButton(Graphics.ARROW_LEFT,  hh, foreColor));
-         if (uiPalm) // guich@554_31
-         {
-            btnRight.setBorder(Button.BORDER_NONE);
-            btnLeft.setBorder(Button.BORDER_NONE);
-         }
          btnRight.setBackForeColors(backColor, foreColor);
          btnLeft.setBackForeColors(backColor, foreColor);
 
@@ -1532,6 +1542,7 @@ public class Grid extends Container implements Scrollable
       }
 
       // add the scrollbar next to the grid
+      if (by > height) by = height; // avoid problems if height is too small
       add(sbVert,RIGHT, Settings.fingerTouch ? lineH : 0, PREFERRED, FILL - by);
       sbVert.setValues(0, linesPerPage, 0, itemsCount); // guich@580_15: set the current itemsCount
       sbVert.setLiveScrolling(true);
@@ -1545,7 +1556,7 @@ public class Grid extends Container implements Scrollable
          btnRight.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
       }
       if (!Settings.fingerTouch && !uiAndroid)
-         add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getWidth())+(uiPalm?1:0), FILL - (!Settings.fingerTouch && sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
+         add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getWidth()), FILL - (!Settings.fingerTouch && sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
       uiAdjustmentsBasedOnFontHeightIsSupported = b;
 
       tabOrder.removeAllElements(); // don't let get into us on focus traversal
@@ -1633,6 +1644,7 @@ public class Grid extends Container implements Scrollable
       ds = null;
       lastStartingRow = -1;
 
+      allChecked = false;
       gridOffset = itemsCount = 0;
       selectedLine = -1; // guich@580_4
       sbVert.setMaximum(0);
@@ -1670,7 +1682,7 @@ public class Grid extends Container implements Scrollable
          for (int i = itemsCount-1; i >= 0; i--)
             if (cc == null || cc.isEnabled(i+row0,0)) // guich@580_31
                items[i] = value;
-         checkedCount = check ? items.length : 0; // guich@tc123_30
+         checkedCount = check ? itemsCount : 0; // guich@tc123_30
       }
    }
 
@@ -1774,6 +1786,7 @@ public class Grid extends Container implements Scrollable
          ed.setText(getCellText(selectedLine, col));
          ed.setVisible(true);
          ed.requestFocus();
+         ed.bringToFront();
          if (Settings.virtualKeyboard)
             ed.popupKCC();
       }
@@ -1818,6 +1831,7 @@ public class Grid extends Container implements Scrollable
       else
       {
          String s = getCellText(ge.row, ge.col);
+         if (s == null || s.length() == 0) return;
          int fmw = s != null ? fm.stringWidth(s) : 0; // guich@tc100b5_43
          int x1 = Convert.sum(widths, 0, ge.col) + xOffset; // guich@tc122_2: if this is the last column and it is not completely visible, show the tooltip
          int x2 = x1 + widths[ge.col];
@@ -1839,7 +1853,7 @@ public class Grid extends Container implements Scrollable
    {
       if (e.target == bag) // guich@tc100: redirect events from our bag to ourselves
          e.target = this;
-      if (enabled)
+      if (isEnabled())
       switch (e.type)
       {
          case ControlEvent.FOCUS_IN:
@@ -1848,16 +1862,10 @@ public class Grid extends Container implements Scrollable
                lastShownControl = (Edit)e.target;
                this.requestFocus(); // will issue a FOCUS_OUT event
             }
-            else
-            if (e.target == this && Settings.keypadOnly) // guich@573_45: if keypad only, set only numbers as input.
-               Keypad.getInstance().setKeys(Keypad.numberKeyset);
             break;
          case ControlEvent.FOCUS_OUT:
             if (e.target instanceof Edit && itemsCount > 0) // hide the edit
                hideControl(/*(Edit)e.target*/);
-            else
-            if (e.target == this && Settings.keypadOnly) // guich@573_45
-               Keypad.getInstance().setKeys(null);
             break;
          case ControlEvent.PRESSED:
             if (e.target instanceof ComboBoxDropDown && Settings.keyboardFocusTraversable) // guich@582_15: keep highlighting off
@@ -1948,6 +1956,8 @@ public class Grid extends Container implements Scrollable
                Event.clearQueue(PenEvent.PEN_DRAG);
                int px = ((PenEvent) e).x;
                int dx = px - resizingDx - resizingRealX - xOffset;
+               if (dx > width/2)
+                  dx = width/2;
                widths[rl] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
                setWidths(widths);
                Window.needsPaint = true;
@@ -1962,14 +1972,14 @@ public class Grid extends Container implements Scrollable
                
                if (isScrolling)
                {
-                  scrollContent(dx, dy);
+                  scrollContent(dx, dy, true);
                   e.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   e.consumed = true;
-                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy, true))
                      isScrolling = scScrolled = true;
                }
             }
@@ -1995,6 +2005,8 @@ public class Grid extends Container implements Scrollable
                   int dx = px - resizingDx - resizingRealX - xOffset;
                   if (dx == 0 && rl == widths.length - 1) // the last row cannot have its size increased by the user, so we expand it
                      dx = resizingOrigWidth/3;
+                  if (dx > this.width) 
+                     dx = this.width;
                   widths[rl] = resizingOrigWidth + dx;
                   setWidths(widths);
                   e.consumed = Window.needsPaint = true;
@@ -2037,7 +2049,7 @@ public class Grid extends Container implements Scrollable
                         showControl(selectedLine, col);
                      else
                      {
-                        if (Settings.keyboardFocusTraversable) // guich@582_
+/*                        if (Settings.keyboardFocusTraversable) // guich@582_
                         {
                            Graphics g = getGraphics();
                            getColRect(rTemp, col, selectedLine, true); // guich@tc100: not sure if is "true" here
@@ -2045,10 +2057,10 @@ public class Grid extends Container implements Scrollable
                            {
                               g.drawCursor(rTemp.x,rTemp.y,rTemp.width,rTemp.height);
                               Vm.sleep(50);
-                              Window.updateScreen();
+                              repaintNow();//Window.updateScreen();
                            }
                         }
-                        postGridEvent(col,selectedLine,false); // guich@580_51
+*/                        postGridEvent(col,selectedLine,false); // guich@580_51
                      }
                   }
                   else break; // prevent repaint
@@ -2220,31 +2232,67 @@ public class Grid extends Container implements Scrollable
       if (checkEnabled)
          col--;
       if (itemsCount > 1 && vItems != null)
+      {
+         int sortType,lin=0;
+         do
+         {
+            sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(getItem(lin)[col]) : sortTypes[col]; // guich@565_1: support numeric sort
+         }
+         while (sortType == Convert.SORT_STRING && ++lin < itemsCount);
          try
          {
             // autodetect the sort type
-            String s = getItem(1)[col];  // guich@565_1: support numeric sort
-            int sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(s) : sortTypes[col];
             switch (sortType)
             {
-               case Convert.SORT_INT:             
-                  try
-                  {
-                     qsortInt         (col, 0, itemsCount-1, ascending);
-                  }
-                  catch (InvalidNumberException ine) // search as double if there's a problem
-                  {
-                     qsortDouble      (col, 0, itemsCount-1, ascending);
-                     sortTypes[col] = Convert.SORT_DOUBLE;
-                  }
-                  break;
+               case Convert.SORT_INT:             qsortInt         (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_DOUBLE:          qsortDouble      (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_DATE:            qsortDate        (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_STRING_NOCASE:   qsortStringNocase(col, 0, itemsCount-1, ascending); break;
                default:                           qsortString      (col, 0, itemsCount-1, ascending); break;
             }
          }
-         catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
+         catch (Exception e) 
+         {
+            // try again, moving invalid values out of the sort
+            int lowestValid = 0, highestValid = itemsCount-1;
+            Date d = sortType == Convert.SORT_DATE ? new Date() : null;
+            for (int i = 0; i <= highestValid; i++)
+            {
+               try 
+               {
+                  switch (sortType)
+                  {
+                     case Convert.SORT_INT:    Convert.toInt(((String[])vItems.items[i])[col]); break;
+                     case Convert.SORT_DOUBLE: Convert.toDouble(((String[])vItems.items[i])[col]); break;
+                     case Convert.SORT_DATE:   d.set(((String[])vItems.items[i])[col], Settings.dateFormat); break;
+                     default: return; // get out - dont know what kind of exceptions can be thrown with String
+                  }                  
+               } 
+               catch (Exception ee) 
+               {
+                  if (ascending)
+                     swap(lowestValid++, i);
+                  else
+                     swap(highestValid--, i);
+               }
+            }   
+            try
+            {
+               // sort as string the invalid part
+               if (ascending)
+                  qsortStringNocase(col, 0, lowestValid-1, ascending);
+               else
+                  qsortStringNocase(col, highestValid, itemsCount-1, ascending);
+               switch (sortType)
+               {
+                  case Convert.SORT_INT:             qsortInt         (col, lowestValid, highestValid, ascending); break;
+                  case Convert.SORT_DOUBLE:          qsortDouble      (col, lowestValid, highestValid, ascending); break;
+                  case Convert.SORT_DATE:            qsortDate        (col, lowestValid, highestValid, ascending); break;
+               }
+            }
+            catch (Exception eee) {if (Settings.onJavaSE) e.printStackTrace();}
+         }
+      }
    }
    /** Performs a quicksort in the items of the given column. This method does not work if there's a datasource assigned. */
    public void qsort(int col) // guich@563_7
@@ -2263,6 +2311,19 @@ public class Grid extends Container implements Scrollable
       qsort(checkEnabled ? col+1 : col, ascending);
    }
 
+   private void swap(int low, int high)
+   {
+      if (checkEnabled)
+      {
+         int t = ivChecks.items[low];
+         ivChecks.items[low] = ivChecks.items[high];
+         ivChecks.items[high] = t;
+      }
+      Object temp = vItems.items[low];
+      vItems.items[low] = vItems.items[high];
+      vItems.items[high] = temp;
+   }
+   
    private void qsortInt(int col, int first, int last, boolean ascending) throws InvalidNumberException // guich@220_34
    {
       if (first >= last)
@@ -2271,7 +2332,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       int mid = Convert.toInt(((String[])items[(first+last) >> 1])[col]);
       while (true)
@@ -2291,18 +2351,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2311,46 +2362,40 @@ public class Grid extends Container implements Scrollable
          qsortInt(col,low,last,ascending);
    }
 
-   private void qsortDouble(int col, int first, int last, boolean ascending) throws InvalidNumberException // guich@220_34
+   private double getDoubleValue(String s, double def)
    {
+      return s.equals("") ? -1 : Convert.toDouble(s,def); // guich@tc210: support empty cells
+   }
+   private void qsortDouble(int col, int first, int last, boolean ascending) throws InvalidNumberException // guich@220_34
+   {      
       if (first >= last)
          return;
       int low = first;
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
-      double mid = Convert.toDouble(((String[])items[(first+last) >> 1])[col]);
+      double mid = getDoubleValue(((String[])items[(first+last) >> 1])[col], Convert.MIN_DOUBLE_VALUE);
       while (true)
       {
          if (ascending)
          {
-            while (high >= low && mid > Convert.toDouble(((String[])items[low ])[col]))
+            while (high >= low && mid > getDoubleValue(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid < Convert.toDouble(((String[])items[high])[col]))
+            while (high >= low && mid < getDoubleValue(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          else
          {
-            while (high >= low && mid < Convert.toDouble(((String[])items[low ])[col]))
+            while (high >= low && mid < getDoubleValue(((String[])items[low ])[col], Convert.MIN_DOUBLE_VALUE))
                low++;
-            while (high >= low && mid > Convert.toDouble(((String[])items[high])[col]))
+            while (high >= low && mid > getDoubleValue(((String[])items[high])[col], Convert.MAX_DOUBLE_VALUE))
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2367,7 +2412,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
       byte df = Settings.dateFormat;
 
       Date d = new Date();
@@ -2389,18 +2433,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2417,7 +2452,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       String mid = ((String[])items[(first+last) >> 1])[col];
       while (true)
@@ -2437,18 +2471,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2465,7 +2490,6 @@ public class Grid extends Container implements Scrollable
       int high = last;
 
       Object []items = vItems.items;
-      int[] ints = checkEnabled ? ivChecks.items : null;
 
       String mid = ((String[])items[(first+last) >> 1])[col].toLowerCase();
       while (true)
@@ -2485,18 +2509,9 @@ public class Grid extends Container implements Scrollable
                high--;
          }
          if (low <= high)
-         {
-            if (ints != null)
-            {
-               int t = ints[low];
-               ints[low] = ints[high];
-               ints[high] = t;
-            }
-            Object temp = items[low];
-            items[low++] = items[high];
-            items[high--] = temp;
-         }
-         else break;
+            swap(low++, high--);
+         else 
+            break;
       }
 
       if (first < high)
@@ -2571,7 +2586,7 @@ public class Grid extends Container implements Scrollable
 
    public void getFocusableControls(Vector v)
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke)
@@ -2646,7 +2661,7 @@ public class Grid extends Container implements Scrollable
    {
       if (htImages == null)
          htImages = new Hashtable(20);
-      htImages.put(tag, image.smoothScaledFixedAspectRatio(fmH,true,backColor));
+      htImages.put(tag, Settings.enableWindowTransitionEffects ? image.smoothScaledFixedAspectRatio(fmH,true) : image.hwScaledFixedAspectRatio(fmH,true));
    }
 
    private class NextEdit extends Thread

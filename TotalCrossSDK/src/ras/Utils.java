@@ -34,14 +34,6 @@ public final class Utils
    {
       return null;
    }
-   public static Hashtable getConfigInfo4B()
-   {
-      Hashtable info = new Hashtable(10);
-      info.put("SERVER_HOST", "www.superwaba.net");
-      info.put("SERVER_PORT", "6666");
-      
-      return info;
-   }
    public native static Hashtable getConfigInfo4D();
    
    public static Hashtable getProductInfo()
@@ -55,16 +47,6 @@ public final class Utils
          //flsobral@tc125: added more info on v2
          info.put("VERSAO_VM", Settings.versionStr);
       }
-      return info;
-   }
-   public static Hashtable getProductInfo4B()
-   {
-      Hashtable info = new Hashtable(10);
-      info.put("COMPILATION_DATE", Convert.toString(CompilationDate4B.COMPILATION_DATE ^ 12341234));
-      
-      //flsobral@tc125: added more info on v2      
-      info.put("VERSAO_VM", Settings.versionStr);
-      
       return info;
    }
    public native static Hashtable getProductInfo4D();
@@ -98,39 +80,6 @@ public final class Utils
          info.put("IMEI", Settings.imei);
          info.put("SERIAL", Settings.romSerialNumber);
       }
-      return info;
-   }
-   public static Hashtable getDeviceInfo4B() throws ActivationException
-   {
-      MD5Digest md5;
-      try
-      {
-         md5 = new MD5Digest();
-      }
-      catch (NoSuchAlgorithmException e)
-      {
-         throw new ActivationException(e.getMessage());
-      }
-      if (Settings.romSerialNumber != null)
-         md5.update(Settings.romSerialNumber.getBytes());
-      else if (Settings.imei != null)
-         md5.update(Settings.imei.getBytes());
-      else if (Settings.esn != null)
-         md5.update(Settings.esn.getBytes());
-
-      Hashtable info = new Hashtable(10);
-      info.put("PLATFORM", Settings.platform);
-      info.put("ID", Settings.deviceId);
-      info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
-
-      //flsobral@tc125: added more info on v2
-      info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
-      if (Settings.activationId != null) info.put("COD_ATIVACAO", Settings.activationId);
-
-      //flsobral@tc138: v3 info
-      if (Settings.imei != null) info.put("IMEI", Settings.imei);
-      if (Settings.romSerialNumber != null) info.put("SERIAL", Settings.romSerialNumber);
-      
       return info;
    }
    public native static Hashtable getDeviceInfo4D() throws ActivationException;
@@ -183,17 +132,11 @@ public final class Utils
          return def;
       }
    }
-   
+
+   /** @deprecated Use Convert.equals(byte[], byte[]) */
    public static boolean byteArrayEquals(byte[] b1, byte[] b2)
    {
-      if (b1.length != b2.length)
-         return false;
-      
-      for (int i = b1.length - 1; i >= 0; i--)
-         if (b1[i] != b2[i])
-            return false;
-      
-      return true;
+      return Convert.equals(b1,b2);
    }
    
    public static int[] bytesToInts(byte[] bytes)

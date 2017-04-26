@@ -18,8 +18,13 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 
-#if defined(ANDROID) || defined(__SYMBIAN32__)
+#if defined(ANDROID)
 #include <netinet/in.h>
+#endif
+
+#if defined (darwin)
+#include <arpa/inet.h>
+#include <err.h>
 #endif
 
 typedef int SOCKET;
@@ -52,11 +57,6 @@ static Err socketClose(SOCKET* socketHandle);
  *
  *************************************/
 
-#if defined(darwin) // fdie@iphone_DNS_issue fix, see http://www.saurik.com/id/3
-#include <mach-o/nlist.h>
-#include <stdbool.h>
-#endif
-
 #if defined(darwin)
 #ifdef __cplusplus
 extern "C" {
@@ -73,45 +73,36 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 {
    Err err;
    int hostSocket;
-   int res, valopt;
-   struct sockaddr_in destination_sin;
+   int res;
+#ifndef darwin
    struct hostent *phostent;
+   struct sockaddr_in destination_sin;
    long arg;
    fd_set fdWriteSet;
    struct timeval timeout_val;
    socklen_t lon;
-
-#if defined(darwin) // fdie@iphone_DNS_issue
-   static bool fix_installed = false;
-   if (!fix_installed)
-   {
-      struct nlist nl[2];
-      memset(nl, 0, sizeof(nl));
-      nl[0].n_un.n_name = (char *) "_useMDNSResponder";
-      nlist("/usr/lib/libc.dylib", nl);
-      if (nl[0].n_type != N_UNDF) * (bool *) nl[0].n_value = false;
-      fix_installed = true;
-   }
+   int valopt;
+#else
+   struct addrinfo hints;
+   struct addrinfo *currentAddrInfo;
+   struct addrinfo *addrInfoList;
+   in_port_t* portPtr;
 #endif
 
-   // Create socket
-   if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-      goto Error;
-
-   // Set non-blocking
-   arg = fcntl(hostSocket, F_GETFL, NULL);
-   arg |= O_NONBLOCK;
-   fcntl(hostSocket, F_SETFL, arg);
-
+   /*
+    * Resolve hostname
+    */
 #if defined (darwin)
-   res = iphoneSocket(hostname, (struct sockaddr*) &destination_sin);
-   if (res < 0)
-   {
-      debug("res: %d", res);
-      *isUnknownHost = true;
-      goto Error;
-   }
-#else   
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_DEFAULT;
+    if ((err = getaddrinfo(hostname, "http", &hints, &addrInfoList)) != 0) {
+        //debug("getaddrinfo %d, %s", error, gai_strerror(error));
+        /*NOTREACHED*/
+        goto Finish;
+    }
+#else
    // Fill out the server socket's address information.
    destination_sin.sin_family = AF_INET;
    //destination_sin.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -119,8 +110,9 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    {
       if ((phostent = gethostbyname(hostname)) == null)
       {
-         if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA)
+         if (h_errno == HOST_NOT_FOUND || h_errno == NO_ADDRESS || h_errno == NO_DATA) {
             *isUnknownHost = true;
+         }
          goto Error;
       }
       else
@@ -129,15 +121,60 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          xmemmove(&(destination_sin.sin_addr.s_addr), phostent->h_addr, phostent->h_length);
       }
    }
-#endif   
    // Convert to network ordering.
    destination_sin.sin_port = htons((uint16) port);
+#endif   
+   
+#if defined (darwin)
+    for (currentAddrInfo = addrInfoList; currentAddrInfo; currentAddrInfo = currentAddrInfo->ai_next) {
+      // Set the port we want to connect to
+      switch (currentAddrInfo->ai_family) {
+         case AF_INET: {  
+            portPtr = &((struct sockaddr_in *) currentAddrInfo->ai_addr)->sin_port;  
+         } break;  
+         case AF_INET6: {  
+            portPtr = &((struct sockaddr_in6 *) currentAddrInfo->ai_addr)->sin6_port;  
+         } break;
+         default: {  
+            portPtr = NULL;  
+        } break; 
+      }
+      if (portPtr != NULL && ((*portPtr) == 0 || ((*portPtr) != htons((uint16) port)))) {
+         (*portPtr) = htons((uint16) port);
+      }
+      
+        if ((hostSocket = socket(
+                 currentAddrInfo->ai_family, 
+                 currentAddrInfo->ai_socktype,
+                 currentAddrInfo->ai_protocol)) < 0) {
+            continue;
+        }
+ 
+        if ((res = connect(hostSocket, currentAddrInfo->ai_addr, currentAddrInfo->ai_addrlen)) < 0) {
+            close(hostSocket);
+            hostSocket = -1;
+            continue;
+        }
+ 
+        break;  /* okay we got one */
+    }
+   freeaddrinfo(addrInfoList);
+    if (hostSocket < 0) {
+        goto Error;
+        /*NOTREACHED*/
+    }
+#else   
+   if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+      goto Error;
 
-//   destination_sin.sin_family = AF_INET;
-//   destination_sin.sin_port = htons(2000);
-//   destination_sin.sin_addr.s_addr = inet_addr("192.168.0.1");
+   // Set non-blocking
+   arg = fcntl(hostSocket, F_GETFL, NULL);
+   arg |= O_NONBLOCK;
+   fcntl(hostSocket, F_SETFL, arg);
 
-   res = connect(hostSocket, (struct sockaddr *)&destination_sin, sizeof(destination_sin));
+   res = connect(hostSocket,
+                 (struct sockaddr *)&destination_sin,
+                 sizeof(destination_sin));
    if (res < 0)
    {
       if (errno != EINPROGRESS)
@@ -147,16 +184,18 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       timeout_val.tv_usec = (timeout<1000 ? timeout : timeout%1000)*1000;
       FD_ZERO(&fdWriteSet);
       FD_SET(hostSocket, &fdWriteSet);
-      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0)
+      if ((res = select(hostSocket+1, NULL, &fdWriteSet, NULL, &timeout_val)) < 0) {
          goto Error;
+      }
       if (res == 0)
       {
          err = ETIMEDOUT;
          *timedOut = true;
          goto Finish;
       }
-      if (!FD_ISSET(hostSocket, &fdWriteSet))
+      if (!FD_ISSET(hostSocket, &fdWriteSet)) {
          goto Error;
+      }
       lon = sizeof(int);
       getsockopt(hostSocket, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
       if (valopt)
@@ -173,12 +212,13 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
       arg &= (~O_NONBLOCK);
       fcntl(hostSocket, F_SETFL, arg);
    */
+#endif
 
    *socketHandle = hostSocket;
    return NO_ERROR;
 
 Error: // Close the socket.
-   err = errno;
+   err = (*isUnknownHost) ? EHOSTUNREACH : errno;
 Finish:
    socketClose(&hostSocket);
    return err;
@@ -197,8 +237,7 @@ Finish:
  *************************************/
 static Err socketClose(SOCKET* socketHandle)
 {
-   if (shutdown(*socketHandle, SHUT_WR) < 0)
-      goto error;
+   shutdown(*socketHandle, SHUT_WR); // always call close, even if shutdown fails
    if (close(*socketHandle) < 0)
       goto error;
 
@@ -232,7 +271,6 @@ static Err socketReadWriteBytes(SOCKET socketHandle, int32 timeoutMillis, CharP 
    fd_set fdSet;
    struct timeval timeout;
    int32 result;
-   int32 timeoutLeft = timeoutMillis >= 0 ? timeoutMillis : 0; // we should enter the read/write loop at least once, even if timeout <= 0
    int32 timestamp;
    *retCount = 0; // clear bytes count
 
@@ -261,12 +299,12 @@ static Err socketReadWriteBytes(SOCKET socketHandle, int32 timeoutMillis, CharP 
    {
       if (isRead)
       {
-         result = recv(socketHandle, buf + start + *retCount, count - *retCount, 0); //Read
+         result = (int)recv(socketHandle, buf + start + *retCount, count - *retCount, 0); //Read
          if (result == 0) // flsobral@tc110_2: if result is 0, the connection was gracefully closed by the remote host.
             return NO_ERROR;
       }
       else
-         result = send(socketHandle, buf + start + *retCount, count - *retCount, 0); //Write
+         result = (int)send(socketHandle, buf + start + *retCount, count - *retCount, 0); //Write
       *retCount += result; // update the number of bytes write/read
    } while (result < 0 && errno == EWOULDBLOCK && (getTimeStamp() - timestamp < timeoutMillis));
 

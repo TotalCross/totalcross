@@ -33,6 +33,25 @@ import totalcross.util.Vector;
  */
 public class Chart extends Control
 {
+   /** Sample gray color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR1 = 0x4D4D4D; // (gray)
+   /** Sample blue color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR2 = 0x5DA5DA; // (blue)
+   /** Sample orange color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR3 = 0xFAA43A; // (orange)
+   /** Sample green color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR4 = 0x60BD68; // (green)
+   /** Sample pink color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR5 = 0xF17CB0; // (pink)
+   /** Sample brown color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR6 = 0xB2912F; // (brown)
+   /** Sample purple color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR7 = 0xB276B2; // (purple)
+   /** Sample yellow color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR8 = 0xDECF3F; // (yellow)
+   /** Sample red color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR9 = 0xF15854; // (red)
+
    /** Indicates a 3D chart. Default is 2D.
     * @see #type
     */
@@ -43,7 +62,7 @@ public class Chart extends Control
    */
    public static final int GRADIENT_HORIZONTAL = 2; // guich@tc110_20
 
-   /** Indicates a horizontal gradient.
+   /** Indicates a vertical gradient.
     * @see #type
     */
    public static final int GRADIENT_VERTICAL = 4; // guich@tc110_20
@@ -78,13 +97,13 @@ public class Chart extends Control
    public Vector series = new Vector();
 
    /** The value for the origin of the X axis */
-   protected double xAxisMinValue;
+   public double xAxisMinValue;
 
    /** The value for the end of the X axis */
-   protected double xAxisMaxValue;
+   public double xAxisMaxValue;
 
    /** The number of subdivisions of the X axis */
-   protected int xAxisSteps;
+   public int xAxisSteps;
 
    /** The categories of the X axis (may be null if X is a value axis) */
    protected String[] xAxisCategories;
@@ -99,19 +118,19 @@ public class Chart extends Control
    protected int yAxisSteps=10; // guich@tc100b5_56
 
    /** The relative screen position of the X axis origin */
-   protected int xAxisX1;
+   public int xAxisX1;
 
    /** The relative screen position of the X axis end */
-   protected int xAxisX2;
+   public int xAxisX2;
 
    /** The relative screen position of the Y axis origin */
-   protected int yAxisY1;
+   public int yAxisY1;
 
    /** The relative screen position of the Y axis end */
-   protected int yAxisY2;
+   public int yAxisY2;
 
    /** This chart's empty border dimensions */
-   protected Insets border = new Insets();
+   public Insets border = new Insets();
 
    /** Flag to indicate whether the title must be painted */
    public boolean showTitle;
@@ -121,6 +140,25 @@ public class Chart extends Control
 
    /** Flag to indicate whether the categories must be painted */
    public boolean showCategories;
+
+   /**
+    * Flag to indicate whether the categories must be painted on the next tick.<br>
+    * The field {@link #showCategories} must also be set to true.<br>
+    * <br>
+    * Special values for categories on tick:
+    * <ul>
+    * <li>"|" - Paints a line using the axis fore color.
+    * <li>":" - Paints a dotted line using the axis fore and back colors.
+    * </ul>
+    * 
+    * @see #showCategories
+    */
+   public boolean showCategoriesOnTick;
+
+   /** The index where the category mark is shown. */
+   public int categoryMarkIndex=-1;
+   /** The color for the category mark. */
+   public int categoryMarkColor = Color.RED;
 
    /** Flag to indicate whether the y values must be painted */
    public boolean showYValues; // guich@tc110_75
@@ -145,7 +183,19 @@ public class Chart extends Control
 
    /** Flag that indicates if the axis must be drawn. Defaults to true. */
    protected boolean drawAxis=true;
+   
+   /** Shows the first y value or not. */
+   public boolean showFirstYValue = true;
+   
+   /** Color used in the axis lines. */
+   public int axisForeColor; // black
 
+   /** Color used in the axis lines. */
+   public int axisBackColor = -1;
+
+   /** Color used in the axis text (x,y values). */
+   public int axisText; // black
+   
    /** Values that may be shown with the legend. */
    protected String[] legendValues; // guich@tc110_78
 
@@ -153,6 +203,27 @@ public class Chart extends Control
 
    private String[] seriesNames = new String[0];
    private Insets ci = new Insets();
+   
+   /** Set to true to let a ChartData be snapped at the bottom. */
+   public boolean snapToBottom;
+   
+   /** Set to true to let a ChartData be snapped at the top. */
+   public boolean snapToTop;
+   
+   /** Defines a value that will be used as the y-value width.
+    * @since TotalCross 2.0 
+    */
+   public int yValuesSize;
+   
+   /** The text color for the legend. */
+   public int legendTextColor; // black
+   
+   public int fillColor2 = -1;
+
+   public int use2ndColorEveryXColumns = 1;
+
+   public boolean onlyShowCategories;
+   public int columnW;
 
    /**
     * Sets this chart's title
@@ -180,7 +251,7 @@ public class Chart extends Control
     */
    public void setXAxis(double min, double max, int steps)
    {
-      xAxisCategories = null; // disable categories
+//      xAxisCategories = null; // disable categories
       xAxisMinValue = min;
       xAxisMaxValue = max;
       xAxisSteps = steps;
@@ -207,8 +278,8 @@ public class Chart extends Control
     */
    public void setYAxis(double min, double max, int steps)
    {
-      yAxisMinValue = min;
-      yAxisMaxValue = max;
+      yAxisMinValue = Math.min(min,max);
+      yAxisMaxValue = Math.max(min,max);
       yAxisSteps = steps;
    }
 
@@ -223,6 +294,9 @@ public class Chart extends Control
    protected void getCustomInsets(Insets r)
    {
    }
+
+   public static final int UNSET = -9999999;
+   int markPos = UNSET; 
 
    /**
     * Draws the chart's basic features.
@@ -241,24 +315,24 @@ public class Chart extends Control
 
       boolean drawTitle = showTitle && title != null;
       boolean drawCategories = showCategories && xAxisCategories != null;
-      boolean drawLegend = showLegend && sCount > 0;
+      boolean drawLegend   = showLegend && sCount > 0;
 
-      int top = border.top;
+      int top = snapToTop ? 0 : border.top;
       int left = border.left;
-      int bottom = border.bottom;
+      int bottom = snapToBottom ? 0 : border.bottom;
       int right = border.right;
       double incY = (yAxisMaxValue - yAxisMinValue) / yAxisSteps;
       boolean lr = legendPosition == LEFT || legendPosition == RIGHT;
-      int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2;
+      int sqWH = fmH - 6, sqOff = (fmH - sqWH) / 2,xx;
 
-      if (drawTitle)
+      if (drawTitle && !snapToTop)
          top += fmH;
 
       if (drawLegend)
       {
          sMaxLen += lr ? fm.getMaxWidth(seriesNames, 0, sCount) : (sqWH + 4) * sCount + getTotalSize(seriesNames);
          if (legendValues != null)
-               sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
+            sMaxLen += lr ? fm.getMaxWidth(legendValues, 0, sCount) : getTotalSize(legendValues);
          int ww = sMaxLen + 32;
          if (is3d)
             ww += Math.abs(legendPerspective);
@@ -268,7 +342,8 @@ public class Chart extends Control
                right += ww;
                break;
             case LEFT:
-               left += ww;
+               if (yValuesSize <= 0)
+                  left += ww;
                break;
             case TOP:
                top += fmH+6;
@@ -284,25 +359,25 @@ public class Chart extends Control
       }
       ci.top = ci.bottom = ci.left = ci.right = 0;
       getCustomInsets(ci);
-      top += ci.top;
-      bottom += ci.bottom;
+      top += snapToTop ? 0 : ci.top;
+      bottom += snapToBottom ? 0 : ci.bottom;
       left += ci.left;
       right += ci.right;
 
       if (showYValues)
       {
-         int yvalW = 0;
+         int yvalW = yValuesSize;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
-         left += yvalW;
-         top += fm.ascent/2;
-         bottom += fm.ascent/2;
+         left += yvalW+3;
+         top += snapToTop ? 0 : fm.ascent/2;
+         bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
             bottom += fmH/2-1;
       }
       else
       if (drawCategories)
-         bottom += fmH - 3;
+         bottom += snapToBottom ? 0 : fmH - 3;
 
       xAxisX1 = left + 3;
       if (xAxisX1 < 0 || xAxisX1 >= width) // validate
@@ -312,48 +387,110 @@ public class Chart extends Control
       if (xAxisX2 < 0 || xAxisX2 >= width || xAxisX2 <= xAxisX1) // validate
          return false;
 
-      yAxisY1 = height - bottom - 4;
-      if (yAxisY1 < 0 || yAxisY1 >= height) // return false;
+      yAxisY1 = height - bottom - (snapToBottom ? 0 : 4);
+      if (!onlyShowCategories && (yAxisY1 < 0 || yAxisY1 > height)) // return false;
          return false;
 
       yAxisY2 = top;
-      if (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1) // validate
+      if (!onlyShowCategories && (yAxisY2 < 0 || yAxisY2 >= height || yAxisY2 >= yAxisY1)) // validate
          return false;
 
-      g.foreColor = Color.BLACK;
-      g.backColor = backColor;
-      if (!transparentBackground)
-         g.fillRect(0, 0, width, height); // clear
+      double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
+      double val = xAxisMinValue;
+      columnW = getXValuePos(val+inc) - getXValuePos(val);
 
-      if (drawAxis)
+      g.foreColor = axisForeColor;
+      if (!transparentBackground)
+      {
+         g.backColor = backColor;
+         g.fillRect(0,0,width,height);
+         if (axisBackColor != -1 && (drawCategories || showYValues))
+         {
+            g.backColor = axisBackColor;
+            g.fillRect(xAxisX1,yAxisY2,xAxisX2-xAxisX1,yAxisY1-yAxisY2);
+         }
+      }
+      if (!onlyShowCategories && drawAxis)
       {
          g.drawLine(xAxisX1, yAxisY1, xAxisX2, yAxisY1); // draw X axis
          g.drawLine(xAxisX1, yAxisY2, xAxisX1, yAxisY1); // draw Y axis
       }
 
-      double inc = (xAxisMaxValue - xAxisMinValue) / xAxisSteps;
-      double val = 0;
+      int lastPos = UNSET;
+      markPos = UNSET; 
 
-      for (int i = 0; i <= xAxisSteps; i ++, val += inc)
+      if (fillColor2 != -1)
+      {
+         double x0 = val + inc * use2ndColorEveryXColumns;
+         g.backColor = fillColor2;
+         for (int j = 1, n = xAxisSteps; j <= n; j+=2, x0 += inc * use2ndColorEveryXColumns * 2) // vertical lines
+            g.fillRect(xx = getXValuePos(x0),yAxisY2,getXValuePos(x0+inc*use2ndColorEveryXColumns)-xx,yAxisY1-yAxisY2);
+      }
+      val = xAxisMinValue;
+
+      for (int i = 0; i <= xAxisSteps; i++, val += inc)
       {
          int pos = getXValuePos(val);
-         if (drawAxis) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
+         if (!onlyShowCategories && drawAxis && !snapToBottom) g.drawLine(pos, yAxisY1, pos, yAxisY1 + 3);
 
-         if (showVGrids && pos != xAxisX1) // draw vertical grids
+         if (!onlyShowCategories && showVGrids && pos != xAxisX1) // draw vertical grids
             g.drawDots(pos, yAxisY1, pos, yAxisY2);
 
          if (drawCategories && i < xAxisCategories.length) // draw category
          {
-            int tW = fm.stringWidth(xAxisCategories[i]);
-            pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
-            g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
+            final int tW = (xAxisCategories[i] == null || xAxisCategories[i].length() == 0)
+                  ? 0
+                  : fm.stringWidth(xAxisCategories[i]);
+
+            if (tW > 0)
+            {
+               if (showCategoriesOnTick)
+               {
+                  final int p = pos - (tW / 2);
+                  final int y1 = height - (fmH * 3 / 4);
+
+                  if ("|".equals(xAxisCategories[i]))
+                     g.drawLine(pos, y1, pos, y1 + fmH);
+                  else if (":".equals(xAxisCategories[i]))
+                  {
+                     g.backColor = axisBackColor;
+                     g.drawDots(pos, y1, pos, y1 + fmH);
+                  }
+                  else if (p > lastPos)
+                  {
+                     g.foreColor = axisText;
+                     g.drawText(xAxisCategories[i], p, onlyShowCategories ? (height-fmH)/2 : yAxisY1, textShadowColor != -1, textShadowColor);
+                     g.foreColor = axisForeColor;
+                     lastPos = p + tW + fmH;
+                  }
+                  if (categoryMarkIndex == i)
+                     markPos = pos;
+                  pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
+               }
+               else
+               {
+                  pos += ((getXValuePos(val + inc) - pos) - tW) / 2;
+                  g.foreColor = axisText;
+                  g.drawText(xAxisCategories[i], pos, yAxisY1, textShadowColor != -1, textShadowColor);
+                  g.foreColor = axisForeColor;
+               }
+            }
          }
       }
+      if (onlyShowCategories)
+         return true;
+      if (drawCategories && categoryMarkIndex >= 0 && markPos != UNSET)
+      {
+         g.foreColor = categoryMarkColor;
+         g.drawLine(markPos-1,yAxisY1,markPos-1,yAxisY2);
+         g.drawLine(markPos,yAxisY1,markPos,yAxisY2);
+         g.drawLine(markPos+1,yAxisY1,markPos+1,yAxisY2);
+      }
 
-      val = 0;
+      val = yAxisMinValue;
       // adjust the number of steps depending on the number's height
       int ySteps = yAxisSteps;
-      while (showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
+      while (ySteps > 1 && showYValues && (getYValuePos(incY)-getYValuePos(incY*2)) < fm.ascent)
       {
          ySteps--;
          incY = (yAxisMaxValue - yAxisMinValue) / ySteps;
@@ -361,11 +498,19 @@ public class Chart extends Control
       for (int i = 0; i <= ySteps; i ++, val += incY)
       {
          int pos = getYValuePos(val);
-         if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
-         if (showYValues)
+         if (i == 0 && !showFirstYValue)
+            ;
+         else
+         if ((!snapToBottom || i != 0) && (!snapToTop || i != ySteps))
          {
-            String s = Convert.toCurrencyString(val,yDecimalPlaces);
-            g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+            if (drawAxis) g.drawLine(xAxisX1, pos, xAxisX1 - 3, pos);
+            if (showYValues)
+            {
+               String s = Convert.toCurrencyString(val,yDecimalPlaces);
+               g.foreColor = axisText;
+               g.drawText(s, xAxisX1 - fm.stringWidth(s) - 3, pos-fmH/2, textShadowColor != -1, textShadowColor);
+               g.foreColor = axisForeColor;
+            }
          }
          if (showHGrids && pos != yAxisY1) // draw horizontal grids
             g.drawDots(xAxisX1, pos, xAxisX2, pos);
@@ -412,17 +557,29 @@ public class Chart extends Control
          g.fillRect(x, y, w, h);
          g.drawRect(x, y, w, h);
 
-         x += 3;
+         x += snapToBottom || snapToTop ? 0 : 3;
+         g.foreColor = legendTextColor;
+         int halfBlankWidth = fm.stringWidth(" ") / 2;
          for (int i = 0; i < sCount; i ++)
          {
-            g.backColor = ((Series) series.items[i]).color;
-            g.fillRect(x, y + sqOff, sqWH, sqWH);
-            g.drawRect(x, y + sqOff, sqWH, sqWH);
+            Series se = (Series) series.items[i];
+            if (se.dot != null)
+            {
+               if (se.legendDot == null)
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth,true);} catch (Exception e) {se.legendDot = se.dot;}
+               g.drawImage(se.legendDot,x + halfBlankWidth,y+sqOff + 1);
+            }
+            else
+            {
+               g.backColor = se.color;
+               g.fillRect(x, y + sqOff, sqWH, sqWH);
+               g.drawRect(x, y + sqOff, sqWH, sqWH);
+            }
             String s = seriesNames[i];
             if (legendValues != null)
                s = s.concat(legendValues[i]);
 
-            g.drawText(s, x + sqWH + 2, y, textShadowColor != -1, textShadowColor);
+            g.drawText(s, x + halfBlankWidth + sqWH + halfBlankWidth, y, textShadowColor != -1, textShadowColor);
             if (lr)
                y += fmH;
             else
@@ -480,7 +637,7 @@ public class Chart extends Control
     * @return the screen position of the value
     * @see #draw(Graphics)
     */
-   protected int getXValuePos(double value)
+   public int getXValuePos(double value)
    {
       return xAxisX1 + (int)Math.round((value - xAxisMinValue) / (xAxisMaxValue - xAxisMinValue) * (xAxisX2 - xAxisX1));
    }
@@ -494,7 +651,7 @@ public class Chart extends Control
     * @return the screen position of the value
     * @see #draw(Graphics)
     */
-   protected int getYValuePos(double value)
+   public int getYValuePos(double value)
    {
       return yAxisY1 - (int)Math.round((value - yAxisMinValue) / (yAxisMaxValue - yAxisMinValue) * (yAxisY1 - yAxisY2));
    }

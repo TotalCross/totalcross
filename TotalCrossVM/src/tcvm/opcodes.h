@@ -172,6 +172,8 @@
 #define JUMP_regI            155
 #define MONITOR_Enter        156
 #define MONITOR_Exit         157
-#define OPCODE_LENGTH        158 // last opcode + 1
+#define MONITOR_Enter2       158
+#define MONITOR_Exit2        159
+#define OPCODE_LENGTH        160 // last opcode + 1
 
 #endif

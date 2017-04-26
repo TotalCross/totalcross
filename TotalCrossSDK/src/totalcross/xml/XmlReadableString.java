@@ -25,7 +25,7 @@ package totalcross.xml;
 * <PRE>
 *    XmlReader rdr = new XmlReader();
 *    rdr.setContentHandler(...);
-*    rdr.parse(new XmlReadableString("<P>Hello World!"));
+*    rdr.parse(new XmlReadableString("Hello World!"));
 * </PRE>
 */
 public class XmlReadableString extends XmlReadableByteArray
@@ -33,7 +33,7 @@ public class XmlReadableString extends XmlReadableByteArray
    /**
    * Constructor
    *
-   * @param source String that contains the XmlReadable HTML
+   * @param source String that contains the XML readable HTML
    */
    public XmlReadableString(String source)
    {

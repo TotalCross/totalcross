@@ -9,77 +9,94 @@
  *                                                                               *
  *********************************************************************************/
 
-TC_API DWORD TCS_Close(DWORD dwData)
+TC_API DWORD TSV_Close(DWORD dwData) {return 0;}
+TC_API DWORD TSV_Deinit(DWORD dwData) {return 0;}
+TC_API DWORD TSV_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut) {return 1;}
+TC_API DWORD TSV_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode) {return 0;}
+TC_API DWORD TSV_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen) {return 0;}
+TC_API DWORD TSV_Seek(DWORD dwData, long pos, DWORD type) {return 0;}
+TC_API DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
+
+unsigned long __cdecl StartVMFromService(void* nnn) 
 {
-	return 0;
+	// WP8 app should not use the registry
+#if !defined WP8
+   // get the tcz name from the registry
+   HKEY handle=(HKEY)0;
+   DWORD err,size;
+   TCHAR buf[64];
+   char name[64];
+   int32 ret;
+
+   err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("\\Services\\TotalCrossSrv"), 0, KEY_ALL_ACCESS, &handle);
+   size = sizeof(buf);
+   buf[0] = 0;
+   RegQueryValueEx(handle,TEXT("TCZ"),null,null,(uint8*)buf,&size);
+   RegCloseKey(handle);
+   TCHARP2CharPBuf(buf,name);
+
+   ret = executeProgram(name);
+   if (ret != 0)
+   {
+      wsprintf(buf,TEXT("%d"),ret);
+      MessageBox(0,buf,TEXT("Service Exit Code"),MB_OK);
+   }
+#endif
+   return 0;
 }
 
-TC_API DWORD TCS_Deinit(DWORD dwData)
+TC_API DWORD TSV_Init(DWORD dwData)
 {
-	return 0;
-}
-
-TC_API DWORD TCS_Init(DWORD dwData)
-{
-   MessageBox(0,"babidedenak","eu amo voces", MB_OK);
-	//HANDLE hThread = CreateThread( 0, 0, PTControllingFunction, 0, 0, 0);
+#ifdef WINCE
+	HANDLE hThread = CreateThread( 0, 0, StartVMFromService, 0, 0, 0);
+#endif
 	return 1;
-}
-
-TC_API DWORD TCS_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut)
-{
-	return 1;
-}
-
-TC_API DWORD TCS_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode)
-{
-	return 0;
-}
-
-TC_API DWORD TCS_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen)
-{
-	return 0;
-}
-
-TC_API DWORD TCS_Seek(DWORD dwData, long pos, DWORD type)
-{
-	return 0;
-}
-
-TC_API DWORD TCS_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen)
-{
-	return 0;
 }
 ///////////////////////////////
 
 static void getWorkingDir()
 {
-   TCHAR d[MAX_PATH];
-   char* sl;
+	char* sl;
 
+#ifndef WP8
+   TCHAR d1[MAX_PATH], d2[MAX_PATH];
    // get the path to the vm
-   GetModuleFileName(GetModuleHandle(TEXT("TCVM.DLL")), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
-   TCHARP2CharPBuf(d, vmPath);
+   GetModuleFileName(hModuleTCVM, d1, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
+   TCHARP2CharPBuf(d1, vmPath);
+   // get the path to the exe
+   GetModuleFileName(GetModuleHandle(null), d2, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
+   TCHARP2CharPBuf(d2, appPath);
+
+
    sl = xstrrchr(vmPath, '\\'); // strip the file name from the path
    if (!sl) sl = vmPath;
    *sl = 0;
-   for (sl = vmPath ; *sl != 0 ; sl++) // replace backslashes for slashes
+   for (sl = vmPath; *sl != 0; sl++) // replace backslashes for slashes
       if (*sl == '\\') *sl = '/';
 
-   // get the path to the exe
-   GetModuleFileName(GetModuleHandle(null), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
-   TCHARP2CharPBuf(d, appPath);
    sl = xstrrchr(appPath, '\\'); // strip the file name from the path
    if (!sl) sl = appPath;
    *sl = 0;
-   for (sl = appPath ; *sl != 0 ; sl++) // replace backslashes by slashes
+   for (sl = appPath; *sl != 0; sl++) // replace backslashes by slashes
       if (*sl == '\\') *sl = '/';
 
    // store the exe name
    GetModuleFileName(GetModuleHandle(null), exeName, MAX_PATHNAME);
+#else
+   char *_path;
+   _path = GetVmPathWP8();
+   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
+      if (*sl == '\\') *sl = '/';
+   xstrcpy(vmPath, _path);
+
+   _path = GetAppPathWP8();
+   for (sl = _path; *sl != 0; sl++) // replace backslashes by slashes
+	   if (*sl == '\\') *sl = '/';
+   xstrcpy(appPath, _path);
+#endif
 }
 
-//#if defined(ENABLE_TEST_SUITE) && defined(WINCE)
+#if defined(ENABLE_TEST_SUITE) && defined(WINCE)
 static void waitUntilStarted() // waits until the window is shown in windows ce so that the graphics test can run correctly
 {
    MSG msg;
@@ -100,9 +117,9 @@ static void waitUntilStarted() // waits until the window is shown in windows ce 
       }
    }
 }
-/*#else
+#else
 #define waitUntilStarted()
-#endif*/
+#endif
 
 typedef struct
 {
@@ -113,6 +130,7 @@ static BOOL CALLBACK SearchWindowProc(HWND hwnd, LPARAM lParam)
 {
    TCHAR wclass[256];
    WindowBeingSearched wbs = (WindowBeingSearched)lParam;
+   wclass[0] = 0;
    GetClassName(hwnd, wclass, 255);
    if (lstrcmpi(wclass,exeName) == 0)
    {
@@ -192,7 +210,9 @@ int32 defScrX=-1,defScrY=-1,defScrW=-1,defScrH=-1;
 static CharP parseScreenBounds(CharP cmd, int32 *xx, int32 *yy, int32 *ww, int32 *hh)
 {
    CharP scr = xstrstr(cmd, "/scr"),s2;
-   int n = sscanf(scr + 5,"%d,%d,%d,%d", xx, yy, ww, hh);
+   int n;
+   if (!scr) return null;
+   n = sscanf(scr + 5,"%d,%d,%d,%d", xx, yy, ww, hh);
    if (n != 4)
    {
       alert("Format: <other arguments> /scr x,y,width,height\nPass -1 to use the default and -2 to center on screen.\nEx: \"/scr -2,100,320,-1\"\nwill open a window horizontally centered at\ny=100, w=320, h=320 (default is 0,0,240,320).");
@@ -210,8 +230,11 @@ static CharP parseScreenBounds(CharP cmd, int32 *xx, int32 *yy, int32 *ww, int32
 
 void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // GraphicsPrimitives_c.h
 
+void appSetFullScreen();
+
 static void setFullScreen()
 {
+#ifndef WP8
    int32 width = GetSystemMetrics(SM_CXSCREEN);
    int32 height = GetSystemMetrics(SM_CYSCREEN);
 #if !defined (WINCE) //flsobral@tc114_60: fixed fullscreen display on win32.
@@ -234,4 +257,7 @@ static void setFullScreen()
    SetForegroundWindow(mainHWnd);
    screen.screenY = screen.screenX = 0;
    screenChange(mainContext, width, height, screen.hRes, screen.vRes, false);
+#else
+   appSetFullScreen();
+#endif
 }

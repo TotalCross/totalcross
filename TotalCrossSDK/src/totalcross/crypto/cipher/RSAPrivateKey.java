@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.cipher;
 
 /**
@@ -23,12 +21,11 @@ public class RSAPrivateKey extends Key
    private byte[] n;
    
    /**
-    * Creates a new RSAPublicKey object, given the public and private exponents and
-    * the modulus.
+    * Creates a new RSAPublicKey object, given the public and private exponents and the modulus.
     * 
-    * @param e a byte array containing the public exponent.
-    * @param d a byte array containing the private exponent.
-    * @param n a byte array containing the modulus.
+    * @param e A byte array containing the public exponent.
+    * @param d A byte array containing the private exponent.
+    * @param n A byte array containing the modulus.
     */
    public RSAPrivateKey(byte[] e, byte[] d, byte[] n)
    {
@@ -38,7 +35,9 @@ public class RSAPrivateKey extends Key
    }
    
    /**
-    * @return a copy of the byte array containing the modulus.
+    * Returns a copy of the byte array containing the modulus.
+    * 
+    * @return A copy of the byte array containing the modulus.
     */
    public byte[] getModulus()
    {
@@ -46,7 +45,9 @@ public class RSAPrivateKey extends Key
    }
    
    /**
-    * @return a copy of the byte array containing the public exponent.
+    * Returns a copy of the byte array containing the public exponent.
+    * 
+    * @return A copy of the byte array containing the public exponent.
     */
    public byte[] getPublicExponent()
    {
@@ -54,7 +55,9 @@ public class RSAPrivateKey extends Key
    }
    
    /**
-    * @return a copy of the byte array containing the private exponent.
+    * Returns a copy of the byte array containing the private exponent.
+    * 
+    * @return A copy of the byte array containing the private exponent.
     */
    public byte[] getPrivateExponent()
    {

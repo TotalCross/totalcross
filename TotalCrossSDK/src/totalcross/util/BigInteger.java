@@ -287,7 +287,7 @@ public class BigInteger implements Comparable
 
       while (highbits == 0 && nwords > 0)
       {
-         highbits = rnd.next(32);
+         highbits = rnd.next(31);
          --nwords;
       }
       if (nwords == 0 && highbits >= 0)

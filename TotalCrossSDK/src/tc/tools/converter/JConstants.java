@@ -426,16 +426,18 @@ public interface JConstants
    public static final int BREAKPOINT      = 202;
 
    /** The types that will be collected */
-   public static final int VOID   = 0;
-   public static final int INT    = 1;
-   public static final int FLOAT  = 2;
-   public static final int DOUBLE = 3;
-   public static final int LONG   = 4;
-   public static final int OBJECT = 5;
-   public static final int SHORT  = 6;
-   public static final int CHAR   = 7;
-   public static final int BYTE   = 8;
-   public static final int BOOLEAN= 9;
+   public static final int NULL    = 0;
+   public static final int VOID    = 1;
+   public static final int BOOLEAN = 2;
+   public static final int BYTE    = 3;
+   public static final int CHAR    = 4;
+   public static final int SHORT   = 5;
+   public static final int INT     = 6;
+   public static final int LONG    = 7;
+   public static final int FLOAT   = 8;
+   public static final int DOUBLE  = 9;
+   public static final int STRING  = 10;
+   public static final int OBJECT  = 11;
 
-   public static final String[] typeAsString = {"VOID","INT","FLOAT","DOUBLE","LONG","OBJECT","SHORT","CHAR","BYTE","BOOLEAN"};
+   public static final String[] typeAsString = {"NULL","VOID","BOOLEAN","BYTE","CHAR","SHORT","INT","LONG","FLOAT","DOUBLE","STRING","OBJECT"};
 }

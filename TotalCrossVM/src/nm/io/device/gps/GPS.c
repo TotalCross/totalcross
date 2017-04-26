@@ -11,8 +11,8 @@
 
 
 
-#include "tcvm.h"
-
+#include "tcvm.h" 
+ 
 #if defined (WINCE)
  #include "win/GPS_c.h"
 #elif defined (ANDROID)
@@ -26,33 +26,53 @@ TC_API void tidgGPS_startGPS(NMParams p) // totalcross/io/device/gps/GPS native 
 {
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
    Err err;
-   
+
+#ifdef ANDROID   
+   if ((err = nativeStartGPS(p->obj[0])) > 0)
+#else
    if ((err = nativeStartGPS()) > 0)
+#endif
+   {
+      if (err == 2)
+         throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
+      else
 #ifdef ANDROID
-      throwException(p->currentContext, IOException, err == 1 ? "No environment" : "GPS is disabled");
+      throwException(p->currentContext, IOException, err == 1 ? "No environment" : "Unknown error");
 #else         
       throwExceptionWithCode(p->currentContext, IOException, err);
 #endif      
+   }
    p->retI = (err == NO_ERROR);
+#elif defined (WP8)
+   p->retI = nativeStartGPSCPP();
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_updateLocation(NMParams p) // totalcross/io/device/gps/GPS native private int updateLocation();
 {
-#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    int32 flags = 0;
+#if defined(WINCE) || defined(ANDROID) || defined(darwin)
    Err err;
 
    if ((err = nativeUpdateLocation(p->currentContext, p->obj[0], &flags)) > 0)
-      throwExceptionWithCode(p->currentContext, IOException, err);
+   {
+      if (err == 2)
+         throwException(p->currentContext, GPSDisabledException, "GPS is disabled");
+      else
+         throwExceptionWithCode(p->currentContext, IOException, err);
+   }
    p->retI = flags;
-#endif
+#elif defined (WP8)
+   p->retI = nativeUpdateLocationCPP(p->currentContext, p->obj[0]);
+#endif 
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidgGPS_stopGPS(NMParams p) // totalcross/io/device/gps/GPS native private void stopGPS();
 {
 #if defined(WINCE) || defined(ANDROID) || defined(darwin)
    nativeStopGPS();
+#elif defined (WP8)
+   nativeStopGPSCPP();
 #endif
 }
 

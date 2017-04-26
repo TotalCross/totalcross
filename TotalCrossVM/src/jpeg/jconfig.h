@@ -28,7 +28,7 @@
 #undef RIGHT_SHIFT_IS_UNSIGNED
 #undef USE_MSDOS_MEMMGR         /* Define this if you use jmemdos.c */
 #if defined TOTALCROSS
-#define MAX_ALLOC_CHUNK 64000   /* Maximum request to malloc() */
+#define MAX_ALLOC_CHUNK (256*1024-32)   /* Maximum request to malloc() */
 #else
 #define MAX_ALLOC_CHUNK 1000000000L   /* Maximum request to malloc() */
 #endif

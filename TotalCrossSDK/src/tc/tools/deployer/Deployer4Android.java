@@ -12,17 +12,24 @@
 package tc.tools.deployer;
 
 import totalcross.util.*;
-import tc.tools.converter.bb.*;
-import tc.tools.converter.bb.attribute.Code;
-import tc.tools.converter.bb.attribute.LocalVariableTable;
-import tc.tools.converter.bb.attribute.SourceFile;
-import tc.tools.converter.bb.constant.Integer;
-import tc.tools.converter.bb.constant.NameAndType;
-import tc.tools.converter.bb.constant.UTF8;
-import tc.tools.converter.bb.constant.Class;
 
 import java.io.*;
-import java.util.zip.*;
+import java.lang.String;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.Adler32;
+import java.util.zip.CRC32;
+
+import org.apache.commons.io.IOUtils;
+
+import de.schlichtherle.truezip.zip.ZipEntry;
+import de.schlichtherle.truezip.zip.ZipFile;
+import de.schlichtherle.truezip.zip.ZipOutputStream;
+import tc.tools.converter.bb.*;
+import tc.tools.converter.bb.attribute.*;
+import tc.tools.converter.bb.constant.*;
+import tc.tools.converter.bb.constant.Class;
+import tc.tools.converter.bb.constant.Integer;
 
 /*
     A launcher for Android is placed in a Android PacKage (APK), which is a 
@@ -90,8 +97,8 @@ public class Deployer4Android
 {
    private static final boolean DEBUG = false;
    private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
-   private String tcFolder = null, lbFolder = null;
-   private boolean isDemo,singleApk;
+   private String tcFolder;
+   private boolean singleApk;
 
    byte[] buf = new byte[8192];
    
@@ -105,7 +112,7 @@ public class Deployer4Android
       File f = new File(targetDir);
       if (!f.exists())
          f.mkdirs();
-      singleApk = DeploySettings.packageType != 0;
+      singleApk = DeploySettings.packageVM;
       if (!singleApk)
       {
          targetPackage = "totalcross/app/"+fileName.toLowerCase();
@@ -114,10 +121,7 @@ public class Deployer4Android
       }
       else
       {
-         isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
-         tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"android/";
-         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-            lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "android/";
+         tcFolder = DeploySettings.folderTotalCross3DistVM+"android/";
          // source and target packages must have the exact length
          sourcePackage = "totalcross/android";
          targetTCZ = "app"+DeploySettings.applicationId.toLowerCase();
@@ -132,22 +136,25 @@ public class Deployer4Android
       }
       updateResources(); // 3+4+5
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
+      new ZipAlign().zipAlign(new File(targetDir+"/"+fileName+".apk"),new File(targetDir+"/"+fileName+"_.apk"));
+      String apk = targetDir+"/"+fileName+".apk";
+      Utils.copyFile(targetDir+"/"+fileName+"_.apk",apk,true); 
       
       String extraMsg = "";
       if (DeploySettings.installPlatforms.indexOf("android,") >= 0)
-         extraMsg = callADB();
+         extraMsg = callADB(apk);
       
       System.out.println("... Files written to folder "+targetDir+extraMsg);
       
    }
 
-   private String callADB() throws Exception
+   private String callADB(String apk) throws Exception
    {
       String adb = Utils.findPath(DeploySettings.etcDir+"tools/android/adb.exe",false);
       if (adb == null)
          throw new DeployerException("File android/adb.exe not found!");
-      String message = Utils.exec(adb+" install -r *.apk",targetDir);
-      if (message.indexOf("INPUT:Success") >= 0)
+      String message = Utils.exec(new String[]{adb,"install","-r",apk},targetDir);
+      if (message != null && message.indexOf("INPUT:Success") >= 0)
          return " (installed)";
       System.out.println(message);
       return " (error on installl)";
@@ -160,36 +167,36 @@ public class Deployer4Android
          throw new DeployerException("File android/Launcher.jar not found!");
       jarOut = targetDir+fileName+".jar";
       
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(jarIn));
+      ZipFile zipf = new ZipFile(jarIn);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(jarOut));
-      ZipEntry ze;
 
-      while ((ze = zis.getNextEntry()) != null)
+      for (ZipEntry ze: zipf)
       {
          String name = convertName(ze.getName());
          if (DEBUG) System.out.println("=== Entry: "+name);
-         
+         InputStream zis = zipf.getInputStream(ze);
          zos.putNextEntry(new ZipEntry(name));
          if (name.endsWith(".class"))
             convertConstantPool(zis,zos);
          zos.closeEntry();
+         zis.close();
       }
 
-      zis.close();
+      zipf.close();
       zos.close();
    }
    
    private void jar2dex() throws Exception
    {
-      // java -classpath P:\TotalCrossSDK\etc\tools\android\dx.jar com.android.dx.command.Main --dex --output=classes.dex UIGadgets.jar
+      // java -classpath P:\TotalCross3\etc\tools\android\dx.jar com.android.dx.command.Main --dex --output=classes.dex UIGadgets.jar
       String dxjar = Utils.findPath(DeploySettings.etcDir+"tools/android/dx.jar",false);
       if (dxjar == null)
          throw new DeployerException("File android/dx.jar not found!");
       String javaExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("java"));
-      String cmd = javaExe+" -classpath "+DeploySettings.pathAddQuotes(dxjar)+" com.android.dx.command.Main --dex --output=classes.dex "+DeploySettings.pathAddQuotes(new File(jarOut).getAbsolutePath()); // guich@tc124_3: use the absolute path for the file
+      String []cmd = {javaExe,"-classpath",DeploySettings.pathAddQuotes(dxjar),"com.android.dx.command.Main","--dex","--output=classes.dex",new File(jarOut).getAbsolutePath()}; // guich@tc124_3: use the absolute path for the file
       String out = Utils.exec(cmd, targetDir);
       if (!new File(targetDir+"classes.dex").exists())
-         throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+cmd+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
+         throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+Utils.toString(cmd)+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
       new File(jarOut).delete(); // delete the jar
    }
    
@@ -199,33 +206,67 @@ public class Deployer4Android
       if (ap == null)
          throw new DeployerException("File android/resources.ap_ not found!");
       String apk = targetDir+fileName+".apk";
-      ZipInputStream zis = new ZipInputStream(new FileInputStream(ap));
+      ZipFile inf = new ZipFile(ap);
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(apk));
-      ZipEntry ze,ze2;
 
       // search the input zip file, convert and write each entry to the output zip file
-      while ((ze = zis.getNextEntry()) != null)
+      for (ZipEntry ze: inf)
       {
+    	 ZipEntry ze2;
          String name = ze.getName();
-         zos.putNextEntry(ze2=new ZipEntry(name));
+         
+         // keep all the metadata if possible
+         if (ze.getMethod() != ZipEntry.STORED)
+         {
+            ze2 = ze;
+            // little trick to make the entry reusable
+            ze2.setCompressedSize(-1);
+         }
+         else
+         {
+            // the trick above doesn't work with stored entries, so we'll ignore the metadata and use only the name
+            ze2 = new ZipEntry(ze.getName());
+         }
+         InputStream zis = inf.getInputStream(ze2);
          if (name.indexOf("tcfiles.zip") >= 0)
+         {
             insertTCFiles_zip(ze2, zos);
+         }
          else
          if (name.indexOf("resources.arsc") >= 0)
+         {
+            zos.putNextEntry(ze2);
             insertResources_arsc(zis, zos);
+         }
          else
          if (name.indexOf("icon.png") >= 0)
-            insertIcon_png(zos);
+         {
+            zos.putNextEntry(ze2);
+            insertIcon_png(zos, name);
+         }
          else
          if (name.indexOf("AndroidManifest.xml") >= 0)
+         {
+            zos.putNextEntry(ze2);
             insertAndroidManifest_xml(zis,zos);
-         
+         }
+         else if (singleApk)
+         {
+            byte[] bytes = Utils.readJavaInputStream(zis);
+            if (name.endsWith(".ogg")) // for zxing beep.ogg file 
+            {
+               setEntryAsStored(ze2, bytes);
+            }
+            zos.putNextEntry(ze2);
+            zos.write(bytes,0,bytes.length);
+         }
          zos.closeEntry();
+         zis.close();
       }
       if (singleApk)
       {
-         processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
-         copyZipEntry(tcFolder+"TotalCross.apk", "res/layout/main.xml", zos);
+    	 processClassesDexes(tcFolder+"TotalCross.apk", zos);
+         copyZipEntries(tcFolder+"TotalCross.apk", "res", zos);
       }
       else
       {
@@ -238,14 +279,59 @@ public class Deployer4Android
          zos.closeEntry();
          f.delete(); // delete original file
       }
+      try {
+    	  String google_services_json_path = Utils.findPath("google-services.json",true);
+    	  
+    	  if (google_services_json_path == null) {
+    		  throw new FileNotFoundException("can't find google-services.json in TotalCross deploy path");
+    	  }
+    	  File google_services_json_file = new File(Utils.findPath("google-services.json",true));
+    	  
+    	  FileInputStream jsonStream = new FileInputStream(google_services_json_file);
+    	  zos.putNextEntry(new ZipEntry("assets/google-services.json"));
+    	  IOUtils.copy(jsonStream, zos);
+    	  zos.closeEntry();
+    	  
+    	  jsonStream.close();
+      } catch (FileNotFoundException e) {
+    	  System.out.println("Could not find 'google-services.json', thus Firebase will be ignored further on");
+      }
       // include the vm and litebase
       if (tcFolder != null)
          copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
-      if (lbFolder != null)
-         copyZipEntry(lbFolder+"Litebase.apk", "lib/armeabi/liblitebase.so", zos);
       
-      zis.close();
-      zos.close();      
+      zos.close();
+      inf.close();
+   }
+
+	private void processClassesDexes(String baseApk, ZipOutputStream zos) throws Exception {
+		ZipFile zipf = new ZipFile(baseApk);
+
+		for (ZipEntry entry : zipf) {
+			if (entry.getName().matches("classes[0-9]*\\.dex")) {
+				processClassesDex(tcFolder + "TotalCross.apk", entry, zos);
+			}
+		}
+		
+		zipf.close();
+	}
+
+   private void copyZipEntries(String srcZip, String initPath, ZipOutputStream zos) throws IOException {
+	   ZipFile zipf = new ZipFile(srcZip);
+	   for (ZipEntry zEntry: zipf) {
+		   String zentryName = zEntry.getName();
+		   InputStream zIn = zipf.getInputStream(zEntry);
+		   if (zentryName.endsWith("/") || zentryName.endsWith("\\") || zentryName.indexOf("icon.png") >= 0) {
+			   // it's a directory or an old icon, just continue
+			   continue;
+		   }
+		   if (zentryName.startsWith(initPath)) {
+			   byte[] bytes = Utils.readJavaInputStream(zIn);
+			   copyEntryBytes(zEntry, bytes, zos);
+		   }
+		   zIn.close();
+	   }
+	   zipf.close();
    }
 
    // http://strazzere.com/blog/?p=3
@@ -284,14 +370,18 @@ public class Deployer4Android
       bytes[11] = (byte)(sum >> 24); 
    }  
    
-   private void processClassesDex(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
+   private void processClassesDex(String srcZip, ZipEntry dexEntry, ZipOutputStream dstZip) throws Exception
    {
+	  String fileName = dexEntry.getName();
       dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
 
       replaceBytes(bytes, sourcePackage.getBytes(), targetPackage.getBytes());
-      if (DeploySettings.autoStart)
-         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, new byte[]{0,0,0,0});
+      if (DeploySettings.autoStart || DeploySettings.isService)
+      {
+         System.out.println("Is service.");
+         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, DeploySettings.isService ? new byte[]{1,0,0,0} : new byte[]{0,0,0,0});
+      }
       calcSignature(bytes);
       calcChecksum(bytes);
       dstZip.write(bytes,0,bytes.length);
@@ -310,15 +400,35 @@ public class Deployer4Android
 
    private void copyZipEntry(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
    {
-      dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
-      dstZip.write(bytes,0,bytes.length);
+      ZipEntry ze = new ZipEntry(fileName);
+      
+      copyEntryBytes(ze, bytes, dstZip);
       dstZip.closeEntry();
    }
    
-   private void insertIcon_png(ZipOutputStream zos) throws Exception
+   private void copyEntryBytes(ZipEntry ze, byte[] bytes, ZipOutputStream dstZip) throws IOException {
+	   String zentryName = ze.getName();
+	   if (zentryName.endsWith(".ogg")) // for zxing beep.ogg file 
+	      {
+	         setEntryAsStored(ze, bytes);
+	      }
+	   
+	      dstZip.putNextEntry(ze);
+	      dstZip.write(bytes,0,bytes.length);
+   }
+
+   private void insertIcon_png(ZipOutputStream zos, String name) throws Exception
    {
-      if (DeploySettings.bitmaps != null) DeploySettings.bitmaps.saveAndroidIcon(zos); // libraries don't have icons
+      if (DeploySettings.bitmaps != null)
+      {
+         int res;
+         if (name.startsWith("res/drawable-xhdpi") && name.endsWith("icon.png"))   res = 96; else
+         if (name.startsWith("res/drawable-xxhdpi") && name.endsWith("icon.png"))  res = 144; else
+         if (name.startsWith("res/drawable-xxxhdpi") && name.endsWith("icon.png")) res = 192; 
+         else res = 72;
+         DeploySettings.bitmaps.saveAndroidIcon(zos,res); // libraries don't have icons
+      }
    }
 
    private totalcross.io.ByteArrayStream readInputStream(java.io.InputStream is)
@@ -353,11 +463,22 @@ public class Deployer4Android
       }
       bas.mark();
       totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
+      String oldPackage, oldTitle, oldActivity;
       
-      String oldPackage  = singleApk ? sourcePackage.replace('/','.') : "totalcross.app.stub";
+      if (singleApk)
+      {
+         oldPackage  = sourcePackage.replace('/','.');
+         oldTitle    = "Stub";
+         oldActivity = null;
+      }
+      else
+      {
+         oldPackage  = "totalcross.app.stub";
+         oldTitle    = "Stub";
+         oldActivity = ".Stub";
+      }
+
       String oldVersion  = "!1.0!";
-      String oldTitle    = "Stub";
-      String oldActivity = singleApk ? null : ".Stub";
       String oldSharedId = singleApk ? "totalcross.app.sharedid" : null;
       
       String newPackage  = targetPackage.replace('/','.');
@@ -373,7 +494,8 @@ public class Deployer4Android
       int difActivity = singleApk ? 0 : (newActivity.length() - oldActivity.length()) * 2;
       int difSharedId = !singleApk ? 0 : (newSharedId.length() - oldSharedId.length()) * 2;
       int dif = difPackage + difVersion + difTitle + difActivity + difSharedId;
-      
+      String newTcPackage = "totalcross.and"+DeploySettings.applicationId.toLowerCase(); // totalcross.android -> totalcross.app.tctestwin
+
       // get the xml size
       bas.setPos(12); 
       int xmlsize = ds.readInt();
@@ -425,20 +547,22 @@ public class Deployer4Android
       int props = Utils.version2int(newVersion);
       dsbas.writeInt(props);
       
-      // if is full screen, search and replace Theme.Black.NoTitleBar by Theme.Black.NoTitleBar.Fullscreen
-      if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
-      {
-         byte[] themeMark = {(byte)0x09,(byte)0x00,(byte)0x03,(byte)0x01};
-         ofs = Utils.indexOf(res, themeMark, false);
-         if (ofs == -1)
-            throw new DeployerException("Error: could not find position for theme");
-         res[ofs] = (byte)0xA; // set Fullscreen attribute
-      }
-      
+      boolean isFullScreen = DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID); // guich@tc120_59
       // now, change the names accordingly
       for (int i = 0; i < len; i++)
       {
          String s = strings[i];
+         if (isFullScreen && s.equals("fullscreen:0"))
+            strings[i] = "fullscreen:1";
+         else
+         if (s.startsWith(oldPackage))
+         {
+            if (singleApk)
+               strings[i] = newPackage+s.substring(oldPackage.length());
+            else
+            if (s.endsWith("google_measurement_service"))
+               strings[i] = newTcPackage+s.substring(oldPackage.length());
+         }
          if (oldPackage != null && s.equals(oldPackage))
             strings[i] = newPackage;
          else
@@ -496,7 +620,7 @@ public class Deployer4Android
       }
       int ofs = Utils.indexOf(all, key, false);
       if (ofs == -1)
-         throw new DeployerException("Could not find position for totalcross.app.stub in arsc.");
+         throw new DeployerException("Could not find position for totalcross.android in arsc.");
       // write the name
       char[] chars = targetPackage.replace('/','.').toCharArray();
       if (chars.length > 0x7F)
@@ -512,7 +636,6 @@ public class Deployer4Android
    private void insertTCFiles_zip(ZipEntry ze, ZipOutputStream z) throws Exception
    {
       ByteArrayOutputStream baos = new ByteArrayOutputStream(8192);
-      ZipOutputStream zos = new ZipOutputStream(baos);
       
       // parse the android.pkg
       Hashtable ht = new Hashtable(13);
@@ -520,73 +643,100 @@ public class Deployer4Android
 
       Vector vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
       Vector vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
-      vLocals.addElement(DeploySettings.tczFileName);
+      vLocals.addElements(DeploySettings.tczs);
       if (vGlobals.size() > 0)
          vLocals.addElements(vGlobals.toObjectArray());
       if (singleApk) // include the vm?
       {
          // tc is always included
          // include non-binary files
-         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
-         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
-         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-            vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCBase.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"TCUI.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+DeploySettings.fontTCZ);
+         vLocals.addElement(DeploySettings.folderTotalCross3DistVM+"LitebaseLib.tcz");
       }         
 
       Utils.preprocessPKG(vLocals,true);
-      for (int i =0, n = vLocals.size(); i < n; i++)
-      {
-         String []pathnames = totalcross.sys.Convert.tokenizeString((String)vLocals.items[i],',');
-         String pathname = pathnames[0];
-         String name = Utils.getFileName(pathname);
-         if (pathnames.length > 1)
-         {
-            name = totalcross.sys.Convert.appendPath(pathnames[1],name);
-            if (name.startsWith("/"))
-               name = name.substring(1);
-         }
-         // tcz's name must match the lowercase sharedid
-         if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
-            name = targetTCZ+".tcz";
-         FileInputStream fis;
-         try
-         {
-            fis = new FileInputStream(pathname);
-         }
-         catch (FileNotFoundException fnfe)
-         {
-            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
-         }
-         byte[] bytes = new byte[fis.available()];
-         fis.read(bytes);
-         fis.close();
-         ZipEntry zze = new ZipEntry(name);
-         if (name.endsWith(".tcz")) // tcz files will be stored without compression so they can be read directly
-         {
-            CRC32 crc = new CRC32();
-            crc.update(bytes); 
-            zze.setCrc(crc.getValue());
-            zze.setMethod(ZipEntry.STORED);
-            zze.setCompressedSize(bytes.length);
-            zze.setSize(bytes.length);
-         }            
-         zos.putNextEntry(zze);
-         zos.write(bytes);
-         zos.closeEntry();
-      }
-      zos.close();
+      writeVlocals(baos, vector2list(vLocals, new ArrayList<String>()));
+      
       // add the file UNCOMPRESSED
       byte[] bytes = baos.toByteArray();
-      CRC32 crc = new CRC32();
-      crc.update(bytes); 
-      ze.setCrc(crc.getValue());
-      ze.setMethod(ZipEntry.STORED);
-      ze.setCompressedSize(bytes.length);
-      ze.setSize(bytes.length);
+      setEntryAsStored(ze, bytes);
+      z.putNextEntry(ze);
       z.write(bytes);
    }
 
-   private void convertConstantPool(ZipInputStream is, ZipOutputStream os) throws Exception
+	public static <E> List<E> vector2list(Vector vec, List<E> list) {
+		for (int i = 0,n = vec.size(); i < n; i++) {
+			@SuppressWarnings("unchecked")
+			E item = (E) vec.items[i];
+			list.add(item);
+		}
+		return list;
+	}
+
+	private void writeVlocals(ByteArrayOutputStream baos, List<String> vLocals) throws IOException {
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		for (String item: vLocals) {
+			String[] pathnames = totalcross.sys.Convert.tokenizeString(item, ',');
+			String pathname = pathnames[0];
+			String name = Utils.getFileName(pathname);
+			if (pathnames.length > 1) {
+				name = totalcross.sys.Convert.appendPath(pathnames[1], name);
+				if (name.startsWith("/")) {
+					name = name.substring(1);
+				}
+			}
+			// tcz's name must match the lowercase sharedid
+			if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) {
+				name = targetTCZ + ".tcz";
+			}
+			FileInputStream fis;
+			try {
+				fis = new FileInputStream(pathname);
+			} catch (FileNotFoundException fnfe) {
+				try {
+					fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+				} catch (FileNotFoundException fnfe2) {
+					String pp = Utils.findPath(pathname, true);
+					if (pp != null) {
+						fis = new FileInputStream(pp);
+					} else {
+						System.out.println("File not found: " + pathname);
+						continue;
+					}
+				}
+			}
+			int avaiable = fis.available();
+			
+			ByteArrayOutputStream secondary = new ByteArrayOutputStream(avaiable);
+			IOUtils.copy(fis, secondary);
+			byte[] bytes = secondary.toByteArray();
+			fis.close();
+			ZipEntry zze = new ZipEntry(name);
+			// tcz files will be stored without
+			// compression so they can be read
+			// directly
+			if (name.endsWith(".tcz")) { 
+				setEntryAsStored(zze, bytes);
+			}
+			zos.putNextEntry(zze);
+			zos.write(bytes);
+			zos.closeEntry();
+		}
+		zos.close();
+	}
+
+	private void setEntryAsStored(ZipEntry entry, byte[] content) {
+		CRC32 crc = new CRC32();
+		crc.update(content);
+		entry.setCrc(crc.getValue());
+		entry.setMethod(ZipEntry.STORED);
+		entry.setCompressedSize(content.length);
+		entry.setSize(content.length);
+	}
+
+   private void convertConstantPool(InputStream is, ZipOutputStream os) throws Exception
    {
       totalcross.io.ByteArrayStream bas = new totalcross.io.ByteArrayStream(1024);
       totalcross.io.DataStream ds = new totalcross.io.DataStream(bas);
@@ -620,10 +770,10 @@ public class Deployer4Android
          {
             case JavaConstant.CONSTANT_INTEGER:
                String cla = jclass.getClassName();
-               if (DeploySettings.autoStart && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
+               if ((DeploySettings.autoStart || DeploySettings.isService) && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
                {
                   Integer it = new Integer();
-                  it.value = 0;
+                  it.value = DeploySettings.isService ? 1 : 0;
                   constant.info = it;
                }
                break;
@@ -719,4 +869,5 @@ public class Deployer4Android
       if (DEBUG) System.out.println(name+" -> "+value);
       return value;
    }
+
 }

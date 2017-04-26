@@ -16,14 +16,17 @@
 
 /// All settings stored in the totalcross.sys.Settings class
 
-/// Enable a sound when the garbage collector runs
-#define VMTWEAK_AUDIBLE_GC        1
-/// Collects memory usage statistics during all program run
-#define VMTWEAK_DUMP_MEMORY_STATS 2
-/// Collects memory usage statistics during a piece of code
-#define VMTWEAK_MEM_PROFILER      3
-/// Disables gc
-#define VMTWEAK_DISABLE_GC        4
+typedef enum
+{
+   VMTWEAK_AUDIBLE_GC = 1,    /// Enable a sound when the garbage collector runs
+   VMTWEAK_DUMP_MEMORY_STATS, /// Collects memory usage statistics during all program run
+   VMTWEAK_MEM_PROFILER,      /// Collects memory usage statistics during a piece of code
+   VMTWEAK_DISABLE_GC,        /// Disables gc
+   VMTWEAK_TRACE_CREATED_CLASSOBJS,
+   VMTWEAK_TRACE_LOCKED_OBJS,
+   VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS,
+   VMTWEAK_TRACE_METHODS,
+} VmTweak;
 
 #define IS_VMTWEAK_ON(x) (vmTweaks & (1 << (x-1))) // guich@tc114_19: better use this macro
 
@@ -53,32 +56,36 @@ typedef struct
    int32* virtualKeyboardPtr;            // boolean
    int32* daylightSavingsPtr;            // boolean
    int32* timeZonePtr;                   // int
+   int32* timeZoneMinutesPtr;            // int
+   int32* daylightSavingsMinutesPtr;     // int
    int32* showSecretsPtr;                // boolean
-   int32* nvfsVolumePtr;                 // int
-   int32* keypadOnlyPtr;                 // boolean
    int32* keyboardFocusTraversablePtr;   // boolean
    int32* closeButtonTypePtr;            // int
    int32* isFullScreenPtr;               // boolean
    int32* uiStylePtr;                    // byte
    int32* dontCloseApplicationPtr;       // boolean
-   Object* appSettingsPtr;               // java.lang.String
+   TCObject* appSettingsPtr;             // java.lang.String
    int32* multipleInstances;             // boolean
    int32* gcCount;                       // int
    int32* gcTime;                        // int
    int32* chunksCreated;                 // int
-   Object* appSecretKeyPtr;              // java.lang.String
-   Object* appSettingsBinPtr;            // byte[]
+   TCObject* appSecretKeyPtr;            // java.lang.String
+   TCObject* appSettingsBinPtr;          // byte[]
    int32* showMemoryMessagesAtExit;      // boolean
-   Object* timeZoneStrPtr;               // java.lang.String
+   TCObject* timeZoneStrPtr;             // java.lang.String
    int32* fingerTouchPtr;                // boolean
    int32* disableDebug;                  // boolean (totalcross.sys.Vm)
-   Object* fullScreenPlatformsPtr;       // java.lang.String
+   TCObject* fullScreenPlatformsPtr;     // java.lang.String
    int32* disableScreenRotation;         // boolean
    int32* deviceFontHeightPtr;           // int
-   Object* iccidPtr;                     // java.lang.String
-   int32* useNewFont;                    // boolean
+   TCObject* iccidPtr;                   // java.lang.String
    int32* resizableWindow;               // boolean
-   int32* windowFont;                    // int
+   int32* windowFont;                    // int 
+   int32* isOpenGL;                      // boolean
+   TCObject* lineNumber;                 // java.lang.String
+   TCObject* bugreportEmail;             // java.lang.String
+   TCObject* appVersion;
+   int32 *unmovableSIP;                  // boolean
 } TTCSettings, *TCSettings;
 
 typedef struct

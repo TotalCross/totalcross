@@ -21,4 +21,14 @@
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3))) // bits RRRRRGGGGGGBBBBB
 #define SETPIXEL555(r,g,b) ((((r) >> 3) << 10) | (((g) >> 3) << 5) | (((b) >> 3))) // bits 0RRRRRGGGGGBBBBB
 
+#define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
+
+typedef enum
+{
+   INVTEX_INVALIDATE,
+   INVTEX_DEL_ALL,
+   INVTEX_DEL_ONLYOLD
+} INVTEX;
+void invalidateTextures(INVTEX it); // imagePrimitives_c.h
+
 #endif

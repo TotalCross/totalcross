@@ -14,12 +14,12 @@
 #define CDILU 199 // Ç
 #define CDILL 231 // ç
 
-extern Object testfont;
+extern TCObject testfont;
 
 TESTCASE(tsC_toInt_s) // totalcross/sys/Convert native public static int toInt(String s);
 {
    TNMParams p;
-   Object params[1];
+   TCObject params[1];
 
    p.currentContext = currentContext;
    p.obj = params;
@@ -228,7 +228,7 @@ TESTCASE(tsC_toString_di) // totalcross/sys/Convert native public static String 
 TESTCASE(tsC_toDouble_s) // totalcross/sys/Convert native public static double toDouble(String s);
 {
    TNMParams p;
-   Object params[5];
+   TCObject params[5];
    int32 i32buf[1];
 
    p.currentContext = currentContext;
@@ -259,7 +259,7 @@ TESTCASE(tsC_toDouble_s) // totalcross/sys/Convert native public static double t
 TESTCASE(tsC_toString_si) // totalcross/sys/Convert native public static String toString(String doubleValue, int n);
 {
    TNMParams p;
-   Object params[1];
+   TCObject params[1];
    char buffer[20];
    int32 i32buf[1];
 
@@ -543,9 +543,9 @@ TESTCASE(tsC_unsigned2hex_ii) // totalcross/sys/Convert native public static Str
 TESTCASE(tsC_hashCode_s) // totalcross/sys/Convert native public static int hashCode(StringBuffer sb);
 {
    TNMParams p;
-   Object params[1];
-   Object sb;
-   Object charArray;
+   TCObject params[1];
+   TCObject sb;
+   TCObject charArray;
    char buf[10] = "HASHCODE";
    JChar jbuf[10];
 
@@ -571,15 +571,15 @@ TESTCASE(tsC_hashCode_s) // totalcross/sys/Convert native public static int hash
    finish: ;
 }
 
-extern Object testfm;
+extern TCObject testfm;
 
 TESTCASE(tsC_getBreakPos_fsiib) // totalcross/sys/Convert native public static int getBreakPos(totalcross.ui.font.FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap); #DEPENDS(tufFM_fontMetricsCreate)
 {
    TNMParams p;
-   Object params[2];
+   TCObject params[2];
    int32 i32buf[3];
-   Object sb;
-   Object charArray;
+   TCObject sb;
+   TCObject charArray;
    CharP buf = "A SuperWaba é uma plataforma para desenvolvimento de aplicações para PDA(Personal Digital Assistants) e Smartphones.";
    JCharP jbuf;
    int32* start;
@@ -669,10 +669,10 @@ TESTCASE(tsC_insertAt_sic) // totalcross/sys/Convert native public static void i
 {
    // note that "insert" is not the same of "replace"
    TNMParams p;
-   Object params[1];
+   TCObject params[1];
    int32 i32buf[2];
-   Object sb;
-   Object charArray;
+   TCObject sb;
+   TCObject charArray;
    char buf[10] = "CARRO";
    JChar jbuf[10];
    JCharP jresP;
@@ -810,7 +810,7 @@ TESTCASE(tsC_toString_l) // totalcross/sys/Convert native public static String t
 static int64 toLongString(Context currentContext, CharP buf)
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;

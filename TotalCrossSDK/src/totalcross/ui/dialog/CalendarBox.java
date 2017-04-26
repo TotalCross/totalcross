@@ -78,7 +78,6 @@ public class CalendarBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
       String[]defCaps = new String[42];
       for (int i=0; i < 42; i++)
          defCaps[i] = Convert.toString(i+10);
@@ -112,6 +111,7 @@ public class CalendarBox extends Window
       btnToday.setFont(font);
       btnClear.setFont(font);
       btnCancel.setFont(font);
+      setTitleFont(font.asBold());
       int btnH = btnCancel.getPreferredHeight();
       Button.commonGap = 0;
 
@@ -160,11 +160,9 @@ public class CalendarBox extends Window
       titleAlign = CENTER;
 
       // buttons
-      Button.commonGap = 2;
-      add(btnToday, LEFT+4, BOTTOM-4, bw, PREFERRED);
-      add(btnClear, CENTER, SAME, bw, PREFERRED);
-      add(btnCancel, RIGHT-4, SAME, bw, PREFERRED);
-      Button.commonGap = 0;
+      add(btnToday, LEFT+4, BOTTOM-4, PARENTSIZEMIN+30, PREFERRED);
+      add(btnClear, CENTER, SAME, PARENTSIZEMIN+30, PREFERRED);
+      add(btnCancel, RIGHT-4, SAME, PARENTSIZEMIN+30, PREFERRED);
 
       // days
       add(pbgDays);
@@ -440,5 +438,6 @@ public class CalendarBox extends Window
    {
       if (!canceled) // guich@580_27
          postPressedEvent();
+      sentDay = 0;
    }
 }

@@ -28,10 +28,9 @@ public class Deployer4Applet
       try {new totalcross.io.File(targetDir).createDir();} catch (totalcross.io.IOException e) {}
       String names[] =
       {
-         "_320x320x16_Treo680.html",
          "_320x480x16_Android.html",
          "_240x320x16_WindowsMobile.html",
-         "_320x240x16_Blackberry.html",
+         "_960x640x16_iPhone.html",
       };
 
       for (int i =0; i < names.length; i++)
@@ -97,15 +96,12 @@ public class Deployer4Applet
          "</applet>\n"+
          "</center>\n"+
          "<p>\n"+
-         "Key emulations:<br>\n"+
-         "F1-F4 : HARD1 to HARD4<br>\n"+
-         "F5 : COMMAND<br>\n"+
+         "Device key emulations:<br>\n"+
+         "F2 : TAKE SCREEN SHOT AND SAVE TO CURRENT FOLDER<br>\n"+
          "F6 : MENU<br>\n"+
-         "F7 : CALC<br>\n"+
-         "F8 : FIND<br>\n"+
-         "F9 : LAUNCH (HOME)<br>\n"+
-         "F11: KEYBOARD_ABC<br>\n"+
-         "F12: KEYBOARD_123<br>\n"+
+         "F7 : BACK (ESCAPE)<br>\n"+
+         "F9 : CHANGE ORIENTATION (don't work on applet)<br>\n"+
+         "F11: OPEN KEYBOARD<br>\n"+
          "<br>Important! You may have to relax the Browser restrictions so that some samples can be run (by default, the Browser won't let the samples access the file system to load images or databases, or to connect to the internet).\n"+
          "<br>If the sample fails, open the Java console and check the error.\n"+
          "</BODY>\n"+

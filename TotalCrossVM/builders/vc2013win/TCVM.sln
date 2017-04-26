@@ -1,0 +1,19 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCVM", "TCVM.vcxproj", "{B6DC7204-DD8B-4A7B-995F-368B82F630DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		NO RAS Debug|Win32 = NO RAS Debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6DC7204-DD8B-4A7B-995F-368B82F630DE}.NO RAS Debug|Win32.ActiveCfg = NO RAS Debug|Win32
+		{B6DC7204-DD8B-4A7B-995F-368B82F630DE}.NO RAS Debug|Win32.Build.0 = NO RAS Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

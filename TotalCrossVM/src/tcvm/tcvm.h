@@ -14,41 +14,47 @@
 #ifndef TCVM_H
 #define TCVM_H
 
+//#define ENABLE_WIN32_POINTER_VERIFICATION 1
+//#define ENABLE_TRACE
+#define ENABLE_TEXTURE_TRACE 0
+
+#if defined(__x86_64__) || defined(__LP64__) // 1st: GCC, 2nd: XCODE
+ #define TBITS 64
+ #define TSIZE 8
+ #define TSHIFT 3
+#else
+ #define TBITS 32
+ #define TSIZE 4
+ #define TSHIFT 2
+#endif
+
+#ifdef darwin
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
+#define __gl2_h_
+#endif
+
+//#if defined(WIN32) && defined(_DEBUG) // use default libc on Visual C, because its easier to find corruption problems
+//#define FORCE_LIBC_ALLOC
+//#endif
+
 #ifdef ANDROID
 #include <jni.h>
+#define __gl2_h_
 #endif
 
 #if HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-/** The following ifdef block is the standard way of creating macros which make exporting
- from a DLL simpler. All files within this DLL are compiled with the TESTE_EXPORTS
- symbol defined on the command line. this symbol should not be defined on any project
- that uses this DLL. This way any other project whose source files include this file see
- TESTE_API functions as being imported from a DLL, wheras this DLL sees symbols
- defined with this macro as being exported.
- */
-#if defined(WIN32) || defined(WINCE)
- #ifdef TC_EXPORTS
- #define TC_API __declspec(dllexport)
- #else
- #define TC_API __declspec(dllimport)
- #endif
-#else
- #define TC_API extern
-#endif
-
-#if defined(TC_EXPORTS) || defined(DONT_PREFIX_WITH_TC_FOR_LIBRARIES)
-#define TCAPI_FUNC(x) x
-#else
-#define TCAPI_FUNC(x) TC_##x
-#endif
-
-#define NATIVE_METHOD(x) TC_API void x(NMParams p)
+#include "../tcvm/tcapi.h"
 
 #if defined(WINCE) || defined(WIN32)
+#if defined WP8
+ #define INCL_WINSOCK_API_PROTOTYPES 1
+#else
  #define INCL_WINSOCK_API_PROTOTYPES 0
+#endif
  #define INCL_WINSOCK_API_TYPEDEFS 1
  #include "winsock2.h"
  #include <windows.h>
@@ -60,26 +66,68 @@
  #if _WIN32_WCE >= 300
   #include <notify.h>
  #endif
+ #if !defined WP8
  typedef HWAVEOUT MediaClipHandle;
  typedef WAVEHDR  MediaClipHeader;
-#elif defined PALMOS
- #include <string.h>  // for memmove
-// #include <PalmOSARM.h>
- #include <PalmCompatibility.h>
+#endif
 #endif
 
 #include <stdarg.h>
 #include <stdio.h>
-
-#if defined(DISABLE_RAS)
-#include "../init/noras_ids/noras.inc"
-#endif
+#include <math.h>
 
 #ifdef darwin
 #define inline
 #endif
 
-#if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
+#if defined WP8
+
+#include "cppwrapper.h"
+//#include "ThreadEmulation.h"
+#include <winsock2.h>
+
+#define GetSystemInfo(a) GetNativeSystemInfo(a)
+
+#define Beep(t,d) do {} while (0)
+#define GetTickCount() GetTickCount64()
+
+#define LoadLibrary(x) LoadPackagedLibrary(x, 0)
+#define CreateFile(a, b, c, d, e, f, g) CreateFile2(a, b, c, e, 0)
+ typedef unsigned char boolean;
+#define FindFirstFile(a, b) FindFirstFileEx(a, FindExInfoStandard, b, FindExSearchNameMatch, NULL, 0)
+#define VirtualAlloc(a, b, c, d) malloc(a * b)
+#define GetModuleHandle(a) 0
+#define GetMessage(a, b, c, d) 0
+#define PostMessage(a, b, c, d)
+#define TranslateMessage(a)
+#define DispatchMessage(b)
+#define GetWindowLong(a, b) 0
+#define SetWindowLong(a, b, c)
+#define PeekMessage(a, b, c, d, e) 0
+#define GetDeviceCaps(a, b) 0
+#define DeleteDC(a)
+#define GetSystemMetrics(a) 0
+#define GetClassName(a, b, c)
+#define lstrlen(a) _tcslen(a)
+#define lstrcmpi(a, b) _tcsicmp(a, b)
+#define SetForegroundWindow(a)
+#define GetModuleFileName(a, b, c)
+#define EnumWindows(a, b)
+#define SetWindowPos(a, b, c, d, e, f, g) 0
+#define ExtEscape(a, b, c, d, e, f) 0
+#define ReleaseDC(a, b)
+#define SystemParametersInfo(a, b, c, d)
+#define GetClientRect(a, b)
+#define SelectPalette(a, b, c)
+#define RealizePalette(a)
+#define SelectObject(a, b) 0
+#define BitBlt(a, b, c, d, e, f, g, h, i)
+#define DeleteObject(a)
+#define GetLogicalDriveStrings(a, b) 0
+
+#endif
+
+#if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
 #include "dlmalloc.h"                                                         
 #endif
 #include "xtypes.h"
@@ -97,6 +145,7 @@
 #include "utils.h"
 #include "debug.h"
 #include "objectmemorymanager.h"
+#include "tcclass.h"
 #include "../tests/tc_testsuite.h"
 #include "../nm/instancefields.h"
 #include "../nm/ui/GraphicsPrimitives.h"
@@ -121,7 +170,7 @@
 TC_API TValue executeMethod(Context currentContext, Method method, ...);
 typedef TValue (*executeMethodFunc)(Context currentContext, Method method, ...);
 /// check if the given range is inside the bounds of the array (start < x <= end)
-TC_API bool checkArrayRange(Context currentContext, Object obj, int32 start, int32 count);
-typedef bool (*checkArrayRangeFunc)(Context currentContext, Object obj, int32 start, int32 count);
+TC_API bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 count);
+typedef bool (*checkArrayRangeFunc)(Context currentContext, TCObject obj, int32 start, int32 count);
 
 #endif

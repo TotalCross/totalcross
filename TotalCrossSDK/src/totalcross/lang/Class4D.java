@@ -19,6 +19,8 @@
 
 package totalcross.lang;
 
+import java.lang.reflect.*;
+
 /** 
  * This class contains utility methods that are used to load classes by name 
  * and get information about their fields and methods. 
@@ -35,20 +37,21 @@ package totalcross.lang;
  * available.
  */
 
-public final class Class4D
+public final class Class4D<T>
 {
    // place holders for the VM
-   Object targetClass; // TClass
+   Object nativeStruct; // TClass
    String targetName;  // java.lang.String
+   String ncached,cached;
 
    /** The TotalCross deployer can find classes that are instantiated using Class.forName if, and only if, they are
     * String constants. If you build the className dynamically, then you must include the file passing it to the tc.Deploy
     * application (the deployer will warn you about that).
     * @see totalcross.sys.Vm#attachLibrary
     */
-   native public static Class forName(String className) throws java.lang.ClassNotFoundException;
+   native public static Class<?> forName(String className) throws java.lang.ClassNotFoundException;
 
-   /** Creates a new instance of this class.
+   /** Creates a new instance of this class. The class must have a default and public constructor (E.G.: <code>public MyClass()</code>)
     * @throws InstantiationException If you try to instantiate an interface, abstract class or array
     * @throws IllegalAccessException If you try to instantiate a private class
     */
@@ -60,12 +63,103 @@ public final class Class4D
    /** Returns the fully qualified name of this class. */
    public String getName()
    {
-      return targetName;
+      if (ncached != null) return ncached;
+      if (isPrimitive())
+      {
+         if (targetName.endsWith(".Integer")) return "int";
+         if (targetName.endsWith(".Character")) return "char";
+         if (targetName.endsWith(".Byte")) return "byte";
+         if (targetName.endsWith(".Short")) return "short";
+         if (targetName.endsWith(".Long")) return "long";
+         if (targetName.endsWith(".Float")) return "float";
+         if (targetName.endsWith(".Double")) return "double";
+         if (targetName.endsWith(".Boolean")) return "boolean";
+      }
+      return ncached = targetName;
+   }
+   
+   public String getCanonicalName()
+   {
+      return getName();
    }
    
    /** Returns the fully qualified name of this class. */
    public String toString()
    {
-   	return targetName;
+      if (cached != null) return cached;
+   	return cached = isPrimitive() ? getName() : "class "+getName();
    }
+   
+   public boolean equals(Object o)
+   {
+      return o instanceof Class4D && ((Class4D)o).getName().equals(getName());
+   }
+
+   /**
+    * Returns the enumeration constants of this class, or
+    * null if this class is not an <code>Enum</code>.
+    *
+    * @return an array of <code>Enum</code> constants
+    *         associated with this class, or null if this
+    *         class is not an <code>enum</code>.
+    * @since 1.5
+    */
+   public T[] getEnumConstants()
+   {
+      try
+        {
+          Method m = getMethod("values", new Class[0]);
+          return (T[]) m.invoke(null, new Object[0]);
+        }
+      catch (NoSuchMethodException exception)
+        {
+          throw new Error("Enum lacks values() method");
+        }
+      catch (IllegalAccessException exception)
+        {
+          throw new Error("Unable to access Enum class");
+        }
+      catch (InvocationTargetException exception)
+        {
+          throw new
+            RuntimeException("The values method threw an exception",
+                             exception);
+        }
+   }
+
+   public String getSimpleName()
+   {
+      String s = getName();
+      return s.substring(s.lastIndexOf('.')+1);
+   }
+   
+   public T cast(Object obj) 
+   {
+      if (obj != null && !isInstance(obj))
+          throw new ClassCastException("Can't cast "+obj);
+      return (T) obj;
+   }
+   
+   public native boolean isAssignableFrom(Class<?> cls);
+   public native boolean isInterface();
+   public native boolean isArray();
+   public native boolean isPrimitive();
+   public native Class<?> getSuperclass();
+   public native Class<?>[] getInterfaces();
+   public native Class<?> getComponentType();
+   public native int getModifiers();
+   public native Object[] getSigners();
+   public native Field[] getFields() throws SecurityException;
+   public native Method[] getMethods() throws SecurityException;
+   public native Constructor<?>[] getConstructors() throws SecurityException;
+   public native Field getField(String name) throws NoSuchFieldException, SecurityException;
+   public native Method getMethod(String name, Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor<?> getConstructor(Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Field[] getDeclaredFields() throws SecurityException;
+   public native Method[] getDeclaredMethods() throws SecurityException;
+   public native Constructor<?>[] getDeclaredConstructors() throws SecurityException;
+   public native Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
+   public native Method getDeclaredMethod(String name, Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   public native Constructor<?> getDeclaredConstructor(Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
+   
 }

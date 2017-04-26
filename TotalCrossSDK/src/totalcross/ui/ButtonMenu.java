@@ -192,6 +192,14 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       reposition();
    }
    
+   /** Returns the button at the given index. You may customize it.
+    * @since TotalCross 2.0
+    */
+   public Button getButton(int idx)
+   {
+      return btns[idx];
+   }
+   
    /** Creates and resizes all Button and images. For better performance, call setFont for this control BEFORE
     * calling add or setRect (this is a general rule for all other controls as well).
     */
@@ -234,10 +242,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try
             {
-               img = img.getSmoothScaledInstance(
-                     img.getWidth() * imageS / img.getHeight(),
-                     imageS,
-                     img.transparentColor);
+               img = Settings.enableWindowTransitionEffects ? img.getSmoothScaledInstance(img.getWidth() * imageS / img.getHeight(),imageS) : img.getHwScaledInstance(img.getWidth() * imageS / img.getHeight(),imageS);
             }
             catch (ImageException ie)
             {

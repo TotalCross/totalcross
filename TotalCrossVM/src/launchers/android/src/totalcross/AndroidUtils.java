@@ -16,7 +16,6 @@ package totalcross;
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
-
 import android.app.*;
 import android.content.*;
 import android.content.pm.*;
@@ -35,50 +34,40 @@ public class AndroidUtils
       
       public Config()
       {
-         // legacy, first time only
-         SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
-         Map<String,?> oldconf = pref.getAll();
-         if (oldconf != null && !oldconf.isEmpty())
+         try
          {
-            saved_screen_size = pref.getInt("saved_screen_size",-1);
-            demotime = pref.getInt("demotime",0);
-            pref.edit().clear().commit();
+            FileInputStream f = new FileInputStream(getRealPath(pinfo.applicationInfo.dataDir)+"/config.bin");
+            DataInputStream ds = new DataInputStream(f);
+            int version = ds.readInt();
+            if (version == 1)
+            {
+               ds.readUTF();
+               saved_screen_size = ds.readInt();
+               demotime = ds.readInt();
+            }
+            else
+            if (version == 2)
+            {
+               saved_screen_size = ds.readInt();
+               demotime = ds.readInt();
+               zipDateTime = ds.readInt();
+            }
+            f.close();
          }
-         else
-            try
-            {
-               FileInputStream f = new FileInputStream(pinfo.applicationInfo.dataDir+"/config.bin");
-               DataInputStream ds = new DataInputStream(f);
-               int version = ds.readInt();
-               if (version == 1)
-               {
-                  ds.readUTF();
-                  saved_screen_size = ds.readInt();
-                  demotime = ds.readInt();
-               }
-               else
-               if (version == 2)
-               {
-                  saved_screen_size = ds.readInt();
-                  demotime = ds.readInt();
-                  zipDateTime = ds.readInt();
-               }
-               f.close();
-            }
-            catch (FileNotFoundException fnfe)
-            {
-            }
-            catch (Exception e)
-            {
-               handleException(e,false);
-            }                  
+         catch (FileNotFoundException fnfe)
+         {
+         }
+         catch (Exception e)
+         {
+            handleException(e,false);
+         }                  
       }
 
       public void save()
       {
          try
          {
-            FileOutputStream f = new FileOutputStream(pinfo.applicationInfo.dataDir+"/config.bin");
+            FileOutputStream f = new FileOutputStream(getRealPath(pinfo.applicationInfo.dataDir)+"/config.bin");
             DataOutputStream ds = new DataOutputStream(f);
             ds.writeInt(version);
             ds.writeInt(saved_screen_size);
@@ -144,22 +133,37 @@ public class AndroidUtils
       }
    }
 
+   private static String getRealPath(String path)
+   {
+      try
+      {
+         File f = new File(path);
+         String ret = f.getCanonicalPath();
+         return ret;
+      }
+      catch (Exception e)
+      {
+         return path;
+      }
+   }
+   
    private static void loadTCVM()
    {
       try // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
       {
-         String sharedId = AndroidUtils.pinfo.sharedUserId;
+         String sharedId = pinfo.sharedUserId;
          String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
-         System.load("/data/data/totalcross." + tczname + "/lib/libtcvm.so"); // for single apk
+         System.load(getRealPath("/data/data/totalcross." + tczname + "/lib")+"/libtcvm.so"); // for single apk
       }
       catch (Throwable ule) 
       {
          try
          {
-            System.load("/data/data/totalcross.android/lib/libtcvm.so");
+            System.load(getRealPath("/data/data/totalcross.android/lib")+"/libtcvm.so");
          }
          catch (UnsatisfiedLinkError ule2)
          {
+            handleException(ule2,false);
             error("The TotalCross Virtual Machine was not found!",true);
             while (true)
                try {Thread.sleep(500);} catch (Exception e) {}
@@ -194,23 +198,12 @@ public class AndroidUtils
       }
    }
    
-   public static int getSavedScreenSize()
-   {
-      return configs.saved_screen_size;
-   }
-
-   public static void setSavedScreenSize(int newValue)
-   {
-      configs.saved_screen_size = newValue;
-      configs.save();
-   }
-   
    public static void updateInstall(StartupTask task) throws Exception
    {
       long ini = System.currentTimeMillis();
       if (task != null)
          task.initDialog();
-      String dataDir = pinfo.applicationInfo.dataDir;
+      String dataDir = getRealPath(pinfo.applicationInfo.dataDir);
       AssetFileDescriptor file = main.getAssets().openFd("tcfiles.zip");
       InputStream is = file.createInputStream();
       ZipInputStream zis = new ZipInputStream(is);
@@ -255,7 +248,7 @@ public class AndroidUtils
       try
       {
          // create a file that informs the application's apk file path
-         String txt = pinfo.applicationInfo.dataDir+"/apkname.txt";
+         String txt = getRealPath(pinfo.applicationInfo.dataDir)+"/apkname.txt";
          nativeCreateFile(txt);
          FileOutputStream fos = new FileOutputStream(txt);
          String dir = main.getPackageResourcePath();
@@ -273,6 +266,7 @@ public class AndroidUtils
    public static void handleException(Throwable e, boolean terminateProgram)
    {
       String stack = Log.getStackTraceString(e);
+      debug(terminateProgram ? "FATAL EXCEPTION" : "NON-FATAL EXCEPTION");
       debug(stack);
       if (terminateProgram)
          error("An exception was issued when launching the program. Please inform this stack trace to your software's vendor:\n\n"+stack,true);
@@ -320,7 +314,7 @@ public class AndroidUtils
       Log.i("TotalCross", s);
    }
 
-   private static final String VM_PARAMS = "/data/data/totalcross.android/launcher.params"; // guich@tc127_71: use / instead of \
+   private static final String VM_PARAMS = getRealPath("/data/data/totalcross.android")+"/launcher.params"; // guich@tc127_71: use / instead of \
    
    public static Hashtable<String,String> readVMParameters()
    {
@@ -368,5 +362,36 @@ public class AndroidUtils
       {
          handleException(e,false);
       }
+   }
+   
+   public static boolean isImage(String argl)
+   {
+      return argl.endsWith(".png") || argl.endsWith(".jpg") || argl.endsWith(".jpeg");
+   }
+
+   public static byte[] readFully(InputStream input) throws IOException
+   {
+       byte[] buffer = new byte[2048];
+       int bytesRead;
+       ByteArrayOutputStream output = new ByteArrayOutputStream(2048);
+       while ((bytesRead = input.read(buffer)) != -1)
+           output.write(buffer, 0, bytesRead);
+       return output.toByteArray();
+   }
+   
+   public static void copyFile(String in, String out) throws IOException {
+      FileInputStream fin = new FileInputStream(in);
+      copyStreamToFile(fin, out);
+      fin.close();
+   }
+   
+   // Não fecha a InputStream enviada...
+   public static void copyStreamToFile(InputStream inputStream, String out) throws IOException {
+      byte[] buf = new byte[4096];
+      FileOutputStream fout = new FileOutputStream(out);
+      int r;
+      while ((r=inputStream.read(buf,0,buf.length)) > 0)
+         fout.write(buf,0,r);
+      fout.close();
    }
 }

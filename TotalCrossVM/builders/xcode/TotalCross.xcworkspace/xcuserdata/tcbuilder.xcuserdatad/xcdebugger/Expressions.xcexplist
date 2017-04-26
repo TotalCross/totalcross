@@ -11,10 +11,18 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "fillNativeProcAddressesTC:nativeProcAddressesTC.c">
+         contextName = "initAll:startup.c">
          <PersistentStrings>
             <PersistentString
-               value = "htNativeProcAddresses">
+               value = "htNativeProcAddresses.size">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView updateScreen]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "window">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
@@ -27,10 +35,46 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "initAll:startup.c">
+         contextName = "vmExec:Vm_c.m">
          <PersistentStrings>
             <PersistentString
-               value = "htNativeProcAddresses.size">
+               value = "szArgs[1]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView invalidateScreen:]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "tcSettings.screenWidthPtr">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[MainViewController viewDidAppear:]:mainview.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView setScreenValues:]:childview.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView initWithFrame:]:childview.m">
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView graphicsSetup]:childview.m">
+         <PersistentStrings>
+            <PersistentString
+               value = "self.layer">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "-[ChildView init:]:childview.m">
+      </ContextState>
+      <ContextState
+         contextName = "fillNativeProcAddressesTC:nativeProcAddressesTC.c">
+         <PersistentStrings>
+            <PersistentString
+               value = "htNativeProcAddresses">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

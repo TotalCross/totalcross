@@ -82,8 +82,6 @@ public class ActivationWindow extends Window
    {
       alert("Success", "TotalCross is now activated!",0x008800);
       unpop();
-      if (Settings.platform.equals(Settings.BLACKBERRY))
-         MainWindow.exit(0);
    }
 
    public void onEvent(Event e)

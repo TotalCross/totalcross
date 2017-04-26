@@ -23,7 +23,6 @@ import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 
 /** Shows a color dialog that can be used to select a color. There are several ways to choose a color:
  * <ul>
@@ -57,7 +56,7 @@ public class ColorChooserBox extends Window implements PenListener
    private KeyEvent ke = new KeyEvent();
    
    /** The choosen color or -1 if the user cancelled. */
-   public int choosenColor;
+   public int choosenColor = -1;
    
    public ColorChooserBox(int defaultColor)
    {
@@ -196,7 +195,6 @@ public class ColorChooserBox extends Window implements PenListener
                   if (err)
                   {
                      v = 0;
-                     Sound.beep();
                      ed.setText("0");
                   }
                   else
@@ -235,6 +233,12 @@ public class ColorChooserBox extends Window implements PenListener
             }
             break;
       }
+   }
+   
+   public void onPopup()
+   {
+      if (choosenColor != -1)
+         colorChanged(choosenColor,-1,-1,-1);
    }
    
    private void colorChanged(int rgb, int r, int g, int b)

@@ -76,9 +76,9 @@ import totalcross.xml.*;
 public class SOAP // guich@570_34
 {
    /**
-    * Turn this TRUE to print the xml in the console. You may also call
+    * Turn this TRUE to print the xml in the console. You may also set
     * <code>HttpStream.debugHeader = true</code>.
-    * Caution: don't use this on device, because it increases a lot the memory usage.
+    * Caution: don't use this on device because it increases a lot the memory usage.
     */
    public static boolean debug;
    /**
@@ -110,28 +110,29 @@ public class SOAP // guich@570_34
       htTypes.put("boolean", BOOLEAN_TYPE);
    }
 
-   /** A flag that indicates if the SOAP connection was using either GZIP or ZLIB.
+   /** A flag that indicates if the SOAP connection was using either GZip or ZLib.
     * This is a ready-only flag, set during the execute method, and changing its 
     * value has no effect.
     */
    public boolean wasCompressionUsed; // guich@tc114_89
    /*
     * luciana@570_45 - Added these attributes and a constructor that only
-    * receives the basic params (URI, method and vector to receive the answer)
-    * and inicialize these attributes. Now the user can create a SOAP object,
+    * receives the basic parameters (URI, method, and vector to receive the answer)
+    * and initialize these attributes. Now the user can create a SOAP object,
     * sets its parameters and then call execute() to handle the SOAP request.
     * There are setParam methods that receives only the parameter value and
     * others that receives the parameter value and parameter name. This is
     * important because some servers require the names of the parameters.
     */
    public String namespace;
+   public String namespaceId;
    public String uri;
    public String mtd;
-   /** An alternative open timeout for the connection. Defaults to 25 seconds. */
+   /** The open timeout for the connection. Defaults to 25 seconds. */
    public int openTimeout;
-   /** An alternative read timeout. Defaults to 60 seconds. */
+   /** The read timeout. Defaults to 60 seconds. */
    public int readTimeout;
-   /** An alternative write timeout. Defaults to 60 seconds. */
+   /** The write timeout. Defaults to 60 seconds. */
    public int writeTimeout; // guich@tc114_8
    /** An alternative tag used to identify when a tag is a answer tag. */
    public String alternativeReturnTag;
@@ -140,7 +141,7 @@ public class SOAP // guich@570_34
    private String errorReason;
    private int errorReasonState;
    // luciana@570_45 - holds the parameter index of the request
-   private int paramIndex;
+   protected int paramIndex;
 
    private static final int DEFAULT_OPEN_TIMEOUT = 25000;
    private static final int DEFAULT_READ_WRITE_TIMEOUT = 60000;
@@ -290,17 +291,19 @@ public class SOAP // guich@570_34
     * The prefix string used when sending requests. Note that it uses UTF-8, so
     * unicode characters are not supported.
     */
-   public static String prefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-         + "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+   public static String prefix = "<soapenv:Envelope "
+         + "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+         + "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
+         + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
          + "<soapenv:Body>";
    /** The suffix string used when sending requests. */
    public static String suffix = "</soapenv:Body>" + "</soapenv:Envelope>";
 
-   private static StringBuffer sbuf = new StringBuffer(1024);
+   protected StringBuffer sbuf = new StringBuffer(1024);
 
    /**
     * Constructs a SOAP request with the given parameters. The default namespace
-    * will be used, along with a open timeout of 25 seconds and a read timeout
+    * will be used, along with an open timeout of 25 seconds, and a read and write timeout
     * of 60 seconds.
     *
     * @param mtd
@@ -330,7 +333,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a string parameter in the order of the method call, identifying it as
-    * <arg+index>
+    * <code>arg+index</code>
     *
     * @param param
     */
@@ -341,7 +344,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a string parameter in the order of the method call, identifying it as
-    * <paramName>.
+    * <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -353,7 +356,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a int parameter in the order of the method call, identifying it as
-    * <arg+index>
+    * <code>arg+index</code>
     *
     * @param param
     */
@@ -364,7 +367,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a int parameter in the order of the method call, identifying it as
-    * <paramName>.
+    * <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -376,7 +379,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a double parameter in the order of the method call, identifying it as
-    * <arg+index>
+    * <code>arg+index</code>
     *
     * @param param
     */
@@ -387,7 +390,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a double parameter in the order of the method call, identifying it as
-    * <paramName>.
+    * <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -399,7 +402,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a boolean parameter in the order of the method call, identifying it
-    * as <arg+index>
+    * as <code>arg+index</code>
     *
     * @param param
     */
@@ -410,7 +413,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a boolean parameter in the order of the method call, identifying it
-    * as <paramName>.
+    * as <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -422,7 +425,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets an array parameter in the order of the method call. The array type
-    * will be <paramType> and the name is <paramName>. Important: unicode
+    * will be <code>paramType</code> and the name is <code>paramName</code>. Important: unicode
     * characters are not accepted because the default header uses UTF-8.
     *
     * @param param
@@ -443,7 +446,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a String array parameter in the order of the method call, identifying
-    * it as <arg+index>. Important: unicode characters are not accepted because
+    * it as <code>arg+index</code>. Important: unicode characters are not accepted because
     * the default header uses UTF-8.
     *
     * @param param
@@ -455,7 +458,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a String array parameter in the order of the method call, identifying
-    * it as <paramName>. Important: unicode characters are not accepted because
+    * it as <code>paramName</code>. Important: unicode characters are not accepted because
     * the default header uses UTF-8.
     *
     * @param param
@@ -468,7 +471,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a int array parameter in the order of the method call, identifying it
-    * as <arg+index>
+    * as <code>arg+index</code>
     *
     * @param param
     */
@@ -479,7 +482,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a int array parameter in the order of the method call, identifying it
-    * as <paramName>.
+    * as <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -494,8 +497,8 @@ public class SOAP // guich@570_34
    }
 
    /**
-    * Sets a int array parameter in the order of the method call, identifying it
-    * as <paramName>.
+    * Sets a byte array parameter in the order of the method call, identifying it
+    * as <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -511,7 +514,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a double array parameter in the order of the method call, identifying
-    * it as <arg+index>
+    * it as <code>arg+index</code>
     *
     * @param param
     */
@@ -522,7 +525,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a double array parameter in the order of the method call, identifying
-    * it as <paramName>.
+    * it as <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -538,7 +541,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a boolean array parameter in the order of the method call,
-    * identifying it as <arg+index>
+    * identifying it as <code>arg+index</code>
     *
     * @param param
     */
@@ -549,7 +552,7 @@ public class SOAP // guich@570_34
 
    /**
     * Sets a boolean array parameter in the order of the method call,
-    * identifying it as <paramName>.
+    * identifying it as <code>paramName</code>.
     *
     * @param param
     * @param paramName
@@ -564,7 +567,7 @@ public class SOAP // guich@570_34
    }
 
    /**
-    * Sets an object param identifying it as <paramName>. The object fields
+    * Sets an object param identifying it as <code>paramName</code>. The object fields
     * names and values must be informed as the String arrays <fieldNames> and
     * <fieldValues>. Important: unicode characters are not accepted because the
     * default header uses UTF-8.
@@ -638,7 +641,9 @@ public class SOAP // guich@570_34
     */
    protected HttpStream.Options createOptions() // guich@583_14
    {
-      return new HttpStream.Options();
+      HttpStream.Options options = new HttpStream.Options();
+      options.setCharsetEncoding(HttpStream.Options.CHARSET_UTF8);
+      return options;
    }
    
    /** HttpStream.Options used by this SOAP connection. */
@@ -689,9 +694,12 @@ public class SOAP // guich@570_34
             httpOptions.postHeaders.put("Accept-Encoding", "deflate;q=1.0, gzip;q=0.5"); // flsobral@tc110_77: zlib encoding is preferred over gzip encoding.
          httpOptions.postHeaders.put("Content-Type", "text/xml; charset=utf-8");
          httpOptions.postHeaders.put("SOAPAction", "\"" + namespace + (!namespace.endsWith("/")? "/" : "") + mtd + "\""); // flsobral@tc100b5_48: only add a trailing slash if the namespace does not have one already.
-         httpOptions.postPrefix = prefix + "<" + mtd + " xmlns=\"" + namespace + "\">"; // guich@tc123_39: don't concatenate the args with the prefix and suffix
+         httpOptions.postPrefix =
+               "<?xml version=\"1.0\" encoding=\"" + httpOptions.getCharsetEncoding() + "\"?>"
+                     + prefix
+                     + (namespaceId == null ? "<" + mtd + " xmlns=\"" + namespace + "\">" : "<" + namespaceId + ":" + mtd + " xmlns:" + namespaceId + "=\"" + namespace + "\">"); // guich@tc123_39: don't concatenate the args with the prefix and suffix
          httpOptions.postDataSB = sbuf;
-         httpOptions.postSuffix = "</" + mtd + ">" + suffix;
+         httpOptions.postSuffix = namespaceId == null ? "</" + mtd + ">" + suffix : "</" + namespaceId + ":" + mtd + ">" + suffix;
          if (debug)
             Vm.debug("post: " + httpOptions.postPrefix + httpOptions.postDataSB + httpOptions.postSuffix);
          hs = new HttpStream(new URI(uri), httpOptions);

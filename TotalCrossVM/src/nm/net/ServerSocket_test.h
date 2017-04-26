@@ -11,31 +11,21 @@
 
 
 
-
-#define DEBUG_SERVERSOCKET false
+#define UNTEST_SERVER_SOCKET
 
 int32 errors[200];
 int32 errorsLen = 0;
 
 TESTCASE(tnSS_serversocketCreate_iiis) // totalcross/net/ServerSocket native void serversocketCreate(int port, int backlog, int timeout, String host) throws totalcross.io.IOException;
 {
-#if DEBUG_SERVERSOCKET
-/*
-   TNMParams p;
-   Object objArray[2];
-*/
+#ifndef UNTEST_SERVER_SOCKET
    char str[1024];
-   ServerSocketHandle ssh;
-   SocketHandle s = INVALID_SOCKET;
+   SERVER_SOCKET* ssh;
+   SOCKET* s = INVALID_SOCKET;
    Err err;
    int32 timeout = 1500;
    int32 bytesReceived;
 
-/*
-   p.currentContext = currentContext;
-   p.obj = objArray;
-   p.obj[0] = createObject("totalcross.net.ServerSocket");
-*/
    err = serverSocketCreate(&ssh, 7070, 50, null);
 
 #if defined WIN32
@@ -50,15 +40,13 @@ TESTCASE(tnSS_serversocketCreate_iiis) // totalcross/net/ServerSocket native voi
    // READ AND WRITE ON OPEN CLIENT SOCKET.
 #if defined WIN32
    while ((bytesReceived = recv(s, str, 1024, 0)) <= 0);
-#elif defined PALMOS
-   timeout = timeout >= 0 ? millisToTicks(timeout) : -1;
-   while ((bytesReceived = NetLibReceive(s, str, 1024, 0, null, 0, timeout, &err)) <= 0);
 #endif
    str[bytesReceived] = 0;
    alert("%s", str);
    nativeClose(ssh);
+#else
+   TEST_CANNOT_RUN;
 #endif
-   TEST_SKIP;
    finish: ;
 }
 TESTCASE(tnSS_accept) // totalcross/net/ServerSocket native public void accept() throws totalcross.io.IOException;

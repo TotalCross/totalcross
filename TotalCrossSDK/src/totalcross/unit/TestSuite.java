@@ -49,11 +49,6 @@ import totalcross.util.*;
 
 public abstract class TestSuite extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    private ProgressBar bar;
    private Label lErrors,lElapsed;
    private static Label lMsg,lMem;
@@ -83,7 +78,7 @@ public abstract class TestSuite extends MainWindow
    }
 
    /** Add a new testcase. */
-   public void addTestCase(Class c)
+   public void addTestCase(Class<?> c)
    {
       v.addElement(c);
    }
@@ -150,7 +145,7 @@ public abstract class TestSuite extends MainWindow
       int start = Vm.getTimeStamp();
       for (int i = 0; i < n; i++)
       {
-         Class c = (Class)v.items[i];
+         Class<?> c = (Class<?>)v.items[i];
          output("=============================",OUTPUT_MSG);
          if (!canRun(i))
             output("SKIPPING "+c,OUTPUT_MSG);

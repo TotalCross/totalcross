@@ -70,7 +70,18 @@ public class SpinList extends Control
     * @since TotalCross 1.53
     */
    public boolean useCalculatorBox;
+   /** Set to false to disallow the wrap around that happens when the user is at the first or last items.
+    * @since TotalCross 2.0
+    */
+   public boolean wrapAround = true;
    
+   /** By default, equals the choices' length. You can define its length and then create a single array shared 
+    * by a set of SpinLists with different lengths on each SpinList.
+    */
+   public int choicesLen;
+   
+   /** Allows -1 as selected index (nothing selected). */
+   public boolean allowsNoneSelected;
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
     */
@@ -85,12 +96,14 @@ public class SpinList extends Control
    public SpinList(String[] choices, boolean isVertical) throws InvalidNumberException
    {
       this.isVertical = isVertical;
+      if (!isVertical)
+         hAlign = CENTER;
       setChoices(choices);
    }
    
    public int getPreferredWidth()
    {
-      int w=fm.getMaxWidth(choices,0,choices.length);
+      int w=fm.getMaxWidth(choices,0,choicesLen);
       if (w == 0)
          return Settings.screenWidth/2;
       int aw = getArrowHeight() * 2;
@@ -99,7 +112,7 @@ public class SpinList extends Control
    
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH + Edit.prefH : fmH;
+      return fmH + Edit.prefH;
    }
 
    /** Sets the choices to the given ones. Searches for [i0,if] and then expands the items.
@@ -111,20 +124,30 @@ public class SpinList extends Control
       if (choices == null) choices = new String[]{""};
       else
       {
-         Vector v = new Vector(choices.length+10);
-         for (int i =0; i < choices.length; i++)
+         this.choicesLen = choices.length;
+         Vector v = new Vector(choicesLen+10);
+         for (int i =0; i < choicesLen; i++)
             if (choices[i].indexOf('[') != -1)
                expand(v,choices[i]);
             else 
                v.addElement(choices[i]);
-         if (choices.length != v.size())
+         if (choicesLen != v.size())
             choices = (String[])v.toObjectArray();
       }
       this.choices = choices;
-      selected = 0;
+      this.choicesLen = choices.length;
+      selected = allowsNoneSelected ? -1 : 0;
       Window.needsPaint = true;
    }
-   
+
+   /** Just replaces the choices array. */
+   public void replaceChoices(String []choices) throws InvalidNumberException
+   {
+      this.choices = choices;
+      this.choicesLen = choices.length;
+      if (selected >= choicesLen) selected = choicesLen;
+   }
+
    /** Expands the items in the format "prefix [start,end] suffix", where prefix and suffix are optional.
     * For example, passing some string as "Day [1,31]" will expand that to an array of 
     * <code>"Day 1","Day 2",...,"Day 31"</code>.
@@ -151,7 +174,7 @@ public class SpinList extends Control
    /** Returns the selected item. */
    public String getSelectedItem()
    {
-      return choices[selected];
+      return selected == -1 ? "" : choices[selected];
    }
 
    /** Returns the selected index. */
@@ -161,13 +184,20 @@ public class SpinList extends Control
    }
 
    /** Sets the selected item; -1 is NOT accepted. */
-	public void setSelectedIndex(int i)
+   public void setSelectedIndex(int i)
+   {
+      setSelectedIndex(i, Settings.sendPressEventOnChange);
+   }
+   
+   /** Sets the selected item; -1 is NOT accepted. */
+	public void setSelectedIndex(int i, boolean sendPress)
 	{
-  	   if (0 <= i && i < choices.length && selected != i)
+	   int min = allowsNoneSelected ? -1 : 0;
+  	   if (min <= i && i < choicesLen && selected != i)
   	   {
 		   selected = i;
 		   Window.needsPaint = true;
-	      if (Settings.sendPressEventOnChange)
+	      if (sendPress)
 	         postPressedEvent();
 		}
 	}
@@ -178,11 +208,17 @@ public class SpinList extends Control
 	   setSelectedIndex(indexOf(item));
 	}
    
+   /** Selects the given item. If the item is not found, the selected index remains unchanged. */
+   public void setSelectedItem(String item, boolean sendPress)
+   {
+      setSelectedIndex(indexOf(item), sendPress);
+   }
+   
    /** Removes the item at the given index. */
 	public String removeAt(int index)
 	{
    	String ret = choices[index];
-   	int last = choices.length-1;
+   	int last = choicesLen-1;
    	String []ch = new String[last];
 		Vm.arrayCopy(choices,0,ch,0,index);
       if (index < last)
@@ -197,13 +233,13 @@ public class SpinList extends Control
    /** Removes the current item */
    public String removeCurrent()
    {
-   	return removeAt(selected);
+   	return selected == -1 ? "" : removeAt(selected);
    }
    
    /** Returns the index of the given item. */
    public int indexOf(String elem)
    {
-      for (int i = 0; i < choices.length; i++)
+      for (int i = 0; i < choicesLen; i++)
          if (choices[i].equals(elem))
             return i;
       return -1;
@@ -214,15 +250,15 @@ public class SpinList extends Control
 	{
    	// find the correct position to insert
       int index = 0;
-      while (index < choices.length && elem.compareTo(choices[index]) > 0)
+      while (index < choicesLen && elem.compareTo(choices[index]) > 0)
          index++;
-      if (index == choices.length || !elem.equals(choices[index]))
+      if (index == choicesLen || !elem.equals(choices[index]))
       {
-	      String []ch = new String[choices.length+1];
+	      String []ch = new String[choicesLen+1];
 	      Vm.arrayCopy(choices,0,ch,0,index);
 	      ch[index] = elem;
-	      if (index < choices.length)
-	      	Vm.arrayCopy(choices,index,ch,index+1,choices.length-index);
+	      if (index < choicesLen)
+	      	Vm.arrayCopy(choices,index,ch,index+1,choicesLen-index);
 	      choices = ch;
 	      selected = index;
 	      Window.needsPaint = true;
@@ -238,17 +274,17 @@ public class SpinList extends Control
    {
       g.backColor = backColor; // guich@341_3
       g.fillRect(0,0,width,height);
-      int fore = enabled ? foreColor : Color.getCursorColor(foreColor);
+      int fore = isEnabled() ? foreColor : Color.getCursorColor(foreColor);
       g.foreColor = fore;
       int yoff = (height - fmH) / 2 + 1;
       int wArrow = getArrowHeight();
-      String s = choices.length > 0 ? choices[selected] : "";
+      String s = choicesLen > 0 && selected != -1 ? choices[selected] : "";
       if (isVertical)
       {
          g.drawArrow(0,yoff,wArrow,Graphics.ARROW_UP,false,fore);
          g.drawArrow(0,yoff+height/2,wArrow,Graphics.ARROW_DOWN,false,fore);
-         if (choices.length > 0) 
-            g.drawText(choices[selected],hAlign==LEFT?wArrow*2:hAlign==RIGHT?width-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+         if (choicesLen > 0) 
+            g.drawText(s,hAlign==LEFT?wArrow*2:hAlign==RIGHT?width-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
       }
       else
       {
@@ -259,23 +295,27 @@ public class SpinList extends Control
          }
          g.drawArrow(0,yoff,wArrow,Graphics.ARROW_LEFT,false,fore);
          g.drawArrow(width-wArrow,yoff,wArrow,Graphics.ARROW_RIGHT,false,fore);
-         if (choices.length > 0) 
-            g.drawText(choices[selected],hAlign==LEFT?wArrow:hAlign==RIGHT?width-fmH/2-1-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+         if (choicesLen > 0) 
+            g.drawText(s,hAlign==LEFT?wArrow:hAlign==RIGHT?width-fmH/2-1-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
       }
    }
    
    private void scroll(boolean up, boolean doPostEvent)
    {
-      int max = choices.length-1;
+      int min = allowsNoneSelected ? -1 : 0;
+      int max = choicesLen-1;
+      if (!wrapAround && ((up && selected == min) || (!up && selected == max)))
+         return;
   	   if (up)
       {
    	   selected--;
-	      if (selected < 0) selected = max;
+	      if (selected < min) 
+	         selected = max;
       }
       else
       {
          selected++;
-	      if (selected > max) selected = 0;
+	      if (selected > max) selected = min;
       }
       Window.needsPaint = true;
       if (doPostEvent) 
@@ -294,7 +334,7 @@ public class SpinList extends Control
             else
             {
                key = Convert.toLowerCase((char)key); // converts to uppercase
-               for (int i =0; i < choices.length; i++)
+               for (int i =0; i < choicesLen; i++)
                   if (choices[i].charAt(0) == (char)key)
                   {
                      selected = i;
@@ -339,8 +379,9 @@ public class SpinList extends Control
 	            if (!isVertical && (useNumericBox || useCalculatorBox) && width/3 <= pe.x && pe.x <= 2*width/3)
 	            {
 	               CalculatorBox nb = new CalculatorBox(useCalculatorBox);
+	               nb.cOrigDefault = this;
 	               if (useNumericBox)
-   	               nb.maxLength = Math.max(choices[0].length(),choices[choices.length-1].length());
+   	               nb.maxLength = Math.max(choices[0].length(),choices[choicesLen-1].length());
 	               nb.popup();
 	            }
 	            else doScroll((PenEvent)event);

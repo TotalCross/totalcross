@@ -14,7 +14,14 @@
 #ifndef BARCODE_H
 #define BARCODE_H
 
-#include "tcvm.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "..\tcvm\tcvm.h"
+#ifdef __cplusplus
+}
+#endif
+
 
 #if defined(WIN32) || defined(WINCE)
  #ifdef SCAN_EXPORTS
@@ -29,6 +36,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#ifdef WINCE
    SCAN_API int32 LibOpen(OpenParams params);
    SCAN_API void LibClose();
    SCAN_API bool HandleEvent(VoidP eventP);
@@ -42,6 +50,18 @@ extern "C" {
    SCAN_API void tidsS_getScanPortDriverVersion(NMParams p);
    SCAN_API void tidsS_getScanManagerVersion(NMParams p);
    SCAN_API void tidsS_deactivate(NMParams p);
+#elif defined (ANDROID)
+   TC_API void tidsS_scannerActivate(NMParams p);
+   TC_API void tidsS_setBarcodeParam_ib(NMParams p);
+   TC_API void tidsS_setParam_iii(NMParams p);
+   TC_API void tidsS_setBarcodeLength_iiii(NMParams p);
+   TC_API void tidsS_commitBarcodeParams(NMParams p);
+   TC_API void tidsS_getData(NMParams p);
+   TC_API void tidsS_getScanPortDriverVersion(NMParams p);
+   TC_API void tidsS_getScanManagerVersion(NMParams p);
+   TC_API void tidsS_deactivate(NMParams p);
+   bool callBoolMethodWithoutParams(CharP name);
+#endif   
 #ifdef __cplusplus
 }
 #endif

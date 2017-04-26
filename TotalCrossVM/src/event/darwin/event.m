@@ -11,7 +11,7 @@
 #include "../../nm/ui/darwin/mainview.h"
 #define Class __Class
 #include "GraphicsPrimitives.h"
-typedef id Context;
+#define Context id
 #include "event.h"
 #undef Class
 
@@ -28,6 +28,9 @@ bool iphone_privateIsEventAvailable()
    return [DEVICE_CTX->_mainview isEventAvailable];
 }
 
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // rotate the screen
+void setEditText(Context currentContext, TCObject control, NSString *str);
+
 void iphone_privatePumpEvent(Context currentContext)
 {
    NSArray* events = [DEVICE_CTX->_mainview getEvents];
@@ -41,6 +44,11 @@ void iphone_privatePumpEvent(Context currentContext)
       id type = [event objectForKey:@"type"];
       if(type == nil) continue;
 
+      if([type isEqualToString:@"multitouchScale"])
+      {
+         postEvent(currentContext, MULTITOUCHEVENT_SCALE, [[event objectForKey:@"key"] intValue],  [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
+      }
+      else
       if([type isEqualToString:@"mouseDown"])
       {
          postEvent(currentContext, PENEVENT_PEN_DOWN, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
@@ -84,8 +92,14 @@ void iphone_privatePumpEvent(Context currentContext)
       }
       if([type isEqualToString:@"updateEdit"])
       {
-         setEditText(currentContext, [[ event objectForKey:@"control"] intValue ], [ event objectForKey:@"value"]);
+         setEditText(currentContext, (TCObject)[[ event objectForKey:@"control"] longValue ], [ event objectForKey:@"value"]);
       }
+      [event release];
+   }
+   if (enumerator)
+   {
+      [events release];
+      [enumerator release];
    }
 }
 

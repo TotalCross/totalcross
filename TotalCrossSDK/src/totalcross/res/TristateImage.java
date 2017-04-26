@@ -21,7 +21,6 @@ import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
-import totalcross.util.concurrent.*;
 
 /** An image that has three states: normal, pressed and disabled.
  * 
@@ -35,9 +34,7 @@ public class TristateImage
    private Hashtable htNormal = new Hashtable(5);
    private Hashtable htPressed = new Hashtable(5);
    private Hashtable htDisabled = new Hashtable(5);
-   private StringBuffer sb = new StringBuffer(20);
    private Image base;
-   private Lock sblock = new Lock();
    
    public TristateImage(String name) throws ImageException, IOException
    {
@@ -51,14 +48,21 @@ public class TristateImage
       htDisabled.clear();
    }
    
+   public Image getCopy() throws ImageException
+   {
+      return base.getCopy();
+   }
+   
    public Image getNormalInstance(int width, int height, int backColor) throws ImageException
    {
+      return getNormalInstance(width, height, backColor, true);
+   }
+   
+   private Image getNormalInstance(int width, int height, int backColor, boolean apply) throws ImageException
+   {
       int hash;
-      synchronized(sblock)
-      {
-         sb.setLength(0);
-         hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
-      }
+      StringBuffer sb = new StringBuffer(20);
+      hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
       Image ret = (Image)htNormal.get(hash);
       if (ret == null)
       {
@@ -72,25 +76,19 @@ public class TristateImage
    public Image getDisabledInstance(int width, int height, int backColor) throws ImageException
    {
       int hash;
-      synchronized(sblock)
-      {
-         sb.setLength(0);
-         hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
-      }
+      StringBuffer sb = new StringBuffer(20);
+      hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor));
       Image ret = (Image)htDisabled.get(hash);
       if (ret == null)
-         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor).getFadedInstance(backColor));
+         htDisabled.put(hash, ret = getNormalInstance(width,height,backColor,false).getFadedInstance());
       return ret;
    }
    
    public Image getPressedInstance(int width, int height, int backColor, int pressColor, boolean enabled) throws ImageException
    {
       int hash;
-      synchronized(sblock)
-      {
-         sb.setLength(0);
-         hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor).append(enabled).append(pressColor));
-      }
+      StringBuffer sb = new StringBuffer(20);
+      hash = Convert.hashCode(sb.append((width << 16) | height).append('|').append(backColor).append(enabled).append(pressColor));
       Image ret = (Image)htPressed.get(hash);
       if (ret == null)
       {         
@@ -100,9 +98,9 @@ public class TristateImage
             ret.applyColor2(pressColor);
          }
          else 
-            ret = getNormalInstance(width,height,backColor).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+            ret = getNormalInstance(width,height,backColor,false).getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
          if (!enabled)
-            ret = ret.getFadedInstance(backColor);
+            ret = ret.getFadedInstance();
          htPressed.put(hash, ret);
       }
       return ret;
@@ -110,7 +108,7 @@ public class TristateImage
    
    private Image scaleTo(int w, int h) throws ImageException
    {
-      Image img = base.getSmoothScaledInstance(w,h,-1);
+      Image img = base.getSmoothScaledInstance(w,h);
       if (img == base) // if image's width/height are the same of w/h
          img = base.getFrameInstance(0);
       return img;

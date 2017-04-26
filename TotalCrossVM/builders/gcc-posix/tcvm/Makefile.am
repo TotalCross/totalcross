@@ -8,7 +8,7 @@ sourcedir	= ${srcdir}/../../../src
 
 AM_CFLAGS = $(CFLAGS) -DTHEOS -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
 if LINUX
-AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm
 endif
 
 if LINUX
@@ -31,6 +31,10 @@ endif
 if TESTSUITE
 AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
+
+SQLITE_CFLAGS_EXTRA = -I$(sourcedir)/sqlite -D_GNU_SOURCE
+
+AM_CFLAGS += $(SQLITE_CFLAGS_EXTRA)
 
 if LINUX
 ALL_LIBS = \
@@ -56,6 +60,7 @@ ALL_LIBS = \
 	libjpeg.la \
 	libevent.la \
 	libvm.la \
+	libsqlite3.la \
 	libinit.la
 else
 ALL_LIBS = 
@@ -137,6 +142,7 @@ NM_IO_FILES =                                   \
 	$(sourcedir)/nm/io/File.c                    \
 	$(sourcedir)/nm/io/device_PortConnector.c    \
 	$(sourcedir)/nm/io/device/RadioDevice.c      \
+	$(sourcedir)/nm/io/device/scanner/zxing.c    \
 	$(sourcedir)/nm/io/device/gps/GPS.c
 
 libnmiofiles_la_SOURCES = ${NM_IO_FILES}
@@ -147,7 +153,8 @@ NM_LANG_FILES =                               \
 	$(sourcedir)/nm/lang/String.c              \
 	$(sourcedir)/nm/lang/StringBuffer.c        \
 	$(sourcedir)/nm/lang/Thread.c              \
-	$(sourcedir)/nm/lang/Throwable.c
+	$(sourcedir)/nm/lang/Throwable.c           \
+	$(sourcedir)/nm/lang/Reflection.c
 
 libnmlang_la_SOURCES = ${NM_LANG_FILES}
 
@@ -193,6 +200,9 @@ AXTLS_FILES =                          \
 	$(sourcedir)/axtls/rc4.c            \
 	$(sourcedir)/axtls/sha1.c           \
 	$(sourcedir)/axtls/sha256.c         \
+	$(sourcedir)/axtls/sha384.c         \
+	$(sourcedir)/axtls/sha512.c         \
+	$(sourcedir)/axtls/x509.c           \
 	$(sourcedir)/axtls/tls1.c           \
 	$(sourcedir)/axtls/tls1_svr.c       \
 	$(sourcedir)/axtls/tls1_clnt.c
@@ -290,7 +300,6 @@ libpng_la_CFLAGS = -DPNG_SETJMP_NOT_SUPPORTED ${AM_CFLAGS}
 libpng_la_SOURCES = ${PNG_FILES}
 
 JPEG_FILES =                               \
-	$(sourcedir)/jpeg/jidctred.c               \
 	$(sourcedir)/jpeg/jdapimin.c               \
 	$(sourcedir)/jpeg/jdapistd.c               \
 	$(sourcedir)/jpeg/jdatasrc.c               \
@@ -313,6 +322,15 @@ JPEG_FILES =                               \
 	$(sourcedir)/jpeg/JpegLoader.c             \
 	$(sourcedir)/jpeg/jquant1.c                \
 	$(sourcedir)/jpeg/jquant2.c                \
+	$(sourcedir)/jpeg/jcarith.c                \
+	$(sourcedir)/jpeg/jdarith.c                \
+	$(sourcedir)/jpeg/jdmerge.c                \
+	$(sourcedir)/jpeg/jidctflt.c               \
+	$(sourcedir)/jpeg/jidctint.c               \
+	$(sourcedir)/jpeg/jfdctflt.c               \
+	$(sourcedir)/jpeg/jfdctfst.c               \
+	$(sourcedir)/jpeg/jfdctint.c               \
+	$(sourcedir)/jpeg/jaricom.c                \
 	$(sourcedir)/jpeg/jutils.c
 
 libjpeg_la_SOURCES = ${JPEG_FILES}
@@ -327,6 +345,13 @@ EVENT_FILES =                              \
 	$(sourcedir)/event/Event.c
 
 libevent_la_SOURCES = ${EVENT_FILES}
+
+SQLITE3_FILES =    \
+    $(sourcedir)/sqlite/sqlite3.c              \
+    $(sourcedir)/nm/db/NativeDB.c
+
+libsqlite3_la_SOURCES =  \
+	$(SQLITE3_FILES)
 
 VM_FILES =                                     \
 	$(sourcedir)/tcvm/tcclass.c                \
@@ -368,6 +393,7 @@ endif
 
 libtcvm_la_SOURCES =	\
 	$(TEST_SUITE_SOURCES)
+
 
 inst_PROGRAMS = Launcher
 

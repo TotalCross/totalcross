@@ -21,7 +21,7 @@ static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key m
    return k == tcK;
 }
 
-extern int32 *shiftYfield;
+extern int32 *shiftYfield, glShiftY;
 /*
  * The argument 'x' is actually the keyCode when the pressed key cannot be translated to an unicode char.
  *
@@ -30,7 +30,7 @@ extern int32 *shiftYfield;
  * Signature: (IIIIII)V
  */
 void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this, jint type, jint key, jint x, jint y, jint modifiers, jint timestamp)
-{
+{                                
    switch (type)
    {
       case totalcross_Launcher4A_SIP_CLOSED:
@@ -69,8 +69,12 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       case totalcross_Launcher4A_PEN_DRAG:
          postEvent(mainContext, PENEVENT_PEN_DRAG, 0, x, y, modifiers);
          break;
+      case totalcross_Launcher4A_MULTITOUCHEVENT_SCALE:
+         postEvent(mainContext, MULTITOUCHEVENT_SCALE, 0, x, y, modifiers);
+         break;
       case totalcross_Launcher4A_APP_PAUSED:
-         postOnMinimizeOrRestore(true);
+         postOnMinimizeOrRestore(true);                 
+         glShiftY = 0;
          break;
       case totalcross_Launcher4A_APP_RESUMED:
          if (shiftYfield)
@@ -108,6 +112,23 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
             screenChange(mainContext, w, h, hRes, vRes, !changed); // guich@tc126_14: passing true here solves the problem - guich@tc130: prevent program from not recreating the mainPixels array when rotating the screen.
          break;
       }
+      case totalcross_Launcher4A_BARCODE_READ:
+      {
+         static Method scannerPostEvent;
+         static Context cont;
+         if (cont == null)
+            cont = newContext(null,null,false);
+         if (scannerPostEvent == null)
+            scannerPostEvent = getMethod(loadClass(mainContext,"totalcross.io.device.scanner.Scanner",false),false,"_onEvent",1,J_INT);
+         executeMethod(cont, scannerPostEvent, 1);
+         break;
+      }
+      case totalcross_Launcher4A_TOKEN_RECEIVED:                               
+         postEvent(mainContext, PUSHNOTIFICATIONEVENT_TOKEN_RECEIVED, 0, x, y, modifiers);
+         break;
+      case totalcross_Launcher4A_MESSAGE_RECEIVED:
+         postEvent(mainContext, PUSHNOTIFICATIONEVENT_MESSAGE_RECEIVED, 0, x, y, modifiers);
+         break;
    }
 }
 

@@ -19,7 +19,6 @@ package totalcross.sys;
 
 import totalcross.*;
 import totalcross.ui.*;
-import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
@@ -37,13 +36,7 @@ public final class Vm
    /** Pass this to Vm.debug to erase the memo/txt file used to store the output. */
    public final static String ERASE_DEBUG = "!erase debug!";
    
-   /** Pass this to Vm.debug to redirect the output to an alternative debugging viewer. The current platforms that support
-    * this command are:
-    * <ul>
-    *  <li> Android: use the logging window throught ADB, which can be viewed by calling
-    * <code>\TotalCrossSDK\etc\tools\android\debug_console.bat</code>
-    * </ul>
-    * This flag can be used only once, at the Application's constructor. Calling it afterwards can result in debugging data loss.
+   /** @deprecated In Android, it writes things on DebugConsole.txt and on ADB, so this is now useless
     */
    public final static String ALTERNATIVE_DEBUG = "!alt_debug!"; // guich@tc122_14
 
@@ -116,6 +109,7 @@ public final class Vm
     * require that you add <code>Settings.timeZone</code>.
     * Does not work on Android, which does not allow to do this programatically.
     * @since TotalCross 1.0
+    * @deprecated It won't work on most devices.
     */
    public static void setTime(Time t)
    {
@@ -164,9 +158,7 @@ public final class Vm
     * The wait parameter passed to this method determines whether to execute the command asynchronously. If false, then
     * the method will return without waiting for the command to complete execution. If true, the method will wait for
     * the program to finish executing and the return value of the method will be the value returned from the application
-    * under Java, Win32 and WinCE. In Palm OS, only a few headless applications can be called with wait being true.
-    * <p>
-    * <b>Note: this method kills all running threads.</b>
+    * under Java, Win32 and WinCE.
     * <p>
     * To run another TotalCross program from Windows CE devices, use:
     *
@@ -179,15 +171,8 @@ public final class Vm
     * </pre>
     * You cannot pass null nor "" in the args, or you'll get error 87. IExplore requires a page to open; in this case,
     * we open the blank page.
-    * <p>
-    * To run another TotalCross program from Palm OS devices, use:
     *
-    * <pre>
-    * Vm.exec(&quot;ProgName&quot;, null, 0, false);
-    * </pre>
-    *
-    * In other words, you must call the program's executable. Note that in Palm OS, the program's name is the name of the prc
-    * appended by the _ character. For example, to launch UIGadgets, you must pass "UIGadgets_" as the command.
+    * In other words, you must call the program's executable.
     * <p>
     * When calling a TotalCross program, you can pass a command line parameter to the calling application, just placing
     * the parameters in the proper argument. It can be retrieved with <code>getCommandLine</code> method from the
@@ -228,9 +213,30 @@ public final class Vm
     * <li> Vm.exec("totalcross.app.uigadgets","UIGadgets",0,false): -- launches another TotalCross' application
     * <li> Vm.exec("com.android.calculator2","Calculator",0,true); -- runs the Calculator program 
     * <li> Vm.exec("/sdcard/myapp.apk",null,0,false); -- calls the apk installation tool. To access the card in Android devices, prefix the path with <code>/sdcard</code>. Be sure that the sdcard is NOT MOUNTED, otherwise your application will not have access to it.
-    * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L) and JPG files.
-    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store
+    * <li> Vm.exec("viewer","file:///sdcard/files/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
+    * <li> Vm.exec("viewer","/sdcard/Download/handbook.pdf",0,true); -- opens a pdf. Note: you must have a pdf reader installed; search for the free adobe reader in your favorite store. Returns -1 if args is null, -2 if file was not found.
+    * <li> Vm.exec("viewer","/sdcard/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed. Returns -1 if args is null, -2 if file was not found.
+    * <li> Vm.exec("totalcross.appsrvc","TCService",0,true); -- starts the given service
+    * <li> Vm.exec("broadcast","broadcast package",flags,true); -- sends a broadcast intent. "flag" is used in intent.addFlags if different of 0.
     * </ul>
+    * <p>
+    * In iOS, the following work as in Android. Note that since iOS does not have a sdcard, you must extract or copy the files to your application's directory (Settings.appPath).
+    * <ul>
+    * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
+    * <li> Vm.exec("viewer",Settings.appPath+"/chlorine-bogusInfo.txt", 0, true); -- uses an internal viewer to show the txt file to the user (here, stored in the sdcard, but could be anywhere). Also accepts HTM(L).  Also accepts HTM(L) and JPG files. 
+    * <li> Vm.exec("viewer",Settings.appPath+"/handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and all file types that the <code>UIWebView</code> component can show. A PDF reader is NOT required.
+    * <li> Vm.exec("viewer",Settings.appPath+"/photo1.jpg",0,true); -- opens a jpeg/jpg/png image so the image can be panned and zoomed.
+    * </ul>
+    * In Win32, you can also use the "viewer" or "url" to open files and web pages:
+    * <ul>
+    * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
+    * <li> Vm.exec("viewer","c:\\handbook.pdf",0,true); -- opens a pdf. WORKS also for XLS, DOC, and other registered extensions.
+    * </ul>
+    * In Win32 you can find if a program is running by using "running process", and passing the exe's filename (case insensitive):
+    * <ul>
+    * <li> int ret = Vm.exec("running process", "explorer.exe",0,false) == 1;
+    * </ul>
+    * 
     * To be able to find what's the class name of a program you want to launch, install it in the Android Emulator
     * (which is inside the Android SDK) and run the "Dev Tools" / Package Browser. Then click on the package, and click
     * in the desired Activities button. The <code>command</code> parameter for Vm.exec is the "Process" description, and the 
@@ -244,7 +250,7 @@ public final class Vm
     * However, trying to update the program itself or the vm will close the program. So, update it at last.
     * 
     * @param command the command to execute
-    * @param args command arguments
+    * @param args command arguments. Does not work on Android.
     * @param launchCode launch code for PalmOS applications.
     * @param wait whether to wait for the command to complete execution before returning. If wait is false,
     * don't forget to call the <code>exit</code> method right after this command is called, otherwise the application may
@@ -261,9 +267,35 @@ public final class Vm
          {
             // guich@120: the ideal were that all classes should be re-instantiated, because any static methods that
             // used the last MainWindow are now pointing to invalid data.
-            Class c = Class.forName(command);
-            Launcher.instance.setNewMainWindow((totalcross.ui.MainWindow) c.newInstance(), args);
+            Launcher.instance.setNewMainWindow((totalcross.ui.MainWindow) Class.forName(command).newInstance(), args);
             status = 0;
+         }
+         else
+         if (command.equals("running process"))
+         {
+            int ret = 0;
+            try
+            {
+               String line;
+               Process p =Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"tasklist.exe");
+               java.io.BufferedReader input =  new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+   
+               args = args.toLowerCase();
+               while ((line = input.readLine()) != null) 
+                  if (line.toLowerCase().startsWith(args))
+                  {
+                     ret = 1;
+                     break;
+                  }
+   
+               input.close();
+            }
+            catch (Exception e) {e.printStackTrace();}
+            return ret;
+         }
+         if (command.equals("viewer"))
+         {
+            java.awt.Desktop.getDesktop().browse(new java.net.URI(args.replace(' ','+')));
          }
          else
          {
@@ -335,13 +367,16 @@ public final class Vm
          millis = end - cur;
          int s = millis > 100 ? 100 : millis;
          try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
-         if (Event.isAvailable())
+         //if (Event.isAvailable()) // always call pumpEvents, otherwise a thread that use this method will not be able to update the screen
             Window.pumpEvents();
          cur = getTimeStamp();
       }
    }
    
-   /** Vibrates the device for the specified number of milliseconds.
+   /** Vibrates the device for the specified number of milliseconds. 
+    * The millis is ignored in iOS, since there's no way to define the duration in that platform.
+    * Note that on WP8 the maximum vibration time is 5 seconds. If millis is greater than 5000, it will vibrate only for 5 seconds.
+    * 
     * @since TotalCross 1.22
     */
    public static void vibrate(int millis)
@@ -407,7 +442,6 @@ public final class Vm
    /**
     * Sends a text, preceeded with the current time stamp and followed by a line feed, to:
     * <ul>
-    * <li>Palm OS: the "DebugConsole" file in the NVFS volume
     * <li>Windows CE / 32: the "DebugConsole.txt" file at the current application's folder
     * <li>Blackberry: the event logger, which can be accessed using alt+LGLG
     * <li>iPhone: the "DebugConsole.txt" file in the application's folder.
@@ -419,7 +453,6 @@ public final class Vm
     * Note: if you're debugging a String that contains \0 in it, all chars after the first \0 are ignored.
     * @see Settings#nvfsVolume
     * @see #disableDebug
-    * @see #ALTERNATIVE_DEBUG
     * @see #ERASE_DEBUG
     */
    public static void debug(String s)
@@ -438,7 +471,6 @@ public final class Vm
    /**
     * Shows an alert IMMEDIATELY on screen. It uses the sytem message box to show the alert,
     * not the totalcross.ui.MessageBox class.
-    * Showing an alert from Palm OS threads may reset the device.
     * <br><br>Note that unicode characters are not displayed on alerts.
     *
     * @since TotalCross 1.0
@@ -474,7 +506,6 @@ public final class Vm
    private static java.awt.datatransfer.ClipboardOwner defaultClipboardOwner = new ClipboardObserver();
 
    /** Copies the specific string to the clipboard. 
-    * Does not work on Android (it has no clipboard).
     */
    public static void clipboardCopy(String s)
    {
@@ -482,7 +513,6 @@ public final class Vm
    }
 
    /** Gets the last string from the clipboard. if none, returns "". 
-    * Does not work on Android (it has no clipboard).
     */
    public static String clipboardPaste()
    {
@@ -636,6 +666,35 @@ public final class Vm
     * @since TotalCross 1.14
     */
    public static final int TWEAK_DISABLE_GC = 4;
+   
+   /** This flag turns on the trace of created class objects. This helps you track objects that are not
+    * being freed because are held in some way into memory.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_CREATED_CLASSOBJS = 5;
+   /** This flag turns on the trace of locked objects, which are objects that are locked by the vm and will
+    * never be released.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_LOCKED_OBJS = 6;
+   /** This flag turns on the trace objects that are left behind between two garbage collector calls.
+    * This helps you to find objects that are being held into memory by your program and that are thus never collected.
+    * This tweak increases memory usage, slows down the garbage collector and thus should not be used in production.
+    * The output goes to the debug console.
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
+   
+   /** Enables dump of executed methods to the console. CAUTION: this makes the program slower since hundreds of
+    * method calls are sent to the console, use with caution.
+    * The output format is: T timestamp thread class - method
+    * @since TotalCross 3.1
+    */
+   public static final int TWEAK_TRACE_METHODS = 8;
 
    /**
     * Tweak some parameters of the virtual machine. Note that these
@@ -681,6 +740,12 @@ public final class Vm
       if (stacktrace != null)
          stacktrace = Convert.replace(stacktrace, Convert.CRLF, "\n").replace("\tat ","");
       return stacktrace;
+   }
+   
+   /** A shortcut for <code>try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}</code> */
+   public static String getStackTrace()
+   {
+      try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}      
    }
 
    /**
@@ -732,7 +797,20 @@ public final class Vm
          e.printStackTrace();
       }
    }
-   
+
+   /** Prints the stack trace to the debug console file with the given message. */ 
+   public static void printStackTrace(String msg)
+   {
+      try 
+      {
+         throw new Exception(msg);
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+   }
+
    /** This method pre-allocates space for an array of objects with the given length.
     * It can reduce the number of calls to GC when allocating big arrays.
     * If the total size (Object size * length) is small, calling this method is useless
@@ -758,5 +836,24 @@ public final class Vm
     */
    public static void preallocateArray(Object sample, int length)
    {
+   }
+   
+   /**
+    * Returns the same hash code for the given object as would be returned by the default method hashCode(), whether or not the given object's class 
+    * overrides <code>hashCode()</code>.
+    * The hash code for the <code>null</code> reference is zero.
+    *
+    * @param object Object for which the hash code is to be calculated.
+    * @return The desired hash code.
+    */
+   public static int identityHashCode(Object object)
+   {
+      return System.identityHashCode(object);
+   }
+   
+   /** used internally for enum */
+   static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
+   {
+      arrayCopy(src,srcPos,dest,destPos,length);
    }
 }

@@ -43,7 +43,7 @@ import totalcross.ui.gfx.*;
  * </pre>
  */
 
-public class Label extends Control
+public class Label extends Control implements TextControl
 {
    /** The String with the full text (not splitted) */
    protected String text;
@@ -53,7 +53,7 @@ public class Label extends Control
    /** Set to false if you want to scroll the text a line at a time instead of a page at a time. */
    public boolean pageScroll = true;
    static final String[] emptyStringArray = {""};
-   private String []lines = emptyStringArray;
+   protected String []lines = emptyStringArray;
    private int []linesW;
    private int linesPerPage,currentLine;
    private boolean invert;
@@ -163,6 +163,15 @@ public class Label extends Control
       this("", LEFT);
    }
 
+   /** Creates a label with the given text, alignment, foreground color, and if the font is bold or not. */
+   public Label(String text, int align, int fore, boolean bold)
+   {
+      this(text, align);
+      setForeColor(fore);
+      if (bold)
+         setFont(font.asBold());
+   }
+   
    /**
     * Creates a label displaying the given text. Alignment is set to LEFT by default.<br>
     * Supports inverted text, multiple lines and is scrollable by default.
@@ -320,8 +329,8 @@ public class Label extends Control
       originalText = text;
       if (marqueeTimer != null)
          stopMarquee();
-      this.text = text;
-      lines = text.equals("") ? new String[]{""} : Convert.tokenizeString(text,'\n'); // guich@tc100: now we use \n
+      this.text = autoSplit && width > 0 ? Convert.insertLineBreak(this.width, fm, text) : text;
+      lines = this.text.equals("") ? new String[]{""} : Convert.tokenizeString(this.text,'\n'); // guich@tc100: now we use \n
       currentLine = 0;
       onFontChanged();
       Window.needsPaint = true;
@@ -348,7 +357,10 @@ public class Label extends Control
    /** Returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return useFillAsPreferred ? FILL : preferredWidthText != null ? fm.stringWidth(preferredWidthText) : (getMaxTextWidth() + (insets==null ? 0 : insets.left+insets.right)) + (borderColor == -1 ? 0 : 4);
+      int ret = useFillAsPreferred ? FILL : preferredWidthText != null ? fm.stringWidth(preferredWidthText) : (getMaxTextWidth() + (insets==null ? 0 : insets.left+insets.right)) + (borderColor == -1 ? 0 : 4);
+      if (highlighted || textShadowColor != 0)
+         ret += 2;
+      return ret;
    }
 
    /** Returns the maximum text width for the lines of this Label. */
@@ -390,7 +402,7 @@ public class Label extends Control
       if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
       {
          lastASW = this.width;
-         split(this.width);
+         split(this.width-(insets == null ? 0 : insets.left+insets.right));
          if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
             setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
       }
@@ -503,13 +515,16 @@ public class Label extends Control
          g.backColor = backColor;
       }
       // guich@200b4_126: repaint the background always.
+      if (drawTranslucentBackground(g, alphaValue))
+         ;
+      else
       if (!transparentBackground)
       {
-         if (backgroundType == SOLID_BACKGROUND || !enabled) // guich@tc115_78: use solid or gradient backgrounds
+         if (backgroundType == SOLID_BACKGROUND || !isEnabled()) // guich@tc115_78: use solid or gradient backgrounds
             g.fillRect(0,0,width,height); // guich@200b4_120: make sure the label is painted with the correct color
          else
          {
-            g.drawRoundGradient(0,0,width, height, 0,0,0,0,firstGradientColor, secondGradientColor, backgroundType == VERTICAL_GRADIENT_BACKGROUND);
+            g.fillShadedRect(0,0,width, height, true, backgroundType == HORIZONTAL_GRADIENT_BACKGROUND,firstGradientColor, secondGradientColor,100);
             g.foreColor = invert ? backColor : fColor;
             g.backColor = invert ? fColor : backColor;
          }
@@ -523,7 +538,7 @@ public class Label extends Control
          {
             case TOP: y = (insets == null ? 0 : insets.top); break;
             case BOTTOM: y = this.height - fmH*Math.min(lines.length,linesPerPage) - (insets == null ? 0 : insets.bottom); break;
-            default: y = ((this.height - fmH*Math.min(lines.length,linesPerPage)) >> 1) + (insets == null ? 0 : insets.top); break; // guich@tc115_34: min of lines.length and linesPerPage
+            default: y = ((this.height - fmH*Math.min(lines.length,linesPerPage)) >> 1)/* + (insets == null ? 0 : insets.top)*/; break; // guich@tc115_34: min of lines.length and linesPerPage
          }
          if (marqueeStep != 0)
          {
@@ -545,15 +560,16 @@ public class Label extends Control
                   marqueeX = -linesW[0] + (insets == null ? 0 : insets.left);
          }
          else
+         if (lines != null && lines.length > 0) 
          {
             int n = Math.min(currentLine+linesPerPage, lines.length);
             int x0 = (insets == null ? 0 : insets.left);
-            int xx = invert || highlighted ? 1 : 0 + x0;
+            int xx = invert || highlighted ? 1 : 0/* + x0*/;
             int fmH = this.fmH; // guich@450_36: use local var
             int []linesW = this.linesW; // same
             for (int i =currentLine; i < n; i++,y+=fmH)
             {
-               int justify = align == FILL && (i < lines.length-1) ? this.width : 0; // don't justify the text line
+               int justify = align == FILL && (i < lines.length-1) ? this.width-1 - (insets == null ? 0 : insets.left+insets.right) : 0; // don't justify the text line
                int x = x0;
                if (align != LEFT)
                {
@@ -575,6 +591,7 @@ public class Label extends Control
                   g.drawText(lines[i], xx+x, y, justify);
                }
                else
+               if (0 <= i && i < lines.length)
                   g.drawText(lines[i], xx+x, y, justify, textShadowColor != -1, textShadowColor);
             }
          }

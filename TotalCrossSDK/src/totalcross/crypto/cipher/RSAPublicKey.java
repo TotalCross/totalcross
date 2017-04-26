@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.cipher;
 
 /**
@@ -22,11 +20,10 @@ public class RSAPublicKey extends Key
    private byte[] n;
    
    /**
-    * Creates a new RSAPublicKey object, given the public exponent and
-    * the modulus.
+    * Creates a new RSAPublicKey object, given the public exponent and the modulus.
     * 
-    * @param e a byte array containing the public exponent.
-    * @param n a byte array containing the modulus.
+    * @param e A byte array containing the public exponent.
+    * @param n A byte array containing the modulus.
     */
    public RSAPublicKey(byte[] e, byte[] n)
    {
@@ -35,7 +32,9 @@ public class RSAPublicKey extends Key
    }
    
    /**
-    * @return a copy of the byte array containing the modulus.
+    * Returns a copy of the byte array containing the modulus.
+    * 
+    * @return A copy of the byte array containing the modulus.
     */
    public byte[] getModulus()
    {
@@ -43,7 +42,9 @@ public class RSAPublicKey extends Key
    }
    
    /**
-    * @return a copy of the byte array containing the public exponent.
+    * Returns a copy of the byte array containing the public exponent.
+    * 
+    * @return A copy of the byte array containing the public exponent.
     */
    public byte[] getPublicExponent()
    {

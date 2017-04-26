@@ -56,7 +56,7 @@ void privateGetBlob(NMParams p, int32 hk, TCHARP key, TCHARP value)
    CFDataRef cfData = (CFDataRef)CFPreferencesCopyAppValue(cfValue, kCFPreferencesCurrentApplication);
    if (cfData != null)
    {
-      if ((p->retO = createByteArray(p->currentContext, CFDataGetLength(cfData))) != null)
+      if ((p->retO = createByteArray(p->currentContext, (int32)CFDataGetLength(cfData))) != null)
       {
          CFDataGetBytes(cfData, CFRangeMake(0,CFDataGetLength(cfData)), ARRAYOBJ_START(p->retO));
          setObjectLock(p->retO, UNLOCKED);
@@ -104,7 +104,7 @@ bool privateDelete(int32 hk, TCHARP key, TCHARP value)
    return CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 }
 
-Object privateList(Context c, int32 hk, TCHARP key)
+TCObject privateList(Context c, int32 hk, TCHARP key)
 {
    return null;
 }

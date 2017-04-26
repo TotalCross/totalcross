@@ -13,31 +13,26 @@
 
 #include "Net.h"
 
-#if defined PALMOS
- #include "palm/Socket_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/Socket_c.h"
 #else
  #include "posix/Socket_c.h"
 #endif
 
-static void invalidate(Object obj)
+static void invalidate(TCObject obj)
 {
    if (Socket_socketRef(obj) != null)
-   {
-      setObjectLock(Socket_socketRef(obj), UNLOCKED);
       Socket_socketRef(obj) = null;
-   }
    Socket_dontFinalize(obj) = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native void socketCreate(final String host, final int port, final int timeout, final boolean noLinger);
 {
-   Object socket = p->obj[0];
-   Object socketRef;
+   TCObject socket = p->obj[0];
+   TCObject socketRef;
    SOCKET* socketHandle;
-   Object host = p->obj[1];
+   TCObject host = p->obj[1];
    int32 port = p->i32[0];
    int32 timeout = p->i32[1];
    bool noLinger = p->i32[2];
@@ -62,6 +57,7 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
    if ((socketRef = createByteArray(p->currentContext, sizeof(SOCKET))) != null)
    {
       Socket_socketRef(socket) = socketRef;
+      setObjectLock(socketRef, UNLOCKED);
       socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
       if ((err = socketCreate(socketHandle, szHost, port, timeout, noLinger, &isUnknownHost, &timedOut)) != NO_ERROR)
       {
@@ -79,8 +75,8 @@ TC_API void tnS_socketCreate_siib(NMParams p) // totalcross/net/Socket native vo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnS_nativeClose(NMParams p) // totalcross/net/Socket native private void nativeClose() throws totalcross.io.IOException;
 {
-   Object socket = p->obj[0];
-   Object socketRef = Socket_socketRef(socket);
+   TCObject socket = p->obj[0];
+   TCObject socketRef = Socket_socketRef(socket);
    SOCKET* socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
    Err err;
 
@@ -91,10 +87,10 @@ TC_API void tnS_nativeClose(NMParams p) // totalcross/net/Socket native private 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native private int readWriteBytes(byte []buf, int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
-   Object socket = p->obj[0];
-   Object socketRef = Socket_socketRef(socket);
+   TCObject socket = p->obj[0];
+   TCObject socketRef = Socket_socketRef(socket);
    SOCKET* socketHandle;
-   Object buf = p->obj[1];
+   TCObject buf = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    bool isRead = p->i32[2];
@@ -108,7 +104,7 @@ TC_API void tnS_readWriteBytes_Biib(NMParams p) // totalcross/net/Socket native 
       timeout = Socket_writeTimeout(socket);
 
    socketHandle = (SOCKET*) ARRAYOBJ_START(socketRef);
-   if ((err = socketReadWriteBytes(*socketHandle, timeout, ARRAYOBJ_START(buf), start, count, &retCount, isRead)) != NO_ERROR)
+   if ((err = socketReadWriteBytes(*socketHandle, timeout, (CharP)ARRAYOBJ_START(buf), start, count, &retCount, isRead)) != NO_ERROR)
       throwExceptionWithCode(p->currentContext, IOException, err);
    else if (retCount == -2) // timeout!
       throwException(p->currentContext, SocketTimeoutException, "Operation timed out");
@@ -121,12 +117,12 @@ int tcSocketReadWrite(int fd, CharP buf, int32 count, bool isRead)
 {
    int32 written = 0;
    int32 retCount;
-   Object socket;
+   TCObject socket;
    int32 timeout;
    Err err;
 
    LOCKVAR(htSSL);
-   socket = (Object) htGetPtr(&htSSLSocket, fd);
+   socket = (TCObject)htGetPtr(&htSSLSocket, fd);
    UNLOCKVAR(htSSL);
 
    if (!socket) // guich@tc113_14

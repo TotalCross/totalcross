@@ -71,32 +71,21 @@ Pthreads on Posix (iPhone, Linux, ...)
 
 #define MUTEX_VAR(x) x##Mutex
 
-#if defined(PALMOS)
- #define MUTEX_TYPE UInt32
- #define SETUP_MUTEX
- #define INIT_MUTEX_VAR(x)    KALMutexCreate(&(x), applicationId) // guich@tc122_20: added missing &
- #define RESERVE_MUTEX_VAR(x) KALMutexReserve((x),-1)
- #define RELEASE_MUTEX_VAR(x) KALMutexRelease((x))
- #define DESTROY_MUTEX_VAR(x) KALMutexDelete((x))
-#elif defined(WIN32)
+#if defined(WIN32)
  #define MUTEX_TYPE CRITICAL_SECTION
  #define SETUP_MUTEX
+#if defined (WP8)
+ // spinCount (semaphore number) initialized with 1
+#define INIT_MUTEX_VAR(x)     do { /*debug("INIT_MUTEX_VAR %s", #x);*/ InitializeCriticalSectionEx(&(x), 1, 0); } while(0)
+#else
  #define INIT_MUTEX_VAR(x)    InitializeCriticalSection(&(x))
- #define RESERVE_MUTEX_VAR(x) EnterCriticalSection(&(x))
+#endif
+#define RESERVE_MUTEX_VAR(x)  do { /*debug("LOCKVAR %s", #x);*/ EnterCriticalSection(&(x)); } while(0)
  #define RELEASE_MUTEX_VAR(x) LeaveCriticalSection(&(x))
  #define DESTROY_MUTEX_VAR(x) DeleteCriticalSection(&(x))
-/*
-#elif defined(__SYMBIAN32__)
- #define MUTEX_TYPE void*
- #define SETUP_MUTEX
- #define INIT_MUTEX_VAR(x)
- #define RESERVE_MUTEX_VAR(x)
- #define RELEASE_MUTEX_VAR(x)
- #define DESTROY_MUTEX_VAR(x)
- */
 #elif defined(POSIX) || defined(ANDROID)
  #include <pthread.h>
- #if !defined(PTHREAD_MUTEX_RECURSIVE) && !defined(__SYMBIAN32__)
+ #if !defined(PTHREAD_MUTEX_RECURSIVE)
  #define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
  #endif
  #define SETUP_MUTEX \
@@ -123,8 +112,14 @@ Pthreads on Posix (iPhone, Linux, ...)
 /************  PUBLIC MUTEXES *************/
 
 extern DECLARE_MUTEX(omm);
+extern DECLARE_MUTEX(tcz);
+extern DECLARE_MUTEX(metAndCls);
 extern DECLARE_MUTEX(screen);
 extern DECLARE_MUTEX(htSSL);
+extern DECLARE_MUTEX(createdHeaps);
+extern DECLARE_MUTEX(alloc);
+extern DECLARE_MUTEX(fonts);
+extern DECLARE_MUTEX(mutexes);
 
 #if defined(WIN32)
 
@@ -133,21 +128,9 @@ extern DECLARE_MUTEX(htSSL);
  typedef struct
  {
     Context context;
-    Object threadObject;
+    TCObject threadObject;
     ThreadHandle h;
  } *ThreadArgs, TThreadArgs;
-
-#elif defined(PALMOS)
-
- typedef void (*ThreadFunc)(VoidP argP);
- typedef UInt32 ThreadHandle;
- typedef struct
- {
-    VoidP args;
-    uint32 got;
-    Context context;
-    ThreadHandle h;
- } *ThreadArgs,TThreadArgs;
 
 #elif defined(POSIX) || defined(ANDROID)
 
@@ -156,7 +139,7 @@ extern DECLARE_MUTEX(htSSL);
  typedef pthread_t ThreadHandle;
  typedef struct
  {
-    Object threadObject;
+    TCObject threadObject;
     Context context;
     pthread_cond_t state_cv;
     pthread_mutex_t state_mutex;
@@ -168,9 +151,13 @@ extern DECLARE_MUTEX(htSSL);
 
 ThreadHandle threadCreateNative(Context context, ThreadFunc t, VoidP args);
 ThreadHandle threadGetCurrent();
-void threadCreateJava(Context currentContext, Object this_);
+void threadCreateJava(Context currentContext, TCObject this_);
 void threadDestroy(ThreadHandle h, bool threadDestroyingItself); // must be used when exiting the application or the thread itself
 void threadDestroyAll(); // destroy all threads
+
+void freeMutex(int32 hash, VoidP mutex);
+bool lockMutex(size_t address);
+void unlockMutex(size_t address);
 
 #define ThreadArgsFromObject(o) ((ThreadArgs)ARRAYOBJ_START(Thread_taskID(o)))
 #define ThreadHandleFromObject(o) ThreadArgsFromObject(o)->h

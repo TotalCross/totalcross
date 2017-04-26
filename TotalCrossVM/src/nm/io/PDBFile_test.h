@@ -9,286 +9,259 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
-#if 1 // MUST CONVERT IT TO THE NEW OBJECT ALLOCATION FORMAT!!!!
 #define SKIP_TESTS_PDB
-#endif
 
-TESTCASE(tiPDBF_create_si) // totalcross/io/PDBFile native private void create(String name, int mode);
+TESTCASE(tiPDBF_create_sssi) // totalcross/io/PDBFile native private void create(String name, String creator, String type, int mode) throws totalcross.io.FileNotFoundException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
-
-   // Fails passing a null path
+   
+   // Empty parameters. Test must pass because the constructor already checks them.
    p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile"); //, &p.obj[0]);
    ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = null;
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[NullPointerException]);
-   currentContext->thrownException = null;
-
-   // Fails passing an invalid value for mode (< 3)
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = 2;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing an invalid value for mode (> 5)
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = 6;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TEST.", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST..TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TET", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TESTA", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TST.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TESTE.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sixxxxxxxxxxxxxxxx.TEST.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // Fails passing invalid name
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
-   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IllegalArgumentException]);
-   currentContext->thrownException = null;
-
-   // This path format is accepted! (but shouldn't)
-   /*
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
-   ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TEST", -1,null);
-   ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "", -1);
+   p.i32[0] = CREATE_EMPTY; 
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   */
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   // Delete if exists and create tiPDBF_create_si.TEST.TEST
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   // Mode READ_WRITE with a PDB file that not exist means exception.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_si.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = 3;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
+   currentContext->thrownException = null;
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+   currentContext->thrownException = null;
+
+   // Mode CREATE_EMPTY with a PDB file that not exist does not throw an exception.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = 5;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   // Doesn't fail passing invalid name because it's checked in the constructor.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TET", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   tiPDBF_create_si(&p);
+   // Doesn't fail passing invalid name because it's checked in the constructor.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TET", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TET", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   // Doesn't fail passing invalid name because it's checked in the constructor.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   // Doesn't fail passing invalid name because it's checked in the constructor.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi.", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   // Doesn't fail passing invalid name because it's checked in the constructor.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssixxx", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   // Doesn't fail passing invalid name because it's checked in the constructor.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   // Delete if exists and create tiPDBF_create_sssi.TEST.TEST
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_create_sssi", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
    tiPDBF_nativeClose(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   // Open tiPDBF_create_si.TEST.TEST
+   // Open tiPDBF_create_sssii.TEST.TEST
    p.i32[0] = READ_WRITE;
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
-
-   tiPDBF_nativeClose(&p);
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-#endif
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_rename_s) // totalcross/io/PDBFile native public void rename(String newName) throws totalcross.io.IOException;
+TESTCASE(tiPDBF_rename_s) // totalcross/io/PDBFile native public void rename(String newName) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
-   // Delete tiPDBF_rename_sii_renamed.TEST.TEST, if exists
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s_renamed.TEST.TEST", -1,null);
+   // Delete tiPDBF_rename_sii_ren.TEST.TEST, if exists
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s_ren", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = READ_WRITE;
+   p.i32[0] = CREATE_EMPTY;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tiPDBF_create_si(&p);
-   currentContext->thrownException = null;
-   //ASSERT1_EQUALS(Null, currentContext->thrownException);
-   if (PDBFile_openRef(p.obj[0]) != null) // tiPDBF_rename_s_renamed.TEST.TEST already exists
+   if (PDBFile_openRef(p.obj[0]) != null) // tiPDBF_rename_s_ren.TEST.TEST already exists
    {
       tiPDBF_delete(&p);
       ASSERT1_EQUALS(Null, currentContext->thrownException);
+      tiPDBF_nativeClose(&p);
+      ASSERT1_EQUALS(NotNull, currentContext->thrownException); // It's not possible to close a deleted PDBFile.
+      currentContext->thrownException = null;
    }
 
    // Create tiPDBF_rename_sii.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
-   // Rename tiPDBF_rename_s.TEST.TEST to tiPDBF_rename_s_renamed.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s_renamed.TEST.TEST", -1,null);
+   // Rename tiPDBF_rename_s.TEST.TEST to tiPDBF_rename_s_ren.TEST.TEST
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s_ren.TEST.TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
-   p.i32[0] = READ_WRITE;
    tiPDBF_rename_s(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
+   tiPDBF_nativeClose(&p);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   // Assert tiPDBF_rename_s_renamed.TEST.TEST exists
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s_renamed.TEST.TEST", -1,null);
-   tiPDBF_create_si(&p);
+   // Assert tiPDBF_rename_s_ren.TEST.TEST exists
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s_ren", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.i32[0] = READ_WRITE;
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
-
-   tiPDBF_nativeClose(&p);
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
    // Assert tiPDBF_rename_s.TEST.TEST does not exist
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_rename_s", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
-   currentContext->thrownException = null;
+   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[FileNotFoundException]);
    ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
-
-#endif
-   finish:
-      ;
+   currentContext->thrownException = null;
+   finish: ;
 }
-TESTCASE(tiPDBF_addRecord_i) // totalcross/io/PDBFile native public int addRecord(int size) throws totalcross.io.IOException;
+TESTCASE(tiPDBF_addRecord_i) // totalcross/io/PDBFile native public int addRecord(int size) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
 
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_addRecord_i.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_addRecord_i.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_addRecord_i", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -296,45 +269,43 @@ TESTCASE(tiPDBF_addRecord_i) // totalcross/io/PDBFile native public int addRecor
    p.i32[0] = 512;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Add the second record
    p.i32[0] = 256;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Assert records were created
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 2, p.retI);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
-   finish:
-      ;
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   finish: ;
 }
-TESTCASE(tiPDBF_addRecord_ii) // totalcross/io/PDBFile native public int addRecord(int size, int pos) throws totalcross.io.IOException;
+TESTCASE(tiPDBF_addRecord_ii) // totalcross/io/PDBFile native public int addRecord(int size, int pos) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[2];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_addRecord_ii.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_addRecord_ii.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_addRecord_ii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -343,48 +314,45 @@ TESTCASE(tiPDBF_addRecord_ii) // totalcross/io/PDBFile native public int addReco
    p.i32[1] = 0;
    tiPDBF_addRecord_ii(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Add another record at the first position
    p.i32[0] = 256;
    tiPDBF_addRecord_ii(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Assert records were created
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 2, p.retI);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-#endif
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_resizeRecord_i) // totalcross/io/PDBFile native public void resizeRecord(int size) throws totalcross.io.IOException;
+TESTCASE(tiPDBF_resizeRecord_i) // totalcross/io/PDBFile native public void resizeRecord(int size) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    int32 hvRecordLength;
    TNMParams p;
+   TCObject objs[4];
 
-   Object objs[2];
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_resizeRecord_i.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_resizeRecord_i.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_resizeRecord_i", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -392,7 +360,6 @@ TESTCASE(tiPDBF_resizeRecord_i) // totalcross/io/PDBFile native public void resi
    p.i32[0] = 512;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
@@ -409,67 +376,86 @@ TESTCASE(tiPDBF_resizeRecord_i) // totalcross/io/PDBFile native public void resi
    hvRecordLength = PDBFile_hvRecordLength(p.obj[0]);
    ASSERT2_EQUALS(I32, p.i32[0], hvRecordLength);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_nativeClose) // totalcross/io/PDBFile native private void nativeClose();
+TESTCASE(tiPDBF_nativeClose) // totalcross/io/PDBFile native private void nativeClose() throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   // Create tiPDBF_create_si.TEST.TEST
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   // Create tiPDBF_create_sssi.TEST.TEST
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_nativeClose_.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_nativeClose_", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
    tiPDBF_nativeClose(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));;
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
    tiPDBF_nativeClose(&p);
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
    ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
-#endif
+   currentContext->thrownException = null;
 
-   finish:
-      ;
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_nativeClose_", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = READ_WRITE;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
+   
+   // Deletes the file.
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+   tiPDBF_nativeClose(&p);
+   ASSERT1_EQUALS(NotNull, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
+   currentContext->thrownException = null;
+
+   finish: ;
 }
 TESTCASE(tiPDBF_delete) // totalcross/io/PDBFile native public boolean delete() throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   // Create tiPDBF_create_si.TEST.TEST
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   // Create tiPDBF_create_sssi.TEST.TEST
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_delete_i_.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_delete_i_", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -477,49 +463,47 @@ TESTCASE(tiPDBF_delete) // totalcross/io/PDBFile native public boolean delete() 
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   // Try to open tiPDBF_create_si.TEST.TEST (must fail)
+   // Try to open tiPDBF_create_sssi.TEST.TEST (must fail)
    p.i32[0] = READ_WRITE;
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
-   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
+   ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[FileNotFoundException]);
    currentContext->thrownException = null;
    ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
    tiPDBF_nativeClose(&p);
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
-#endif
+   currentContext->thrownException = null;
 
-   finish:
-      ;
+   finish: ;
 }
 TESTCASE(tiPDBF_listPDBs_ii) // totalcross/io/PDBFile native public static String []listPDBs(int creatorId, int type);
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i, count;
-   Object listObj;
-   Object* list;
+   TCObject listObj;
+   TCObject* list;
    CharP s;
    bool found = false;
-
    int32 i32Array[2];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Create tiPDBF_ListPDBFiles_ii.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_listPDBs_ii.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_listPDBs_ii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -537,42 +521,55 @@ TESTCASE(tiPDBF_listPDBs_ii) // totalcross/io/PDBFile native public static Strin
    count = ARRAYOBJ_LEN(listObj);
    ASSERT1_EQUALS(True, count > 0);
 
-   list = (Object*) ARRAYOBJ_START(listObj);
+   list = (TCObject*) ARRAYOBJ_START(listObj);
    for (i = 0; i < count && !found; i ++) // search for tiPDBF_ListPDBFiles_ii
    {
       s = String2CharP(list[i]);
-      if (xstrcmp(s, "tiPDBF_listPDBs_ii") == 0)
+      if (xstrcmp(s, "tiPDBF_listPDBs_ii.TEST.TEST") == 0)
          found = true;
       xfree(s);
    }
 
    ASSERT1_EQUALS(True, found);
-#endif
 
-   finish:
-      ;
+   // Deletes the file.
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
+   ASSERT1_EQUALS(NotNull, p.obj[0]);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_listPDBs_ii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   ASSERT1_EQUALS(NotNull, p.obj[1]);
+   p.i32[0] = READ_WRITE;
+   tiPDBF_create_sssi(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
+   tiPDBF_delete(&p);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
+
+   finish: ;
 }
 TESTCASE(tiPDBF_deleteRecord) // totalcross/io/PDBFile native public void deleteRecord() throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_deleteRecord.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_deleteRecord.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_deleteRecord.TEST.TEST", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -580,13 +577,11 @@ TESTCASE(tiPDBF_deleteRecord) // totalcross/io/PDBFile native public void delete
    p.i32[0] = 512;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Add the second record
    p.i32[0] = 256;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Assert records were created
    tiPDBF_getRecordCount(&p);
@@ -597,13 +592,11 @@ TESTCASE(tiPDBF_deleteRecord) // totalcross/io/PDBFile native public void delete
    tiPDBF_setRecordPos_i(&p);
    ASSERT1_EQUALS(True, p.retI);
    tiPDBF_deleteRecord(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // Assert record was deleted
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 1, p.retI);
-   //tiPDBF_getRecordPos(&p);
-   //ASSERT2_EQUALS(I32, -1, p.retI);
    ASSERT2_EQUALS(I32, -1, PDBFile_hvRecordPos(p.obj[0]));
 
    // Move back to the first record and delete it
@@ -611,43 +604,40 @@ TESTCASE(tiPDBF_deleteRecord) // totalcross/io/PDBFile native public void delete
    tiPDBF_setRecordPos_i(&p);
    ASSERT1_EQUALS(True, p.retI);
    tiPDBF_deleteRecord(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    // Assert record was deleted
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 0, p.retI);
-   //tiPDBF_getRecordPos(&p);
-   //ASSERT2_EQUALS(I32, -1, p.retI);
    ASSERT2_EQUALS(I32, -1, PDBFile_hvRecordPos(p.obj[0]));
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_getRecordCount) // totalcross/io/PDBFile native public int getRecordCount();
+TESTCASE(tiPDBF_getRecordCount) // totalcross/io/PDBFile native public int getRecordCount() throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_getRecordCount_.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_getRecordCount_.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_getRecordCount_", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
    tiPDBF_getRecordCount(&p);
@@ -657,7 +647,6 @@ TESTCASE(tiPDBF_getRecordCount) // totalcross/io/PDBFile native public int getRe
    p.i32[0] = 512;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 1, p.retI);
 
@@ -665,52 +654,50 @@ TESTCASE(tiPDBF_getRecordCount) // totalcross/io/PDBFile native public int getRe
    p.i32[0] = 256;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 2, p.retI);
 
    // Delete records
    tiPDBF_deleteRecord(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 1, p.retI);
 
    p.i32[0] = 0;
    tiPDBF_setRecordPos_i(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiPDBF_deleteRecord(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 0, p.retI);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_setRecordPos_i) // totalcross/io/PDBFile native public boolean setRecordPos(int pos) throws totalcross.io.IOException;
+TESTCASE(tiPDBF_setRecordPos_i) // totalcross/io/PDBFile native public boolean setRecordPos(int pos) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[1];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_setRecordPos_i.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_setRecordPos_i.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_setRecordPos_i", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -718,13 +705,11 @@ TESTCASE(tiPDBF_setRecordPos_i) // totalcross/io/PDBFile native public boolean s
    p.i32[0] = 512;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Add the second record
    p.i32[0] = 256;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Assert records were created
    tiPDBF_getRecordCount(&p);
@@ -733,46 +718,45 @@ TESTCASE(tiPDBF_setRecordPos_i) // totalcross/io/PDBFile native public boolean s
    // Move back to the first record (512 bytes)
    p.i32[0] = 0;
    tiPDBF_setRecordPos_i(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, 512, PDBFile_hvRecordLength(p.obj[0]));
 
    // Move forward to the second record (256 bytes)
    p.i32[0] = 1;
    tiPDBF_setRecordPos_i(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, 256, PDBFile_hvRecordLength(p.obj[0]));
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_readBytes_Bii) // totalcross/io/PDBFile native public int readBytes(byte []buf, int start, int count);
+TESTCASE(tiPDBF_readBytes_Bii) // totalcross/io/PDBFile native int readWriteBytes(byte buf[], int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    CharP buf;
    int32 i, recSize = 128;
-
-   int32 i32Array[2];
+   int32 i32Array[3];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_readBytes_Bii.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_readBytes_Bii.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_readBytes_Bii.TEST.TEST", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -780,30 +764,29 @@ TESTCASE(tiPDBF_readBytes_Bii) // totalcross/io/PDBFile native public int readBy
    p.i32[0] = recSize;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Write some bytes
-   p.obj[1] = createByteArray(currentContext, recSize * 2, null);
+   p.obj[1] = createByteArray(currentContext, recSize);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = 0;
    p.i32[1] = recSize;
+   p.i32[2] = false;
    buf = (CharP) ARRAYOBJ_START(p.obj[1]);
 
    for (i = 0; i < p.i32[1]; i ++) // fill the buffer
       buf[i] = i;
 
-   tiPDBF_writeBytes_Bii(&p);
+   tiPDBF_readWriteBytes_Biib(&p);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
    // Add a record
    p.i32[0] = recSize;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
@@ -812,59 +795,60 @@ TESTCASE(tiPDBF_readBytes_Bii) // totalcross/io/PDBFile native public int readBy
    // Move back to the first record (128 bytes)
    p.i32[0] = 0;
    tiPDBF_setRecordPos_i(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, 128, PDBFile_hvRecordLength(p.obj[0]));
 
    // Read bytes
    p.i32[1] = ARRAYOBJ_LEN(p.obj[1]);
+   p.i32[2] = true;
    xmemzero(buf, p.i32[1]); // clear the buffer
 
-   tiPDBF_readBytes_Bii(&p);
-   ASSERT2_EQUALS(I32, -1, p.retI); // cannot read bytes; end of record
+   tiPDBF_readWriteBytes_Biib(&p);
+   ASSERT2_EQUALS(I32, 128, p.retI); 
 
    PDBFile_hvRecordOffset(p.obj[0]) = 0;
    p.i32[0] = 0;
-   tiPDBF_readBytes_Bii(&p);
-   ASSERT2_EQUALS(I32, -1, p.retI); // cannot read bytes; len is bigger than available bytes
+   tiPDBF_readWriteBytes_Biib(&p);
+   ASSERT2_EQUALS(I32, 128, p.retI); 
 
+   PDBFile_hvRecordOffset(p.obj[0]) = 0;
    p.i32[1] = recSize;
-   tiPDBF_readBytes_Bii(&p);
+   tiPDBF_readWriteBytes_Biib(&p);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
    for (i = 0; i < p.i32[1]; i ++) // check bytes read
       ASSERT2_EQUALS(I8, (int8)i, (int8)buf[i]);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_writeBytes_Bii) // totalcross/io/PDBFile native public int writeBytes(byte []buf, int start, int count);
+TESTCASE(tiPDBF_writeBytes_Bii) // totalcross/io/PDBFile native int readWriteBytes(byte buf[], int start, int count, boolean isRead) throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    CharP buf;
    int32 i, recSize = 128;
-
-   int32 i32Array[2];
+   int32 i32Array[3];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_writeBytes_Bii.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_writeBytes_Bii.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_writeBytes_Bii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -872,38 +856,38 @@ TESTCASE(tiPDBF_writeBytes_Bii) // totalcross/io/PDBFile native public int write
    p.i32[0] = recSize;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Write some bytes
-   p.obj[1] = createByteArray(currentContext, recSize * 2, null);
+   p.obj[1] = createByteArray(currentContext, recSize - 1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = 0;
    p.i32[1] = ARRAYOBJ_LEN(p.obj[1]);
+   p.i32[2] = false;
    buf = (CharP) ARRAYOBJ_START(p.obj[1]);
 
    for (i = 0; i < p.i32[1]; i ++) // fill the buffer
       buf[i] = i;
 
-   tiPDBF_writeBytes_Bii(&p);
-   ASSERT2_EQUALS(I32, -1, p.retI); // cannot write bytes; len is bigger than available bytes
+   tiPDBF_readWriteBytes_Biib(&p);
+   ASSERT2_EQUALS(I32, 127, p.retI); 
 
-   p.i32[1] = recSize;
-   tiPDBF_writeBytes_Bii(&p);
+   PDBFile_hvRecordOffset(p.obj[0]) = 0;
+   p.i32[1] = recSize - 1;
+   tiPDBF_readWriteBytes_Biib(&p);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
    p.i32[1] = 1;
-   tiPDBF_writeBytes_Bii(&p);
-   ASSERT2_EQUALS(I32, -1, p.retI); // cannot write bytes; end of record
+   tiPDBF_readWriteBytes_Biib(&p);
+   ASSERT2_EQUALS(I32, 1, p.retI); 
 
    // Add a record
    p.i32[0] = recSize;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
@@ -912,57 +896,53 @@ TESTCASE(tiPDBF_writeBytes_Bii) // totalcross/io/PDBFile native public int write
    // Move back to the first record (128 bytes)
    p.i32[0] = 0;
    tiPDBF_setRecordPos_i(&p);
-   ASSERT1_EQUALS(True, p.retI);
+   ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, 128, PDBFile_hvRecordLength(p.obj[0]));
 
    // Read bytes
    PDBFile_hvRecordOffset(p.obj[0]) = 0;
    p.i32[0] = 0;
    p.i32[1] = recSize;
+   p.i32[2] = true;
    for (i = 0; i < p.i32[1]; i ++) // clear the buffer
       buf[i] = 0;
 
-   tiPDBF_readBytes_Bii(&p);
+   tiPDBF_readWriteBytes_Biib(&p);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
-   for (i = 0; i < p.i32[1]; i ++) // check bytes read
-   {
-     ASSERT2_EQUALS(I8, (int8)i, (int8)buf[i]);
-     i=i;
-   }
-
-   tiPDBF_nativeClose(&p);
+   for (i = 0; i < 127; i ++) // check bytes read
+      ASSERT2_EQUALS(I8, (int8)i, (int8)buf[i]);
+   
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
-TESTCASE(tiPDBF_inspectRecord_Bi) // totalcross/io/PDBFile native public int inspectRecord(byte []buf, int recPosition) throws totalcross.io.IOException;
+TESTCASE(tiPDBF_inspectRecord_Bii) // totalcross/io/PDBFile native public int inspectRecord(byte buf[], int recordPos, int offsetInRec) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    CharP buf;
    int32 i, recSize = 128;
-
-   int32 i32Array[2];
+   int32 i32Array[3];
    TNMParams p;
-   Object objs[2];
-   Object byteArray;
+   TCObject objs[4];
+   TCObject byteArray;
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_inspectRecord_Bi.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_inspectRecord_Bi.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_inspectRecord_Bii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
-
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -970,90 +950,84 @@ TESTCASE(tiPDBF_inspectRecord_Bi) // totalcross/io/PDBFile native public int ins
    p.i32[0] = recSize;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
    ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Write some bytes
-   byteArray = createByteArray(currentContext, recSize * 2, null);
+   byteArray = createByteArray(currentContext, recSize * 2);
    p.obj[1] = byteArray;
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = 0;
    p.i32[1] = recSize;
+   p.i32[2] = false;
    buf = (CharP) ARRAYOBJ_START(p.obj[1]);
 
-   for (i = 0; i < p.i32[1]; i ++) // fill the buffer
+   for (i = 0; i < recSize; i ++) // fill the buffer
       buf[i] = i;
 
-   tiPDBF_writeBytes_Bii(&p);
+   tiPDBF_readWriteBytes_Biib(&p);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
    // Add a new record
    p.i32[0] = recSize;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    tiPDBF_nativeClose(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_inspectRecord_Bi.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_inspectRecord_Bii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = READ_WRITE;
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
    // Inspect first record
    p.obj[0] = p.obj[0];
    p.obj[1] = byteArray;
-   p.i32[0] = 0;
-   xmemzero(buf, p.i32[1]);
-   /*
-   for (i = 0; i < p.i32[1]; i ++) // clear the buffer
-      buf[i] = 0;
-   */
+   p.i32[0] = p.i32[1] = 0;
+   xmemzero(buf, recSize); 
+   
+   tiPDBF_inspectRecord_Bii(&p);
+   ASSERT2_EQUALS(I32, recSize, p.retI); // cannot read bytes; end of record
 
-   tiPDBF_inspectRecord_Bi(&p);
-   ASSERT2_EQUALS(I32, p.i32[1], p.retI); // cannot read bytes; end of record
-
-   for (i = 0; i < p.i32[1]; i ++) // check bytes read
-   {
+   for (i = 0; i < recSize; i++) // check bytes read
       ASSERT2_EQUALS(I8, (int8)i, (int8)buf[i]);
-   }
-
-   tiPDBF_nativeClose(&p);
+   
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish:;
 }
-TESTCASE(tiPDBF_setRecordAttributes_ib) // totalcross/io/PDBFile native public void setRecordAttributes(int recordPos, byte attr);
+TESTCASE(tiPDBF_setRecordAttributes_ib) // totalcross/io/PDBFile native public void setRecordAttributes(int recordPos, byte attr) throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    int32 i32Array[2];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_setRecordAttributes_ib.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_setRecAttributes_ib.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_setRecAttributes_ib", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -1061,7 +1035,6 @@ TESTCASE(tiPDBF_setRecordAttributes_ib) // totalcross/io/PDBFile native public v
    p.i32[0] = 128;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Assert record was created
    tiPDBF_getRecordCount(&p);
@@ -1086,34 +1059,34 @@ TESTCASE(tiPDBF_setRecordAttributes_ib) // totalcross/io/PDBFile native public v
    tiPDBF_getRecordAttributes_i(&p);
    ASSERT2_EQUALS(I32, dmRecAttrSecret, p.retI & dmRecAttrSecret);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish: ;
 }
 TESTCASE(tiPDBF_setAttributes_i) // totalcross/io/PDBFile native public void setAttributes(int i);
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
-   int32 i32Array[2];
+   int32 i32Array[3];
    TNMParams p;
-   Object objs[2];
+   TCObject objs[4];
+
    p.obj = objs;
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_setAttributes_i.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_setAttributes_i.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_setAttributes_i", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -1126,21 +1099,18 @@ TESTCASE(tiPDBF_setAttributes_i) // totalcross/io/PDBFile native public void set
    ASSERT2_EQUALS(I32, 0x0004, p.retI & 0x0004);
    ASSERT2_EQUALS(I32, 0x0008, p.retI & 0x0008);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish:;
 }
-TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int searchBytes(byte []toSearch, int length, int offsetInRec);
+TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int searchBytes(byte []toSearch, int length, int offsetInRec) throws totalcross.io.IOException;
 {
-#ifdef SKIP_TESTS_PDB
-   TEST_CANNOT_RUN;
-#else
    TNMParams p;
-   Object objs[2];
-   int32 i32Array[2];
+   TCObject objs[4];
+   int32 i32Array[3];
    CharP buf = null;
    int32 i;
 
@@ -1148,15 +1118,17 @@ TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int sear
    p.i32 = i32Array;
    p.currentContext = currentContext;
 
-   createObject(currentContext, "totalcross.io.PDBFile", &p.obj[0]);
+   p.obj[0] = createObject(currentContext, "totalcross.io.PDBFile");
    ASSERT1_EQUALS(NotNull, p.obj[0]);
 
    // Delete if exists and create tiPDBF_searchBytes_Bii.TEST.TEST
-   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_searchBytes_Bii.TEST.TEST", -1,null);
+   p.obj[1] = createStringObjectFromCharP(currentContext, "tiPDBF_searchBytes_Bii", -1);
+   p.obj[2] = createStringObjectFromCharP(currentContext, "TEST", -1);
+   p.obj[3] = createStringObjectFromCharP(currentContext, "TEST", -1);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
    p.i32[0] = CREATE_EMPTY;
 
-   tiPDBF_create_si(&p);
+   tiPDBF_create_sssi(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(NotNull, PDBFile_openRef(p.obj[0]));
 
@@ -1164,13 +1136,11 @@ TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int sear
    p.i32[0] = 5;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 0, p.retI);
 
    // Add the second record
    p.i32[0] = 15;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 1, p.retI);
 
    // Assert records were created
    tiPDBF_getRecordCount(&p);
@@ -1180,6 +1150,7 @@ TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int sear
    PDBFile_hvRecordOffset(p.obj[0]) += 2;
    p.i32[0] = 0;
    p.i32[1] = 8;
+   p.i32[2] = false;
    p.obj[1] = createByteArray(currentContext, 8, null);
    ASSERT1_EQUALS(NotNull, p.obj[1]);
 
@@ -1187,19 +1158,17 @@ TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int sear
    for (i = 0; i < p.i32[1]; i ++) // fill the buffer
       buf[i] = 'a' + i;
 
-   tiPDBF_writeBytes_Bii(&p);
+   tiPDBF_readWriteBytes_Biib(&p); (&p);
    ASSERT2_EQUALS(I32, p.i32[1], p.retI);
 
    // Add the third record
    p.i32[0] = 10;
    tiPDBF_addRecord_i(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 2, p.retI);
 
    // Release record
    p.i32[0] = -1;
    tiPDBF_setRecordPos_i(&p);
-   ASSERT2_EQUALS(I32, -1, p.i32[0]);
 
    // Search for written bytes
    p.i32[0] = 6;
@@ -1208,10 +1177,10 @@ TESTCASE(tiPDBF_searchBytes_Bii) // totalcross/io/PDBFile native public int sear
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT2_EQUALS(I32, 1, p.retI);
 
-   tiPDBF_nativeClose(&p);
+   // Deletes the file.
+   tiPDBF_delete(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-#endif
+   ASSERT1_EQUALS(Null, PDBFile_openRef(p.obj[0]));
 
-   finish:
-      ;
+   finish:;
 }

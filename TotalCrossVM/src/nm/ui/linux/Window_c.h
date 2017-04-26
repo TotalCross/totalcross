@@ -16,7 +16,7 @@ static void windowSetSIP(int32 sipOption)
    UNUSED(sipOption)
 }
 
-static void windowSetDeviceTitle(Object titleObj)
+static void windowSetDeviceTitle(TCObject titleObj)
 {
    UNUSED(titleObj)
 }

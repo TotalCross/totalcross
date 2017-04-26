@@ -143,8 +143,8 @@ public class ScrollBar extends Container
       btnDec.focusTraversable = btnInc.focusTraversable = false;
       add(btnDec);
       add(btnInc);
-      btnDec.setBorder(uiPalm?Button.BORDER_NONE:Button.BORDER_3D);
-      btnInc.setBorder(uiPalm?Button.BORDER_NONE:Button.BORDER_3D);
+      btnDec.setBorder(Button.BORDER_3D);
+      btnInc.setBorder(Button.BORDER_3D);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
    }
@@ -411,7 +411,7 @@ public class ScrollBar extends Container
                disableAutoScroll();
             Window.needsPaint = true;
             startDragPos = -1;
-            mustPostEvent = btnDec.enabled || btnInc.enabled;
+            mustPostEvent = btnDec.isEnabled() || btnInc.isEnabled();
             pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
             if (disableBlockIncrement && (pos < dragBarPos || pos > dragBarPos+dragBarSize))
             {
@@ -424,7 +424,7 @@ public class ScrollBar extends Container
             KeyEvent ke = (KeyEvent)event;
             if (ke.isPrevKey()) // guich@330_45
             {
-               if (btnDec.enabled)
+               if (btnDec.isEnabled())
                   value -= Settings.keyboardFocusTraversable ? unitIncrement : blockIncrement;
                event.consumed = true;
                mustPostEvent = true; // guich@240_21
@@ -432,7 +432,7 @@ public class ScrollBar extends Container
             else
             if (ke.isNextKey()) // guich@330_45
             {
-               if (btnInc.enabled)
+               if (btnInc.isEnabled())
                   value += Settings.keyboardFocusTraversable ? unitIncrement : blockIncrement;
                event.consumed = true;
                mustPostEvent = true; // guich@240_21
@@ -440,7 +440,8 @@ public class ScrollBar extends Container
             else
             if (ke.isActionKey())
             {
-               parent.requestFocus();
+               if (parent != null)
+                  parent.requestFocus();
                isHighlighting = true;
             }
             break;
@@ -452,7 +453,8 @@ public class ScrollBar extends Container
       else
       if (mustPostEvent)
       {
-         parent.postEvent(getPressedEvent(this));
+         if (parent != null)
+            parent.postEvent(getPressedEvent(this));
          isHighlighting = false; // don't let postEvent steal our focus!
       }
    }
@@ -505,11 +507,11 @@ public class ScrollBar extends Container
       boolean b = true;
       Window win = getParentWindow();
       if (!buttonScroll)
-        btnDec.setEnabled(b = (enabled && value > minimum));
+        btnDec.setEnabled(b = (isEnabled() && value > minimum));
       if (!b && win != null && win.getFocus() == btnDec) // if we're disabled now and we got the focus, move focus to other control
          requestFocus();
       if (!buttonScroll)
-         btnInc.setEnabled(b = (enabled && value+visibleItems < maximum));
+         btnInc.setEnabled(b = (isEnabled() && value+visibleItems < maximum));
       Control foc = win == null ? null : win.getFocus();
       if (!b && (foc == btnDec || foc == btnInc)) // guich@572_16: only if the focus is one of the buttons - bruno@tc114: avoid auto-setting the focus to a multi-edit
       {
@@ -535,13 +537,10 @@ public class ScrollBar extends Container
 
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled,false))
       {
-         this.enabled = enabled;
-         btnDec.setEnabled(enabled && value > minimum);
-         btnInc.setEnabled(enabled && value+visibleItems < maximum);
-         onColorsChanged(false);
-         Window.needsPaint = true;
+         btnDec.setEnabled(isEnabled() && value > minimum);
+         btnInc.setEnabled(isEnabled() && value+visibleItems < maximum);
       }
    }
 
@@ -552,94 +551,63 @@ public class ScrollBar extends Container
          btnDec.setBackForeColors(backColor,foreColor);
          btnInc.setBackForeColors(backColor,foreColor);
       }
-      if (uiPalm)
-      {
-         bColor = backColor;
-         sbColor = getForeColor();
-         sbColorDis = Color.brighter(sbColor);
-         sfColor = enabled?Color.brighter(sbColor):sbColor;
-      }
-      else bColor = Color.brighter(getBackColor());
+      bColor = Color.brighter(getBackColor());
       if (parent != null && bColor == parent.getBackColor())
          bColor = Color.getCursorColor(bColor);
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    public void onPaint(Graphics g)
    {
       // Draw background and borders
-      if (uiPalm)
+      int k = size - (btnWH<<1);
+      if (k <= 0) return;
+      g.backColor = bColor;
+      if (verticalBar)
+         g.fillRect(0,btnWH,btnWH,k);
+      else
+         g.fillRect(btnWH,0,k,btnWH);
+      g.backColor = backColor;
+      if (uiFlat)
       {
-         g.backColor = backColor;
-         if (!transparentBackground)
-            g.fillRect(0,0,width,height);
-         g.backColor = btnDec.enabled || btnInc.enabled ? sbColor : sbColorDis; // guich@582_5
-         g.foreColor = sfColor;
-         int h = Settings.screenWidth >= 200 ? 5 : 3; // guich@511_5
-         int c = btnWH >> 1;
-         int s = (btnWH-h)>>1;
-         if (verticalBar)
-         {
-            g.drawLine(c,btnWH,c,size-btnWH);
-            g.fillRect(s,dragBarPos,h,dragBarSize);
-         }
+         g.foreColor = fourColors[2];
+         g.drawRect(0,0,width,height);
+      }
+      if (verticalBar)
+      {
+         if (uiVista && isEnabled()) // guich@573_6
+            g.fillVistaRect(0,dragBarPos,width,dragBarSize,backColor,startDragPos!=-1,true); // guich@tc110_51: press the bar if dragging.
          else
+            g.fillRect(0,dragBarPos,width,dragBarSize);
+         g.draw3dRect(0,dragBarPos,width,dragBarSize,uiVista?Graphics.R3D_CHECK:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
+         if (uiFlat || uiVista)
          {
-            g.drawLine(btnWH,c,size-btnWH,c);
-            g.fillRect(dragBarPos,s,dragBarSize,h);
+            g.foreColor = fourColors[2];
+            k = dragBarPos+(dragBarSize>>1);
+            g.drawLine(3,k,width-4,k);
+            if (dragBarSize > minDragBarSize)
+            {
+               g.drawLine(3,k-2,width-4,k-2);
+               g.drawLine(3,k+2,width-4,k+2);
+            }
          }
       }
       else
       {
-         int k = size - (btnWH<<1);
-         if (k <= 0) return;
-         g.backColor = bColor;
-         if (verticalBar)
-            g.fillRect(0,btnWH,btnWH,k);
+         if (uiVista && isEnabled()) // guich@573_6
+            g.fillVistaRect(dragBarPos,0,dragBarSize,height,backColor,startDragPos!=-1,false); // guich@tc110_51: press the bar if dragging.
          else
-            g.fillRect(btnWH,0,k,btnWH);
-         g.backColor = backColor;
-         if (uiFlat)
+            g.fillRect(dragBarPos,0,dragBarSize,height);
+         g.draw3dRect(dragBarPos,0,dragBarSize,height,uiVista?Graphics.R3D_CHECK:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
+         if (uiFlat || uiVista)
          {
             g.foreColor = fourColors[2];
-            g.drawRect(0,0,width,height);
-         }
-         if (verticalBar)
-         {
-            if (uiVista && enabled) // guich@573_6
-               g.fillVistaRect(0,dragBarPos,width,dragBarSize,backColor,startDragPos!=-1,true); // guich@tc110_51: press the bar if dragging.
-            else
-               g.fillRect(0,dragBarPos,width,dragBarSize);
-            g.draw3dRect(0,dragBarPos,width,dragBarSize,uiVista?Graphics.R3D_CHECK:uiCE && startDragPos!=-1 ? Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
-            if (uiFlat || uiVista)
+            k = dragBarPos+(dragBarSize>>1);
+            g.drawLine(k,3,k,height-4);
+            if (dragBarSize > minDragBarSize)
             {
-               g.foreColor = fourColors[2];
-               k = dragBarPos+(dragBarSize>>1);
-               g.drawLine(3,k,width-4,k);
-               if (dragBarSize > minDragBarSize)
-               {
-                  g.drawLine(3,k-2,width-4,k-2);
-                  g.drawLine(3,k+2,width-4,k+2);
-               }
-            }
-         }
-         else
-         {
-            if (uiVista && enabled) // guich@573_6
-               g.fillVistaRect(dragBarPos,0,dragBarSize,height,backColor,startDragPos!=-1,false); // guich@tc110_51: press the bar if dragging.
-            else
-               g.fillRect(dragBarPos,0,dragBarSize,height);
-            g.draw3dRect(dragBarPos,0,dragBarSize,height,uiVista?Graphics.R3D_CHECK:uiCE && startDragPos!=-1 ? Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,false,fourColors); // guich@tc110_51: press the bar if dragging.
-            if (uiFlat || uiVista)
-            {
-               g.foreColor = fourColors[2];
-               k = dragBarPos+(dragBarSize>>1);
-               g.drawLine(k,3,k,height-4);
-               if (dragBarSize > minDragBarSize)
-               {
-                  g.drawLine(k-2,3,k-2,height-4);
-                  g.drawLine(k+2,3,k+2,height-4);
-               }
+               g.drawLine(k-2,3,k-2,height-4);
+               g.drawLine(k+2,3,k+2,height-4);
             }
          }
       }
@@ -696,5 +664,9 @@ public class ScrollBar extends Container
        }
        _onEvent(ke);
        return this;
+   }
+   
+   public void tempShow()
+   {
    }
 }

@@ -13,7 +13,9 @@
 
 #include "tcvm.h"
 
-#if defined WINCE || defined WIN32
+#if defined WP8
+
+#elif defined WINCE || defined WIN32
  #include "win/CellInfo_c.h"
 #elif defined(ANDROID)
  #include "android/CellInfo_c.h"
@@ -23,12 +25,12 @@
 
 // static fields
 static TCClass cellInfoClass;
-#define ConnectionManager_connRef(c)      getStaticFieldObject(c, "connRef")
+#define ConnectionManager_connRef(c)      getStaticFieldObject(null,c, "connRef")
 
-#define CellInfo_cellId(c)                *getStaticFieldObject(c, "cellId")
-#define CellInfo_mnc(c)                   *getStaticFieldObject(c, "mnc")
-#define CellInfo_mcc(c)                   *getStaticFieldObject(c, "mcc")
-#define CellInfo_lac(c)                   *getStaticFieldObject(c, "lac")
+#define CellInfo_cellId(c)                *getStaticFieldObject(null,c, "cellId")
+#define CellInfo_mnc(c)                   *getStaticFieldObject(null,c, "mnc")
+#define CellInfo_mcc(c)                   *getStaticFieldObject(null,c, "mcc")
+#define CellInfo_lac(c)                   *getStaticFieldObject(null,c, "lac")
 #define CellInfo_signal(c)                *getStaticFieldInt(c, "signal")
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,3 +63,32 @@ TC_API void tpCI_update(NMParams p) // totalcross/phone/CellInfo native public s
    CellInfo_signal(cellInfoClass) = signal;       
 #endif
 }
+
+#ifndef ANDROID
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_getHeightD_i(NMParams p) // totalcross/money/Ads native static int getHeightD(int size);
+{
+   p->retI = 0;
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_configureD_s(NMParams p) // totalcross/money/Ads native static void configureD(String id);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setSizeD_i(NMParams p) // totalcross/money/Ads native static void setSizeD(int s);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setPositionD_i(NMParams p) // totalcross/money/Ads native static void setPositionD(int p);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_setVisibleD_b(NMParams p) // totalcross/money/Ads native static void setVisibleD(boolean b);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmA_isVisibleD(NMParams p) // totalcross/money/Ads native static boolean isVisibleD();
+{
+   p->retI = 0;
+}
+#endif

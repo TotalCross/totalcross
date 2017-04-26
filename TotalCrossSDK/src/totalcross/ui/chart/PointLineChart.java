@@ -44,6 +44,9 @@ public abstract class PointLineChart extends Chart
 
    /** Flag to indicate whether the points must be painted */
    public boolean showPoints;
+   
+   /** Flag to indicate whether is to show the selected value */
+   public boolean showValue = true;
 
    /** The current selected series */
    private int selectedSeries = -1;
@@ -59,34 +62,39 @@ public abstract class PointLineChart extends Chart
 
    /** Flag to indicate whether this chart is focused */
    private boolean hasFocus;
-
+   
+   /** The axis that was selected. */
+   public int selectedAxis=-1;
+   
+   /** Flag indicating if its to post an event when the user selects an axis. */
+   public boolean postEventOnAxisSelection;
+   
    public void onPaint(Graphics g)
    {
       // Draw lines
       if (showLines)
       {
-         g.useAA = Settings.screenBPP > 8; 
          int thick = lineThickness;
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
-            g.foreColor = (((Series) series.items[i]).color);
+            Series s = (Series) series.items[i];
+            g.foreColor = s.color;
             Vector v = (Vector) points.items[i]; // the series' points
             if (v != null)
             {
-               for (int j = v.size() - 2; j >= 0; j --) // for each series point
-               {
-                  Coord c1 = (Coord) v.items[j];
-                  Coord c2 = (Coord) v.items[j + 1];
-                  for (int k = -(thick>>1); k <= (thick>>1); k++)
-                     g.drawLine(c1.x, c1.y-k, c2.x, c2.y-k);
-               }
+               for (int j = 0, n = v.size() - 1; j < n; j++) // for each series point
+                  if (s.yValues[j] != UNSET && s.yValues[j+1] != UNSET)
+                  {
+                     Coord c1 = (Coord) v.items[j];
+                     Coord c2 = (Coord) v.items[j + 1];
+                     g.drawThickLine(c1.x, c1.y, c2.x, c2.y, thick);
+                  }
             }
          }
-         g.useAA = false;
       }
 
       // Draw points
-      if (!showLines || showPoints || hasFocus)
+      if (!showLines || showPoints || hasFocus || Settings.fingerTouch)
       {
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
@@ -99,17 +107,32 @@ public abstract class PointLineChart extends Chart
                   Coord c1 = (Coord) v.items[j];
 
                   int c = s.color;
-                  if (selectedSeries == i && selectedValue == j)
+                  if (showValue && selectedSeries == i && selectedValue == j)
                      c = Color.darker(c);
 
-                  g.backColor = c;
-                  g.fillCircle(c1.x, c1.y, pointR);
+                  if (s.dot == null)
+                  {
+                     g.backColor = c;
+                     g.fillCircle(c1.x, c1.y, pointR);
+                  }
+                  else
+                  {
+                     int dy;
+                     int h = s.dot.getHeight();
+                     switch (s.dotVAlign)
+                     {
+                        case Control.TOP   : dy = c1.y-h; break;
+                        case Control.BOTTOM: dy = c1.y; break;
+                        default: dy = c1.y-h/2;
+                     }
+                     g.drawImage(s.dot, c1.x-s.dot.getWidth()/2, dy);
+                  }
                }
             }
          }
 
          // Draw selection (text box)
-         if (selectedSeries != -1)
+         if (selectedSeries != -1 && showValue)
          {
             Series s = (Series) series.items[selectedSeries];
 
@@ -127,6 +150,22 @@ public abstract class PointLineChart extends Chart
    {
       switch (e.type)
       {
+         case PenEvent.PEN_UP:
+         {
+            PenEvent pe = (PenEvent)e;
+            if (!hadParentScrolled() && xAxisX1 <= pe.x && pe.x <= xAxisX2)
+            {
+               int d = columnW/4;
+               for (int i = 0, xx = xAxisX1; xx <= xAxisX2; xx += columnW,i++)
+                  if ((xx-d) <= pe.x && pe.x <= (xx+d))
+                  {
+                     selectedAxis = i;
+                     postPressedEvent();
+                     break;
+                  }
+            }
+            break;
+         }
          case PenEvent.PEN_DOWN:
          {
             PenEvent pe = (PenEvent) e;
@@ -147,7 +186,8 @@ public abstract class PointLineChart extends Chart
                selectedValue = -1;
 
                Rect r = new Rect();
-               r.width = r.height = pointR * 2;
+               int dim = fmH;
+               r.width = r.height = fmH*2;
 
                for (int i = series.size() - 1; i >= 0; i --) // for each series
                {
@@ -157,8 +197,8 @@ public abstract class PointLineChart extends Chart
                      for (int j = v.size() - 1; j >= 0; j --) // for each series point
                      {
                         Coord c = (Coord) v.items[j];
-                        r.x = c.x - pointR;
-                        r.y = c.y - pointR;
+                        r.x = c.x - dim;
+                        r.y = c.y - dim;
 
                         if (r.contains(xx, yy))
                         {

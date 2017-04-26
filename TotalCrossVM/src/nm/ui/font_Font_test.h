@@ -11,14 +11,14 @@
 
 
 
-Object testfont;
+TCObject testfont;
 TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCreate(Font obj);
 {
    TNMParams p;
    int32 *style, *size, *maxfs, *minfs, *normal, *tabSize;
-   Object *name, *hvUserFont;
-   Class c;
-   Object font;
+   TCObject *name, *hvUserFont;
+   TCClass c;
+   TCObject font;
    font = createObject(currentContext, "totalcross.ui.font.Font");
    setObjectLock(font, UNLOCKED);
    ASSERT1_EQUALS(NotNull, font);

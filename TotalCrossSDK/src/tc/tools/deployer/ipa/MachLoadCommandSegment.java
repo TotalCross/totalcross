@@ -4,17 +4,17 @@ import java.io.IOException;
 
 public class MachLoadCommandSegment extends MachLoadCommand
 {
-   public String segname;
-   public long vmaddr;
-   public long vmsize;
-   public long fileoff;
-   public long filesize;
-   public long maxprot;
-   public long initprot;
-   public long nsects;
-   public long flags;
+   protected String segname;
+   protected long vmaddr;
+   protected long vmsize;
+   protected long fileoff;
+   protected long filesize;
+   protected long maxprot;
+   protected long initprot;
+   protected long nsects;
+   protected long flags;
 
-   private int offset2FileSize;
+   protected int offset2FileSize;
 
    void updateFileSize(ElephantMemoryWriter writer, long filesize) throws IOException
    {

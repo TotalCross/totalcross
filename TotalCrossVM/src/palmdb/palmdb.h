@@ -18,6 +18,7 @@
 #define TC_privateXmalloc              privateXmalloc
 #define TC_privateXrealloc             privateXrealloc
 #define TC_createArrayObject           createArrayObject
+#define TC_createByteArrayObject       createByteArrayObject
 #include "tcvm.h"
 
 /*
@@ -77,7 +78,7 @@ Documentation:
 The PDB is handled, in SuperWaba, by the waba.io.Catalog class.
 
 This file contains the platform independent routines.
-The files _palm/_ce/_posix contains platform dependent code.
+The files _ce/_posix contains platform dependent code.
 
 Catalog Premisses:
 
@@ -99,11 +100,7 @@ Notes:
 #define DB_NAME_LENGTH 32 // 31 chars + 1 null terminator
 #define DB_FULLNAME_LENGTH DB_NAME_LENGTH + 10
 
-#if defined(PALMOS)
- typedef uint32 _HANDLE;
-#elif defined(__SYMBIAN32__)
- typedef VoidP _HANDLE;
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  typedef HANDLE _HANDLE;
 #else
  typedef FILE* _HANDLE;
@@ -213,9 +210,6 @@ typedef struct t_PDBFile
 } TPDBFile, *PDBFile;
 
 
-//PalmOS constants
-//
-#if !defined (PALMOS)
 //Attributes of a Database
 //
  #define dmHdrAttrResDB             0x0001   // Resource database
@@ -259,20 +253,16 @@ typedef struct t_PDBFile
 
 //Return value
  #define dmErrInvalidParam          (0x0200 | 3)
-#endif
 
 //In Windows, != 0 means success, in PalmOS 0 means success
 //This defines a standard approach
-#if !defined PALMOS
  #define errNone 0
-#endif
 #define PALM_SUCCESS errNone
 #define PALM_ERROR !errNone
 
 #define DB_IS_OPEN(db) (db != null ? (((VoidP)db->fh) != null) : false )
 #define GET_OFFSET(idx) (78 + ((int32)idx << 3))
 
-#ifndef PALMOS
  typedef CharP MemHandle;
  typedef PDBFile DmOpenRef;
 
@@ -280,9 +270,8 @@ typedef struct t_PDBFile
 
  typedef int32 DmSearchStateType;
  typedef int32* DmSearchStatePtr;
-#endif
 
-#if defined(WIN32) || defined(WINCE) || defined(__SYMBIAN32__)
+#if defined(WIN32) || defined(WINCE)
  #define PATH_SEPARATOR           '\\'
  #define NO_PATH_SEPARATOR        '/'
  #define PATH_SEPARATOR_STR       TEXT("\\")
@@ -294,11 +283,7 @@ typedef struct t_PDBFile
  #define NO_PATH_SEPARATOR_STR    "\\"
 #endif
 
-#ifdef PALMOS
- #define BYTE_BUF_LEN 2048 // if this value is changed, replace it also in sw_palmdb_vfs.c
-#else
  #define BYTE_BUF_LEN 8192
-#endif
 
 typedef struct
 {
@@ -314,7 +299,6 @@ typedef struct
 
 typedef bool (*HandlePDBSearchProcType) (TCHARP fileName, VoidP userVars);
 
-#if !defined (PALMOS)
  #define DmGetLastErr()                                  myDmGetLastErr()
  #define DmReleaseRecord(dbP, index, dirty)              myDmReleaseRecord(dbP, index, dirty)
  #define DmCloseDatabase(dbP)                            myDmCloseDatabase(dbP)
@@ -336,9 +320,7 @@ typedef bool (*HandlePDBSearchProcType) (TCHARP fileName, VoidP userVars);
  #define DmQueryRecord(dbP, index)                       myDmQueryRecord(dbP, index)
  #define MemHandleLock(handle)                           myMemHandleLock(handle)
  #define MemHandleUnlock(handle)                         errNone
-#endif
 
-#if !defined (PALMOS)
 Err myDmGetLastErr();
 Err myDmCloseDatabase(DmOpenRef dbref);
 Err myDmReleaseRecord(DmOpenRef dbref, int32 index, bool dirty);
@@ -374,6 +356,5 @@ TCHARPs* listDatabasesByTypeCreator(uint32 type, uint32 creator, int32* count, H
 #endif
 
 bool endsWithPDB(TCHARP fName);
-#endif
 
 #endif

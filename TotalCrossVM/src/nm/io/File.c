@@ -13,9 +13,7 @@
 
 #include "File.h"
 
-#if defined PALMOS
- #include "palm/File_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/File_c.h"
 #else
  #include "posix/File_c.h"
@@ -49,7 +47,7 @@ TC_API bool validatePath(TCHARP path)
    return true;
 }
 
-static void invalidate(Object file)
+static void invalidate(TCObject file)
 {
    if (File_fileRef(file) != null)
    {
@@ -66,13 +64,14 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
    if (xstrncmp(szPath,"/sdcard",7) == 0)
    {
       char path2[MAX_PATHNAME];
-      if (!getSDCardPath(path2))
+      char n = szPath[7] - '0';
+      if (!getSDCardPath(path2,n))
       {                                                
          if (throwEx)
             throwException(p->currentContext, IOException, "Card not inserted.");
          return false;
       }   
-      xstrcat(path2, &szPath[7]);
+      xstrcat(path2, &szPath[0 <= n && n <= 9 ? 8 : 7]);
       xstrcpy(szPath, path2);
    }
    return true;
@@ -85,11 +84,7 @@ bool replacePath(NMParams p, char* szPath, bool throwEx)
 TC_API void tiF_getDeviceAlias(NMParams p) // totalcross/io/File native private static String getDeviceAlias();
 {
 #if defined (darwin)
-   #if defined (THEOS)
-      p->retO = createStringObjectFromCharP(p->currentContext, "/private/var/mobile", -1);
-   #else
-      p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
-   #endif
+   p->retO = createStringObjectFromCharP(p->currentContext, appPath, -1);
    setObjectLock(p->retO, UNLOCKED);
 #else
    p->retO = null;
@@ -110,11 +105,10 @@ TC_API void tiF_isCardInserted_i(NMParams p) // totalcross/io/File native public
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void create(String path, int mode, int slot) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object path = p->obj[1];
+   TCObject file = p->obj[0];
+   TCObject path = p->obj[1];
    int32 mode  = p->i32[0];
-   int32 slot  = p->i32[1];
-   Object fileRef = null;
+   TCObject fileRef = null;
    NATIVE_FILE* natFile = null;
    TCHAR szPath[MAX_PATHNAME];
    Err err;
@@ -124,19 +118,17 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
    File_path(file) = path;
    File_mode(file) = mode;
 #endif
-#if defined (PALMOS)
-   if (slot == lastVolume && (File_slot(file) = getLastVolume()) == lastVolume) // no card inserted
-   {
-      throwExceptionWithCode(p->currentContext, IOException, vfsErrVolumeBadRef);
-      return;
-   }
-#endif
 
    if (mode != DONT_OPEN)
    {
       JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
       if (IS_DEBUG_CONSOLE(szPath))
          mode = READ_ONLY;
+      if (!replacePath(p,szPath,true))
+      {
+         invalidate(file);
+         return;
+      }
       if (mode != CREATE && mode != CREATE_EMPTY && !fileExists(szPath, File_slot(file)))
          throwFileNotFoundException(p->currentContext, szPath);
       else
@@ -144,11 +136,6 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
       {
          File_fileRef(file) = fileRef;
          natFile = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-         if (!replacePath(p,szPath,true))
-         {
-            invalidate(file);
-            return;
-         }
          if ((err = fileCreate(natFile, szPath, mode, &File_slot(file))) != NO_ERROR)
          {
             throwExceptionWithCode(p->currentContext, IOException, err);
@@ -160,7 +147,7 @@ TC_API void tiF_create_sii(NMParams p) // totalcross/io/File native private void
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private void nativeClose() throws totalcross.io.IOException;
 {
-   Object file, fileRef;
+   TCObject file, fileRef;
    NATIVE_FILE* fref;
    Err err;
 
@@ -175,14 +162,54 @@ TC_API void tiF_nativeClose(NMParams p) // totalcross/io/File native private voi
    }
 }
 //////////////////////////////////////////////////////////////////////////
+#ifdef WIN32
+#define FILE_EXISTS 183
+#else
+#define FILE_EXISTS 17
+#endif
+int createDirRec(NMParams p, TCHARP szPath, int stringSize, int slot)
+{
+   TCHARP c;
+   int nStringSize;
+   Err err;
+
+   if (fileExists(szPath, slot))
+      return 0;
+
+   for (nStringSize = stringSize, c = szPath + stringSize - 1; c >= szPath; c--, nStringSize--)
+      if (*c == '/')
+      {
+          *c = 0;
+          if (!createDirRec(p, szPath, nStringSize, slot))
+          {
+             *c = '/';
+             if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != FILE_EXISTS) // ignore if EEXIST
+             {
+                throwExceptionWithCode(p->currentContext, IOException, err);
+                return 1;
+             }
+             else
+                return 0;
+          }
+          return 1;
+      }
+  
+   if ((err = fileCreateDir(szPath, slot)) != NO_ERROR && err != FILE_EXISTS)
+   {
+      throwExceptionWithCode(p->currentContext, IOException, err);
+      return 1;
+   }
+   else
+      return 0;
+}
+
 TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void createDir() throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
-   Err err;
 
    if (mode == INVALID)
       throwException(p->currentContext, IOException, "Invalid file object.");
@@ -191,24 +218,26 @@ TC_API void tiF_createDir(NMParams p) // totalcross/io/File native public void c
       throwException(p->currentContext, IOException, "Operation can ONLY be used in mode DONT_OPEN.");
    else
    {
-      JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
+      int stringSize = String_charsLen(path);
+      JCharP2TCHARPBuf(String_charsStart(path), stringSize, szPath);
       if (!replacePath(p,szPath,true))
          return;
       if (fileExists(szPath, slot))
          throwException(p->currentContext, IOException, "Directory already exists.");
       else
-      if ((err = fileCreateDir(szPath, slot)) != NO_ERROR)
-         throwExceptionWithCode(p->currentContext, IOException, err);
+         createDirRec(p, szPath, stringSize, slot); // this recursion will throw the exception
    }
 }
+
+
 //////////////////////////////////////////////////////////////////////////
 void closeDebug();
 
 TC_API void tiF_delete(NMParams p) // totalcross/io/File native public void delete() throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    int32 slot = File_slot(file);
@@ -241,8 +270,8 @@ TC_API void tiF_delete(NMParams p) // totalcross/io/File native public void dele
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_exists(NMParams p) // totalcross/io/File native public boolean exists();
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
@@ -261,9 +290,9 @@ TC_API void tiF_exists(NMParams p) // totalcross/io/File native public boolean e
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_getSize(NMParams p) // totalcross/io/File native public int getSize() throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    int32 slot = File_slot(file);
@@ -286,7 +315,7 @@ TC_API void tiF_getSize(NMParams p) // totalcross/io/File native public int getS
       }
       else
       if (mode == DONT_OPEN)
-         throwException(p->currentContext, IOException, "File is not a root directory.");
+         throwException(p->currentContext, IOException, "The file can't be open in the DONT_OPEN mode to get its size.");
       else
       {
          fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
@@ -301,8 +330,8 @@ TC_API void tiF_getSize(NMParams p) // totalcross/io/File native public int getS
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_isDir(NMParams p) // totalcross/io/File native public boolean isDir();
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
@@ -332,15 +361,15 @@ TC_API void tiF_isDir(NMParams p) // totalcross/io/File native public boolean is
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_listFiles(NMParams p) // totalcross/io/File native public String []listFiles() throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
    TCHARPs* list=null;
    int32 count=0;
-   volatile Object arrayObj = null;
-   ObjectArray start, end;
+   volatile TCObject arrayObj = null;
+   TCObjectArray start, end;
    Err err;
    volatile Heap h;
 
@@ -355,7 +384,7 @@ TC_API void tiF_listFiles(NMParams p) // totalcross/io/File native public String
       if (!replacePath(p,szPath,true))
          return;
 #if defined(WIN32) && !defined(WINCE)
-      if (strstr(szPath,"System Volume Information")) // guich@tc110_24
+      if (tcsstr(szPath,TEXT("System Volume Information"))) // guich@tc110_24
          return;
 #endif
       h = heapCreate();
@@ -376,7 +405,7 @@ TC_API void tiF_listFiles(NMParams p) // totalcross/io/File native public String
       {
          if ((p->retO = arrayObj = createStringArray(p->currentContext, count)) != null)
          {
-            start = (ObjectArray) ARRAYOBJ_START(arrayObj);
+            start = (TCObjectArray) ARRAYOBJ_START(arrayObj);
             end = start + ARRAYOBJ_LEN(arrayObj);
             for (; start < end; start++, list = list->next) // stop also if OutOfMemoryError
             {
@@ -395,14 +424,14 @@ TC_API void tiF_listFiles(NMParams p) // totalcross/io/File native public String
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public int readBytes(byte []b, int off, int len) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object bytes = p->obj[1];
+   TCObject file = p->obj[0];
+   TCObject bytes = p->obj[1];
    int32 off = p->i32[0];
    int32 len = p->i32[1];
-   Object fileRef = File_fileRef(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
-   int32 bytesRead;
+   int32 bytesRead = 0;
    Err err;
 
    if (mode == INVALID)
@@ -422,7 +451,7 @@ TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public in
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-      if ((err = fileReadBytes(*fref, ARRAYOBJ_START(bytes), off, len, &bytesRead)) != NO_ERROR)
+      if ((err = fileReadBytes(*fref, (char*)ARRAYOBJ_START(bytes), off, len, &bytesRead)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
       else
       {
@@ -434,10 +463,10 @@ TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public in
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_rename_s(NMParams p) // totalcross/io/File native public boolean rename(String path) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object currPath = File_path(file);
-   Object newPath = p->obj[1];
-   Object fileRef = File_fileRef(file);
+   TCObject file = p->obj[0];
+   TCObject currPath = File_path(file);
+   TCObject newPath = p->obj[1];
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    NATIVE_FILE frefDummy;
@@ -491,10 +520,10 @@ TC_API void tiF_rename_s(NMParams p) // totalcross/io/File native public boolean
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_setPos_i(NMParams p) // totalcross/io/File native public void setPos(int pos) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    int32 pos = p->i32[0];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    TCHAR szPath[MAX_PATHNAME];
@@ -531,11 +560,11 @@ TC_API void tiF_setPos_i(NMParams p) // totalcross/io/File native public void se
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_writeBytes_Bii(NMParams p) // totalcross/io/File native public int writeBytes(byte []b, int off, int len) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
-   Object bytes = p->obj[1];
+   TCObject file = p->obj[0];
+   TCObject bytes = p->obj[1];
    int32 off = p->i32[0];
    int32 len = p->i32[1];
-   Object fileRef = File_fileRef(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    int32 bytesWritten;
@@ -561,7 +590,7 @@ TC_API void tiF_writeBytes_Bii(NMParams p) // totalcross/io/File native public i
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-      if ((err = fileWriteBytes(*fref, ARRAYOBJ_START(bytes), off, len, &bytesWritten)) != NO_ERROR)
+      if ((err = fileWriteBytes(*fref, (char*)ARRAYOBJ_START(bytes), off, len, &bytesWritten)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
       else
       {
@@ -573,10 +602,10 @@ TC_API void tiF_writeBytes_Bii(NMParams p) // totalcross/io/File native public i
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_setAttributes_i(NMParams p) // totalcross/io/File native public void setAttributes(int attr) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    int32 attr = p->i32[0];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    TCHAR szPath[MAX_PATHNAME];
@@ -607,10 +636,10 @@ TC_API void tiF_setAttributes_i(NMParams p) // totalcross/io/File native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_getAttributes(NMParams p) // totalcross/io/File native public int getAttributes() throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    int32 attr = p->i32[0];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    TCHAR szPath[MAX_PATHNAME];
@@ -637,11 +666,11 @@ TC_API void tiF_getAttributes(NMParams p) // totalcross/io/File native public in
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_setTime_bt(NMParams p) // totalcross/io/File native public void setTime(byte whichTime, totalcross.sys.Time time) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    char whichTime = (char) p->i32[0];
-   Object time = p->obj[1];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject time = p->obj[1];
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    TCHAR szPath[MAX_PATHNAME];
@@ -675,14 +704,14 @@ TC_API void tiF_setTime_bt(NMParams p) // totalcross/io/File native public void 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_getTime_b(NMParams p) // totalcross/io/File native public totalcross.sys.Time getTime(byte whichTime) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    char whichTime = (char) p->i32[0];
-   Object path = File_path(file);
-   Object fileRef = File_fileRef(file);
+   TCObject path = File_path(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    TCHAR szPath[MAX_PATHNAME];
-   Object time;
+   TCObject time;
    Err err;
 
    if (mode == INVALID)
@@ -712,9 +741,9 @@ TC_API void tiF_getTime_b(NMParams p) // totalcross/io/File native public totalc
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_setSize_i(NMParams p) // totalcross/io/File native public void setSize(int newSize) throws totalcross.io.IOException;
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    int32 newSize = p->i32[0];
-   Object fileRef = File_fileRef(file);
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    Err err;
@@ -758,8 +787,8 @@ TC_API void tiF_getCardSerialNumber_i(NMParams p) // totalcross/io/File native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_flush(NMParams p)
 {
-   Object file = p->obj[0];
-   Object fileRef = File_fileRef(file);
+   TCObject file = p->obj[0];
+   TCObject fileRef = File_fileRef(file);
    int32 mode = File_mode(file);
    NATIVE_FILE* fref;
    Err err;
@@ -785,8 +814,8 @@ TC_API void tiF_listRoots(NMParams p) // totalcross/io/File native public static
 #if defined (WIN32)
    TCHARPs* list=null;
    int32 count = 0;
-   volatile Object arrayObj = null;
-   ObjectArray start, end;
+   volatile TCObject arrayObj = null;
+   TCObjectArray start, end;
    Err err;
    volatile Heap h;
 
@@ -807,7 +836,7 @@ TC_API void tiF_listRoots(NMParams p) // totalcross/io/File native public static
    {
       if ((p->retO = arrayObj = createStringArray(p->currentContext, count)) != null)
       {
-         start = (ObjectArray) ARRAYOBJ_START(arrayObj);
+         start = (TCObjectArray) ARRAYOBJ_START(arrayObj);
          end = start + ARRAYOBJ_LEN(arrayObj);
          for (; start < end; start++, list = list->next) // stop also if OutOfMemoryError
          {
@@ -826,8 +855,8 @@ TC_API void tiF_listRoots(NMParams p) // totalcross/io/File native public static
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_isEmpty(NMParams p) // totalcross/io/File native public boolean isEmpty() throws IOException
 {
-   Object file = p->obj[0];
-   Object path = File_path(file);
+   TCObject file = p->obj[0];
+   TCObject path = File_path(file);
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];
@@ -856,9 +885,9 @@ TC_API void tiF_isEmpty(NMParams p) // totalcross/io/File native public boolean 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tiF_chmod_i(NMParams p) // totalcross/io/File native public int chmod(int mod) throws IOException
 {
-   Object file = p->obj[0];
+   TCObject file = p->obj[0];
    int32 mod = p->i32[0];
-   Object path = File_path(file);
+   TCObject path = File_path(file);
    int32 mode = File_mode(file);
    int32 slot = File_slot(file);
    TCHAR szPath[MAX_PATHNAME];

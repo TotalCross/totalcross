@@ -68,8 +68,14 @@ public class MultiListBox extends ListBox
     */
    public boolean unselectFirstWhenMaxIsReached;
 
-   /** Suffix used to display the number of items in a ComboBox. Defaults to " items". */
+   /** Global suffix used to display the number of items in a ComboBox. Defaults to " items". */
    public static String itemsText = " items";
+   
+   /** Local suffix to display the number of items in a ComboBox. Defaults to " items". */
+   public String localItemsText = " items";
+   
+   /** The amount of time used to show how many itens. */
+   public int tipDelay = 250;
 
    /** Constructs an empty MultiListBox. */
    public MultiListBox()
@@ -185,6 +191,14 @@ public class MultiListBox extends ListBox
          super.drawSelectedItem(g, from, to);
    }
 
+   protected void drawItems(Graphics g, int dx, int dy, int greatestVisibleItemIndex)
+   {
+      for (int i = offset; i < greatestVisibleItemIndex; dy += getItemHeight(i++))
+         if (!selectedIndexes.exists(i))
+            drawItem(g,i,dx,dy); // guich@200b4: let the user extend ListBox and draw the items himself
+      drawSelectedItem(g, offset, greatestVisibleItemIndex);
+   }
+
    protected int getCursorColor(int index)
    {
       boolean exists = selectedIndexes.exists(index);
@@ -218,7 +232,7 @@ public class MultiListBox extends ListBox
          selectedIndexes.clear();
          if (order != null) order.removeAllElements();
       }
-      super.setSelectedIndex(index);
+      super.setSelectedIndex(index,false);
    }
 
    protected void leftReached()
@@ -309,7 +323,7 @@ public class MultiListBox extends ListBox
                {
                   order.addElement(index);
                   if (showOrderInTip)
-                     showTip(this, Convert.toString(order.size()),250,getIndexY(index));
+                     showTip(this, Convert.toString(order.size()),tipDelay,getIndexY(index));
                }
                changed = true;
             }
@@ -332,7 +346,7 @@ public class MultiListBox extends ListBox
    }
 
    /** Returns the String with the selected item (if single) or a string with the number of selected items.
-    * You can change the suffix itemsText to another one.
+    * You can change the suffix itemsText or localItemsText to another one.
     * If order is important, returns the last selected item.
     */
    public String getText()
@@ -341,7 +355,7 @@ public class MultiListBox extends ListBox
       if (size <= 1) return super.getText();
       if (order != null)
          return getLastSelectedItem().toString();
-      return Convert.toString(size)+itemsText;
+      return Convert.toString(size)+(localItemsText != null ? localItemsText : itemsText);
    }
 
    public void onEvent(Event e)

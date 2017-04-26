@@ -25,12 +25,11 @@ import totalcross.sys.*;
 /** Constructs a Menu with the given items. 
    * A menu can be opened by the user in a couple of ways:
    * <ul>
-   * <li> By clicking in the Menu button on Palm OS devices
+   * <li> By clicking in the Menu button
    * <li> By clicking in the title of a Window
-   * <li> By holding during 1 second the middle button of the 5-way navigation buttons.
    * </ul>
    * The Menu supports disabled and checked items.
-   * Here is an example of how to build the menu for the Palm OS' DateBook:<br>
+   * Here is an example of how to build the menu:<br>
    * <pre>
    * MenuItem miBeamEvent,miNewEvent,miDeleteEvent;
    * MenuItem col0[] =
@@ -133,7 +132,6 @@ public class MenuBar extends Window
    /** Create a MenuBar with the given menu items. */
    public MenuBar(MenuItem [][]items)
    {
-      highResPrepared = true;
       started = true; // avoid calling the initUI method
       canDrag = false;
       setBackColor(Color.WHITE);
@@ -368,11 +366,16 @@ public class MenuBar extends Window
       g.setFont(font);
       if (selected != -1)
       {
-         g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
          if (!uiAndroid && uiVista && borderStyle == BORDER_NONE)
-            g.fillVistaRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2, bColor, true,false);
-         else
+         {
+            g.backColor = popCursor != -1 ? popCursor : popBack; 
             g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
+         }
+         else
+         {
+            g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
+            g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
+         }
       }
       // paint captions
       int yy = (height-fmH)/2;

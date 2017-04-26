@@ -1,16 +1,14 @@
 package ras.comm;
 
-import ras.ActivationClient;
-import ras.ui.ActivationHtml;
-import totalcross.io.ByteArrayStream;
-import totalcross.io.DataStream;
-import totalcross.io.IOException;
-import totalcross.net.Base64;
+import ras.*;
+import ras.ui.*;
+
+import totalcross.io.*;
+import totalcross.net.*;
 import totalcross.sys.*;
-import totalcross.ui.dialog.InputBox;
-import totalcross.util.Hashtable;
-import totalcross.xml.soap.SOAP;
-import totalcross.xml.soap.SOAPException;
+import totalcross.ui.dialog.*;
+import totalcross.util.*;
+import totalcross.xml.soap.*;
 
 public class RASConnectionSOAP extends RASConnection
 {
@@ -91,7 +89,7 @@ public class RASConnectionSOAP extends RASConnection
          }
          catch (SOAPException firstException) // on wince, if the first execute fails, check for proxy configuration and try again.
          {
-            if (Settings.isWindowsDevice()) //flsobral@tc126: check for proxy availability
+            if (Settings.isWindowsCE()) //flsobral@tc126: check for proxy availability
             {
                try
                {
@@ -153,7 +151,7 @@ public class RASConnectionSOAP extends RASConnection
       ByteArrayStream bas = new ByteArrayStream(decodedResponse);
 
       int id = 0;
-      Class packetClass;
+      Class<?> packetClass;
       Packet packet = null;
 
       // Receive packet
@@ -161,7 +159,7 @@ public class RASConnectionSOAP extends RASConnection
       try
       {
          id = ds.readInt();
-         packetClass = (Class) Packet.packetClasses.get(id);
+         packetClass = (Class<?>) Packet.packetClasses.get(id);
          if (packetClass == null)
             throw new CommException("Unsupported packet received: " + id);
          packet = (Packet) packetClass.newInstance();

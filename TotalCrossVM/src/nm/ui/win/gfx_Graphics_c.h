@@ -70,6 +70,7 @@ extern int32 defScrX,defScrY,defScrW,defScrH;
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
+#ifndef WP8
    DWORD style;
    int32 width, height;
    RECT rect;
@@ -90,11 +91,15 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
    if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
    if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = 800;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = min32(800,rect.bottom-rect.top);} else
    {
       width = defScrW == -1 ? 240 : defScrW;
       height = defScrH == -1 ? 320 : defScrH;
-   }
+   }                                                                                                                          
+#ifdef _DEBUG
+   defScrX = defScrY = 0;
+#endif
+
    rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
    rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
    rect.bottom = height;
@@ -140,6 +145,10 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    ReleaseDC(mainHWnd, deviceContext);
 #endif
 
+#endif
+#if defined(_DEBUG) && !defined(WINCE)
+   SetProcessAffinityMask(GetCurrentProcess(), 1);
+#endif
    return true;
 }
 
@@ -217,45 +226,11 @@ inline static void drawImageLine(ScreenSurface screen, HDC targetDC, int32 minx,
    BitBlt(SCREEN_EX(screen)->dc, minx,miny, maxx-minx, maxy-miny, targetDC, minx,miny, SRCCOPY);
 }
 
-void graphicsUpdateScreen(Context currentContext, ScreenSurface screen, int32 transitionEffect) // screen's already locked
+void graphicsUpdateScreen(Context currentContext, ScreenSurface screen) // screen's already locked
 {                         
    HDC targetDC = CreateCompatibleDC(NULL);
    HBITMAP hOldBitmap = (HBITMAP)SelectObject(targetDC, SCREEN_EX(screen)->hbmp);
-   switch (transitionEffect)
-   {
-      case TRANSITION_NONE:
-         BitBlt(SCREEN_EX(screen)->dc, currentContext->dirtyX1, currentContext->dirtyY1, currentContext->dirtyX2-currentContext->dirtyX1, currentContext->dirtyY2-currentContext->dirtyY1, targetDC, currentContext->dirtyX1, currentContext->dirtyY1, SRCCOPY);
-         break;                                                                                                                                                                                                               
-      case TRANSITION_CLOSE:
-      case TRANSITION_OPEN:
-      {       
-         int32 i0,iinc,i;
-         int32 w = screen->screenW;
-         int32 h = screen->screenH;
-         float incX=1,incY=1;
-         int32 n = min32(w,h);
-         int32 mx = w/2,ww=1,hh=1;
-         int32 my = h/2;
-         if (w > h)
-            {incX = (float)w/h; ww = (int)incX+1;}
-          else
-            {incY = (float)h/w; hh = (int)incY+1;}
-         i0 = transitionEffect == TRANSITION_CLOSE ? n : 0;
-         iinc = transitionEffect == TRANSITION_CLOSE ? -1 : 1;
-         for (i =i0; --n >= 0; i+=iinc)
-         {
-            int32 minx = (int32)(mx - i*incX);
-            int32 miny = (int32)(my - i*incY);
-            int32 maxx = (int32)(mx + i*incX);
-            int32 maxy = (int32)(my + i*incY);
-            drawImageLine(screen,targetDC,minx-ww,miny-hh,maxx+ww,miny+hh);
-            drawImageLine(screen,targetDC,minx-ww,miny-hh,minx+ww,maxy+hh);
-            drawImageLine(screen,targetDC,maxx-ww,miny-hh,maxx+ww,maxy+hh);
-            drawImageLine(screen,targetDC,minx-ww,maxy-hh,maxx+ww,maxy+hh);
-         }
-         break;
-      }
-   }
+   BitBlt(SCREEN_EX(screen)->dc, currentContext->dirtyX1, currentContext->dirtyY1, currentContext->dirtyX2-currentContext->dirtyX1, currentContext->dirtyY2-currentContext->dirtyY1, targetDC, currentContext->dirtyX1, currentContext->dirtyY1, SRCCOPY);
    SelectObject(targetDC, hOldBitmap);
    DeleteDC(targetDC);
 #ifdef WINCE // guich@tc113_20

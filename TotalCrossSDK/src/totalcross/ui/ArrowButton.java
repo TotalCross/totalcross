@@ -14,29 +14,61 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.ui.gfx.*;
 
-/** A class used to display a Button with an arrow inside. 
+/** 
+ * A class used to display a Button with an arrow inside. 
  */
-
 public class ArrowButton extends Button
 {
+   /**
+    * <code>Graphics.ARROW_UP</code>, <code>Graphics.ARROW_DOWN</code>, <code>Graphics.ARROW_LEFT</code>, or <code>Graphics.ARROW_RIGHT</code>.
+    */
    protected byte direction;
+   
+   /**
+    * prefWH the desired arrow width/height. The effective arrow's size will be computed based in the current width/height.
+    */
    protected int prefWH;
-   private int xx,yy,kk,dkk;
+   
+   /**
+    * The x position.
+    */
+   protected int xx;
+   
+   /**
+    * The y position.
+    */
+   protected int yy;
+   
+   /**
+    * The current arrow size.
+    */
+   protected int kk;
+   
+   /**
+    * The newly assigned arrow size.
+    */
+   protected int dkk;
+   
+   /**
+    * Indicates if the arrow is horizontal or not.
+    */
    private boolean horiz;
    
-   /** The arrow's color */
+   /** 
+    * The arrow's color. 
+    */
    public int arrowColor;
    
-   /** Constructs an Arrow Button  
-    * @param direction Graphics.ARROW_UP or Graphics.ARROW_DOWN or Graphics.ARROW_LEFT or Graphics.ARROW_RIGHT
-    * @param prefWH the desired arrow width/height. The effective arrow's size will be computed based in the current width/height.
-    * @param arrowColor the arrow color. Can be changed by setting the arrowColor field. 
+   /** 
+    * Constructs an <code>ArrowButton</code>.  
+    * @param direction <code>Graphics.ARROW_UP</code>, <code>Graphics.ARROW_DOWN</code>, <code>Graphics.ARROW_LEFT</code>, or 
+    * <code>Graphics.ARROW_RIGHT</code>.
+    * @param prefWH The desired arrow width/height. The effective arrow's size will be computed based in the current width/height.
+    * @param arrowColor The arrow color. Can be changed by setting the <code>arrowColor</code> field. 
     */
    public ArrowButton(byte direction, int prefWH, int arrowColor)
    {
@@ -47,16 +79,32 @@ public class ArrowButton extends Button
       horiz = direction == Graphics.ARROW_LEFT || direction == Graphics.ARROW_RIGHT;
    }
    
+   /** 
+    * Returns the preferred width of this control. 
+    * 
+    * @return The preferred width of this control.
+    */
    public int getPreferredWidth()
    {
       return super.getPreferredWidth() + (horiz && border==BORDER_NONE ? prefWH : prefWH*2) - 1;
    }
    
+   /**
+    * Returns the preferred height of this control. 
+    *
+    * @return The preferred height of this control.
+    */
    public int getPreferredHeight()
    {
       return super.getPreferredHeight() + (!horiz && border==BORDER_NONE ? prefWH : prefWH*2) - 1;
    }
    
+   /**
+    * Sets the style of the border.
+    * 
+    * @param border One out of <code>Button.BORDER_NONE</code>, <code>Button.BORDER_SIMPLE</code>, <code>Button.BORDER_3D</code>, 
+    * <code>Button.BORDER_3D_HORIZONTAL_GRADIENT</code>, <code>Button.BORDER_3D_VERTICAL_GRADIENT</code>, or <code>Button.BORDER_GRAY_IMAGE</code>.
+    */
    public void setBorder(byte border)
    {
       super.setBorder(border);
@@ -89,24 +137,44 @@ public class ArrowButton extends Button
       }
    }
    
+   /**
+    * Sets the arrow size.
+    *
+    * @param kk The new size.
+    */
    public void setArrowSize(int kk)
    {
       dkk = kk;
       recomputeParameters();
    }
    
+   /**
+    * Called after a <code>setRect()</code>.
+    * 
+    * @param screenChanged If the bounds was changed due to a screen change (rotation, collapse).
+    */
    protected void onBoundsChanged(boolean screenChanged)
    {
       super.onBoundsChanged(screenChanged);
       recomputeParameters();
    }
    
+   /** 
+    * Called by the system to draw the <code>ArrowButton</code>.
+    * 
+    * @param g The graphics object for drawing. 
+    */
    public void onPaint(Graphics g)
    {
       super.onPaint(g);
-      g.drawArrow(xx,yy,kk,direction,!uiAndroid && armed,enabled ? arrowColor : Color.brighter(arrowColor,128)); // here is h regardless the case
+      g.drawArrow(xx,yy,kk,direction,!uiAndroid && armed,isEnabled() ? arrowColor : Color.brighter(arrowColor,128)); // here is h regardless the case
    }
    
+   /**
+    * Returns a string representation of the object.
+    * 
+    * @return The string representation of the haired button plus its direction.
+    */
    public String toString()
    {
       return super.toString()+", dir: "+direction;

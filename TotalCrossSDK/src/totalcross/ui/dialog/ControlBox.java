@@ -31,6 +31,7 @@ public class ControlBox extends Window
    protected Control cb;
    private int selected = -1;
    protected int prefW,prefH;
+   private String originalText;
    /** Defines the y position on screen where this window opens. Can be changed to TOP or BOTTOM. Defaults to CENTER.
     * @see #CENTER
     * @see #TOP
@@ -80,7 +81,7 @@ public class ControlBox extends Window
     * @param text The text that will be displayed in a Label above the control.
     * @param cb The control that will be used to get input from the user.
     * @param buttonCaptions The button captions that will be used in the PushButtonGroup, or null to hide them.
-    * @param prefW The preferred width for the control.
+    * @param prefW The preferred width for the control. You can also use FILL or PREFERREED
     * @param prefH The preferred height for the control.
     */
    public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions)
@@ -94,7 +95,7 @@ public class ControlBox extends Window
     * @param text The text that will be displayed in a Label above the control.
     * @param cb The control that will be used to get input from the user.
     * @param buttonCaptions The button captions that will be used in the PushButtonGroup, or null to hide them.
-    * @param prefW The preferred width for the control.
+    * @param prefW The preferred width for the control. You can also use FILL or PREFERREED
     * @param prefH The preferred height for the control.
     * @param buttonRows The number of rows for the buttons.
     */
@@ -104,10 +105,9 @@ public class ControlBox extends Window
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
-      highResPrepared = true;
       if (buttonCaptions != null) // guich@tc114_7 
          btns = new PushButtonGroup(buttonCaptions,false,-1,uiAndroid?fmH/2:4,6,buttonRows,uiAndroid,PushButtonGroup.BUTTON);
-      msg = new Label(text,Label.CENTER);
+      msg = new Label(originalText = text,Label.CENTER);
       this.cb = cb;
       this.prefW = prefW;
       this.prefH = prefH;
@@ -121,6 +121,11 @@ public class ControlBox extends Window
       if (btns != null) btns.setFont(font);
       cb.setFont(font);
       msg.setFont(font);
+      int maxW = Settings.screenWidth-fmH*2;
+      String text = originalText;
+      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
+         text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
+      msg.setText(text);
       int wb = btns == null ? 0 : btns.getPreferredWidth();
       int hb = btns == null ? 0 : btns.getPreferredHeight();
       if (uiAndroid && wb > 0)
@@ -131,7 +136,7 @@ public class ControlBox extends Window
       int he = prefH == PREFERRED ? cb.getPreferredHeight(): prefH;
       int captionH = titleFont.fm.height+10;
 
-      int h = captionH + hb + hm + he;
+      int h = captionH + hb + hm + he + fmH;
       if (uiAndroid) h += fmH;
       int w = Math.max(Math.max(Math.max(wb,wm),we),titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
@@ -143,7 +148,8 @@ public class ControlBox extends Window
       msg.setRect(LEFT,TOP,FILL,hm);
       if (btns != null) btns.setRect(CENTER,BOTTOM-(uiAndroid?fmH/2:2),wb,hb);
       msg.setBackForeColors(backColor, foreColor);
-      cb.setRect(we==FILL ? LEFT : CENTER,AFTER+2,we,he,msg);
+      int gap = we == FILL ? fmH/2 : 0;
+      cb.setRect(we==FILL ? LEFT+gap : CENTER,AFTER+fmH/2,we-gap,he,msg);
    }
 
    /** handle scroll buttons and normal buttons */

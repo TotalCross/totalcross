@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.digest;
 
 import totalcross.io.ByteArrayStream;
@@ -30,29 +28,39 @@ public abstract class Digest
    protected ByteArrayStream input = new ByteArrayStream(128);
    private byte[] oneByte = new byte[1];
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return The name of the algorithm whose class heirs from Digest. 
+    */
    public String toString()
    {
       return getAlgorithm();
    }
    
    /**
-    * @return the algorithm name of this message digest. 
+    * Returns the name of the algorithm.
+    * 
+    * @return The name of the algorithm whose class heirs from Digest. 
     */
    public abstract String getAlgorithm();
    
    /**
-    * @return the block length (in bytes).
+    * Returns the block length.
+    * 
+    * @return The block length (in bytes).
     */
    public abstract int getBlockLength();
    
    /**
-    * @return the message digest length (in bytes).
+    * Returns the message digest length.
+    * 
+    * @return The message digest length (in bytes).
     */
    public abstract int getDigestLength();
    
    /**
-    * Initializes this message digest. Calling this method will also reset the input
-    * data buffer.
+    * Initializes this message digest. Calling this method will also reset the input data buffer.
     */
    public final void reset()
    {
@@ -60,11 +68,10 @@ public abstract class Digest
    }
    
    /**
-    * Updates the input data that will be processed by this message digest algorithm.
-    * The data will be accumulated in an input buffer to be processed when {@link #getDigest()}
-    * is finally called.
+    * Updates the input data that will be processed by this message digest algorithm. The data will be accumulated in an input buffer to be processed 
+    * when {@link #getDigest()} is finally called.
     * 
-    * @param data the input data.
+    * @param data The input data.
     */
    public final void update(int data)
    {
@@ -73,11 +80,10 @@ public abstract class Digest
    }
    
    /**
-    * Updates the input data that will be processed by this message digest algorithm.
-    * The data will be accumulated in an input buffer to be processed when {@link #getDigest()}
-    * is finally called.
+    * Updates the input data that will be processed by this message digest algorithm. The data will be accumulated in an input buffer to be processed 
+    * when {@link #getDigest()} is finally called.
     * 
-    * @param data the input data.
+    * @param data The input data.
     */
    public final void update(byte[] data)
    {
@@ -85,13 +91,12 @@ public abstract class Digest
    }
    
    /**
-    * Updates the input data that will be processed by this message digest algorithm.
-    * The data will be accumulated in an input buffer to be processed when {@link #getDigest()}
-    * is finally called.
+    * Updates the input data that will be processed by this message digest algorithm. The data will be accumulated in an input buffer to be processed 
+    * when {@link #getDigest()} is finally called.
     * 
-    * @param data the input data.
-    * @param start the offset in <code>data</code> where the data starts.
-    * @param count the input length.
+    * @param data The input data.
+    * @param start The offset in <code>data</code> where the data starts.
+    * @param count The input length.
     */
    public final void update(byte[] data, int start, int count)
    {
@@ -99,10 +104,9 @@ public abstract class Digest
    }
    
    /**
-    * Finalizes the message digest operation by processing all the accumulated input data
-    * and returning the result in a new buffer.
+    * Finalizes the message digest operation by processing all the accumulated input data and returning the result in a new buffer.
     * 
-    * @return the operation result in a new buffer.
+    * @return The operation result in a new buffer.
     */
    public final byte[] getDigest()
    {

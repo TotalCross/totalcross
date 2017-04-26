@@ -25,14 +25,10 @@ public class GraphicsTest extends ImageComparisionTest
 
    private static int back = Color.YELLOW;
 
-   private String setDrawOp_65536 = "58C385D0B119C3200C8451CF49A335AEB92519427318255F8C5030F7973C1542E4277CA34778BAAEACA3BE7324EFFF8EC57B7514EFAB2724CB368B73967CC773603AB91B789CDC0EFC3C5E7CCDA283B7E4DC7953DEC279F036DCE3A2D3CB2786FBC119EECA5DB9E3DDCB7D5E1CCAA11CCAA1DCE2A22737E5A6DC941BAADF1BF2F17C";
    private String setPixel_65536 = "58C385D3C116C0100C44D1F96C9F5F5534613263E9BE8543A0A905341897C1EB2A182E82CFEB607A192CAF82ED45F03B0F82D3203A0B929320FB1D1C7E05B8368C1F01C8918CA700F4528C8700C5B318DF01CAC1303E0388D1343E02C8CF61BC07DA3BE3013A6997E0";
    private String drawLine_65536 = "58C38D935B1280200C0373EC3DBE8EA3435F10FBBB29943448AED8D78375C437DD09C47BBC36F8E3A3402C3E0844E44D20322F0251791288CCCB9082DE1FBA9839ED2DD5FE6A565B4FD946F74F4C3C8C36F6FFBCDFCC6FDE6FFC3BF9EFF767F66FF263F267F26BF26FFE8FA90BB62F54D8";
    private String drawRect_65536 = "58C3636020042A700302D25493C7E50EB83C14D34C1E8FFD70092C410666C3E511DAB0EBC72E8F293A5CE57184DF20487F03294F000000B5C45280";
    private String fillRect_65536 = "58C37BF6AC020F6060784640BEA2820EF2CF406070CA23249E210015E511768D74F9014C7F83581E003FBCEA42";
-   private String drawDottedCursor_65536 = "58C38BAF88C7031918E22BF0807806860ABC6054FFA87E1AEB07255302FAE329B43F9E42FB29F33FFEFC09006AFC9FB0";
-   private String drawCursor_65536 = "58C38B8F47011528209E81217E549EB03C843328E59138151860B0C8630BDB5179B4F8AD88C700150C0C0076838791";
-   private String drawCursorOutline_65536 = "58C38B8F47011528209E810155044DBE62541E2C020F3A5CF230291AC883AD86E2784C79A8BB41F2159800260F564243796C6E4392C7EAB7517944FC22021135B732300000E8B19A06";
    private String fillPie_65536 = "58C3D5924B0EC0200844E7D87362CE518592CA27BA6AD2CE06E10D60A2E04E187A9BE33FBCD86301C8869003C5B0A6403068C85844DC334E95BB41A63A1E742F79B8B5D970EF67B7DFC22C92AC0BB4D76A6C0CD273169C384F5C25E1D2DDA3AE0379F8FF5FE7176DB35F82";
    private String fillEllipticalPie_65536 = "58C3A593511280200805F7D89C9873540EA908659A1F0EB24F640045DE16C88433E3ACF0518E1790E83B078C02778620E88FC5D6246267ABEA2E37EC05F17AE5650FE9192F26AE5EB7575B20D73FE20ABCBE7FEED9FD153E8B1FE6CBA58F6C71EB5FCA5B052A96649AAE180F5C42D5C6E9B67EF0FDFFFCE5074E2F5668";
    private String fillPolygon_65536 = "58C3ABA800826715380003430511F2CF9E3DA344FED9339C0A1818A072389480E52B70DB418C3C9449AE3C9CFD0C77F8551008DF51F9517932E5019FEDB86A";
@@ -51,7 +47,6 @@ public class GraphicsTest extends ImageComparisionTest
    private String drawPie_65536 = "58C38D93010E80300803FBEC3EDF288E5299E21213C741C780815A88651642B0FD895B94B68B3B95E5F4C30EDFB6E03B1C0E17DFE3107E115F0E3F7895EFE531DE2EE31CE5939E0A9CA54556B99C170044A6D179E4BB6C8DE3B1BC9579044CFF913D5095E1B7A702DBFC64CB4B0D603C1D4AB8373FE7B3F0DEBF4CEAA5BFF0FE73981F0EF3C7617EA7F91FDE0FBFDFDF012A154FB0";
    private String drawEllipticalArc_65536 = "58C3C5D3410E80200C44D17FEC39BE8A21740A0577B231F26A436995EE85E6D5F6A0E2779716B07351700B783C32FED69094B276E4A7C5F3336520FA4B16909DF1E83ECA5BB88213CEE7092A27BB56AEEF1EF3F3BFA77EDBFDF54B63AA2B7F9EDA6B2D308FFD278CDB6A7ED8CF1FC57CF67ACC0FF37FFA7F0E7E01BD9E5CD0";
    private String drawEllipticalPie_65536 = "58C385D3510280200803D01D7BC7AF30109CA87FF9C030887C17A8CBF6808EC72E2CE0E444C316F07966D42743AC19AD8F5A507D26FC05E580EC331B9D63390016901DD4179474520ED8BB49753F1D631BE57B79BF1039E25896383D66DE569C51D6D639E5ECD26FA491898F96DAB9712CEED56D3D5A9B8F97F9892636F3976750DCEF53FC32FFB7FFE7E20F931E46C8";
-   private String eraseRect_65536 = "58C37BF60C0554A002068667A3F2435ABE022F18951FEAF2000EB106AD";
    private String clearScreen_65536 = "58C37BF60C1F606078362A3F2A3F2A3F68E50136C328C6";
    private String drawPolygon_65536 = "58C3ABA80002860A1C80810122CD40893C036E1B08CB2301ECF250ADD8DD80A48D814C79049B2CF90ABC60547E549E327900436A9510";
    private String drawPolyline_65536 = "58C3ABA80002860A1C80012AC340A13C2E0584E591007679B801F8E52B182894AF204FBE022F18951F95A74C1E00B8909858";
@@ -60,21 +55,15 @@ public class GraphicsTest extends ImageComparisionTest
    private String drawHatchedRect_65536 = "58C36360C00D2A2A20242EC05081579A907652E419F0CB336057009367C06102D1F2381CCA802C811270484288D0C26011235F315CE4E1C20CB8E21F2DF4A8997E06AD7C0581FC8592AEB0E44F00577F5988";
    private String fillHatchedRect_65536 = "58C3CDD3410A00200844D17F6C4F3CE7A84510181A5154B3F4890429A6306690706D00A539E6E44E30A8952168D8F70EF42CB9B6DCBDE563D7C8EEFF07D6B5FD7AE6B3FBB2C97D166B62A1B7";
    private String copyRect_65536 = "58C3D5D0210200211042518F4DF9775777824598B441EAA300ACC8658CC8E5CAAEECCAAE379C8A714E6E0EAEF039D8C276F085E5100ABDF3B3DF5E3DCDC7BDD9D7EC6FFEA9FF268DFDAB22";
-   private String drawHighLightFrame_65536 = "58C36378860F3030303CABC00D40F215749007BB058F3C88A0A93C8E7078862CC10007CF50F4C3E511DA90E4111EC32E8F101DEEF248C98EDEE96B30CBE303407900E2E4A6F4";
-   private String drawImageSprite_65536 = "58C3EDD2310EC0200C43518EEDE5DFBD034394343862E9544F88679088905CD6D2EF77CECEC189740EB9501C4A213B35D979E7C6F9CC63C3F8707EB8DFBE3F9607EFE7A7C9E5E7DF14DCFFD9FE002232AC3A";
    private String copyImageRect_65536 = "58C3EDC9210A00300C04C13CFBCCFEBD50A82B6B425CC64E7201F9A87A6B8F3FFEF8D37B863F6A7F7FF60F4B75A771";
    private String setClipR_65536 = "58C37BF60C0554A002068667A3F2A4C8A381819747B875547E38CA0300ED8DA7CF";
    private String drawImage_65536 = "58C3EDD2310EC0200C43518EEDE5DFBD034394343862E9544F88679088905CD6D2EF77CECEC189740EB9501C4A213B35D979E7C6F9CC63C3F8707EB8DFBE3F9607EFE7A7C9E5E7DF14DCFFD9FE002232AC3A";
    private String drawArrow_65536 = "58C3BDD14B0EC0200804508ECD89E71CFD50A38B61C6A469D9C90B0A18F144B238D38A2F4FC1B767CFE5D972F6955F78682773AC19B6872541F738CF41FFE1DFF947403BB4433BB403EFEAEDFBB6FF9A1F667F7589723887736CD41FD23EA168";
 
-   private String setDrawOp_256 = "58C3BDD1410A03210C40D190D58C78124FE8C61B043C85BB2167ACD1743071A0A58BFE9D3E1189298DEA2C8194EF0056EDB527AF8BB7DDABF1E6BD3A6FD665F79C11D1D53B50DA9C48FD8A8BD7B7D3E27177321EBD93F3685D081EFBCAE9774F1F1C64A2E3D5631566CC5C7A590F3867562F7A8375760ED67973381667EB638C28139DCE8F8E9B07EBA87EB377341E76C7C58373FDEB5EB1FDDDB3F717C64639C8";
    private String setPixel_256 = "58C385D3C116C0100C44D1F96C9F5F5534613263E9BE8543A0A905341897C1EB2A182E82CFEB607A192CAF82ED45F03B0F82D3203A0B929320FB1D1C7E05B8368C1F01C8918CA700F4528C8700C5B318DF01CAC1303E0388D1343E02C8CF61BC07DA3BE3013A6997E0";
    private String drawLine_256 = "58C38D935B1280200C0373EC3DBE8EA3435F10FBBB29943448AED8D78375C437DD09C47BBC36F8E3A3402C3E0844E44D20322F0251791288CCCB9082DE1FBA9839ED2DD5FE6A565B4FD946F74F4C3C8C36F6FFBCDFCC6FDE6FFC3BF9EFF767F66FF263F267F26BF26FFE8FA90BB62F54D8";
    private String drawRect_256 = "58C3636020042A700302D25493C7E50EB83C14D34C1E8FFD70092C410666C3E511DAB0EBC72E8F293A5CE57184DF20487F03294F000000B5C45280";
    private String fillRect_256 = "58C37BF6AC020F6060784640BEA2820EF2CF406070CA23249E210015E511768D74F9014C7F83581E003FBCEA42";
-   private String drawDottedCursor_256 = "58C38BAF88C7031918E22BF0807806860ABC6054FFA87E1AEB07255302FAE329B43F9E42FB29F33FFEFC09006AFC9FB0";
-   private String drawCursor_256 = "58C38B8F47011528209E81217E549EB03C843328E59138151860B0C8630BDB5179B4F8AD88C700150C0C0076838791";
-   private String drawCursorOutline_256 = "58C38B8F47011528209E810155044DBE62541E2C020F3A5CF230291AC883AD86E2784C79A8BB41F2159800260F564243796C6E4392C7EAB7517944FC22021135B732300000E8B19A06";
    private String fillPie_256 = "58C3D5924B0EC0200844E7D87362CE518592CA27BA6AD2CE06E10D60A2E04E187A9BE33FBCD86301C8869003C5B0A6403068C85844DC334E95BB41A63A1E742F79B8B5D970EF67B7DFC22C92AC0BB4D76A6C0CD273169C384F5C25E1D2DDA3AE0379F8FF5FE7176DB35F82";
    private String fillEllipticalPie_256 = "58C3A593511280200805F7D89C9873540EA908659A1F0EB24F640045DE16C88433E3ACF0518E1790E83B078C02778620E88FC5D6246267ABEA2E37EC05F17AE5650FE9192F26AE5EB7575B20D73FE20ABCBE7FEED9FD153E8B1FE6CBA58F6C71EB5FCA5B052A96649AAE180F5C42D5C6E9B67EF0FDFFFCE5074E2F5668";
    private String fillPolygon_256 = "58C3ABA800826715380003430511F2CF9E3DA344FED9339C0A1818A072389480E52B70DB418C3C9449AE3C9CFD0C77F8551008DF51F9517932E5019FEDB86A";
@@ -93,7 +82,6 @@ public class GraphicsTest extends ImageComparisionTest
    private String drawPie_256 = "58C38D93010E80300803FBEC3EDF288E5299E21213C741C780815A88651642B0FD895B94B68B3B95E5F4C30EDFB6E03B1C0E17DFE3107E115F0E3F7895EFE531DE2EE31CE5939E0A9CA54556B99C170044A6D179E4BB6C8DE3B1BC9579044CFF913D5095E1B7A702DBFC64CB4B0D603C1D4AB8373FE7B3F0DEBF4CEAA5BFF0FE73981F0EF3C7617EA7F91FDE0FBFDFDF012A154FB0";
    private String drawEllipticalArc_256 = "58C3C5D3410E80200C44D17FEC39BE8A21740A0577B231F26A436995EE85E6D5F6A0E2779716B07351700B783C32FED69094B276E4A7C5F3336520FA4B16909DF1E83ECA5BB88213CEE7092A27BB56AEEF1EF3F3BFA77EDBFDF54B63AA2B7F9EDA6B2D308FFD278CDB6A7ED8CF1FC57CF67ACC0FF37FFA7F0E7E01BD9E5CD0";
    private String drawEllipticalPie_256 = "58C385D3510280200803D01D7BC7AF30109CA87FF9C030887C17A8CBF6808EC72E2CE0E444C316F07966D42743AC19AD8F5A507D26FC05E580EC331B9D63390016901DD4179474520ED8BB49753F1D631BE57B79BF1039E25896383D66DE569C51D6D639E5ECD26FA491898F96DAB9712CEED56D3D5A9B8F97F9892636F3976750DCEF53FC32FFB7FFE7E20F931E46C8";
-   private String eraseRect_256 = "58C37BF60C0554A002068667A3F2435ABE022F18951FEAF2000EB106AD";
    private String clearScreen_256 = "58C37BF60C1F606078362A3F2A3F2A3F68E50136C328C6";
    private String drawPolygon_256 = "58C3ABA80002860A1C80810122CD40893C036E1B08CB2301ECF250ADD8DD80A48D814C79049B2CF90ABC60547E549E327900436A9510";
    private String drawPolyline_256 = "58C3ABA80002860A1C80012AC340A13C2E0584E591007679B801F8E52B182894AF204FBE022F18951F95A74C1E00B8909858";
@@ -102,23 +90,10 @@ public class GraphicsTest extends ImageComparisionTest
    private String drawHatchedRect_256 = "58C36360C00D2A2A20242EC05081579A907652E419F0CB336057009367C06102D1F2381CCA802C811270484288D0C26011235F315CE4E1C20CB8E21F2DF4A8997E06AD7C0581FC8592AEB0E44F00577F5988";
    private String fillHatchedRect_256 = "58C3CDD3410A00200844D17F6C4F3CE7A84510181A5154B3F4890429A6306690706D00A539E6E44E30A8952168D8F70EF42CB9B6DCBDE563D7C8EEFF07D6B5FD7AE6B3FBB2C97D166B62A1B7";
    private String copyRect_256 = "58C3D5D0210200211042518F4DF9775777824598B441EAA300ACC8658CC8E5CAAEECCAAE379C8A714E6E0EAEF039D8C276F085E5100ABDF3B3DF5E3DCDC7BDD9D7EC6FFEA9FF268DFDAB22";
-   private String drawHighLightFrame_256 = "58C36378860F3030303CABC00D40F215749007BB058F3C88A0A93C8E7078862CC10007CF50F4C3E511DA90E4111EC32E8F101DEEF248C98EDEE96B30CBE303407900E2E4A6F4";
-   private String drawImageSprite_256 = "58C3EDD2310EC0200C43518EEDE5DFBD034394343862E9544F88679088905CD6D2EF77CECEC189740EB9501C4A213B35D979E7C6F9CC63C3F8707EB8DFBE3F9607EFE7A7C9E5E7DF14DCFFD9FE002232AC3A";
    private String copyImageRect_256 = "58C3EDC9210A00300C04C13CFBCCFEBD50A82B6B425CC64E7201F9A87A6B8F3FFEF8D37B863F6A7F7FF60F4B75A771";
    private String setClipR_256 = "58C37BF60C0554A002068667A3F2A4C8A381819747B875547E38CA0300ED8DA7CF";
    private String drawImage_256 = "58C3EDD2310EC0200C43518EEDE5DFBD034394343862E9544F88679088905CD6D2EF77CECEC189740EB9501C4A213B35D979E7C6F9CC63C3F8707EB8DFBE3F9607EFE7A7C9E5E7DF14DCFFD9FE002232AC3A";
    private String drawArrow_256 = "58C3BDD14B0EC0200804508ECD89E71CFD50A38B61C6A469D9C90B0A18F144B238D38A2F4FC1B767CFE5D972F6955F78682773AC19B6872541F738CF41FFE1DFF947403BB4433BB403EFEAEDFBB6FF9A1F667F7589723887736CD41FD23EA168";
-
-   // void drawDottedCursor(int x, int y, int w, int h);
-   private void testDrawDottedCursor()
-   {
-      resetImage();
-      g.drawDottedCursor(0,0,30,30);
-      g.drawDottedCursor(10,10,1,1);
-      g.drawDottedCursor(10,20,1,0);
-      g.drawDottedCursor(20,10,0,1);
-      g.drawDottedCursor(-5,22,10,5);
-   }
 
    // void drawEllipse(int xc, int yc, int rx, int ry);
    private void testDrawEllipse()
@@ -289,15 +264,6 @@ public class GraphicsTest extends ImageComparisionTest
          g.setPixel(i,i);
    }
 
-   // void eraseRect(int x, int y, int w, int h);
-   private void testEraseRect()
-   {
-      resetImage();
-      g.fillRect(0,0,15,15);
-      g.eraseRect(10,10,10,10);
-      g.eraseRect(-10,-10,15,15);
-   }
-
    // void drawLine(int Ax, int Ay, int Bx, int By);
    private void testDrawLine()
    {
@@ -331,34 +297,6 @@ public class GraphicsTest extends ImageComparisionTest
       g.drawDots(30,0,0,30);
       g.drawDots(5,10,5,10);
       g.drawDots(5,15,6,16);
-   }
-
-   // void drawCursor(int x, int y, int w, int h);
-   private void testDrawCursor()
-   {
-      resetImage();
-      g.fillCursor(0,0,30,0);
-      g.fillCursor(0,0,0,30);
-      g.fillCursor(30-1,0,30-1,30);
-      g.fillCursor(0,30-1,30,30-1);
-      g.fillCursor(30,0,0,30);
-      g.fillCursor(5,10,5,10);
-      g.fillCursor(5,15,6,16);
-      g.fillCursor(0,0,15,15);
-   }
-
-   // void drawCursorOutline(int x, int y, int w, int h);
-   private void testDrawCursorOutline()
-   {
-      resetImage();
-      g.drawCursor(0,0,30,0);
-      g.drawCursor(0,0,0,30);
-      g.drawCursor(30-1,0,30-1,30);
-      g.drawCursor(0,30-1,30,30-1);
-      g.drawCursor(30,0,0,30);
-      g.drawCursor(5,10,5,10);
-      g.drawCursor(5,15,6,16);
-      g.drawCursor(0,0,15,15);
    }
 
    // void drawRect(int x, int y, int w, int h);
@@ -537,37 +475,12 @@ public class GraphicsTest extends ImageComparisionTest
       // TODO TAKE THE PROBLEMS OUT OF GFORGE AND TEST HERE
    }
 
-   // void drawHighLightFrame(int x, int y, int w, int h, Color topLeft, Color bottomRight, boolean yMirror);
-   private void testDrawHighLightFrame()
-   {
-      resetImage();
-      int w = Color.WHITE;
-      int b = Color.BLACK;
-      g.drawHighLightFrame(0,0,30,30,w,b,true);
-      g.drawHighLightFrame(0,0,0,0,w,b,false);
-      g.drawHighLightFrame(5,5,5,5,w,b,true);
-      g.drawHighLightFrame(10,10,11,11,w,b,false);
-      g.drawHighLightFrame(40,40,10,10,w,b,true);
-      g.drawHighLightFrame(-1,10,4,3,w,b,false);
-      g.drawHighLightFrame(-8,-8,10,10,w,b,true);
-   }
-
-   // void drawImage(waba.fx.Image image, int x, int y, int drawOp, waba.fx.Color backColor, boolean doClip);
-   private void testDrawImageSprite()
-   {
-      resetImage();
-      Image ball = createBall();
-      g.drawImage(ball, 10,10, Graphics.DRAW_SPRITE, back, true);
-      g.drawImage(ball, 20,20, Graphics.DRAW_SPRITE, Color.BLACK, true);
-      g.drawOp = Graphics.DRAW_PAINT;
-   }
-
    // void copyImageRect(waba.fx.Image image, int x, int y, int width, int height, int drawOp, waba.fx.Color backColor, boolean doClip);
    private void testCopyImageRect()
    {
       resetImage();
       ImageTester ball = createBall();
-      g.copyImageRect(ball, 0,0,10,10, Graphics.DRAW_PAINT, Color.WHITE, false);
+      g.copyImageRect(ball, 0,0,10,10, false);
    }
 
    // void setClip(Rect r)
@@ -587,27 +500,6 @@ public class GraphicsTest extends ImageComparisionTest
       Image ball = createBall();
       g.drawImage(ball, 10,10);
       g.drawImage(ball, 20,20);
-   }
-
-   // void setDrawOp(int drawOp)
-   private void testSetDrawOp()
-   {
-      resetImage();
-      Image ball = createBall();
-      g.drawOp = Graphics.DRAW_MASK;
-      g.drawImage(ball,-5,-5);
-      g.drawOp = Graphics.DRAW_INVERT;
-      g.drawImage(ball,0,0);
-      g.drawOp = Graphics.DRAW_OVERLAY;
-      g.drawImage(ball,5,5);
-      g.drawOp = Graphics.DRAW_PAINT_INVERSE;
-      g.drawImage(ball,10,10);
-      g.drawOp = Graphics.DRAW_SPRITE;
-      g.drawImage(ball,15,15);
-      g.drawOp = Graphics.DRAW_ERASE;
-      g.drawImage(ball,5,5);
-      // reset the drawop
-      g.drawOp = Graphics.DRAW_PAINT;
    }
 
    // void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, Color []fourColors)
@@ -680,49 +572,41 @@ public class GraphicsTest extends ImageComparisionTest
 
       // trouble
       if (Settings.onJavaSE) // TODO fix this test on device
-      {  testSetDrawOp();       assert(setDrawOp_256,setDrawOp_65536,                    "setDrawOp");}
-
-      testSetPixel();           assert(setPixel_256,setPixel_65536,                      "setPixel");
-      testDrawLine();           assert(drawLine_256,drawLine_65536,                      "drawLine");
-      testDrawRect();           assert(drawRect_256,drawRect_65536,                      "drawRect");
-      testFillRect();           assert(fillRect_256,fillRect_65536,                      "fillRect");
-      testDrawDottedCursor();   assert(drawDottedCursor_256,drawDottedCursor_65536,      "drawDottedCursor");
-      testDrawCursor();         assert(drawCursor_256,drawCursor_65536,                  "drawCursor");
-      testDrawCursorOutline();  assert(drawCursorOutline_256,drawCursorOutline_65536,    "drawCursorOutline");
-      testFillPie();            assert(fillPie_256,fillPie_65536,                        "fillPie");
-      testFillEllipticalPie();  assert(fillEllipticalPie_256,fillEllipticalPie_65536,    "fillEllipticalPie");
-      testFillPolygon();        assert(fillPolygon_256,fillPolygon_65536,                "fillPolygon");
-      testDrawRoundRect();      assert(drawRoundRect_256,drawRoundRect_65536,            "drawRoundRect");
-      testFillRoundRect();      assert(fillRoundRect_256,fillRoundRect_65536,            "fillRoundRect");
-      testDraw3dRect();         assert(draw3dRect_256,draw3dRect_65536,                  "draw3dRect");
-      testDrawCircle();         assert(drawCircle_256,drawCircle_65536,                  "drawCircle");
-      testFillCircle();         assert(fillCircle_256,fillCircle_65536,                  "fillCircle");
-      testDrawDots();           assert(drawDots_256,drawDots_65536,                      "drawDots");
-      testDrawDottedRect();     assert(drawDottedRect_256,drawDottedRect_65536,          "drawDottedRect");
+      testSetPixel();           assertOK(setPixel_256,setPixel_65536,                      "setPixel");
+      testDrawLine();           assertOK(drawLine_256,drawLine_65536,                      "drawLine");
+      testDrawRect();           assertOK(drawRect_256,drawRect_65536,                      "drawRect");
+      testFillRect();           assertOK(fillRect_256,fillRect_65536,                      "fillRect");
+      testFillPie();            assertOK(fillPie_256,fillPie_65536,                        "fillPie");
+      testFillEllipticalPie();  assertOK(fillEllipticalPie_256,fillEllipticalPie_65536,    "fillEllipticalPie");
+      testFillPolygon();        assertOK(fillPolygon_256,fillPolygon_65536,                "fillPolygon");
+      testDrawRoundRect();      assertOK(drawRoundRect_256,drawRoundRect_65536,            "drawRoundRect");
+      testFillRoundRect();      assertOK(fillRoundRect_256,fillRoundRect_65536,            "fillRoundRect");
+      testDraw3dRect();         assertOK(draw3dRect_256,draw3dRect_65536,                  "draw3dRect");
+      testDrawCircle();         assertOK(drawCircle_256,drawCircle_65536,                  "drawCircle");
+      testFillCircle();         assertOK(fillCircle_256,fillCircle_65536,                  "fillCircle");
+      testDrawDots();           assertOK(drawDots_256,drawDots_65536,                      "drawDots");
+      testDrawDottedRect();     assertOK(drawDottedRect_256,drawDottedRect_65536,          "drawDottedRect");
       testClip();
-      testSetClip();            assert(setClip_256,setClip_65536,                        "setClip");
-      testTranslate();          assert(translate_256,translate_65536,                    "translate");
-      testDrawEllipse();        assert(drawEllipse_256,drawEllipse_65536,                "drawEllipse");
-      testFillEllipse();        assert(fillEllipse_256,fillEllipse_65536,                "fillEllipse");
-      testDrawArc();            assert(drawArc_256,drawArc_65536,                        "drawArc");
-      testDrawPie();            assert(drawPie_256,drawPie_65536,                        "drawPie");
-      testDrawEllipticalArc();  assert(drawEllipticalArc_256,drawEllipticalArc_65536,    "drawEllipticalArc");
-      testDrawEllipticalPie();  assert(drawEllipticalPie_256,drawEllipticalPie_65536,    "drawEllipticalPie");
+      testSetClip();            assertOK(setClip_256,setClip_65536,                        "setClip");
+      testTranslate();          assertOK(translate_256,translate_65536,                    "translate");
+      testDrawEllipse();        assertOK(drawEllipse_256,drawEllipse_65536,                "drawEllipse");
+      testFillEllipse();        assertOK(fillEllipse_256,fillEllipse_65536,                "fillEllipse");
+      testDrawArc();            assertOK(drawArc_256,drawArc_65536,                        "drawArc");
+      testDrawPie();            assertOK(drawPie_256,drawPie_65536,                        "drawPie");
+      testDrawEllipticalArc();  assertOK(drawEllipticalArc_256,drawEllipticalArc_65536,    "drawEllipticalArc");
+      testDrawEllipticalPie();  assertOK(drawEllipticalPie_256,drawEllipticalPie_65536,    "drawEllipticalPie");
       testGetPixel();
-      testEraseRect();          assert(eraseRect_256,eraseRect_65536,                    "eraseRect");
-      testClearScreen();        assert(clearScreen_256,clearScreen_65536,                "clearScreen");
-      testDrawPolygon();        assert(drawPolygon_256,drawPolygon_65536,                "drawPolygon");
-      testDrawPolyline();       assert(drawPolyline_256,drawPolyline_65536,              "drawPolyline");
-      testDrawTextStr();        assert(drawTextStr_256,drawTextStr_65536,                "drawTextStr");
-      testDrawTextChars();      assert(drawTextChars_256,drawTextChars_65536,            "drawTextChars");
-      testDrawHatchedRect();    assert(drawHatchedRect_256,drawHatchedRect_65536,        "drawHatchedRect");
-      testFillHatchedRect();    assert(fillHatchedRect_256,fillHatchedRect_65536,        "fillHatchedRect");
-      testCopyRect();           assert(copyRect_256,copyRect_65536,                      "copyRect");
-      testDrawHighLightFrame(); assert(drawHighLightFrame_256,drawHighLightFrame_65536,  "drawHighLightFrame");
-      testDrawImageSprite();    assert(drawImageSprite_256,drawImageSprite_65536,        "drawImageSprite");
-      testCopyImageRect();      assert(copyImageRect_256,copyImageRect_65536,            "copyImageRect");
-      testSetClipR();           assert(setClipR_256,setClipR_65536,                      "setClipR");
-      testDrawImage();          assert(drawImage_256,drawImage_65536,                    "drawImage");
-      testDrawArrow();          assert(drawArrow_256,drawArrow_65536,                    "drawArrow");
+      testClearScreen();        assertOK(clearScreen_256,clearScreen_65536,                "clearScreen");
+      testDrawPolygon();        assertOK(drawPolygon_256,drawPolygon_65536,                "drawPolygon");
+      testDrawPolyline();       assertOK(drawPolyline_256,drawPolyline_65536,              "drawPolyline");
+      testDrawTextStr();        assertOK(drawTextStr_256,drawTextStr_65536,                "drawTextStr");
+      testDrawTextChars();      assertOK(drawTextChars_256,drawTextChars_65536,            "drawTextChars");
+      testDrawHatchedRect();    assertOK(drawHatchedRect_256,drawHatchedRect_65536,        "drawHatchedRect");
+      testFillHatchedRect();    assertOK(fillHatchedRect_256,fillHatchedRect_65536,        "fillHatchedRect");
+      testCopyRect();           assertOK(copyRect_256,copyRect_65536,                      "copyRect");
+      testCopyImageRect();      assertOK(copyImageRect_256,copyImageRect_65536,            "copyImageRect");
+      testSetClipR();           assertOK(setClipR_256,setClipR_65536,                      "setClipR");
+      testDrawImage();          assertOK(drawImage_256,drawImage_65536,                    "drawImage");
+      testDrawArrow();          assertOK(drawArrow_256,drawArrow_65536,                    "drawArrow");
    }
 }

@@ -15,9 +15,29 @@
 #include "../ui/PalmFont.h"
 
 //////////////////////////////////////////////////////////////////////////
+TC_API void tsC_equals_BB(NMParams p) // totalcross/sys/Convert native public static boolean equals(byte []b1, byte []b2);
+{
+   TCObject b1 = p->obj[0];
+   TCObject b2 = p->obj[1];
+   bool ret = true;
+   if (b1 != null && b2 != null && ARRAYOBJ_LEN(b1) == ARRAYOBJ_LEN(b2))
+   {
+      uint8* a1 = (uint8*)ARRAYOBJ_START(b1);
+      uint8* a2 = (uint8*)ARRAYOBJ_START(b2);
+      int32 len = ARRAYOBJ_LEN(b1);
+      while (--len >= 0)
+         if (*a1++ != *a2++)
+         {
+            ret = false;
+            break;
+         }
+   } else ret = b1 == b2;
+   p->retI = ret;
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tsC_toInt_s(NMParams p) // totalcross/sys/Convert native public static int toInt(String s);
 {
-   Object string = p->obj[0];
+   TCObject string = p->obj[0];
    IntBuf buffer;
 
    if (!string)
@@ -84,27 +104,41 @@ TC_API void tsC_toString_di(NMParams p) // totalcross/sys/Convert native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_toDouble_s(NMParams p) // totalcross/sys/Convert native public static double toDouble(String s);
 {
-   Object string = p->obj[0];
+   TCObject string = p->obj[0];
    DoubleBuf buffer;
 
    if (!string)
       throwNullArgumentException(p->currentContext, "s");
    else
+   if (String_charsLen(string) == 0)
+      throwException(p->currentContext, InvalidNumberException, "Error: argument s cannot an empty value.");
+   else
    if (String_charsLen(string) >= sizeof(buffer)) // guich@tc123_2: check if argument fits in buffer
-      throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer); // guich@tc123_9
+      throwException(p->currentContext, InvalidNumberException, "Error (1): %s is not a valid double value (%d > %d).", buffer, String_charsLen(string), sizeof(buffer)); // guich@tc123_9
    else
    {
       bool err = false;
       String2CharPBuf(string, buffer);
       p->retD = str2double(buffer, &err);
-      if (err || !buffer[0])
-         throwException(p->currentContext, InvalidNumberException, "Error: %s is not a valid double value.", buffer);
+      if (err)
+      {
+#ifndef WINCE
+         double result;
+         CharP endPtr=null;
+         String2CharPBuf(string, buffer);
+         p->retD = result = strtod(buffer, &endPtr);
+         if (*endPtr != 0 || result == HUGE_VAL || result == -HUGE_VAL) // guich: testing for endPtr to see if it stopped in an invalid character
+            throwException(p->currentContext, InvalidNumberException, "Error (2): %s is not a valid double value (%s / %f / %f).", buffer, endPtr, result, HUGE_VAL);
+#else
+            throwException(p->currentContext, InvalidNumberException, "Error (2): %s is not a valid double value.", buffer);
+#endif
+      }
    }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_toString_si(NMParams p) // totalcross/sys/Convert native public static String toString(String doubleValue, int n);
 {
-   Object doubleValue = p->obj[0];
+   TCObject doubleValue = p->obj[0];
    int32 n = p->i32[0];
    CharP buffer;
    double d;
@@ -134,21 +168,7 @@ TC_API void tsC_toString_si(NMParams p) // totalcross/sys/Convert native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_doubleToLongBits_d(NMParams p) // totalcross/sys/Convert native public static long doubleToLongBits(double value);
 {
-#ifdef PALMOS
-   union
-   {
-      struct {uint32 n1,n2;};
-      uint64 l;
-   } c;
-   int32 i;
-   c.l = p->i64[0];
-   i = c.n1;
-   c.n1 = c.n2;
-   c.n2 = i;
-   p->retL = c.l;
-#else
    p->retL = p->i64[0];
-#endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_longBitsToDouble_l(NMParams p) // totalcross/sys/Convert native public static double longBitsToDouble(long bits);
@@ -184,7 +204,7 @@ TC_API void tsC_unsigned2hex_ii(NMParams p) // totalcross/sys/Convert native pub
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_hashCode_s(NMParams p) // totalcross/sys/Convert native public static int hashCode(StringBuffer sb);
 {
-   Object stringBuffer = p->obj[0];
+   TCObject stringBuffer = p->obj[0];
 
    if (!stringBuffer)
       throwNullArgumentException(p->currentContext, "sb");
@@ -194,8 +214,8 @@ TC_API void tsC_hashCode_s(NMParams p) // totalcross/sys/Convert native public s
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_getBreakPos_fsiib(NMParams p) // totalcross/sys/Convert native public static int getBreakPos(totalcross.ui.font.FontMetrics fm, StringBuffer sb, int start, int width, boolean doWordWrap);
 {
-   Object fm = p->obj[0];
-   Object sb = p->obj[1];
+   TCObject fm = p->obj[0];
+   TCObject sb = p->obj[1];
    int32 start = p->i32[0];
    int32 width = p->i32[1];
    bool doWordWrap = p->i32[2];
@@ -203,7 +223,7 @@ TC_API void tsC_getBreakPos_fsiib(NMParams p) // totalcross/sys/Convert native p
    JCharP buf = StringBuffer_charsStart(sb);
    int32 lastSpace = -1;
    JChar c;
-   Object font = FontMetrics_font(fm);
+   TCObject font = FontMetrics_font(fm);
    int32 oldStart = start;
 
    if (!fm)
@@ -269,7 +289,7 @@ TC_API void tsC_toString_l(NMParams p) // totalcross/sys/Convert native public s
 TC_API void tsC_toLong_s(NMParams p) // totalcross/sys/Convert native public static long toLong(String s);
 {
    LongBuf buffer;
-   Object string = p->obj[0];
+   TCObject string = p->obj[0];
 
    if (!string)
       throwNullArgumentException(p->currentContext, "s");
@@ -288,7 +308,7 @@ TC_API void tsC_toLong_s(NMParams p) // totalcross/sys/Convert native public sta
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Ciic(NMParams p) // totalcross/sys/Convert native public static void fill(char []a, int from, int to, char value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    int32 value = p->i32[2];
@@ -302,7 +322,7 @@ TC_API void tsC_fill_Ciic(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Biib(NMParams p) // totalcross/sys/Convert native public static void fill(boolean []a, int from, int to, boolean value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    int32 value = p->i32[2];
@@ -316,7 +336,7 @@ TC_API void tsC_fill_Biib(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Iiii(NMParams p) // totalcross/sys/Convert native public static void fill(int []a, int from, int to, int value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    int32 value = p->i32[2];
@@ -330,7 +350,7 @@ TC_API void tsC_fill_Iiii(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Diid(NMParams p) // totalcross/sys/Convert native public static void fill(double []a, int from, int to, double value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    double value = p->dbl[0];
@@ -344,7 +364,7 @@ TC_API void tsC_fill_Diid(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Siii(NMParams p) // totalcross/sys/Convert native public static void fill(short []a, int from, int to, int value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    int16 value = (int16)p->i32[2];
@@ -358,7 +378,7 @@ TC_API void tsC_fill_Siii(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Biii(NMParams p) // totalcross/sys/Convert native public static void fill(byte []a, int from, int to, int value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    int8 value = (int8)p->i32[2];
@@ -372,7 +392,7 @@ TC_API void tsC_fill_Biii(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Liil(NMParams p) // totalcross/sys/Convert native public static void fill(long []a, int from, int to, long value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
    int64 value = p->i64[0];
@@ -386,27 +406,27 @@ TC_API void tsC_fill_Liil(NMParams p) // totalcross/sys/Convert native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_fill_Oiio(NMParams p) // totalcross/sys/Convert native public static void fill(Object []a, int from, int to, Object value);
 {
-   Object ao = p->obj[0];
+   TCObject ao = p->obj[0];
    int32 from = p->i32[0];
    int32 to = p->i32[1];
-   Object value = p->obj[1];
+   TCObject value = p->obj[1];
    if (checkArrayRange(p->currentContext, ao, from, to-from))
    {
-      Object* a = (Object*)ARRAYOBJ_START(ao);
+      TCObject* a = (TCObject*)ARRAYOBJ_START(ao);
       for (a += from; from < to; from++)
          *a++ = value;
    }
 }
 //////////////////////////////////////////////////////////////////////////
-void SB_delete(Object sb, int32 start, int32 end);
-void SB_insert(Context currentContext, Object obj, JCharP what, int32 pos, int32 wlen);
-Object S_replace(Context currentContext, Object me, JChar oldChar, JChar newChar);
+void SB_delete(TCObject sb, int32 start, int32 end);
+void SB_insert(Context currentContext, TCObject obj, JCharP what, int32 pos, int32 wlen);
+TCObject S_replace(Context currentContext, TCObject me, JChar oldChar, JChar newChar);
 
 TC_API void tsC_replace_sss(NMParams p) // totalcross/sys/Convert native public static String replace(String source, String from, String to);
 {
    // guich@tc123_10: pre-compute the number of changes and create a single string to store the result. 
    // The pattern is searched inside the String and replaced inside the target string
-   Object source = p->obj[0], from = p->obj[1], to = p->obj[2];
+   TCObject source = p->obj[0], from = p->obj[1], to = p->obj[2];
    if (source == null)
       throwNullArgumentException(p->currentContext, "source");
    else
@@ -441,7 +461,7 @@ TC_API void tsC_replace_sss(NMParams p) // totalcross/sys/Convert native public 
             p->retO = source;
          else
          {
-            Object target = createStringObjectWithLen(p->currentContext, s + (t-f) * count); // create a string with the new length
+            TCObject target = createStringObjectWithLen(p->currentContext, s + (t-f) * count); // create a string with the new length
             if (target == null)
                return;
             targetc = String_charsStart(target);
@@ -470,10 +490,10 @@ TC_API void tsC_replace_sss(NMParams p) // totalcross/sys/Convert native public 
    }
 }
 //////////////////////////////////////////////////////////////////////////
-Object chars2bytes(Context currentContext, JCharP chars, int32 length); // CharacterConverter.c
+TCObject chars2bytes(Context currentContext, JCharP chars, int32 length); // CharacterConverter.c
 TC_API void tsC_getBytes_s(NMParams p) // totalcross/sys/Convert native public static byte[] getBytes(StringBuffer sb);
 {
-   Object sb = p->obj[0];
+   TCObject sb = p->obj[0];
    if (sb == null)
       throwNullArgumentException(p->currentContext, "sb");
    else
@@ -486,7 +506,7 @@ TC_API void tsC_getBytes_s(NMParams p) // totalcross/sys/Convert native public s
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_numberOf_sc(NMParams p) // totalcross/sys/Convert native public static int numberOf(String s, char c);
 { 
-   Object s = p->obj[0];
+   TCObject s = p->obj[0];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s");
    else
@@ -505,7 +525,7 @@ TC_API void tsC_numberOf_sc(NMParams p) // totalcross/sys/Convert native public 
 TC_API void tsC_zeroPad_si(NMParams p) // totalcross/sys/Convert native public static String zeroPad(String s, int size);
 {
    int32 size = p->i32[0];
-   Object s = p->obj[0];
+   TCObject s = p->obj[0];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s");
    else
@@ -515,7 +535,7 @@ TC_API void tsC_zeroPad_si(NMParams p) // totalcross/sys/Convert native public s
       if (n > 0)
       {  
          JCharP chars,source = String_charsStart(s);
-         Object target = createStringObjectWithLen(p->currentContext, size);
+         TCObject target = createStringObjectWithLen(p->currentContext, size);
          if (target == null)
             return;
          chars = String_charsStart(target);
@@ -540,7 +560,7 @@ TC_API void tsC_zeroPad_ii(NMParams p) // totalcross/sys/Convert native public s
    if (n > 0)
    {  
       JCharP chars;
-      Object target = createStringObjectWithLen(p->currentContext, size);
+      TCObject target = createStringObjectWithLen(p->currentContext, size);
       if (target == null)
          return;
       chars = String_charsStart(target);
@@ -556,7 +576,7 @@ TC_API void tsC_zeroPad_ii(NMParams p) // totalcross/sys/Convert native public s
 TC_API void tsC_numberPad_si(NMParams p) // totalcross/sys/Convert native public static String numberPad(String s, int size);
 {
    int32 size = p->i32[0];
-   Object s = p->obj[0];
+   TCObject s = p->obj[0];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s");
    else
@@ -566,7 +586,7 @@ TC_API void tsC_numberPad_si(NMParams p) // totalcross/sys/Convert native public
       if (n > 0)
       {  
          JCharP chars,source = String_charsStart(s);
-         Object target = createStringObjectWithLen(p->currentContext, size);
+         TCObject target = createStringObjectWithLen(p->currentContext, size);
          if (target == null)
             return;
          chars = String_charsStart(target);
@@ -591,7 +611,7 @@ TC_API void tsC_numberPad_ii(NMParams p) // totalcross/sys/Convert native public
    if (n > 0)
    {  
       JCharP chars;
-      Object target = createStringObjectWithLen(p->currentContext, size);
+      TCObject target = createStringObjectWithLen(p->currentContext, size);
       if (target == null)
          return;
       chars = String_charsStart(target);
@@ -608,7 +628,7 @@ TC_API void tsC_dup_ci(NMParams p) // totalcross/sys/Convert native public stati
 {
    JChar c = (JChar)p->i32[0], *chars;
    int32 count = p->i32[1];
-   Object target;
+   TCObject target;
    if (count < 0)
       throwIllegalArgumentExceptionI(p->currentContext, "count",count);
    else
@@ -627,7 +647,7 @@ TC_API void tsC_spacePad_sib(NMParams p) // totalcross/sys/Convert native public
 {
    int32 size = p->i32[0];
    bool before = p->i32[1];
-   Object s = p->obj[0];
+   TCObject s = p->obj[0];
    if (s == null)
       throwNullArgumentException(p->currentContext, "what");
    else
@@ -637,7 +657,7 @@ TC_API void tsC_spacePad_sib(NMParams p) // totalcross/sys/Convert native public
       if (n > 0)
       {  
          JCharP chars,source = String_charsStart(s);
-         Object target = createStringObjectWithLen(p->currentContext, size);
+         TCObject target = createStringObjectWithLen(p->currentContext, size);
          if (target == null)
             return;
          chars = String_charsStart(target);

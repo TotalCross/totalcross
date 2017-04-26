@@ -18,22 +18,31 @@
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
    pthread_t h = 0;
+   pthread_attr_t attr;
    ThreadArgs targs = ThreadArgsFromObject(this_);
    targs->threadObject = this_;
    targs->context = context;
    pthread_mutex_init(&targs->state_mutex, NULL);
    pthread_cond_init(&targs->state_cv, NULL);
    targs->start = false;
-
+   
    pthread_create(&h, NULL, t, targs); // Create, but thread will suspend until we send a resume signal
 
    if (h != null)
    {
-      int policy;
+      int policy,ret;
+      size_t ssize=0;
       struct sched_param param;
       pthread_getschedparam(h, &policy, &param);
       param.sched_priority = CONVERT_PRIORITY(policy, Thread_priority(this_));
       pthread_setschedparam(h, policy, &param);
+
+      // make sure that the stack size is at 1MB
+      ret = pthread_attr_init(&attr);
+      ret = pthread_attr_getstacksize(&attr, &ssize);
+      if (ssize < 1*1024*1024)
+         ret = pthread_attr_setstacksize(&attr, 1*1024*1024);
+      ret = pthread_attr_destroy(&attr);
 
       ThreadHandleFromObject(this_) = h;
       // now start/resume the thread
@@ -42,7 +51,7 @@ static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, Voi
       pthread_cond_signal(&targs->state_cv);
       pthread_mutex_unlock(&targs->state_mutex);
    }
-   else throwException(context, RuntimeException, "Can't create thread");
+   else throwException(context, OutOfMemoryError, "Can't create thread (2)");
    return h;
 }
 
@@ -53,7 +62,7 @@ static ThreadHandle privateThreadGetCurrent()
 
 static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 {
-#if !defined(ANDROID) && !defined(__SYMBIAN32__) // TODO must find an alternative these platforms
+#if !defined(ANDROID)
    if (!threadDestroyingItself) pthread_cancel(h);
    void *ret;
    pthread_join(h, &ret); // wait child thread termination and get its exit code

@@ -33,7 +33,7 @@ package totalcross.lang;
  * available.
  */
 
-public class InstantiationException4D extends Exception
+public class InstantiationException4D extends ReflectiveOperationException
 {
    /** Constructs an empty Exception. */
    public InstantiationException4D()

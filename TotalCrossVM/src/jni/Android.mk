@@ -4,18 +4,10 @@ include $(CLEAR_VARS)
 
 TYPE ?= release
 
-ifeq ($(TYPE), noras)
-	include $(LOCAL_PATH)/options_noras.mk
-endif
-ifeq ($(TYPE), release)
-	include $(LOCAL_PATH)/options_nodemo.mk
-endif
-ifeq ($(TYPE), demo)
-	include $(LOCAL_PATH)/options_demo.mk
-endif
-
 TC_SRCDIR := ..
 TC_INCLUDEDIR := $(TC_SRCDIR)/src
+LB_SRCDIR := $(TC_SRCDIR)/litebase
+LB_INCLUDEDIR := $(TC_SRCDIR)/src/litebase
 
 _TEST_SUITE ?= DISABLE
 
@@ -39,6 +31,9 @@ AXTLS_FILES =                                 \
 	$(TC_SRCDIR)/axtls/rc4.c                   \
 	$(TC_SRCDIR)/axtls/sha1.c                  \
 	$(TC_SRCDIR)/axtls/sha256.c                \
+	$(TC_SRCDIR)/axtls/sha384.c                \
+	$(TC_SRCDIR)/axtls/sha512.c                \
+	$(TC_SRCDIR)/axtls/x509.c                  \
 	$(TC_SRCDIR)/axtls/tls1.c                  \
 	$(TC_SRCDIR)/axtls/tls1_svr.c              \
 	$(TC_SRCDIR)/axtls/tls1_clnt.c
@@ -56,6 +51,7 @@ VM_FILES =                                    \
 INIT_FILES =                                  \
 	$(TC_SRCDIR)/init/demo.c                   \
 	$(TC_SRCDIR)/init/globals.c                \
+	$(TC_SRCDIR)/init/nativeProcAddressesTC.c  \
 	$(TC_SRCDIR)/init/startup.c                \
 	$(TC_SRCDIR)/init/settings.c
 
@@ -65,6 +61,7 @@ UTIL_FILES =                                  \
 	$(TC_SRCDIR)/util/debug.c                  \
 	$(TC_SRCDIR)/util/tcz.c                    \
 	$(TC_SRCDIR)/util/utils.c                  \
+	$(TC_SRCDIR)/util/dlmalloc.c               \
 	$(TC_SRCDIR)/util/mem.c                    \
 	$(TC_SRCDIR)/util/errormsg.c               \
 	$(TC_SRCDIR)/util/nativelib.c              \
@@ -108,6 +105,7 @@ NM_IO_FILES =                                 \
 	$(TC_SRCDIR)/nm/io/File.c                  \
 	$(TC_SRCDIR)/nm/io/device_PortConnector.c  \
 	$(TC_SRCDIR)/nm/io/device/RadioDevice.c    \
+	$(TC_SRCDIR)/nm/io/device/scanner/zxing.c  \
 	$(TC_SRCDIR)/nm/io/device/gps/GPS.c
 
 NM_IO_DEVICE_BLUETOOTH_FILES =                \
@@ -116,6 +114,7 @@ NM_IO_DEVICE_BLUETOOTH_FILES =                \
 	$(TC_SRCDIR)/nm/io/device/bluetooth/SerialPortServer.c 
 
 NM_LANG_FILES =                               \
+	$(TC_SRCDIR)/nm/lang/Reflection.c          \
 	$(TC_SRCDIR)/nm/lang/Class.c               \
 	$(TC_SRCDIR)/nm/lang/Object.c              \
 	$(TC_SRCDIR)/nm/lang/String.c              \
@@ -132,6 +131,9 @@ NM_NET_FILES =                                \
 NM_PIM_FILES =                                \
 	$(TC_SRCDIR)/nm/pim/POutlook.c
 
+NM_MONEY_FILES =                                \
+	$(TC_SRCDIR)/nm/money/money.c
+
 NM_PHONE_FILES =                              \
 	$(TC_SRCDIR)/nm/phone/Dial.c               \
 	$(TC_SRCDIR)/nm/phone/SMS.c                \
@@ -145,12 +147,11 @@ NM_SYS_FILES =                                \
 	$(TC_SRCDIR)/nm/sys/Convert.c
 
 NM_UI_FILES =                                 \
+	$(TC_SRCDIR)/nm/ui/gfx_Graphics.c          \
 	$(TC_SRCDIR)/nm/ui/event_Event.c           \
 	$(TC_SRCDIR)/nm/ui/Control.c               \
 	$(TC_SRCDIR)/nm/ui/font_Font.c             \
 	$(TC_SRCDIR)/nm/ui/font_FontMetrics.c      \
-	$(TC_SRCDIR)/nm/ui/gfx_Graphics.c          \
-	$(TC_SRCDIR)/nm/ui/android/screen.cpp      \
 	$(TC_SRCDIR)/nm/ui/image_Image.c           \
 	$(TC_SRCDIR)/nm/ui/MainWindow.c            \
 	$(TC_SRCDIR)/nm/ui/media_Sound.c           \
@@ -215,14 +216,21 @@ JPEG_FILES =                                  \
 	$(TC_SRCDIR)/jpeg/jdsample.c               \
 	$(TC_SRCDIR)/jpeg/jerror.c                 \
 	$(TC_SRCDIR)/jpeg/jfdctfst.c               \
-	$(TC_SRCDIR)/jpeg/jidctfst.c               \
-	$(TC_SRCDIR)/jpeg/jidctred.c               \
 	$(TC_SRCDIR)/jpeg/jmemmgr.c                \
 	$(TC_SRCDIR)/jpeg/jmemnobs.c               \
 	$(TC_SRCDIR)/jpeg/JpegLoader.c             \
 	$(TC_SRCDIR)/jpeg/jquant1.c                \
 	$(TC_SRCDIR)/jpeg/jquant2.c                \
 	$(TC_SRCDIR)/jpeg/jutils.c                 \
+	$(TC_SRCDIR)/jpeg/jcarith.c                \
+	$(TC_SRCDIR)/jpeg/jdarith.c                \
+	$(TC_SRCDIR)/jpeg/jdmerge.c                \
+	$(TC_SRCDIR)/jpeg/jidctflt.c               \
+	$(TC_SRCDIR)/jpeg/jidctfst.c               \
+	$(TC_SRCDIR)/jpeg/jidctint.c               \
+	$(TC_SRCDIR)/jpeg/jfdctflt.c               \
+	$(TC_SRCDIR)/jpeg/jfdctint.c               \
+	$(TC_SRCDIR)/jpeg/jaricom.c                \
 	$(TC_SRCDIR)/jpeg/rdbmp.c
 
 EVENT_FILES =                                 \
@@ -234,8 +242,52 @@ XML_FILES =                                   \
 
 PALMDB_FILES =                                \
 	$(TC_SRCDIR)/palmdb/palmdb.c
+	
+SQLITE_FILES =                               \
+	$(TC_SRCDIR)/sqlite/sqlite3.c             \
+	$(TC_SRCDIR)/nm/db/NativeDB.c               
+
+SCANNER_FILES =                                \
+	$(TC_SRCDIR)/scanner/android/Android_barcode.c
+	
+LITEBASE_FILES = \
+	$(LB_SRCDIR)/lbFile.c	\
+	$(LB_SRCDIR)/PlainDB.c	\
+	$(LB_SRCDIR)/TCVMLib.c	\
+	$(LB_SRCDIR)/Litebase.c	\
+	$(LB_SRCDIR)/ResultSet.c	\
+	$(LB_SRCDIR)/NativeMethods.c	\
+	$(LB_SRCDIR)/Table.c \
+	$(LB_SRCDIR)/LitebaseGlobals.c \
+	$(LB_SRCDIR)/nativeProcAddressesLB.c \
+	$(LB_SRCDIR)/Key.c \
+	$(LB_SRCDIR)/Node.c \
+	$(LB_SRCDIR)/Index.c \
+	$(LB_SRCDIR)/SQLValue.c \
+	$(LB_SRCDIR)/MarkBits.c \
+	$(LB_SRCDIR)/MemoryFile.c \
+	$(LB_SRCDIR)/NormalFile.c \
+	$(LB_SRCDIR)/PreparedStatement.c \
+	$(LB_SRCDIR)/UtilsLB.c
+
+PARSER_FILES = \
+	$(LB_SRCDIR)/parser/LitebaseLex.c \
+	$(LB_SRCDIR)/parser/LitebaseMessage.c \
+	$(LB_SRCDIR)/parser/LitebaseParser.c \
+	$(LB_SRCDIR)/parser/SQLBooleanClause.c \
+	$(LB_SRCDIR)/parser/SQLBooleanClauseTree.c \
+	$(LB_SRCDIR)/parser/SQLColumnListClause.c \
+	$(LB_SRCDIR)/parser/SQLDeleteStatement.c \
+	$(LB_SRCDIR)/parser/SQLInsertStatement.c \
+	$(LB_SRCDIR)/parser/SQLSelectStatement.c \
+	$(LB_SRCDIR)/parser/SQLUpdateStatement.c
+	
 
 SOURCE_FILES =                                \
+	$(LITEBASE_FILES)                          \
+	$(PARSER_FILES)                            \
+	$(SQLITE_FILES)                            \
+	$(NM_UI_FILES)                             \
 	$(EVENT_FILES)                             \
 	$(XML_FILES)                               \
 	$(UTIL_FILES)                              \
@@ -247,8 +299,8 @@ SOURCE_FILES =                                \
 	$(NM_LANG_FILES)                           \
 	$(NM_NET_FILES)                            \
 	$(NM_PIM_FILES)                            \
+	$(NM_MONEY_FILES)                          \
 	$(NM_SYS_FILES)                            \
-	$(NM_UI_FILES)                             \
 	$(NM_UTIL_FILES)                           \
 	$(NM_UTIL_ZIP_FILES)                       \
 	$(NM_PHONE_FILES)                          \
@@ -260,15 +312,17 @@ SOURCE_FILES =                                \
 	$(MAP_FILES)                               \
 	$(AXTLS_FILES)                             \
 	$(PALMDB_FILES)                            \
+	$(SCANNER_FILES)                            \
 	$(TEST_SUITE_FILES)
 
 
 LOCAL_ARM_MODE   := arm
 LOCAL_MODULE     := tcvm
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
-LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io
-LOCAL_LDLIBS     := -llog -ldl
-LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
+LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io $(TC_INCLUDEDIR)/scanner $(TC_INCLUDEDIR)/sqlite $(TC_INCLUDEDIR)/nm $(TC_INCLUDEDIR)/nm/lang $(LB_INCLUDEDIR)/parser $(LB_INCLUDEDIR)
+LOCAL_LDLIBS     := -llog -ldl -lGLESv2 -lEGL -landroid
+LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
 LOCAL_LDFLAGS    := -Wl,-Map,$(NDK_APP_DST_DIR)/$(LOCAL_MODULE).map
+NDK_APP_DST_DIR  := $(NDK_OUT)/libs/$(TARGET_ARCH_ABI)
 
 include $(BUILD_SHARED_LIBRARY)

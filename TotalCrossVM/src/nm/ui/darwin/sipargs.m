@@ -25,6 +25,7 @@ SipArgs SipArgsMake(int options, id control, bool secret, NSString *text)
 
 - (void)dealloc
 {
+   [super dealloc];
 }
 
 @end

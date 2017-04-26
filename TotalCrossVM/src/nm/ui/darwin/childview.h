@@ -13,23 +13,30 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <UIKit/UIKit.h>
 #import <QuartzCore/CALayer.h>
+#import <QuartzCore/QuartzCore.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 
 @interface ChildView : UIView
 {
-   int lastEventTS;
+   bool isMultitouching;
    int shiftY;
-   int clientW;
-   int lastOrientation;
    UIViewController* controller;
-   CGDataProviderRef provider;
-   CGImageRef cgImage;
-   char* screenBuffer;
-   CGColorSpaceRef colorSpace;
+   EAGLContext *glcontext;
+	GLuint defaultFramebuffer, colorRenderbuffer;
+   bool firstCall;
+   UIDeviceOrientation lastKnownOrientation;
+@public
+   int taskbarHeight;
 }
+- (CGRect)getBounds;
+- (CGSize)getResolution;
+- (UIDeviceOrientation)getOrientation;
 - (id)init:(UIViewController*) ctrl;
-- (void)updateScreen:(void*)screen;
-- (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen withContext:(void*)context;
+- (void)setScreenValues:(void*)screen;
+- (void)doRotate;
+- (void)updateScreen;
+- (void)createGLcontext;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;

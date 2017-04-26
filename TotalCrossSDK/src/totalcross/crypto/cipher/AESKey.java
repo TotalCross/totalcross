@@ -22,7 +22,8 @@ public class AESKey extends Key
    
    /**
     * Creates a new AESKey object with the given data.
-    * @param data a byte array containing the key data.
+    * 
+    * @param data A byte array containing the key data.
     */
    public AESKey(byte[] data)
    {
@@ -30,7 +31,9 @@ public class AESKey extends Key
    }
    
    /**
-    * @return a copy of the byte array containing the key data.
+    * Gets the key data.
+    * 
+    * @return A copy of the byte array containing the key data.
     */
    public byte[] getData()
    {

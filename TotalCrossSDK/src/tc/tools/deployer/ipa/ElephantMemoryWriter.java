@@ -8,14 +8,19 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
 {
    byte[] buffer;
    public int pos;
-   Stack positions = new Stack();
+   Stack<Integer> positions = new Stack<Integer>();
 
    public ElephantMemoryWriter()
    {
-      buffer = new byte[512];
+      this(512);
    }
 
-   public ElephantMemoryWriter(byte[] data) throws IOException
+   public ElephantMemoryWriter(int size)
+   {
+      this(new byte[size]);
+   }
+
+   public ElephantMemoryWriter(byte[] data)
    {
       buffer = data;
    }
@@ -48,6 +53,12 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
       this.write(b);
    }
 
+   public void writeUnsignedLongLE(long value) throws IOException
+   {
+      writeUnsignedIntLE((int) value);
+      writeUnsignedIntLE((int) (value >> 32));
+   }
+
    public void write(byte value)
    {
       this.write(new byte[] { value });
@@ -64,7 +75,7 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
 
    public void moveBack()
    {
-      this.pos = ((Integer) positions.pop()).intValue();
+      this.pos = positions.pop();
    }
 
    public int getPos()
@@ -84,7 +95,7 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
 
    public void memorize()
    {
-      positions.push(Integer.valueOf(this.pos));
+      positions.push(this.pos);
    }
 
    public int size()
@@ -102,5 +113,25 @@ public class ElephantMemoryWriter implements ElephantMemoryStream
          System.arraycopy(buffer, 0, b, 0, pos);
          return b;
       }
+   }
+
+   public void write(byte[] b, int offset, int length)
+   {
+      int available = buffer.length - pos;
+      if (length > available)
+         buffer = Arrays.copyOf(buffer, buffer.length + (length - available));
+      for (int i = 0; i < length; i++)
+         buffer[pos++] = b[offset + i];
+   }
+
+   /**
+    * Aligns the output to the given position by filling it with zeroes.
+    * 
+    * @param alignPosition
+    */
+   public void align(int alignPosition)
+   {
+      Arrays.fill(buffer, pos, alignPosition, (byte) 0);
+      pos = alignPosition;
    }
 }

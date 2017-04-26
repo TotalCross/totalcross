@@ -13,23 +13,20 @@
 
 package tc.tools.deployer;
 
-import totalcross.io.File;
+import totalcross.io.*;
 import totalcross.sys.*;
-import totalcross.ui.font.Font;
-import totalcross.util.IntVector;
+import totalcross.util.*;
+import totalcross.util.Hashtable;
 import totalcross.util.Vector;
+
+import java.util.*;
 
 public class DeploySettings
 {
-   public static final String UnknownVendor = "Unknown Vendor"; // fdie@570_96
-
+   public static String[] tczs;
    // constants for including the vm and/or litebase in a package 
-   public static final int PACKAGE_DEMO = 1;
-   public static final int PACKAGE_RELEASE = 2;
-   public static final int PACKAGE_LITEBASE = 4;
-   public static int packageType;
-   public static String folderTotalCrossSDKDistVM, folderTotalCrossVMSDistVM,
-                        folderLitebaseSDKDistLIB, folderLitebaseVMSDistLIB;
+   public static boolean packageVM;
+   public static String folderTotalCross3DistVM;
    
    public static String tczFileName;
    public static String targetDir;
@@ -45,8 +42,9 @@ public class DeploySettings
    public static boolean testClass; // guich@tc114_54
    public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
-   public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
+   public static String fontTCZ = "TCFont.tcz";
    public static boolean resizableWindow;
+   public static boolean isService, isMainClass;
    public static int windowFont, windowSize;
    public static double dJavaVersion;
    
@@ -84,12 +82,14 @@ public class DeploySettings
    public static boolean isTotalCrossJarDeploy;
 
    public static String installPlatforms = "";
+   
+   public static HashMap<String,String> hmMappedClasses = new HashMap<String,String>(5);
 
-   // iOS IPA required files
-   public static boolean buildIPA = false;
-   public static String certStorePath;
-   public static java.io.File mobileProvision;
-   public static java.io.File appleCertStore;
+   public static byte[] tcappProp;
+   public static final String TCAPP_PROP = "tcapp.prop";
+   public static int appBuildNumber=-1;
+
+   public static boolean isFreeSDK;
 
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
@@ -115,8 +115,15 @@ public class DeploySettings
       exclusionList.addElement("litebase/");
       exclusionList.addElement("ras/");
       exclusionList.addElement("net/rim/");
+      
+      hmMappedClasses.put("java.math.BigDecimal","totalcross.util.BigDecimal");
+      hmMappedClasses.put("java.math.BigInteger","totalcross.util.BigInteger");
+      hmMappedClasses.put("java.util.Random", "totalcross.util.Random");
+      hmMappedClasses.put("java.lang.StringBuilder", "java.lang.StringBuffer");
+      hmMappedClasses.put("java.lang.CharSequence", "java.lang.String"); // used in the replace method
+      
       appletFontSizes.addElement(12);
-
+      
       currentDir = System.getProperty("user.dir").replace('\\','/');
       // parse the classpath environment variable
       String cp0;
@@ -137,94 +144,104 @@ public class DeploySettings
       if (new File(currentDir+"/etc").exists())
          etcDir = currentDir+"/etc";
       else
-      if (new File(System.getenv("GIT_HOME")+"/TotalCross/TotalCrossSDK/etc").exists()) // check first at p:
-         etcDir = System.getenv("GIT_HOME")+"/TotalCross/TotalCrossSDK/etc";
+      if (new File(System.getenv("GIT_HOME")+"/TotalCross/TotalCross3/etc").exists()) // check first at p:
+         etcDir = System.getenv("GIT_HOME")+"/TotalCross/TotalCross3/etc";
       else
       if ((etcDir = Utils.findPath("etc",false)) == null)
       {
-         String tchome = System.getenv("TOTALCROSS_HOME");
+         String tchome = System.getenv("TOTALCROSS3_HOME");
+         if (tchome == null)
+            tchome = System.getenv("TOTALCROSS_HOME");
+         
          if (tchome != null)
             etcDir = tchome.replace('\\','/')+"/etc";
          else
          if (isWindows()) // if in windows, search in all drives
          {
             for (char i = 'c'; i <= 'z'; i++)
-               if (new File(i+":/TotalCrossSDK/etc").exists())
+               if (new File(i+":/TotalCross3/etc").exists())
                {
-                  etcDir = i+":/TotalCrossSDK/etc";
+                  etcDir = i+":/TotalCross3/etc";
                   break;
                }
          }
          else
-         if (new File("/TotalCrossSDK/etc").exists()) // check on the root of the current drive
-            etcDir = "/TotalCrossSDK/etc";
-         if (etcDir == null || !new File(etcDir).exists())
-            throw new DeployerException("Can't find path for etc folder. Add TotalCrossSDK to the classpath or set the TOTALCROSS_HOME environment variable.");
+         if (new File("/TotalCross3/etc").exists()) // check on the root of the current drive
+            etcDir = "/TotalCross3/etc";
       }
-      if (!etcDir.endsWith("/"))
-         etcDir += "/";
-      etcDir = Convert.replace(etcDir, "//","/").replace('\\','/');
-      homeDir = Convert.replace(etcDir, "/etc/","/");
-      binDir = Convert.replace(etcDir, "/etc/","/bin/");
-      distDir = Convert.replace(etcDir, "/etc/", "/dist/");
-      System.out.println("TotalCross SDK version "+Settings.versionStr+" running on "+osName+" with JDK "+javaVersion);
-      System.out.println("Etc directory: "+etcDir); // keep this always visible, its a very important information
+      if (etcDir != null)
+      {
+         if (!etcDir.endsWith("/"))
+            etcDir += "/";
+         etcDir = Convert.replace(etcDir, "//","/").replace('\\','/');
+         homeDir = Convert.replace(etcDir, "/etc/","/");
+         binDir = Convert.replace(etcDir, "/etc/","/bin/");
+         distDir = Convert.replace(etcDir, "/etc/", "/dist/");
+      }
+      System.out.println("TotalCross SDK version "+Settings.versionStr+"."+Settings.buildNumber+" running on "+osName+" with JDK "+javaVersion);
+      System.out.println("Current folder: "+currentDir);
+      System.out.println("Etc directory: "+ (etcDir != null ? etcDir : "not found")); // keep this always visible, its a very important information
       System.out.println("Classpath: "+cp0);
 
       // find the demo and release folders for totalcross and litebase
-      String f;
-      f = System.getenv("TOTALCROSS_DEMO");
+      String f = System.getenv("TOTALCROSS3_HOME");
+      if (f == null)
+         f = System.getenv("TOTALCROSS3");
       if (f != null)
       {
-         folderTotalCrossSDKDistVM = Convert.appendPath(f, "dist/vm/");
-         if (!new File(folderTotalCrossSDKDistVM).isDir())
+         folderTotalCross3DistVM = Convert.appendPath(f, "dist/vm/");
+         if (!new File(folderTotalCross3DistVM).isDir())
          {
-            folderTotalCrossSDKDistVM = Convert.appendPath(f, "vm/");
-            if (!new File(folderTotalCrossSDKDistVM).isDir())
-               folderTotalCrossSDKDistVM = f;
+            folderTotalCross3DistVM = Convert.appendPath(f, "vm/");
+            if (!new File(folderTotalCross3DistVM).isDir())
+               folderTotalCross3DistVM = f;
          }
       }
-      f = System.getenv("TOTALCROSS_RELEASE");
-      if (f != null)
-      {
-         folderTotalCrossVMSDistVM = Convert.appendPath(f, "dist/vm/");
-         if (!new File(folderTotalCrossVMSDistVM).isDir())
-         {
-            folderTotalCrossVMSDistVM = Convert.appendPath(f, "vm/");
-            if (!new File(folderTotalCrossVMSDistVM).isDir())
-               folderTotalCrossVMSDistVM = f;
-         }
-      }
-      f = System.getenv("LITEBASE_DEMO");
-      if (f != null)
-         folderLitebaseSDKDistLIB = Convert.appendPath(f, "dist/lib/");
-      f = System.getenv("LITEBASE_RELEASE");
-      if (f != null)
-         folderLitebaseVMSDistLIB = Convert.appendPath(f, "dist/lib/");
 
-      if (folderTotalCrossSDKDistVM == null)
-         folderTotalCrossSDKDistVM = distDir+"vm/";
-      if (folderTotalCrossVMSDistVM == null)
-         folderTotalCrossVMSDistVM = Convert.replace(folderTotalCrossSDKDistVM, "SDK","VMS");
-      String lbhome = System.getenv("LITEBASE_HOME");
-      if (lbhome == null)
-         lbhome = Utils.getParent(Utils.getParentFolder(etcDir))+"/LitebaseSDK";
-      lbhome = lbhome.replace('\\','/');
-      if (folderLitebaseSDKDistLIB == null)
-         folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
-      if (folderLitebaseVMSDistLIB == null)
-         folderLitebaseVMSDistLIB = Convert.replace(folderLitebaseSDKDistLIB, "SDK","VMS");
+      if (folderTotalCross3DistVM == null)
+         folderTotalCross3DistVM = distDir+"vm/";
       // check if folders exist
-      if (!new File(folderLitebaseSDKDistLIB).exists())
-         folderLitebaseSDKDistLIB = null;
-      if (!new File(folderLitebaseVMSDistLIB).exists()) 
-         folderLitebaseVMSDistLIB = null;
-      if (!new File(folderTotalCrossSDKDistVM).exists()) 
-         folderTotalCrossSDKDistVM = null;
-      if (!new File(folderTotalCrossVMSDistVM).exists()) 
-         folderTotalCrossVMSDistVM = null;
+      if (folderTotalCross3DistVM == null || !new File(folderTotalCross3DistVM).exists()) 
+         folderTotalCross3DistVM = null;
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
+      
+      handleTCAppProp();
+   }
+   
+   private static void handleTCAppProp()
+   {
+      String dir = currentDir;
+      while (true)
+      {
+         try
+         {
+            String path = Convert.appendPath(dir, TCAPP_PROP);
+            File f = new File(path, File.READ_WRITE);
+            Hashtable ht = new Hashtable(new String(f.read()));
+            appBuildNumber = Convert.toInt((String)ht.get("build.number","0"), 0) + 1;
+            ht.put("build.number", appBuildNumber);
+            byte[] bytes = ht.getKeyValuePairs("=").toString("\n").getBytes();
+            f.setSize(0);
+            f.writeAndClose(bytes);
+            tcappProp = bytes;
+            System.out.println("Application's build number: "+appBuildNumber);
+            break;
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            dir = Utils.getParent(dir);
+            if (dir == null)
+               break;
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+            break;
+         }
+         if (tcappProp == null)
+            Utils.println("File "+TCAPP_PROP+" not found; build number could not be generated.");
+      }
    }
 
    /** From 5.21, return 5 */

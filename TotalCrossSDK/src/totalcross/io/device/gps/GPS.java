@@ -43,6 +43,10 @@ import totalcross.util.*;
  *          {
  *             gps.retrieveGPSData();
  *          }
+ *          catch (GPSDisabledException gde)
+ *          {
+ *             Toast.show("Please enable GPS!",2000);
+ *          }
  *          catch (Exception eee)
  *          {
  *             eee.printStackTrace();
@@ -77,7 +81,7 @@ public class GPS
    * On low signal, it contains the value <CODE>INVALID</code>. */
    public double velocity = INVALID;
    /**
-    * Number of satellites in view.
+    * Number of satellites in view. Not supported on WP8.
     * 
     * @since TotalCross 1.20
     */
@@ -98,6 +102,23 @@ public class GPS
     */
    public String lowSignalReason;
 
+   /** Used in gpsPrecision */
+   public static final int HIGH_GPS_PRECISION = 0;
+   /** Used in gpsPrecision */
+   public static final int LOW_GPS_PRECISION = 1;
+
+   /** Defines the GPS precision (currently has effect only on Android): 
+    * if HIGH, only the GPS is used, if LOW, then Google Play Services is also used.
+    * Be aware that Google Play Services may return wifi and radio antenna values, with pdop
+    * ranging from 30m to 1500m or more; always check the pdop value and discard or store it.
+    * 
+    * Note that this is set at the constructor, and changing it after will have no effect;
+    * you must create a new GPS instance.
+    * 
+    * @since TotalCross 3.1
+    */
+   public int precision = HIGH_GPS_PRECISION;
+
    /** A value that indicates that invalid data was retrieved. 
     * Declared as the minimum double value. 
     */
@@ -106,7 +127,9 @@ public class GPS
    PortConnector sp;
    private byte[] buf = new byte[1];
    private StringBuffer sb = new StringBuffer(512);
-   private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS();
+   private static boolean nativeAPI = Settings.isWindowsCE() || Settings.platform.equals(Settings.ANDROID) || Settings.isIOS() || Settings.platform.equals(Settings.WINDOWSPHONE);
+   private static boolean isOpen;
+   boolean dontFinalize;
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:
@@ -164,22 +187,38 @@ public class GPS
    }
 
    /**
-    * Constructs a GPS control, opening a default port at 9600 bps. Already prepared for PIDION scanners. It
+    * Constructs a GPS control. Already prepared for PIDION scanners. It
     * automatically scans the Windows CE registry searching for the correct GPS COM port.
     * 
     * Under Windows Mobile and Android, uses the internal GPS api.
     * 
-    * @throws IOException
+    * @throws GPSDisabledException If GPS is disabled
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS() throws IOException
    {
-      String com;
-
-      if (!nativeAPI || !startGPS())
+      this(HIGH_GPS_PRECISION);
+   }
+      
+   /**
+    * Constructs a GPS control, with the given precision. Already prepared for PIDION scanners. It
+    * automatically scans the Windows CE registry searching for the correct GPS COM port.
+    * 
+    * Under Windows Mobile and Android, uses the internal GPS api.
+    * 
+    * @throws GPSDisabledException If GPS is disabled
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
+    */
+   public GPS(int precision) throws IOException
+   {
+      this.precision = precision;
+      checkOpen();
+      if (!nativeAPI || !testStartGPS())
       {
+         String com;
          if ("PIDION".equals(Settings.deviceId)) // guich@586_7
             sp = new PortConnector(Convert.chars2int("COM4"), 9600, 7, PortConnector.PARITY_EVEN, 1);
-         else if (Settings.isWindowsDevice() && (com = getWinCEGPSCom()) != null)
+         else if (Settings.isWindowsCE() && (com = getWinCEGPSCom()) != null)
             sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
          else
             sp = new PortConnector(0, 9600);
@@ -191,7 +230,7 @@ public class GPS
          sp.setFlowControl(false);
       }
    }
-
+   
    /**
     * Constructs a GPS control with the given serial port. For example:
     * 
@@ -202,24 +241,47 @@ public class GPS
     * </pre>
     * Don't use this constructor under Android nor Windows Mobile.
     * @see #GPS()
+    * @throws IOException If something goes wrong or if there's already an open instance of the GPS class
     */
    public GPS(PortConnector sp) throws IOException
    {
+      checkOpen();
       if (sp != null)
          this.sp = sp;
       else 
       if (nativeAPI)
-         startGPS();
+         testStartGPS();
+   }
+
+   private boolean testStartGPS() throws IOException
+   {
+      try
+      {
+         return startGPS();
+      }
+      catch (IOException e)
+      {
+         isOpen = false;
+         throw e;
+      }
    }
 
    private boolean startGPS() throws IOException {return false;}
    native boolean startGPS4D() throws IOException;
+
+   private void checkOpen() throws IOException
+   {
+      if (isOpen) throw new IOException("There's already an open instance of the GPS class");
+      isOpen = true;
+   }
 
    /**
     * Closes the underlying PortConnector or native api.
     */
    public void stop()
    {
+      dontFinalize = true;
+      isOpen = false;
       if (sp == null)
          stopGPS();
       else

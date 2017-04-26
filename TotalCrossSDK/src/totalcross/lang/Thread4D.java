@@ -39,7 +39,7 @@ import totalcross.util.concurrent.Lock;
  * available.
  * @see Runnable
  */
-public abstract class Thread4D
+public abstract class Thread4D implements Runnable
 {
    byte[] taskID;
    private Runnable r;
@@ -106,6 +106,12 @@ public abstract class Thread4D
       
       this.r = r;
       this.name = name == null ? "Thread-" + tid : name;
+   }
+   
+   /** Returns the thread id, which is a number generated automatically. */
+   public long getId()
+   {
+      return tid;
    }
    
    /**

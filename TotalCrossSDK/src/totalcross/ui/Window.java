@@ -20,6 +20,7 @@
 package totalcross.ui;
 
 import totalcross.*;
+import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
@@ -121,10 +122,13 @@ public class Window extends Container
    protected Control menubar; // guich@200
    /** If true (default), the user can drag this window around */
    protected boolean canDrag = true;
+
    /** Must set to true if your Window is prepared for 320x320 resolutions.
     *  If false (default), the Window is doubled size (and centered) to make controls fit.
     */
+   /** @deprecated */
    protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
+
    /** A temporary title that will be displayed when this Windows pops up. It will be replaced by the original title when it is closed. 
     * @since TotalCross 1.53
     */
@@ -132,7 +136,7 @@ public class Window extends Container
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
-
+   
    static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus,focusOnPenUp;
@@ -153,7 +157,7 @@ public class Window extends Container
    private static int ptPenDownX,ptPenDownY,shiftYAtPenDownY;
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
-   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private static int repeatedEventMinInterval = Settings.isIOS() || Settings.ANDROID.equals(Settings.platform) ? 40 : 0;
    private String oldTitle;
    protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
@@ -233,9 +237,11 @@ public class Window extends Container
 
    /** Used to hide the virtual keyboard */
    public static final int SIP_HIDE = 10000;
-   /** Used to place the virtual keyboard on top of screen */
+   /** Used to place the virtual keyboard on top of screen.
+   */
    public static final int SIP_TOP = 10001;
-   /** Used to place the virtual keyboard on bottom of screen */
+   /** Used to place the virtual keyboard on bottom of screen.
+    */
    public static final int SIP_BOTTOM = 10002;
    /** Used to show the virtual keyboard, without changing the position */
    public static final int SIP_SHOW = 10003;
@@ -259,7 +265,9 @@ public class Window extends Container
    protected DragEvent _dragEvent = new DragEvent();
    private static int currentDragId;
    protected MouseEvent _mouseEvent = new MouseEvent();
+   protected MultiTouchEvent _multiEvent = new MultiTouchEvent();
    private static boolean lastInside;
+   protected boolean multiTouching;
    
    public static int shiftY,shiftH,lastShiftY;
    
@@ -271,6 +279,9 @@ public class Window extends Container
    public static int dragThreshold = getDefaultDragThreshold();
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN = 1.0 * 0.0393700787; // 0.5mm
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER = 1.0 * 0.0393700787; // 1.0mm
+   
+   /** A key listener that have priority over all other listeners. */
+   public static KeyListener keyHook;
    
    ////////////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////////////
@@ -284,7 +295,7 @@ public class Window extends Container
       foreColor = UIColors.controlsFore; // assign the default colors
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
-      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
+      titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -322,7 +333,7 @@ public class Window extends Container
    public void setTitleFont(Font titleFont)
    {
       this.titleFont = titleFont;
-      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
+      titleGap = uiAndroid && borderStyle != NO_BORDER ? titleFont.fm.height/2 : 0;
       rTitle = null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -350,6 +361,16 @@ public class Window extends Container
       totalcross.Launcher.instance.setTitle(title);
    }
    native static void setDeviceTitle4D(String title);
+   ////////////////////////////////////////////////////////////////////////////////////
+   /** Force the orientation during runtime. Use one of ORIENTATION_PORTRAIT / ORIENTATION_LANDSCAPE. Can be ored with ORIENTATION_INVERTED flag.
+    */
+   public static final int ORIENTATION_PORTRAIT = 1;
+   public static final int ORIENTATION_LANDSCAPE = 2;
+   public static final int ORIENTATION_INVERTED = 4;
+   final public static void setOrientation(int orientation)
+   {
+   }
+   native final public static void setOrientation4D(int orientation);
    ////////////////////////////////////////////////////////////////////////////////////
    /** Sets the border borderStyle.
     * @see #NO_BORDER
@@ -401,7 +422,7 @@ public class Window extends Container
             if (_focus == null) // guich@tc100: maybe the user changed the focus to a new control in the FOCUS_OUT event
             {
                _focus = c;
-               if (c.enabled) // guich@tc152: disabled controls can't send focus events
+               if (c.isEnabled()) // guich@tc152: disabled controls can't send focus events
                {
                   _controlEvent.type = ControlEvent.FOCUS_IN;
                   _controlEvent.target = c;
@@ -441,8 +462,13 @@ public class Window extends Container
          _controlEvent.update(highlighted);
          highlighted.postEvent(_controlEvent); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_OUT event
          highlighted = null;
-         drawHighlight(null);
-         updateScreen();
+         if (Settings.isOpenGL)
+            needsPaint = true;
+         else
+         {
+            drawHighlight(null);
+            safeUpdateScreen();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -480,7 +506,7 @@ public class Window extends Container
    public void validate() // guich@400_44
    {
       if (needsPaint)
-         _doPaint();
+         repaintActiveWindows();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /**
@@ -488,9 +514,11 @@ public class Window extends Container
     */
    final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp)
    {
-      boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
+      boolean isPenEvent = !multiTouching && PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
-      if (isKeyEvent && Settings.deviceRobotSpecialKey == key)
+      if (isKeyEvent && Settings.optionalBackspaceKey != 0 && key == Settings.optionalBackspaceKey)
+         key = SpecialKeys.BACKSPACE;
+      if (isKeyEvent && Settings.deviceRobotSpecialKey != 0 && Settings.deviceRobotSpecialKey == key)
       {
          onRobotKey();
          return;
@@ -507,6 +535,19 @@ public class Window extends Container
       
       if (isPenEvent) // do all the pen event filtering here
       {
+         if (grabPenEvents != null) // guich@tc100 - guich@tc168: moved to here to prevent gaps when Whiteboard is inside a window
+         {
+            PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
+            Control c = _focus;
+            while (c != null)
+            {
+               x -= c.x;
+               y -= c.y;
+               c = c.parent;
+            }
+            grabPenEvents._onEvent(pe.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
+            return;
+         }
          if (type == PenEvent.PEN_DRAG && firstDrag) // discard first PEN_DRAG unless it exceeds the drag threshold
          {
             int absDeltaX = x > ptPenDownX ? x - ptPenDownX : ptPenDownX - x;
@@ -514,7 +555,7 @@ public class Window extends Container
             if (absDeltaX < Settings.touchTolerance && absDeltaY < Settings.touchTolerance)
                return;
          }
-         if (grabPenEvents == null && type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
+         if (type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
             return;
          if (type == PenEvent.PEN_UP && cancelPenUp)
          {
@@ -537,6 +578,16 @@ public class Window extends Container
          }
       }
          
+      if (type == PushNotificationEvent.TOKEN_RECEIVED) // single message
+      {
+         broadcastEvent(new PushNotificationEvent(type, PushNotification.readToken()));
+         return;
+      }
+      if (type == PushNotificationEvent.MESSAGE_RECEIVED)// multiple messages
+      {
+         postPushNotifications();
+         return;
+      }
       if (key == SpecialKeys.SCREEN_CHANGE) // dont move from here!
       {
          MainWindow.mainWindowInstance.width  = Settings.screenWidth;
@@ -566,6 +617,7 @@ public class Window extends Container
             repaintActiveWindows();
             return;
          }
+         if (Settings.isWindowsDevice() && shiftY > 0) shiftY = 0; // required for WP8. not sure on other platforms
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
@@ -584,7 +636,7 @@ public class Window extends Container
             }
          }
          else
-         if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
+         if (!Settings.platform.equals(Settings.WINDOWSPHONE) && lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
          {
             lastY = y = y + lastShiftY;
             if (type == PenEvent.PEN_UP)
@@ -600,21 +652,25 @@ public class Window extends Container
       
       Event event=null;
       boolean invokeMenu = false;
-      if (isPenEvent && grabPenEvents != null) // guich@tc100
-      {
-         PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
-         Control c = _focus;
-         while (c != null)
-         {
-            x -= c.x;
-            y -= c.y;
-            c = c.parent;
-         }
-         grabPenEvents._onEvent(pe.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
-         return;
-      }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
+      if (type == MultiTouchEvent.SCALE)
+      {
+         if (key == 1)
+            multiTouching = true;
+         else
+         if (key == 2)
+            multiTouching = false;
+         else
+         {
+            long l = ((((long)x & 0xFFFFFFFFL) << 32) | ((long)y & 0xFFFFFFFFL));
+            _multiEvent.update(_focus, Convert.longBitsToDouble(l));
+            _focus.postEvent(_multiEvent);
+         }
+         if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
+            repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
+         return;
+      }
       if (isPenEvent) 
       {
          switch (type)
@@ -667,6 +723,48 @@ public class Window extends Container
          if (!invokeMenu) return;
       }
 
+      // checks for mouse wheel on DESKTOP/WIN32 only
+      if (Settings.scrollDistanceOnMouseWheelMove != 0 && type == MouseEvent.MOUSE_WHEEL && contains(x, y))
+      {
+         Control c = findChild(x - this.x, y - this.y);
+         for (; c != null && !(c instanceof Scrollable); c = c.parent) {}
+         if (c != null && c instanceof Scrollable && !(c instanceof TabbedContainer))
+         {
+            int k = Settings.scrollDistanceOnMouseWheelMove;
+            Scrollable sc = (Scrollable)c;
+            boolean canScrollVert  = sc.canScrollContent(DragEvent.UP,sc)   || sc.canScrollContent(DragEvent.DOWN,sc);
+            boolean canScrollHoriz = sc.canScrollContent(DragEvent.LEFT,sc) || sc.canScrollContent(DragEvent.RIGHT,sc);
+            int kx = 0, ky = 0;
+            if (canScrollVert && !canScrollHoriz) // only vertical?
+               switch (key)
+               {
+                  case DragEvent.DOWN : 
+                  case DragEvent.LEFT : ky =  k; break;
+                  case DragEvent.UP   : 
+                  case DragEvent.RIGHT: ky = -k; break;
+               }
+            else
+            if (!canScrollVert && canScrollHoriz) // only horizontal
+               switch (key)
+               {
+                  case DragEvent.DOWN : 
+                  case DragEvent.LEFT : kx =  k; break;
+                  case DragEvent.UP   : 
+                  case DragEvent.RIGHT: kx = -k; break;
+               }
+            else // both horizontal and vertical
+               switch (key)
+               {
+                  case DragEvent.DOWN : ky =  k; break;
+                  case DragEvent.UP   : ky = -k; break;
+                  case DragEvent.LEFT : kx =  k; break;
+                  case DragEvent.RIGHT: kx = -k; break;
+               }
+            if ((ky != 0 && sc.scrollContent(0, ky, false)) || (kx != 0 && sc.scrollContent(kx, 0, false)))
+               repaintNow();
+            return;
+         }
+      }
       if (isPenEvent || type == MouseEvent.MOUSE_MOVE) // guich@102: user clicked outside the window? - guich@tc126_45: send MOUSE_IN/OUT when the window bounds are crossed
       {
          boolean inside = contains(x, y);
@@ -692,10 +790,10 @@ public class Window extends Container
             _penEvent.modifiers = modifiers;
             _penEvent.target = null;
             _penEvent.touch();
-            if (_focus != null && _focus != this && _focus == _dragEvent.target && type == PenEvent.PEN_UP) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever
+            if (_focus != null && _focus != this && (_focus == _dragEvent.target || x == 10000) && type == PenEvent.PEN_UP) // guich@gc153: fixed problem of clicking in the Calendar's button making it repeat and dragging the mouse outside the window. without this, the button will repeat forever -- x = 10000 is sent when a multitouch will begin
                _focus.postEvent(_penEvent);
             if (!onClickedOutside(_penEvent)) // if clicked outside was not handled by this method...
-               if (type == PenEvent.PEN_DOWN && beepIfOut) // alert him! - ds: i changed this accordingly to your comments about win32 problems
+               if (type == PenEvent.PEN_DOWN && beepIfOut && !fadeOtherWindows) // alert him! - ds: i changed this accordingly to your comments about win32 problems
                   Sound.beep();
             return;
          }
@@ -707,6 +805,20 @@ public class Window extends Container
          _keyEvent.modifiers = modifiers;
          _keyEvent.type = type;
          event = _keyEvent;
+         
+         if (isKeyEvent && keyHook != null)
+         {
+            _keyEvent.consumed = false;
+            switch (type)
+            {
+               case KeyEvent.KEY_PRESS:         keyHook.keyPressed(_keyEvent);         break;
+               case KeyEvent.ACTION_KEY_PRESS:  keyHook.actionkeyPressed(_keyEvent);   break;
+               case KeyEvent.SPECIAL_KEY_PRESS: keyHook.specialkeyPressed(_keyEvent);  break;
+            }
+            if (_keyEvent.consumed)
+               return;
+         }
+
 
          if (Settings.geographicalFocus && _keyEvent.isActionKey()) _keyEvent.type = KeyEvent.ACTION_KEY_PRESS; // kmeehl@tc100 from here
 
@@ -715,7 +827,7 @@ public class Window extends Container
             if (isHighlighting && handleFocusChangeKeys(_keyEvent))
             {
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+                  repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
          }
@@ -728,7 +840,7 @@ public class Window extends Container
             {
                setFocus(c);
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+                  repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
             else
@@ -736,7 +848,7 @@ public class Window extends Container
                c = highlighted == null ? _focus : highlighted;
                if (c == this || c == null || !c.focusTraversable || c.focusLess)
                { // find a new control to set focus to
-                  if (firstFocus == null || firstFocus.focusLess || !firstFocus.focusTraversable || !firstFocus.visible || !firstFocus.enabled) // kmeehl@tc100: if firstfocus is set and focusable, set it as the first control to get focus
+                  if (firstFocus == null || firstFocus.focusLess || !firstFocus.focusTraversable || !firstFocus.visible || !firstFocus.isEnabled()) // kmeehl@tc100: if firstfocus is set and focusable, set it as the first control to get focus
                   {
                      if (fakeControl == null) // create a fake control and find the closest control to the top-left corner
                      {
@@ -763,18 +875,9 @@ public class Window extends Container
 
                setFocus(c);
                if (needsPaint) // commit any pending paint before returning
-                  topMost._doPaint();
+                  repaintActiveWindows();
                return;
             }
-         }
-         else
-         if (Settings.keypadOnly) // guich@580_42: only if keypadOnly is true, otherwise it will have problems with a Edit + ToolTip
-         {
-            if (_focus != highlighted && highlighted != null) // guich@573_47: something different of the movement commands was typed, so redirect the key directly to the control.
-               highlighted.requestFocus();
-
-            if (Keypad.getInstance().handleKey(key)) // fdie@570_107 use a keypad on "keypadOnly" devices
-               return; // otherwise, an Edit will receive two events
          }
          else
          if (_focus != highlighted && highlighted != null) // guich@tc100: without this, if an Edit is highlighted and the user press a key, the key is not sent to the control bypassing the need for the ACTION key
@@ -809,9 +912,9 @@ public class Window extends Container
          tempFocus = c;
       }
       // guich@200b4_147: make sure that the focused control is an enabled one
-      if (_focus != null && _focus != this && (!_focus.enabled || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
+      if (_focus != null && _focus != this && (!_focus.isEnabled() || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
       {
-         if (_focus.enabled) // guich@tc152: disabled controls can't send focus events
+         if (_focus.isEnabled()) // guich@tc152: disabled controls can't send focus events
          {
             _controlEvent.type = ControlEvent.FOCUS_OUT;
             _controlEvent.target = _focus;
@@ -822,7 +925,7 @@ public class Window extends Container
          if (_focus == null || _focus.parent == null)
             _focus = this;
          else
-            while (!_focus.enabled && _focus.parent != null)
+            while (!_focus.isEnabled() && _focus.parent != null)
                _focus = _focus.parent;
       }
       if (!isKeyEvent)
@@ -954,6 +1057,17 @@ public class Window extends Container
          focusOnPenUp = _focus != null && (_focus instanceof Edit || _focus instanceof MultiEdit) ? _focus : null;
          tempFocus = null;
       }
+      if (type == MouseEvent.MOUSE_WHEEL)
+      {
+         _mouseEvent.target = event.target;
+         _mouseEvent.consumed = false;
+         _mouseEvent.timeStamp = timeStamp;
+         _mouseEvent.type = MouseEvent.MOUSE_WHEEL;
+         _mouseEvent.wheelDirection = key;
+         event = _mouseEvent;
+         (_focus != null ? _focus : this).postEvent(event);
+      }
+      else
       if (type == MouseEvent.MOUSE_MOVE)
       {
          if (event instanceof MouseEvent)
@@ -973,9 +1087,15 @@ public class Window extends Container
          ((Control)event.target).postEvent(event);
       
       if (needsPaint || Container.nextTransitionEffect != Container.TRANSITION_NONE) // guich@200b4_18: maybe the current event had poped up a Window.
-         topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+         repaintActiveWindows(); // guich@tc100: paint the topMost, not ourselves.
    }
 
+   void postPushNotifications()
+   {
+      for (String msg: PushNotification.readMessages())
+         broadcastEvent(new PushNotificationEvent(PushNotificationEvent.MESSAGE_RECEIVED, msg));
+   }
+   
    private int getDirection(int originX, int originY, int x, int y) // guich@tc122_11
    {
       int xDelt = originX - x;
@@ -993,7 +1113,8 @@ public class Window extends Container
    protected void getClientRect(Rect r) // guich@450_36
    {
       int m = borderGaps[borderStyle];
-      boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
+      boolean onlyBorder = borderStyle == NO_BORDER || ((title == null || title.isEmpty()) && (borderStyle == ROUND_BORDER && uiAndroid));
+
       r.x = m;
       r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1);
       switch (borderStyle)
@@ -1048,7 +1169,7 @@ public class Window extends Container
             {
                case HORIZONTAL_GRADIENT:
                case VERTICAL_GRADIENT:
-                  gg.drawRoundGradient(0, 0, width,hh, 0, 0, 0, 0, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor, borderStyle == VERTICAL_GRADIENT);
+                  gg.fillShadedRect(0, 0, width,hh, true, borderStyle == HORIZONTAL_GRADIENT, gradientTitleStartColor == -1 ? f : gradientTitleStartColor, gradientTitleEndColor == -1 ? b : gradientTitleEndColor,100);
                   break;
                case TAB_BORDER:
                case TAB_ONLY_BORDER:
@@ -1063,7 +1184,7 @@ public class Window extends Container
                   {
                      boolean hasTitle = tit != null && tit.length() > 0;
                      int c = Color.getCursorColor(f);
-                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,borderColor != -1 ? borderColor : f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
                      if (!hasTitle)
                         return;
                      else
@@ -1089,39 +1210,41 @@ public class Window extends Container
             gg.foreColor = titleColor == -1 ? f : titleColor;
             gg.backColor = b;
          }
-         gg.setFont(titleFont);
-         gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
-         gg.setFont(font);
-         if (rTitle == null)
+         if (borderStyle != NO_BORDER && tit != null && !tit.isEmpty())
+         {
+            gg.setFont(titleFont);
+            gg.drawText(tit, xx, yy, textShadowColor != -1, textShadowColor);
+            gg.setFont(font);
+         }
+         if (rTitle == null && borderStyle != NO_BORDER)
             rTitle = new Rect(xx-2,0,ww+4,hh==0 && tit.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
+   public void paintWindowBackground(Graphics gg)
+   {
+      if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
+         fillBackground(gg, backColor);
+      // guich@102: if border or title, draw it
+      paintTitle(title, gg);
+      onPaint(gg);
+   }
    /**
     * Called by the VM to repaint an area.
     */
    public void _doPaint()
    {
       Graphics gg = getGraphics();
-      // clear background
-      gg.backColor = backColor; // disabled here?
-      if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
-         gg.fillRect(0, 0, width, height); // guich@110
-      // guich@102: if border or title, draw it
-      paintTitle(title, gg);
-      onPaint(gg);
-      paintChildren();
-      if (needsPaint)
+      if (offscreen != null)
+         gg.drawImage(offscreen,0,0);
+      else
       {
-         needsPaint = false;
-         onWindowPaintFinished();
-         if (_focus != null && _focus.getParentWindow() == this)
-            _focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
-         lastHighlighted = null;
-         if (highlighted != null && this == topMost) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
-            drawHighlight(highlighted);
-         updateScreen(); // tc100
+         // clear background
+         paintWindowBackground(gg);
+         paintChildren();
       }
+      if (offscreen == null && Settings.onJavaSE)
+         safeUpdateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, and make it child of this one. All events in the behind window are deactivated.
@@ -1136,6 +1259,9 @@ public class Window extends Container
          enableUpdateScreen = false;
          if (isScreenShifted())
             shiftScreen(null,0);
+         setSIP(SIP_HIDE,null,false);
+         if (newWin.transitionEffect != TRANSITION_NONE)
+            setNextTransitionEffect(newWin.transitionEffect);
          if (newWin.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this window was popped?
             newWin.reposition();
          newWin.popped = true;
@@ -1154,21 +1280,27 @@ public class Window extends Container
          setFocus(topMost); // guich@567_4: changed from setFocus to swapFocus to fix 566_18 problem - guich@568_17: changed back to setFocus
          topMost.eventsEnabled = true; // enable the new window
          topMost.postPopup();
-         enableUpdateScreen = true;
-         //setNextTransitionEffect(newWin.transitionEffect); - this is not working fine on windows on android
-         repaintActiveWindows();
+         if (newWin.offscreen == null)
+         {
+            enableUpdateScreen = true;
+            if (newWin.transitionEffect != TRANSITION_NONE)
+               applyTransitionEffect();
+            else
+               repaintActiveWindows();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Popup a modal window, blocking the program execution, and make it child of this one. All events in the behind window are deactivated.
        Important! You can't use this method in the application's constructor or in the initUI method!
+       Calling this 
    */
    private void popup(Window newWin) // anodos@320_9
    {
       if (!started && this instanceof MainWindow) // guich@567_17: if the user call this method in the initUI method, repaintNow so that the back of the screen is stored correctly
       {
          started = true; // don't let this repaintNow be called again if more than one popup is called in sequence in the initUI of the MainWindow
-         repaintNow();
+         //repaintNow(); - guich@tc210 - prevent an empty white background on startup.
       }
       if (!enableUpdateScreen) // guich@tc114_57: if we need interaction, make sure that the screen was updated.
       {
@@ -1177,6 +1309,7 @@ public class Window extends Container
       }
       popupNonBlocking(newWin);
       blocking = true;
+      if (!MainWindow.quittingApp)
       do
       {
          pumpEvents();
@@ -1184,7 +1317,7 @@ public class Window extends Container
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Hides this window. Calling unpop when only the MainWindow is active does nothing. */
-   final public void unpop()
+   public void unpop()
    {
       if (zStack.size() == 1) // guich@400_69
          return;
@@ -1193,10 +1326,12 @@ public class Window extends Container
          setTitle(oldTitle);
          oldTitle = null;
       }
+      Window lastTopMost = topMost;
+      int nextTrans = lastTopMost.transitionEffect == TRANSITION_FADE ? TRANSITION_FADE : lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
+      setNextTransitionEffect(nextTrans);
       onUnpop();
       eventsEnabled = false;
       MainWindow.mainWindowInstance.removeTimers(this);
-      Window lastTopMost = topMost;
       try
       {
          zStack.pop();
@@ -1204,12 +1339,7 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-/* transitions on Window is not working fine on android.
-          int nextTrans = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
-         if (nextTrans == TRANSITION_NONE)
-            loadBehind(); // guich@200b4: restore the saved window
-         setNextTransitionEffect(nextTrans);
-*/         topMost.eventsEnabled = true;
+         topMost.eventsEnabled = true;
          if (topMost.focusOnPopup instanceof totalcross.ui.MenuBar)
             topMost.focusOnPopup = topMost; // make sure that the focus is not on the closed menu bar
          else
@@ -1219,16 +1349,24 @@ public class Window extends Container
          if (!topMost.focusOnPopup.isDisplayed()) // guich@300_61: if we popped up a MessageBox and swapped the container...
             topMost.focusOnPopup = topMost;
          else
-         if (!topMost.focusOnPopup.enabled) // guich@300_62: if the button that dispatched the event is not more enabled...
+         if (!topMost.focusOnPopup.isEnabled()) // guich@300_62: if the button that dispatched the event is not more enabled...
             topMost.focusOnPopup = topMost;
          lastTopMost = topMost;
          topMost.focusOnPopup.postEvent(new ControlEvent(ControlEvent.WINDOW_CLOSED, this)); // tell last control that we closed
          if (topMost == lastTopMost) // guich@240_23: if the postEvent before pops up another Window, we must not set the focus back because the topMost var has changed
             topMost.setFocus(topMost.focusOnPopup);
          postUnpop();
+         if (topMost.focusOnPopup != null && !(topMost.focusOnPopup instanceof TextControl) && Settings.virtualKeyboard && Window.isSipShown) // if we close a window that has opened the keyboard, close it.
+         {
+            Window.isSipShown = false;
+            Window.setSIP(Window.SIP_HIDE,null,false);
+         }
          popped = false;
          needsPaint = true;
-         repaintActiveWindows();
+         if (transitionEffect != TRANSITION_NONE)
+            applyTransitionEffect();
+         else
+            repaintActiveWindows();
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1311,7 +1449,7 @@ public class Window extends Container
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Open the menu bar that is associated with this window */
-   protected void popupMenuBar() // guich@200b4_41
+   public void popupMenuBar() // guich@200b4_41
    {
       if (menubar != null)
          menubar.setVisible(true);
@@ -1344,18 +1482,18 @@ public class Window extends Container
          mainSwapContainer = newContainer;
       else
          isHighlighting = Settings.keyboardFocusTraversable; // guich@573_17
+      // add the new container.
+      if (newContainer != null && newContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(newContainer.transitionEffect);
+      else
+      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
+         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_FADE ? TRANSITION_FADE : lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
       // remove the last container
       if (lastSwappedContainer != null)
          remove(lastSwappedContainer);
       // returning back to the main one?
       if (newContainer == null)
          newContainer = mainSwapContainer;
-      // add the new container.
-      if (newContainer.transitionEffect != TRANSITION_NONE)
-         setNextTransitionEffect(newContainer.transitionEffect);
-      else
-      if (lastSwappedContainer != null && lastSwappedContainer.transitionEffect != TRANSITION_NONE)
-         setNextTransitionEffect(lastSwappedContainer.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_OPEN);
       lastSwappedContainer = newContainer;
       add(newContainer);
       if (!newContainer.started) // guich@340_15: if the container did not start yet, set its size
@@ -1364,10 +1502,14 @@ public class Window extends Container
       if (newContainer.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this container was added?
          newContainer.reposition();
       Control firstTarget = (_focus != null && _focus.getParentWindow() == this) ? _focus : newContainer.tabOrder.size() > 0 ? (Control)newContainer.tabOrder.items[0] : newContainer; // guich@573_19: set focus to the first control, instead of the new container. - guich@tc100: only if the focus was not already set in the initUI method of the newContainer
+      applyTransitionEffect();
+      if (Toast.btn != null)
+         try {Toast.btn.bringToFront();} catch (Exception e) {}
       newContainer.repaintNow(); // guich@503_7: fixed problem when this swap was being called from inside a Menu.
       firstTarget.requestFocus(); // guich@tc153: put this after repaintNow to fix transition effect problems
       topMost.focusOnPopup = firstTarget; // guich@550_15: otherwise, the ContainerSwitch app won't work for Sub3 when using pen less.
       if (Settings.keyboardFocusTraversable || Settings.geographicalFocus) highlighted = firstTarget;
+      newContainer.onSwapFinished();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the size of the title if any plus the size of the border.
@@ -1399,28 +1541,47 @@ public class Window extends Container
       int i,j,n;
       boolean eas = enableUpdateScreen;
       enableUpdateScreen = false;
+      boolean neededPaint = needsPaint;
+      needsPaint = false; // prevent from updating the screen
       // guich@400_73 guich@400_76
-      Object[] items = zStack.items;
-      Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
-      for (i=zStack.size(); --i > 0;) // search for the the most top window with the same size of MainWindow - 0=mainwindow, so we skip it
-         if (((Window)items[i]).getRect().equals(mainWindowRect))
-            break;
-      // guich@tc120_43: find the last fadeOtherWindows
-      int lastFade = 1000;
-      for (j = 0,n=zStack.size(); j < n; j++)
-         if (((Window)items[j]).fadeOtherWindows)
-            lastFade = j;
-      for (n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
+      boolean callUS = true;
+      try
       {
-         if (i == lastFade)
-            Graphics.fadeScreen(fadeValue);
-         ((Window)items[i]).repaintNow();
+         Object[] items = zStack.items;
+         Rect mainWindowRect = MainWindow.mainWindowInstance.getRect(); // size of the MainWindow
+         for (i=zStack.size(); --i > 0;) // search for the the most top window with the same size of MainWindow - 0=mainwindow, so we skip it
+            if (((Window)items[i]).getRect().equals(mainWindowRect))
+               break;
+         // guich@tc120_43: find the last fadeOtherWindows
+         int lastFade = 1000;
+         for (j = 0,n=zStack.size(); j < n; j++)
+            if (((Window)items[j]).fadeOtherWindows)
+               lastFade = j;
+         if (i == -1) i = 0;
+         for (n=zStack.size(); i < n; i++) // repaints every window, from the nearest with the MainWindow size to last parent
+         {
+            if (i == lastFade)
+               Graphics.fadeScreen(fadeValue);
+            if (items[i] != null) ((Window)items[i])._doPaint();
+         }
+         if (neededPaint)
+         {
+            topMost.onWindowPaintFinished();
+            if (topMost._focus != null && topMost._focus.getParentWindow() == topMost)
+               topMost._focus.onWindowPaintFinished(); // guich@200b4: test if the last focused control belongs to this window; this corrects the painted control after a window is poped up
+            topMost.lastHighlighted = null;
+            if (topMost.highlighted != null) // fdie@570_120 repaint with clipping an xor drawn highlighted control   kmeehl@tc100: only draw the highlight on the topmost window
+               topMost.drawHighlight(topMost.highlighted);
+            safeUpdateScreen(); // tc100
+         }
       }
+      catch (Exception e) {e.printStackTrace(); callUS = false;}
       
       // guich@tc125_18: there's no need to paint the highlight here because it was already painted in the repaintNow() method called above.
       
       enableUpdateScreen = eas;
-      updateScreen();
+      if (callUS)
+         safeUpdateScreen();
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Called by the main event handler to handle the focus change keys. Only
@@ -1453,7 +1614,7 @@ public class Window extends Container
                p = (c.asContainer != null && c.asContainer.tabOrder.size() > 0) ? c.asContainer : c.parent;
             if (p == null) // guich@tc113_22
                c = p = this;
-            if (highlighted == null && firstFocus != null && !firstFocus.focusLess && firstFocus.focusTraversable && firstFocus.visible && firstFocus.enabled) // kmeehl@tc100: if firstFocus is set and focusable, use it as the first control to get focus
+            if (highlighted == null && firstFocus != null && !firstFocus.focusLess && firstFocus.focusTraversable && firstFocus.visible && firstFocus.isEnabled()) // kmeehl@tc100: if firstFocus is set and focusable, use it as the first control to get focus
                setHighlighted(firstFocus);
             else
                c.changeHighlighted(p,isForward);
@@ -1486,8 +1647,13 @@ public class Window extends Container
             c.postEvent(_controlEvent); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_IN event
             highlighted = c;
          }
-         drawHighlight(highlighted);
-         updateScreen();
+         if (Settings.isOpenGL)
+            needsPaint = true;
+         else
+         {
+            drawHighlight(highlighted);
+            safeUpdateScreen();
+         }
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1533,12 +1699,21 @@ public class Window extends Container
       c.postEvent(_controlEvent);
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Called when the screen is resized, probably caused by a rotation. */
+   /** Called when the screen is resized, probably caused by a rotation.
+    * ATTENTION: THIS CALL CANNOT BE BLOCKED OR THE SYSTEM WILL LOCK!
+    */
    public void screenResized()
    {
       enableUpdateScreen = false; requestFocus(); enableUpdateScreen = true; // if resize occured in an edit, remove the focus from it.
       rTitle = null; // guich@tc120_37
       reposition();
+      MainWindow.getMainWindow().runOnMainThread(new Runnable()
+      {
+         public void run()
+         {
+            repaintActiveWindows();
+         }
+      });
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /**
@@ -1581,7 +1756,7 @@ public class Window extends Container
    private void drawHighlight(Control c, boolean highlighted)
    {
       int n = UIColors.highlightColors.length;
-      Graphics g = c.refreshGraphics(c.gfx, n);
+      Graphics g = c.refreshGraphics(c.gfx, n, null,0,0);
       if (g != null)
       {
          int offset = 0;
@@ -1692,14 +1867,6 @@ public class Window extends Container
       double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
       return (int)Math.round(threshold);
    }
-   public static int getDefaultDragThreshold4B()
-   {
-      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
-      if (Settings.deviceId.startsWith("95")) // 95xx series have SurePress screen, so increase threshold
-         threshold *= 1.5;
-      
-      return (int)Math.round(threshold);
-   }
    
    /** Returns the number of windows that are popped up. If there's only a MainWindow, returns 0.
     * @since TotalCross 1.27
@@ -1751,7 +1918,6 @@ public class Window extends Container
       else
       {
          Rect r = c.getAbsoluteRect();
-
          int newShiftY = Math.max(r.y + deltaY - c.fmH, 0);
          if (newShiftY != shiftY)
          {
@@ -1765,5 +1931,10 @@ public class Window extends Container
    public static boolean isScreenShifted()
    {
       return shiftY != 0;
+   }
+   
+   public static boolean isSipShown()
+   {
+      return isSipShown;
    }
 }

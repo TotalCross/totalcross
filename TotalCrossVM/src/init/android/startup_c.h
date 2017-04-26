@@ -74,21 +74,21 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
       	 targetPackage[len] = '_';            
    }   	
 
+   jshowRoute        = (*env)->GetStaticMethodID(env, applicationClass, "showRoute", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)I");
    jshowGoogleMaps   = (*env)->GetStaticMethodID(env, applicationClass, "showGoogleMaps", "(Ljava/lang/String;Z)Z");
    jeventIsAvailable = (*env)->GetStaticMethodID(env, applicationClass, "eventIsAvailable", "()Z");
    jpumpEvents       = (*env)->GetStaticMethodID(env, applicationClass, "pumpEvents", "()V");
-   jtransitionEffectChanged = (*env)->GetStaticMethodID(env, applicationClass, "transitionEffectChanged", "(I)V");
-   jupdateScreen     = (*env)->GetStaticMethodID(env, applicationClass, "updateScreen", "(IIIII)V");
    jalert            = (*env)->GetStaticMethodID(env, applicationClass, "alert", "(Ljava/lang/String;)V");
    jsetElapsed       = (*env)->GetStaticMethodID(env, applicationClass, "setElapsed", "(I)I");
    jvmFuncI          = (*env)->GetStaticMethodID(env, applicationClass, "vmFuncI", "(II)I");
    jvmExec           = (*env)->GetStaticMethodID(env, applicationClass, "vmExec", "(Ljava/lang/String;Ljava/lang/String;IZ)I");
-   jgetSDCardPath    = (*env)->GetStaticMethodID(env, applicationClass, "getSDCardPath", "()Ljava/lang/String;");
-   jshowCamera       = (*env)->GetStaticMethodID(env, applicationClass, "showCamera", "(Ljava/lang/String;III)V");
+   jgetSDCardPath    = (*env)->GetStaticMethodID(env, applicationClass, "getSDCardPath", "(I)Ljava/lang/String;");
+   jshowCamera       = (*env)->GetStaticMethodID(env, applicationClass, "showCamera", "(Ljava/lang/String;IIIZI)V");
    jgetNativeResolutions= (*env)->GetStaticMethodID(env, applicationClass, "getNativeResolutions", "()Ljava/lang/String;");
    jdial             = (*env)->GetStaticMethodID(env, applicationClass, "dial", "(Ljava/lang/String;)V");
-   jgpsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "gpsFunc", "(I)Ljava/lang/String;");
+   jgpsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "gpsFunc", "(II)Ljava/lang/String;");
    jtone             = (*env)->GetStaticMethodID(env, applicationClass, "tone", "(II)V");
+   jsoundPlay        = (*env)->GetStaticMethodID(env, applicationClass, "soundPlay", "(Ljava/lang/String;)V");
    jsoundEnable      = (*env)->GetStaticMethodID(env, applicationClass, "soundEnable", "(Z)V");
    jcellinfoUpdate   = (*env)->GetStaticMethodID(env, applicationClass, "cellinfoUpdate", "()[I");
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
@@ -100,10 +100,15 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jfindTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "findTCZ", "(Ljava/lang/String;)I");
    jreadTCZ          = (*env)->GetStaticMethodID(env, applicationClass, "readTCZ", "(II[B)I");
    jlistTCZs         = (*env)->GetStaticMethodID(env, applicationClass, "listTCZs", "()Ljava/lang/String;");
+   jgetFreeMemory    = (*env)->GetStaticMethodID(env, applicationClass, "getFreeMemory", "()I");
    // guich@tc135: load classes at startup since it will fail if loading from a thread
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
+   jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
+   jsoundToText      = (*env)->GetStaticMethodID(env, applicationClass, "soundToText", "(Ljava/lang/String;)Ljava/lang/String;");
+   jsoundFromText    = (*env)->GetStaticMethodID(env, applicationClass, "soundFromText", "(Ljava/lang/String;)V");
+   jadsFunc          = (*env)->GetStaticMethodID(env, applicationClass, "adsFunc", "(IILjava/lang/String;)I");
 }
 
 char* getTotalCrossAndroidClass(CharP className)
@@ -122,6 +127,8 @@ jclass androidFindClass(JNIEnv* env, CharP className)
 {   
    jclass c = (*env)->FindClass(env, getTotalCrossAndroidClass(className));
    (*env)->ExceptionClear(env);
+   if (c)
+      MAKE_GLOBAL_REFERENCE(c,jclass);
    return c;
 }
 
@@ -132,7 +139,7 @@ JNIEnv* getJNIEnv()
    return env;
 }
 
-void callExecuteProgram() // called from android/gfz_Graphics_c.h
+void callExecuteProgram() // called from android/gfx_Graphics_c.h
 {
    executeProgram(tczname[0] ? tczname : NULL);
 }

@@ -16,12 +16,10 @@
 
 package totalcross.ui.media;
 
-import totalcross.io.IOException;
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.PressListener;
-import totalcross.util.Vector;
+import totalcross.util.*;
 
 public class Camera4D
 {
@@ -39,6 +37,16 @@ public class Camera4D
    public int videoTimeLimit;
 
    public int captureMode = CAMERACAPTURE_MODE_STILL;
+   
+   public boolean allowRotation;
+
+   public int cameraType;
+   public static String fcbTitle = "Select a photo";
+
+   public static final int CAMERA_CUSTOM = 0;
+   public static final int CAMERA_NATIVE = 1;
+   public static final int CAMERA_NATIVE_NOCOPY = 2;
+   public static final int CAMERA_FROM_GALLERY = 3;
 
    public static final int CAMERACAPTURE_MODE_STILL = 0;
    public static final int CAMERACAPTURE_MODE_VIDEOONLY = 1;
@@ -58,27 +66,11 @@ public class Camera4D
 
    public String click() throws IOException
    {
-      if (Settings.platform.equals(Settings.PALMOS))
+      if (Settings.isWindowsCE() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.WINDOWSPHONE))
       {
-         cameraScreen = new Window();
-         Button bOk = new Button("Ok");
-         bOk.appObj = this;
-         cameraScreen.add(bOk, Control.LEFT, Control.BOTTOM);
-         initCamera();
-         bOk.addPressListener(new PressListener()
-         {
-            public void controlPressed(ControlEvent e)
-            {
-               Button bOk = (Button) e.target;
-               Camera4D camera = (Camera4D) bOk.appObj;
-               camera.defaultFileName = camera.nativeClick();
-               bOk.getParentWindow().unpop();
-            }
-         });
-         cameraScreen.popup();
-      }
-      else if (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32) || Settings.isIOS() || Settings.platform.equals(Settings.ANDROID))
+         if (initialDir != null) try {new File(initialDir).createDir();} catch (Exception e) {}
          return this.nativeClick();
+      }
       else
          new totalcross.ui.dialog.MessageBox("Camera (Emulation)", "Say cheese!", new String[] { "Click" }).popup();
 
@@ -103,10 +95,10 @@ public class Camera4D
       {
          String s = getNativeResolutions();
          if (s != null)
-            ret = Convert.tokenizeString(s,',');
+            ret = sortResolutions(Convert.tokenizeString(s,','));
       }
       else
-      if (Settings.isWindowsDevice())
+      if (Settings.isWindowsCE())
       {
          Vector v = new Vector(10);
          String dir = "Software\\Microsoft\\Pictures\\Camera\\OEM\\PictureResolution";
@@ -124,11 +116,18 @@ public class Camera4D
             catch (Exception e) {} // key not found
          }
          if (v.size() > 0)
-            ret = (String[])v.toObjectArray();
+            ret = sortResolutions((String[])v.toObjectArray());
       }
       if (ret == null)
          ret = new String[]{"default resolution","320x240","640x480","1024x768","2048x1536"};
       return ret;
+   }
+   private static String[] sortResolutions(String[] res)
+   {
+      for (int i = res.length; --i >= 0;) {String[] sp = Convert.tokenizeString(res[i],'x'); res[i] = Convert.zeroPad(sp[0],5)+"x"+Convert.zeroPad(sp[1],5);}
+      Convert.qsort(res,0,res.length-1);
+      for (int i = res.length; --i >= 0;) {String[] sp = Convert.tokenizeString(res[i],'x'); res[i] = Convert.zeroUnpad(sp[0])+"x"+Convert.zeroUnpad(sp[1]);}
+      return res;
    }
 
    static native private String getNativeResolutions();

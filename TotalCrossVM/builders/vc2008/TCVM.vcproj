@@ -54,7 +54,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\util,..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;WIN32;NDEBUG;_WINDOWS;TC_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -259,7 +259,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -361,7 +361,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;_MSC_VER=1200;ENABLE_RAS"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -469,7 +469,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;ENABLE_TEST_SUITE;_CRT_SECURE_NO_WARNINGS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -659,7 +659,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				CommandLine="copy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\win32&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -680,7 +680,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\util,..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;WIN32;NDEBUG;_WINDOWS;TC_EXPORTS;_CRT_SECURE_NO_WARNINGS;ENABLE_DEMO"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -779,7 +779,7 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\util,..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\util,..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;ENABLE_DEMO;_MSC_VER=1200"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -885,7 +885,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;ENABLE_DEMO"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -988,7 +988,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;ENABLE_DEMO;_MSC_VER=1200"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
@@ -1098,7 +1098,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="1"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\util,..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;WIN32;NDEBUG;_WINDOWS;TC_EXPORTS;_CRT_SECURE_NO_WARNINGS;DISABLE_RAS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -1165,7 +1165,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/release/TotalCrossSDK/dist/vm/wince"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1197,12 +1197,14 @@
 				ExecutionBucket="7"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\src\tcvm,..\..\src\util,..\..\src\zlib;..\..\src\axtls"
-				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
+				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;NDEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200;_WINDOWS_"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				StructMemberAlignment="3"
+				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
+				FloatingPointModel="0"
 				PrecompiledHeaderFile="$(IntDir)\TCVM.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
@@ -1283,7 +1285,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				CommandLine="copy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\win32&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -1303,12 +1305,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="LITTLE_ENDIAN;TOTALCROSS;TC_EXPORTS;WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;DISABLE_RAS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				StructMemberAlignment="3"
+				FloatingPointModel="1"
 				PrecompiledHeaderFile="$(IntDir)\TCVM.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
@@ -1405,11 +1408,12 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls"
+				AdditionalIncludeDirectories="..\..\src\tcvm;..\..\src\util;..\..\src\zlib;..\..\src\axtls;..\..\src\nm"
 				PreprocessorDefinitions="TOTALCROSS;LITTLE_ENDIAN;TC_EXPORTS;_WIN32_WCE=$(CEVER);WINCE;$(CePlatform);ARM;_ARM_;UNDER_CE=$(CEVER);UNICODE;_UNICODE;DEBUG;_USRDLL;DISABLE_RAS;_MSC_VER=1200"
 				MinimalRebuild="true"
 				RuntimeLibrary="1"
 				StructMemberAlignment="3"
+				FloatingPointModel="0"
 				PrecompiledHeaderFile="$(IntDir)\TCVM.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
@@ -1473,7 +1477,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCUI.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;tcvm.dll|$(OutDir)|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
@@ -2007,6 +2011,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\nm\lang\Object.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\nm\lang\Reflection.c"
 					>
 				</File>
 				<File
@@ -2600,6 +2608,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="db"
+				>
+				<File
+					RelativePath="..\..\src\nm\db\NativeDB.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="ZLib"
@@ -3113,11 +3129,19 @@
 			Name="jpeg"
 			>
 			<File
+				RelativePath="..\..\src\jpeg\jaricom.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jcapimin.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\jpeg\jcapistd.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg\jcarith.c"
 				>
 			</File>
 			<File
@@ -3181,6 +3205,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jpeg\jdarith.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jdatadst.c"
 				>
 			</File>
@@ -3221,6 +3249,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jpeg\jdmerge.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jdphuff.c"
 				>
 			</File>
@@ -3237,7 +3269,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\jpeg\jfdctflt.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\jpeg\jfdctfst.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg\jfdctint.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg\jidctflt.c"
 				>
 			</File>
 			<File
@@ -3245,7 +3289,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\jpeg\jidctred.c"
+				RelativePath="..\..\src\jpeg\jidctint.c"
 				>
 			</File>
 			<File
@@ -3545,6 +3589,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\axtls\sha384.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\axtls\sha512.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\axtls\ssl.h"
 				>
 			</File>
@@ -3566,6 +3618,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\axtls\version.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\axtls\x509.c"
 				>
 			</File>
 		</Filter>
@@ -3604,6 +3660,14 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="sqlite"
+			>
+			<File
+				RelativePath="..\..\src\sqlite\sqlite3.c"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

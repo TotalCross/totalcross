@@ -21,25 +21,25 @@
 
 struct TContext
 {
-   Object thrownException;
+   TCObject thrownException;
    VoidPArray callStack;
    Int32Array  regI;  // start <= x < end
-   ObjectArray regO;
+   TCObjectArray regO;
    Value64Array reg64;
    Int32Array  regIStart, regIEnd;  // start <= x < end
-   ObjectArray regOStart, regOEnd;
+   TCObjectArray regOStart, regOEnd;
    Value64Array reg64Start, reg64End;
    // method stack
    VoidPArray callStackStart, callStackEnd;
    Code code;
    Heap heap;
    ThreadHandle thread; // the thread handle for this thread or null if its the main thread
-   Object threadObj;
+   TCObject threadObj;
    TNMParams nmp;
 
    // global variables that can be changed by the thread
    // tcexception.c
-   Object OutOfMemoryErrorObj;
+   TCObject OutOfMemoryErrorObj;
 
    // tcexception.c
    char exmsg[1024];
@@ -54,7 +54,7 @@ struct TContext
 
    // PalmFont_c.h
    UserFont lastUF;
-   Object lastFontObj;
+   TCObject lastFontObj;
 
    VoidP litebasePtr; // used by litebase
    VoidP sslPtr; // used by SSL
@@ -71,6 +71,9 @@ struct TContext
    bool fullDirty;
    int32 dirtyX1, dirtyY1, dirtyX2, dirtyY2;
 
+   // reflection
+   bool parametersInArray;
+
    // IMPORTANT: ALL IFDEFS MUST BE PLACED AT THE END, otherwise, other native libraries that 
    // use this header that do not define the same #defines, will have problems.
    #ifdef ENABLE_TEST_SUITE
@@ -85,13 +88,13 @@ struct TContext
    #endif
 };
 
-Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes); // if bigContextSize is false, use STARTING_xxx_SIZE/10
+Context newContext(ThreadHandle thread, TCObject threadObj, bool bigContextSizes); // if bigContextSize is false, use STARTING_xxx_SIZE/10
 void deleteContext(Context c, bool destroyThread);
 
 bool contextIncreaseRegI(Context c, int32** r);
-bool contextIncreaseRegO(Context c, Object** r);
+bool contextIncreaseRegO(Context c, TCObject** r);
 bool contextIncreaseReg64(Context c, Value64* r);
-bool contextIncreaseCallStack(Context c, VoidP** r);
+bool contextIncreaseCallStack(Context c);
 
 Context initContexts();
 void destroyContexts();

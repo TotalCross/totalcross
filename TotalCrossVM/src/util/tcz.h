@@ -14,16 +14,13 @@
 #ifndef TCZLIB_H
 #define TCZLIB_H
 
-#ifdef PALMOS
-#define __MACTYPES__ // don't redefine Byte
-#endif
 #include "../zlib/zlib.h"
 
-#define TCZ_VERSION 110
+#define TCZ_VERSION 200
 #define ATTR_HAS_MAINCLASS  1 // if false, it is a library-only module
 #define ATTR_HAS_MAINWINDOW 2
 #define ATTR_LIBRARY 4
-#define ATTR_NEW_FONT_SET 8
+//#define ATTR_NEW_FONT_SET 8
 #define ATTR_RESIZABLE_WINDOW 16
 #define ATTR_WINDOWFONT_DEFAULT 32
 #define ATTR_WINDOWSIZE_320X480 64

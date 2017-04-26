@@ -15,13 +15,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -38,7 +37,10 @@ public class Container extends Control
    byte borderStyle = BORDER_NONE;
    private int []fourColors = new int[4];
    private Vector childControls;
-   
+   private int pressColor=-1;
+   private PenListener pe;
+   private boolean cpressed;
+
    /** Sets the type of background of this Container. To disable the background, set the 
     * <code>transparentBackground</code> of the Control class to true. This field is used when
     * transparentBackground is set to false (default).
@@ -63,11 +65,20 @@ public class Container extends Control
    static public final byte BORDER_SIMPLE=5;
    /** used in the setBorderStyle method */
    static public final byte BORDER_TOP = 1;
+   /** used in the setBorderStyle method.
+    * @since TotalCross 2.0 */
+   static public final byte BORDER_ROUNDED = 6;
    
    /** used in the bckgroundStyle field */
    static public final int BACKGROUND_SOLID = 0;
    /** used in the backgroundStyle field */
    static public final int BACKGROUND_SHADED = 1;
+   /** used in the backgroundStyle field */
+   static public final int BACKGROUND_SHADED_INV = 3;
+   /** used in the backgroundStyle field. The bright color must be the fore color, and the darker color, the back color
+    * @since TotalCross 2.0 
+    */
+   static public final int BACKGROUND_CYLINDRIC_SHADED = 2;
    
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_NONE = 0;
@@ -75,6 +86,14 @@ public class Container extends Control
    public static final int TRANSITION_OPEN = 1;
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_CLOSE = 2;
+   /** Used when animating the exhibition of a container. */
+   public static final int TRANSITION_FADE = 3;
+   
+   
+   /** The color used in the border.
+    * @since TotalCross 2.0
+    */
+   public int borderColor = -1;
    
    /** Set the transition effect when this container appears on screen.
     * Defaults to Control.UPDATESCREEN_AT_ONCE, which means no transition effects.
@@ -84,6 +103,7 @@ public class Container extends Control
     * @see #TRANSITION_NONE
     * @see #TRANSITION_OPEN
     * @see #TRANSITION_CLOSE
+    * @SEE #TRANSITION_FADE
     * @see Window#swap(Container)
     * @see Window#popup()
     * @see Window#unpop()
@@ -91,6 +111,12 @@ public class Container extends Control
     * @since TotalCross 1.2
     */
    public int transitionEffect = TRANSITION_NONE; // guich@tc120_47
+   /**
+    * Defines the total transition time. Defaults to 1000 (1 second).
+    * 
+    * @since TotalCross 1.68
+    */
+   public static int TRANSITION_TIME = 500;
 
    static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
@@ -139,6 +165,45 @@ public class Container extends Control
       asContainer = this;
       focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
    }
+   
+   public void setPressColor(int color)
+   {
+      this.pressColor = color;
+      if (color == -1 && pe != null)
+      {
+         removePenListener(pe);
+         pe = null;
+         callListenersOnAllTargets = cpressed = false;
+      }
+      if (color != -1 && pe == null)
+      {
+         callListenersOnAllTargets = true;
+         addPenListener(pe = new PenListener()
+         {
+            public void penUp(PenEvent e)
+            {
+               if (e.type == PenEvent.PEN_UP && isEnabled() && !hadParentScrolled())
+               {
+                  setPressed(!cpressed);
+                  postPressedEvent();
+               }
+            }
+            public void penDown(PenEvent e) {}   
+            public void penDrag(DragEvent e) {}  
+            public void penDragStart(DragEvent e) {}   
+            public void penDragEnd(DragEvent e) {}
+         });
+      }
+   }
+   public void setPressed(boolean p)
+   {
+      cpressed = p;
+      Window.needsPaint = true;
+   }
+   public boolean isPressed()
+   {
+      return cpressed;
+   }
 
    /** The transition effect to apply in the next screen update.
     * After this effect is applied, the next effect is set to TRANSITION_NONE.
@@ -147,25 +212,97 @@ public class Container extends Control
     * @see #TRANSITION_NONE
     * @see #TRANSITION_OPEN
     * @see #TRANSITION_CLOSE
+    * @see #TRANSITION_FADE
     */
-   static void setNextTransitionEffect(int t)
+   public static void setNextTransitionEffect(int t)
    {
       nextTransitionEffect = t;
       if (t != TRANSITION_NONE)
-         transitionEffectChanged(t);
+         screen0 = MainWindow.getScreenShot();
    }
 
-   public static int getNextTransitionEffect()
-   {
-      int ret = nextTransitionEffect;
-      nextTransitionEffect = Container.TRANSITION_NONE;
-      return ret;
-   }
+   static Image screen0;
 
-   static void transitionEffectChanged(int t)
+   public static void applyTransitionEffect()
    {
+      int transitionEffect = nextTransitionEffect;
+      nextTransitionEffect = TRANSITION_NONE;
+      if (transitionEffect == -1)
+         transitionEffect = TRANSITION_NONE;
+
+      if (screen0 != null) // only when transitionEffect is not NONE
+      {
+         try
+         {
+            int ini0 = Vm.getTimeStamp();
+            Image screen1 = MainWindow.getScreenShot();
+            screen1.lockChanges();
+            Graphics g = MainWindow.mainWindowInstance.getGraphics();
+            
+            if (transitionEffect == TRANSITION_FADE)
+            {
+               int ini = Vm.getTimeStamp();
+               for (int i = 1; i <= 255; i++)
+               {
+                  screen1.alphaMask = (Vm.getTimeStamp() - ini) * 255 / TRANSITION_TIME; 
+                  if (screen1.alphaMask > 255) 
+                     break;
+                  g.drawImage(screen0, 0,0);
+                  g.drawImage(screen1, 0,0);
+                  updateScreen();
+                  Vm.sleep(1);
+               }
+            }
+            else
+            {
+               int w = totalcross.sys.Settings.screenWidth;
+               int h = totalcross.sys.Settings.screenHeight;
+               int remainingFrames = Math.min(w,h)/2;
+               int mx = w/2;
+               int my = h/2;
+               double incX=1,incY=1;
+               if (w > h)
+                  incX = (double)w/h;
+                else
+                  incY = (double)h/w;
+               int step=1;
+               boolean isClose = transitionEffect == TRANSITION_CLOSE;
+               Image s0 = isClose ? screen1 : screen0;
+               Image s1 = isClose ? screen0 : screen1;
+               boolean noDelay = Settings.platform.equals(Settings.WIN32); // the delay does not work well on win32
+               for (int i = isClose ? remainingFrames : 0; remainingFrames >= 0; i+=isClose?-step:step, remainingFrames -= step)
+               {
+                  int ini = Vm.getTimeStamp();
+                  g.clearClip();
+                  g.drawImage(s0,0,0);
+                  int minx = (int)(mx - i*incX);
+                  int miny = (int)(my - i*incY);
+                  int maxx = (int)(mx + i*incX);
+                  int maxy = (int)(my + i*incY);
+                  g.setClip(minx,miny,maxx-minx,maxy-miny);
+                  g.drawImage(s1,0,0);
+                  updateScreen();
+                  int frameElapsed = Vm.getTimeStamp()-ini;
+                  int totalElapsed = Vm.getTimeStamp()-ini0;
+                  int remainingTime = TRANSITION_TIME - totalElapsed;
+                  if (remainingTime <= 0)
+                     break;
+                  if (!noDelay && frameElapsed * remainingFrames < remainingTime) // on too fast computers, do a delay
+                  {
+                     Vm.sleep((remainingTime - remainingFrames * frameElapsed) / remainingFrames + 1);
+                     step = 1;
+                  }
+                  else
+                  {
+                     step = frameElapsed * remainingFrames / remainingTime;
+                  }
+               }                  
+            }
+         }
+         catch (Throwable e) {}
+         screen0 = null;
+      }
    }
-   native static void transitionEffectChanged4D(int t);
 
    /** Sets the insets value to match the given ones.
     * @since TotalCross 1.01
@@ -442,15 +579,11 @@ public class Container extends Control
    /** Sets if this container and all childrens can or not accept events */
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled, false))
       {
-         this.enabled = enabled;
-         onColorsChanged(false);
          for (Control child = children; child != null; child = child.next)
             child.setEnabled(enabled);
-         esce.update(this);
-         postEvent(esce);
-         Window.needsPaint = true; // now the controls have different l&f for disabled states
+         post();
       }
    }
 
@@ -473,24 +606,33 @@ public class Container extends Control
       for (Control child = children; child != null; child = child.next)
          if (child.visible) // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
          {
-            child.onPaint(child.getGraphics());
-            if (child.asContainer != null)
-               child.asContainer.paintChildren();
+            if (child.offscreen != null)
+               getGraphics().drawImage(child.offscreen,child.x,child.y);
+            else
+            {
+               child.onPaint(child.getGraphics());
+               if (child.asContainer != null)
+                  child.asContainer.paintChildren();
+            }
          }
    }
 
    /** Sets the border for this container. The insets are changed after this method is called.
+    * The BORDER_ROUNDED sets the background to transparent.
     * @see #BORDER_NONE
     * @see #BORDER_LOWERED
     * @see #BORDER_RAISED
     * @see #BORDER_SIMPLE
     * @see #BORDER_TOP
+    * @see #BORDER_ROUNDED
     */
    public void setBorderStyle(byte border) // guich@200final_16
    {
       int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setInsets(gap,gap,gap,gap);
       this.borderStyle = border;
+      if (border == BORDER_ROUNDED)
+         transparentBackground = true;
       onColorsChanged(false);
    }
 
@@ -517,41 +659,58 @@ public class Container extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP)
-         Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP && borderStyle != BORDER_ROUNDED)
+         Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
+   protected void fillBackground(Graphics g, int b)
+   {
+      switch (backgroundStyle)
+      {
+         case BACKGROUND_SOLID:
+            g.backColor = b;
+            g.fillRect(0,0,width,height);
+            break;
+         case BACKGROUND_SHADED:
+            g.fillShadedRect(0,0,width,height,true,false,foreColor,b,UIColors.shadeFactor);
+            break;
+         case BACKGROUND_SHADED_INV:
+            g.fillShadedRect(0,0,width,height,false,false,foreColor,b,UIColors.shadeFactor);
+            break;
+         case BACKGROUND_CYLINDRIC_SHADED:
+            g.drawCylindricShade(foreColor,b,0,0,width,height);
+            break;
+      }
+   }
+   
    /** Draws the border (if any). If you override this method, be sure to call
      * <code>super.onPaint(g);</code>, or the border will not be drawn.
      */
    public void onPaint(Graphics g)
    {
-      if (!transparentBackground && parent != null && (backColor != parent.backColor || parent.asWindow != null || alwaysEraseBackground)) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
-      {
-         switch (backgroundStyle)
-         {
-            case BACKGROUND_SOLID:
-               g.backColor = backColor;
-               g.fillRect(0,0,width,height);
-               break;
-            case BACKGROUND_SHADED:
-               g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
-               break;
-         }
-      }
+      int b = pressColor != -1 && cpressed ? pressColor : backColor;
+      if (drawTranslucentBackground(g, alphaValue))
+         ;
+      else
+      if (!transparentBackground && (parent != null && (b != parent.backColor || parent.asWindow != null || alwaysEraseBackground))) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
+         fillBackground(g, b);
       switch (borderStyle)
       {
          case BORDER_NONE:
             break;
 
          case BORDER_TOP:
-            g.foreColor = getForeColor();
+            g.foreColor = borderColor != -1 ? borderColor : getForeColor();
             g.drawRect(0,0,width,0);
             break;
             
          case BORDER_SIMPLE:
-            g.foreColor = getForeColor();
+            g.foreColor = borderColor != -1 ? borderColor : getForeColor();
             g.drawRect(0,0,width,height);
+            break;
+            
+         case BORDER_ROUNDED:
+            g.drawWindowBorder(0,0,width,height,0,0,borderColor != -1 ? borderColor : getForeColor(),b,b,b,2,false);
             break;
 
          default:
@@ -645,7 +804,7 @@ public class Container extends Control
     */
    public void getFocusableControls(Vector v) //kmeehl@tc100
    {
-      if (!visible || !enabled)
+      if (!visible || !isEnabled())
          return;
       Control child = children;
       for (int i = 0; i < numChildren; i++, child = child.next)
@@ -897,31 +1056,42 @@ public class Container extends Control
     */
    public Control moveFocusToNextEditable(Control control, boolean forward) // guich@tc125_26
    {
+      if (control.nextTabControl != null && changeTo(control.nextTabControl))
+         return control.nextTabControl;
+         
       Vector v = tabOrder;
       int idx = v.indexOf(control);
       int n = v.size();
-      if (idx >= 0 && n > 1)
+      if ((idx == -1 && n >= 0) || n > 1)
       {
+         if (idx == -1 && !forward) idx = n;
          for (int i = n-1; i >= 0; i--)
          {
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.enabled && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
-            {
-               c.requestFocus();
-               if (Settings.virtualKeyboard)
-               {
-                  if (c instanceof Edit)
-                     ((Edit)c).popupKCC();
-                  else
-                     ((MultiEdit)c).popupKCC();
-               }
+            if (changeTo(c))
                return c;
-            }
          }
       }
-      return null;
+      return parent != null ? parent.moveFocusToNextEditable(control, forward) : null;
+   }
+
+   private boolean changeTo(Control c)
+   {
+      if (c != this && c.isEnabled() && c.visible && (c instanceof Edit && ((Edit)c).editable) || (c instanceof MultiEdit && ((MultiEdit)c).editable)) // guich@tc100b4_12: also check for enabled/visible/editable - guich@tc120_49: skip ourself
+      {
+         c.requestFocus();
+         if (Settings.virtualKeyboard)
+         {
+            if (c instanceof Edit)
+               ((Edit)c).popupKCC();
+            else
+               ((MultiEdit)c).popupKCC();
+         }
+         return true;
+      }
+      return false;
    }
 
    /** Moves the focus to the next control, which can be an Edit, a MultiEdit, or another control type.
@@ -941,7 +1111,7 @@ public class Container extends Control
             if (forward && ++idx == n) idx = 0; else
             if (!forward && --idx < 0) idx = n-1;
             Control c = (Control)v.items[idx];
-            if (c != this && c.enabled && c.visible)
+            if (c != this && c.isEnabled() && c.visible)
             {
                c.requestFocus();
                return c;
@@ -961,5 +1131,12 @@ public class Container extends Control
          if (cc.asContainer != null)
             cc.asContainer.setFocusTraversable(b);
       }
+   }
+   
+   /** Called when this container has been swapped into the Window and the swap is done.
+    * @since TotalCross 2.0
+    */
+   public void onSwapFinished()
+   {
    }
 }

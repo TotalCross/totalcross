@@ -13,10 +13,11 @@
 
 package tc.tools.converter.tclass;
 
+import java.lang.reflect.Method;
 import totalcross.util.*;
 import tc.tools.converter.*;
 import totalcross.io.DataStreamLE;
-import totalcross.sys.Convert;
+import totalcross.sys.*;
 import tc.tools.converter.bb.*;
 import tc.tools.converter.ir.*;
 import tc.tools.converter.ir.Instruction.*;
@@ -241,12 +242,16 @@ public final class TCMethod implements TCConstants
       if (J2TC.inProhibitedList(className,false) && !htAlreadyChecked.exists(params))
       {
          htAlreadyChecked.put(params,"");
-         Class c4D;
+         Class<?> c4D;
          // checks if class java.xxx exists as a totalcross.xxx4D class
          String tcClassName = "totalcross"+className.substring(4);
          try
          {
-            c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+            int index = tcClassName.indexOf('$');
+            if (index < 0)
+               c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+            else
+               c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
          }
          catch (ClassNotFoundException e)
          {
@@ -256,14 +261,23 @@ public final class TCMethod implements TCConstants
             }
             catch (ClassNotFoundException ee)
             {
-               throw new InvalidClassException("Class '"+className+"' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."+beAware);
+            	tcClassName  = "jdkcompat" + className.substring(4);
+                try {
+					int index = tcClassName.indexOf('$');
+					if (index < 0)
+					   c4D = Class.forName(tcClassName+"4D"); // first try the 4D class
+					else
+					   c4D = Class.forName(tcClassName.substring(0, index) + "4D" + tcClassName.substring(index));
+				} catch (ClassNotFoundException e1) {
+		               throw new InvalidClassException("Class '"+className+"' is not available at the device! To see the available classes, see the Javadocs for totalcross.lang package."+beAware);
+				}
             }
          }
          // now checks if the method exists in the totalcross4D class
          boolean found = false;
          if (method.equals(GlobalConstantPool.CONSTRUCTOR_NAME)) // is this a constructor?
          {
-            java.lang.reflect.Constructor[] consts = c4D.getDeclaredConstructors();
+            java.lang.reflect.Constructor<?>[] consts = c4D.getDeclaredConstructors();
             for (int i = 0; i < consts.length; i++)
                if (areParametersCompatible(params,consts[i].getParameterTypes()))
                {
@@ -273,8 +287,13 @@ public final class TCMethod implements TCConstants
          }
          else
          {
-            java.lang.reflect.Method methods[] = c4D.getDeclaredMethods();
-            // lookahead to see if there are 4D/4B methods with this same name
+            Vector vector = new Vector(c4D.getMethods());
+            vector.addElements(c4D.getDeclaredMethods());
+            Object[] objects = vector.toObjectArray();
+            Method[] methods = new Method[objects.length];
+            
+            Vm.arrayCopy(objects, 0, methods, 0, objects.length);
+            // lookahead to see if there are 4D methods with this same name
             Hashtable ht = new Hashtable(methods.length);
             for (int i =0; i < methods.length; i++)
                ht.put(methods[i].getName(),"");
@@ -284,7 +303,7 @@ public final class TCMethod implements TCConstants
                if (name.endsWith("4D"))
                   name = name.substring(0,name.length()-2);
                else
-               if (name.endsWith("4B") || ht.exists(name+"4D"))
+               if (ht.exists(name+"4D"))
                   continue;
                if (name.equals(method) && areParametersCompatible(params, methods[i].getParameterTypes()))
                {
@@ -294,7 +313,9 @@ public final class TCMethod implements TCConstants
             }
          }
          if (!found)
+         {
             throw new InvalidClassException(toHumanReadable(className,method,params)+" is not available at the device! To find the available ones, see the Javadocs for "+java2totalcross(className)+" class."+(className.startsWith("java.lang") ? beAware : ""));
+         }
       }
    }
 
@@ -329,7 +350,7 @@ public final class TCMethod implements TCConstants
    }
 
    // jiargs is what the user is calling; args is from the method retrieved with introspection in the totalcross/xxx4D class
-   private static boolean areParametersCompatible(int[] jiargs, Class[] args)
+   private static boolean areParametersCompatible(int[] jiargs, Class<?>[] args)
    {
       int jiargsLen = jiargs.length-2;
       int argsLen = args == null ? 0 : args.length;
@@ -340,6 +361,9 @@ public final class TCMethod implements TCConstants
       {
          String name = args[i].getName();
          String js = GlobalConstantPool.getClassName(jiargs[i+2]);
+         if (name == "float")
+            name = "double";
+
          if (js.charAt(0) == '&') // primitive type?
             found &= name.equals(GlobalConstantPool.getPrimitiveJavaName(js));
          else
@@ -368,7 +392,7 @@ public final class TCMethod implements TCConstants
          {
             name = java2totalcross(name);
             js = java2totalcross(js);
-            found &= name.equals(js) || name.equals(js+"4D");
+            found &= name.equals(js) || name.equals(js+"4D") || Convert.replace(name, "4D", "").equals(js);
          }
       }
       return found;

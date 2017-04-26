@@ -19,39 +19,42 @@
 package totalcross;
 
 import totalcross.android.*;
-import totalcross.android.compat.*;
+import totalcross.android.Loader;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
-import android.view.animation.*;
-import android.view.animation.Animation.AnimationListener;
 import android.app.*;
+import android.app.ActivityManager.*;
 import android.content.*;
+import android.content.pm.*;
 import android.content.res.*;
 import android.graphics.*;
 import android.hardware.Camera;
 import android.location.*;
 import android.media.*;
+import android.net.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
 import android.telephony.gsm.*;
+import android.text.*;
 import android.util.*;
 import android.view.*;
-import android.view.View.OnKeyListener;
+import android.view.View.*;
 import android.view.inputmethod.*;
 import android.widget.*;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
+import java.util.*;
+import java.util.zip.*;
 
-final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
+final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener
 {
+   public static final boolean GENERATE_FONT = false;
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
-   public static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
-   static TCEventThread eventThread;
+   public static TCEventThread eventThread;
    static Rect rDirty = new Rect();
    static boolean showKeyCodes;
    static Hashtable<String,String> htPressedKeys = new Hashtable<String,String>(5);
@@ -60,12 +63,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean appPaused;
    static PhoneListener phoneListener;
    static boolean showingAlert;
-   static int deviceFontHeight; // guich@tc126_69
+   public static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
    static int appTitleH;
+   static boolean lastWasPenDown;
+   static ActivityManager activityManager;
+   static MemoryInfo mi = new MemoryInfo();
+   
+   public static String appPath;
    private static android.text.ClipboardManager clip;
    
-   static Handler viewhandler = new Handler()
+   public static Handler viewhandler = new Handler()
    {
       public void handleMessage(Message msg) 
       {
@@ -78,16 +86,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   instance.setKeepScreenOn(b.getBoolean("set"));
                   break;
                case GPSFUNC_START:
-                  gps = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
-                  gps.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, instance);
-                  gpsStatus = gps.getGpsStatus(null);
+                  GPSHelper.instance.startGps();
                   break;
                case GPSFUNC_STOP:
-                  if (gps != null)
-                  {
-                     gps.removeUpdates(instance);
-                     gps = null;
-                  }
+                  GPSHelper.instance.stopGps();
                   break;
                case CELLFUNC_START:
                   telephonyManager = (TelephonyManager) instance.getContext().getSystemService(Context.TELEPHONY_SERVICE);
@@ -130,16 +132,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       super(context);
       // read all apk names, before loading the vm
+      activityManager = (ActivityManager) context.getSystemService(Activity.ACTIVITY_SERVICE);
       if (!isSingleAPK)
-      {
-         loadAPK("/data/data/litebase.android/apkname.txt",false); // litebase
          loadAPK("/data/data/totalcross.android/apkname.txt",true); // vm
-      }
       loadAPK(appPath+"/apkname.txt",true);
+      Launcher4A.appPath = appPath;
       System.loadLibrary("tcvm");
       instance = this;
       loader = context;
       surfHolder = getHolder();
+      surfHolder.setFormat(PixelFormat.RGBA_8888);
       surfHolder.addCallback(this);
       setWillNotDraw(true);
       setWillNotCacheDrawing(true);
@@ -149,9 +151,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       Configuration config = getResources().getConfiguration();
       hardwareKeyboardIsVisible = config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO || config.keyboard == Configuration.KEYBOARD_QWERTY; // motorola titanium returns HARDKEYBOARDHIDDEN_YES but KEYBOARD_QWERTY. In soft inputs, it returns KEYBOARD_NOKEYS
       lastOrientation = getOrientation();
-      
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
+      if (GENERATE_FONT)
+      {
+         new totalcross.android.fontgen.FontGenerator("tahoma", new String[]{"","/aa","/rename:TCFont"});
+         exit(0);
+      }
    }
 
    public static Context getAppContext()
@@ -196,65 +202,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return wm.getDefaultDisplay().getOrientation();
    }
    
-   private static int firstOrientationSize;
+   private android.view.Surface lastSurface;
    
-   public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
+   public void surfaceChanged(final SurfaceHolder holder, int format, int w, int h) 
    {
-      if (h == 0 || w == 0) return;
+      if (h == 0 || w == 0 || appPaused) return;
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
-      //PixelFormat pf = new PixelFormat(); - android returns 5
-      //PixelFormat.getPixelFormatInfo(display.getPixelFormat(), pf); - which has 32bpp, but devices actually map to 16bpp (as from may/2012)
-      int screenHeight = display.getHeight();
-      // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
-      if (sScreenBitmap == null) 
-      {
-         int screenSize = Math.max(screenHeight, display.getWidth()), screenSize0 = screenSize;
-         if (Build.VERSION.SDK_INT >= 13)
-         {
-            // if first try, check if the value was already cached
-            int temp;
-            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) > 0)
-            {
-               screenSize = temp;
-               //AndroidUtils.debug("restoring size from cache: "+screenSize);
-               firstOrientationSize = 1;
-            }
-            else
-            {
-               // not yet cached. first try? store the size and cache it
-               if (firstOrientationSize == 0)
-               {
-                  //AndroidUtils.debug("@@@@ first: "+screenSize);
-                  firstOrientationSize = screenSize;
-                  sendOrientationChange(true);
-                  return;
-               }
-               //AndroidUtils.debug("@@@@ second: "+screenSize);
-               if (firstOrientationSize > screenSize)
-                  screenSize = firstOrientationSize;
-               AndroidUtils.setSavedScreenSize(screenSize);
-               sendOrientationChange(false); // restore orientation to what user wants
-            }
-         }
-         if (screenSize == 0)
-         {
-            screenSize = screenSize0;
-            AndroidUtils.debug("!!!! replacing wrong screen size 0 by "+screenSize);
-         }
-         sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565/*Bitmap.Config.ARGB_8888 - ALSO CHANGE ANDROID_BPP to 32 at android/gfx_ex.h */);
-         sScreenBitmap.eraseColor(0xFFFFFFFF);
-         nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
-         
-         // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
-         // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
-         // for this second chance and ignore the first one.
-
-         // 1. this is failing on Xoom! at first run, we get a black screen; have to exit and call the program again to work
-         // 2. occurs because the xoom has a bar at the bottom that has non-physic buttons, which appears even when the app is full screen
-         // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
-//         if (Loader.isFullScreen && h != screenHeight) return; 
-      }
+      int screenHeight = display.getHeight(); //Loader.mainView.getHeight();
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
@@ -264,51 +219,99 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       if (sipVisible) // sip changed?
       {
+         instance.nativeInitSize(null,-999,h); // signal vm that the keyboard will appear
          if (rotated) // close the sip if a rotation occurs
             setSIP(SIP_HIDE);
-         return;
+      }
+      else
+      {
+         instance.nativeInitSize(null,-999,0); // signal vm that the keyboard will hide
+         android.view.Surface surface = holder == null ? lastSurface : holder.getSurface();
+         if (w != lastScreenW || h != lastScreenH || surface != lastSurface)
+         {
+            lastSurface = surface;
+            lastScreenW = w;
+            lastScreenH = h;
+            sendScreenChangeEvent();
+         }
+      }
+   }
+
+   private void sendScreenChangeEvent()
+   {
+      if (appPaused) return;
+      eventThread.invokeInEventThread(false, new Runnable()
+      {
+         public void run()
+         {
+            nativeInitSize(lastSurface,lastScreenW,lastScreenH);
+            deviceFontHeight = (int)new TextView(getContext()).getTextSize();
+            rDirty.left = rDirty.top = 0;
+            rDirty.right = lastScreenW;
+            rDirty.bottom = lastScreenH;
+            DisplayMetrics metrics = getResources().getDisplayMetrics();
+            _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
+            sendCloseSIPEvent(); // makes first screen rotation work
+         }
+      });
+   }
+   
+   private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener
+   {
+      public boolean onScaleBegin(ScaleGestureDetector detector)
+      {
+         multiTouching = true;
+         if (lastWasPenDown) // if pressed a button and started multitouch, issue a penup event so button can be released
+         {
+            lastWasPenDown = false;
+            eventThread.pushEvent(PEN_UP, 0, 10000, 10000, 0, 0);
+         }
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 1, 0,0, 0, 0);
+         return true;
       }
       
-      if (w != lastScreenW || h != lastScreenH)
+      public void onScaleEnd(/*ScaleGestureDetector detector*/)
       {
-         lastScreenW = w;
-         lastScreenH = h;
-         eventThread.invokeInEventThread(false, new Runnable()
-         {
-            public void run()
-            {
-               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
-               rDirty.left = rDirty.top = 0;
-               rDirty.right = lastScreenW;
-               rDirty.bottom = lastScreenH;
-               Canvas canvas = surfHolder.lockCanvas(rDirty);
-               surfHolder.unlockCanvasAndPost(canvas);
-               DisplayMetrics metrics = getResources().getDisplayMetrics();
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
-            }
-         });
+         multiTouching = false;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 2, 0,0, 0, 0);
+      }
+
+      public boolean onScale(ScaleGestureDetector detector)
+      {
+         if (eventThread.hasEvent(MULTITOUCHEVENT_SCALE))
+            return false;
+         double scale = detector.getScaleFactor();
+         long l = Double.doubleToLongBits(scale);
+         int x = (int)(l >>> 32);
+         int y = (int)l;
+         eventThread.pushEvent(MULTITOUCHEVENT_SCALE, 0, x, y, 0, 0);
+         return true;
       }
    }
 
-   private void sendOrientationChange(boolean invert)
-   {
-      Message msg = loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putBoolean("invert",invert);
-      b.putInt("type",Loader.INVERT_ORIENTATION);
-      msg.setData(b);
-      loader.achandler.sendMessage(msg);
-   }
-
+   ScaleGestureDetector sgd;
+   ScaleListener scaleList;
+   boolean multiTouching;
+   
    public void surfaceCreated(SurfaceHolder holder)
    {
       // here is where everything starts
       if (eventThread == null)
+      {
          eventThread = new TCEventThread(this);
+         eventThread.popTime = 20;
+         sgd = new ScaleGestureDetector(loader, scaleList = new ScaleListener());
+      }
+      else
+      {
+         lastSurface = holder.getSurface();
+         sendScreenChangeEvent();
+      }
    }
 
    public void surfaceDestroyed(SurfaceHolder holder)
    {
+      instance.nativeInitSize(null,0,0); // signal vm that the surface will change
    }
 
    private static final int PEN_DOWN  = 1;
@@ -320,50 +323,86 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int APP_RESUMED = 7;
    private static final int SCREEN_CHANGED = 8;
    private static final int SIP_CLOSED = 9;
+   private static final int MULTITOUCHEVENT_SCALE = 10;
+   public static final int BARCODE_READ = 11;
+   public static final int TOKEN_RECEIVED = 12;//360;
+   public static final int MESSAGE_RECEIVED = 13;//361;
+
+   ///////////////////////// ANDROID 4.4 BACK KEY BUG ///////////////////////////////
+   // https://code.google.com/p/android/issues/detail?id=62306
+   // http://stackoverflow.com/questions/18581636/android-cannot-capture-backspace-delete-press-in-soft-keyboard/19980975#19980975
+
+   class MyInputConnection extends BaseInputConnection 
+   {
+      KeyEvent delUp = new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL);
+      KeyEvent delDn = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+      
+      public MyInputConnection(View targetView, boolean fullEditor) 
+      {
+         super(targetView, fullEditor);
+      }
+      
+      public boolean deleteSurroundingText(int beforeLength, int afterLength) 
+      {
+         for (int i =0; i < beforeLength; i++)
+         {
+            sendKeyEvent(delDn);
+            sendKeyEvent(delUp);
+         }
+         return true;
+      }
+
+      public boolean performPrivateCommand(java.lang.String action, android.os.Bundle data)
+      {
+         if (action != null && action.contains("hideSoftInputView")) // for LG's special "hide keyboard" key
+         {
+            sendCloseSIPEvent();
+            sipVisible = false;
+         }
+         return super.performPrivateCommand(action, data);
+      }
+      
+      public boolean reportFullscreenMode(boolean enabled)
+      {
+         return false;
+      }      
+   }
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
       //outAttrs.inputType = android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS; - this makes android's fullscreen keyboard appear in landscape
-      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
-
-      return new BaseInputConnection(this, false)
-      {
-         public boolean deleteSurroundingText(int leftLength, int rightLength)
-         {
-            for (int i =0; i < leftLength; i++)
-            {
-               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-               sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-            }
-
-            return true;
-         }
-      };
+      outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE | 0x2000000/*EditorInfo.IME_FLAG_NO_FULLSCREEN*/; // the NO_FULLSCREEN flag fixes the problem of keyboard not being shifted correctly in android >= 3.0
+      outAttrs.inputType = InputType.TYPE_NULL;
+      outAttrs.actionLabel = null;
+      return new MyInputConnection(this, false);
    }
+   //////////////////////////////////////////////////////////////////////////////////
    
    private static boolean altNext;
    private static boolean shiftNext;
    
    public boolean onKeyPreIme(int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event))
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK)
          return onKey(this, keyCode, event);
-      else
-         return false;
+      return false;
    }
    
    public static boolean hardwareKeyboardIsVisible;
    
-   
    protected void onSizeChanged(int w, int h, int oldw, int oldh)
    {
       super.onSizeChanged(w, h, oldw, oldh);
-      if (oldh < h)
-         updateScreen(0,0,w,h,TRANSITION_NONE);
    }
-
+   
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
+      if (Scanner4A.scanner != null && Scanner4A.scanner.checkScanner(event)) 
+         return false;
+      
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
       {
          if (!hardwareKeyboardIsVisible && sipVisible)
@@ -381,6 +420,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case KeyEvent.ACTION_DOWN:
             htPressedKeys.put(String.valueOf(keyCode), "");
             int state = event.getMetaState();
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) 
+            {
+               eventThread.pushEvent(KEY_PRESS, 0, keyCode == KeyEvent.KEYCODE_VOLUME_UP ? -1000 : -1001,0,event.getMetaState(),0);
+               return true;
+            }
             if (keyCode == KeyEvent.KEYCODE_ALT_LEFT || keyCode == KeyEvent.KEYCODE_ALT_RIGHT)
             {
                altNext = true;
@@ -433,171 +477,52 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public boolean onTouchEvent(MotionEvent event)
    {
+      if (sgd != null)
+         sgd.onTouchEvent(event);
       int type;
       int x = (int)event.getX();
       int y = (int)event.getY();
       
       switch (event.getAction())
       {
-         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; break;
-         case MotionEvent.ACTION_UP:   type = PEN_UP;   break;
+         case MotionEvent.ACTION_DOWN: type = PEN_DOWN; lastWasPenDown = true;  break;
+         case MotionEvent.ACTION_UP:   type = PEN_UP;   lastWasPenDown = false; break;
          case MotionEvent.ACTION_MOVE: type = PEN_DRAG; break;
          default: return false;
       }
+      if (multiTouching) // we do this to ignore all touch events until a definitive pen_up
+      {
+         if (type == PEN_UP)
+            scaleList.onScaleEnd();
+      }
+      else
       if (type != lastType || x != lastX || y != lastY) // skip identical events
       {
          lastType = type;
          lastX = x;
          lastY = y;
-         eventThread.pushEvent(type, 0, x, y, 0, 0);
+         if (type != PEN_DRAG || !eventThread.hasEvent(PEN_DRAG))         
+            eventThread.pushEvent(type, 0, x, y, 0, 0);
       }
       return true;
-   }
-
-   private static final int TRANSITION_NONE = 0;
-   private static final int TRANSITION_OPEN = 1;
-   private static final int TRANSITION_CLOSE = 2;
-   
-   static class ScreenView extends SurfaceView
-   {
-      public ScreenView(Context context)
-      {
-         super(context);
-         setWillNotDraw(false);
-         setWillNotCacheDrawing(true);
-      }
-      
-      public void draw(Canvas c)
-      {
-         c.drawBitmap(sScreenBitmap,0,0,null);
-      }
-   }
-   
-   static class AnimationThread implements Runnable,AnimationListener
-   {
-      Bitmap bm;
-      java.util.concurrent.CountDownLatch latch;
-      int trans;
-      ImageView newView;
-      ScreenView scrView;
-      
-      void startTransition(int trans)
-      {
-         this.trans = trans;
-         latch = new java.util.concurrent.CountDownLatch(1);
-         loader.runOnUiThread(this);
-         try {animt.latch.await();} catch (InterruptedException ie) {}
-      }
-      
-      public void run()
-      {
-         if (scrView == null)
-         {
-            ViewGroup vg = (ViewGroup)instance.getParent();
-            scrView = new ScreenView(instance.getContext());
-            newView = new ImageView(instance.getContext());
-            newView.setWillNotCacheDrawing(true);
-            newView.setVisibility(ViewGroup.INVISIBLE);
-            scrView.setVisibility(ViewGroup.INVISIBLE);
-            vg.addView(scrView);
-            vg.addView(newView);
-         }
-         // since our bitmap is greater than the screen, we have to create another one and copy only the visible part
-         if (bm == null || bm.getWidth() != lastScreenW || bm.getHeight() != lastScreenH)
-         {
-            bm = Bitmap.createBitmap(lastScreenW,lastScreenH, Bitmap.Config.RGB_565);
-            bm.eraseColor(0xFFFFFFFF);
-            newView.setImageBitmap(bm);
-         }
-         Animation anim;
-         if (trans == TRANSITION_OPEN)
-         {
-            new Canvas(bm).drawBitmap(sScreenBitmap,0,0,null);
-            newView.setImageBitmap(bm);
-            anim = new ScaleAnimation(0,1,0,1,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-         else // TRANSITION_CLOSE
-         {
-            anim = new ScaleAnimation(1,0,1,0,lastScreenW/2,lastScreenH/2);
-            anim.setDuration(500);
-            anim.setAnimationListener(this);
-
-            newView.setImageBitmap(bm);
-            newView.setVisibility(ViewGroup.VISIBLE);
-            scrView.setVisibility(ViewGroup.VISIBLE);
-            newView.startAnimation(anim);
-         }
-      }
-      
-      public void onAnimationEnd(Animation animation)
-      {
-         drawScreen();
-         newView.setVisibility(ViewGroup.INVISIBLE);
-         scrView.setVisibility(ViewGroup.INVISIBLE);
-         latch.countDown();
-      }
-
-      public void onAnimationRepeat(Animation animation) {}
-      public void onAnimationStart(Animation animation) {}
-   }
-   
-   static AnimationThread animt = new AnimationThread();
-   
-   static void drawScreen()
-   {
-      Canvas canvas = surfHolder.lockCanvas(rDirty);
-      if (canvas != null)
-      {
-         canvas.drawBitmap(sScreenBitmap, rDirty,rDirty, null);
-         surfHolder.unlockCanvasAndPost(canvas);
-      }
-   }
-
-   static void transitionEffectChanged(int type)
-   {
-      if (type == TRANSITION_CLOSE && sScreenBitmap != null && animt != null && animt.bm != null)
-         new Canvas(animt.bm).drawBitmap(sScreenBitmap,0,0,null);
-   }
-   
-   static void updateScreen(int dirtyX1, int dirtyY1, int dirtyX2, int dirtyY2, int transitionEffect)
-   {
-      if (!appPaused)
-      try
-      {
-         //long ini = System.currentTimeMillis();
-         if (sScreenBitmap == null || camera != null)
-            return;
-         
-         switch (transitionEffect)
-         {
-            case TRANSITION_CLOSE:
-            case TRANSITION_OPEN:
-               animt.startTransition(transitionEffect);
-               // no break!
-            case TRANSITION_NONE:
-               rDirty.left = dirtyX1; rDirty.top = dirtyY1; rDirty.right = dirtyX2; rDirty.bottom = dirtyY2;
-               drawScreen();
-               break;
-         }
-         //int ela = (int)(System.currentTimeMillis() - ini);
-         //AndroidUtils.debug((1000/ela) + " fps "+rDirty);
-      }
-      catch (Throwable t)
-      {
-         AndroidUtils.debug(Log.getStackTraceString(t));
-      }
    }
 
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
    private final static int SOFT_EXIT = 0x40000000;
+   private final static int SOFT_UNEXIT = 0x40000001;
    static void exit(int ret)
    {
+      if (ret == SOFT_UNEXIT)
+      {
+         AndroidUtils.debug("soft unexit");
+         Intent myStarterIntent = new Intent(loader, Loader.class);
+         myStarterIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+         loader.startActivity(myStarterIntent);         
+         return;
+      }
+      else
       if (ret == SOFT_EXIT)
       {
          Intent i = new Intent(Intent.ACTION_MAIN);
@@ -606,8 +531,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
       else
       {
-         eventThread.running = false;
+         if (eventThread != null) eventThread.running = false;
          loader.finish();
+         //if (!loader.isSingleApk())
+            System.exit(3);
       }
       canQuit = true;
    }
@@ -615,14 +542,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static void stopVM()
    {
       restoreSound();
-      if (gps != null) // stop the gps if still running
-      {
-         Message msg = viewhandler.obtainMessage();
-         Bundle b = new Bundle();
-         b.putInt("type", GPSFUNC_STOP);
-         msg.setData(b);
-         viewhandler.sendMessage(msg);
-      }
+      GPSHelper.instance.sendStopGps();
       if (phoneListener != null)
       {
          Message msg = viewhandler.obtainMessage();
@@ -638,11 +558,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean eventIsAvailable()
    {
+      if (appPaused)
+         try {Thread.sleep(250);} catch (Exception e) {}
       return eventThread.eventAvailable();
    }
    
    public static void pumpEvents()
    {
+      if (appPaused)
+         try {Thread.sleep(250);} catch (Exception e) {}
       eventThread.pumpEvents();
    }
    
@@ -660,12 +584,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void onClick(DialogInterface dialoginterface, int i) 
             {
-               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
+//               updateScreen(0,0,instance.getWidth(),instance.getHeight(), TRANSITION_NONE);
                showingAlert = false;
             }
          })
          .show();
       }});
+   }
+
+
+   static void setOrientation(int orientation)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type",Loader.ORIENTATION);
+      b.putInt("orientation", orientation);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
    }
    
    static void setDeviceTitle(String title)
@@ -678,7 +613,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName, int stillQuality, int width, int height)
+   static void showCamera(String fileName, int stillQuality, int width, int height, boolean allowRotation, int cameraType)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
@@ -686,6 +621,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       b.putInt("showCamera.quality", stillQuality);
       b.putInt("showCamera.width",width);
       b.putInt("showCamera.height",height);
+      b.putBoolean("showCamera.allowRotation", allowRotation);
+      b.putInt("showCamera.cameraType", cameraType);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
@@ -693,7 +630,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeSetOffcreenBitmap(Bitmap bmp);
+   public native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -736,6 +673,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    public SipClosedReceiver siprecv = new SipClosedReceiver();
    private SipClosedThread sipthread = new SipClosedThread();
+
+   private static void showAds(boolean show)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type", Loader.ADS_FUNC);
+      b.putBoolean("show", show);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
+   }
    
    public static void setSIP(int sipOption)
    {
@@ -744,6 +691,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          case SIP_HIDE:
             sipVisible = false;
+            if (Loader.adView != null)
+               showAds(true);
             if (Loader.isFullScreen)
                setLoaderFullScreen(true);
             else
@@ -753,6 +702,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          case SIP_TOP:
          case SIP_BOTTOM:
             sipVisible = true;
+            if (Loader.adView != null)
+               showAds(false);
             if (Loader.isFullScreen)
                setLoaderFullScreen(false);
             else
@@ -807,8 +758,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int GET_REMAINING_BATTERY = 4;
    private static final int IS_KEY_DOWN    = 5;
    private static final int TURN_SCREEN_ON = 6;
-   private static final int GPSFUNC_START = 7;
-   private static final int GPSFUNC_STOP = 8;
+   public static final int GPSFUNC_STOP = 8;
+   public static final int GPSFUNC_START = 7;
    private static final int GPSFUNC_GETDATA = 9;
    private static final int CELLFUNC_START = 10;
    private static final int CELLFUNC_STOP = 11;
@@ -955,6 +906,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static int vmExec(String command, String args, int launchCode, boolean wait)
    {
+      if (command != null && command.contains("/sdcard"))
+         command = replaceSDcard(command);
+      if (args != null && args.contains("/sdcard"))
+         args = replaceSDcard(args);
+
+      if (command.equals("bugreport"))
+         return createBugreport() ? 1 : 0;
+      if (command.equals("viewer"))
+      {
+         if (args == null)
+            return -1;
+         String argl = args.toLowerCase();
+         if ((AndroidUtils.isImage(argl) || argl.endsWith(".pdf")) && !new java.io.File(args).exists())
+            return -2;
+      }
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putString("command", command);
@@ -967,69 +933,187 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return 0;
    }
    
-   public static String getSDCardPath()
+   private static String replaceSDcard(String args)
    {
-      java.io.File sd = Environment.getExternalStorageDirectory();
-      return sd.canWrite() ? sd.toString() : null;
+      int idx = args.indexOf("/sdcard");
+      if (idx != -1 && idx < args.length()-1)
+      {
+         char m1 = args.charAt(idx+7);
+         if ('0' <= m1 && m1 <= '9')
+         {
+            String sd = Launcher4A.getSDCardPath(m1 - '0');
+            args = args.substring(0,idx) + sd + args.substring(idx+8);
+            AndroidUtils.debug("changing path to "+args);
+         }
+      }
+      return args;
    }
-   
+
+   static boolean shownSD[] = new boolean[10];
+   public static String getSDCardPath(int i)
+   {
+      try
+      {
+         Method getExternalFilesDir = Context.class.getMethod("getExternalFilesDirs",  new Class[] { String.class } );
+         File[] ff = (File[])getExternalFilesDir.invoke(loader, new Object[]{null});
+         if (ff != null)
+         {
+            if (i < 0 || i >= ff.length)
+               return null;
+            File f = ff[i];
+            if (!f.canRead())
+            {
+               try {if (!shownSD[i]) AndroidUtils.debug("/sdcard"+i+": "+f+" (cant read)"); shownSD[i] = true;} catch (Exception e) {}
+               return null;
+            }
+            String ret = f.toString();
+            if (ret.contains("/Android/data"))
+               ret = ret.substring(0,ret.indexOf("/Android/data"));
+            try {if (!shownSD[i]) AndroidUtils.debug("/sdcard"+i+": "+ret+" (valid)"); shownSD[i] = true;} catch (Exception e) {}
+            return ret;
+         }
+      }
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+      }      
+      File f = Environment.getExternalStorageDirectory();
+      return f != null && f.canRead() ? f.toString() : null;
+   }
+
    // gps stuff
-   private static LocationManager gps;
-   private static GpsStatus gpsStatus;
-   private static String lastGps = "*";
-   public static String gpsFunc(int what)
+   public static int gpsPrecision;
+   
+   public static String gpsFunc(int what, int opc)
    {
       switch (what)
       {
          case GPSFUNC_GETDATA:
-            return gps != null && gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? lastGps : null;
+            return GPSHelper.instance.gpsGetData();
          case GPSFUNC_START:
-            lastGps = "*";
+            gpsPrecision = opc;
+            return GPSHelper.instance.gpsTurn(true);
          case GPSFUNC_STOP:
-            Message msg = viewhandler.obtainMessage();
-            Bundle b = new Bundle();
-            b.putInt("type", what);
-            msg.setData(b);
-            viewhandler.sendMessage(msg);
-            if (what == GPSFUNC_START)
-            {
-               while (gps == null)
-                  try {Thread.sleep(100);} catch (Exception e) {}
-               return gps.isProviderEnabled(LocationManager.GPS_PROVIDER) ? "*" : null;
-            }
-            break;
+            return GPSHelper.instance.gpsTurn(false);
       }
       return null;
    }
 
-   public void onLocationChanged(Location loc)
+   private static double[] getLatLon(String address) throws IOException
    {
-      String lat = Double.toString(loc.getLatitude()); //flsobral@tc126_57: Decimal separator might be platform dependent when using Location.convert with Location.FORMAT_DEGREES.
-      String lon = Double.toString(loc.getLongitude());
-      
-      Calendar fix = new GregorianCalendar(TimeZone.getTimeZone("GMT")); //flsobral@tc126_57: Date is deprecated, and apparently bugged for some devices. Replaced with Calendar.
-      fix.setTimeInMillis(loc.getTime());
-      int satellites = gps.getGpsStatus(gpsStatus).getMaxSatellites();
-      String sat = satellites < 255 && satellites > 0 ? String.valueOf(satellites) : "";
-      String vel = loc.hasSpeed() && loc.getSpeed() != 0d ? String.valueOf(loc.getSpeed())   : "";
-      String dir = loc.hasBearing() ? String.valueOf(loc.getBearing()) : "";
-      String sfix = fix.get(Calendar.YEAR)+"/"+(fix.get(Calendar.MONTH)+1)+"/"+fix.get(Calendar.DAY_OF_MONTH)+" "+fix.get(Calendar.HOUR_OF_DAY)+":"+fix.get(Calendar.MINUTE)+":"+fix.get(Calendar.SECOND);
-      float pdop = loc.hasAccuracy() ? loc.getAccuracy() : 0; // guich@tc126_66
-      lastGps = lat+";"+lon+";"+sfix+";"+sat+";"+vel+";"+dir+";"+pdop+";";
+      if (address.equals("")) // last known location?
+      {
+         // first, use the location manager
+         LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+         List<String> pros = loc.getProviders(true);
+         Location position = null;
+         for (String p : pros)
+         {
+            position = loc.getLastKnownLocation(p);
+            if (position != null)
+               return new double[]{position.getLatitude(),position.getLongitude()};
+         }
+      }
+      else
+      if (address.startsWith("@"))
+      {
+         String[] st = address.substring(1).split(",");
+         return new double[]{Double.parseDouble(st[0]),Double.parseDouble(st[1])};
+      }
+      else
+      {
+         return getGeocode(address);
+      }
+      return null;
+   }
+   
+   private static double[] getGeocode(String address)
+   {
+      try
+      {
+         // connect to map web service
+         StringBuilder urlString = new StringBuilder(128).
+         append("http://maps.googleapis.com/maps/api/geocode/xml?address=").append(address.replace("  "," ").replace(' ','+')).append("&sensor=false");
+         //AndroidUtils.debug(urlString.toString());
+         HttpURLConnection urlConnection = (HttpURLConnection) new URL(urlString.toString()).openConnection();
+         urlConnection.connect();
+         byte[] bytes = AndroidUtils.readFully(urlConnection.getInputStream());
+         String s = new String(bytes).toLowerCase();
+         //AndroidUtils.debug(s);
+         if (s.contains("<location_type>approximate</location_type>"))
+            return null;
+         int idx1 = s.indexOf("<lat>"), idx2 = s.indexOf("</lat>",idx1);
+         int idx3 = s.indexOf("<lng>"), idx4 = s.indexOf("</lng>",idx1);
+         if (idx1 == -1 || idx2 == -1 || idx3 == -1 || idx4 == -1)
+            return null;
+         String lat = s.substring(idx1+5,idx2);
+         String lon = s.substring(idx3+5,idx4);
+         return new double[]{Double.parseDouble(lat),Double.parseDouble(lon)};
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         return null;
+      }
    }
 
-   public void onProviderDisabled(String provider)
+   private static boolean isCallable(Intent intent) 
    {
+      return loader.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
    }
-
-   public void onProviderEnabled(String provider)
+   
+   public static int showRoute(String addressI, String addressF, String coords, int flags) throws IOException
    {
-   }
+      boolean tryAgain = false;
+      int tryAgainCount = 0;
+      do
+      {
+         try
+         {
+            if ((flags & Loader.USE_WAZE) != 0 && !isCallable(new Intent( Intent.ACTION_VIEW, Uri.parse("waze://?ll=0,0&navigate=yes") )))
+               return -2;
 
-   public void onStatusChanged(String provider, int status, Bundle extras)
-   {
+            AndroidUtils.debug("addrs: "+addressI+", "+addressF);
+            double[] llI = getLatLon(addressI);
+            double[] llF = addressF == null ? new double[]{0,0} : getLatLon(addressF);
+            if (llI != null && llF != null)
+            {
+               AndroidUtils.debug(llI[0]+","+llI[1]+" - "+llF[0]+","+llF[1]);
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.ROUTE);
+               b.putDouble("latI", llI[0]);
+               b.putDouble("lonI", llI[1]);
+               b.putDouble("latF", llF[0]);
+               b.putDouble("lonF", llF[1]);
+               b.putString("coord", coords);
+               b.putInt("flags", flags);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return 0;
+            }
+            else
+               throw new Exception(tryAgainCount+" parse response for address"); // make it try again
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e, false);
+            String msg = e.getMessage();
+            tryAgain = msg != null && msg.indexOf("parse response") >= 0 && ++tryAgainCount <= 5; // Unable to parse response from server
+            if (tryAgain)
+            {
+               try {Thread.sleep(500);} catch (Exception ee) {}
+               AndroidUtils.debug("Internet out of range. Trying again to get location ("+tryAgainCount+" of 5)");
+            }
+         }
+      } while (tryAgain);
+      return -1;
    }
-
+   
    public static boolean showingMap;
    public static boolean showGoogleMaps(String address, boolean showSatellite)
    {
@@ -1039,61 +1123,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       {
          try
          {
-            double lat=0,lon=0;
-            boolean latlonOk = false;
-            if (address.equals("")) // last known location?
-            {
-               // first, use the location manager
-               LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
-               List<String> pros = loc.getProviders(true);
-               Location position = null;
-               for (String p : pros)
-               {
-                  position = loc.getLastKnownLocation(p);
-                  //AndroidUtils.debug("Provider: "+p+"  "+position);
-                  if (position != null)
-                  {
-                     lat = position.getLatitude();
-                     lon = position.getLongitude();
-                     latlonOk = true;
-                     break;
-                  }
-               }
-            }
-            else
-            if (address.startsWith("@"))
-            {
-               StringTokenizer st = new StringTokenizer(address.substring(1),",",false);
-               lat = Double.parseDouble(st.nextToken());
-               lon = Double.parseDouble(st.nextToken());
-               latlonOk = true;
-            }
-            else
-            {         
-               Geocoder g = new Geocoder(instance.getContext());
-               List<Address> al = g.getFromLocationName(address, 1);
-               if (al != null && al.size() > 0)
-               {
-                  Address a = al.get(0);
-                  if (a.hasLatitude() && a.hasLongitude())
-                  {
-                     lat = a.getLatitude();
-                     lon = a.getLongitude();
-                     latlonOk = true;
-                  }
-               }
-               if (!latlonOk)
-                  throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
-            }
-            if (latlonOk)
+            if (address.startsWith("***")) // MapItems?
             {
                // call the loader
                showingMap = true;
                Message msg = loader.achandler.obtainMessage();
                Bundle b = new Bundle();
-               b.putInt("type", Loader.MAP);
-               b.putDouble("lat", lat);
-               b.putDouble("lon", lon);
+               b.putInt("type", Loader.MAPITEMS);
+               b.putString("items", address.substring(3));
                b.putBoolean("sat", showSatellite);
                msg.setData(b);
                loader.achandler.sendMessage(msg);
@@ -1101,6 +1138,25 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                   try {Thread.sleep(400);} catch (Exception e) {}
                return true;
             }
+               
+            double [] ll = getLatLon(address);
+            if (ll != null)
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAP);
+               b.putDouble("lat", ll[0]);
+               b.putDouble("lon", ll[1]);
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+            else throw new Exception(tryAgainCount+" parse response for address "+address); // make it try again
          }
          catch (Exception e)
          {
@@ -1166,16 +1222,18 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static void appPaused()
    {
       appPaused = true;
+      instance.nativeInitSize(null,-998,0); // signal vm to delete the textures while the context is valid
       if (eventThread != null)
       {
          setSIP(SIP_HIDE);
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
       }
-   }
+   }   
    
    public static void appResumed()
    {
       appPaused = false;
+      instance.nativeInitSize(null,-997,0); // signal vm to invalidate the textures
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
    }
@@ -1187,7 +1245,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          StringBuffer sb = new StringBuffer(32);
          Camera camera = Camera.open();
          Camera.Parameters parameters=camera.getParameters();
-         List<Camera.Size> sizes = Level5.getInstance().getSupportedPictureSizes(parameters);
+         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
          if (sizes == null)
             return null;
          for (Camera.Size ss: sizes)
@@ -1294,7 +1352,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                zis.close();
                sis.close();
                // now we open the file again, with random access, and search for the filenames to get the correct offset to them
-               byte[] buf = new byte[Math.max(1024,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
+               byte[] buf = new byte[Math.max(4096,sis.maxLength*2)]; // we use a bigger buffer to avoid having a tcz name cut into 2 parts
                RandomAccessFile raf = new RandomAccessFile(apk,"r");
                for (int i = base, n = tczs.size(); i < n; i++)
                {
@@ -1310,7 +1368,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      if (realOfs == -1) // if not found, double the read buffer and try again
                      {
                         if (--j == 0)
+                        {
+                           raf.close();
                            throw new RuntimeException("Error: cannot find real offset in APK for "+a.name);
+                        }
                         buf = new byte[buf.length*2];
                         AndroidUtils.debug("read from "+pos+" to "+(pos+buf.length)+" but not found. doubling buffer to "+buf.length+"!");
                      }
@@ -1403,5 +1464,231 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       for (int i = 0, n = tczs.size(); i < n; i++)
          if (tczs.get(i).raf != lastRAF)
             try {(lastRAF = tczs.get(i).raf).close();} catch (Exception e) {}
+   }
+   
+   public static boolean callingZXing;
+   public static String zxingResult;
+   public static String zxing(String mode)
+   {
+      String text = null;
+      try 
+      {
+         if (mode == null) mode = "";
+         zxingResult = null;
+         callingZXing = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("zxing.mode", mode);
+         b.putInt("type",Loader.ZXING_SCAN);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingZXing)
+            try {Thread.sleep(50);} catch (Exception e) {}
+         return zxingResult;
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION"; // note: any tries to get the exception here will halt the vm (tested in sony ericsson xperia x1)
+      }
+      return text;
+   }
+
+   public static boolean callingSound;
+   public static String soundResult;
+   public static String soundToText(String params)
+   {
+      String text = null;
+      try 
+      {
+         if (params == null) params = "";
+         soundResult = null;
+         callingSound = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("title", params);
+         b.putInt("type",Loader.TOTEXT);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingSound)
+            try {Thread.sleep(5);} catch (Exception e) {}
+         return soundResult;
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION";
+      }
+      return text;
+   }
+
+   public static void soundFromText(String text)
+   {
+      try 
+      {
+         if (text == null) text = "";
+         soundResult = null;
+         callingSound = true;
+         Message msg = loader.achandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putString("text", text);
+         b.putInt("type",Loader.FROMTEXT);
+         msg.setData(b);
+         loader.achandler.sendMessage(msg);
+         while (callingSound)
+            try {Thread.sleep(5);} catch (Exception e) {}
+      } 
+      catch (Throwable e) 
+      {
+         e.printStackTrace();
+         text = "***EXCEPTION";
+      }
+   }
+
+   public static int getFreeMemory()
+   {
+      activityManager.getMemoryInfo(mi);
+      return mi.availMem > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) mi.availMem;
+   }
+   ///////////////// crash controller //////////////////////
+   
+   static boolean createBugreport() // called by MainWindow using Vm.exec 
+   {
+      boolean containsUsefulInformation = false;
+      long l2 = 0;
+      try 
+      {
+         // generate the bugreport
+         try {new File("/sdcard/IssueReport").mkdirs();} catch (Exception ee) {}
+         String bugreportfn = "/sdcard/IssueReport/bugreport"+((int)(Math.random()*10000))+".txt";
+         String[] commands =
+            {
+               "logcat -v threadtime -d TotalCross:I DEBUG:I *:S >"+bugreportfn+" \n",
+            };
+         java.lang.Process p = Runtime.getRuntime().exec("/system/bin/sh -");
+         DataOutputStream os = new DataOutputStream(p.getOutputStream());
+         for (String tmpCmd : commands) 
+            os.writeBytes(tmpCmd);
+         File f = new File(bugreportfn); // takes 33 seconds on a s3 mini
+         while (true)
+         {
+            long l1 = f.length();
+            Thread.sleep(250);
+            l2 = f.length();
+            if (l1 == l2)
+               break;
+         }
+         if (l2 <= 512)   // ignore small reports
+         {
+            f.delete();
+         }
+         else
+         {
+            // zip the bugreport
+            final String bugreportZip = "/sdcard/IssueReport/bugreport.zip";
+            FileOutputStream fout = new FileOutputStream(bugreportZip);
+            ZipOutputStream zout = new ZipOutputStream(fout);
+            File ff = new File(bugreportfn);
+            FileInputStream fin = new FileInputStream(ff);
+            zout.putNextEntry(new ZipEntry("bugreport.txt"));
+            byte[] buf = new byte[8192];
+            for (int n; (n = fin.read(buf)) > 0;)
+            {
+               if (!containsUsefulInformation)
+                  containsUsefulInformation = containsUsefulInformation(new String(buf,0,n));
+               zout.write(buf,0,n);
+            }
+            zout.closeEntry();
+            zout.close();
+            fout.close();
+            fin.close();
+            ff.delete();
+            if (!containsUsefulInformation)
+               new File(bugreportZip).delete();
+         }
+      }
+      catch (Exception e) 
+      {
+         AndroidUtils.handleException(e,false);
+      }
+      return containsUsefulInformation; // will be false if file is small
+   }
+
+   private static boolean containsUsefulInformation(String s)
+   {
+      s = s.toLowerCase();
+      if (s.indexOf("totalcross") >= 0)
+         return true;
+      // TODO see if the tests below won't discard useful information
+//      if (s.indexOf(">>> totalcross") >= 0)
+//         return true;
+//      if (s.indexOf("OutOfMemoryError") != -1 || s.indexOf("(tns") != -1 || s.indexOf("(tnS_") != -1)
+//         return true;
+//      if (s.indexOf("fontDestroy") != -1 || s.indexOf("Unhandled exception") != -1)
+//         return true;
+//      if (s.indexOf("#00") >= 0)
+//      {            
+//         if (s.indexOf("(dlfree)") != -1)
+//            return true;
+//         if (s.matches(".*(\\(strcmp\\))$")) // #00  pc 0000e108  /system/lib/libc.so (strcmp)
+//            return true;
+//      }
+      return false;
+   }
+
+   private static SoundPool player;
+   private static String lastSound;
+   private static int lastSoundID;
+   
+   public static void soundPlay(String filename)
+   {
+      if (player == null)
+         player = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+      if (!filename.equals(lastSound))
+      {
+         if (lastSound != null) player.unload(lastSoundID);
+         lastSound = filename;
+         lastSoundID =  player.load(filename, 1);
+      }
+      AudioManager audio = (AudioManager) loader.getSystemService(Context.AUDIO_SERVICE);
+      int ring = audio.getRingerMode();
+      if (ring == AudioManager.RINGER_MODE_NORMAL) // 4.4 does not returns correct values for volume methods
+      {
+         int volumeLevel = audio.getStreamVolume(AudioManager.STREAM_SYSTEM);
+         int maxVolume   = audio.getStreamMaxVolume(AudioManager.STREAM_SYSTEM);
+         float volume    = (float)volumeLevel/maxVolume;
+         for (int i = 0; lastSoundID > 0 && player.play(lastSoundID, volume, volume, 0, 0, 1.0f) == 0 && i++ < 10;)
+            try {Thread.sleep(100);} catch (Exception e) {}
+      }
+  }
+   
+//   int getHeightD(int size)
+//   void configureD(String id);
+//   void setSizeD(int s);
+//   void setPositionD(int p);
+//   void setVisibleD(boolean b)
+//   boolean isVisibleD();
+   
+   public static final int GET_WH       = 1;
+   public static final int CONFIGURE    = 2;
+   public static final int SET_SIZE     = 3;
+   public static final int SET_POSITION = 4;
+   public static final int SET_VISIBLE  = 5;
+   public static final int IS_VISIBLE   = 6;
+   
+   public static int adsRet = -1;
+   public static int adsFunc(int func, int i, String s)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type",Loader.ADS_FUNC);
+      b.putInt("func", func);
+      b.putInt("int", i);
+      b.putString("str", s);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
+      while (adsRet == -1)
+         try {Thread.sleep(20);} catch (Exception e) {};
+      return adsRet;
    }
 }

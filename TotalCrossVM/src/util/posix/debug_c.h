@@ -12,6 +12,7 @@
 
 
 // Debug
+#include<unistd.h>
 
 static FILE* fdebug;
 
@@ -38,8 +39,8 @@ static void privateDestroyDebug()
 
 static bool privateDebug(char* str)
 {
+    bool err = true;
    static char debugPath[MAX_PATHNAME];
-   bool err = true;
    if (!fdebug)
    {
       xstrprintf(debugPath, "%s/DebugConsole.txt", appPath);
@@ -60,7 +61,7 @@ static bool privateDebug(char* str)
          fsync(fileno(fdebug));
       }
    }
-   return err;
+    return err;
 }
 
 // Alert

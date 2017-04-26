@@ -12,6 +12,14 @@
 #ifndef CLASS_H
 #define CLASS_H
 
+#include "../tcvm/tcapi.h"
+#include "xtypes.h"
+#include "mem.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** IMPORTANT: there's a main difference between the XXX and XXXInfo structures:
  * the XXXInfo are PACKED at 2 bytes, which make it use less memory main memory,
  * but it makes the C compiled code bigger and slower. Due to this, we decided to
@@ -47,14 +55,15 @@ typedef struct
    uint16 isFinal        : 1;
    uint16 isNative       : 1;
    uint16 isAbstract     : 1;
-   uint16 __available    : 9; // prefer to fill the gap to prevent structure size optimization
+   uint16 isSynchronized : 1;
+   uint16 __available    : 8; // prefer to fill the gap to prevent structure size optimization
 } __attribute_packed__ MethodFlags;
 
 /// Flags for a Java field
 typedef struct
 {
    uint16 isArray        : 1;
-   uint16 type           : 4; // the Type, ranging from Type_Null to Type_Oject
+   uint16 type           : 4; // the Type, ranging from Type_Null to Type_Object
    uint16 isPublic       : 1;
    uint16 isPrivate      : 1;
    uint16 isProtected    : 1;
@@ -62,7 +71,8 @@ typedef struct
    uint16 isVolatile     : 1;
    uint16 isTransient    : 1;
    uint16 isFinal        : 1;
-   uint16 __available    : 4; // prefer to fill the gap to prevent structure size optimization
+   uint16 isInherited    : 1;
+   uint16 __available    : 3; // prefer to fill the gap to prevent structure size optimization
 } __attribute_packed__ FieldFlags;
 
 #pragma pack()  // restore structure member alignment to default
@@ -92,6 +102,7 @@ typedef enum // this order can't be changed, it impacts the compiler and the Obj
    Type_StringArray,
    Type_ObjectArray,
 } Type;
+#define TYPE_IS_PRIMITIVE(t) (Type_Boolean <= t && t <= Type_Double)
 
 typedef enum
 {
@@ -108,8 +119,8 @@ typedef TValue* ValueArray;
 typedef struct TObjectProperties TObjectProperties; // An object is prefixed with its properties
 typedef TObjectProperties* ObjectProperties;
 
-typedef ValueArray Object; // an Object is an array of TValues
-typedef Object* ObjectArray; // different from the other arrays! this one is a pointer array
+typedef ValueArray TCObject; // an TCObject is an array of TValues
+typedef TCObject* TCObjectArray; // different from the other arrays! this one is a pointer array
 
 typedef struct TField TField;
 typedef TField* Field;
@@ -133,8 +144,12 @@ typedef struct TConstantPool TConstantPool;
 typedef TConstantPool* ConstantPool;
 
 typedef struct TContext TContext;
-#ifndef Context
+#if !defined Context
+#if !defined __OBJC__
 typedef TContext* Context;
+#else
+typedef id Context;
+#endif
 #endif
 
 typedef JCharP TJCharP;
@@ -328,7 +343,7 @@ union TCode
 };
 
 
-/** A value held by an Object. The object contains an array of Values.
+/** A value held by an TCObject. The object contains an array of Values.
  * The type is known by the program and does not need to be stored here.
  */
 union TValue
@@ -337,7 +352,7 @@ union TValue
    double asDouble;
    int64 asInt64;
    uint32 asUInt32;
-   Object asObj;
+   TCObject asObj;
    VoidP asVoidP;
    uint32 arrayLen;
 };
@@ -347,7 +362,7 @@ typedef struct
 {
    // input values to the native method
    int32 *i32;
-   Object *obj;
+   TCObject *obj;
    union // old v64
    {
       double *dbl;
@@ -360,7 +375,7 @@ typedef struct
       double retD;
       int64 retL;
    };
-   Object retO; // retO is outside the union
+   TCObject retO; // retO is outside the union
    // the context for the current thread
    Context currentContext;
 } *NMParams, TNMParams;
@@ -412,7 +427,7 @@ struct TConstantPool
    uint16 strCount;
 
    Int32Array    i32;
-   ObjectArray   str;
+   TCObjectArray str;
    DoubleArray   dbl;
    Int64Array    i64;
    CharPArray    cls; // primitive types and class names (full package name)
@@ -448,14 +463,14 @@ struct TException
 #define FIELD_V64_OFFSET(o,c) (((uint8*)(o))+c->v64Ofs)
 
 #define FIELD_I32(o,idx) (((int32*)(FIELD_I32_OFFSET(o)))[idx])
-#define FIELD_OBJ(o,c,idx) (((Object*)(FIELD_OBJ_OFFSET(o,c)))[idx])
+#define FIELD_OBJ(o,c,idx) (((TCObject*)(FIELD_OBJ_OFFSET(o,c)))[idx])
 #define FIELD_I64(o,c,idx) (((int64*)(FIELD_V64_OFFSET(o,c)))[idx])  // i64 and dbl point to the same structure
 #define FIELD_DBL(o,c,idx) (((double*)(FIELD_V64_OFFSET(o,c)))[idx])
 
 /** This structure represents a Java class. */
 struct TTCClass
 {
-   // The offsets to the object where each instance field type starts in an Object
+   // The offsets to the object where each instance field type starts in an TCObject
    uint16 objOfs, v64Ofs; // there's no i32Ofs because int32's offset is always 0
    // The constant pool assigned to this class.
    ConstantPool cp;
@@ -465,7 +480,7 @@ struct TTCClass
    CharP name;
    // The access flags of this class (e.g.: if this class is public, static, etc)
    ClassFlags flags;
-   // The fields that will be copied into each instance (an Object) of this class.
+   // The fields that will be copied into each instance (an TCObject) of this class.
    FieldArray i32InstanceFields;
    FieldArray v64InstanceFields;
    FieldArray objInstanceFields;
@@ -478,7 +493,7 @@ struct TTCClass
    // The current values for static fields
    Int32Array  i32StaticValues;
    DoubleArray v64StaticValues;
-   ObjectArray objStaticValues;
+   TCObjectArray objStaticValues;
    // The methods declared in this class
    MethodArray methods;
    // The interfaces that this class implements
@@ -495,6 +510,8 @@ struct TTCClass
    // Index in the vLoadedClasses array
    uint32 index;
    uint32 hash;
+   // Used in reflection
+   TCObject classObj;
 };
 
 /** Structure representing a method of a class. */
@@ -502,34 +519,34 @@ struct TMethod
 {
    // How many registers of each type are used in this method, including
    // the method parameters, but excluding the instance reference (if any)
-   uint8 iCount,oCount, v64Count, paramSkip;
+   uint8 iCount,oCount, v64Count, paramSkip; // 3
    // an array of instructions.
-   Code code;
+   Code code; // 4
    // The class to whom this method belongs to
-   TCClass class_;
+   TCClass class_; // 8
    // Signature of this method, containing indexes to the CP: name, number of parameters, and the parameters
-   CharP name;
+   CharP name; // 0xC
    uint16 paramCount;
-   UInt16Array cpParams; // indexes to the constant pool of the parameters
+   UInt16Array cpParams; // indexes to the constant pool of the parameters - 0x14
    UInt8Array paramRegs; // the RegType to where the parameters must go on - two bits would be enough, but we use more to improve speed
    int32 hashName, hashParams; // hash for the name and parameters
    // The return type, as an index to the constant pool. Zero for constructors and methods that return void.
    uint16 cpReturn;
-   RegType returnReg; // register used for return
+   RegType returnReg; // register used for return - 0x28
    // The method's access flags (public, static, private, etc)
    MethodFlags flags;
    // The exception handlers defining which parts of the code have a try/catch
-   ExceptionArray exceptionHandlers;
+   ExceptionArray exceptionHandlers; // 0x30
    // Used in debug info - the line numbers for each set of instructions
-   UInt16Array lineNumberLine; // The line number itself;
-   UInt16Array lineNumberStartPC; // The pc where this line number goes
+   UInt16Array lineNumberLine; // The line number itself; - 0x34
+   UInt16Array lineNumberStartPC; // The pc where this line number goes - 0x38
    // if this method is native, this holds the native signature
-   CharP nativeSignature;
-   NativeMethod boundNM;
+   CharP nativeSignature; // 0x3C
+   NativeMethod boundNM; // 0x40
    uint32 ref; // library reference
 };
 
-/** This structure represents a Java int, double, long and Object class field. */
+/** This structure represents a Java int, double, long and TCObject class field. */
 struct TField
 {
    // The field's name
@@ -537,8 +554,21 @@ struct TField
    // The access flags of this field (isPublic, isPrivate, isObject, isArray, etc) and the Type
    FieldFlags flags;
    // The fully qualified class name
-   CharP sourceClassName, targetClassName;
+   CharP sourceClassName, targetClassName; // class where the field is, class type of the field
 };
+
+// java flags (used during reflection)
+#define JFLAG_PUBLIC       1
+#define JFLAG_PRIVATE      2
+#define JFLAG_PROTECTED    4
+#define JFLAG_STATIC       8
+#define JFLAG_FINAL        16
+#define JFLAG_SYNCHRONIZED 32
+#define JFLAG_VOLATILE     64
+#define JFLAG_TRANSIENT    128
+#define JFLAG_NATIVE       256
+#define JFLAG_INTERFACE    512
+#define JFLAG_ABSTRACT     1024
 
 /// String representing a constructor
 #define CONSTRUCTOR_NAME "<C>" // name of the constructor
@@ -565,9 +595,9 @@ struct TField
 #define DOUBLE_ARRAY  "[&D"
 /// A string representing a Java boolean array
 #define BOOLEAN_ARRAY "[&b"
+#define BOOLEAN_MATRIX "[[&b"
 /// A string representing a Java float array
 #define FLOAT_ARRAY   "[&F"
-
 /// A string representing a Java int
 #define J_INT "I"
 /// A string representing a Java double
@@ -601,5 +631,12 @@ typedef CompatibilityResult (*areClassesCompatibleFunc)(Context currentContext, 
 /// Checks if the methods have the same parameters
 bool paramsEq(ConstantPool cp1, UInt16Array params1, int32 n1, ConstantPool cp2, UInt16Array params2);
 
+Type type2javaType(CharP type);
+bool isSuperClass(TCClass s, TCClass t);
+
 #define CLASS_OUT_OF_MEMORY ((TCClass)-1)
+
+#ifdef __cplusplus
+}
+#endif
 #endif

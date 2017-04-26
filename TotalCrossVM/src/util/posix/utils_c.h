@@ -21,84 +21,6 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#if (defined __SYMBIAN32__ && !defined __WINS__)  // ARMI
-
-#define LONG_BITS       (sizeof(long) << 3)
-#define LONGLONG_BITS   (sizeof(long long) << 3)
-
-#define UL_HIGH   1
-#define UL_LOW    0
-
-union uu
-{
-   long long ll;           /* as a signed int64 */
-   unsigned long ul[2];    /* as two unsigned int32 */
-};
-
-static long long my_fixunsdfdi(double a)   // unsigned dbl float to dbl int
-{
-   unsigned long hi, lo;
-
-   hi = a / (((unsigned long long)1) << LONG_BITS);
-   lo = (a - ((double)hi) * (((unsigned long long)1) << LONG_BITS));
-   return ((unsigned long long)hi << LONG_BITS) | lo;
-}
-
-static long long my_fixunssfdi(float a0)   // unsigned single float to dbl int
-{
-   double a = a0;
-   unsigned long hi, lo;
-
-   hi = a / (((unsigned long long)1) << LONG_BITS);
-   lo = (a - ((double)hi) * (((unsigned long long)1) << LONG_BITS));
-   return ((unsigned long long)hi << LONG_BITS) | lo;
-}
-
-long long __fixdfdi(double a)              // dbl float to dbl int
-{
-   return (a < 0) ? -my_fixunsdfdi(-a) : my_fixunsdfdi(a);
-}
-
-long long __fixsfdi(float a)              // single float to dbl int
-{
-   return (a < 0) ? -my_fixunssfdi(-a) : my_fixunssfdi(a);
-}
-
-double __floatdidf(long long u)
-{
-   double d;
-   union uu m;
-   m.ll = (u < 0) ? -u : u; //fdie@560_27 fix neg values issue on Symbian
-   d = (4.0 * m.ul[UL_HIGH]) * (1L << (LONG_BITS - 2));
-   d += (2.0 * (m.ul[UL_LOW] >> 1)) + (m.ul[UL_LOW] & 1); // fdie@ grant that the long isn't signed before the double conversion
-   return u < 0 ? -d : d;
-}
-
-float __floatdisf(long long u)
-{
-#if 1
-   double f;
-
-   if (
-      ((53 < LONGLONG_BITS) && (53 > (LONGLONG_BITS-53+24))) &&
-      ((-((long long)1 << 53) >= u) || (u >= ((long long)1 << 53))) &&
-      ((unsigned long long)u & (((unsigned long long)1 << (LONGLONG_BITS-53))-1))
-   ) {
-      u &= ~ (((unsigned long long)1 << (LONGLONG_BITS-53))-1);
-      u |= ((unsigned long long)1 << (LONGLONG_BITS-53));
-   }
-   f = (long)(u >> LONG_BITS);
-   f *= 2.0 * (((unsigned long long)1) << (LONG_BITS - 1));
-   f += (unsigned long)(u & ((((unsigned long long)1) << LONG_BITS) - 1));
-   return (float)f;
-#else
-   // or even simpler
-   return __floatdidf(u);
-#endif
-}
-#endif // (defined __SYMBIAN32__ && !defined __WINS__)  // ARMI
-
-
 #if defined(darwin)
 
 #include <mach/mach.h>
@@ -121,15 +43,55 @@ static int32 privateGetFreeMemory(bool maxblock)
         return 0;
  
     /* Stats in bytes */
-    //flsobral@tc126: kept code to find out the used memory for further reference.
-//    natural_t mem_used = (vm_stat.active_count + vm_stat.inactive_count + vm_stat.wire_count) * pagesize;
-    natural_t mem_free = vm_stat.free_count * pagesize;
+    natural_t mem_free = (int)(vm_stat.free_count * pagesize);
 //    natural_t mem_total = mem_used + mem_free;
     
     return mem_free;
 }
+int32 getUsedMemory()
+{
+   mach_port_t host_port;
+   mach_msg_type_number_t host_size;
+   vm_size_t pagesize;
+
+   host_port = mach_host_self();
+   host_size = sizeof(vm_statistics_data_t) / sizeof(integer_t);
+   host_page_size(host_port, &pagesize);        
+
+   vm_statistics_data_t vm_stat;
+
+   if (host_statistics(host_port, HOST_VM_INFO, (host_info_t)&vm_stat, &host_size) != KERN_SUCCESS)
+      return 0;
+
+   /* Stats in bytes */
+   natural_t mem_used = (vm_stat.active_count + vm_stat.inactive_count + vm_stat.wire_count) * pagesize;
+   return mem_used;
+}
 
 #else // defined(darwin)
+
+#ifndef ANDROID
+struct mallinfo {
+   int arena;     /* Non-mmapped space allocated (bytes) */
+   int ordblks;   /* Number of free chunks */
+   int smblks;    /* Number of free fastbin blocks */
+   int hblks;     /* Number of mmapped regions */
+   int hblkhd;    /* Space allocated in mmapped regions (bytes) */
+   int usmblks;   /* Maximum total allocated space (bytes) */
+   int fsmblks;   /* Space in freed fastbin blocks (bytes) */
+   int uordblks;  /* Total allocated space (bytes) */
+   int fordblks;  /* Total free space (bytes) */
+   int keepcost;  /* Top-most, releasable space (bytes) */
+};
+extern struct mallinfo mallinfo(void);
+#endif
+
+#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
+int32 getUsedMemory()
+{
+   return mallinfo().uordblks;
+}
+#endif
 
 #define BUFFER_SIZE 338 /* We are bothered about only the first 338 bytes of the /proc/meminfo file */
 #define PROC_MEM_FILE "/proc/meminfo"
@@ -184,26 +146,41 @@ static int32 privateGetFreeMemory(bool maxblock)
 
 static void privateSleep(uint32 millis)
 {
-#if !defined(__SYMBIAN32__)
    usleep(1000UL * millis);
-#endif
 }
 
 static int32 privateGetTimeStamp()
 {
    struct timeval now;
    gettimeofday(&now, NULL);
-   return now.tv_sec * 1000 + now.tv_usec / 1000;
+   return (int32)(now.tv_sec * 1000 + now.tv_usec / 1000);
 }
 
-static bool pfileIsDir(TCHARP path, int32 slot)
+static bool pfileIsDir(TCHARP dir, TCHARP file)
 {
+#ifdef darwin
    struct stat statData;
-
-   if (stat(path, &statData))
+   if (stat(file, &statData))
       return false;
-
    return S_ISDIR(statData.st_mode);
+#else
+   struct stat statData;
+   int len;
+   TCHAR fullpath[MAX_PATHNAME];
+   fullpath[0] = 0;
+   tcscat(fullpath, dir);
+   len = tcslen(fullpath);
+   if (fullpath[len-1] != '/')
+   {
+      fullpath[len++] = '/';
+      fullpath[len] = 0;
+   }
+   tcscat(&fullpath[len], file);
+
+   if (stat(fullpath, &statData))
+      return false;
+   return S_ISDIR(statData.st_mode);
+#endif   
 }
 
 static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options)
@@ -222,7 +199,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
    
    dir = opendir(path);
    if (!dir)
-      return errno;
+      return NO_ERROR; // guich@tc200: don't throw error, let the user handle it when opening the file. (issue 2254)
    if (recursive)
       pathlen = tcslen(path) + 1;
 
@@ -241,7 +218,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
          }
          tcscat(fileName, entry->d_name);
 
-         isDir = pfileIsDir(fileName, 0);
+         isDir = pfileIsDir(path,fileName);
          if (isDir)
             tcscat(fileName, TEXT("/"));
 #ifdef ANDROID // Android has a bug that result in files being added more than once. so, check if it already exists

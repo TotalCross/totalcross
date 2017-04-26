@@ -18,16 +18,17 @@
 
 package totalcross.android;
 
-import totalcross.*;
-
-import java.lang.reflect.*;
-
 import android.content.*;
 import android.content.res.*;
 import android.net.wifi.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.net.NetworkInterface;
+
+import totalcross.*;
 
 public final class Settings4A
 {
@@ -64,14 +65,19 @@ public final class Settings4A
    
    // identification
    public static String userName;
-   public static String imei;
+   public static String imei,imei2;
    public static String esn;   
    public static String iccid;
    public static String serialNumber;
+   public static String macAddress;
 
    // device capabilities
    public static boolean virtualKeyboard;
    public static boolean keypadOnly;
+   
+   public static String lineNumber;
+   
+   public static int buildNumber = 000;
 
    public static void refresh()
    {
@@ -84,30 +90,69 @@ public final class Settings4A
 	   
 	}
 	
-	static void fillSettings(boolean isActivationVM)
+	public static String getMacAddr() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) {
+                    continue;
+                }
+ 
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+ 
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(Integer.toHexString(b & 0xFF) + ":");
+                }
+ 
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "02:00:00:00:00:00";
+    }
+	
+	static void fillSettings()
 	{
 	   Context ctx = Launcher4A.instance.getContext();
 	   String id1,id2;
       // platform
       String v = Build.VERSION.RELEASE;
-      double vd = 0;
-      while (vd == 0 && v.length() > 0)
-         try
-         {
-            vd = Double.valueOf(v);            
-         }
-         catch (Exception e)
-         {
-            v = v.substring(0,v.length()-1);
-         }
-      romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16    
-      deviceId = Build.MANUFACTURER + " " + Build.MODEL;
+      // guich@tc200: java was rounding 2.3 to 2.29...
+      if (v.length() == 5 && v.charAt(1) == '.' && v.charAt(3) == '.') // 2.3.4
+         romVersion = Integer.parseInt(v.replace(".",""));
+      else
+      if (v.length() == 3 && v.charAt(1) == '.') // 2.3
+         romVersion = Integer.parseInt(v.replace(".","")) * 10; // 23 * 10 = 230
+      else
+      {      
+         double vd = 0;
+         while (vd == 0 && v.length() > 0)
+            try
+            {
+               vd = Double.valueOf(v);            
+               vd += 0.005; // round up
+            }
+            catch (Exception e)
+            {
+               v = v.substring(0,v.length()-1);
+            }
+         romVersion = (int)vd * 100 + ((int)(vd * 100)) % 100; // 3.16
+      }
+      deviceId = Build.MANUFACTURER.replaceAll("\\P{ASCII}", " ") + " " + Build.MODEL.replaceAll("\\P{ASCII}", " ");
       
       // userName
       userName = null; // still looking for a way to retrieve this on droid.	   
 	   
       // imei
-      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.loader.getSystemService(Context.TELEPHONY_SERVICE);
+      lineNumber = telephonyMgr.getLine1Number();
       // handle dual-sim phones. Usually, they overload the method with a
       Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
       Method[] mtds = cc.getDeclaredMethods();
@@ -125,6 +170,12 @@ public final class Settings4A
                id2 = (String)m.invoke(telephonyMgr, new Integer(0));
                if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
                   imei = id1;
+               // dual-sim support
+               id1 = (String)m.invoke(telephonyMgr, new Integer(1));
+               id2 = (String)m.invoke(telephonyMgr, new Integer(1));
+               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+                  imei2 = id1;
+
                if (--toFind == 0) break;
             }
             catch (Exception ee)
@@ -177,25 +228,31 @@ public final class Settings4A
          }
          catch (NoSuchFieldError nsfe) {}
          catch (Throwable t) {}
-      
-      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR) // no else here!
+
+      if (!Loader.IS_EMULATOR)
       {
          WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
          if (wifiMan != null) // not sure what happens when device has no connectivity at all
          {
-            String macAddr = wifiMan.getConnectionInfo().getMacAddress();
-            if (macAddr == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
+            macAddress = wifiMan.getConnectionInfo().getMacAddress();
+            if (macAddress == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
             {
                wifiMan.setWifiEnabled(true);
                while (!wifiMan.isWifiEnabled()) // wait until its active
                   try {Thread.sleep(100);} catch (Exception e) {}
                wifiMan.setWifiEnabled(false);
-               macAddr = wifiMan.getConnectionInfo().getMacAddress();
+               macAddress = wifiMan.getConnectionInfo().getMacAddress();
             }
-            if (macAddr != null)
-               serialNumber = String.valueOf(((long)macAddr.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
+            
+            // Work around for Android 6 mac address, although not reliable...
+            if ("02:00:00:00:00:00".equals(macAddress)) {
+            	macAddress = getMacAddr();
+            }
          }
       }
+
+      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR && macAddress != null) // no else here!
+         serialNumber = String.valueOf(((long)macAddress.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
       
       // virtualKeyboard
       virtualKeyboard = true; // always available on droid?
@@ -228,7 +285,7 @@ public final class Settings4A
 	   
 	   if (!Loader.IS_EMULATOR) // running on emulator, right now there's no way to retrieve more settings from it.
 	   {
-	      ContentResolver cr = Launcher4A.getAppContext().getContentResolver();
+	      ContentResolver cr = Launcher4A.loader.getContentResolver();
 	      
 	      Configuration config = new Configuration();
 	      Settings.System.getConfiguration(cr, config);
@@ -250,12 +307,17 @@ public final class Settings4A
 	   }
 	}
 	
+   public static int timeZoneMinutes;
+   public static int daylightSavingsMinutes;
    public static void settingsRefresh()
    {
-      java.util.Calendar cal = java.util.Calendar.getInstance();
-      daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0;
       java.util.TimeZone tz = java.util.TimeZone.getDefault();
-      timeZone = tz.getRawOffset() / (60*60*1000);
+      Calendar cal = Calendar.getInstance();
+      int dls = cal.get(Calendar.DST_OFFSET);
+      daylightSavingsMinutes = dls / 60000;
+      daylightSavings = daylightSavingsMinutes != 0;
+      timeZone = tz.getRawOffset() / (60*60000);
+      timeZoneMinutes = tz.getRawOffset() / 60000;
       timeZoneStr = java.util.TimeZone.getDefault().getID();
    }
    

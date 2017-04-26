@@ -26,6 +26,7 @@ import totalcross.util.Hashtable;
 /**
  * Font is the character font used when drawing text on a surface.
  * Fonts can be antialiased, and usually range from size 7 to 38.
+ * In OpenGL platforms, they are 8bpp antialiased fonts ranging up indefinedly.
  * <ol>
  * <li> To see if the font you created is installed in the target device, query its name after
  * the creation. If the font is not found, its name is changed to match the default font.
@@ -37,7 +38,6 @@ import totalcross.util.Hashtable;
  * <li> In JavaSE you can choose the default font size passing <code>/fontsize &lt;size&gt;</code> as argument, 
  * before the application's name.
  * </ol>
- * @see totalcross.sys.Settings#useNewFont
  */
 
 public final class Font
@@ -52,23 +52,20 @@ public final class Font
    public Object hv_UserFont;
    public FontMetrics fm;
 
-   /** The name of the file that has the old font set (prior to TotalCross 1.3). */
-   public static final String OLD_FONT_SET = "TCFontOld";
-   /** The name of the file that has the current font set (after TotalCross 1.3). */
-   public static final String NEW_FONT_SET = "TCFont";
-   
-   /** The default font name: Font.NEW_FONT_SET if new font set is being used, Font.OLD_FONT_SET otherwise. 
-    * If a specified font is not found, this one is used instead. 
+   /** The default font name. If a specified font is not found, this one is used instead. 
     */
-   public static final String DEFAULT = Settings.useNewFont ? NEW_FONT_SET : OLD_FONT_SET;
-   /** The minimum font size: 6. */
+   public static final String DEFAULT = "TCFont";
+   /** The minimum font size: 7. */
    public static int MIN_FONT_SIZE = 7;
-   /** The maximum font size: 22. */
-   public static int MAX_FONT_SIZE = 44;
+   /** The maximum font size: 48 for Windows32, unlimited for OpenGL platforms (the number here will be 80,
+    * since this is the size that the base font was created; you can specify something higher, but it will use
+    * upscaling, which usually results in a smooth font). */
+   public static int MAX_FONT_SIZE = Settings.WIN32.equals(Settings.platform) ? 48 : 80;
 
+   /** For internal use only. */
+   public static int baseChar = ' ';
 
    /** Returns the default font size, based on the screen's size.
-    * If not in Android and Settings.fingerTouch is true, the default font size will be increased by 15%. 
     */
    public static int getDefaultFontSize()
    {
@@ -78,28 +75,20 @@ public final class Font
 
       // determine fonts as if we were in portrait mode
       int w,h;
-      if (Settings.BLACKBERRY.equals(Settings.platform)) // blackberry devices are often landscape
-      {
-         w = Settings.screenWidth;
-         h = Settings.screenHeight;
-      }
-      else
-      {
-         w = Math.min(Settings.screenWidth,Settings.screenHeight);
-         h = Math.max(Settings.screenWidth,Settings.screenHeight);
-      }
+      w = Math.min(Settings.screenWidth,Settings.screenHeight);
+      h = Math.max(Settings.screenWidth,Settings.screenHeight);
 
-      if (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT)
+      if (Settings.WINDOWSPHONE.equals(Settings.platform) || (Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_DEFAULT))
          fontSize = Settings.deviceFontHeight;
       else
-      if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-         fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 12; // added this exception to get the right font when running in the WM phone in landscape mode
+      if (Settings.isWindowsCE()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
+         fontSize = Settings.screenWidth >= 480 ? 28 : Settings.screenWidth >= 320 ? 18 : 14; // added this exception to get the right font when running in the WM phone in landscape mode
       else
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          fontSize = 20 * Settings.deviceFontHeight / 14;
       else
-      if (Settings.BLACKBERRY.equals(Settings.platform) && w >= 640)
-         fontSize = 26; // storm 7.0 with 640x480         
+      if (Settings.isIOS() && Settings.deviceFontHeight != 0)
+         fontSize = Settings.deviceFontHeight;
       else
          switch (w)
          {
@@ -126,15 +115,10 @@ public final class Font
                else
                   fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
          }
-      if (Settings.useNewFont && ((Settings.WIN32.equals(Settings.platform) && Settings.windowFont == Settings.WINDOWFONT_12) || Settings.deviceFontHeight == 0)) // keep font height of the new font the same as before on platforms that are not Android
-      {
-         byte[] new2oldInc = {1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6,7,7,7,7};
-         fontSize += new2oldInc[fontSize-MIN_FONT_SIZE];
-      }
       if (fontSize < MIN_FONT_SIZE)
          fontSize = MIN_FONT_SIZE;
       else
-      if (fontSize > MAX_FONT_SIZE)
+      if (!Settings.isOpenGL && fontSize > MAX_FONT_SIZE)
          fontSize = MAX_FONT_SIZE;
       
       return fontSize;
@@ -157,10 +141,11 @@ public final class Font
    public static int TAB_SIZE = 3;
 
    private static Hashtable htFonts = new Hashtable(13);
-   private static StringBuffer sb = new StringBuffer(30);
 
    private Font(String name, boolean boldStyle, int size) // guich@580_10
    {
+      if (size == 0)
+         throw new RuntimeException("Font size cannot be 0!");
       this.name = name;
       this.style = boldStyle ? 1 : 0;
       this.size = size;
@@ -173,7 +158,9 @@ public final class Font
     * @param boldStyle If true, a bold font is used. Otherwise, a plain font is used.
     * @param size If you want a text bigger than the standard size, use Font.NORMAL_SIZE+x; or if you want
     * a text smaller than the standard size, use Font.NORMAL_SIZE-x. Size is adjusted to be in the range
-    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>.
+    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>. That is, passing a value out of the bounds 
+    * won't throw an exception, will only use the minimum default size if the size passed is less than it or 
+    * use the maximum default size if the size passed is greater than it.
     */
    public static Font getFont(boolean boldStyle, int size) // guich@580_10
    {
@@ -182,21 +169,21 @@ public final class Font
 
    /**
     * Gets the instance of a font of the given name, style and size. Font styles are defined
-    * in this class. BlackBerry supports the use of native system fonts, which are formed by
-    * the font family name preceded by a '$' (e.g.: "$BBCasual"). You can also specify only
-    * "$" for the font name, which means the default system font. Font.DEFAULT will be used in
-    * place of native fonts for all platforms that do not support them.
+    * in this class. Font.DEFAULT will be used if the font is not installed on the device. 
+    * This method can be used to check if the created font is in fact installed on the device.
     * @param name Font.DEFAULT is the default font. You must install other fonts if you want to use them.
     * @param boldStyle If true, a bold font is used. Otherwise, a plain font is used.
     * @param size If you want a text bigger than the standard size, use Font.NORMAL_SIZE+x; or if you want
     * a text smaller than the standard size, use Font.NORMAL_SIZE-x. Size is adjusted to be in the range
-    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>.
+    * <code>Font.MIN_FONT_SIZE ... Font.MAX_FONT_SIZE</code>. That is, passing a value out of the bounds won't throw an exception, 
+    * will only use the minimum default size if the size passed is less than it or use the maximum default size if the size passed is 
+    * greater than it.
     */
    public static Font getFont(String name, boolean boldStyle, int size) // guich@580_10
    {
-      sb.setLength(0);
-      String key = sb.append(name).append('$').append(boldStyle?'B':'P').append(size).toString();
-      Font f = (Font)htFonts.get(key);
+      char st = boldStyle ? 'B' : 'P';
+      String key = name+'$'+st+size;
+      Font f = baseChar == ' ' ? (Font)htFonts.get(key) : null;
       if (f == null)
          htFonts.put(key, f = new Font(name, boldStyle, size));
       return f;
@@ -210,6 +197,7 @@ public final class Font
    
    /** Returns a font with the size changed with that delta. 
     * The new size is thisFont.size+delta.
+    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
     * @since TotalCross 1.3
     */
    public Font adjustedBy(int delta)
@@ -219,6 +207,7 @@ public final class Font
 
    /** Returns a font with the size changed with that delta and the given bold style. 
     * The new size is thisFont.size+delta.
+    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
     * @since TotalCross 1.3
     */
    public Font adjustedBy(int delta, boolean bold)
@@ -238,6 +227,17 @@ public final class Font
    native void fontCreate4D();
    void fontCreate()
    {
-      hv_UserFont = Launcher.instance.getFont(this, ' ');
+      hv_UserFont = Launcher.instance.getFont(this, (char)baseChar);
+   }
+   
+   /** Used internally. */
+   public void removeFromCache()
+   {
+      char st = style==1 ? 'B' : 'P';
+      String key = name+'$'+st+size;
+      htFonts.remove(key);
+   }
+   public void removeFromCache4D()
+   {
    }
 }

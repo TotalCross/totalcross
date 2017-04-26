@@ -9,30 +9,35 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.cipher;
 
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-
+import java.security.*;
+import java.security.spec.*;
 import javax.crypto.spec.IvParameterSpec;
-
 import totalcross.crypto.*;
+import totalcross.crypto.NoSuchAlgorithmException;
 
 /**
  * This class implements the RSA cryptographic cipher.
  */
 public class RSACipher extends Cipher
 {
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return "RSA".
+    */
    public final String getAlgorithm()
    {
       return "RSA";
    }
 
+   /**
+    * Returns the block length.
+    * 
+    * @return Always returns 0.
+    */
    public final int getBlockLength()
    {
       return 0;

@@ -72,13 +72,13 @@ static int32 digitOf(char c) // don't inline!
 }
 
 // given the 3-char hex value, return its decimal value
-inline static int32 hex2unsigned3(CharP p)
+static int32 hex2unsigned3(CharP p)
 {
    return (digitOf(*(p)) << 8) | (digitOf(*(p+1)) << 4) | digitOf(*(p+2));
 }
 
 // given the 4-char hex value, return its decimal value
-inline static int32 hex2unsigned4(CharP p)
+static int32 hex2unsigned4(CharP p)
 {
    return (digitOf(*p) << 12) | (digitOf(*(p+1)) << 8) | (digitOf(*(p+2)) << 4) | digitOf(*(p+3));
 }
@@ -340,7 +340,7 @@ TC_API TCHARP JCharP2TCHARP(JCharP from, int32 len)
 
 TC_API TCHARP JCharP2TCHARPBuf(JCharP from, int32 len, TCHARP buf)
 {
-#ifdef WINCE
+#ifdef UNICODE
    tcsncpy(buf, from, len);
    buf[len] = 0;
    return buf;
@@ -351,7 +351,7 @@ TC_API TCHARP JCharP2TCHARPBuf(JCharP from, int32 len, TCHARP buf)
 
 TC_API JCharP TCHARP2JCharP(TCHARP from, JCharP to, int32 len)
 {
-#ifdef WINCE
+#ifdef UNICODE
    tcsncpy(to, from, len);
    to[len] = 0;
    return to;
@@ -402,4 +402,19 @@ TC_API int32 JCharPLastIndexOfJChar(JCharP me, int32 meLen, JChar c, int32 start
          if (me[startIndex] == c) 
             return startIndex;
    return -1;
+}
+
+TC_API void JCharPDupBuf(JCharP original, int32 length, JCharP buffer)
+{
+   xmemmove(buffer, original, length << 1);
+   buffer[length] = 0;
+}
+
+TC_API JCharP JCharPDup(JCharP original, int32 length)
+{
+   JCharP buffer = (JCharP)xmalloc((length + 1) << 1);
+   
+   if (buffer)
+      xmemmove(buffer, original, length << 1);
+   return buffer;
 }

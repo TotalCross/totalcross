@@ -12,6 +12,7 @@
 
 
 #include "tcvm.h"
+#include "NativeMethods.h"
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_valueOf_d(NMParams p) // java/lang/String native public static String valueOf(double d);
@@ -24,6 +25,10 @@ TC_API void jlS_valueOf_d(NMParams p) // java/lang/String native public static S
       setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
+void tsC_toString_c(NMParams p);
+void tsC_toString_i(NMParams p);
+void tsC_toString_l(NMParams p);
+
 TC_API void jlS_valueOf_c(NMParams p) // java/lang/String native public static String valueOf(char c);
 {
    tsC_toString_c(p);
@@ -36,7 +41,7 @@ TC_API void jlS_valueOf_i(NMParams p) // java/lang/String native public static S
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_copyChars_CiCii(NMParams p) // java/lang/String native static boolean copyChars(char []srcArray, int srcStart, char []dstArray, int dstStart, int length);
 {
-   Object srcArray, dstArray;
+   TCObject srcArray, dstArray;
    int32 srcStart, dstStart, len;
    JCharP srcPtr, dstPtr;
 
@@ -58,7 +63,7 @@ TC_API void jlS_copyChars_CiCii(NMParams p) // java/lang/String native static bo
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_toUpperCase(NMParams p) // java/lang/String native public String toUpperCase();
 {
-   Object fromObj, toObj;
+   TCObject fromObj, toObj;
    JCharP from,to;
    int32 len;
 
@@ -79,7 +84,7 @@ TC_API void jlS_toUpperCase(NMParams p) // java/lang/String native public String
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_toLowerCase(NMParams p) // java/lang/String native public String toLowerCase();
 {
-   Object fromObj, toObj;
+   TCObject fromObj, toObj;
    JCharP from,to;
    int32 len;
 
@@ -100,7 +105,7 @@ TC_API void jlS_toLowerCase(NMParams p) // java/lang/String native public String
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_equals_o(NMParams p) // java/lang/String native public boolean equals(Object obj);
 {
-   Object me, other;
+   TCObject me, other;
    me = p->obj[0];
    other = p->obj[1];
 
@@ -115,7 +120,7 @@ TC_API void jlS_equals_o(NMParams p) // java/lang/String native public boolean e
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_compareTo_s(NMParams p) // java/lang/String native public int compareTo(String s);
 {
-   Object me, other;
+   TCObject me, other;
    me = p->obj[0];
    other = p->obj[1];
 
@@ -130,19 +135,19 @@ TC_API void jlS_compareTo_s(NMParams p) // java/lang/String native public int co
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_indexOf_i(NMParams p) // java/lang/String native public int indexOf(int c);
 {
-   Object me = p->obj[0];
+   TCObject me = p->obj[0];
    p->retI = JCharPIndexOfJChar(String_charsStart(me), (JChar)p->i32[0], 0, String_charsLen(me));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_indexOf_ii(NMParams p) // java/lang/String native public int indexOf(int c, int startIndex);
 {
-   Object me = p->obj[0];
+   TCObject me = p->obj[0];
    p->retI = JCharPIndexOfJChar(String_charsStart(me), (JChar)p->i32[0], p->i32[1], String_charsLen(me));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_indexOf_s(NMParams p) // java/lang/String native public int indexOf(String c);
 {
-   Object me,other;
+   TCObject me,other;
    me = p->obj[0];
    other = p->obj[1];
    if (other == null)
@@ -153,7 +158,7 @@ TC_API void jlS_indexOf_s(NMParams p) // java/lang/String native public int inde
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_indexOf_si(NMParams p) // java/lang/String native public int indexOf(String c, int startIndex);
 {
-   Object me,other;
+   TCObject me,other;
    me = p->obj[0];
    other = p->obj[1];
    if (other == null)
@@ -164,13 +169,13 @@ TC_API void jlS_indexOf_si(NMParams p) // java/lang/String native public int ind
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_hashCode(NMParams p) // java/lang/String native public int hashCode();
 {
-   Object me = p->obj[0];
+   TCObject me = p->obj[0];
    p->retI = JCharPHashCode(String_charsStart(me), String_charsLen(me));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_startsWith_si(NMParams p) // java/lang/String native public boolean startsWith(String prefix, int from);
 {
-   Object me, other;
+   TCObject me, other;
    int32 from;
 
    me = p->obj[0];
@@ -185,7 +190,7 @@ TC_API void jlS_startsWith_si(NMParams p) // java/lang/String native public bool
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_startsWith_s(NMParams p) // java/lang/String native public boolean startsWith(String prefix);
 {
-   Object me, other;
+   TCObject me, other;
 
    me = p->obj[0];
    other = p->obj[1];
@@ -198,7 +203,7 @@ TC_API void jlS_startsWith_s(NMParams p) // java/lang/String native public boole
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_endsWith_s(NMParams p) // java/lang/String native public boolean endsWith(String suffix);
 {
-   Object me, other;
+   TCObject me, other;
 
    me = p->obj[0];
    other = p->obj[1];
@@ -211,7 +216,7 @@ TC_API void jlS_endsWith_s(NMParams p) // java/lang/String native public boolean
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_equalsIgnoreCase_s(NMParams p) // java/lang/String native public boolean equalsIgnoreCase(String s);
 {
-   Object me, other;
+   TCObject me, other;
 
    me = p->obj[0];
    other = p->obj[1];
@@ -219,9 +224,9 @@ TC_API void jlS_equalsIgnoreCase_s(NMParams p) // java/lang/String native public
    p->retI = other == null ? false : JCharPEqualsIgnoreCaseJCharP(String_charsStart(me), String_charsStart(other), String_charsLen(me), String_charsLen(other)); // guich@tc120_45: return false if null
 }
 //////////////////////////////////////////////////////////////////////////
-Object S_replace(Context currentContext, Object me, JChar oldChar, JChar newChar)
+TCObject S_replace(Context currentContext, TCObject me, JChar oldChar, JChar newChar)
 {
-   Object other, retO = null;
+   TCObject other, retO = null;
    int32 n;
    JCharP jme, jother;
    bool found = false;
@@ -260,7 +265,7 @@ TC_API void jlS_replace_cc(NMParams p) // java/lang/String native public String 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_lastIndexOf_ii(NMParams p) // java/lang/String native public int lastIndexOf(int c, int startIndex);
 {
-   Object me;
+   TCObject me;
    int32 c,startIndex;
 
    me = p->obj[0];
@@ -272,7 +277,7 @@ TC_API void jlS_lastIndexOf_ii(NMParams p) // java/lang/String native public int
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_lastIndexOf_i(NMParams p) // java/lang/String native public int lastIndexOf(int c);
 {
-   Object me;
+   TCObject me;
    int32 c,startIndex;
 
    me = p->obj[0];
@@ -284,7 +289,7 @@ TC_API void jlS_lastIndexOf_i(NMParams p) // java/lang/String native public int 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_trim(NMParams p) // java/lang/String native public String trim();
 {
-   Object me;
+   TCObject me;
    int32 end,len,st=0;
    JCharP chars;
 
@@ -322,7 +327,7 @@ TC_API void jlS_valueOf_l(NMParams p) // java/lang/String native public static S
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_lastIndexOf_s(NMParams p) // java/lang/String native public int lastIndexOf(String s);
 {
-   Object me,other;
+   TCObject me,other;
    me = p->obj[0];
    other = p->obj[1];
    if (other == null)
@@ -333,7 +338,7 @@ TC_API void jlS_lastIndexOf_s(NMParams p) // java/lang/String native public int 
 //////////////////////////////////////////////////////////////////////////
 TC_API void jlS_lastIndexOf_si(NMParams p) // java/lang/String native public int lastIndexOf(String s, int startIndex);
 {
-   Object me,other;
+   TCObject me,other;
    me = p->obj[0];
    other = p->obj[1];
    if (other == null)
@@ -343,11 +348,11 @@ TC_API void jlS_lastIndexOf_si(NMParams p) // java/lang/String native public int
 }
 //////////////////////////////////////////////////////////////////////////
 
-Object chars2bytes(Context currentContext, JCharP chars, int32 length); // CharacterConverter.c
+TCObject chars2bytes(Context currentContext, JCharP chars, int32 length); // CharacterConverter.c
 
 TC_API void jlS_getBytes(NMParams p) // java/lang/String native public byte []getBytes();
 {
-   Object obj = p->obj[0];
+   TCObject obj = p->obj[0];
    JChar* chars = String_charsStart(obj);
    int32 length = String_charsLen(obj);
    p->retO = chars2bytes(p->currentContext, chars, length);

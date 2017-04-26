@@ -16,7 +16,7 @@
 extern "C" {
 #endif
     
-  int iphone_cameraClick(int w, int h, char* fileName);
+  int iphone_cameraClick(int w, int h, int t, char* fileName);
     
 #ifdef __cplusplus
 };
@@ -27,8 +27,8 @@ extern "C" {
 static void cameraClick(NMParams p)
 {
 #ifdef darwin    
-    Object cameraObj = p->obj[0];
-    Object defaultFileName = Camera_defaultFileName(cameraObj);
+    TCObject cameraObj = p->obj[0];
+    TCObject defaultFileName = Camera_defaultFileName(cameraObj);
     char tempPictureName[MAX_PATHNAME];
     char fileName[MAX_PATHNAME];
     IntBuf intBuf;
@@ -56,7 +56,7 @@ static void cameraClick(NMParams p)
             xstrcat(tempPictureName, fileName); // else, just the name, append after the path
     }
     
-    if (iphone_cameraClick(Camera_resolutionWidth(cameraObj),Camera_resolutionHeight(cameraObj), tempPictureName))
+    if (iphone_cameraClick(Camera_resolutionWidth(cameraObj),Camera_resolutionHeight(cameraObj), Camera_cameraType(cameraObj), tempPictureName))
         setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, tempPictureName, -1), UNLOCKED);
 #endif
 }

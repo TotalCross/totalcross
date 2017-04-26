@@ -18,7 +18,7 @@
 #endif
 
 #define TRACE if (traceOn) debug
-#define DUMP_BYTECODE(s) //TRACE("T %08d %X %X %05d - %4d: %s", getTimeStamp(), thread, context, ++context->ccon, (int32)(code-method->code), s);
+#define DUMP_BYTECODE(s) //TRACE("%s",s); //TRACE("T %08d %X %X %05d - %4d: %s", getTimeStamp(), thread, context, ++context->ccon, (int32)(code-method->code), s);
 
 #ifdef DIRECT_JUMP // use a direct jump if supported
  #define OPCODE(x) _##x: DUMP_BYTECODE(#x)
@@ -39,6 +39,7 @@
  #define XSELECT(addr, idx) switch (idx)
 #endif
 
+TC_API void jlC_forName_s(NMParams p);
 //////////////////////////////////////////////////////////////////////////////
 #ifdef ENABLE_TRACE
 static CharP getSpaces(Context currentContext, int32 n)
@@ -66,15 +67,24 @@ static void tcvmCreateException(Context currentContext, Throwable t, int32 pc, i
          vsprintf(str, message, args);
          va_end(args);
       }
-      if (t == OutOfMemoryError)
+      if (t == OutOfMemoryError)           
+      {
          currentContext->thrownException = currentContext->OutOfMemoryErrorObj;
+         if (message)
+         {
+            *Throwable_msg(currentContext->thrownException) = createStringObjectFromCharP(currentContext, str,-1);
+            setObjectLock(*Throwable_msg(currentContext->thrownException), UNLOCKED);
+            if (*Throwable_msg(currentContext->thrownException) == null)
+               debug("out of memory error reason: %s",str);
+         }
+      }
       else
          createException(currentContext, t, false, message != null ? str : null);
       fillStackTrace(currentContext, currentContext->thrownException, pc, currentContext->callStack + decTrace);
    }
 }
 
-bool checkArrayRange(Context currentContext, Object obj, int32 start, int32 count) // check if the given array can access from start to start+count-1
+bool checkArrayRange(Context currentContext, TCObject obj, int32 start, int32 count) // check if the given array can access from start to start+count-1
 {
    if (obj == null)
       throwException(currentContext, NullPointerException,"In checkArrayRange");
@@ -97,7 +107,7 @@ bool checkArrayRange(Context currentContext, Object obj, int32 start, int32 coun
 // macros used in this function
 #define ARRAYCHECK(target)                                                                                \
    if (regO[target##_ar.base] == null)                                                                    \
-      goto throwNullPointerException;                                                                     \
+      {exceptionMsg = "When checking array object"; goto throwNullPointerException;}                      \
    if (regI[target##_ar.idx] < 0 || regI[target##_ar.idx] >= (int32)ARRAYOBJ_LEN(regO[target##_ar.base])) \
    {                                                                                                      \
       tcvmCreateException(context, ArrayIndexOutOfBoundsException, (int32)(code-method->code), 0, "%d must be >= 0 and < %d", \
@@ -137,7 +147,7 @@ bool checkArrayRange(Context currentContext, Object obj, int32 start, int32 coun
          }                                                                    \
       }                                                                       \
    }                                                                          \
-   else goto throwNullPointerException;
+   else {exceptionMsg = "Getting instance field"; goto throwNullPointerException;}
 
 #ifdef DIRECT_JUMP // use a direct jump if supported
 uint32 *_address[OPCODE_LENGTH];
@@ -145,6 +155,7 @@ uint32 *_addrMtdParam[4];
 uint32 *_addrMtdcParam[4];
 uint32 *_addrMtdbParam[4];
 uint32 *_addrInParam[4];
+uint32 *_addrInParamA[4];
 uint32 *_addrNMRet[4];
 #endif
 
@@ -154,8 +165,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    // cache the current context into local variables
    Int32Array   regI  = context->regI;
    Value64Array reg64 = context->reg64;
-   ObjectArray  regO  = context->regO,regO2;
-   VoidPArray callStack0 = null;
+   TCObjectArray  regO  = context->regO,regO2;
+   int32 callStackMethodEnd = 0;
    // get method's variables
    register Code code = method->code;
    TCClass class_ = method->class_, c=null,thisClass;
@@ -166,7 +177,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    int32 i,len;
    UInt16Array sym;
    bool originalClassIsInterface,directNativeCall=false;
-   Object o=null;
+   CharP exceptionMsg = null;
+   TCObject o=null;
    Method newMethod=null;
    uint16 retv;
    VoidP sf;
@@ -183,6 +195,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    uint32 **addrMtdcParam;
    uint32 **addrMtdbParam;
    uint32 **addrInParam;
+   uint32 **addrInParamA;
    uint32 **addrNMRet;
    if (_address[0] == null)
    {
@@ -190,18 +203,20 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       _addrMtdcParam[RegI] = &&cRegI; _addrMtdcParam[RegO] = &&cRegO; _addrMtdcParam[RegD] = &&cRegD; _addrMtdcParam[RegL] = &&cRegL;
       _addrMtdbParam[RegI] = &&bRegI; _addrMtdbParam[RegO] = &&bRegO; _addrMtdbParam[RegD] = &&bRegD; _addrMtdbParam[RegL] = &&bRegL;
       _addrInParam[RegI] = &&dRegI;   _addrInParam[RegO] = &&dRegO;   _addrInParam[RegD] = &&dRegD;   _addrInParam[RegL] = &&dRegL;
+      _addrInParamA[RegI] = &&eRegI;  _addrInParamA[RegO] = &&eRegO;  _addrInParamA[RegD] = &&eRegD;  _addrInParamA[RegL] = &&eRegL;
       _addrNMRet[RegI] = &&nmRegI;    _addrNMRet[RegO] = &&nmRegO;    _addrNMRet[RegD] = &&nmRegD;    _addrNMRet[RegL] = &&nmRegL;
       OPADDR(BREAK)               OPADDR(MOV_regI_regI)       OPADDR(MOV_regI_field)      OPADDR(MOV_regI_static)     OPADDR(MOV_regI_aru)       OPADDR(MOV_regI_arc)        OPADDR(MOV_regI_sym)        OPADDR(MOV_regI_s18)        OPADDR(MOV_regI_arlen)     OPADDR(MOV_regO_regO)       OPADDR(MOV_regO_field)      OPADDR(MOV_regO_static)     OPADDR(MOV_regO_aru)       OPADDR(MOV_regO_arc)        OPADDR(MOV_regO_sym)        OPADDR(MOV_reg64_reg64)     OPADDR(MOV_reg64_field)      OPADDR(MOV_reg64_static)    OPADDR(MOV_reg64_aru)       OPADDR(MOV_reg64_arc)       OPADDR(MOV_regD_sym)       OPADDR(MOV_regL_sym)        OPADDR(MOV_regD_s18)        OPADDR(MOV_regL_s18)        OPADDR(MOV_field_regI)     OPADDR(MOV_field_regO)      OPADDR(MOV_field_reg64)     OPADDR(MOV_static_regI)     OPADDR(MOV_static_regO)    OPADDR(MOV_static_reg64)    OPADDR(MOV_arc_regI)        OPADDR(MOV_arc_regO)
       OPADDR(MOV_arc_reg64)       OPADDR(MOV_aru_regI)        OPADDR(MOV_aru_regO)        OPADDR(MOV_aru_reg64)       OPADDR(MOV_arc_regIb)      OPADDR(MOV_arc_reg16)       OPADDR(MOV_aru_regIb)       OPADDR(MOV_aru_reg16)       OPADDR(MOV_regIb_arc)      OPADDR(MOV_reg16_arc)       OPADDR(MOV_regIb_aru)       OPADDR(MOV_reg16_aru)       OPADDR(MOV_regO_null)      OPADDR(INC_regI)            OPADDR(ADD_regI_regI_regI)  OPADDR(ADD_regI_s12_regI)   OPADDR(ADD_regI_arc_s6)      OPADDR(ADD_regI_aru_s6)     OPADDR(ADD_regI_regI_sym)   OPADDR(ADD_regD_regD_regD)  OPADDR(ADD_regL_regL_regL) OPADDR(ADD_aru_regI_s6)     OPADDR(SUB_regI_s12_regI)   OPADDR(SUB_regI_regI_regI)  OPADDR(SUB_regD_regD_regD) OPADDR(SUB_regL_regL_regL)  OPADDR(MUL_regI_regI_s12)   OPADDR(MUL_regI_regI_regI)  OPADDR(MUL_regD_regD_regD) OPADDR(MUL_regL_regL_regL)  OPADDR(DIV_regI_regI_s12)   OPADDR(DIV_regI_regI_regI)
       OPADDR(DIV_regD_regD_regD)  OPADDR(DIV_regL_regL_regL)  OPADDR(MOD_regI_regI_s12)   OPADDR(MOD_regI_regI_regI)  OPADDR(MOD_regD_regD_regD) OPADDR(MOD_regL_regL_regL)  OPADDR(SHR_regI_regI_s12)   OPADDR(SHR_regI_regI_regI)  OPADDR(SHR_regL_regL_regL) OPADDR(SHL_regI_regI_s12)   OPADDR(SHL_regI_regI_regI)  OPADDR(SHL_regL_regL_regL)  OPADDR(USHR_regI_regI_s12) OPADDR(USHR_regI_regI_regI) OPADDR(USHR_regL_regL_regL) OPADDR(AND_regI_regI_s12)   OPADDR(AND_regI_aru_s6)      OPADDR(AND_regI_regI_regI)  OPADDR(AND_regL_regL_regL)  OPADDR(OR_regI_regI_s12)    OPADDR(OR_regI_regI_regI)  OPADDR(OR_regL_regL_regL)   OPADDR(XOR_regI_regI_s12)   OPADDR(XOR_regI_regI_regI)  OPADDR(XOR_regL_regL_regL) OPADDR(JEQ_regO_regO)       OPADDR(JEQ_regO_null)       OPADDR(JEQ_regI_regI)       OPADDR(JEQ_regL_regL)      OPADDR(JEQ_regD_regD)       OPADDR(JEQ_regI_s6)         OPADDR(JEQ_regI_sym)
       OPADDR(JNE_regO_regO)       OPADDR(JNE_regO_null)       OPADDR(JNE_regI_regI)       OPADDR(JNE_regL_regL)       OPADDR(JNE_regD_regD)      OPADDR(JNE_regI_s6)         OPADDR(JNE_regI_sym)        OPADDR(JLT_regI_regI)       OPADDR(JLT_regL_regL)      OPADDR(JLT_regD_regD)       OPADDR(JLT_regI_s6)         OPADDR(JLE_regI_regI)       OPADDR(JLE_regL_regL)      OPADDR(JLE_regD_regD)       OPADDR(JLE_regI_s6)         OPADDR(JGT_regI_regI)       OPADDR(JGT_regL_regL)        OPADDR(JGT_regD_regD)       OPADDR(JGT_regI_s6)         OPADDR(JGE_regI_regI)       OPADDR(JGE_regL_regL)      OPADDR(JGE_regD_regD)       OPADDR(JGE_regI_s6)         OPADDR(JGE_regI_arlen)      OPADDR(DECJGTZ_regI)       OPADDR(DECJGEZ_regI)        OPADDR(TEST_regO)           OPADDR(JUMP_s24)            OPADDR(CONV_regI_regL)     OPADDR(CONV_regI_regD)      OPADDR(CONV_regIb_regI)     OPADDR(CONV_regIc_regI)
-      OPADDR(CONV_regIs_regI)     OPADDR(CONV_regL_regI)      OPADDR(CONV_regL_regD)      OPADDR(CONV_regD_regI)      OPADDR(CONV_regD_regL)     OPADDR(RETURN_regI)         OPADDR(RETURN_regO)         OPADDR(RETURN_reg64)        OPADDR(RETURN_void)        OPADDR(RETURN_s24I)         OPADDR(RETURN_null)         OPADDR(RETURN_s24D)         OPADDR(RETURN_s24L)        OPADDR(RETURN_symI)         OPADDR(RETURN_symO)         OPADDR(RETURN_symD)         OPADDR(RETURN_symL)          OPADDR(SWITCH)              OPADDR(NEWARRAY_len)        OPADDR(NEWARRAY_regI)       OPADDR(NEWARRAY_multi)     OPADDR(NEWOBJ)              OPADDR(THROW)               OPADDR(INSTANCEOF)          OPADDR(CHECKCAST)          OPADDR(CALL_normal)         OPADDR(CALL_virtual)        OPADDR(JUMP_regI)           OPADDR(MONITOR_Enter)      OPADDR(MONITOR_Exit)
+      OPADDR(CONV_regIs_regI)     OPADDR(CONV_regL_regI)      OPADDR(CONV_regL_regD)      OPADDR(CONV_regD_regI)      OPADDR(CONV_regD_regL)     OPADDR(RETURN_regI)         OPADDR(RETURN_regO)         OPADDR(RETURN_reg64)        OPADDR(RETURN_void)        OPADDR(RETURN_s24I)         OPADDR(RETURN_null)         OPADDR(RETURN_s24D)         OPADDR(RETURN_s24L)        OPADDR(RETURN_symI)         OPADDR(RETURN_symO)         OPADDR(RETURN_symD)         OPADDR(RETURN_symL)          OPADDR(SWITCH)              OPADDR(NEWARRAY_len)        OPADDR(NEWARRAY_regI)       OPADDR(NEWARRAY_multi)     OPADDR(NEWOBJ)              OPADDR(THROW)               OPADDR(INSTANCEOF)          OPADDR(CHECKCAST)          OPADDR(CALL_normal)         OPADDR(CALL_virtual)        OPADDR(JUMP_regI)           OPADDR(MONITOR_Enter)      OPADDR(MONITOR_Enter2)      OPADDR(MONITOR_Exit)        OPADDR(MONITOR_Exit2)
    }
    address = _address;
    addrMtdParam = _addrMtdParam;
    addrMtdcParam = _addrMtdcParam;
    addrMtdbParam = _addrMtdbParam;
    addrInParam = _addrInParam;
+   addrInParamA = _addrInParamA;
    addrNMRet = _addrNMRet;
 #endif
 
@@ -214,6 +229,8 @@ TC_API TValue executeMethod(Context context, Method method, ...)
       {
 #ifdef ENABLE_TRACE
          TRACE("T %08d %X %X %05d - Cannot acquire context; owner=%X; usageCount=%d", getTimeStamp(), thread, context, ++context->ccon, context->usageOwner, context->usageCount);
+#else
+         debug("Cannot acquire context! Waiting to release...");
 #endif
          do
          {
@@ -222,6 +239,9 @@ TC_API TValue executeMethod(Context context, Method method, ...)
             LOCKVAR(context->usageLock);
          }
          while (context->usageOwner != null); // while this context is not released
+#ifndef ENABLE_TRACE
+         debug("Context released!");
+#endif
       }
       context->usageOwner = thread;
    }
@@ -235,7 +255,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 
 #ifdef ENABLE_TEST_SUITE
    if (context->callStackForced)
-      callStack0 = context->callStackForced; // needed by the RETURN_XXX test cases
+      callStackMethodEnd = context->callStackForced - context->callStackStart; // needed by the RETURN_XXX test cases
 #endif
 
    returnedValue.asInt32 = (int32)0xFFFFFFFF;
@@ -244,8 +264,11 @@ TC_API TValue executeMethod(Context context, Method method, ...)
    if (((context->regI  + method->iCount)   >= context->regIEnd      && !contextIncreaseRegI(context, &regI))   ||
        ((context->regO  + method->oCount)   >= context->regOEnd      && !contextIncreaseRegO(context, &regO))   ||
        ((context->reg64 + method->v64Count) >= context->reg64End     && !contextIncreaseReg64(context, &reg64)) ||
-       ((context->callStack+2)              >= context->callStackEnd && !contextIncreaseCallStack(context, &callStack0)))
+       ((context->callStack+2)              >= context->callStackEnd && !contextIncreaseCallStack(context)))
+   {
+      exceptionMsg = "On context's stack expansion 1";
       goto throwOutOfMemoryError;
+   }
 
 #ifndef ENABLE_TEST_SUITE
    *regO = null;
@@ -260,7 +283,7 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #ifdef ENABLE_TEST_SUITE
    if (context->callStackForced == null)
 #endif
-      callStack0 = context->callStack; // method will end when callStack0 is reached.
+      callStackMethodEnd = (int32)(context->callStack - context->callStackStart); // method will end when callStackMethodEnd is reached. guich@tc310: changed the pointer to a difference because when the call stack reaches the limit, it will not change all pointers since this method is called recursively
 
    // push the parameters
 #ifdef ENABLE_TRACE
@@ -269,30 +292,51 @@ TC_API TValue executeMethod(Context context, Method method, ...)
 #endif
    if (method->paramCount > 0 || !method->flags.isStatic)
    {
-      Object *rO = regO;
+      TCObject *rO = regO;
       va_list vaargs;
       va_start(vaargs, method);
 
-      if (!method->flags.isStatic && (*rO++ = va_arg(vaargs, Object)) == null) // push "this", which must be the first parameter passed to executeMethod
+      if (!method->flags.isStatic && (*rO++ = va_arg(vaargs, TCObject)) == null) // push "this", which must be the first parameter passed to executeMethod
       {
          tcvmCreateException(context, NullPointerException, -1, 0, "Instance is null when calling method %s", method->name); // cannot use "goto throwNullPointerException" here, because we can't replace "method" by newMethod
          goto handleException;
       }
 
+      /*if (method->flags.isSynchronized)
+         lockMutex(method->flags.isStatic? (size_t)method->class_ : (size_t)regO[0]);
+      */
       if (method->paramCount > 0)
       {
          int32  *rI = regI;
          TValue64 *r64 = reg64;
          int32 n = method->paramCount;
          UInt8Array regTypes = method->paramRegs;
-         for (; n-- > 0; regTypes++)
+         if (context->parametersInArray)
          {
-            XSELECT(addrInParam, *regTypes)
+            TValue* aargs = va_arg(vaargs, TValue*);
+            context->parametersInArray = false;
+            for (; n-- > 0; regTypes++, aargs++)
             {
-               XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
-               XOPTION(d,RegO): *rO++ = va_arg(vaargs, Object);        continue;
-               XOPTION(d,RegD):
-               XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
+               XSELECT(addrInParamA, *regTypes)
+               {
+                  XOPTION(e,RegI): *rI++ = aargs->asInt32;         continue;
+                  XOPTION(e,RegO): *rO++ = aargs->asObj;           continue;
+                  XOPTION(e,RegD):
+                  XOPTION(e,RegL): *REGD(r64++) = aargs->asDouble; continue;
+               }
+            }
+         }
+         else
+         {
+            for (; n-- > 0; regTypes++)
+            {
+               XSELECT(addrInParam, *regTypes)
+               {
+                  XOPTION(d,RegI): *rI++ = va_arg(vaargs, int32);         continue;
+                  XOPTION(d,RegO): *rO++ = va_arg(vaargs, TCObject);        continue;
+                  XOPTION(d,RegD):
+                  XOPTION(d,RegL): *REGD(r64++) = va_arg(vaargs, double); continue;
+               }
             }
          }
       }
@@ -327,15 +371,15 @@ mainLoop:
       OPCODE(MOV_regI_aru)        regI[code->reg_ar.reg]  = ((int32*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_regI_sym)        regI[code->reg_sym.reg] = cp->i32[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_regI_s18)        regI[code->s18_reg.reg] = (int32)code->s18_reg.s18; NEXT_OP
-      OPCODE(MOV_regI_arlen)      if (regO[code->reg_ar.base] == null) goto throwNullPointerException; regI[code->reg_ar.reg]  = ARRAYOBJ_LEN(regO[code->reg_ar.base]); NEXT_OP
+      OPCODE(MOV_regI_arlen)      if (regO[code->reg_ar.base] == null) {exceptionMsg = "On array's length object"; goto throwNullPointerException;} regI[code->reg_ar.reg]  = ARRAYOBJ_LEN(regO[code->reg_ar.base]); NEXT_OP
       OPCODE(MOV_regO_regO)       regO[code->reg_reg.reg0] = regO[code->reg_reg.reg1]; NEXT_OP
       OPCODE(MOV_regO_null)       regO[code->reg.reg] = 0; NEXT_OP
       OPCODE(MOV_regO_arc)        ARRAYCHECK(code->reg)
-      OPCODE(MOV_regO_aru)        regO[code->reg_ar.reg]  = ((Object*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
+      OPCODE(MOV_regO_aru)        regO[code->reg_ar.reg]  = ((TCObject*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_regO_sym)        regO[code->reg_sym.reg] = cp->str[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_reg64_reg64)     reg64[code->reg_reg.reg0] = reg64[code->reg_reg.reg1]; NEXT_OP
       OPCODE(MOV_reg64_arc)       ARRAYCHECK(code->reg)
-      OPCODE(MOV_reg64_aru)       REGD(reg64)[code->reg_ar.reg]  = ((double*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
+      OPCODE(MOV_reg64_aru)       REGL(reg64)[code->reg_ar.reg]  = ((int64*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]]; NEXT_OP
       OPCODE(MOV_regD_sym)        REGD(reg64)[code->reg_sym.reg] = cp->dbl[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_regL_sym)        REGL(reg64)[code->reg_sym.reg] = cp->i64[code->reg_sym.sym]; NEXT_OP
       OPCODE(MOV_regD_s18)        REGD(reg64)[code->s18_reg.reg] = (int32)code->s18_reg.s18; NEXT_OP
@@ -343,7 +387,7 @@ mainLoop:
       OPCODE(MOV_arc_regI)        ARRAYCHECK(code->reg)
       OPCODE(MOV_aru_regI)        ((int32 *)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = regI[code->reg_ar.reg]; NEXT_OP
       OPCODE(MOV_arc_regO)        ARRAYCHECK(code->reg)
-      OPCODE(MOV_aru_regO)        ((Object*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = regO[code->reg_ar.reg]; NEXT_OP
+      OPCODE(MOV_aru_regO)        ((TCObject*)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = regO[code->reg_ar.reg]; NEXT_OP
       OPCODE(MOV_arc_reg64)       ARRAYCHECK(code->reg)
       OPCODE(MOV_aru_reg64)       ((Value64)ARRAYOBJ_START(regO[code->reg_ar.base]))[regI[code->reg_ar.idx]] = reg64[code->reg_ar.reg]; NEXT_OP
       OPCODE(MOV_arc_regIb)       ARRAYCHECK(code->reg)
@@ -361,10 +405,10 @@ mainLoop:
       OPCODE(MOV_regO_field)      GET_INSTANCE_FIELD(RegO) regO[code->field_reg.reg] = FIELD_OBJ(o, OBJ_CLASS(o), retv); NEXT_OP
       OPCODE(MOV_reg64_field)     GET_INSTANCE_FIELD(RegD) REGD(reg64)[code->field_reg.reg] = FIELD_DBL(o, OBJ_CLASS(o), retv); NEXT_OP
       OPCODE(MOV_static_regI)     GET_STATIC_FIELD(RegI) ((int32*) sf)[0] = regI[code->static_reg.reg]; NEXT_OP
-      OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((Object*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
+      OPCODE(MOV_static_regO)     GET_STATIC_FIELD(RegO) ((TCObject*)sf)[0] = regO[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_static_reg64)    GET_STATIC_FIELD(RegD) ((double*)sf)[0] = REGD(reg64)[code->static_reg.reg]; NEXT_OP
       OPCODE(MOV_regI_static)     GET_STATIC_FIELD(RegI) regI[code->static_reg.reg] = ((int32*) sf)[0]; NEXT_OP
-      OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((Object*)sf)[0]; NEXT_OP
+      OPCODE(MOV_regO_static)     GET_STATIC_FIELD(RegO) regO[code->static_reg.reg] = ((TCObject*)sf)[0]; NEXT_OP
       OPCODE(MOV_reg64_static)    GET_STATIC_FIELD(RegD) REGD(reg64)[code->static_reg.reg] = ((double*)sf)[0]; NEXT_OP
       OPCODE(ADD_regI_regI_regI)  regI[code->reg_reg_reg.reg0] = regI[code->reg_reg_reg.reg1] + regI[code->reg_reg_reg.reg2]; NEXT_OP
       OPCODE(ADD_regI_s12_regI)   regI[code->reg_reg_s12.reg0] = regI[code->reg_reg_s12.reg1] + (int32)code->reg_reg_s12.s12; NEXT_OP
@@ -449,8 +493,17 @@ mainLoop:
             goto notYetLinked;
       OPCODE(CALL_virtual) // 66% of the calls
          if (regO[code->mtd.this_] == null)
+         {     
+            exceptionMsg = "On 'this' when calling a method";
             goto throwNullPointerException;
+         }
          thisClass = OBJ_CLASS(regO[code->mtd.this_]);
+		 if (thisClass == null)
+		 {
+			 exceptionMsg = "Obj class is null";
+          debug("NULL CLASS OBJECT: %X", regO[code->mtd.this_]);
+			 goto throwNullPointerException;
+		 }
          if ((macArray = cp->boundVirtualMethod[code->mtd.sym]) != null && // was the method ever linked?
             (mac = macArray[thisClass->hash&15]) != null &&                // map to the hash position
             mac->c == thisClass) // 90% of the cases
@@ -469,12 +522,13 @@ contCall:
             if ((context->regI      >= context->regIEnd      && !contextIncreaseRegI(context, &regI))   ||
                 (context->regO      >= context->regOEnd      && !contextIncreaseRegO(context, &regO))   ||
                 (context->reg64     >= context->reg64End     && !contextIncreaseReg64(context, &reg64)) ||
-                (context->callStack >= context->callStackEnd && !contextIncreaseCallStack(context, &callStack0)))
+                (context->callStack >= context->callStackEnd && !contextIncreaseCallStack(context)))
             {
                context->regI  -= newMethod->iCount;
                context->regO  -= newMethod->oCount;
                context->reg64 -= newMethod->v64Count;
                context->callStack -= 2;
+               exceptionMsg = "On context's stack expansion 2";
                goto throwOutOfMemoryError;
             }
 
@@ -487,6 +541,9 @@ contCall:
 #ifdef ENABLE_TRACE
             TRACE("T %08d %X %X %05d - %04d #%4d %X-%X %X %s calling %s.%s - %s (%X)", getTimeStamp(), thread, context, ++context->ccon, (int)(code-method->code), locateLine(method, (int32)(code-method->code)), (int)regO, context->regO, context->callStack-2, getSpaces(context,context->depth), newMethod->class_->name, newMethod->name, regO[(int32)code->mtd.this_ - (int32)method->oCount] == null ? "" : OBJ_CLASS(regO[(int32)code->mtd.this_ - (int32)method->oCount])->name, (int)(regO[(int32)code->mtd.this_ - (int32)method->oCount]));
             context->depth++;
+#else
+            if (traceOn)
+               debug("T %08d %X %s - %s",getTimeStamp(), thread, newMethod->class_->name, newMethod->name);
 #endif
             if (!newMethod->flags.isStatic)
             {
@@ -501,6 +558,9 @@ contCall:
                   goto popStackFrame; // stack frame must be pulled before handling the exception
                }
             }
+
+            /*if (newMethod->flags.isSynchronized)
+               lockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[0]);*/           
             // retrieve the instance reference, the return register and the parameters
             nparam = newMethod->paramCount;
             if (nparam == 0) // is anything being passed along?
@@ -510,7 +570,7 @@ contCall:
                int32  *ri = regI;
                TValue64 *r64 = reg64;
                uint8 *regs = newMethod->paramRegs, *params=0;
-               Object *ro = regO + (newMethod->flags.isStatic == 0);
+               TCObject *ro = regO + (newMethod->flags.isStatic == 0);
                // if nothing is returned, then the first parameter is in the method's instruction
                if (newMethod->cpReturn == 0)
                {
@@ -592,15 +652,7 @@ nativeMethodCall:
                nmp->i32 = regI;
                nmp->obj = regO;
                nmp->i64 = reg64;
-#ifdef PALMOS
-               if (newMethod->ref) // external library?
-               {
-                  EnterLibrary(newMethod->ref)
-                  newMethod->boundNM(nmp); // call the method
-                  ExitLibrary()
-               }
-               else
-#endif
+               nmp->retO = null;
                newMethod->boundNM(nmp); // call the method
 popStackFrame:
                // There's no "return" instruction for native methods, so we must pop the frame here
@@ -621,23 +673,32 @@ popStackFrame:
                   reg64 = context->reg64;
                }
                context->callStack -= 2;
-
+               newMethod = (Method)context->callStack[0];
+               /*if (newMethod->flags.isSynchronized)
+                  unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]);
+               */
                if (context->thrownException != null) // if an exception was thrown by the native method, handle it
+               {
+                  nmp->retO = null;
                   goto handleException;
+               }
 
 #ifdef ENABLE_TRACE
                context->depth--;
                TRACE("T %08d %X %X %05d - %04d #%4d %X-%X %X %s native method called and returned to %s.%s - %s (%X)", getTimeStamp(), thread, context, ++context->ccon, (int)(code-method->code), locateLine(method, (int32)(code-method->code)), (int)regO, context->regO, context->callStack-2, getSpaces(context,context->depth), method->class_->name, method->name, regO[0] == null ? "" : OBJ_CLASS(regO[0])->name, regO[0]);
 #endif
                // check the returned value
-               if (context->callStack >= callStack0)
+               if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd)
                {
                   if (newMethod->cpReturn) // not returning void?
                   {
                      XSELECT(addrNMRet, newMethod->returnReg)
                      {
                         XOPTION(nm,RegI): regI [code->mtd.retOr1stParam] = nmp->retI; code += newMethod->paramSkip; NEXT_OP;
-                        XOPTION(nm,RegO): regO [code->mtd.retOr1stParam] = nmp->retO; code += newMethod->paramSkip; nmp->retO = null; NEXT_OP;
+                        XOPTION(nm,RegO): regO [code->mtd.retOr1stParam] = nmp->retO;
+                        if (((long)nmp->retO & 1) == 1)
+                           nmp->retO = 0;
+                        code += newMethod->paramSkip; nmp->retO = null; NEXT_OP;
                         XOPTION(nm,RegD):
                         XOPTION(nm,RegL): reg64[code->mtd.retOr1stParam] = nmp->retL; code += newMethod->paramSkip; NEXT_OP;
                      }
@@ -663,13 +724,15 @@ popStackFrame:
             if (macArray == null) // have to create the array?
             {
                IF_HEAP_ERROR(cp->heap)
-               {
+               {                            
+                  exceptionMsg = "When expanding MAC array";
                   goto throwOutOfMemoryError;
                }
-               macArray = cp->boundVirtualMethod[code->mtd.sym] = (MethodAndClass*)heapAlloc(cp->heap, PTRSIZE*16);
+               macArray = cp->boundVirtualMethod[code->mtd.sym] = (MethodAndClass*)heapAlloc(cp->heap, TSIZE*16);
                boundHead = &macArray[thisClass->hash&15];
                goto notYetLinked;
             }
+            LOCKVAR(metAndCls);
             boundHead = &macArray[thisClass->hash&15];
             for (last=mac, mac = mac ? mac->next : null; mac != null; last = mac, mac = mac->next)
                if (mac->c == thisClass)
@@ -681,8 +744,10 @@ popStackFrame:
                   *boundHead = mac;
                   // get the method's address and execute it.
                   newMethod = mac->m;
+                  UNLOCKVAR(metAndCls);
                   goto contCall;
                }
+            UNLOCKVAR(metAndCls);
 notYetLinked:
             originalClassIsInterface = false;
             sym = cp->mtd[ code->mtd.sym ]; // virtual methods are directly referenced: mtd.sym is the index to an array that will point to the mtd table
@@ -692,7 +757,22 @@ notYetLinked:
             hashParams = cp->hashParams[code->mtd.sym];
             methodName = cp->mtdfld[sym[1]];
             if (code->op.op == CALL_virtual)
+            {
                c = OBJ_CLASS(regO[code->mtd.this_]); // search for the method starting on the class pointed by "this"
+               if (c->flags.isString && strEq(className, "java.lang.Class"))
+               {
+                  TNMParams params;
+
+                  tzero(params);
+                  params.currentContext = context;
+                  params.obj = &regO[code->mtd.this_];
+                  jlC_forName_s(&params);
+                  regO[code->mtd.this_] = params.retO;
+                  c = params.retO ? OBJ_CLASS(params.retO) : null;
+                  if (c == null)
+                     goto throwClassNotFoundException;
+               }
+            }
             else
             if (className == class_->name || strEq(className, class_->name)) // calling a method inside this class? (first comparison is always true, but keep 2nd for safety)
                c = class_;
@@ -707,7 +787,10 @@ notYetLinked:
                {
                   originalClassIsInterface = true;
                   if (regO[code->mtd.this_] == null)
+                  {
+                     exceptionMsg = "Calling an interface's method";
                      goto throwNullPointerException;
+                  }
                   c = OBJ_CLASS(regO[code->mtd.this_]);
                }
             }
@@ -732,7 +815,7 @@ notYetLinked:
                      goto contCall;
                   }
                // not found in current class, search in inherited classes, if calling a virtual method
-               if (code->op.op != CALL_virtual && !originalClassIsInterface)
+               if (code->op.op != CALL_virtual && code->op.op != CALL_normal && !originalClassIsInterface)
                   break;
                c = c->superClass;
             } while (c);
@@ -751,20 +834,25 @@ notYetLinked:
       //         means: where the caller wants the answer to be placed
       // reg.reg: points where the current routine placed the answer
       // so, the movement is: reg.reg -> retReg
-      OPCODE(RETURN_s24I)  context->callStack -= 2; if (context->callStack >= callStack0) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = (int32 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt32  = (int32 )code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_null)  context->callStack -= 2; if (context->callStack >= callStack0) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = null;                      goto resumePreviousMethod;} else {returnedValue.asObj    = null;                     goto finishMethod;}
-      OPCODE(RETURN_s24D)  context->callStack -= 2; if (context->callStack >= callStack0) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (double)code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asDouble = (double)code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_s24L)  context->callStack -= 2; if (context->callStack >= callStack0) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (int64 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt64  = (int64 )code->s24.desloc; goto finishMethod;}
-      OPCODE(RETURN_symI)  context->callStack -= 2; if (context->callStack >= callStack0) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = cp->i32[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt32  = cp->i32[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symO)  context->callStack -= 2; if (context->callStack >= callStack0) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = cp->str[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asObj    = cp->str[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symD)  context->callStack -= 2; if (context->callStack >= callStack0) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->dbl[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asDouble = cp->dbl[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_symL)  context->callStack -= 2; if (context->callStack >= callStack0) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->i64[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt64  = cp->i64[code->sym.sym];   goto finishMethod;}
-      OPCODE(RETURN_regI)  context->callStack -= 2; if (context->callStack >= callStack0) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = regI[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asInt32  = regI[code->reg.reg];      goto finishMethod;}
-      OPCODE(RETURN_regO)  context->callStack -= 2; if (context->callStack >= callStack0) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = regO[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asObj    = regO[code->reg.reg];      goto finishMethod;}
-      OPCODE(RETURN_reg64) context->callStack -= 2; if (context->callStack >= callStack0) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
+      OPCODE(RETURN_s24I)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = (int32 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt32  = (int32 )code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_null)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = null;                      goto resumePreviousMethod;} else {returnedValue.asObj    = null;                     goto finishMethod;}
+      OPCODE(RETURN_s24D)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (double)code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asDouble = (double)code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_s24L)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = (int64 )code->s24.desloc;  goto resumePreviousMethod;} else {returnedValue.asInt64  = (int64 )code->s24.desloc; goto finishMethod;}
+      OPCODE(RETURN_symI)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = cp->i32[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt32  = cp->i32[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symO)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = cp->str[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asObj    = cp->str[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symD)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGD(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->dbl[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asDouble = cp->dbl[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_symL)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {REGL(reg64)[((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = cp->i64[code->sym.sym];    goto resumePreviousMethod;} else {returnedValue.asInt64  = cp->i64[code->sym.sym];   goto finishMethod;}
+      OPCODE(RETURN_regI)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regI       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->iCount  ] = regI[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asInt32  = regI[code->reg.reg];      goto finishMethod;}
+      OPCODE(RETURN_regO)  context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {regO       [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->oCount  ] = regO[code->reg.reg];       goto resumePreviousMethod;} else {returnedValue.asObj    = regO[code->reg.reg];      goto finishMethod;}
+      OPCODE(RETURN_reg64) context->callStack -= 2; /*newMethod = (Method)context->callStack[0]; if (newMethod->flags.isSynchronized) unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)regO[-method->oCount]); */ if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd) {reg64      [((Code)context->callStack[-1])->mtd.retOr1stParam - ((Method)context->callStack[-2])->v64Count] = reg64[code->reg.reg];      goto resumePreviousMethod;} else {returnedValue.asInt64  = reg64[code->reg.reg];     goto finishMethod;}
 returnVoid:
-      OPCODE(RETURN_void)  context->callStack -= 2;
-         if (context->callStack >= callStack0)
+      OPCODE(RETURN_void)  
+         context->callStack -= 2;
+         newMethod = (Method)context->callStack[0];
+         /*if (newMethod->flags.isSynchronized)
+            unlockMutex(newMethod->flags.isStatic? (size_t)newMethod->class_ : (size_t)context->regO[-newMethod->oCount]);
+         */
+         if (((int32)(context->callStack-context->callStackStart)) >= callStackMethodEnd)
          {
 resumePreviousMethod:
             code = ((Code)context->callStack[-1]) + method->paramSkip; // now that retReg was used, its safe to skip over the parameters
@@ -830,10 +918,10 @@ resumePreviousMethod:
          }
          NEXT_OP0
       }
-      OPCODE(NEWARRAY_len)   if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims)) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
-      OPCODE(NEWARRAY_regI)  if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], regI[code->newarray.lenOrRegIOrDims])) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
-      OPCODE(NEWARRAY_multi) if ((regO[code->newarray.regO] = createArrayObjectMulti(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims, (uint8*)(code+1), regI)) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->newarray.regO], UNLOCKED); code += (code->newarray.lenOrRegIOrDims+3)>>2; NEXT_OP
-      OPCODE(NEWOBJ)         if ((regO[code->reg_sym.reg]   = createObjectWithoutCallingDefaultConstructor(context, cp->cls[code->reg_sym.sym])) == null) goto throwOutOfMemoryError; setObjectLock(regO[code->reg_sym.reg], UNLOCKED); NEXT_OP // do not call default constructor
+      OPCODE(NEWARRAY_len)   if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims)) == null) {exceptionMsg = "When creating array with length"; goto throwOutOfMemoryError;} setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
+      OPCODE(NEWARRAY_regI)  if ((regO[code->newarray.regO] = createArrayObject(context, cp->cls[code->newarray.sym], regI[code->newarray.lenOrRegIOrDims])) == null) {exceptionMsg = "When creating array with register"; goto throwOutOfMemoryError;} setObjectLock(regO[code->newarray.regO], UNLOCKED); NEXT_OP
+      OPCODE(NEWARRAY_multi) if ((regO[code->newarray.regO] = createArrayObjectMulti(context, cp->cls[code->newarray.sym], code->newarray.lenOrRegIOrDims, (uint8*)(code+1), regI)) == null) {exceptionMsg = "When creating multiple arrays"; goto throwOutOfMemoryError;} setObjectLock(regO[code->newarray.regO], UNLOCKED); code += (code->newarray.lenOrRegIOrDims+3)>>2; NEXT_OP
+      OPCODE(NEWOBJ)         if ((regO[code->reg_sym.reg]   = createObjectWithoutCallingDefaultConstructor(context, cp->cls[code->reg_sym.sym])) == null) {exceptionMsg = "When creating object"; goto throwOutOfMemoryError;} setObjectLock(regO[code->reg_sym.reg], UNLOCKED); NEXT_OP // do not call default constructor
       OPCODE(THROW)
          context->thrownException = regO[code->reg_reg.reg0];
 #ifdef ENABLE_TRACE
@@ -892,38 +980,54 @@ handleException:
          }
          NEXT_OP
       }
-      OPCODE(TEST_regO) if (regO[code->reg.reg] == null) goto throwNullPointerException; NEXT_OP
+      OPCODE(TEST_regO) if (regO[code->reg.reg] == null) {exceptionMsg = "Testing object."; goto throwNullPointerException;} NEXT_OP
       OPCODE(INC_regI)  regI[code->inc.reg] += (int32)code->inc.s16; NEXT_OP
       OPCODE(MONITOR_Enter)
+      OPCODE(MONITOR_Enter2)
       {
-         Object mutex;
          // get variables and do some checks
-         o = regO[code->reg_reg.reg0];
-         if (o == null) goto throwNullPointerException;
+         if (code->s24.op == MONITOR_Enter)        
+            o = regO[code->reg_reg.reg0];
+         else
+            o = cp->str[code->reg_reg.reg0];
+         if (o == null) {exceptionMsg = "On synchronized object's enter"; goto throwNullPointerException;}
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
-         {
-            className = OBJ_CLASS(o)->name;
-            goto throwMonitorRuntimeException;
+         {            
+            if (!lockMutex((size_t)o))
+            {
+               exceptionMsg = "When locking mutex";
+               goto throwOutOfMemoryError;         
+            }     
          }
-         mutex = Lock_mutex(o);
-         if (mutex != null) // guich@tc126_62
-            RESERVE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         else
+         {
+            TCObject mutex = Lock_mutex(o);
+            if (mutex != null) // guich@tc126_62
+               RESERVE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
+         }
          NEXT_OP
       }
       OPCODE(MONITOR_Exit)
+      OPCODE(MONITOR_Exit2) 
       {
-         Object mutex;
          // get variables and do some checks
-         o = regO[code->reg_reg.reg0];
-         if (o == null) goto throwNullPointerException;
+         if (code->s24.op == MONITOR_Exit)        
+            o = regO[code->reg_reg.reg0];
+         else
+            o = cp->str[code->reg_reg.reg0];
+         if (o == null) {exceptionMsg = "On synchronized object's exit"; goto throwNullPointerException;}
          if (OBJ_CLASS(o) != lockClass) // check for totalcross.util.concurrent.Lock
-         {
-            className = OBJ_CLASS(o)->name;
-            goto throwMonitorRuntimeException;
+            unlockMutex((size_t)o);
+         else
+         {   
+            TCObject mutex = Lock_mutex(o);
+            if (mutex != null) // guich@tc126_62
+            {
+               MUTEX_TYPE* pmutex = ((MUTEX_TYPE *)ARRAYOBJ_START(mutex));
+               if (pmutex)
+                  RELEASE_MUTEX_VAR(*pmutex); // now, get access to the mutex
+            }
          }
-         mutex = Lock_mutex(o);
-         if (mutex != null) // guich@tc126_62
-            RELEASE_MUTEX_VAR(*((MUTEX_TYPE *)ARRAYOBJ_START(mutex))); // now, get access to the mutex
          NEXT_OP
       }
       // end of opcodes
@@ -938,14 +1042,18 @@ throwArithmeticException:
    tcvmCreateException(context, ArithmeticException, (int32)(code-method->code), 0, null);
    goto handleException;
 throwNullPointerException:
-   tcvmCreateException(context, NullPointerException, (int32)(code-method->code), 0, null);
+   tcvmCreateException(context, NullPointerException, (int32)(code-method->code), 0, exceptionMsg);
+   exceptionMsg = null;
    goto handleException;
 throwClassNotFoundException:
    tcvmCreateException(context, ClassNotFoundException, (int32)(code-method->code), 0, className);
    goto handleException;
 throwOutOfMemoryError:
    if (context->thrownException == null)
-      tcvmCreateException(context, OutOfMemoryError, (int32)(code-method->code), 0, null);
+   {
+      tcvmCreateException(context, OutOfMemoryError, (int32)(code-method->code), 0, exceptionMsg);
+      exceptionMsg = null;
+   }
    goto handleException;
 throwNoSuchFieldError:
    tcvmCreateException(context, NoSuchFieldError, (int32)(code-method->code), 0, "%s %s. The current VM may not be compatible with this program.", className, fieldName);
@@ -957,7 +1065,8 @@ throwNoSuchMethodError:
    CharP paramsStr = null;
    for (i = 0; i < len; i++)
       slen += xstrlen(cp->cls[sym[i+2]]);
-   if (slen > 0 && (paramsStr = xmalloc(slen)) != null)
+   slen++;
+   if (slen > 0 && (paramsStr = (CharP)xmalloc(slen)) != null)
    {                 
       for (i = 0; i < len; i++)
       {
@@ -966,19 +1075,16 @@ throwNoSuchMethodError:
       }              
       paramsStr[slen-1] = 0;
    }
-   tcvmCreateException(context, NoSuchMethodError, (int32)(code-method->code), 0, "%s %s(%s). The current VM may not be compatible with this program.", className, methodName, slen == 0 ? "" : paramsStr == null ? "..." : paramsStr);
+   tcvmCreateException(context, NoSuchMethodError, (int32)(code-method->code), 0, "%s %s(%s). The current VM may not be compatible with this program OR there may be a bug in the Java compiler; try to upgrade or downgrade your JDK.", className, methodName, slen == 0 ? "" : paramsStr == null ? "..." : paramsStr);
    xfree(paramsStr);
    goto handleException;
 }
-throwMonitorRuntimeException:
-   tcvmCreateException(context, RuntimeException, (int32)(code-method->code), 0, "Invalid class '%s'. Only totalcross.util.concurrent.Lock can be used with 'synchronized' keyword", className);
-   goto handleException;
 
 finishMethod:
    context->regO  = regO; // alredy points to the end of the previous called method
    context->regI  = regI;
    context->reg64 = reg64;
-   context->callStack = callStack0-2; // needed for testcases
+   context->callStack = context->callStackStart + callStackMethodEnd-2; // needed for testcases
    context->code = code;
 
 #ifdef ENABLE_TRACE

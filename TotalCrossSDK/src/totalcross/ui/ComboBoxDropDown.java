@@ -31,7 +31,7 @@ public class ComboBoxDropDown extends Window
    /** The assigned ListBox. */
    public ListBox lb;
    /** Set to true if want to make the control popup below or above always, and not only if WinCE */
-   public boolean dontHideParent = !uiPalm; // guich@200b4_205: let the user choose to not hide the parent control
+   public boolean dontHideParent = true; // guich@200b4_205: let the user choose to not hide the parent control
    /** Set to true to make this pop have the screen height */
    public boolean fullHeight; // guich@330_52
    /** Set to true to make this popup have the screen width */
@@ -53,7 +53,6 @@ public class ComboBoxDropDown extends Window
    public ComboBoxDropDown(ListBox lb)
    {
       if (uiAndroid) transparentBackground = lb.transparentBackground = true;
-      highResPrepared = true;
       started = true; // avoid calling the initUI method
       this.lb = lb;
       lb.simpleBorder = true;
@@ -171,7 +170,7 @@ public class ComboBoxDropDown extends Window
             break;
          //case KeyEvent.ACTION_KEY_PRESS: // kmeehl@tc100 - guich@tc113_9: commented out
          case ControlEvent.PRESSED:
-            if (event.target == lb)
+            if (event.target == lb && topMost == this) // guich@tc305: fix problem when a MLB is inside a window, this unpop was closing the window
                unpop();
             break;
       }

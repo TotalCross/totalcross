@@ -17,9 +17,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
-#if !defined(__SYMBIAN32__)
 #include <utime.h>
-#endif
 
 #if HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
@@ -31,11 +29,13 @@
 
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
-#ifdef ANDROID
-static bool getSDCardPath(char* buf)
+#if defined(ANDROID) && !defined(LITEBASE_H)
+bool getSDCardPath(char* buf, int idx)
 {
    JNIEnv *env = getJNIEnv();                                      
-   jstring path = (*env)->CallStaticObjectMethod(env, applicationClass, jgetSDCardPath);
+   if (idx < 0 || idx > 9)
+      idx = 0;
+   jstring path = (*env)->CallStaticObjectMethod(env, applicationClass, jgetSDCardPath, idx);
    if (path != null)
    {
       jstring2CharP(path, buf);
@@ -56,7 +56,7 @@ static bool getSDCardPath(char* buf)
 static bool fileIsCardInserted(int32 slot)
 {
    char buf[64];
-   return getSDCardPath(buf);
+   return getSDCardPath(buf, slot);
 }
 #else
 #define fileIsCardInserted(slot) true
@@ -113,6 +113,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
  * Link Library: libc.
  *
  *************************************/
+static inline Err fileFlush(NATIVE_FILE fref);
 
 static Err fileClose(NATIVE_FILE* fref)
 {
@@ -121,7 +122,7 @@ static Err fileClose(NATIVE_FILE* fref)
 
    if (fref->handle == INVALID_HANDLE_VALUE)
       return NO_ERROR;
-
+   
    if (fstat(fileno(fref->handle), &statData))
       return errno;
 
@@ -129,6 +130,7 @@ static Err fileClose(NATIVE_FILE* fref)
       return NO_ERROR;
 
    hFile = fref->handle;
+   fileFlush(*fref);
    fref->handle = INVALID_HANDLE_VALUE;
 
    if (fclose(hFile))
@@ -200,7 +202,6 @@ error:
 
 static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
 {
-   int ret;
    struct stat statData;
 
    if (stat(path, &statData))
@@ -288,9 +289,10 @@ static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
    if (fref.handle != INVALID_HANDLE_VALUE)
    {
       struct stat statData;
+      fileFlush(fref); // flsobral: must flush before getSize, otherwise the value returned may not be accurate - this fix a bug in ZipStream introduced with the forced flush in setSize.
       if (!fstat(fileno(fref.handle), &statData))
       {
-         *size = statData.st_size;
+         *size = (int)statData.st_size;
          return NO_ERROR;
       }
    }
@@ -350,24 +352,26 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
    #endif
       dir = opendir(path);
       if (dir)
-      while ((entry = readdir(dir)))
       {
-   #ifdef ANDROID
-         if (entry->d_off < lastOff)        
-            break;
-         lastOff = entry->d_off;
-   #endif
-         if ((entry->d_name[0] != '.') || ((entry->d_name[1] != '\0') && ((entry->d_name[1] != '.') || (entry->d_name[2] != '\0')))) /* warning: order matters! */
+         while ((entry = readdir(dir)))
          {
-            *isEmpty = false; // at least one file found. stop
-            break;
+      #ifdef ANDROID
+            if (entry->d_off < lastOff)        
+               break;
+            lastOff = entry->d_off;
+      #endif
+            if ((entry->d_name[0] != '.') || ((entry->d_name[1] != '\0') && ((entry->d_name[1] != '.') || (entry->d_name[2] != '\0')))) /* warning: order matters! */
+            {
+               *isEmpty = false; // at least one file found. stop
+               break;
+            }
          }
+         closedir(dir);
       }
-      closedir(dir);
    }
    else
    {
-      *isEmpty = statData.st_size;
+      *isEmpty = (int)statData.st_size;
    }
    return err;
 }
@@ -384,7 +388,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
 
 static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {
-   if ((*bytesRead = fread(bytes+offset, 1, length, fref.handle)) <= 0 && !feof(fref.handle)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
+   if ((*bytesRead = (int)fread(bytes+offset, 1, length, fref.handle)) <= 0 && !feof(fref.handle)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
       return errno;
 
    return NO_ERROR;
@@ -441,7 +445,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 
 static inline Err fileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
 {
-   if ((*bytesWritten = fwrite(bytes+offset, 1, length, fref.handle)) < 0)
+   if ((*bytesWritten = (int)fwrite(bytes+offset, 1, length, fref.handle)) < 0)
       return errno;
    return NO_ERROR;
 }
@@ -513,10 +517,8 @@ static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
  *
  ************************************/
 
-static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
+static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, TCObject time)
 {
-#if !defined(__SYMBIAN32__)
-
    struct tm tm;
    struct utimbuf timbuf;
    struct stat statData;
@@ -545,7 +547,6 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 
    if (utime(path, &timbuf))
       return errno;
-#endif
 
    return NO_ERROR;
 }
@@ -561,7 +562,7 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
  *
  *************************************/
 
-static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, int32 whichTime, Object* time)
+static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, int32 whichTime, TCObject* time)
 {
    struct stat statData;
 
@@ -610,6 +611,7 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
 
 static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
+   fileFlush(*fref);
    return ftruncate(fileno(fref->handle), newSize) ? errno : NO_ERROR;
 }
 
@@ -640,3 +642,52 @@ static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)
    *mod = toBaseAsDecimal(statData.st_mode,10,8);
    return NO_ERROR;
 }
+
+#ifdef darwin
+
+/**
+ * Placeholders temporarios para permitir o build do iOS com a api de scanner (por menos funcional que seja)
+ */
+
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_scannerActivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean scannerActivate();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setBarcodeParam_ib(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeParam(int barcodeType, boolean enable);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_iii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setParam(int type, int barcodeType, int value);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setBarcodeLength_iiii(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean setBarcodeLength(int barcodeType, int lengthType, int min, int max);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_commitBarcodeParams(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean commitBarcodeParams();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getData(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getData();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getScanManagerVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanManagerVersion();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_getScanPortDriverVersion(NMParams p) // totalcross/io/device/scanner/Scanner native public static String getScanPortDriverVersion();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scanner native public static boolean deactivate();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
+{
+}
+
+#endif /* darwin */

@@ -12,12 +12,12 @@
 
 
 #include "tcvm.h"
-
-#define STRING_BUILDER_MSG "\nTotalCross is not compatible\nwith Java 1.5, so you must\ncompile your application passing\n-source 1.2 -target 1.1\nto instruct JavaC to replace\nStringBuilder by StringBuffer."
-
+                      
+void printStackTraceFromObj(TCObject traceObj);
+                      
 TC_API void throwException(Context currentContext, Throwable t, CharP message, ...) // throw an exception based on the Throwable enumeration
 {
-   Object exception;
+   TCObject exception;
    // note: code is duplicated here because the ... cannot be passed along different routines
    CharP exceptionClassName = throwableAsCharP[(int32)t];
 
@@ -28,6 +28,8 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
+//      debug("invalidating exception due to OutOfMemory (1). Stack trace:");
+//      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -36,12 +38,6 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
       setObjectLock(currentContext->thrownException, UNLOCKED);
    }
 
-   if (message && strEq(exceptionClassName, throwableAsCharP[ClassNotFoundException]) && strEq(message,"java.lang.StringBuilder"))
-   {
-      *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, STRING_BUILDER_MSG,-1);
-      setObjectLock(*Throwable_msg(exception), UNLOCKED);
-   }
-   else
    if (message)
    {
       va_list args;
@@ -54,9 +50,9 @@ TC_API void throwException(Context currentContext, Throwable t, CharP message, .
    fillStackTrace(currentContext, exception, -1, currentContext->callStack);
 }
 
-TC_API Object createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...)
+TC_API TCObject createException(Context currentContext, Throwable t, bool fillStack, CharP message, ...)
 {
-   Object exception;
+   TCObject exception;
 
    if (currentContext->thrownException != null)
       return currentContext->thrownException;
@@ -69,6 +65,8 @@ TC_API Object createException(Context currentContext, Throwable t, bool fillStac
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
+//      debug("invalidating exception due to OutOfMemory (2). Stack trace:");
+//      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -76,12 +74,7 @@ TC_API Object createException(Context currentContext, Throwable t, bool fillStac
       currentContext->thrownException = exception;
       setObjectLock(currentContext->thrownException, UNLOCKED);
    }
-   if (message && t == ClassNotFoundException && strEq(message,"java.lang.StringBuilder"))
-   {
-      *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, STRING_BUILDER_MSG,-1);
-      setObjectLock(*Throwable_msg(exception), UNLOCKED);
-   }
-   else
+   
    if (message)
    {
       va_list args;
@@ -97,7 +90,7 @@ TC_API Object createException(Context currentContext, Throwable t, bool fillStac
 
 TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName, CharP message, ...) // throw an exception
 {
-   Object exception;
+   TCObject exception;
 
    if (currentContext->thrownException != null) // do not overwrite a first exception, maybe the second one is caused by the first.
       return;
@@ -107,6 +100,8 @@ TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName
    if (exception == null)
    {
       currentContext->thrownException = exception = currentContext->OutOfMemoryErrorObj;
+      debug("invalidating exception due to OutOfMemory (3). Stack trace:");
+      printStackTraceFromObj(*Throwable_trace(exception));
       *Throwable_trace(exception) = null; // let a new trace be generated
    }
    else
@@ -114,12 +109,7 @@ TC_API void throwExceptionNamed(Context currentContext, CharP exceptionClassName
       currentContext->thrownException = exception;
       setObjectLock(currentContext->thrownException, UNLOCKED);
    }
-   if (message && strEq(exceptionClassName, throwableAsCharP[ClassNotFoundException]) && strEq(message,"java.lang.StringBuilder"))
-   {
-      *Throwable_msg(exception) = createStringObjectFromCharP(currentContext, STRING_BUILDER_MSG,-1);
-      setObjectLock(*Throwable_msg(exception), UNLOCKED);
-   }
-   else
+   
    if (message)
    {
       va_list args;
@@ -223,42 +213,56 @@ int32 locateLine(Method m, int32 pc)
    }
    return -1;
 }
-void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPArray callStack)
+void fillStackTrace(Context currentContext, TCObject exception, int32 pc0, VoidPArray callStack)
 {
    Method m=null;
    int32 line;
-   char *c=currentContext->exmsg;
+   size_t im;
+   char *c0 =currentContext->exmsg; 
+   char *c=c0;
    bool first = true;
    Code oldpc;
-
+   
    while (callStack > currentContext->callStackStart)
    {
       callStack -= 2;
       //int2hex((int32)callStack, 6, c); c += 6; *c++ = ' '; - used when debugging
-      m = (Method)callStack[0];
+      m = (Method)callStack[0];  
+      im = (size_t)m;
+      if (im < 1000 || (im & 3) != 0) 
+      {
+         debug("breaking fillStackTrace due to invalid memory addresses");
+         break; // trying to handle crash on addresses 0x33 and 0x36 and odd addresses
+      }
       oldpc = (Code)callStack[1];
       line = (m->lineNumberLine != null) ? locateLine(m, first ? pc0 : ((int32)(oldpc - m->code))) : -1;
-      c = dumpMethodInfo(c, m, line, currentContext->exmsg + sizeof(currentContext->exmsg) - 2);
+      c = dumpMethodInfo(c, m, line, c0 + sizeof(currentContext->exmsg) - 2);
       first = false;
    }
    *c = 0;
    if (exception != null)
-   {
-      if (c != currentContext->exmsg) // was something filled in?
+   {                    
+      TCObject *trace = Throwable_trace(exception);
+      if (c != c0) // was something filled in?
       {
-         *Throwable_trace(exception) = createStringObjectFromCharP(currentContext, currentContext->exmsg, (int32)(c-currentContext->exmsg));
-         if (*Throwable_trace(exception))
-            setObjectLock(*Throwable_trace(exception), UNLOCKED);
+         if (currentContext != gcContext && exception == currentContext->OutOfMemoryErrorObj)
+            debug("OutOfMemory:\n%s",c0);
+         *trace = createStringObjectFromCharP(currentContext, c0, (int32)(c-c0));
+         if (*trace)
+            setObjectLock(*trace, UNLOCKED);
          else
          if (currentContext != gcContext)
-            debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg);
+            debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,c0);
          else
          if (exception != currentContext->OutOfMemoryErrorObj)
-            debug("Exception thrown in finalize: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg); // guich@tc126_63
+            debug("Exception thrown in finalize: %s\n%s", OBJ_CLASS(exception)->name,c0); // guich@tc126_63
       }
       else
-         *Throwable_trace(exception) = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj
+         *trace = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj
    }
+#ifdef _DEBUG
+//   if (c != c0) debug(c0);
+#endif
 }
 
 void printStackTrace(Context currentContext)
@@ -266,12 +270,13 @@ void printStackTrace(Context currentContext)
    fillStackTrace(currentContext, null, -1, currentContext->callStack); 
    debug(currentContext->exmsg);
 }
+
 void showUnhandledException(Context context, bool useAlert)
 {
-   Object o;
-   Object thrownException = context->thrownException;
+   TCObject o;
+   TCObject thrownException = context->thrownException;
    CharP msg=null, throwableTrace=null;              
-   
+
    context->thrownException = null; // guich@tc130: null it out before the alert
    
    o = *Throwable_msg(thrownException);
@@ -298,7 +303,7 @@ void initException()
    throwableAsCharP[ExceptionClass                ] = "java.lang.Exception";
    throwableAsCharP[IllegalAccessException        ] = "java.lang.IllegalAccessException";
    throwableAsCharP[IllegalArgumentException      ] = "java.lang.IllegalArgumentException";
-   throwableAsCharP[ImageException                ] = "java.lang.ImageException";
+   throwableAsCharP[ImageException                ] = "totalcross.ui.image.ImageException";
    throwableAsCharP[IndexOutOfBoundsException     ] = "java.lang.IndexOutOfBoundsException";
    throwableAsCharP[InstantiationException        ] = "java.lang.InstantiationException";
    throwableAsCharP[NoSuchFieldError              ] = "java.lang.NoSuchFieldError";
@@ -316,4 +321,12 @@ void initException()
    throwableAsCharP[InvalidNumberException        ] = "totalcross.sys.InvalidNumberException";
    throwableAsCharP[ElementNotFoundException      ] = "totalcross.util.ElementNotFoundException";
    throwableAsCharP[CryptoException               ] = "totalcross.crypto.CryptoException";
+   throwableAsCharP[SQLException                  ] = "totalcross.sql.SQLException";
+   throwableAsCharP[SQLWarning                    ] = "totalcross.sql.SQLWarning";
+   throwableAsCharP[NegativeArraySizeException    ] = "java.lang.NegativeArraySizeException";
+   throwableAsCharP[InvocationTargetException     ] = "java.lang.reflect.InvocationTargetException";
+   throwableAsCharP[NoSuchMethodException         ] = "java.lang.NoSuchMethodException";
+   throwableAsCharP[NoSuchFieldException          ] = "java.lang.NoSuchFieldException";
+   throwableAsCharP[NotInstalledException         ] = "totalcross.util.NotInstalledException";
+   throwableAsCharP[GPSDisabledException          ] = "totalcross.io.device.gps.GPSDisabledException";
 }

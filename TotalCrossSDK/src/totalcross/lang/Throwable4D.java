@@ -18,6 +18,8 @@
 
 package totalcross.lang;
 
+import java.util.ArrayList;
+
 /**
  * Base class of all Exceptions. 
  * <br><br>
@@ -39,6 +41,19 @@ public class Throwable4D
     protected String msg;
 
     public String trace;
+    
+    /**
+     * The cause of the throwable, including null for an unknown or non-chained
+     * cause. This may only be set once; so the field is set to
+     * <code>this</code> until initialized.
+     *
+     * @serial the cause, or null if unknown, or this if not yet set
+     * @since 1.4
+     */
+    private Throwable4D cause = this;
+
+	private ArrayList<Throwable4D> suppressed = new ArrayList<>();
+	private Throwable4D[] cachedSuppressedArray;
 
     /** Constructs an empty Exception. */
     public Throwable4D()
@@ -50,6 +65,32 @@ public class Throwable4D
     {
 	    this.msg = msg;
     }
+    
+    /**
+     * Instantiate this Throwable with the given message and cause. Note that
+     * the message is unrelated to the message of the cause.
+     *
+     * @param message the message to associate with the Throwable
+     * @param cause the cause, may be null
+     * @since 1.4
+     */
+    public Throwable4D(String message, Throwable4D cause)
+    {
+      this(message);
+      this.cause = cause;
+    }
+
+    /**
+     * Instantiate this Throwable with the given cause. The message is then
+     * built as <code>cause == null ? null : cause.toString()</code>.
+     *
+     * @param cause the cause, may be null
+     * @since 1.4
+     */
+    public Throwable4D(Throwable4D cause)
+    {
+      this(cause == null ? null : cause.toString(), cause);
+    }
 
     /** Returns the message passed on the constructor. May be null. */
     public String getMessage()
@@ -59,9 +100,12 @@ public class Throwable4D
 
     public String toString()
     {
-       if (msg == null)
-          return super.toString();
-       return super.toString() + " - " + msg;
+       String ret = getClass().getName()+"@"+hashCode();
+       if (msg != null)
+          ret += " - " + msg;
+       if (cause != null && cause != this)
+          ret += " caused by "+cause.toString();
+       return ret;
     }
 
     /**
@@ -71,9 +115,39 @@ public class Throwable4D
     {
        totalcross.sys.Vm.warning(toString());
        printStackTraceNative();
+       if (cause != null && cause != this)
+       {
+          totalcross.sys.Vm.warning("Caused by ");
+          cause.printStackTrace(); // allows recursion
+       }
     }
 
     native private void printStackTraceNative();
 
     public void printStackTrace(Object o) {} // guich@582_6: just a place-holder to let it build-device
+    
+    public Throwable4D getCause()
+    {
+       return cause;
+    }
+    public Throwable4D initCause(Throwable4D cause)
+    {
+       this.cause = cause;
+       return this;
+    }
+    
+    public final void addSuppressed(Throwable4D exception)
+    {
+        this.suppressed.add(exception);
+        cachedSuppressedArray = null;
+    }
+    
+    public final Throwable4D[] getSuppressed()
+    {
+        if (cachedSuppressedArray == null)
+        {
+            cachedSuppressedArray = this.suppressed.toArray(new Throwable4D[0]);
+        }
+        return cachedSuppressedArray;
+    }
 }

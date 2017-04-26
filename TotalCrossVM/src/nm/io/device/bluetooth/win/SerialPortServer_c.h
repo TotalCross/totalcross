@@ -12,6 +12,7 @@
 
 
 #include "winsockLib.h"
+#if !defined WP8
 #pragma pack(8)
 #include <ws2bth.h>
 #pragma pack()
@@ -23,39 +24,11 @@
 #else
  #include <BluetoothAPIs.h>
 #endif
+#endif
 
 #define NATIVE_HANDLE SOCKET
 
 static GUID _SerialPortServiceClassID_UUID16 = {0x00001101, 0x0000, 0x1000, { 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB } };
-
-// auxiliary functions
-static Err RegisterBtService(GUID* pguid, GUID* pguid2, byte bChannel, ULONG *pRecord)
-{
-   // SDP dummy record
-   // GUID goes at offset 8
-   // Channel goes in last byte of record.
-   static BYTE bSDPRecord[] = {
-   0x35, 0x27, 0x09, 0x00, 0x01, 0x35, 0x11, 0x1C, 0x00, 0x00, 0x00,
-   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-   0x00, 0x00, 0x09, 0x00, 0x04, 0x35, 0x0C, 0x35, 0x03, 0x19, 0x01,
-   0x00, 0x35, 0x05, 0x19, 0x00, 0x03, 0x08, 0x00};
-
-   // BTHNS_SETBLOB structure passed to PublishRecord.
-   uint8 setBlob[sizeof(BTHNS_SETBLOB) + sizeof(bSDPRecord) - 1];
-
-   // Update the SDP record
-   // Translate guid into net byte order for SDP record
-   GUID *p = (GUID*) &bSDPRecord[8];
-   p->Data1 = htonl(pguid->Data1);
-   p->Data2 = htons(pguid->Data2);
-   p->Data3 = htons(pguid->Data3);
-   xmemmove(p->Data4, pguid->Data4, sizeof(pguid->Data4));
-
-   // Copy channel value into record
-   bSDPRecord[sizeof(bSDPRecord) - 1] = bChannel;
-
-   return PublishRecord(bSDPRecord, pguid2, sizeof(bSDPRecord), pRecord, (BTHNS_SETBLOB*) &setBlob);
-}
 
 static Err PublishRecord(PBYTE pSDPRec, GUID* pguid2, int32 nRecSize, ULONG *pRecord, BTHNS_SETBLOB* pSetBlob)
 {
@@ -90,6 +63,35 @@ static Err PublishRecord(PBYTE pSDPRec, GUID* pguid2, int32 nRecSize, ULONG *pRe
 
    // Publish the service
    return WSASetService(&Service, RNRSERVICE_REGISTER, 0);
+}
+
+// auxiliary functions
+static Err RegisterBtService(GUID* pguid, GUID* pguid2, byte bChannel, ULONG *pRecord)
+{
+   // SDP dummy record
+   // GUID goes at offset 8
+   // Channel goes in last byte of record.
+   static BYTE bSDPRecord[] = {
+   0x35, 0x27, 0x09, 0x00, 0x01, 0x35, 0x11, 0x1C, 0x00, 0x00, 0x00,
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+   0x00, 0x00, 0x09, 0x00, 0x04, 0x35, 0x0C, 0x35, 0x03, 0x19, 0x01,
+   0x00, 0x35, 0x05, 0x19, 0x00, 0x03, 0x08, 0x00};
+
+   // BTHNS_SETBLOB structure passed to PublishRecord.
+   uint8 setBlob[sizeof(BTHNS_SETBLOB) + sizeof(bSDPRecord) - 1];
+
+   // Update the SDP record
+   // Translate guid into net byte order for SDP record
+   GUID *p = (GUID*) &bSDPRecord[8];
+   p->Data1 = htonl(pguid->Data1);
+   p->Data2 = htons(pguid->Data2);
+   p->Data3 = htons(pguid->Data3);
+   xmemmove(p->Data4, pguid->Data4, sizeof(pguid->Data4));
+
+   // Copy channel value into record
+   bSDPRecord[sizeof(bSDPRecord) - 1] = bChannel;
+
+   return PublishRecord(bSDPRecord, pguid2, sizeof(bSDPRecord), pRecord, (BTHNS_SETBLOB*) &setBlob);
 }
 
 // interface functions

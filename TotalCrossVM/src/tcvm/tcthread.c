@@ -13,17 +13,15 @@
 
 #include "tcvm.h"
 
-void executeThreadRun(Context context, Object thread);
+void executeThreadRun(Context context, TCObject thread);
 
-#if defined PALMOS
- #include "palm/tcthread_c.h"
-#elif defined WINCE || defined WIN32
+#if defined WINCE || defined WIN32
  #include "win/tcthread_c.h"
 #elif defined POSIX || defined ANDROID
  #include "posix/tcthread_c.h"
 #endif
 
-void executeThreadRun(Context context, Object thread)
+void executeThreadRun(Context context, TCObject thread)
 {
    TCClass c = OBJ_CLASS(thread);
    Method run = getMethod(c, true, "run", 0);
@@ -36,7 +34,8 @@ void executeThreadRun(Context context, Object thread)
       if (cc == null)
          throwException(context, OutOfMemoryError, "Can't create thread context");
       else
-      {
+      {              
+         Sleep(1);
          setObjectLock(thread, UNLOCKED); // now is safe to unlock, because the context will mark the threadObj
          executeMethod(cc, run, thread);
          deleteContext(cc, false);
@@ -57,9 +56,9 @@ ThreadHandle threadGetCurrent()
    return privateThreadGetCurrent();
 }
 
-void threadCreateJava(Context currentContext, Object this_)
+void threadCreateJava(Context currentContext, TCObject this_)
 {
-   Object a;
+   TCObject a;
    setObjectLock(this_,LOCKED); // prevent the java.lang.Thread object from being collected, because another thread may collect it before the thread is started
    a = Thread_taskID(this_) = createByteArray(currentContext, sizeof(TThreadArgs));
    if (a != null)
@@ -79,16 +78,53 @@ void threadDestroy(ThreadHandle h, bool threadDestroyingItself)
 }
 
 void threadDestroyAll()
-{
-   VoidPs *head = contexts, *current = head;
-   do
-   {
-      Context c = (Context)current->value;
-      if (c->thread != null)
+{     
+   Context c;              
+   int32 i;
+   for (i = 0; i < MAX_CONTEXTS; i++)
+      if ((c=contexts[i]) != null && c->thread != null)
       {
          threadDestroy(c->thread,false);
          c->thread = null;
       }
-      current = current->next;
-   } while (current != head);
+}
+
+void freeMutex(int32 hash, VoidP pmutex)
+{
+   MUTEX_TYPE* mutex = (MUTEX_TYPE*)pmutex;
+   UNUSED(hash);
+   DESTROY_MUTEX_VAR(*mutex);
+   xfree(mutex);
+}
+
+bool lockMutex(size_t address)
+{
+   MUTEX_TYPE* mutex;
+
+   LOCKVAR(mutexes);
+   if (!(mutex = htGetPtr(&htMutexes, address)))
+   {
+      if (!(mutex = (MUTEX_TYPE*)xmalloc(sizeof(MUTEX_TYPE))))
+      {
+         UNLOCKVAR(mutexes);
+         return false;
+      }
+      SETUP_MUTEX;
+      INIT_MUTEX_VAR(*mutex);
+      if (!htPutPtr(&htMutexes, address, mutex))
+      {                  
+         DESTROY_MUTEX_VAR(*mutex);
+         UNLOCKVAR(mutexes);
+         return false;
+      }
+   }
+   UNLOCKVAR(mutexes);
+   RESERVE_MUTEX_VAR(*mutex); 
+   return true;
+}
+
+void unlockMutex(size_t address)
+{
+   MUTEX_TYPE* mutex = htGetPtr(&htMutexes, address);
+   RELEASE_MUTEX_VAR(*mutex);
 }

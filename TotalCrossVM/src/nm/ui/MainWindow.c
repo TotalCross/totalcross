@@ -18,7 +18,11 @@ void privateExit(int32 code);
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_restore(NMParams p) // totalcross/ui/MainWindow native public final void restore();
 {
-#if defined WIN32 // guich@tc122_49
+#if defined WP8
+#elif defined ANDROID
+   #define SOFT_UNEXIT 0x40000001
+   privateExit(SOFT_UNEXIT);
+#elif defined WIN32 // guich@tc122_49
    ShowWindow(mainHWnd, SW_RESTORE); 
    SetForegroundWindow(mainHWnd);
 #endif
@@ -26,7 +30,8 @@ TC_API void tuMW_restore(NMParams p) // totalcross/ui/MainWindow native public f
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_minimize(NMParams p) // totalcross/ui/MainWindow native public final void minimize();
 {
-#ifdef ANDROID   
+#if defined WP8
+#elif defined ANDROID
    #define SOFT_EXIT 0x40000000
    privateExit(SOFT_EXIT);
 #elif defined WIN32 // guich@tc122_49
@@ -40,9 +45,14 @@ TC_API void tuMW_exit_i(NMParams p) // totalcross/ui/MainWindow native public fi
    keepRunning = false;
 }
 //////////////////////////////////////////////////////////////////////////
+void setTimerInterval(int32 t)
+{
+   nextTimerTick = getTimeStamp() + t;
+}
+
 TC_API void tuMW_setTimerInterval_i(NMParams p) // totalcross/ui/MainWindow native void setTimerInterval(int n);
 {
-   nextTimerTick = getTimeStamp() + p->i32[0];
+   setTimerInterval(p->i32[0]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuMW_getCommandLine(NMParams p) // totalcross/ui/MainWindow native public static String getCommandLine();

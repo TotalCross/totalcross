@@ -13,16 +13,14 @@
 
 #include "Net.h"
 
-#if defined (PALMOS)
- #include "palm/ConnectionManager_c.h"
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/ConnectionManager_c.h"
 #elif defined (ANDROID)
  #include "android/ConnectionManager_c.h"
 #endif
 
 // static fields
-#define ConnectionManager_connRef(c)      getStaticFieldObject(c, "connRef")
+#define ConnectionManager_connRef(c)      getStaticFieldObject(null, c, "connRef")
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_loadResources(NMParams p) // totalcross/net/ConnectionManager native private void loadResources();
@@ -37,7 +35,7 @@ TC_API void tnCM_loadResources(NMParams p) // totalcross/net/ConnectionManager n
 TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/ConnectionManager native public static void setDefaultConfiguration(int type, String cfg) throws totalcross.io.IOException;
 {
    int32 type = p->i32[0];
-   Object connCfg = p->obj[0];
+   TCObject connCfg = p->obj[0];
 #if defined (WINCE)
    TCHARP szConnCfg = null;
    Err err;
@@ -64,14 +62,15 @@ TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/Connec
    (*env)->DeleteLocalRef(env, jConnectionManager4A);
    if (szConnCfg) (*env)->DeleteLocalRef(env, szConnCfg);
 #else
-   UNUSED(p)
+   UNUSED(connCfg);
+   UNUSED(type);
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_open(NMParams p) // totalcross/net/ConnectionManager native public static void open() throws totalcross.io.IOException;
 {
 #if 0 //defined (WINCE) - disabled for this release
-   Object* connRef;
+   TCObject* connRef;
    NATIVE_CONNECTION* connHandle;
    bool wasSuccessful = false;
    Err err;
@@ -87,7 +86,7 @@ TC_API void tnCM_open(NMParams p) // totalcross/net/ConnectionManager native pub
       setObjectLock(*connRef, UNLOCKED);
    }
 #else
-   //UNUSED(p)
+   UNUSED(p)
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
@@ -95,7 +94,7 @@ TC_API void tnCM_open_i(NMParams p) // totalcross/net/ConnectionManager native p
 {
 #if defined (WINCE)
    int type = p->i32[0];
-   Object* connRef;
+   TCObject* connRef;
    NATIVE_CONNECTION* connHandle;
    bool wasSuccessful = false;
    Err err;
@@ -134,7 +133,7 @@ TC_API void tnCM_nativeClose(NMParams p) // totalcross/net/ConnectionManager nat
 {
 #if defined (WINCE)
    Err err;
-   Object* connRef = ConnectionManager_connRef(connMgrClass);
+   TCObject* connRef = ConnectionManager_connRef(connMgrClass);
    NATIVE_CONNECTION* connHandle;
 
    if (*connRef != null)
@@ -145,17 +144,13 @@ TC_API void tnCM_nativeClose(NMParams p) // totalcross/net/ConnectionManager nat
       if (err != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
    }
-#elif defined(PALMOS)
-   Err err;
-   if ((err = CmClose()) != NO_ERROR)
-      throwExceptionWithCode(p->currentContext, IOException, err);
 #endif
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostAddress(String host) throws totalcross.net.UnknownHostException;
 {
-#if defined(PALMOS) || defined (WIN32) || defined (ANDROID)
-   Object hostName = p->obj[0];
+#if defined (WIN32) || defined (ANDROID)
+   TCObject hostName = p->obj[0];
    CharP szHostName = null;
    char szHostAddress[40];
    Err err;
@@ -166,8 +161,9 @@ TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManage
       throwNullArgumentException(p->currentContext, "host");
    else
    {
-      szHostName = String2CharP(hostName);
-      if ((err = CmGetHostAddress(szHostName, szHostAddress)) != NO_ERROR)
+      if (!(szHostName = String2CharP(hostName)))
+         throwException(p->currentContext, OutOfMemoryError, null);
+      else if ((err = CmGetHostAddress(szHostName, szHostAddress)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, UnknownHostException, err); // flsobral@tc120: now we throw an exception
       else if (xstrlen(szHostAddress) > 0) //flsobral@tc115_43: must return null if the host address is not found.
       {
@@ -181,8 +177,8 @@ TC_API void tnCM_getHostAddress_s(NMParams p) // totalcross/net/ConnectionManage
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager native public static String getHostName(String host) throws totalcross.net.UnknownHostException;
 {
-#if defined(PALMOS) || defined (WIN32) || defined (ANDROID)
-   Object hostAddress = p->obj[0];
+#if defined (WIN32) || defined (ANDROID)
+   TCObject hostAddress = p->obj[0];
    CharP szHostAddress = null;
    char szHostName[128];
    Err err;
@@ -193,8 +189,9 @@ TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager n
       throwNullArgumentException(p->currentContext, "hostAddress");
    else
    {
-      szHostAddress = String2CharP(hostAddress);
-      if ((err = CmGetHostName(szHostAddress, szHostName)) != NO_ERROR)
+      if (!(szHostAddress = String2CharP(hostAddress)))
+         throwException(p->currentContext, OutOfMemoryError, null);
+      else if ((err = CmGetHostName(szHostAddress, szHostName)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, UnknownHostException, err); // flsobral@tc120_XX: now we throw an exception
       else
       {
@@ -208,10 +205,11 @@ TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager native public static String getLocalHost() throws totalcross.net.UnknownHostException;
 {
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+#if defined (WIN32) || defined (ANDROID)
    char szHostAddress[16];
+   szHostAddress[0] = 0;
 
-   if (CmGetLocalHost(szHostAddress) != NO_ERROR)
+   if (CmGetLocalHost(szHostAddress) != NO_ERROR || szHostAddress[0] == 0)
       xstrcpy(szHostAddress, "127.0.0.1");
    p->retO = createStringObjectFromCharP(p->currentContext, szHostAddress, -1);
 #else
@@ -238,8 +236,22 @@ TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager n
    }
    else
       p->retI = CmIsAvailable(type);
+#elif defined WP8
+   switch (type)
+   {
+      case CM_CRADLE:
+         p->retI = false;
+         break;
+      case CM_WIFI:
+      case CM_CELLULAR:
+          p->retI = isAvailableCPP(type);
+         break;
+      default:
+         throwIllegalArgumentExceptionI(p->currentContext, "type", type);
+   }
 #else
-   p->retI = true;
+   UNUSED(type);
+   p->retI = false;
 #endif
 }
 //////////////////////////////////////////////////////////////////////////

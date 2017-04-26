@@ -35,11 +35,6 @@ import totalcross.util.*;
 
 public class Calculator extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    // variables related to the user interface
    private Edit            edNum;
    private TabbedContainer tpOpers;
@@ -81,7 +76,7 @@ public class Calculator extends MainWindow
             }
          }
       });
-      add(bar,LEFT,0,FILL,fmH*3/2);
+      add(bar,LEFT,0,FILL,FONTSIZE+150);
       // add a menubar
       MenuItem col0[] = {
             new MenuItem(" File "),

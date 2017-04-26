@@ -73,35 +73,35 @@ bool inline_ PDBRemove(TCHARP fileName)
 
 bool inline_ PDBRead(PDBFileRef fileRef, VoidP buf, int32 size, int32* read)
 {
-   return (*read = fread(buf, 1, size, fileRef)) > 0;
+   return (*read = (int32)fread(buf, 1, size, fileRef)) > 0;
 }
 
 bool inline_ PDBReadAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* read)
 {
-   return fseek(fileRef, offset, SEEK_SET) == 0 && (*read = fread(buf, 1, size, fileRef)) > 0; // guich@tc122_53: don't test for the amount of bytes read - no other platforms do this, and will make it impossible to delete an empty pdb
+   return (int32)fseek(fileRef, offset, SEEK_SET) == 0 && (*read = (int32)fread(buf, 1, size, fileRef)) > 0; // guich@tc122_53: don't test for the amount of bytes read - no other platforms do this, and will make it impossible to delete an empty pdb
 }
 
 bool inline_ PDBWrite(PDBFileRef fileRef, VoidP buf, int32 size, int32* written)
 {
-   return (*written = fwrite(buf, 1, size, fileRef)) > 0;
+   return (*written = (int32)fwrite(buf, 1, size, fileRef)) > 0;
 }
 
 bool inline_ PDBWriteAt(PDBFileRef fileRef, VoidP buf, int32 size, int32 offset, int32* written)
 {
-   return fseek(fileRef, offset, SEEK_SET) == 0 && (*written = fwrite(buf, 1, size, fileRef)) > 0; // guich@tc122_53
+   return (int32)fseek(fileRef, offset, SEEK_SET) == 0 && (*written = (int32)fwrite(buf, 1, size, fileRef)) > 0; // guich@tc122_53
 }
 
 bool inline_ PDBGetFileSize (PDBFileRef fileRef, int32* size)
 {
    // Record the current position
-   uint32 pos = ftell(fileRef);
+   uint32 pos = (int32)ftell(fileRef);
    if ((int)pos == -1) return false;
 
    // Seek to the end
    if (fseek(fileRef, 0, SEEK_END) != 0) return false;
 
    // Re-get position; it's the size
-   *size = ftell(fileRef);
+   *size = (int32)ftell(fileRef);
 
    // Restore the stream pointer
    fseek(fileRef, pos, SEEK_SET);
@@ -118,16 +118,13 @@ bool inline_ PDBGrowFileSize(PDBFileRef fileRef, int32 oldSize, int32 growSize)
 
    if (growSize < 0)
    {
-      #if !defined __ECOS && !defined __SYMBIAN32__
-         return ftruncate(fileno(fileRef), growSize + oldSize) == 0;
-      #endif
+      return ftruncate(fileno(fileRef), growSize + oldSize) == 0;
    }
    else
    {
-      uint32 pos = ftell(fileRef);
+      uint32 pos = (int32)ftell(fileRef);
       if (fseek(fileRef, 0, SEEK_END) == 0)
       {
-         int done = 0;
          // write any bytes
          do
          {
@@ -166,7 +163,6 @@ bool PDBListDatabasesIn(TCHARP path, bool recursive, HandlePDBSearchProcType pro
    while (!stopSearch && (entry = readdir(targetDirectory)))
    {
       int isDir;
-      TCHAR const * name = entry->d_name;
       strcpy(fullPath+len, entry->d_name);
 
       if (endsWithPDB((TCHAR*)entry->d_name)) // not a dir

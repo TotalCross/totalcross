@@ -43,7 +43,7 @@ import totalcross.xml.AttributeList;
 import totalcross.xml.ContentHandler;
 
 /**
- * Methods here are called by the xml parser used in XmlRpcClient
+ * Methods here are called by the XML parser used in XmlRpcClient
  *
  * @version March 2006
  * @author Added to SuperWaba by Guich
@@ -56,9 +56,9 @@ public class XmlRpcContentHandler extends ContentHandler
    private XmlRpcValue currentValue;
    private boolean readCdata;
 
-   /** Gets the object unmarshalled from the last xml-rpc response parsing */
+   /** Gets the object unmarshalled from the last XML-RPC response parsing */
    public Object result;
-   /** Tells if a fault occurred during parsing */
+   /** Tells if a fault occurred during the parsing */
    public boolean faultOccured;
 
    public XmlRpcContentHandler()

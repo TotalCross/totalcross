@@ -12,6 +12,6 @@ public abstract class MyNSObjectSerializer
 
    public static byte[] toXMLPropertyListBytesUTF8(NSObject o) throws UnsupportedEncodingException
    {
-      return toXMLPropertyList(o).getBytes("UTF-8");
+      return toXMLPropertyList(o).replace(".0</real>", "</real>").getBytes("UTF-8");
    }
 }

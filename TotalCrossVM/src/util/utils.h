@@ -35,8 +35,8 @@ typedef void (*int2hexFunc)(int32 b, int32 places, CharP outBuf);
 void long2hex(int64 b, int32 places, CharP outBuf);
 bool radix2int(CharP hex, int32 radix, int32* result);
 bool radix2long(CharP str, int32 radix, int64* result);
-extern inline int32 min32(int32 i1, int32 i2);
-extern inline int32 max32(int32 i1, int32 i2);
+extern int32 min32(int32 i1, int32 i2);
+extern int32 max32(int32 i1, int32 i2);
 
 /// simple case convertions: only supports a-z/A-Z
 TC_API char toLower(char c);
@@ -57,13 +57,11 @@ FILE* findFile(CharP name, CharP pathOut);
 
 #define LF_NONE      0
 #define LF_RECURSIVE 1
-#define LF_FILE_TYPE 2
-#define LF_FILE_APPID 4
 /// List all files on the given folder. In Palm OS, if slot is 0, searches in main memory, otherwise NVFS is used.
 /// If (options & LF_RECURSIVE) is true, all folders from the given one are searched, and the path is stored with the file's name; otherwise, only the
 /// file name is stored in the list.
 /// <b>Important: count and list must be initialized to 0 before this function is called!</b>
-/// options can be a combination of LF_RECURSIVE, LF_FILE_TYPE and LF_FILE_APPID (and the last two are only for PALMOS with slot 0)
+/// options can be a combination of LF_RECURSIVE
 TC_API Err listFiles(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options);
 typedef Err (*listFilesFunc)(TCHARP path, int32 slot, TCHARPs** list, int32* count, Heap h, int32 options);
 
@@ -99,18 +97,22 @@ void replaceChar(CharP s, char from, char to);
 typedef char IntBuf[12];
 TC_API CharP int2str(int32 i, IntBuf buf);
 typedef CharP (*int2strFunc)(int32 i, IntBuf buf);
-typedef char DoubleBuf[40];
+/**
+ * Length of the longest printable double:
+ * int max_digits = 3 + DBL_MANT_DIG - DBL_MIN_EXP
+ * For a 64-bit IEEE double, we have
+ * DBL_MANT_DIG = 53
+ * DBL_MIN_EXP = -1023
+ * max_digits = 3 + 53 - (-1023) = 1079
+ * 
+ * We should set DoubleBuf to 1079 to support ANY double value.
+ */
+typedef char DoubleBuf[1080];
 TC_API CharP double2str(double val, int32 places, DoubleBuf buf);
 typedef CharP (*double2strFunc)(double val, int32 places, DoubleBuf buf);
 typedef char LongBuf[24];
 TC_API CharP long2str(int64 i, LongBuf buf);
 typedef CharP (*long2strFunc)(int64 i, LongBuf buf);
-
-#ifdef PALMOS
-int32 millisToTicks(int32 millis);
-TC_API int32 getLastVolume();
-typedef int32 (*getLastVolumeFunc)();
-#endif
 
 /// Pauses the program for the given number of milliseconds
 #ifndef WIN32

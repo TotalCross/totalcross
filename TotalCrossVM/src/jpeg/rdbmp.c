@@ -2,6 +2,7 @@
  * rdbmp.c
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Modified 2009-2010 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -23,7 +24,8 @@
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
 
-#if 1 //def BMP_SUPPORTED
+#ifdef BMP_SUPPORTED
+
 
 /* Macros to deal with unsigned chars as efficiently as compiler allows */
 
@@ -59,21 +61,20 @@ typedef struct _bmp_source_struct {
   JDIMENSION source_row;	/* Current source row number */
   JDIMENSION row_width;		/* Physical width of scanlines in file */
 
-   boolean is_bottom_up; //totalcross: if true, reads the rows in reverse order.
-
   int bits_per_pixel;		/* remembers 8- or 24-bit format */
 } bmp_source_struct;
 
 
 LOCAL(int)
-read_byte (bmp_source_ptr sinfo) //totalcross: directly use executeMethod
+read_byte (bmp_source_ptr sinfo)
 /* Read next byte from BMP file */
 {
-  JPEGFILE* infile = sinfo->pub.input_file;
+  register FILE *infile = sinfo->pub.input_file;
+  register int c;
 
-  if (executeMethod(infile->currentContext, infile->readBytesMethod, infile->params[0].asObj, infile->params[1].asObj, 0, 1).asInt32 < 1)
+  if ((c = getc(infile)) == EOF)
     ERREXIT(sinfo->cinfo, JERR_INPUT_EOF);
-  return ARRAYOBJ_START(infile->params[1].asObj)[0];
+  return c;
 }
 
 
@@ -156,10 +157,7 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   register JDIMENSION col;
 
   /* Fetch next row from virtual array */
-  if (source->is_bottom_up) //totalcross: correctly handle upside down images.
-    source->source_row++;
-  else
-    source->source_row--;
+  source->source_row--;
   image_ptr = (*cinfo->mem->access_virt_sarray)
     ((j_common_ptr) cinfo, source->whole_image,
      source->source_row, (JDIMENSION) 1, FALSE);
@@ -180,23 +178,56 @@ get_24bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 }
 
 
+METHODDEF(JDIMENSION)
+get_32bit_row (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
+/* This version is for reading 32-bit pixels */
+{
+  bmp_source_ptr source = (bmp_source_ptr) sinfo;
+  JSAMPARRAY image_ptr;
+  register JSAMPROW inptr, outptr;
+  register JDIMENSION col;
+
+  /* Fetch next row from virtual array */
+  source->source_row--;
+  image_ptr = (*cinfo->mem->access_virt_sarray)
+    ((j_common_ptr) cinfo, source->whole_image,
+     source->source_row, (JDIMENSION) 1, FALSE);
+  /* Transfer data.  Note source values are in BGR order
+   * (even though Microsoft's own documents say the opposite).
+   */
+  inptr = image_ptr[0];
+  outptr = source->pub.buffer[0];
+  for (col = cinfo->image_width; col > 0; col--) {
+    outptr[2] = *inptr++;	/* can omit GETJSAMPLE() safely */
+    outptr[1] = *inptr++;
+    outptr[0] = *inptr++;
+    inptr++;			/* skip the 4th byte (Alpha channel) */
+    outptr += 3;
+  }
+
+  return 1;
+}
+
+
 /*
  * This method loads the image into whole_image during the first call on
  * get_pixel_rows.  The get_pixel_rows pointer is then adjusted to call
- * get_8bit_row or get_24bit_row on subsequent calls.
+ * get_8bit_row, get_24bit_row, or get_32bit_row on subsequent calls.
  */
 
 METHODDEF(JDIMENSION)
 preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
+   /*
   bmp_source_ptr source = (bmp_source_ptr) sinfo;
+  register JPEGFILE *infile = source->pub.input_file;
+  register int c;
   register JSAMPROW out_ptr;
   JSAMPARRAY image_ptr;
-  JDIMENSION row;
-  JPEGFILE* infile = source->pub.input_file;
+  JDIMENSION row, col;
   cd_progress_ptr progress = (cd_progress_ptr) cinfo->progress;
 
-  /* Read the data into a virtual array in input-file row order. */
+  // Read the data into a virtual array in input-file row order. 
   for (row = 0; row < cinfo->image_height; row++) {
     if (progress != NULL) {
       progress->pub.pass_counter = (long) row;
@@ -207,16 +238,17 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       ((j_common_ptr) cinfo, source->whole_image,
        row, (JDIMENSION) 1, TRUE);
     out_ptr = image_ptr[0];
-
-    //totalcross: replaced read byte loop for a single row read. preload is 150x faster on palm this way.
-   if (executeMethod(infile->currentContext, infile->readBytesMethod, infile->params[0].asObj, infile->params[1].asObj, 0, source->row_width).asInt32 < 1)
-     ERREXIT(source->cinfo, JERR_INPUT_EOF);
-   xmemmove(out_ptr, ARRAYOBJ_START(infile->params[1].asObj), source->row_width);
+    for (col = source->row_width; col > 0; col--) {
+      // inline copy of read_byte() for speed 
+      if ((c = getc(infile)) == EOF)
+	ERREXIT(cinfo, JERR_INPUT_EOF);
+      *out_ptr++ = (JSAMPLE) c;
+    }
   }
   if (progress != NULL)
     progress->completed_extra_passes++;
 
-  /* Set up to read from the virtual array in top-to-bottom order */
+  // Set up to read from the virtual array in top-to-bottom order 
   switch (source->bits_per_pixel) {
   case 8:
     source->pub.get_pixel_rows = get_8bit_row;
@@ -224,16 +256,19 @@ preload_image (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   case 24:
     source->pub.get_pixel_rows = get_24bit_row;
     break;
+  case 32:
+    source->pub.get_pixel_rows = get_32bit_row;
+    break;
   default:
     ERREXIT(cinfo, JERR_BMP_BADDEPTH);
   }
-  if (source->is_bottom_up) //totalcross: correctly process upside down images.
-    source->source_row = -1;
-  else
-    source->source_row = cinfo->image_height;
+  source->source_row = cinfo->image_height;
 
-  /* And read the first row */
+  // And read the first row 
   return (*source->pub.get_pixel_rows) (cinfo, sinfo);
+  */
+   debug("!!!!!!!!!!!!! preload_image NOT IMPLEMENTED!");
+   return 0;
 }
 
 
@@ -255,8 +290,8 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 			       (((INT32) UCH(array[offset+3])) << 24))
   INT32 bfOffBits;
   INT32 headerSize;
-  INT32 biWidth = 0;		/* initialize to avoid compiler warning */
-  INT32 biHeight = 0;
+  INT32 biWidth;
+  INT32 biHeight;
   unsigned int biPlanes;
   INT32 biCompression;
   INT32 biXPelsPerMeter,biYPelsPerMeter;
@@ -304,8 +339,6 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
       break;
     }
-    if (biPlanes != 1)
-      ERREXIT(cinfo, JERR_BMP_BADPLANES);
     break;
   case 40:
   case 64:
@@ -313,11 +346,6 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     /* or OS/2 2.x header, which has additional fields that we ignore */
     biWidth = GET_4B(bmpinfoheader,4);
     biHeight = GET_4B(bmpinfoheader,8);
-    if (biHeight < 0) // totalcross: negative height, upside down image.
-    {
-       biHeight = -biHeight;
-       source->is_bottom_up = true;
-    }
     biPlanes = GET_2B(bmpinfoheader,12);
     source->bits_per_pixel = (int) GET_2B(bmpinfoheader,14);
     biCompression = GET_4B(bmpinfoheader,16);
@@ -334,12 +362,13 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     case 24:			/* RGB image */
       TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
       break;
+    case 32:			/* RGB image + Alpha channel */
+      TRACEMS2(cinfo, 1, JTRC_BMP, (int) biWidth, (int) biHeight);
+      break;
     default:
       ERREXIT(cinfo, JERR_BMP_BADDEPTH);
       break;
     }
-    if (biPlanes != 1)
-      ERREXIT(cinfo, JERR_BMP_BADPLANES);
     if (biCompression != 0)
       ERREXIT(cinfo, JERR_BMP_COMPRESSED);
 
@@ -352,8 +381,13 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
     break;
   default:
     ERREXIT(cinfo, JERR_BMP_BADHEADER);
-    break;
+    return;
   }
+
+  if (biWidth <= 0 || biHeight <= 0)
+    ERREXIT(cinfo, JERR_BMP_EMPTY);
+  if (biPlanes != 1)
+    ERREXIT(cinfo, JERR_BMP_BADPLANES);
 
   /* Compute distance to bitmap data --- will adjust for colormap below */
   bPad = bfOffBits - (headerSize + 14);
@@ -384,6 +418,8 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   /* Compute row width in file, including padding to 4-byte boundary */
   if (source->bits_per_pixel == 24)
     row_width = (JDIMENSION) (biWidth * 3);
+  else if (source->bits_per_pixel == 32)
+    row_width = (JDIMENSION) (biWidth * 4);
   else
     row_width = (JDIMENSION) biWidth;
   while ((row_width & 3) != 0) row_width++;
@@ -420,8 +456,6 @@ start_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 METHODDEF(void)
 finish_input_bmp (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
 {
-   UNUSED(cinfo); //totalcross: removed warning
-   UNUSED(sinfo);
   /* no work */
 }
 

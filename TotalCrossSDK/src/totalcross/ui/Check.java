@@ -49,7 +49,7 @@ import totalcross.ui.image.*;
  * </pre>
  */
 
-public class Check extends Control
+public class Check extends Control implements TextControl
 {
    private String text;
    private boolean checked;
@@ -65,6 +65,11 @@ public class Check extends Control
     * @deprecated Now the align is always at left
     */
    public boolean leftJustify;
+   
+   /** Sets the text color of the check. Defaults to the foreground color. 
+    * @since TotalCross 2.0.
+    */
+   public int textColor = -1;
    
    /** Set to the color of the check, if you want to make it different of the foreground color.
     * @since TotalCross 1.3
@@ -87,7 +92,7 @@ public class Check extends Control
    /** Called by the system to pass events to the check control. */
    public void onEvent(Event event)
    {
-      if (event.target != this || !enabled) return;
+      if (event.target != this || !isEnabled()) return;
       switch (event.type)
       {
          case KeyEvent.ACTION_KEY_PRESS:
@@ -160,26 +165,27 @@ public class Check extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return getMaxTextWidth() + (Settings.useNewFont ? fmH+Edit.prefH+2 : fm.ascent + 2);
+      return getMaxTextWidth() + fmH+Edit.prefH+2;
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return Settings.useNewFont ? fmH*lines.length+Edit.prefH : fm.ascent*lines.length;
+      return fmH*lines.length+Edit.prefH;
    }
 
    protected void onColorsChanged(boolean colorsChanged)
    {
       cbColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       cfColor = getForeColor();
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
-      int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+      boolean enabled = isEnabled();
+      int wh = lines.length == 1 ? height : fmH+Edit.prefH;
       int xx,yy;
 
       // guich@200b4_126: repaint the background of the whole control
@@ -190,6 +196,7 @@ public class Check extends Control
       if (!uiAndroid && uiVista && enabled) // guich@573_6
          g.fillVistaRect(0,0,wh,wh,cbColor,true,false);
       else
+      if (!uiAndroid || !transparentBackground)
       {
          g.backColor = uiAndroid ? backColor : cbColor;
          g.fillRect(0,0,wh,wh); // guich@220_28
@@ -197,9 +204,12 @@ public class Check extends Control
       if (uiAndroid)
          try 
          {
-            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh, backColor),0,0);
+            Image img = enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor);
+            img.alphaMask = alphaValue;
+            NinePatch.tryDrawImage(g, img,0,0);
+            img.alphaMask = 255;
             if (checked)
-               g.drawImage(Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+               NinePatch.tryDrawImage(g,Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}
       else
          g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28
@@ -210,7 +220,7 @@ public class Check extends Control
       // draw label
       yy = (this.height - fmH*lines.length) >> 1;
       xx = wh+2; // guich@300_69
-      g.foreColor = cfColor;
+      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cfColor;
       for (int i =0; i < lines.length; i++,yy+=fmH)
          g.drawText(lines[i], xx, yy, textShadowColor != -1, textShadowColor);
    }
@@ -238,7 +248,7 @@ public class Check extends Control
          int wh = height;
          int m = 2*wh/5;
          int yy = m;
-         int xx = uiPalm ? 2 : 3;
+         int xx = 3;
          wh -= xx;
          if (fmH <= 10) // guich@tc110_18
          {
@@ -290,7 +300,7 @@ public class Check extends Control
       if (autoSplit && this.width > 0 && this.width != lastASW) // guich@tc114_74 - guich@tc120_5: only if PREFERRED was choosen in first setRect - guich@tc126_35
       {
          lastASW = this.width;
-         int wh = lines.length == 1 ? height : Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
+         int wh = lines.length == 1 ? height : fmH+Edit.prefH;
          split(this.width-wh-2);
          if (PREFERRED-RANGE <= setH && setH <= PREFERRED+RANGE) 
             setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);

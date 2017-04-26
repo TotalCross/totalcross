@@ -18,6 +18,7 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -40,6 +41,9 @@ public class RadioGroupController
 {
    private Radio last; // guich@402_21
    private Vector members = new Vector();
+   
+   /** Set to false to disable sending PRESSED events to the previous control. */
+   public boolean sendPressOnLast=Settings.sendPressEventOnChange;
 
    /** Adds a new Radio to the list of Radios this controller handles. 
     * This method is called by the Radio's constructor.
@@ -63,7 +67,7 @@ public class RadioGroupController
    public void setSelectedItem(Radio who)
    {
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressOnLast);
       (last = who).setChecked(true);
    }
    
@@ -71,11 +75,30 @@ public class RadioGroupController
    public void setSelectedItem(String text)
    {
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressOnLast);
       for (int i = 0, n = members.size(); i < n; i++)
       {
          Radio r = (Radio)members.items[i];
          if (r.getText().equals(text))
+         {
+            (last = r).setChecked(true);
+            break;
+         }
+      }
+   }
+   
+   /** Selects a radio whose text starts with the given caption */
+   public void setSelectedItemStartingWith(String text, boolean caseInsensitive)
+   {
+      if (caseInsensitive) text = text.toLowerCase();
+      if (last != null)
+         last.setChecked(false,sendPressOnLast);
+      for (int i = 0, n = members.size(); i < n; i++)
+      {
+         Radio r = (Radio)members.items[i];
+         String s = r.getText();
+         if (caseInsensitive) s = s.toLowerCase();
+         if (s.startsWith(text))
          {
             (last = r).setChecked(true);
             break;
@@ -115,23 +138,37 @@ public class RadioGroupController
      */
    public void setSelectedIndex(int i) // guich@421_32
    {
+      setSelectedIndex(i, Settings.sendPressEventOnChange);
+   }
+   
+   /** Selects the given radio and deselects the other one.
+    * @param i the zero-based index of the radio to be set, or -1 to disable all.
+    */
+   public void setSelectedIndex(int i, boolean sendPressEvent) // guich@421_32
+   {
       if (last != null)
-         last.setChecked(false);
+         last.setChecked(false,sendPressEvent);
       if (i < 0) // guich@tc100
          last = null;
       else
       if (i < members.size())
       {
          last = (Radio)members.items[i];
-         last.setChecked(true);
+         last.setChecked(true,sendPressEvent);
       }
    }
-   
+  
    /** Returns the Radio at the given index.
     * @since TotalCross 1.5 
     */
    public Radio getRadio(int idx)
    {
       return (Radio)members.items[idx];
+   }
+   
+   /** Returns the number of Radio's. */
+   public int getSize()
+   {
+      return members.size();
    }
 }

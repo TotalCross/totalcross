@@ -229,7 +229,7 @@ public class ComboBoxEditable extends ComboBox implements PressListener, KeyList
    
    public void getFocusableControls(Vector v) // kmeehl@tc100
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100

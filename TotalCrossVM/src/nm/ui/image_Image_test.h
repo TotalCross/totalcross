@@ -11,15 +11,20 @@
 
 
 
-Object pngImage,jpegImage;
+TCObject pngImage,jpegImage;
 
 TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imageLoad(String path);
 {
    TNMParams p;
-   Object imgObj, pathObj, obj[2];
+   TCObject imgObj, pathObj, obj[2], intArray;
+
    // load a jpg
-   imgObj = createObject(currentContext, "totalcross.ui.image.Image");
+   imgObj = createObject(currentContext, "totalcross.ui.image.Image");   
    setObjectLock(imgObj, UNLOCKED);
+
+   intArray = FIELD_OBJ(imgObj, OBJ_CLASS(imgObj), 5) = createIntArray(currentContext, 1);
+   ASSERT1_EQUALS(NotNull, intArray);
+
    ASSERT1_EQUALS(NotNull, imgObj);
    pathObj = createStringObjectFromCharP(currentContext, "barbara.jpg", 11);
    setObjectLock(pathObj, UNLOCKED);
@@ -32,13 +37,15 @@ TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imag
    ASSERT1_EQUALS(NotNull, Image_pixels(imgObj));
    ASSERT2_EQUALS(I32, Image_width(imgObj), 240);
    ASSERT2_EQUALS(I32, Image_height(imgObj), 240);
-
+   
    jpegImage = imgObj;
 
    // load a png
    imgObj = createObject(currentContext, "totalcross.ui.image.Image");
    setObjectLock(imgObj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, imgObj);
+   intArray = FIELD_OBJ(imgObj, OBJ_CLASS(imgObj), 5) = createIntArray(currentContext, 1);
+   ASSERT1_EQUALS(NotNull, intArray);
    pathObj = createStringObjectFromCharP(currentContext, "pal685.png", 10);
    setObjectLock(pathObj, UNLOCKED);
    ASSERT1_EQUALS(NotNull, pathObj);
@@ -50,7 +57,7 @@ TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imag
    ASSERT2_EQUALS(I32, Image_width(imgObj), 240);
    ASSERT2_EQUALS(I32, Image_height(imgObj), 240);
 
-   pngImage = imgObj;
+   pngImage = imgObj; 
    finish: ;
 }
 TESTCASE(tuiI_imageParse_sB) // totalcross/ui/image/Image native private void imageParse(totalcross.io.Stream in, byte []buf);  #DEPENDS(tuiI_imageLoad_s)

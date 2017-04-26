@@ -29,7 +29,6 @@ public class Tile
    private static Sprite animSprite;
    private static int halfHeight,halfWidth;
 
-   public boolean dirty;
   	public int color;
    protected int centerX,centerY;
 
@@ -60,7 +59,6 @@ public class Tile
   		centerX = x;
    	centerY = y;
     	color = index;
-      dirty = true;
   	}
 
   	public boolean hit(Ball ball)
@@ -92,7 +90,6 @@ public class Tile
          ball.centerX = centerX + halfWidth + ball_hw;
          ball.ispeedx = -ball.ispeedx;
       }
-      dirty = true;
 		return (--color <= 0);
 	}
 
@@ -109,6 +106,5 @@ public class Tile
       animSprite.centerX = centerX;
       animSprite.centerY = centerY;
       animSprite.show();
-      dirty = false;
    }
 }

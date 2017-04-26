@@ -27,11 +27,24 @@ import totalcross.util.Vector;
 
 public class XYChart extends PointLineChart
 {
+   /** Position the values at the center of the column instead of at the line. */ 
+   public boolean positionAtColumnCenter;
+   
    /**
-    * Creates a new XY (scatter) chart
+    * Creates a new XY (scatter) chart without categories
     */
    public XYChart()
    {
+      this(null);
+   }
+   
+   /**
+    * Creates a new XY (scatter) chart with the given categories
+    */
+   public XYChart(String[] categories)
+   {
+      if (categories != null)
+         setXAxis(categories);
       border = new Insets(5, 5, 5, 5);
       showLines = true;
       showPoints = true;
@@ -44,6 +57,7 @@ public class XYChart extends PointLineChart
 
       // Update points
       int sCount = series.size();
+      int transX = positionAtColumnCenter ? -columnW/2 : 0;
       for (int i = 0; i < sCount; i ++) // for each series
       {
          if (i >= points.size())
@@ -61,7 +75,7 @@ public class XYChart extends PointLineChart
                v.addElement(new Coord());
             Coord c = (Coord) v.items[j];
 
-            c.x = getXValuePos(xValues[j]);
+            c.x = getXValuePos(xValues[j]) + transX;
             c.y = getYValuePos(yValues[j]);
          }
       }

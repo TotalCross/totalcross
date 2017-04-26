@@ -11,9 +11,7 @@
 
 
 
-#if defined(PALMOS)
- const TCHARP TEMP_PATH = TEXT("/temp");
-#elif defined(WIN32) || defined (WINCE)
+#if defined(WIN32) || defined (WINCE)
  const TCHARP TEMP_PATH = TEXT("TC_TEST");
 #elif defined(linux)
  const TCHARP TEMP_PATH = TEXT("/tmp");
@@ -25,9 +23,9 @@
  * Creates a file Object.
  */
 TCHAR buf[128];
-Object createFile(Context currentContext, const TCHARP dir, const TCHARP fileName, Object* outPath)
+TCObject createFile(Context currentContext, const TCHARP dir, const TCHARP fileName, TCObject* outPath)
 {
-   Object obj;
+   TCObject obj;
    obj = createObject(currentContext,"totalcross.io.File");
    setObjectLock(obj, UNLOCKED);
    if (obj != null)
@@ -50,9 +48,9 @@ Object createFile(Context currentContext, const TCHARP dir, const TCHARP fileNam
 /*
  * Create a time Object.
  */
-Object createTime(Context currentContext, int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millisecond)
+TCObject createTime(Context currentContext, int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millisecond)
 {
-   Object obj = createObject(currentContext, "totalcross.sys.Time");
+   TCObject obj = createObject(currentContext, "totalcross.sys.Time");
    setObjectLock(obj, UNLOCKED);
    if (obj != null)
    {
@@ -68,9 +66,9 @@ Object createTime(Context currentContext, int32 year, int32 month, int32 day, in
    return obj;
 }
 
-Object CharP2Buf(Context currentContext, CharP bytes, int len)
+TCObject CharP2Buf(Context currentContext, CharP bytes, int len)
 {
-   Object arrayObj;
+   TCObject arrayObj;
    CharP array;
 
    if (len <= 0 && bytes != null)
@@ -107,7 +105,7 @@ TESTCASE(tiF_isCardInserted_i) // totalcross/io/File native public static boolea
 TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String path, int mode, int slot); #DEPENDS(tiF_isCardInserted_i)
 {
    TNMParams p, tempDirParams;
-   Object objArray[2], tempDirObj[2], path;
+   TCObject objArray[2], tempDirObj[2], path;
    int32 i32Array[2], tempDirI32[2];
 #if 0//def WIN32
    char msg[128];
@@ -156,6 +154,8 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
    tiF_create_sii(&p); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiF_exists(&p);
+
+   // If p.retI is true, then the test has failed, besaucse "create" should not return true
    if (p.retI)
    {
       tiF_delete(&p);
@@ -253,7 +253,7 @@ TESTCASE(tiF_create_sii) // totalcross/io/File native private void create(String
 TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(); #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -367,7 +367,7 @@ TESTCASE(tiF_nativeClose) // totalcross/io/File native private void nativeClose(
 TESTCASE(tiF_createDir) // totalcross/io/File native public boolean createDir(); #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -401,7 +401,7 @@ TESTCASE(tiF_createDir) // totalcross/io/File native public boolean createDir();
 TESTCASE(tiF_delete) // totalcross/io/File native public void delete();  #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -456,7 +456,7 @@ TESTCASE(tiF_delete) // totalcross/io/File native public void delete();  #DEPEND
 TESTCASE(tiF_exists) // totalcross/io/File native public boolean exists();  #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -546,7 +546,7 @@ TESTCASE(tiF_exists) // totalcross/io/File native public boolean exists();  #DEP
 TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -586,8 +586,9 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    currentContext->thrownException = null;
 
    // ----- ROOT -----
-
+#ifndef WP8
    p.obj[0] = createFile(currentContext, TEXT("/"), null, &path);
+
    ASSERT1_EQUALS(NotNull, p.obj[0]);
    p.obj[1] = path;
    p.i32[0] = DONT_OPEN;
@@ -598,14 +599,14 @@ TESTCASE(tiF_getSize) // totalcross/io/File native public int getSize();      #D
    tiF_getSize(&p);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    ASSERT1_EQUALS(True, p.retI >= 0); // assert volume size is greater than zero
-
+#endif
    finish:
       ;
 }
 TESTCASE(tiF_isDir) // totalcross/io/File native public boolean isDir();     #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -667,9 +668,9 @@ TESTCASE(tiF_isDir) // totalcross/io/File native public boolean isDir();     #DE
 TESTCASE(tiF_listFiles) // totalcross/io/File native public String []listFiles();  #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
-   Object* list;
+   TCObject* list;
    int32 count;
    TCHARP s;
    bool found;
@@ -701,7 +702,7 @@ TESTCASE(tiF_listFiles) // totalcross/io/File native public String []listFiles()
    ASSERT1_EQUALS(NotNull, p.retO);
    ASSERT1_EQUALS(True, (count = ARRAYOBJ_LEN(p.retO)) > 0);
 
-   list = (Object*) ARRAYOBJ_START(p.retO);
+   list = (TCObject*) ARRAYOBJ_START(p.retO);
    found = false;
    while (--count >= 0 && !found)
    {
@@ -719,9 +720,9 @@ TESTCASE(tiF_listFiles) // totalcross/io/File native public String []listFiles()
 TESTCASE(tiF_rename_s) // totalcross/io/File native public boolean rename(String path);  #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
-   Object renPath;
+   TCObject renPath;
 
    p.obj = objArray;
    p.i32 = i32Array;
@@ -796,9 +797,9 @@ TESTCASE(tiF_rename_s) // totalcross/io/File native public boolean rename(String
 TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(byte []b, int off, int len);   #DEPENDS(tiF_create_sii)
 {
    TNMParams rbP, wbP;
-   Object readBytesObj[2], writeBytesObj[2],path;
+   TCObject readBytesObj[2], writeBytesObj[2],path;
    int32 readBytesI32[2], writeBytesI32[2];
-   Object rbBuf, wbBuf;
+   TCObject rbBuf, wbBuf;
 
    rbP.currentContext = currentContext;
    wbP.currentContext = currentContext;
@@ -1067,9 +1068,12 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.obj[0] = rbP.obj[0];
    rbP.i32[0] = 12;
    tiF_setPos_i(&rbP);
+   
+#ifndef WP8
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    ASSERT2_EQUALS(Sz, OBJ_CLASS(currentContext->thrownException)->name, throwableAsCharP[IOException]);
    currentContext->thrownException = null;
+#endif
 
    // #32 Moving the file pointer back to the beggining of the file
    rbP.obj[0] = rbP.obj[0];
@@ -1085,8 +1089,12 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
    rbP.i32[1] = ARRAYOBJ_LEN(rbP.obj[1]);
    tiF_readBytes_Bii(&rbP);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
-   ASSERT2_EQUALS(I32, 11, rbP.retI);
-   ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11));
+
+#ifndef WP8
+   ASSERT2_EQUALS(I32, 11, rbP.retI); 
+#endif
+
+   ASSERT2_EQUALS(I32, 0, xstrncmp(ARRAYOBJ_START(rbBuf), "23456701234", 11)); 
 
    // #34 Close the file.
    tiF_nativeClose(&rbP);
@@ -1098,7 +1106,7 @@ TESTCASE(tiF_writeBytes_Bii) // totalcross/io/File native public int writeBytes(
 TESTCASE(tiF_setAttributes_i) // totalcross/io/File native public void setAttributes(int attr); #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;
@@ -1137,9 +1145,9 @@ TESTCASE(tiF_setAttributes_i) // totalcross/io/File native public void setAttrib
 TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte whichTime, totalcross.sys.Time time);  #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
-   Object time, t1, t2, t3;
+   TCObject time, t1, t2, t3;
 
    p.obj = objArray;
    p.i32 = i32Array;
@@ -1199,9 +1207,12 @@ TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte w
    ASSERT2_EQUALS(I32, Time_year(time), Time_year(t3));
    ASSERT2_EQUALS(I32, Time_month(time), Time_month(t3));
    ASSERT2_EQUALS(I32, Time_day(time), Time_day(t3));
-   //ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
-   //ASSERT2_EQUALS(I32, jtime->minute(time), Time_minute(t3));
-   //ASSERT2_EQUALS(I32, jtime->second, Time_second(t3));
+   
+#ifdef WP8   
+   ASSERT2_EQUALS(I32, Time_hour(time), Time_hour(t3));
+   ASSERT2_EQUALS(I32, Time_minute(time), Time_minute(t3));
+   ASSERT2_EQUALS(I32, Time_second(time), Time_second(t3));
+#endif
 
    finish:
       ;
@@ -1210,7 +1221,7 @@ TESTCASE(tiF_setTime_bt) // totalcross/io/File native public void setTime(byte w
 TESTCASE(tiF_setSize_i) // totalcross/io/File native public void setSize(int newSize); #DEPENDS(tiF_create_sii)
 {
    TNMParams p;
-   Object objArray[2],path;
+   TCObject objArray[2],path;
    int32 i32Array[2];
    p.obj = objArray;
    p.i32 = i32Array;

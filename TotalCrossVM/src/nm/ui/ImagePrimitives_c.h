@@ -9,11 +9,22 @@
  *                                                                               *
  *********************************************************************************/
 
-#define NO_TRANSPARENT_COLOR -2
-
 #include <math.h>
+#ifdef ANDROID
+#undef __gl2_h_
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#endif
 
-static void setCurrentFrame(Object obj, int32 nr)
+#if defined WP8
+#include "openglWrapper.h"
+#endif
+
+void applyChanges(Context currentContext, TCObject obj);
+void freeTexture(TCObject obj);
+
+static void setCurrentFrame(TCObject obj, int32 nr)
 {
    int32 y,width,widthOfAllFrames;
    Pixel* pixelsOfAllFrames = (Pixel*)ARRAYOBJ_START(Image_pixelsOfAllFrames(obj));
@@ -36,13 +47,12 @@ static void setCurrentFrame(Object obj, int32 nr)
          *pixels++ = *pixelsOfAllFrames++;
 }
 
-static void applyColor(Object obj, Pixel color) // guich@tc112_24
+static void applyColor(TCObject obj, Pixel color) // guich@tc112_24
 {
    int32 frameCount = Image_frameCount(obj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
-   Pixel transp = makePixelRGB(Image_transparentColor(obj));
    PixelConv c;
    double k = 128;
    int32 mr,mg,mb;
@@ -54,12 +64,11 @@ static void applyColor(Object obj, Pixel color) // guich@tc112_24
    mb = (int32) (sqrt((c.b + k) / k) * 0x10000);
 
    for (; len-- > 0; pixels++)
-      if (pixels->pixel != transp)
-      {
-         pixels->r = min32(255,(mr * pixels->r) >> 16);
-         pixels->g = min32(255,(mg * pixels->g) >> 16);
-         pixels->b = min32(255,(mb * pixels->b) >> 16);
-      }
+   {
+      pixels->r = min32(255,(mr * pixels->r) >> 16);
+      pixels->g = min32(255,(mg * pixels->g) >> 16);
+      pixels->b = min32(255,(mb * pixels->b) >> 16);
+   }
    if (frameCount != 1)
    {
       Image_currentFrame(obj) = 2;
@@ -70,7 +79,7 @@ static void applyColor(Object obj, Pixel color) // guich@tc112_24
 #define BIAS_BITS 16
 #define BIAS (1<<BIAS_BITS)
 
-static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackColor) // guich@tc130: changed area-averaging to Catmull-Rom resampling
+static bool getSmoothScaledInstance(TCObject thisObj, TCObject newObj) // guich@tc130: changed area-averaging to Catmull-Rom resampling
 {
    bool fSuccess = false;
    PixelConv* ob = (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
@@ -79,17 +88,14 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    int32 height = Image_height(thisObj);
    int32 newWidth = Image_width(newObj);
    int32 newHeight = Image_height(newObj);
-   Pixel transp = makePixelRGB(Image_transparentColor(thisObj));
-   Object pixelsObj = (frameCount == 1) ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = (frameCount == 1) ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
    PixelConv *ib = (PixelConv*)ARRAYOBJ_START(pixelsObj);
-   PixelConv pval,backColor;
+   PixelConv pval;                                                                                                                                   
 
-   int32 i, j, n, s, iweight,a,r,g,b;
+   int32 i=0, j, n, s, iweight,a,r,g,b;
    double xScale, yScale;
 
    // Temporary values
-   int32 val;
-
    int32 * v_weight = null; // Weight contribution    [newHeight][maxContribs]
    int32 * v_pixel = null;  // Pixel that contributes [newHeight][maxContribs]
    int32 * v_count = null;  // How many contribution for the pixel [newHeight]
@@ -99,8 +105,8 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
 
    double center;         // Center of current sampling
    double weight;         // Current wight
-   int32 left;           // Left of current sampling
-   int32 right;          // Right of current sampling
+   int32 left=0;           // Left of current sampling
+   int32 right=0;          // Right of current sampling
 
    int32 * p_weight;     // Temporary pointer
    int32 * p_pixel;      // Temporary pointer
@@ -109,8 +115,10 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
 
-   backColor.pixel = pbackColor;
+   if (width <= 0 || height <= 0 || newWidth <= 0 || newHeight <= 0) 
+      return true;
 
+   setObjectLock(newObj, LOCKED);
    xScale = ((double)newWidth / width);
    yScale = ((double)newHeight / height);
 
@@ -125,7 +133,8 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
       /* Horizontal downsampling */
       filterFactor = xScale;
       scaledRadius = 2 / xScale;
-   }
+   }                                                             
+   
    /* The maximum number of contributions for a target pixel */
    maxContribs  = (int32) (2 * scaledRadius  + 1);
 
@@ -139,9 +148,9 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    v_pixel  = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* the contributing pixels */
    v_count  = (int32 *) xmalloc(s * sizeof(int32)); /* how may contributions for the target pixel */
    v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
-
+      
    if (!tb || !v_weight || !v_pixel || !v_count || !v_wsum) goto Cleanup;
-
+      
    /* Pre-calculate weights contribution for a row */
    for (i = 0; i < newWidth; i++)
    {
@@ -185,26 +194,18 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         val = a = r = g = b = 0;
+         a = r = g = b = 0;
          for (j=0; j < count; j++)
          {
             int32 iweight = *p_weight++;
             pval.pixel = ib[*p_pixel++ + n * width].pixel;
             // Acting on color components
             a += pval.a * iweight;
-            if ((pval.pixel&0xFFFFFF) == transp)
-            {
-               r += backColor.r * iweight;
-               g += backColor.g * iweight;
-               b += backColor.b * iweight;
-            }
-            else
-            {
-               r += pval.r * iweight;
-               g += pval.g * iweight;
-               b += pval.b * iweight;
-            }
+            r += pval.r * iweight;
+            g += pval.g * iweight;
+            b += pval.b * iweight;
          }
+         if (wsum == 0) continue;
          a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
          r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
          g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
@@ -280,7 +281,7 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         val = a = r = g = b = 0;
+         a = r = g = b = 0;
          for (j = 0; j < count; j++)
          {
             int iweight = *p_weight++;
@@ -311,29 +312,20 @@ Cleanup: /* CLEANUP */
    if (v_pixel) xfree(v_pixel);
    if (v_count) xfree(v_count);
    if (v_wsum) xfree(v_wsum);
+   setObjectLock(newObj, UNLOCKED);
    return fSuccess;
 }
 
 // Replace a color by another one
-static void changeColors(Object obj, Pixel from, Pixel to)
+static void changeColors(TCObject obj, Pixel from, Pixel to)
 {
    int32 frameCount = Image_frameCount(obj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    int32 len = ARRAYOBJ_LEN(pixelsObj);
    Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
-   bool useAlpha = Image_useAlpha(obj);
-   if (useAlpha)
-   {
-      for (; len-- > 0; pixels++)
-         if ((*pixels & 0xFFFFFF) == from)
-            *pixels = (*pixels & 0xFF000000) | to; // keep alpha unchanged
-   }
-   else
-   {
-      for (; len-- > 0; pixels++)
-         if (*pixels == from)
-            *pixels = to;
-   }
+   for (; len-- > 0; pixels++)
+      if (*pixels == from)
+         *pixels = to;
    if (frameCount != 1)
    {
       Image_currentFrame(obj) = 2;
@@ -341,11 +333,11 @@ static void changeColors(Object obj, Pixel from, Pixel to)
    }
 }
 
-static void getScaledInstance(Object thisObj, Object newObj)
+static void getScaledInstance(TCObject thisObj, TCObject newObj)
 {
    Pixel* dstImageData = (Pixel*)ARRAYOBJ_START(Image_pixels(newObj));
    int32 frameCount = Image_frameCount(thisObj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
    Pixel* srcImageData = (Pixel*)ARRAYOBJ_START(pixelsObj);
    int32 thisWidth = Image_width(thisObj) * frameCount;
    int32 thisHeight= Image_height(thisObj);
@@ -362,6 +354,7 @@ static void getScaledInstance(Object thisObj, Object newObj)
    int32 x,y;
    Pixel *dst,*src;
 
+   if (newWidth != 0 && newHeight != 0 && thisWidth != 0 && thisHeight != 0)
    for (y = 0; y < newHeight; y++, hf += hi)
    {
       wf = thisWidth / w;
@@ -372,7 +365,7 @@ static void getScaledInstance(Object thisObj, Object newObj)
    }
 }
 
-static void getRotatedScaledInstance(Object thisObj, Object newObj, int32 percScale, int32 angle, Pixel color, int32 x0, int32 y0)
+static void getRotatedScaledInstance(TCObject thisObj, TCObject newObj, int32 percScale, int32 angle, Pixel color, int32 x0, int32 y0)
 {
    int32 frameCount = Image_frameCount(thisObj);
    Pixel *pixelsIn = (Pixel*)ARRAYOBJ_START(Image_pixels(thisObj)), *pixelsIn0 = pixelsIn;
@@ -388,7 +381,7 @@ static void getRotatedScaledInstance(Object thisObj, Object newObj, int32 percSc
    Pixel *pixelsOfAllFrames, *pixels, *out;
 
    /* xplying by 0x10000 allow integer math, while not loosing much prec. */
-   backColor = color ? (Pixel)color : (Pixel)makePixelRGB(Image_transparentColor(thisObj));
+   backColor = (Pixel)color;
    angle = angle % 360;
    if (angle < 0) angle += 360;
    switch (angle)
@@ -477,7 +470,7 @@ static void computeContrastTable(uint8 *table, int32 level)
    }
 }
 
-static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightness, int32 iContrast)
+static void getTouchedUpInstance(TCObject thisObj, TCObject newObj, int32 iBrightness, int32 iContrast)
 {
    enum
    {
@@ -486,13 +479,12 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
       CONTRAST_TOUCHUP
    } touchup;
 
-   PixelConv *in, *out, pc;
+   PixelConv *in, *out;
    int32 len;
    uint8 table[256];
    int32 m=0, k=0, max;
    int32 frameCount = Image_frameCount(thisObj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
-   bool useAlpha = Image_useAlpha(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
 
    touchup = NO_TOUCHUP;
    in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
@@ -524,7 +516,6 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
          m = (int32)((1.0-f) * brightness * 0x10000);
       }
    }
-   pc.pixel = makePixelRGB(Image_transparentColor(thisObj));
    switch (touchup)
    {
       case BRITE_TOUCHUP:
@@ -535,9 +526,6 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
             out->g = min32(255, (in->g * m + k) >> 16);
             out->b = min32(255, (in->b * m + k) >> 16);
          }
-         pc.r = min32(255, (pc.r * m + k) >> 16);
-         pc.g = min32(255, (pc.g * m + k) >> 16);
-         pc.b = min32(255, (pc.b * m + k) >> 16);
          break;
       case CONTRAST_TOUCHUP:
          for (; len-- > 0; in++,out++)
@@ -547,9 +535,6 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
             out->g = table[in->g];
             out->b = table[in->b];
          }
-         pc.r = table[pc.r];
-         pc.g = table[pc.g];
-         pc.b = table[pc.b];
          break;
       default: // case CTRSTBRITE_TOUCHUP:
          for (; len-- > 0; in++,out++)
@@ -559,35 +544,31 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
             out->g = min32(255, (table[in->g] * m + k) >> 16);
             out->b = min32(255, (table[in->b] * m + k) >> 16);
          }
-         pc.r = min32(255, (table[pc.r] * m + k) >> 16);
-         pc.g = min32(255, (table[pc.g] * m + k) >> 16);
-         pc.b = min32(255, (table[pc.b] * m + k) >> 16);
          break;
    }
-   Image_transparentColor(newObj) = useAlpha ? NO_TRANSPARENT_COLOR : (pc.r << 16) | (pc.g << 8) | pc.b;
 }
 
-static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // guich@tc110_50
+static void getFadedInstance(TCObject thisObj, TCObject newObj, int32 backColor) // guich@tc110_50
 {
-   PixelConv *in, *out, t,back;
+   PixelConv *in, *out,back;
    int32 len,r,g,b;
    int32 frameCount = Image_frameCount(thisObj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
 
    in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
    out= (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
    len = ARRAYOBJ_LEN(pixelsObj);
 
-   t.pixel = makePixelRGB(Image_transparentColor(thisObj));
    back.pixel = backColor;
    r = back.r;
    g = back.g;
    b = back.b;
    for (; len-- > 0; in++,out++)
    {
-      if (in->pixel == t.pixel) // don't change the transparent color
-         out->pixel = t.pixel;
-      else
+      out->a = in->a;
+      out->r = (in->r + (int32)r) >> 1;
+      out->g = (in->g + (int32)g) >> 1;
+      out->b = (in->b + (int32)b) >> 1;
       {
          out->a = in->a;
          out->r = (in->r + (int32)r) >> 1;
@@ -597,35 +578,56 @@ static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // 
    }
 }
 
-static void getPixelRow(Object obj, Object outObj, int32 y)
+static void getAlphaInstance(TCObject thisObj, TCObject newObj, int32 delta) // guich@tc110_50
 {
-   Object pixObj = (Image_frameCount(obj) > 1) ? Image_pixelsOfAllFrames(obj) : Image_pixels(obj);
-   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
-   int8* out = (int8*)ARRAYOBJ_START(outObj);
-   int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
-   bool useAlpha = Image_useAlpha(obj);
-   for (pixels += y * width; width-- > 0; pixels++)
-   {
-      if (useAlpha)
-         *out++ = pixels->a;
-      *out++ = pixels->r;
-      *out++ = pixels->g;
-      *out++ = pixels->b;                                   
+   PixelConv *in, *out;
+   int32 len;
+   int32 frameCount = Image_frameCount(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+
+   in = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+   out= (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   len = ARRAYOBJ_LEN(pixelsObj);
+
+   for (; len-- > 0; in++,out++)
+   {                         
+      int32 a = in->a;
+      out->pixel = in->pixel;
+      if (a != 0)
+      {
+         a += delta;
+         if (a < 0) a = 0; else if (a > 255) a = 255;
+            out->a = a;
+      }
    }
 }
 
-static void applyColor2(Object obj, Pixel color)
+static void getPixelRow(Context currentContext, TCObject obj, TCObject outObj, int32 y)
+{
+   TCObject pixObj = (Image_frameCount(obj) > 1) ? Image_pixelsOfAllFrames(obj) : Image_pixels(obj);
+   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
+   int8* out = (int8*)ARRAYOBJ_START(outObj);
+   int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+   if (checkArrayRange(currentContext, outObj, 0, width*4))
+      for (pixels += y * width; width-- > 0; pixels++)
+      {
+         *out++ = pixels->r;
+         *out++ = pixels->g;
+         *out++ = pixels->b;                                   
+         *out++ = pixels->a;
+      }
+}
+
+static void applyColor2(TCObject obj, Pixel color)
 {
    int32 frameCount = Image_frameCount(obj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
    PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
-   int32 itransp = Image_transparentColor(obj);
-   Pixel transp = makePixelRGB(itransp);
-   bool useAlpha = Image_useAlpha(obj);
    PixelConv c;
    int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m;
    PixelConv hip;
+   bool changeA;
 
    hip.pixel = 0;
    c.pixel = color;
@@ -633,68 +635,40 @@ static void applyColor2(Object obj, Pixel color)
    r2 = c.r;
    g2 = c.g;
    b2 = c.b;
+   changeA = c.a == 0xAA;                   
 
    // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
-   if (!useAlpha)
-   {
-      if (itransp == -1)
+   for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+      if (pixels->a == 0xFF) // consider only opaque pixels
       {
-         for (len = len0, pixels = pixels0; len-- > 0; pixels++)
-         {
-            m = (pixels->r + pixels->g + pixels->b) / 3;
-            if (m > hi) 
-            {
-               hi = m; 
-               hip = *pixels;
-               if ((pixels->pixel & 0xFFFFFF) == 0xFFFFFF) // highest color is always white
-                  break;
-            }
-         }
+         m = (pixels->r + pixels->g + pixels->b) / 3;
+         if (m > hi) {hi = m; hip = *pixels;}
       }
-      else
-      {
-         for (len = len0, pixels = pixels0; len-- > 0; pixels++)
-            if (pixels->pixel != transp)
-            {
-               m = (pixels->r + pixels->g + pixels->b) / 3;
-               if (m > hi) 
-               {
-                  hi = m; 
-                  hip = *pixels;
-                  if ((pixels->pixel & 0xFFFFFF) == 0xFFFFFF) // highest color is always white
-                     break;
-               }
-            }
-      }
-   }
-   else
-   {
-      for (len = len0, pixels = pixels0; len-- > 0; pixels++)
-         if (pixels->a == 0xFF) // consider only opaque pixels
-         {
-            m = (pixels->r + pixels->g + pixels->b) / 3;
-            if (m > hi) {hi = m; hip = *pixels;}
-         }
-   }
    hiR = hip.r;
    hiG = hip.g;
    hiB = hip.b;        
-   if (hiR == 0 && hiG == 0 && hiB == 0)
-      hiR = hiG = hiB = 255;
+   if (hiR == 0) hiR = 255;
+   if (hiG == 0) hiG = 255;
+   if (hiB == 0) hiB = 255;
+   hi = hiR > hiG ? hiR : hiG; hi = hi > hiB ? hi : hiB;
    
    for (len = len0, pixels = pixels0; len-- > 0; pixels++)
-      if (useAlpha || pixels->pixel != transp)
+   {
+      int32 r = pixels->r * r2 / hiR;
+      int32 g = pixels->g * g2 / hiG;
+      int32 b = pixels->b * b2 / hiB;
+      if (r > 255) r = 255;
+      if (g > 255) g = 255;
+      if (b > 255) b = 255;
+      if (changeA)                                      
       {
-         int32 r = pixels->r * r2 / hiR;
-         int32 g = pixels->g * g2 / hiG;
-         int32 b = pixels->b * b2 / hiB;
-         if (r > 255) r = 255;
-         if (g > 255) g = 255;
-         if (b > 255) b = 255;
-         pixels->r = r;
-         pixels->g = g;
-         pixels->b = b;
+         int32 a = pixels->r > pixels->g ? pixels->r : pixels->g; if (pixels->b > a) a = pixels->b;
+         pixels->a = a*255/hi;
       }
+      pixels->r = r;
+      pixels->g = g;
+      pixels->b = b;
+   }
 
    if (frameCount != 1)
    {
@@ -703,12 +677,123 @@ static void applyColor2(Object obj, Pixel color)
    }
 }
 
-static bool nativeEquals(Object thisObj, Object otherObj)
+void setTransparentColor(TCObject obj, Pixel color);
+void setTransparentColor(TCObject obj, Pixel color)
+{
+   int32 frameCount = Image_frameCount(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 len = ARRAYOBJ_LEN(pixelsObj);
+   Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+   if ((int32)color == -1) // no transparent pixels?
+      for (; len-- > 0;)
+         *pixels++ |= 0xFF000000;
+   else
+      for (; len-- > 0; pixels++)
+      {
+         Pixel p = *pixels & 0xFFFFFF;
+         *pixels = (p == color) ? color : p | 0xFF000000; // if is the transparent color, set the alpha to 0, otherwise, set to full bright
+      }
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+}
+
+#ifdef __gl2_h_                         
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+void applyChanges(Context currentContext, TCObject obj)
+{
+   int32 frameCount = Image_frameCount(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   bool doReset = true;
+   if (pixelsObj)
+   {     
+      Pixel *pixels = (Pixel*)ARRAYOBJ_START(pixelsObj);
+      int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+      int32 height = Image_height(obj);
+#ifdef WP8
+      glDeleteTexture(obj, Image_textureId(obj));
+#endif
+      doReset = glLoadTexture(currentContext, obj, Image_textureId(obj), pixels, width, height,false);
+      Image_lastAccess(obj) = getTimeStamp();
+   }
+   Image_changed(obj) = !doReset;
+}
+void glDeleteTexture(TCObject img, int32* textureId);
+void freeTexture(TCObject img)
+{                                       
+   if (ENABLE_TEXTURE_TRACE) debug("freeing texture %X (%dx%d): %d (count: %d)",img,Image_width(img),Image_height(img),Image_textureId(img)[0],Image_instanceCount(img));
+   glDeleteTexture(img,Image_instanceCount(img) < 0 ? Image_textureId(img) : null); // must be -1 to free the texture, because the first instance does not increment the instance count (which is done only in the instance copies)
+}
+
+void resetFontTexture(); // PalmFont_c.h
+#ifdef ANDROID
+static int timestampOldLimit;
+void onImage(int32 it, VoidP ptr) {
+    TCObject img = (TCObject)ptr;
+    TCObject field = FIELD_OBJ(img, OBJ_CLASS(img), 2);
+    if (field) {
+        int arrayLen = ARRAYOBJ_LEN(field);
+        int32 *ids = Image_textureId(img);
+        if (arrayLen && ids && ids[0]) {
+            if (ENABLE_TEXTURE_TRACE) debug("deleting texture %X (%dx%d): %d",img,Image_width(img),Image_height(img),ids[0]);
+            switch ((INVTEX)it) {
+            case INVTEX_INVALIDATE:
+                ids[0] = ids[1] = 0;
+                break;
+            case INVTEX_DEL_ALL:
+                glDeleteTexture(img, ids);
+                break;
+            case INVTEX_DEL_ONLYOLD:
+                if (Image_lastAccess(img) != -1 && Image_lastAccess(img) < timestampOldLimit) {
+                    glDeleteTexture(img, ids);
+                }
+                break;
+            }
+        }
+    }
+    Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+}
+                                                                       
+void invalidateTextures(INVTEX it) // called by opengl when the application changes the opengl surface
+{
+   timestampOldLimit = it == INVTEX_DEL_ONLYOLD ? getTimeStamp() - 5000 : 0; // delete textures
+   visitImages(onImage, it);
+   if (it == INVTEX_INVALIDATE)
+      resetFontTexture();
+   totalTextureLoaded = 0;   
+}
+#else
+static void onImage(int32 dumb, VoidP ptr)
+{
+   TCObject img = (TCObject)ptr;
+   if (Image_textureId(img))
+   {
+      #ifndef WP8 // in wp8 we have to delete the texture when applying the changes
+      // glDeleteTexture(img, Image_textureId(img)); - TODO use this on iOS
+      Image_textureId(img)[0] = 0;
+      Image_textureId(img)[1] = 0;
+      #endif
+   }
+   Image_changed(img) = true; //applyChanges(lifeContext, img); - update only when the image is going to be painted
+}
+
+void invalidateTextures() // called by opengl when the application changes the opengl surface
+{
+   visitImages(onImage, 0);
+   resetFontTexture();
+   totalTextureLoaded = 0;   
+}
+#endif // ANDROID
+#endif
+
+static bool nativeEquals(TCObject thisObj, TCObject otherObj)
 {
    Pixel *p1,*p2;
    int32 len;
    int32 frameCount = Image_frameCount(thisObj);
-   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
 
    p1 = (Pixel*)ARRAYOBJ_START(pixelsObj);
    p2 = (Pixel*)ARRAYOBJ_START(Image_pixels(otherObj));
@@ -718,4 +803,26 @@ static bool nativeEquals(Object thisObj, Object otherObj)
       if (*p1 != *p2)
          return false;
    return true;
+}
+
+static void applyFade(TCObject obj, int32 fadeValue)
+{
+   int32 frameCount = Image_frameCount(obj);
+   TCObject pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 len = ARRAYOBJ_LEN(pixelsObj), r,g,b;
+   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+
+   for (; len-- > 0; pixels++)
+   {
+      r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+      g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+      b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
+   }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+   Image_changed(obj) = true;
 }

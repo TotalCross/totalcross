@@ -32,7 +32,7 @@ public class Racket extends Sprite
 
 	public Racket() throws ImageException, IOException
   	{
-    	super(new Image("tc/samples/game/breakout/racket.png").smoothScaledBy(Settings.screenWidth/160d, 1, 0x000099), -1, true, null);
+    	super(new Image("tc/samples/game/breakout/racket.png").setTransparentColor(0x000099).smoothScaledBy(Settings.screenWidth/160d, 1), -1, true, null);
 
       int halfWidth = width / 2;
    	adjust1 = halfWidth - ((width * 1) / 8);
