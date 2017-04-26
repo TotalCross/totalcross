@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="litebase.android"
+      android:versionCode="-1"
+      android:versionName="!1.0!"
+      android:sharedUserId="totalcross.app.sharedid"
+    >
+    <application android:icon="@drawable/icon" android:label="Litebase - TotalCross Database"
+         android:theme="@android:style/Theme.Black.NoTitleBar" >
+        <activity android:name=".Loader" android:label="Checking Litebase installation..." />
+    </application>
+    <uses-sdk android:minSdkVersion="4" />
+</manifest>

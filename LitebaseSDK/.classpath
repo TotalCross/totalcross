@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="litebase/android/" kind="src" path="src/java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TotalCrossSDK"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

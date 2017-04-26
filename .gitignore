@@ -39,3 +39,4 @@ TotalCrossVM/builders/droid/src/main/libs/armeabi/
 .*.swp
 TotalCrossSDK/build/
 TotalCrossSDK/.gradle/
+*.DS_Store

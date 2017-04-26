@@ -1,0 +1,537 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F7CBA061552CC8600E9BD43 /* nativeProcAddressesLB.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F7CBA041552CC8600E9BD43 /* nativeProcAddressesLB.c */; };
+		0F7CBA071552CC8600E9BD43 /* nativeProcAddressesLB.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F7CBA051552CC8600E9BD43 /* nativeProcAddressesLB.h */; };
+		0F91CCF0154EDFA8000868DA /* Constants.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB0154EDFA8000868DA /* Constants.h */; };
+		0F91CCF1154EDFA8000868DA /* Index.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCB1154EDFA8000868DA /* Index.c */; };
+		0F91CCF2154EDFA8000868DA /* Index.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB2154EDFA8000868DA /* Index.h */; };
+		0F91CCF3154EDFA8000868DA /* Key.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCB3154EDFA8000868DA /* Key.c */; };
+		0F91CCF4154EDFA8000868DA /* Key.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB4154EDFA8000868DA /* Key.h */; };
+		0F91CCF5154EDFA8000868DA /* lbFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCB5154EDFA8000868DA /* lbFile.c */; };
+		0F91CCF6154EDFA8000868DA /* lbFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB6154EDFA8000868DA /* lbFile.h */; };
+		0F91CCF7154EDFA8000868DA /* Litebase.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCB7154EDFA8000868DA /* Litebase.c */; };
+		0F91CCF8154EDFA8000868DA /* Litebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCB8154EDFA8000868DA /* Litebase.h */; };
+		0F91CCF9154EDFA8000868DA /* LitebaseGlobals.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCB9154EDFA8000868DA /* LitebaseGlobals.c */; };
+		0F91CCFA154EDFA8000868DA /* LitebaseGlobals.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCBA154EDFA8000868DA /* LitebaseGlobals.h */; };
+		0F91CCFB154EDFA8000868DA /* LitebaseTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCBB154EDFA8000868DA /* LitebaseTypes.h */; };
+		0F91CCFC154EDFA8000868DA /* Macros.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCBC154EDFA8000868DA /* Macros.h */; };
+		0F91CCFD154EDFA8000868DA /* MarkBits.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCBD154EDFA8000868DA /* MarkBits.c */; };
+		0F91CCFE154EDFA8000868DA /* MarkBits.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCBE154EDFA8000868DA /* MarkBits.h */; };
+		0F91CCFF154EDFA8000868DA /* MemoryFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCBF154EDFA8000868DA /* MemoryFile.c */; };
+		0F91CD00154EDFA8000868DA /* MemoryFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCC0154EDFA8000868DA /* MemoryFile.h */; };
+		0F91CD01154EDFA8000868DA /* NativeMethods.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCC1154EDFA8000868DA /* NativeMethods.c */; };
+		0F91CD02154EDFA8000868DA /* NativeMethods.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCC2154EDFA8000868DA /* NativeMethods.h */; };
+		0F91CD03154EDFA8000868DA /* Node.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCC5154EDFA8000868DA /* Node.c */; };
+		0F91CD04154EDFA8000868DA /* Node.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCC6154EDFA8000868DA /* Node.h */; };
+		0F91CD05154EDFA8000868DA /* NormalFile.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCC7154EDFA8000868DA /* NormalFile.c */; };
+		0F91CD06154EDFA8000868DA /* NormalFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCC8154EDFA8000868DA /* NormalFile.h */; };
+		0F91CD07154EDFA8000868DA /* LitebaseLex.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCCA154EDFA8000868DA /* LitebaseLex.c */; };
+		0F91CD08154EDFA8000868DA /* LitebaseLex.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCCB154EDFA8000868DA /* LitebaseLex.h */; };
+		0F91CD09154EDFA8000868DA /* LitebaseMessage.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCCC154EDFA8000868DA /* LitebaseMessage.c */; };
+		0F91CD0A154EDFA8000868DA /* LitebaseMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */; };
+		0F91CD0B154EDFA8000868DA /* LitebaseParser.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCCE154EDFA8000868DA /* LitebaseParser.c */; };
+		0F91CD0C154EDFA8000868DA /* LitebaseParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCCF154EDFA8000868DA /* LitebaseParser.h */; };
+		0F91CD0E154EDFA8000868DA /* SQLBooleanClause.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD1154EDFA8000868DA /* SQLBooleanClause.c */; };
+		0F91CD0F154EDFA8000868DA /* SQLBooleanClause.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCD2154EDFA8000868DA /* SQLBooleanClause.h */; };
+		0F91CD10154EDFA8000868DA /* SQLBooleanClauseTree.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD3154EDFA8000868DA /* SQLBooleanClauseTree.c */; };
+		0F91CD11154EDFA8000868DA /* SQLBooleanClauseTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCD4154EDFA8000868DA /* SQLBooleanClauseTree.h */; };
+		0F91CD12154EDFA8000868DA /* SQLColumnListClause.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD5154EDFA8000868DA /* SQLColumnListClause.c */; };
+		0F91CD13154EDFA8000868DA /* SQLColumnListClause.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCD6154EDFA8000868DA /* SQLColumnListClause.h */; };
+		0F91CD14154EDFA8000868DA /* SQLDeleteStatement.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD7154EDFA8000868DA /* SQLDeleteStatement.c */; };
+		0F91CD15154EDFA8000868DA /* SQLDeleteStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCD8154EDFA8000868DA /* SQLDeleteStatement.h */; };
+		0F91CD16154EDFA8000868DA /* SQLInsertStatement.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCD9154EDFA8000868DA /* SQLInsertStatement.c */; };
+		0F91CD17154EDFA8000868DA /* SQLInsertStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCDA154EDFA8000868DA /* SQLInsertStatement.h */; };
+		0F91CD18154EDFA8000868DA /* SQLSelectStatement.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCDB154EDFA8000868DA /* SQLSelectStatement.c */; };
+		0F91CD19154EDFA8000868DA /* SQLSelectStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCDC154EDFA8000868DA /* SQLSelectStatement.h */; };
+		0F91CD1A154EDFA8000868DA /* SQLUpdateStatement.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCDD154EDFA8000868DA /* SQLUpdateStatement.c */; };
+		0F91CD1B154EDFA8000868DA /* SQLUpdateStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCDE154EDFA8000868DA /* SQLUpdateStatement.h */; };
+		0F91CD1C154EDFA8000868DA /* PlainDB.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCDF154EDFA8000868DA /* PlainDB.c */; };
+		0F91CD1D154EDFA8000868DA /* PlainDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCE0154EDFA8000868DA /* PlainDB.h */; };
+		0F91CD1E154EDFA8000868DA /* PreparedStatement.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCE1154EDFA8000868DA /* PreparedStatement.c */; };
+		0F91CD1F154EDFA8000868DA /* PreparedStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCE2154EDFA8000868DA /* PreparedStatement.h */; };
+		0F91CD20154EDFA8000868DA /* ResultSet.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCE3154EDFA8000868DA /* ResultSet.c */; };
+		0F91CD21154EDFA8000868DA /* ResultSet.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCE4154EDFA8000868DA /* ResultSet.h */; };
+		0F91CD22154EDFA8000868DA /* SQLValue.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCE5154EDFA8000868DA /* SQLValue.c */; };
+		0F91CD23154EDFA8000868DA /* SQLValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCE6154EDFA8000868DA /* SQLValue.h */; };
+		0F91CD24154EDFA8000868DA /* Table.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCE7154EDFA8000868DA /* Table.c */; };
+		0F91CD25154EDFA8000868DA /* Table.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCE8154EDFA8000868DA /* Table.h */; };
+		0F91CD26154EDFA8000868DA /* TCVMLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCE9154EDFA8000868DA /* TCVMLib.c */; };
+		0F91CD27154EDFA8000868DA /* TCVMLib.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCEA154EDFA8000868DA /* TCVMLib.h */; };
+		0F91CD28154EDFA8000868DA /* UtilsLB.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CCEB154EDFA8000868DA /* UtilsLB.c */; };
+		0F91CD29154EDFA8000868DA /* UtilsLB.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CCEC154EDFA8000868DA /* UtilsLB.h */; };
+		0F91CD2E154EE3D6000868DA /* liblitebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F91CD2C154EE3D6000868DA /* liblitebase.h */; };
+		0F91CD2F154EE3D6000868DA /* liblitebase.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F91CD2D154EE3D6000868DA /* liblitebase.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0F7CBA041552CC8600E9BD43 /* nativeProcAddressesLB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = nativeProcAddressesLB.c; sourceTree = "<group>"; };
+		0F7CBA051552CC8600E9BD43 /* nativeProcAddressesLB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nativeProcAddressesLB.h; sourceTree = "<group>"; };
+		0F91CB7B154EDC7A000868DA /* libLitebase.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libLitebase.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F91CB82154EDC7A000868DA /* Litebase-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Litebase-Prefix.pch"; sourceTree = "<group>"; };
+		0F91CCB0154EDFA8000868DA /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
+		0F91CCB1154EDFA8000868DA /* Index.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Index.c; sourceTree = "<group>"; };
+		0F91CCB2154EDFA8000868DA /* Index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Index.h; sourceTree = "<group>"; };
+		0F91CCB3154EDFA8000868DA /* Key.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Key.c; sourceTree = "<group>"; };
+		0F91CCB4154EDFA8000868DA /* Key.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Key.h; sourceTree = "<group>"; };
+		0F91CCB5154EDFA8000868DA /* lbFile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbFile.c; sourceTree = "<group>"; };
+		0F91CCB6154EDFA8000868DA /* lbFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lbFile.h; sourceTree = "<group>"; };
+		0F91CCB7154EDFA8000868DA /* Litebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Litebase.c; sourceTree = "<group>"; };
+		0F91CCB8154EDFA8000868DA /* Litebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Litebase.h; sourceTree = "<group>"; };
+		0F91CCB9154EDFA8000868DA /* LitebaseGlobals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseGlobals.c; sourceTree = "<group>"; };
+		0F91CCBA154EDFA8000868DA /* LitebaseGlobals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseGlobals.h; sourceTree = "<group>"; };
+		0F91CCBB154EDFA8000868DA /* LitebaseTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseTypes.h; sourceTree = "<group>"; };
+		0F91CCBC154EDFA8000868DA /* Macros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Macros.h; sourceTree = "<group>"; };
+		0F91CCBD154EDFA8000868DA /* MarkBits.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = MarkBits.c; sourceTree = "<group>"; };
+		0F91CCBE154EDFA8000868DA /* MarkBits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MarkBits.h; sourceTree = "<group>"; };
+		0F91CCBF154EDFA8000868DA /* MemoryFile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = MemoryFile.c; sourceTree = "<group>"; };
+		0F91CCC0154EDFA8000868DA /* MemoryFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryFile.h; sourceTree = "<group>"; };
+		0F91CCC1154EDFA8000868DA /* NativeMethods.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NativeMethods.c; sourceTree = "<group>"; };
+		0F91CCC2154EDFA8000868DA /* NativeMethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeMethods.h; sourceTree = "<group>"; };
+		0F91CCC3154EDFA8000868DA /* NativeMethods.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NativeMethods.txt; sourceTree = "<group>"; };
+		0F91CCC4154EDFA8000868DA /* NativeMethodsPrototypes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = NativeMethodsPrototypes.txt; sourceTree = "<group>"; };
+		0F91CCC5154EDFA8000868DA /* Node.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Node.c; sourceTree = "<group>"; };
+		0F91CCC6154EDFA8000868DA /* Node.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Node.h; sourceTree = "<group>"; };
+		0F91CCC7154EDFA8000868DA /* NormalFile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NormalFile.c; sourceTree = "<group>"; };
+		0F91CCC8154EDFA8000868DA /* NormalFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NormalFile.h; sourceTree = "<group>"; };
+		0F91CCCA154EDFA8000868DA /* LitebaseLex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseLex.c; sourceTree = "<group>"; };
+		0F91CCCB154EDFA8000868DA /* LitebaseLex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseLex.h; sourceTree = "<group>"; };
+		0F91CCCC154EDFA8000868DA /* LitebaseMessage.c */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.c; path = LitebaseMessage.c; sourceTree = "<group>"; };
+		0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseMessage.h; sourceTree = "<group>"; };
+		0F91CCCE154EDFA8000868DA /* LitebaseParser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LitebaseParser.c; sourceTree = "<group>"; };
+		0F91CCCF154EDFA8000868DA /* LitebaseParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LitebaseParser.h; sourceTree = "<group>"; };
+		0F91CCD1154EDFA8000868DA /* SQLBooleanClause.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLBooleanClause.c; sourceTree = "<group>"; };
+		0F91CCD2154EDFA8000868DA /* SQLBooleanClause.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLBooleanClause.h; sourceTree = "<group>"; };
+		0F91CCD3154EDFA8000868DA /* SQLBooleanClauseTree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLBooleanClauseTree.c; sourceTree = "<group>"; };
+		0F91CCD4154EDFA8000868DA /* SQLBooleanClauseTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLBooleanClauseTree.h; sourceTree = "<group>"; };
+		0F91CCD5154EDFA8000868DA /* SQLColumnListClause.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLColumnListClause.c; sourceTree = "<group>"; };
+		0F91CCD6154EDFA8000868DA /* SQLColumnListClause.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLColumnListClause.h; sourceTree = "<group>"; };
+		0F91CCD7154EDFA8000868DA /* SQLDeleteStatement.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLDeleteStatement.c; sourceTree = "<group>"; };
+		0F91CCD8154EDFA8000868DA /* SQLDeleteStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLDeleteStatement.h; sourceTree = "<group>"; };
+		0F91CCD9154EDFA8000868DA /* SQLInsertStatement.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLInsertStatement.c; sourceTree = "<group>"; };
+		0F91CCDA154EDFA8000868DA /* SQLInsertStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLInsertStatement.h; sourceTree = "<group>"; };
+		0F91CCDB154EDFA8000868DA /* SQLSelectStatement.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLSelectStatement.c; sourceTree = "<group>"; };
+		0F91CCDC154EDFA8000868DA /* SQLSelectStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLSelectStatement.h; sourceTree = "<group>"; };
+		0F91CCDD154EDFA8000868DA /* SQLUpdateStatement.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLUpdateStatement.c; sourceTree = "<group>"; };
+		0F91CCDE154EDFA8000868DA /* SQLUpdateStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUpdateStatement.h; sourceTree = "<group>"; };
+		0F91CCDF154EDFA8000868DA /* PlainDB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PlainDB.c; sourceTree = "<group>"; };
+		0F91CCE0154EDFA8000868DA /* PlainDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlainDB.h; sourceTree = "<group>"; };
+		0F91CCE1154EDFA8000868DA /* PreparedStatement.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PreparedStatement.c; sourceTree = "<group>"; };
+		0F91CCE2154EDFA8000868DA /* PreparedStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PreparedStatement.h; sourceTree = "<group>"; };
+		0F91CCE3154EDFA8000868DA /* ResultSet.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ResultSet.c; sourceTree = "<group>"; };
+		0F91CCE4154EDFA8000868DA /* ResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResultSet.h; sourceTree = "<group>"; };
+		0F91CCE5154EDFA8000868DA /* SQLValue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SQLValue.c; sourceTree = "<group>"; };
+		0F91CCE6154EDFA8000868DA /* SQLValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLValue.h; sourceTree = "<group>"; };
+		0F91CCE7154EDFA8000868DA /* Table.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Table.c; sourceTree = "<group>"; };
+		0F91CCE8154EDFA8000868DA /* Table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Table.h; sourceTree = "<group>"; };
+		0F91CCE9154EDFA8000868DA /* TCVMLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TCVMLib.c; sourceTree = "<group>"; };
+		0F91CCEA154EDFA8000868DA /* TCVMLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCVMLib.h; sourceTree = "<group>"; };
+		0F91CCEB154EDFA8000868DA /* UtilsLB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = UtilsLB.c; sourceTree = "<group>"; };
+		0F91CCEC154EDFA8000868DA /* UtilsLB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UtilsLB.h; sourceTree = "<group>"; };
+		0F91CD2C154EE3D6000868DA /* liblitebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = liblitebase.h; sourceTree = "<group>"; };
+		0F91CD2D154EE3D6000868DA /* liblitebase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = liblitebase.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0F91CB78154EDC7A000868DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0F91CB70154EDC7A000868DA = {
+			isa = PBXGroup;
+			children = (
+				0F91CD2C154EE3D6000868DA /* liblitebase.h */,
+				0F91CD2D154EE3D6000868DA /* liblitebase.m */,
+				0F91CCAD154EDFA8000868DA /* native */,
+				0F91CB80154EDC7A000868DA /* Litebase */,
+				0F91CB7D154EDC7A000868DA /* Frameworks */,
+				0F91CB7C154EDC7A000868DA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0F91CB7C154EDC7A000868DA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0F91CB7B154EDC7A000868DA /* libLitebase.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0F91CB7D154EDC7A000868DA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0F91CB80154EDC7A000868DA /* Litebase */ = {
+			isa = PBXGroup;
+			children = (
+				0F91CB81154EDC7A000868DA /* Supporting Files */,
+			);
+			path = Litebase;
+			sourceTree = "<group>";
+		};
+		0F91CB81154EDC7A000868DA /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				0F91CB82154EDC7A000868DA /* Litebase-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		0F91CCAD154EDFA8000868DA /* native */ = {
+			isa = PBXGroup;
+			children = (
+				0F7CBA041552CC8600E9BD43 /* nativeProcAddressesLB.c */,
+				0F7CBA051552CC8600E9BD43 /* nativeProcAddressesLB.h */,
+				0F91CCB0154EDFA8000868DA /* Constants.h */,
+				0F91CCB1154EDFA8000868DA /* Index.c */,
+				0F91CCB2154EDFA8000868DA /* Index.h */,
+				0F91CCB3154EDFA8000868DA /* Key.c */,
+				0F91CCB4154EDFA8000868DA /* Key.h */,
+				0F91CCB5154EDFA8000868DA /* lbFile.c */,
+				0F91CCB6154EDFA8000868DA /* lbFile.h */,
+				0F91CCB7154EDFA8000868DA /* Litebase.c */,
+				0F91CCB8154EDFA8000868DA /* Litebase.h */,
+				0F91CCB9154EDFA8000868DA /* LitebaseGlobals.c */,
+				0F91CCBA154EDFA8000868DA /* LitebaseGlobals.h */,
+				0F91CCBB154EDFA8000868DA /* LitebaseTypes.h */,
+				0F91CCBC154EDFA8000868DA /* Macros.h */,
+				0F91CCBD154EDFA8000868DA /* MarkBits.c */,
+				0F91CCBE154EDFA8000868DA /* MarkBits.h */,
+				0F91CCBF154EDFA8000868DA /* MemoryFile.c */,
+				0F91CCC0154EDFA8000868DA /* MemoryFile.h */,
+				0F91CCC1154EDFA8000868DA /* NativeMethods.c */,
+				0F91CCC2154EDFA8000868DA /* NativeMethods.h */,
+				0F91CCC3154EDFA8000868DA /* NativeMethods.txt */,
+				0F91CCC4154EDFA8000868DA /* NativeMethodsPrototypes.txt */,
+				0F91CCC5154EDFA8000868DA /* Node.c */,
+				0F91CCC6154EDFA8000868DA /* Node.h */,
+				0F91CCC7154EDFA8000868DA /* NormalFile.c */,
+				0F91CCC8154EDFA8000868DA /* NormalFile.h */,
+				0F91CCC9154EDFA8000868DA /* parser */,
+				0F91CCDF154EDFA8000868DA /* PlainDB.c */,
+				0F91CCE0154EDFA8000868DA /* PlainDB.h */,
+				0F91CCE1154EDFA8000868DA /* PreparedStatement.c */,
+				0F91CCE2154EDFA8000868DA /* PreparedStatement.h */,
+				0F91CCE3154EDFA8000868DA /* ResultSet.c */,
+				0F91CCE4154EDFA8000868DA /* ResultSet.h */,
+				0F91CCE5154EDFA8000868DA /* SQLValue.c */,
+				0F91CCE6154EDFA8000868DA /* SQLValue.h */,
+				0F91CCE7154EDFA8000868DA /* Table.c */,
+				0F91CCE8154EDFA8000868DA /* Table.h */,
+				0F91CCE9154EDFA8000868DA /* TCVMLib.c */,
+				0F91CCEA154EDFA8000868DA /* TCVMLib.h */,
+				0F91CCEB154EDFA8000868DA /* UtilsLB.c */,
+				0F91CCEC154EDFA8000868DA /* UtilsLB.h */,
+			);
+			name = native;
+			path = ../../src/native;
+			sourceTree = "<group>";
+		};
+		0F91CCC9154EDFA8000868DA /* parser */ = {
+			isa = PBXGroup;
+			children = (
+				0F91CCCA154EDFA8000868DA /* LitebaseLex.c */,
+				0F91CCCB154EDFA8000868DA /* LitebaseLex.h */,
+				0F91CCCC154EDFA8000868DA /* LitebaseMessage.c */,
+				0F91CCCD154EDFA8000868DA /* LitebaseMessage.h */,
+				0F91CCCE154EDFA8000868DA /* LitebaseParser.c */,
+				0F91CCCF154EDFA8000868DA /* LitebaseParser.h */,
+				0F91CCD1154EDFA8000868DA /* SQLBooleanClause.c */,
+				0F91CCD2154EDFA8000868DA /* SQLBooleanClause.h */,
+				0F91CCD3154EDFA8000868DA /* SQLBooleanClauseTree.c */,
+				0F91CCD4154EDFA8000868DA /* SQLBooleanClauseTree.h */,
+				0F91CCD5154EDFA8000868DA /* SQLColumnListClause.c */,
+				0F91CCD6154EDFA8000868DA /* SQLColumnListClause.h */,
+				0F91CCD7154EDFA8000868DA /* SQLDeleteStatement.c */,
+				0F91CCD8154EDFA8000868DA /* SQLDeleteStatement.h */,
+				0F91CCD9154EDFA8000868DA /* SQLInsertStatement.c */,
+				0F91CCDA154EDFA8000868DA /* SQLInsertStatement.h */,
+				0F91CCDB154EDFA8000868DA /* SQLSelectStatement.c */,
+				0F91CCDC154EDFA8000868DA /* SQLSelectStatement.h */,
+				0F91CCDD154EDFA8000868DA /* SQLUpdateStatement.c */,
+				0F91CCDE154EDFA8000868DA /* SQLUpdateStatement.h */,
+			);
+			path = parser;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		0F91CB79154EDC7A000868DA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F91CCF0154EDFA8000868DA /* Constants.h in Headers */,
+				0F91CCF2154EDFA8000868DA /* Index.h in Headers */,
+				0F91CCF4154EDFA8000868DA /* Key.h in Headers */,
+				0F91CCF6154EDFA8000868DA /* lbFile.h in Headers */,
+				0F91CCF8154EDFA8000868DA /* Litebase.h in Headers */,
+				0F91CCFA154EDFA8000868DA /* LitebaseGlobals.h in Headers */,
+				0F91CCFB154EDFA8000868DA /* LitebaseTypes.h in Headers */,
+				0F91CCFC154EDFA8000868DA /* Macros.h in Headers */,
+				0F91CCFE154EDFA8000868DA /* MarkBits.h in Headers */,
+				0F91CD00154EDFA8000868DA /* MemoryFile.h in Headers */,
+				0F91CD02154EDFA8000868DA /* NativeMethods.h in Headers */,
+				0F91CD04154EDFA8000868DA /* Node.h in Headers */,
+				0F91CD06154EDFA8000868DA /* NormalFile.h in Headers */,
+				0F91CD08154EDFA8000868DA /* LitebaseLex.h in Headers */,
+				0F91CD0A154EDFA8000868DA /* LitebaseMessage.h in Headers */,
+				0F91CD0C154EDFA8000868DA /* LitebaseParser.h in Headers */,
+				0F91CD0F154EDFA8000868DA /* SQLBooleanClause.h in Headers */,
+				0F91CD11154EDFA8000868DA /* SQLBooleanClauseTree.h in Headers */,
+				0F91CD13154EDFA8000868DA /* SQLColumnListClause.h in Headers */,
+				0F91CD15154EDFA8000868DA /* SQLDeleteStatement.h in Headers */,
+				0F91CD17154EDFA8000868DA /* SQLInsertStatement.h in Headers */,
+				0F91CD19154EDFA8000868DA /* SQLSelectStatement.h in Headers */,
+				0F91CD1B154EDFA8000868DA /* SQLUpdateStatement.h in Headers */,
+				0F91CD1D154EDFA8000868DA /* PlainDB.h in Headers */,
+				0F91CD1F154EDFA8000868DA /* PreparedStatement.h in Headers */,
+				0F91CD21154EDFA8000868DA /* ResultSet.h in Headers */,
+				0F91CD23154EDFA8000868DA /* SQLValue.h in Headers */,
+				0F91CD25154EDFA8000868DA /* Table.h in Headers */,
+				0F91CD27154EDFA8000868DA /* TCVMLib.h in Headers */,
+				0F91CD29154EDFA8000868DA /* UtilsLB.h in Headers */,
+				0F91CD2E154EE3D6000868DA /* liblitebase.h in Headers */,
+				0F7CBA071552CC8600E9BD43 /* nativeProcAddressesLB.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		0F91CB7A154EDC7A000868DA /* Litebase */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F91CB9F154EDC7B000868DA /* Build configuration list for PBXNativeTarget "Litebase" */;
+			buildPhases = (
+				0F91CB77154EDC7A000868DA /* Sources */,
+				0F91CB78154EDC7A000868DA /* Frameworks */,
+				0F91CB79154EDC7A000868DA /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Litebase;
+			productName = Litebase;
+			productReference = 0F91CB7B154EDC7A000868DA /* libLitebase.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0F91CB72154EDC7A000868DA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0430;
+				ORGANIZATIONNAME = "SuperWaba Ltda";
+			};
+			buildConfigurationList = 0F91CB75154EDC7A000868DA /* Build configuration list for PBXProject "Litebase" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 0F91CB70154EDC7A000868DA;
+			productRefGroup = 0F91CB7C154EDC7A000868DA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0F91CB7A154EDC7A000868DA /* Litebase */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0F91CB77154EDC7A000868DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F91CCF1154EDFA8000868DA /* Index.c in Sources */,
+				0F91CCF3154EDFA8000868DA /* Key.c in Sources */,
+				0F91CCF5154EDFA8000868DA /* lbFile.c in Sources */,
+				0F91CCF7154EDFA8000868DA /* Litebase.c in Sources */,
+				0F91CCF9154EDFA8000868DA /* LitebaseGlobals.c in Sources */,
+				0F91CCFD154EDFA8000868DA /* MarkBits.c in Sources */,
+				0F91CCFF154EDFA8000868DA /* MemoryFile.c in Sources */,
+				0F91CD01154EDFA8000868DA /* NativeMethods.c in Sources */,
+				0F91CD03154EDFA8000868DA /* Node.c in Sources */,
+				0F91CD05154EDFA8000868DA /* NormalFile.c in Sources */,
+				0F91CD07154EDFA8000868DA /* LitebaseLex.c in Sources */,
+				0F91CD09154EDFA8000868DA /* LitebaseMessage.c in Sources */,
+				0F91CD0B154EDFA8000868DA /* LitebaseParser.c in Sources */,
+				0F91CD0E154EDFA8000868DA /* SQLBooleanClause.c in Sources */,
+				0F91CD10154EDFA8000868DA /* SQLBooleanClauseTree.c in Sources */,
+				0F91CD12154EDFA8000868DA /* SQLColumnListClause.c in Sources */,
+				0F91CD14154EDFA8000868DA /* SQLDeleteStatement.c in Sources */,
+				0F91CD16154EDFA8000868DA /* SQLInsertStatement.c in Sources */,
+				0F91CD18154EDFA8000868DA /* SQLSelectStatement.c in Sources */,
+				0F91CD1A154EDFA8000868DA /* SQLUpdateStatement.c in Sources */,
+				0F91CD1C154EDFA8000868DA /* PlainDB.c in Sources */,
+				0F91CD1E154EDFA8000868DA /* PreparedStatement.c in Sources */,
+				0F91CD20154EDFA8000868DA /* ResultSet.c in Sources */,
+				0F91CD22154EDFA8000868DA /* SQLValue.c in Sources */,
+				0F91CD24154EDFA8000868DA /* Table.c in Sources */,
+				0F91CD26154EDFA8000868DA /* TCVMLib.c in Sources */,
+				0F91CD28154EDFA8000868DA /* UtilsLB.c in Sources */,
+				0F91CD2F154EE3D6000868DA /* liblitebase.m in Sources */,
+				0F7CBA061552CC8600E9BD43 /* nativeProcAddressesLB.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0F91CB9D154EDC7B000868DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					POSIX,
+					linux,
+					darwin,
+					FORCE_LIBC_ALLOC,
+					LB_EXPORTS,
+					ENABLE_DEMO,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm",
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/util",
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/io",
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/lang",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
+				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm/tcvm.h";
+			};
+			name = Debug;
+		};
+		0F91CB9E154EDC7B000868DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					POSIX,
+					linux,
+					darwin,
+					FORCE_LIBC_ALLOC,
+					LB_EXPORTS,
+				);
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm",
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/util",
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/io",
+					"$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/nm/lang",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
+				LD_DYLIB_INSTALL_NAME = liblitebase.dylib;
+				MACH_O_TYPE = staticlib;
+				OTHER_LDFLAGS = "-ObjC";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../../../TotalCross/TotalCrossVM/src/tcvm/tcvm.h";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		0F91CBA0154EDC7B000868DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/Litebase.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Litebase-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					POSIX,
+					linux,
+					darwin,
+					FORCE_LIBC_ALLOC,
+					LB_EXPORTS,
+					ENABLE_DEMO,
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		0F91CBA1154EDC7B000868DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/Litebase.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Litebase-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0F91CB75154EDC7A000868DA /* Build configuration list for PBXProject "Litebase" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F91CB9D154EDC7B000868DA /* Debug */,
+				0F91CB9E154EDC7B000868DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0F91CB9F154EDC7B000868DA /* Build configuration list for PBXNativeTarget "Litebase" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F91CBA0154EDC7B000868DA /* Debug */,
+				0F91CBA1154EDC7B000868DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0F91CB72154EDC7A000868DA /* Project object */;
+}
