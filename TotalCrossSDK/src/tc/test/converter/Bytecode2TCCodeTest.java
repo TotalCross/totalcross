@@ -39,7 +39,7 @@ public class Bytecode2TCCodeTest extends TestCase implements JConstants, TCConst
       vcodeTest.removeAllElements();
       ByteCode.initClasses();
       GlobalConstantPool.init();
-      File f = new File("O:/TotalCrossSDK/classes/tc/test/converter/testfiles/"+fileName, File.READ_WRITE);
+      File f = new File("P:/TotalCross3/classes/tc/test/converter/testfiles/"+fileName, File.READ_WRITE);
 
       JavaClass jc = new JavaClass(f, false);
       new J2TC(jc);

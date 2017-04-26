@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
-static void vmSetTime(Object time)
+static void vmSetTime(TCObject time)
 {
    struct tm tm;
    struct timeval tv;
@@ -114,7 +114,7 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
 #ifdef darwin
 void vmClipboardCopy(JCharP string, int32 sLen); // in mainview.m
 unsigned short* ios_ClipboardPaste();
-Object vmClipboardPaste(Context currentContext)
+TCObject vmClipboardPaste(Context currentContext)
 {
    unsigned short* chars = ios_ClipboardPaste();
    return !chars ? null : createStringObjectFromJCharP(currentContext, chars,-1);
@@ -125,7 +125,7 @@ static void vmClipboardCopy(JCharP string, int32 sLen) // JCharP
    //dfb_clipboard_set()
 }
 
-static Object vmClipboardPaste(Context currentContext)
+static TCObject vmClipboardPaste(Context currentContext)
 {
    //dfb_clipboard_get()
    return createStringObjectFromTCHAR(currentContext, "", 0);
@@ -180,7 +180,7 @@ static bool vmTurnScreenOn(bool on)
 }
 
 #ifndef darwin // implemented in Vm_c.m
-static void vmVibrate(int32 ms)
+void vmVibrate(int32 ms)
 {
 }
 #endif

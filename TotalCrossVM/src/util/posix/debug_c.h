@@ -12,6 +12,7 @@
 
 
 // Debug
+#include<unistd.h>
 
 static FILE* fdebug;
 
@@ -60,9 +61,6 @@ static bool privateDebug(char* str)
          fsync(fileno(fdebug));
       }
    }
-#ifdef darwin
-    iphoneDebug(str);
-#endif
     return err;
 }
 

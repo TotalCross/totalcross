@@ -25,6 +25,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserv
    switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
+			hModuleTCVM = hModule;
 		case DLL_THREAD_ATTACH:
 		case DLL_THREAD_DETACH:
 		case DLL_PROCESS_DETACH:
@@ -114,6 +115,12 @@ static bool minimized;
 void adjustWindowSizeWithBorders(int32 resizableWindow, int32* w, int32* h);
 void applyPalette();
 
+#if defined (WP8)
+static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
+{
+	return 0L;
+}
+#else
 static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG lParam)
 {
    bool isHotKey = false;
@@ -134,7 +141,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
    //debug("msg: %X (%d), wParam: %d, lParam: %X", (int)msg, (int)msg, (int)wParam, (int)lParam);
    switch(msg)
    {
-#ifndef WINCE
+#if !defined WINCE && !defined WP8
       case WM_GETMINMAXINFO:
          if (screen.pixels && *tcSettings.resizableWindow)
          {
@@ -233,6 +240,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
 #endif
       case WM_PAINT:
       {
+#if !defined WP8
          PAINTSTRUCT ps;
          HDC hDC;
          int32 w,h;
@@ -254,6 +262,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          markWholeScreenDirty(mainContext);
          updateScreen(mainContext);
          EndPaint(hWnd, &ps);
+#endif
          break;
       }
 #if defined (WINCE)
@@ -291,6 +300,18 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          }
          break;
       }
+#ifndef WINCE
+      case WM_MOUSEHWHEEL:
+      case WM_MOUSEWHEEL:
+      {
+         int32 x = lastPenX;//(int32)((int16)LOWORD(lParam)); using the last position because the ones that comes in lParam are relative to window's origin!
+         int32 y = lastPenY;//(int32)((int16)HIWORD(lParam));
+         int32 a = (int32)((int16)HIWORD(wParam));
+         if (y >= 0 && x >= 0 && keepRunning)
+            postEvent(mainContext, MOUSEEVENT_MOUSE_WHEEL, a > 0 ? (msg==WM_MOUSEHWHEEL ? WHEEL_RIGHT : WHEEL_UP) : (msg==WM_MOUSEHWHEEL ? WHEEL_LEFT : WHEEL_DOWN), x, max32(y,0),-1);
+         break;
+      }
+#endif
       case WM_MOUSEMOVE:
       {
          int32 x = (int32)((int16)LOWORD(lParam));
@@ -411,7 +432,10 @@ cont:
          PostQuitMessage(0);
 #else
          if (*tcSettings.closeButtonTypePtr == NO_BUTTON)
+         {        
+            postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, SK_MENU, 0,0,-1); // must pass control chars, otherwise clipboard functions won't work
             break;
+         }
 #endif
          keepRunning = false;
          break;
@@ -421,9 +445,11 @@ def:
    }
    return 0L;
 }
-
+#endif
 bool privateInitEvent()
 {
+#if !defined WP8
+
    WNDCLASS wc;
    xmemzero(&wc, sizeof(wc));
    wc.hInstance = GetModuleHandle(0);
@@ -434,16 +460,31 @@ bool privateInitEvent()
    if (!RegisterClass(&wc) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
       return false;
    return true;
+#else
+	return true;
+#endif
 }
 
 bool privateIsEventAvailable()
 {
-   MSG msg;
-   return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+#if defined WP8
+   bool ret;
+   ret = !eventQueueEmpty();
+   return ret;
+#else
+	MSG msg;
+	return PeekMessage(&msg, mainHWnd, 0, 0, PM_NOREMOVE);
+#endif
 }
 
 void privatePumpEvent(Context currentContext)
 {
+#if defined(WP8)
+	struct eventQueueMember q_member = eventQueuePop();
+   //debug("%X - %d.event pop: %d", GetCurrentThreadId(), q_member.count, q_member.type);
+   if (q_member.type != 0)
+	   postEvent(mainContext, q_member.type, q_member.key, q_member.x, q_member.y, q_member.modifiers);
+#else
    MSG msg;
 #ifdef WINCE
    if (oldAutoOffValue != 0) // guich@450_33: since the autooff timer function don't work on wince, we must keep resetting the idle timer so that the device will never go sleep - guich@554_7: reimplemented this feature
@@ -457,6 +498,7 @@ void privatePumpEvent(Context currentContext)
    else
    if (msg.message == WM_QUIT)
       keepRunning = false;
+#endif
 }
 
 void privateDestroyEvent()

@@ -295,12 +295,12 @@ public class PushButtonGroup extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (!enabled && autoRepeatTimer != null)
+      if (!isEnabled() && autoRepeatTimer != null)
          disableAutoRepeat();
       if (colorsChanged) // backColor has changed
          dColor = userCursorColor >= 0 ? userCursorColor : Color.getCursorColor(backColor);
       fColor = getForeColor();
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    protected void onBoundsChanged(boolean screenChanged)
@@ -355,7 +355,7 @@ public class PushButtonGroup extends Control
       boolean uiAndroid = Control.uiAndroid && !simpleBorder;
 
       g.foreColor = fColor;
-      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
+      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiAndroid || (uiVista && isEnabled())) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
       if (!drawEachBack && !uiAndroid)
       {
          g.backColor = backColor;
@@ -380,7 +380,9 @@ public class PushButtonGroup extends Control
    
                   if (uiAndroid)
                   {
-                     g.drawImage(getAndroidButton(r.width,r.height,enabled ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
+                     Image img = getAndroidButton(r.width,r.height,isEnabled() ? back : Color.interpolate(back,parent.backColor), i == sel);
+                     img.alphaMask = alphaValue;
+                     NinePatch.tryDrawImage(g,img, r.x,r.y);
                      continue;
                   }
                   else
@@ -430,9 +432,9 @@ public class PushButtonGroup extends Control
 
    private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
    {
-      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
+      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false);
       if (selected)
-         img = NinePatch.getInstance().getPressedInstance(img, color, -1, true);
+         img = NinePatch.getInstance().getPressedInstance(img, color, -1);
       return img;
    }
 
@@ -504,7 +506,7 @@ public class PushButtonGroup extends Control
             if (actLikeButton && autoRepeat) 
                autoRepeatTimer = addTimer(INITIAL_DELAY);
          case PenEvent.PEN_DRAG:
-            if (!enabled || (actLikeButton && Settings.fingerTouch))
+            if (!isEnabled() || (actLikeButton && Settings.fingerTouch))
                break;
             if (sel != selectedIndex && (!atLeastOne || sel != -1))
                setSelectedIndex(sel);
@@ -568,7 +570,7 @@ public class PushButtonGroup extends Control
          case PenEvent.PEN_UP:
             if (autoRepeat && autoRepeatTimer != null)
                disableAutoRepeat();
-            if (enabled && (!Settings.fingerTouch || !hadParentScrolled()))
+            if (isEnabled() && (!Settings.fingerTouch || !hadParentScrolled()))
             {
                if (actLikeButton && Settings.fingerTouch)
                {

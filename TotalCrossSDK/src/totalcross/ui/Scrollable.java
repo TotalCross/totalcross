@@ -34,7 +34,7 @@ public interface Scrollable
     * @param yDelta The relative amount of pixels to move in the Y axis.
     * @returns true if the Container was able to move in the indicated direction.
     */
-   boolean scrollContent(int xDelta, int yDelta);
+   boolean scrollContent(int xDelta, int yDelta, boolean fromFlick);
    
    /** Returns the current flick object. */
    Flick getFlick();

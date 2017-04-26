@@ -44,7 +44,7 @@
  #define lstrstr wsstr
 #else
  #define PATH_SEPARATOR_STR "/"
- #define lstrlen strlen
+ #define lstrlen (int)strlen
  #define lstrcmp strcmp
  #define lstrcpy strcpy
  #define lstrcat strcat
@@ -89,7 +89,7 @@ static int ensureAppPreferencesDirectory(TCHAR * buf)
       if (errno != ENOENT) return 0;
       if (mkdir(buf, DEFAULT_DIR_PERMS) != 0) return 0;
    }
-   int finalpos = strlen(buf) - 1;
+   int finalpos = lstrlen(buf) - 1;
    if (buf[finalpos] != '/')
    {
       if (buf[finalpos] == '\\')
@@ -148,7 +148,7 @@ static char *readAppPreferences(TCHAR *hive, bool bin, UInt16* outlen)
       char temp[BLK_SZ];
       UInt16 total = 0;
       int count;
-      while ((count = read(f, temp, sizeof(temp))) > 0)
+      while ((count = (int)read(f, temp, sizeof(temp))) > 0)
       {
          uint32 i = total + count;
          char *tmp = (char*)xmalloc(i+(bin?0:1)); // guich@tc124_18
@@ -190,7 +190,7 @@ static void deleteAppPreferences(AppHive h)
    unlink(path);
 }
 
-static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
    AppHive hive;
    uint8* data;
@@ -203,16 +203,16 @@ static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // gu
    writeAppPreferences(k, data, bin ? len : len*2);
 }
 
-static Object getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
    AppHive hive;
-   Object target = null;
+   TCObject target = null;
    TCHAR *k = isHKLM ? getAppSecretHive(hive, applicationId) : getAppHive(hive, applicationId, bin);
    UInt16 len;
    CharP buf = readAppPreferences(k, bin, &len);
    if (buf && len > 0)
    {
-      Object temp = null;
+      TCObject temp = null;
       target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, len/2);
       if (temp)
          memcpy(ARRAYOBJ_START(temp), buf, len);
@@ -275,19 +275,24 @@ void updateDaylightSavings(Context currentContext)
 #include "sys/system_properties.h"
 bool fillSettings(Context currentContext)
 {
-#ifdef ENABLE_RAS
-   bool isActivationVM = true;
-#else
-   bool isActivationVM = false;   
-#endif
    JNIEnv* env = getJNIEnv();
    jclass jSettingsClass = androidFindClass(env, "totalcross/android/Settings4A");
-   jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "(Z)V");
-   (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod, isActivationVM);
+   jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "()V");
+   (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod);
 
    jfieldID jfID;
    jstring jStringField;
    char strTemp[128];
+
+   // phone number - needed to move to here or jni on android 5 will abort
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "lineNumber", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+   }
 
    // date format
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "dateFormat", "B");
@@ -350,7 +355,7 @@ bool fillSettings(Context currentContext)
    {
       jstring2CharP(jStringField, strTemp);
       (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
    // identification
@@ -370,6 +375,14 @@ bool fillSettings(Context currentContext)
       (*env)->DeleteLocalRef(env, jStringField);
    }
 
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "imei2", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+   {
+      jstring2CharP(jStringField, imei2);
+      (*env)->DeleteLocalRef(env, jStringField);
+   }
+
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "iccid", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
@@ -384,7 +397,7 @@ bool fillSettings(Context currentContext)
    {
       jstring2CharP(jStringField, strTemp);
       (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "esn") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "esn") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
    // device capabilities
@@ -396,16 +409,16 @@ bool fillSettings(Context currentContext)
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
       jstring2CharP(jStringField, romSerialNumber);
-   (*env)->DeleteLocalRef(env, jSettingsClass);
+//    (*env)->DeleteLocalRef(env, jSettingsClass); - this is NOT a local ref. breaks on android 4.2.2
 
-   // phone number
-   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "lineNumber", "Ljava/lang/String;");
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "macAddress", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
    {
       jstring2CharP(jStringField, strTemp);
       (*env)->DeleteLocalRef(env, jStringField);
-      setObjectLock(*getStaticFieldObject(settingsClass, "lineNumber") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
+      if (strTemp[0])
+         setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "macAddress") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
    return true;
@@ -422,8 +435,10 @@ bool fillSettings(Context currentContext)
    char timeSep = ':';      // time separator
    int time24h;             // time 0-24h
    int datefmt;             // date format
+#ifndef darwin
    int gmtBias;             // gmt+0
    int daylightSavings;     // 1 when DST is on
+#endif
 
 #if defined (darwin)
    *tcSettings.romVersionPtr = getRomVersion(); //flsobral@tc126_3: implemented Settings.romVersion for iPhone/iPad.
@@ -456,7 +471,7 @@ bool fillSettings(Context currentContext)
 // platform, touch screen and virtual keyboard settings
 #if defined darwin
    platform = strCaseEqn(deviceId, "ipad", 4) ? "IPAD" : "IPHONE";
-   *getStaticFieldObject(settingsClass, "platform") = *getStaticFieldObject(settingsClass, platform); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
+   *getStaticFieldObject(currentContext, settingsClass, "platform") = *getStaticFieldObject(currentContext, settingsClass, platform); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
    *tcSettings.virtualKeyboardPtr = *tcSettings.fingerTouchPtr = 1;
 #elif defined linux
    platform = "Linux";

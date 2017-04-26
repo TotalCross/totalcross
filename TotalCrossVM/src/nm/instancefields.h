@@ -54,8 +54,37 @@
 #define StringBuffer_count(o)       FIELD_I32(o, 0)
 
 // java.lang.Class
-#define Class_targetClass(o)        FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Class_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Class_targetName(o)         FIELD_OBJ(o, OBJ_CLASS(o), 1)
+
+// java.lang.reflect.Field
+#define Field_index(o)              FIELD_I32(o, 0)
+#define Field_mod(o)                FIELD_I32(o, 1)
+#define Field_primitiveType(o)      FIELD_I32(o, 2)
+#define Field_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Field_name(o)               FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define Field_declaringClass(o)     FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define Field_type(o)               FIELD_OBJ(o, OBJ_CLASS(o), 3)
+
+// java.lang.reflect.Method
+#define Method_mod(o)                FIELD_I32(o, 0)
+#define Method_nativeStruct(o)       FIELD_OBJ(o, OBJ_CLASS(o), 0)
+#define Method_name(o)               FIELD_OBJ(o, OBJ_CLASS(o), 1)
+#define Method_declaringClass(o)     FIELD_OBJ(o, OBJ_CLASS(o), 2)
+#define Method_parameterTypes(o)     FIELD_OBJ(o, OBJ_CLASS(o), 3) // array
+#define Method_exceptionTypes(o)     FIELD_OBJ(o, OBJ_CLASS(o), 4) // array
+#define Method_type(o)               FIELD_OBJ(o, OBJ_CLASS(o), 5) // not for Constructor
+#define Method_returnType(o)         FIELD_OBJ(o, OBJ_CLASS(o), 6) // not for Constructor
+
+// java.lang Wrappers
+#define Boolean_v(o)        FIELD_I32(o, 0)
+#define Byte_v(o)           FIELD_I32(o, 0)
+#define Character_v(o)      FIELD_I32(o, 0)
+#define Short_v(o)          FIELD_I32(o, 0)
+#define Integer_v(o)        FIELD_I32(o, 0)
+#define Float_v(o)          FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Double_v(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
+#define Long_v(o)           FIELD_I64(o, OBJ_CLASS(o), 0)
 
 //totalcross.sys.Time
 #define Time_year(o)                FIELD_I32(o, 0)
@@ -115,6 +144,7 @@
 #define Graphics_pitch(o)           FIELD_I32(o, 20)
 #define Graphics_alpha(o)           FIELD_I32(o, 21)
 #define Graphics_isVerticalText(o)  FIELD_I32(o, 22)
+#define Graphics_lastClipFactor(o)  FIELD_I32(o, 23)
 
 #define Graphics_lastPPD(o)         FIELD_DBL(o, OBJ_CLASS(o), 0)
 
@@ -132,10 +162,12 @@
 #define Image_widthOfAllFrames(o)   FIELD_I32(o, 5)
 #define Image_transparentColor(o)   FIELD_I32(o, 6)
 #define Image_useAlpha(o)           FIELD_I32(o, 7)
+#define Image_alphaMask(o)          FIELD_I32(o, 8)
+#define Image_lastAccess(o)         FIELD_I32(o, 9)
 
 #define Image_pixels(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
 #define Image_pixelsOfAllFrames(o)  FIELD_OBJ(o, OBJ_CLASS(o), 1)
-#define Image_textureId(o)          ((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 2)))
+#define Image_textureId(o)          ((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 2))) // 2 positions
 #define Image_comment(o)            FIELD_OBJ(o, OBJ_CLASS(o), 3)
 #define Image_gfx(o)                FIELD_OBJ(o, OBJ_CLASS(o), 4)
 #define Image_changed(o)            *((int32*)ARRAYOBJ_START(FIELD_OBJ(o, OBJ_CLASS(o), 5)))
@@ -152,10 +184,11 @@
 #define Control_width(o)            FIELD_I32(o, 3)
 #define Control_height(o)           FIELD_I32(o, 4)
 
-// generic surface - for Control or Image
+// generic surface - can only be used if "o" is a Control or Image
 #define Surface_isImage(o)          (o && ImageOrControl_surfaceType(o) == 1)
+#define Graphics_isImageSurface(g)  (Surface_isImage(Graphics_surface(g)))
 #ifdef __gl2_h_
-#define Graphics_useOpenGL(g)             (!Surface_isImage(Graphics_surface(g)))
+#define Graphics_useOpenGL(g)             (!Graphics_isImageSurface(g))
 #else
 #define Graphics_useOpenGL(g)             (false)
 #endif
@@ -177,12 +210,12 @@
 #define PDBFile_openRef(o)          FIELD_OBJ(o, OBJ_CLASS(o), 1)
 #define PDBFile_name(o)             FIELD_OBJ(o, OBJ_CLASS(o), 2)
 #define PDBFile_hvRecordPos(o)      FIELD_I32(o, 0)
-#define PDBFile_hvRecordHandle(o)   FIELD_I32(o, 1)
-#define PDBFile_hvRecordOffset(o)   FIELD_I32(o, 2)
-#define PDBFile_hvRecordLength(o)   FIELD_I32(o, 3)
-#define PDBFile_hvRecordChanged(o)  FIELD_I32(o, 4)
-#define PDBFile_dontFinalize(o)     FIELD_I32(o, 5)
-#define PDBFile_mode(o)             FIELD_I32(o, 6)
+#define PDBFile_hvRecordOffset(o)   FIELD_I32(o, 1)
+#define PDBFile_hvRecordLength(o)   FIELD_I32(o, 2)
+#define PDBFile_hvRecordChanged(o)  FIELD_I32(o, 3)
+#define PDBFile_dontFinalize(o)     FIELD_I32(o, 4)
+#define PDBFile_mode(o)             FIELD_I32(o, 5)
+#define PDBFile_hvRecordHandle(o)   FIELD_I64(o, OBJ_CLASS(o), 0)
 
 // totalcross.io.device.PortConnector
 #define PortConnector_portConnector(o)             FIELD_OBJ(o, OBJ_CLASS(o), 0)
@@ -243,6 +276,9 @@
 #define GPS_satellites(o)                 *getInstanceFieldInt(o, "satellites", "totalcross.io.device.gps.GPS")
 #define GPS_lastFix(o)                    *getInstanceFieldObject(o, "lastFix", "totalcross.io.device.gps.GPS")
 #define GPS_pdop(o)                       *getInstanceFieldDouble(o, "pdop", "totalcross.io.device.gps.GPS")
+#define GPS_lowSignalReason(o)            *getInstanceFieldObject(o, "lowSignalReason", "totalcross.io.device.gps.GPS")
+#define GPS_messageReceived(o)            *getInstanceFieldObject(o, "messageReceived", "totalcross.io.device.gps.GPS") 
+#define GPS_precision(o)                  *getInstanceFieldInt(o, "precision", "totalcross.io.device.gps.GPS")
 
 // totalcross.net.Socket
 #define Socket_socketRef(o)               FIELD_OBJ(o, OBJ_CLASS(o), 0)
@@ -258,13 +294,13 @@
 #define ServerSocket_dontFinalize(o)      FIELD_I32(o, 2)
 
 // totalcross.net.ssl.SSL
-#define SSL_sslRef(o)                     FIELD_I32(o, 0)
-#define SSL_sslDontFinalize(o)            FIELD_I32(o, 1)
+#define SSL_sslRef(o)                     FIELD_I64(o, OBJ_CLASS(o), 0)
+#define SSL_sslDontFinalize(o)            FIELD_I32(o, 0)
 #define SSL_nativeHeap(o)                 getInstanceFieldObject(o, "nativeHeap", "totalcross.net.ssl.SSL")
 
 // totalcross.net.ssl.SSLCTX
-#define SSLCTX_ctxRef(o)                  FIELD_I32(o, 0)
-#define SSLCTX_dontFinalize(o)            FIELD_I32(o, 1)
+#define SSLCTX_ctxRef(o)                  FIELD_I64(o, OBJ_CLASS(o), 0)
+#define SSLCTX_dontFinalize(o)            FIELD_I32(o, 0)
 #define SSLCTX_nativeHeap(o)              getInstanceFieldObject(o, "nativeHeap", "totalcross.net.ssl.SSLCTX")
 
 // totalcross.net.ssl.SSLReadHolder
@@ -355,6 +391,8 @@
 #define Camera_resolutionHeight(o) FIELD_I32(o, 3)
 #define Camera_videoTimeLimit(o)   FIELD_I32(o, 4)
 #define Camera_captureMode(o)      FIELD_I32(o, 5)
+#define Camera_allowRotation(o)    FIELD_I32(o, 6)
+#define Camera_cameraType(o)       FIELD_I32(o, 7)
 
 // totalcross.util.concurrent.Lock
 #define Lock_mutex(o)        FIELD_OBJ(o, OBJ_CLASS(o), 0)

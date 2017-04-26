@@ -29,15 +29,17 @@ static int32 callReadTCZ(int32 apkIdx, uint8* buf, int32 offset, int32 length)
 {
    JNIEnv* env = getJNIEnv();
    jbyteArray jbytesP = (*env)->NewByteArray(env, length); // !!! temporary byte array has length: count-offset
-   jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
-   int32 ret;
+   int32 ret,i;
 
    ret = (*env)->CallStaticIntMethod(env, applicationClass, jreadTCZ, apkIdx, offset, jbytesP);
    
    if (ret > 0)
+   {                 
+      jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0); // android5 require get the array after returning from method
       xmemmove(buf, jbytes, ret);
+      (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
+   }
    
-   (*env)->ReleaseByteArrayElements(env, jbytesP, jbytes, 0);
    (*env)->DeleteLocalRef(env, jbytesP);
    return ret;
 }
@@ -67,19 +69,25 @@ void destroyTCZ() // no threads are running at this point
 static bool tczReadMore(TCZFile f)
 {
    int32 n;
+   bool ret = true;
+   LOCKVAR(tcz);
 #ifdef ANDROID
    n = callReadTCZ(f->header->apkIdx, f->buf, f->expectedFilePos, TCZ_BUFFER_SIZE);
 #else   
    if (f->expectedFilePos != f->header->realFilePos) // if the file position has changed by some other instance, reposition it
       fseek(f->header->fin, f->expectedFilePos, SEEK_SET);
-   n = fread(f->buf, 1, TCZ_BUFFER_SIZE, f->header->fin);
+   n = (int32)fread(f->buf, 1, TCZ_BUFFER_SIZE, f->header->fin);
 #endif   
    f->header->realFilePos = (f->expectedFilePos += n);
    if (n <= 0)
-      return false; // no more data
-   f->zs.next_in = f->buf;
-   f->zs.avail_in = n;
-   return true;
+      ret = false; // no more data
+   else
+   {
+      f->zs.next_in = f->buf;
+      f->zs.avail_in = n;
+   }
+   UNLOCKVAR(tcz);
+   return ret;
 }
 
 int32 tczRead(TCZFile f, void* outBuf, int32 count)
@@ -111,7 +119,7 @@ int32 tczRead(TCZFile f, void* outBuf, int32 count)
       if (f->tempHeap != null)
          HEAP_ERROR(f->tempHeap, HEAP_ZIP_ERROR);
       else
-         alert("Error on zip (in a heapless tcz): %d. Remain %d bytes",(int)err, (int)zs->avail_out);
+         debug("Error on zip (in a heapless tcz): %d. Remain %d bytes",(int)err, (int)zs->avail_out);
    }
    return count;
 }
@@ -245,18 +253,22 @@ static int32 findNamePosition(TCZFile tcz, CharP name)
 
 TCZFile tczFindName(TCZFile tcz, CharP name) // locates the name and also positions the stream at the place to start reading it
 {
-   TCZFile ntcz;
-   int32 pos = findNamePosition(tcz, name);
+   TCZFile ntcz = null;
+   int32 pos;
+   LOCKVAR(tcz);
+   pos = findNamePosition(tcz, name);
    if (pos == -1)
-      return null;
+      goto end;
    ntcz = tczNewInstance(tcz);
    if (!ntcz)
-      return null;
+      goto end;
    ntcz->header->realFilePos = ntcz->expectedFilePos = ntcz->header->offsets[pos];
 #ifndef ANDROID   
    fseek(ntcz->header->fin, ntcz->expectedFilePos, SEEK_SET);
 #endif   
    ntcz->uncompressedSize = tcz->header->uncompressedSizes[pos];
+end:
+   UNLOCKVAR(tcz);
    return ntcz;
 }
 
@@ -303,7 +315,7 @@ TCZFile tczOpen(FILE* fin, CharP fileName)
 #endif      
       && version != TCZ_VERSION) // guich@tc110_70: check for version mismatch. font files doesn't care if the tcz changed
    {
-      alert("TCZ version mismatch for %s. Recompile and deploy your app with the new SDK.",fileName);
+      alert("TCZ version mismatch for %s (defined: %d, loaded: %d). Recompile and deploy your app with the new SDK.",fileName,TCZ_VERSION,version);
       return null;
    }
    // the instance can only be created after the initial part has been read

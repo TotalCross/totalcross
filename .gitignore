@@ -3,6 +3,14 @@ out.txt
 *.map
 *.user
 *.class
+*.ipch
+*.sdf
+*.suo
+*.ncb
+*.obj
+*.idb
+*.tlog
+memmap_*.txt
 DebugConsole.txt
 TotalCrossSDK/etc/tools/android/AndroidManifest_singleapk.xml
 TotalCrossSDK/etc/tools/android/resources_singleapk.arsc
@@ -15,3 +23,17 @@ TotalCrossVM/src/launchers/android/bin
 TotalCrossVM/src/launchers/android/gen
 TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/UserInterfaceState.xcuserstate
 TotalCrossVM/builders/xcode/TotalCross.xcworkspace/xcuserdata/tcbuilder.xcuserdatad/xcdebugger/Breakpoints.xcbkptlist
+
+# Files generated from VisualStudio
+*.ilk
+*.exp
+TotalCrossVM/builders/vc*/**/*.pdb
+TotalCrossVM/builders/vc*/**/*.lib
+TotalCrossVM/builders/vc*/**/*.dll
+TotalCrossVM/builders/droid/build/
+TotalCrossVM/builders/droid/.gradle/
+TotalCrossVM/builders/droid/gradle/
+TotalCrossVM/builders/droid/src/main/libs/armeabi/
+
+# Files from vim
+.*.swp

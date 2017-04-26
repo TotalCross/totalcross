@@ -37,13 +37,13 @@ VoidP privateLoadLibrary(CharP libName)
       library = tryAt("../","",libName,".dll");
    if (library == null)
       library = tryAt(vmPath,"/",libName,".dll");
-#if defined(WIN32) && !defined(WINCE)
+#if defined(WIN32) && !(defined(WINCE) || defined(WP8))
    if (library == null && strEq(libName,"litebase"))
    {
       TCHAR litebasePath[MAX_PATHNAME];
-      if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
+      if (GetEnvironmentVariable(TEXT("TOTALCROSS3_HOME"), litebasePath, MAX_PATHNAME) != 0)
       {
-         tcscat(litebasePath, TEXT("/dist/lib/win32")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
+         tcscat(litebasePath, TEXT("/dist/vm/win32")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
          library = tryAt(litebasePath,"/",libName,".dll");
       }
    }
@@ -57,7 +57,7 @@ VoidP privateLoadLibrary(CharP libName)
 
 void privateUnloadLibrary(VoidP libPtr)
 {
-#if !defined (WINCE)
+#if !defined (WINCE) && !defined (WP8) //XXX
    // do not free the synchronization dll please
    TCHAR libPath[MAX_PATH];
    char libName[MAX_PATH];
@@ -73,10 +73,14 @@ void privateUnloadLibrary(VoidP libPtr)
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
+#ifdef WINCE
    TCHAR szFuncName[128];
    FARPROC procAddress;
 
    CharP2TCHARPBuf(funcName, szFuncName);
-   procAddress = GetProcAddress(!module ? GetModuleHandle(TEXT("tcvm.dll")) : module, szFuncName);
+   procAddress = GetProcAddress(!module ? hModuleTCVM : module, szFuncName);
    return procAddress;
+#else   
+   return GetProcAddress(!module ? hModuleTCVM : module, (CharP) funcName);
+#endif      
 }

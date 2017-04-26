@@ -11,10 +11,6 @@
  *                                                                               *
  *********************************************************************************/
 
-IMPORTANT:
-           SDK -> SDK WITH DEMO VIRTUAL MACHINES WITH TRIAL PERIOD
-           VMS -> ONLY VIRTUAL MACHINES WITHOUT TRIAL PERIOD
-
 -->
 
 <project name="TotalCross SDK deploy" default="help" basedir=".">
@@ -41,12 +37,12 @@ IMPORTANT:
 </condition>
 <property name="rootpath"      value="p:"/> <!-- MUST BE ABSOLUTE PATH -->
 <property file="${rootpath}/userpaths.properties"/>
-<fail unless="msvc.path" message="Cannot find file ${rootpath}/userpaths.properties!"/>
+<property name="buildNumber" value="-1" /> <!-- set by jenkins -->
 
 <!-- javac settings -->
 <property name="compile.listfiles"       value="no"/>
-<property name="compile.target"          value="1.1"/>
-<property name="compile.source"          value="1.2"/>
+<property name="compile.target"          value="7"/>
+<property name="compile.source"          value="7"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
 
@@ -59,16 +55,16 @@ IMPORTANT:
 <property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
 
 <!-- properties regarding the TC paths -->
-<property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
-<property name="source.vms.path"   value="${basedir}/.."/>
-<property name="base.temp.path"    value="${basedir}/../../../temp"/>
-<property name="base.target.path"  value="${basedir}/../../../output/release"/>
-<property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
-<property name="target.vms.path"   value="${base.target.path}/TotalCrossVMS"/>
-<property name="target.noras.path" value="${base.target.path}/TotalCrossVMS_NORAS"/>
-<property name="tools"             value="${source.sdk.path}/etc/tools"/>
+<!--property name="target.sdk.path"   value="t:/SDK/TotalCrossSDK"/-->
 
-<property name="noras_dir"         value="${source.vms.path}/src/init/noras_ids" />
+<property name="base.target.path"  value="${basedir}/../../../output/release"/>
+<property name="source.vm.path"    value="${basedir}/.."/>
+<property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
+<property name="target.sdk3.path"  value="${base.target.path}/TotalCross3"/>
+<property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
+<property name="base.temp.path"    value="${basedir}/../../../temp"/>
+<property name="etc"               value="${source.sdk.path}/etc"/>
+<property name="tools"             value="${etc}/tools"/>
 
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
 <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
@@ -116,7 +112,7 @@ IMPORTANT:
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: makeNativeHT - updates the native methods hash table.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="makeNativeHT" >
+<target name="makeNativeHT" description = "Build the native hashtable for ios" >
    <property name="path.to.prototypeGenerator" value="${base.temp.path}/nmPrototypeGenerator" />
    <mkdir dir="${path.to.prototypeGenerator}" />
 
@@ -137,7 +133,7 @@ target: makeNativeHT - updates the native methods hash table.
       classpath="${path.to.prototypeGenerator}"
       fork="yes"
    >
-      <arg line="makeNativeHT TC ${source.vms.path}\src\init ${source.vms.path}\src\nm\NativeMethods.txt" />
+      <arg line="makeNativeHT TC ${source.vm.path}\src\init ${source.vm.path}\src\nm\NativeMethods.txt" />
    </java>
 </target>
    
@@ -145,248 +141,24 @@ target: makeNativeHT - updates the native methods hash table.
 target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWin32_vms" >
-   <echo message="GENERATING WIN32 FILES - VMS"/>
-
-   <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "RAS Release|Win32"'/>
-      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "RAS Release|Win32"'/>
-   </exec>
-</target>
-
-<target name="buildWin32_vms_noras" >
-   <echo message="GENERATING WIN32 FILES - VMS"/>
-
-   <exec executable="${msvc.path}" failonerror="yes">
-      <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "NO RAS Release|Win32"'/>
-      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "NO RAS Release|Win32"'/>
-   </exec>
-</target>
-
 <target name="buildWin32_sdk" >
    <echo message="GENERATING WIN32 FILES - SDK"/>
    
+   <mkdir dir="${target.sdk.path}/dist/vm/Win32"/>
    <exec executable="${msvc.path}" failonerror="yes">
       <arg line='${msvc.project.path}/TCVM.sln /project TCVM /rebuild "DEMO Release|Win32"'/>
-      <arg line='${msvc.project.path}/TCVM.sln /project Conduit /rebuild "DEMO Release|Win32"'/>
    </exec>
 </target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: buildWinCE
-
-       call evc commandline compiler
-       Important: to be able to compile some of these files, you must delete wce211\bin
-       and copy the wce300\bin to wce211\bin (thus, updating all old compilers to new versions)
-       these folders are located under <program files>\Microsoft eMbedded Tools\EVC\
-
-       Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="buildWinCE_vms" >
-
-  <echo message="GENERATING WINCE FILES - VMS"/>
-
-  <echo message="=> 1 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_vms.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle">
-   <param name="path.param" value="${target.vms.path}"/>
-  </antcall>
-
-</target>
-
-<target name="buildWinCE_vms_noras" >
-
-  <echo message="GENERATING WINCE FILES - VMS"/>
-
-  <echo message="=> 1 of 5"/>
-	<exec executable="${evc.path}" failonerror="yes">
-		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC2000"      /CEConfig="HPC 2000" /rebuild'/>
-	</exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/>
-	<exec executable="${evc.path}" failonerror="yes">
-		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/>
-	</exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/>
-	<exec executable="${evc.path}" failonerror="yes">
-		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
-	</exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/>
-	<exec executable="${evc.path}" failonerror="yes">
-		<arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Noras POCKETPC"    /CEConfig="Pocket PC" /rebuild'/>
-	</exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/>
-	<exec executable="${evc.path}" failonerror="yes">
-		<arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
-	</exec> <sleep seconds="2"/>
-
-  <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_noras.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle">
-   <param name="path.param" value="${target.noras.path}"/>
-  </antcall>
-
-</target>
-
-<target name="buildWinCE_vms_noras_PocketPC_ARM" >
-
-  <echo message="GENERATING WINCE ARM FILES - SDK"/>
-
-  <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. 
-     CHANGING THIS DON'T FORGET TO UPDATE THE TARGET buildWinCE_sdk !
-  -->
-  <echo message="=> 1 of 6"/>
-	<exec executable="${evc.path}" failonerror="yes">
-		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
-	</exec> <sleep seconds="2"/>	
-
-  <echo message="=> 2 of 7"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 7"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 7"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 7"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 6 of 7"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 7 of 7"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Bematech - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <copy todir="${target.noras.path}/dist/vm/wince" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/noras" excludes="**/Litebase.*" />
-  </copy>
-  <copy todir="${target.noras.path}/dist/vm/wince/PocketPC/ARM" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/ce/PocketPC/ARM" includes="OpticonH16.dll,SocketScan.dll,Symbol.dll,Dolphin.dll,Motorola.dll,Bematech.dll" />
-  </copy>
-
-  <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_noras.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle_PocketPC_ARM">
-   <param name="path.param" value="${target.noras.path}"/>
-  </antcall>
-</target>	
-	
-<target name="buildWinCE_sdk" >
-
-  <echo message="GENERATING WINCE FILES - SDK"/>
-
-  <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. -->
-  <echo message="=> 1 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <echo message="=> 6 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 7 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 8 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 9 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>10 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>11 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>12 of 12"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Bematech - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_sdk.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle">
-   <param name="path.param" value="${target.sdk.path}"/>
-  </antcall>
-
-</target>
-
-<target name="buildWinCE_sdk_ARM" >
-
-  <echo message="GENERATING WINCE FILES - SDK"/>
-
-  <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. -->
-  <echo message="=> 3 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <echo message="=> 6 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 7 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 8 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 9 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>10 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>11 of 11"/><exec executable="${evc.path}" failonerror="yes"><arg line='${evc.project} /make "Bematech - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <copy todir="${target.sdk.path}/dist/vm/wince" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/demo" excludes="**/Litebase.*" />
-  </copy>
-  <copy todir="${target.sdk.path}/dist/vm/wince/PocketPC/ARM" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/ce/PocketPC/ARM" includes="OpticonH16.dll,SocketScan.dll,Symbol.dll,Dolphin.dll,Bematech.dll" />
-  </copy>
-
-  <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_sdk.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
-
-  <antcall target="buildWinCECabsSingle_PocketPC_ARM">
-   <param name="path.param" value="${target.sdk.path}"/>
-  </antcall>
-
-</target>  
-  
-<target name="buildWinCECabsSingle">
-
-  <exec dir="${source.sdk.path}/etc/tools/makecab" executable="${source.sdk.path}/etc/tools/makecab/Cabwiz.exe" failonerror="no">
-  <arg line="totalcross.inf /cpu HPC2000_ARM HPC211_ARM PocketPC_ARM PocketPC_MIPS PocketPC_SH3"/>
-  </exec>
-
-  <!-- copy the cab files -->
-  <move todir="${path.param}/dist/vm/wince">
-    <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.cab" casesensitive="no"/>
-  </move>
-
-  <!-- copy bat and ini files -->
-  <copy todir="${path.param}/dist/vm/wince" overwrite="yes" >
-    <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat,CEinstall_WMOBILE.ini,_CEinstall-RunMe_WMOBILE.bat,ceinstall*.*" casesensitive="no"/>
-  </copy>
-
-  <exec dir="${source.sdk.path}/etc/tools/makecab" executable="${source.sdk.path}/etc/tools/makecab/Cabwizsp.exe" failonerror="no">
-  <arg line="totalcross.inf /cpu PocketPC_ARM"/>
-  </exec>
-
-  <!-- copy the cab files -->
-  <move file="${source.sdk.path}/etc/tools/makecab/totalcross.PocketPC_ARM.CAB" tofile="${path.param}/dist/vm/wince/totalcross.WMobile_ARM.CAB" />
-
-  <delete>
-    <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.dat" casesensitive="no"/>
-  </delete>
-
-</target>
-
-<target name="buildWinCECabsSingle_PocketPC_ARM">
-
-  <exec dir="${source.sdk.path}/etc/tools/makecab" executable="${source.sdk.path}/etc/tools/makecab/Cabwiz.exe" failonerror="no">
-  <arg line="totalcross.inf /cpu PocketPC_ARM"/>
-  </exec>
-
-  <!-- copy the cab files -->
-  <move todir="${path.param}/dist/vm/wince">
-    <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.cab" casesensitive="no"/>
-  </move>
-
-  <!-- copy bat and ini files -->
-  <copy todir="${path.param}/dist/vm/wince" overwrite="yes" >
-    <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat,ceinstall*.*" casesensitive="no"/>
-  </copy>
-
-  <exec dir="${source.sdk.path}/etc/tools/makecab" executable="${source.sdk.path}/etc/tools/makecab/Cabwizsp.exe" failonerror="no">
-  <arg line="totalcross.inf /cpu PocketPC_ARM"/>
-  </exec>
-
-  <!-- copy the cab files -->
-  <move file="${source.sdk.path}/etc/tools/makecab/totalcross.PocketPC_ARM.CAB" tofile="${path.param}/dist/vm/wince/totalcross.WMobile_ARM.CAB" />
-
-  <delete>
-    <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="*.dat" casesensitive="no"/>
-  </delete>
-
-</target>	
 
 <!-- updates the file that stores the compilation date. -->
 <target name="updateCompilerDate" >
    <tstamp />
    <echo message="Compiler date: ${DSTAMP}" />
-   <concat destfile="${source.vms.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
+   <concat destfile="${source.vm.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
    <concat destfile="${source.sdk.path}/src/ras/CompilationDate4B.java">package ras; public class CompilationDate4B {public static final int COMPILATION_DATE = ${DSTAMP} ^ 12341234;}</concat>
+
+   <replace file="${source.sdk.path}/src/totalcross/sys/Settings.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+   <replace file="${source.sdk.path}/src/totalcross/android/Settings4A.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -396,8 +168,6 @@ target: createSkeleton - Create the folders from scratch
 <target name="createSkeleton" depends="updateCompilerDate" description="copy the changed files to the SDK">
    <delete dir="${base.target.path}/TotalCross*" failonerror="yes" />
    <mkdir dir="${target.sdk.path}/dist/vm"/>
-   <mkdir dir="${target.vms.path}/dist/vm"/>
-   <mkdir dir="${target.noras.path}/dist/vm"/>
 
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
@@ -406,6 +176,7 @@ target: createSkeleton - Create the folders from scratch
       </copy>
    <copy todir="${target.sdk.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
+   <replaceregexp file="${target.sdk.path}/src/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -418,23 +189,24 @@ target: buildSkeleton - Build the folders
       <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
       </delete>
 
-   <echo message="Building TotalCross SDK"/>
+   <echo message="Building TotalCross SDK build ${buildNumber}"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="clean"           inheritAll="false"/>
    <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false"/>
+   <ant antfile="build.xml" dir="${source.sdk.path}" target="javadoc"         inheritAll="false">
+      <property name="buildNumber" value="${buildNumber}"/>
+   </ant>
 
    <!-- copy the changed files to the release folder -->
    <mkdir dir="${target.sdk.path}/dist/vm" />
    <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
-   <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
    <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
    <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
    <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tcweb.jar" />
 </target>
 
 <target name="buildSamples_sdk" >
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
+	<ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false"/>
+	<copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
 </target>
 
 <target name="buildJava_sdk" >
@@ -455,49 +227,85 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildInstalls" >
+<target name="reorganizeSamples" >
+  <property name="samples"  value="${target.sdk3.path}/dist/samples/"/>
 
-  <property name="target.file"  value="${target.path}/../TotalCross${type}"/>
+  <move todir="${samples}/app/Breakout"    failonerror="no"> <fileset dir="${samples}/Breakout"/>    </move>
+  <move todir="${samples}/app/Scape"       failonerror="no"> <fileset dir="${samples}/Scape"/>       </move>
+  <move todir="${samples}/app/Calculator"  failonerror="no"> <fileset dir="${samples}/Calculator"/>  </move>
+  <move todir="${samples}/app/BtChat"      failonerror="no"> <fileset dir="${samples}/BtChat"/>      </move>
+  <move todir="${samples}/app/WorldWatch"  failonerror="no"> <fileset dir="${samples}/WorldWatch"/>  </move>
+                                   
+  <move todir="${samples}/service/GPSLogger"           failonerror="no"> <fileset dir="${samples}/GPSLogger"/>           </move>
+  <move todir="${samples}/service/GPSLoggerController" failonerror="no"> <fileset dir="${samples}/GPSLoggerController"/> </move>
+  <move todir="${samples}/service/GPSLoggerViewer"     failonerror="no"> <fileset dir="${samples}/GPSLoggerViewer"/>     </move>
+  <move todir="${samples}/service/MailController"      failonerror="no"> <fileset dir="${samples}/MailController"/>      </move>
+  <move todir="${samples}/service/MailService"         failonerror="no"> <fileset dir="${samples}/MailService"/>         </move>
+  <move todir="${samples}/service/MailViewer"          failonerror="no"> <fileset dir="${samples}/MailViewer"/>          </move>
+   
+</target>   
+                                  
+<target name="createTotalCross3" description="create the TotalCross3 folder from TotalCrossSDK and LitebaseSDK">
+
+  <property name="target.litebase.path"  value="${target.sdk.path}/../LitebaseSDK"/>
+
+   <delete dir="${target.sdk3.path}"/>
+   <mkdir dir="${target.sdk3.path}"/>
+   
+   <!-- totalcross -->
+   <copy todir="${target.sdk3.path}">          <fileset dir="${target.sdk.path}"/>               </copy>
+   
+   <!-- litebase -->
+   <zip destfile="${target.sdk3.path}/dist/tc.jar" update="yes">
+    <zipgroupfileset dir="${target.litebase.path}/dist" includes="litebase.jar"/>
+   </zip>
+
+   <copy todir="${target.sdk3.path}/dist/vm">  <fileset dir="${target.litebase.path}/dist/lib"/> </copy>
+   <copy todir="${target.sdk3.path}/dist/samples/litebase" includeEmptyDirs="No" failonerror="No">
+      <fileset dir="${target.litebase.path}/dist/samples" />
+   </copy>
+   <copy file="${target.litebase.path}/docs/Litebase Companion.pdf" todir="${target.sdk3.path}/docs" />
+   <copy todir="${target.sdk3.path}/src/lb" ><fileset dir="${target.litebase.path}/src/java"/></copy>
+   
+   <copy todir="${target.sdk3.path}" file="${source.sdk.path}/license.txt" overwrite="yes"  />
+   <copy file="${source.sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk3.path}/docs" overwrite="yes" />
+   
+   <antcall target="reorganizeSamples" />
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   merge TotalCrossSDK + LitebaseSDK into TotalCross3 
+   and create file TotalCross3.exe
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildInstalls_sdk" >
+  
+  <antcall target="createTotalCross3" />
+
+  <property name="target.file"  value="${target.sdk.path}/../../../TotalCross3"/>
 
   <!-- delete old files -->
-  <delete file="${target.file}.exe" />
+  <delete file="${target.file}" />
 
   <!-- update readme files -->
-  <copy file="${type}_sfx.diz" toDir="${rootpath}/">
+  <copy file="SDK_sfx.diz" toDir="${rootpath}/">
     <filterset>
       <filter token="VERSION" value="${tc.version}"/>
     </filterset>
   </copy>
 
   <echo message="Creating ${target.file} file..."/>
-  <!-- create the splitted rar then the full sfx -->
-  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes"><arg line='a -sfx -y -ep1 -m5 -r -s -idq -z${type}_sfx.diz ${target.file} ${target.path}\*.*'/></exec>
+  <exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -sfx -y -ep1 -m5 -md64m -ma5 -r -s -idq -zSDK_sfx.diz ${target.file}.exe ${target.sdk3.path}\*.*'/>
+  </exec>
+  <!--exec dir="${rootpath}/" executable="${winrar.path}/rar.exe" failonerror="yes">
+     <arg line='a -y -ep1 -m5 -r -s -idq -zSDK_sfx.diz ${target.file}.rar ${target.sdk3.path}\*.*'/>
+  </exec-->
 
   <!-- delete temp files -->
-  <delete file="${rootpath}/${type}_sfx.diz"/>
-
-</target>
-
-<target name="buildInstalls_sdk" >
-  <copy file="${source.sdk.path}/etc/launchers/ios/Launcher" todir="${target.sdk.path}/etc/launchers/ios" overwrite="true" />
-  <antcall target="buildInstalls">
-      <param name="type" value="SDK" />
-      <param name="target.path" value="${target.sdk.path}" />
-  </antcall>
-</target>
-
-<target name="buildInstalls_vms" >
-  <antcall target="buildInstalls">
-      <param name="type" value="VMS" />
-      <param name="target.path" value="${target.vms.path}" />
-  </antcall>
-</target>
-
-<target name="buildInstalls_vms_noras" >
-  <antcall target="buildInstalls">
-      <param name="type" value="VMS_NORAS" />
-      <param name="target.path" value="${target.noras.path}" />
-  </antcall>
+  <delete file="${rootpath}/SDK_sfx.diz"/>
+  
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -509,56 +317,18 @@ target: IPhone builds
   4. create a rep for the tcvm and the samples
   5. ftp to the sw.com.br
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="build-theos-launcher">
-   <property name="remote.path" value="~/ios_workspace/theos-launcher/${env.COMPUTERNAME}" />
-   <property name="launcher.path" value="${target.sdk.path}/etc/launchers/iphone2" />
-
-   <tar
-      basedir="${basedir}/../../.."
-      includes="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**"
-      destfile="${base.temp.path}/Launcher_theos.tgz"
-      compression="gzip"
-      longfile="gnu" />
-   <sshexec command="
-      rm -Rf ${remote.path};
-      mkdir -p ${remote.path}"
-      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
-   <scp
-      file="${base.temp.path}/Launcher_theos.tgz"
-      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
-      trust="yes" password="${buildserver.pass}" port="22" />
-
-   <sshexec command="
-      tar -zxpf ${remote.path}/Launcher_theos.tgz -C ${remote.path};
-      bash -l ${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/build.sh;"
-      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
-
-   <mkdir dir="${launcher.path}" />
-   <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/src/launchers/darwin/obj/Launcher" todir="${launcher.path}" trust="yes" password="${buildserver.pass}" port="22" />
-</target>
 
 <target name="buildIPhone_sdk_base" >
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
     <property name="arg_clean" value="-clean" />
-    <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+    <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   </then>
   <else>
     <property name="arg_clean" value="" />
   </else>
   </if>
   
-    <if><equals arg1="${type}" arg2="demo" /><then>
-      <property name="extra_args" value="-demo" />
-    </then>
-    <elseif><equals arg1="${type}" arg2="noras" /><then>
-      <property name="extra_args" value="-noras" />
-    </then></elseif>
-   <elseif><equals arg1="${type}" arg2="release" /><then>
-     <property name="extra_args" value="" />
-   </then></elseif>
-    </if>
-  
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="ios_build">
@@ -593,15 +363,6 @@ target: IPhone builds
    <scp file="${buildserver.user}@${macserver.host}:${remote.path}/TotalCross/TotalCrossVM/builders/${build.name}/${copy.from}" todir="${copy.to}" trust="yes" password="${buildserver.pass}" port="22" />
 </target>
 
-<target name="ios_theos" >
-   <antcall target="ios_build">
-      <param name="build.name"      value="theos" />
-      <param name="build.includes"  value="TotalCross/TotalCrossVM/builders/theos/**, TotalCross/TotalCrossVM/src/**" />
-      <param name="copy.from"       value="demo/libtcvm.dylib" />
-      <param name="copy.to"         value="${basedir}/theos/demo" />
-   </antcall>
-</target>
-
 <target name="ios_xcode" >
    <antcall target="ios_build">
       <param name="build.name"      value="xcode" />
@@ -617,7 +378,7 @@ target: IPhone builds
 <target name="invalidate-ipas" >
    <property name="path.to.invalidator" value="${base.temp.path}/invalidator" />
    <mkdir dir="${path.to.invalidator}" />
-   <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa ${target.vms.path}\dist\vm\ios\TotalCross.ipa ${target.noras.path}\dist\vm\ios\TotalCross.ipa" />
+   <property name="ipa.files" value="${target.sdk.path}\dist\vm\ios\TotalCross.ipa" />
 
    <javac
       srcdir="${source.sdk.path}/src/tc/tools/"
@@ -634,15 +395,15 @@ target: IPhone builds
       <classpath>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
          <pathelement location="${tools}/ipa/dd-plist.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
       </classpath>
    </javac>
    <java
@@ -653,16 +414,16 @@ target: IPhone builds
          <pathelement location="${path.to.invalidator}"/>
          <pathelement location="${tools}/jdeb/lib/ant.jar"/>
          <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-         <pathelement location="${tools}/ipa/bcpkix-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/bcprov-jdk15on-147.jar"/>
-         <pathelement location="${tools}/ipa/commons-io-2.2.jar"/>
-         <pathelement location="${tools}/ipa/commons-compress-1.4.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcpkix-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/bouncycastle/bcprov-jdk15on-147.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-io-2.2.jar"/>
+         <pathelement location="${etc}/libs/commons/commons-compress-1.4.jar"/>
          <pathelement location="${tools}/ipa/dd-plist.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-driver-zip-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-file-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-kernel-7.5.1.jar"/>
-         <pathelement location="${tools}/ipa/truezip-swing-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-driver-zip-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-file-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-kernel-7.5.1.jar"/>
+         <pathelement location="${etc}/libs/truezip/truezip-swing-7.5.1.jar"/>
       </classpath>
       <arg line="${tools} ${ipa.files}" />
    </java>
@@ -670,7 +431,7 @@ target: IPhone builds
 
 <target name="buildIPhone_sdk_clean" >
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -679,59 +440,11 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -tcvm -2 -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyIPhoneLauncher_sdk" >
-   <if><equals arg1="${iphone.version_2}" arg2="YES" /><then>
-      <scp file="${buildserver.tc.iphone2.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/iphone2" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-   </then></if>
-</target>
-
-<target name="copyIPhoneTCVM" >
-
-  <!-- iphone 2 -->
-
-</target>
-
 <target name="copyIPhoneTCVM_sdk" >
    <antcall target="copyIPhoneTCVM">
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
-</target>
-
-<target name="copyIPhoneTCVM_vms" >
-   <echo message="retrieve remote release builds" />
-  <antcall target="copyIPhoneTCVM">
-      <param name="type" value="ras" />
-      <param name="target.path" value="${target.vms.path}" />
-  </antcall>
-</target>
-   
-<target name="copyIPhoneTCVM_vms_noras" >
-   <echo message="retrieve remote NORAS release builds" />
-   <antcall target="copyIPhoneTCVM">
-       <param name="type" value="noras" />
-       <param name="target.path" value="${target.noras.path}" />
-   </antcall>
-</target>   
-
-<target name="buildIPhone_vms" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <antcall target="copyIPhoneTCVM_vms" />
-
-</target>
-
-<target name="buildIPhone_vms_noras" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-  
-   <antcall target="copyIPhoneTCVM_vms_noras" />
-
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -744,7 +457,7 @@ target: Linux builds
 
 <target name="buildLinux_sdk_clean" >
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vm.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -773,6 +486,7 @@ target: Linux builds
       <arg line="-b ${gcc.project.path}/tcvm/linux/${type}/libtcvm.so"/>
       <arg line="-t ${target.path}/dist/vm/linux"/>
       <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
+      <arg value="${source.sdk.path}/dist/vm/TCUI.tcz"/>
       <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     </java>
 </target>
@@ -782,40 +496,6 @@ target: Linux builds
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
-</target>
-	
-<target name="packageLinux_vms" >
-   <antcall target="packageLinux">
-    <param name="type" value="release" />
-    <param name="target.path" value="${target.vms.path}" />
-   </antcall>
-</target>
-   
-<target name="packageLinux_vms_noras" >
-   <antcall target="packageLinux">
-       <param name="type" value="noras" />
-       <param name="target.path" value="${target.noras.path}" />
-   </antcall>
-</target>   
-
-<target name="buildLinux_vms" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <antcall target="packageLinux_vms" />
-
-</target>
-
-<target name="buildLinux_vms_noras" >
-
-  <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-   
-   <antcall target="packageLinux_vms_noras" />
-   
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -827,13 +507,27 @@ target: Android builds
 </target>
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
-   <property name="type" value="demo" />
-   <exec dir="${source.vms.path}/src" executable="cmd.exe" failonerror="true">
-      <env key="TYPE" value="${type}" />
-      <env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
-      <arg line="/c ${android.ndk.path}/ndk-build"/>
-   </exec>
-  <sleep seconds="3"/>
+	<trycatch>
+		<try>
+			<delete dir="${source.vm.path}/native" failonerror="false" />
+			<copy todir="${source.vm.path}" overwrite="true">
+				<fileset dir="${basedir}/../../../Litebase/LitebaseSDK/src">
+					<include name="native/**/*" />
+					<exclude name="native/jni/**/*" />
+				</fileset>
+			</copy>
+			<property name="type" value="demo" />
+			<exec dir="${source.vm.path}/src" executable="cmd.exe" failonerror="true">
+				<env key="TYPE" value="${type}" />
+				<env key="NDK_OUT" value="${base.temp.path}/android/TotalCross/${TYPE}" />
+				<arg line="/c ${android.ndk.path}/ndk-build" />
+			</exec>
+			<sleep seconds="3" />
+		</try>
+		<finally>
+			<delete dir="${source.vm.path}/native" failonerror="false" />
+		</finally>
+	</trycatch>
 </target>
 
 <target name="build_android_java" description="Builds the TotalCross.apk for Android">
@@ -841,27 +535,17 @@ target: Android builds
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
   <delete dir="${android.temp}" failonerror="false" />
+  <sleep seconds="1"/>
   <mkdir dir="${android.temp}" />
 
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>
 	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="release" inheritAll="false"/>
 
-  <!-- test if the apk contains the needed files -->
-  <delete dir="${android.temp}/apk" />
-  <unjar src="${apk}" dest="${android.temp}/apk" overwrite="yes"/>
-  <available file="${android.temp}/apk/META-INF/TCANDROI.SF" property="apk.is.signed"/>
-  <fail unless="apk.is.signed" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: NOT SIGNED. TRY TO RUN THIS TASK AGAIN."/>
-  <available file="${android.temp}/apk/AndroidManifest.xml" property="apk.has.xml"/>
-  <fail unless="apk.has.xml" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: XML NOT FOUND. TRY TO RUN THIS TASK AGAIN."/>
-  <available file="${android.temp}/apk/classes.dex" property="apk.has.dex"/>
-  <fail unless="apk.has.dex" message="THE ANDROID APK WAS NOT SUCCESSFULLY GENERATED: DEX NOT FOUND. TRY TO RUN THIS TASK AGAIN."/>
-  <delete dir="${android.temp}/apk" />
-
 </target>
 
 <target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
    <copy todir="${android.project.path}/apps/tcvm/libs" overwrite="true" >
-      <fileset dir="${source.vms.path}/src/jni/libs" >
+      <fileset dir="${base.temp.path}/android/TotalCross/${type}/libs" >
          <include name="**/*.so" />
       </fileset>
    </copy>
@@ -891,22 +575,6 @@ target: Android builds
 
 <target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
 
-<target name="buildAndroid_vms" depends="clean_android_native">
-  <delete dir="${android.project.path}/out/src" />
-  <antcall target="build_android" >
-	<param name="type" value="release" />
-	</antcall>	
-  <copy file="${android.temp}/TotalCross.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
-</target>   
-
-<target name="buildAndroid_vms_noras" depends="clean_android_native">
-  <delete dir="${android.project.path}/out/src" />
-  <antcall target="build_android" >
-	<param name="type" value="noras" />
-	</antcall>
-  <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
-</target>   
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -923,14 +591,10 @@ target: checks if we must update the versions of the files prior to a build.
   <fail unless="version.updated" message="************************************* Please update the project version information on vc2008, EVC, gcc-arm/vm/resources.rcp!!! **********"/>
 </target>
 
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: builds NORAS sdks for all companys.
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
 <target name="buildPostInstall" >
 
   <property name="temp" value="${base.temp.path}/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
+  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="${compile.target}" source="${compile.source}" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
@@ -938,6 +602,7 @@ target: builds NORAS sdks for all companys.
      <pathelement location="${temp}"/>
    </classpath>
    <arg line="PostInstall.class -win32"/>
+   <arg line="/r 5443444B314891CE3D2DD791"/>
   </java>
   
   <copy file="${temp}\install\win32\PostInstall.exe" todir="${target.sdk.path}" />
@@ -946,9 +611,32 @@ target: builds NORAS sdks for all companys.
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: build targets
+target: buildWinCE
+
+       call evc commandline compiler
+       Important: to be able to compile some of these files, you must delete wce211\bin
+       and copy the wce300\bin to wce211\bin (thus, updating all old compilers to new versions)
+       these folders are located under <program files>\Microsoft eMbedded Tools\EVC\
+
+       Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
+    <target name="buildWinCE_sdk">
+        <echo message="GENERATING WINCE FILES - SDK" />
+        <exec executable="${msvc.path}" failonerror="yes">
+            <arg line='${msvc.project.path}/TCVM.sln /rebuild "NO RAS Release|Pocket PC 2003 (ARMV4)"' />
+        </exec>
+        <copy todir="${target.sdk.path}/dist/vm/wince" overwrite="yes" >
+          <fileset dir="${source.sdk.path}/etc/tools/makecab" includes="CEinstall.ini,_CEinstall-RunMe.bat" casesensitive="no"/>
+        </copy>
+        <delete failonerror="no">
+            <fileset dir="${target.sdk.path}/dist/vm/wince" includes="CabWiz.log,TotalCross.inf" casesensitive="no" />
+        </delete>
+    </target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: build targets
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
  
 <target name="build_iphone" >
   <fail unless="type" />
@@ -956,11 +644,32 @@ target: build targets
   <antcall target="copyIPhoneLauncher_sdk" />
 </target>
 
+<target name="copyIPhoneLauncher_sdk" />
+<target name="copyIPhoneTCVM" />
 <target name="buildBB_sdk" />
 <target name="buildBB_vms" />
 <target name="buildBB_vms_noras" />
 <target name="buildPalmOS5_sdk" />
 <target name="buildPalmOS5_vms" />
 <target name="buildPalmOS5_vms_noras" />
-
+<target name="buildWin32_vms" />
+<target name="buildWin32_vms_noras" />
+<target name="buildInstalls_vms" />
+<target name="buildInstalls_vms_noras" />
+<target name="build-theos-launcher" />
+<target name="ios_theos" />
+<target name="copyIPhoneTCVM_vms" />
+<target name="copyIPhoneTCVM_vms_noras" />
+<target name="buildIPhone_vms" />
+<target name="buildIPhone_vms_noras" />
+<target name="packageLinux_vms" />
+<target name="packageLinux_vms_noras" />
+<target name="buildLinux_vms" />
+<target name="buildLinux_vms_noras" />
+<target name="buildAndroid_vms" />
+<target name="buildAndroid_vms_noras" />
+<target name="buildWinCE_vms" />
+<target name="buildWinCE_vms_noras" />
+<target name="buildWinCECabsSingle" />
+    
 </project>

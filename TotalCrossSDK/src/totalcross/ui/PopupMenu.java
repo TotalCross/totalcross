@@ -19,6 +19,7 @@
 package totalcross.ui;
 
 import totalcross.io.*;
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -107,13 +108,13 @@ public class PopupMenu extends Window
       itemCount = items.length;
       if (multipleSelection)
       {
-         off = new Image("totalcross/res/android/checkBkg.png");
-         ball = new Image("totalcross/res/android/checkSel.png");
+         off = Resources.checkBkg.getCopy();
+         ball = Resources.checkSel.getCopy();
       }
       else
       {
-         off = new Image("totalcross/res/android/radioBkg.png");
-         ball = new Image("totalcross/res/android/radioSel.png");
+         off = Resources.radioBkg.getCopy();
+         ball = Resources.radioSel.getCopy();
       }
    }
    
@@ -131,6 +132,7 @@ public class PopupMenu extends Window
       try
       {
          list = new ListContainer();
+         list.setFont(this.font);
          if (cursorColor != -1)
             list.highlightColor = cursorColor;
          
@@ -191,7 +193,7 @@ public class PopupMenu extends Window
             for (int i = 0; i < caps.length; i++)
                caps[i] = Convert.toString((char)v.items[i]);
             pbgSearch = new PushButtonGroup(caps,false,-1,0,fmH,1,true,PushButtonGroup.BUTTON);
-            add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,fmH*2);
+            add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,FONTSIZE+200);
             sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FILL);
          }
          if (enableCancel)

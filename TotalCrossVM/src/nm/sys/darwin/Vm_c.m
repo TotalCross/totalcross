@@ -21,21 +21,31 @@
 
 int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
-    bool ret = false;
-    // does not work: seems that the ui is gone, because it misses the first click, but nothing is displayed
-   if (strEq(szCommand,"viewer")/* && xstrstr(szArgs,".pdf") != 0*/)
+   bool ret = false;
+   NSString *args = [NSString stringWithFormat:@"%s", szArgs];
+   if (strEq(szCommand,"viewer"))
    {
-      if (DEVICE_CTX->_childview->uidController)
-          [DEVICE_CTX->_childview->uidController release];
-      DEVICE_CTX->_childview->uidController = [[UIDocumentInteractionController alloc] init];
-      //DEVICE_CTX->_childview->uidController.UTI = @"com.adobe.pdf";
-      DEVICE_CTX->_childview->uidController = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%s", szArgs]]];
-      if (![DEVICE_CTX->_childview->uidController presentOpenInMenuFromRect:DEVICE_CTX->_childview.frame inView:[UIApplication sharedApplication].keyWindow animated:YES])
-          ret = [[UIApplication sharedApplication] openURL:[NSURL fileURLWithPath:[NSString stringWithFormat:@"%s", szArgs]]];
+      dispatch_sync(dispatch_get_main_queue(), ^
+      {
+         UIWebView *webView = DEVICE_CTX->_mainview->webView =[[UIWebView alloc] initWithFrame:[DEVICE_CTX->_childview bounds]];
+         [webView setContentMode:UIViewContentModeScaleAspectFit];
+         [webView setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
+         [webView setScalesPageToFit:YES];
+         DEVICE_CTX->_mainview.view = webView;
+         UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+         [button addTarget:DEVICE_CTX->_mainview action:@selector(closeWebView:) forControlEvents:UIControlEventTouchUpInside];
+         [button setTitle:@" X " forState:UIControlStateNormal];
+         [button setBackgroundColor:[UIColor colorWithRed:0.5f green:0.5f blue:0.5f alpha:0.5f]];
+         int h = DEVICE_CTX->_childview->taskbarHeight;
+         button.frame = CGRectMake(0,0,h,h);
+         [webView addSubview:button];
+         [webView loadRequest: [NSURLRequest requestWithURL:[NSURL fileURLWithPath:args]]];
+         [webView release];
+      });
    }
    else
    if (strEq(szCommand,"url"))
-      ret = [[UIApplication sharedApplication] openURL:[NSURL URLWithString: [NSString stringWithFormat:@"%s", szArgs]]];
+      ret = [[UIApplication sharedApplication] openURL:[NSURL URLWithString: args]];
    if (!wait)
       keepRunning = false;
     return ret ? 0 : 1;

@@ -29,6 +29,7 @@
 {
    NSMutableArray* _events;
    ChildView *child_view;
+   int lastOrientationSentToVM;
    // keyboard
    UITextView* kbd;
    NSRange lastRange;
@@ -42,8 +43,10 @@
    int locationFlags, locationDate, locationTime, locationSat, locationCount;
    double locationVeloc, locationPDOP, locationDir;
    double locationLat, locationLon;
+   UIWebView* webView;
 }
 
+- (bool)hasEvents;
 - (void)addEvent:(NSDictionary*)event;
 - (bool)isEventAvailable;
 - (NSArray*)getEvents;
@@ -53,12 +56,14 @@
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
-- (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h;
+- (BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t;
+- (void) updateLayout;
 - (void) dialNumber:(NSString*) number;
-- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+- (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;
 - (int) gpsStart;
 - (void) gpsStop;
 - (int) gpsUpdateLocation;
+- (IBAction)closeWebView:(id)sender;
 @end
 
 typedef struct

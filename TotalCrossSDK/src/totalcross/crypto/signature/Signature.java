@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.signature;
 
 import totalcross.crypto.*;
@@ -23,8 +21,7 @@ import totalcross.crypto.cipher.Key;
 import totalcross.io.ByteArrayStream;
 
 /**
- * This class provides the functionality of a signature algorithm for signing
- * and verifying.
+ * This class provides the functionality of a signature algorithm for signing and verifying.
  */
 public abstract class Signature
 {
@@ -37,27 +34,34 @@ public abstract class Signature
    private ByteArrayStream input = new ByteArrayStream(128);
    private byte[] oneByte = new byte[1];
    
-   /** Constant used to initialize this signature algorithm to sign. */
+   /** 
+    * Constant used to initialize this signature algorithm to sign. 
+    */
    public static final int OPERATION_SIGN = 0;
    
-   /** Constant used to initialize this signature algorithm to verify. */
+   /** 
+    * Constant used to initialize this signature algorithm to verify. 
+    */
    public static final int OPERATION_VERIFY = 1;
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return The name of the algorithm used. 
+    */
    public final String toString()
    {
       return getAlgorithm();
    }
    
    /**
-    * Initializes this message signature algorithm to sign or verify. Calling this
-    * method will also reset the input data buffer.
+    * Initializes this message signature algorithm to sign or verify. Calling this method will also reset the input data buffer.
     * 
-    * @param operation the operation mode of this signature algorithm (OPERATION_SIGN
-    * or OPERATION_VERIFY).
-    * @param key the key.
+    * @param operation The operation mode of this signature algorithm (<code>OPERATION_SIGN</code> or <code>OPERATION_VERIFY</code>).
+    * @param key The key.
     * 
-    * @throws CryptoException if one or more initialization parameters are invalid
-    * or the signature algorithm fails to initialize with the given parameters. 
+    * @throws CryptoException If one or more initialization parameters are invalid or the signature algorithm fails to initialize with the given 
+    * parameters. 
     */
    public final void reset(int operation, Key key) throws CryptoException
    {
@@ -74,11 +78,10 @@ public abstract class Signature
    }
    
    /**
-    * Updates the input data that will be processed by this signature algorithm. The data
-    * will be accumulated in an input buffer to be processed when {@link #sign()} or
-    * {@link #verify(byte[])} is finally called.
+    * Updates the input data that will be processed by this signature algorithm. The data will be accumulated in an input buffer to be processed when 
+    * {@link #sign()} or {@link #verify(byte[])} is finally called.
     * 
-    * @param data the input data.
+    * @param data The input data.
     */
    public final void update(int data)
    {
@@ -87,11 +90,10 @@ public abstract class Signature
    }
    
    /**
-    * Updates the input data that will be processed by this signature algorithm. The data
-    * will be accumulated in an input buffer to be processed when {@link #sign()} or
-    * {@link #verify(byte[])} is finally called.
+    * Updates the input data that will be processed by this signature algorithm. The data will be accumulated in an input buffer to be processed when 
+    * {@link #sign()} or {@link #verify(byte[])} is finally called.
     * 
-    * @param data the input data.
+    * @param data The input data.
     */
    public final void update(byte[] data)
    {
@@ -99,13 +101,12 @@ public abstract class Signature
    }
    
    /**
-    * Updates the input data that will be processed by this signature algorithm. The data
-    * will be accumulated in an input buffer to be processed when {@link #sign()} or
-    * {@link #verify(byte[])} is finally called.
+    * Updates the input data that will be processed by this signature algorithm. The data will be accumulated in an input buffer to be processed when 
+    * {@link #sign()} or {@link #verify(byte[])} is finally called.
     * 
-    * @param data the input data.
-    * @param start the offset in <code>data</code> where the data starts.
-    * @param count the input length.
+    * @param data The input data.
+    * @param start The offset in <code>data</code> where the data starts.
+    * @param count The input length.
     */
    public final void update(byte[] data, int start, int count)
    {
@@ -116,7 +117,7 @@ public abstract class Signature
     * Finalizes the sign operation by processing all the accumulated input data and returning
     * the result in a new buffer.
     * 
-    * @return the signature in a new buffer.
+    * @return The signature in a new buffer.
     */
    public byte[] sign() throws CryptoException
    {
@@ -141,7 +142,9 @@ public abstract class Signature
    }
    
    /**
-    * @return the name of this signature algorithm. 
+    * Returns the name of the signature algorithm.
+    * 
+    * @return The name of the signature algorithm used. 
     */
    public abstract String getAlgorithm();
    

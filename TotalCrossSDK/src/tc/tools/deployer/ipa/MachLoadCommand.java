@@ -13,6 +13,7 @@ public abstract class MachLoadCommand
    public static final int LC_CODE_SIGNATURE = 0x1d;
    public static final int LC_ENCRYPTION_INFO = 0x21;
    public static final int LC_DYLD_INFO = 0x22;
+   public static final int LC_SEGMENT_64 = 0x19;
 
    public static MachLoadCommand readFromStream(ElephantMemoryReader reader) throws IOException,
          InstantiationException, IllegalAccessException
@@ -33,6 +34,10 @@ public abstract class MachLoadCommand
 
          case LC_DYSYMTAB:
             commandDataSize = 80;
+         break;
+
+         case LC_SEGMENT_64:
+            command = new MachLoadCommandSegment64();
          break;
 
          case LC_CODE_SIGNATURE:

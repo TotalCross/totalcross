@@ -18,9 +18,7 @@
 
 package totalcross.io;
 
-import totalcross.sys.Convert;
-import totalcross.sys.Registry;
-import totalcross.sys.Settings;
+import totalcross.sys.*;
 import totalcross.util.*;
 
 public class File4D extends RandomAccessStream
@@ -33,6 +31,9 @@ public class File4D extends RandomAccessStream
 
    static final boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
    static final boolean isIOS = Settings.isIOS();
+   static final boolean isWP8 = Settings.platform.equals(Settings.WINDOWSPHONE);
+   static final boolean isWin32 = Settings.platform.equals(Settings.WIN32);
+   static final boolean isWinCE = Settings.isWindowsCE();
    static final int INVALID = 0;
    public static final int DONT_OPEN = 1;
    public static final int READ_WRITE = 2;
@@ -53,12 +54,14 @@ public class File4D extends RandomAccessStream
    public static String[] winceVols = {"\\Storage Card2\\", "\\Storage Card1\\", "\\SD Card\\", "\\Storage Card\\",
          "\\SD-MMCard\\", "\\CF Card\\"}; // guich@572_3
 
-   private static final String deviceAlias = getDeviceAlias();
+   private static String deviceAlias;
 
    native private static String getDeviceAlias();
 
    public File4D(String path, int mode, int slot) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
    {
+      if (deviceAlias == null)
+         deviceAlias = getDeviceAlias();
       if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
       if (path == null)
          throw new java.lang.NullPointerException("Argument 'path' cannot have a null value.");
@@ -76,12 +79,12 @@ public class File4D extends RandomAccessStream
          //flsobral@tc129.2: path for both iphone and ipad.
          if (Settings.isIOS()) // guich@tc115_14: as per greg's suggestion
             path = Convert.appendPath(deviceAlias, path);
-         else if (isAndroid)
+         else if (isAndroid || isWP8 || isWin32 || isWinCE)
             path = Settings.appPath + "/" + path;
          slot = 1;
       }
       else 
-      if (isAndroid && !path.startsWith("/sdcard") && !path.startsWith("/mnt") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
+      if (isAndroid && !path.startsWith("/") && path.indexOf("data/data") < 0) // in android, force access appPath if specifying the root
          path = Settings.appPath+"/"+path;
       else
       if (isIOS && !path.startsWith("/"))
@@ -194,12 +197,12 @@ public class File4D extends RandomAccessStream
       if (path.equals("/"))
          return null;
 
-      return new File(path.substring(0, path.lastIndexOf('/')), DONT_OPEN, slot);      
+      return new File(path.substring(0, path.lastIndexOf('/')), DONT_OPEN);      
    }
 
    public static File getCardVolume() throws totalcross.io.IOException
    {
-      if (Settings.isWindowsDevice()) //flsobral@tc112_10: Fixed to also work on devices recognized as WindowsMobile.
+      if (Settings.isWindowsCE()) //flsobral@tc112_10: Fixed to also work on devices recognized as WindowsMobile.
       {
          String cardName = null;
          try
@@ -342,12 +345,48 @@ public class File4D extends RandomAccessStream
          try {if (fout != null) fout.close();} catch (Exception e) {}
       }
    }
+
    public byte[] readAndClose() throws IOException
+   {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         close();
+      }
+   }
+   
+   public byte[] readAndDelete() throws IOException
+   {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         delete();
+      }
+   }
+   
+   public byte[] read() throws IOException
    {
       int len = getSize();
       byte[] ret = new byte[len];
       readBytes(ret,0,len);
-      close();
       return ret;
+   }
+   
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      try
+      {
+         writeBytes(bytes, 0, bytes.length);
+      }
+      finally
+      {
+         close();
+      }
    }
 }

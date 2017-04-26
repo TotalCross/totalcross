@@ -12,6 +12,7 @@
 
 
 #include "tcvm.h"
+#include "NativeMethods.h"
 
 #if defined(WINCE) || defined(WIN32)
  #include "win/Vm_c.h"
@@ -21,11 +22,16 @@
  #include "posix/Vm_c.h"
 #endif
 
-CompatibilityResult areArraysCompatible(Context currentContext, Object array, CharP ident)
+void vmVibrate(int32 ms);
+#ifdef darwin
+int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait);
+#endif
+
+CompatibilityResult areArraysCompatible(Context currentContext, TCObject array, CharP ident)
 {
    // this function searches for the first non-null element in array and checks if it is compatible with ident
    int32 n = ARRAYOBJ_LEN(array);
-   ObjectArray oa = (ObjectArray)ARRAYOBJ_START(array);
+   TCObjectArray oa = (TCObjectArray)ARRAYOBJ_START(array);
    for (; n-- > 0; oa++)
       if (*oa != null)
          return areClassesCompatible(currentContext, OBJ_CLASS(*oa), ident);
@@ -34,12 +40,12 @@ CompatibilityResult areArraysCompatible(Context currentContext, Object array, Ch
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
 {
-   Object srcArray = p->obj[0];
-   Object dstArray = p->obj[1];
+   TCObject srcArray = p->obj[0];
+   TCObject dstArray = p->obj[1];
    int32 srcStart = p->i32[0];
    int32 dstStart = p->i32[1];
    int32 length = p->i32[2];
-   int8 *src, *dst;
+   uint8 *src, *dst;
    bool result = false;
 
    if (!srcArray)
@@ -48,34 +54,53 @@ TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public s
    if (!dstArray)
       throwNullArgumentException(p->currentContext, "dstArray");
    else
-   if (dstStart < 0)
-      throwIllegalArgumentExceptionI(p->currentContext, "dstStart",dstStart);
-   else
-   if (length < 0)
-      throwIllegalArgumentExceptionI(p->currentContext, "length",length);
-   else
-   if (length == 0)
-      result = true;
-   else
-   if (!checkArrayRange(p->currentContext, srcArray, srcStart, length) || !checkArrayRange(p->currentContext, dstArray, dstStart, length)) // Check the array's range
-      result = false;
-   else
-   if (OBJ_CLASS(srcArray) != OBJ_CLASS(dstArray) && // quick test
-      areClassesCompatible(p->currentContext, OBJ_CLASS(srcArray), OBJ_CLASS(dstArray)->name) != COMPATIBLE && // Check if srcArray and dstArray are compatible
-      (OBJ_CLASS(srcArray)->name[1] == '&' || OBJ_CLASS(dstArray)->name[1] == '&' || // make sure the arrays are not primitive arrays
-         areArraysCompatible(p->currentContext, srcArray, OBJ_CLASS(dstArray)->name+1) != COMPATIBLE)) // check if the first elements are compatible
-      throwException(p->currentContext, ArrayStoreException, "srcArray and dstArray are not compatible");
-   else
    {
-      TCClass c = OBJ_CLASS(srcArray);
-      length <<= c->flags.bits2shift; // convert array units into byte units
-      dstStart <<= c->flags.bits2shift;
-      srcStart <<= c->flags.bits2shift;
-      // Copy
-      src = ARRAYOBJ_START(srcArray);
-      dst = ARRAYOBJ_START(dstArray);
-      xmemmove(dst+dstStart, src+srcStart, length);
-      result = true;
+      bool isObjectArray;
+      isObjectArray = OBJ_PROPERTIES(srcArray)->class_->flags.isObjectArray;
+      if (isObjectArray && p->currentContext != gcContext) // prevent another thread from calling the gc while running this method, which can change objects in memory and result in a crash
+         LOCKVAR(omm);
+      if (dstStart < 0)
+         throwIllegalArgumentExceptionI(p->currentContext, "dstStart",dstStart);
+      else
+      if (length < 0)
+         throwIllegalArgumentExceptionI(p->currentContext, "length",length);
+      else
+      if (length == 0)
+         result = true;
+      else
+      if (!checkArrayRange(p->currentContext, srcArray, srcStart, length) || !checkArrayRange(p->currentContext, dstArray, dstStart, length)) // Check the array's range
+         result = false;                                              
+      else
+      if (OBJ_CLASS(srcArray) != OBJ_CLASS(dstArray) && // quick test
+         areClassesCompatible(p->currentContext, OBJ_CLASS(srcArray), OBJ_CLASS(dstArray)->name) != COMPATIBLE && // Check if srcArray and dstArray are compatible
+         (OBJ_CLASS(srcArray)->name[1] == '&' || OBJ_CLASS(dstArray)->name[1] == '&' || // make sure the arrays are not primitive arrays
+            areArraysCompatible(p->currentContext, srcArray, OBJ_CLASS(dstArray)->name+1) != COMPATIBLE)) // check if the first elements are compatible
+         throwException(p->currentContext, ArrayStoreException, "srcArray and dstArray are not compatible");
+      else
+      {
+         TCClass c = OBJ_CLASS(srcArray);
+         src = ARRAYOBJ_START(srcArray);
+         dst = ARRAYOBJ_START(dstArray);
+         if (isObjectArray) // copy pointers directly to prevent a partial assigned value from being considered a valid object
+         {
+            TCObjectArray psrc = (TCObjectArray)src;
+            TCObjectArray pdst = (TCObjectArray)dst;
+            if (src == dst && srcStart < dstStart) // copy arrays overlap?
+               for (psrc += srcStart + length - 1, pdst += dstStart + length - 1;  --length >= 0; ) // must go backwards to allow copy into overlapping array
+                  *pdst-- = *psrc--;
+            else
+               for (psrc += srcStart, pdst += dstStart;  --length >= 0; )
+                  *pdst++ = *psrc++;
+         }
+         else
+         {
+            uint32 s = TC_ARRAYSIZE(c, 1);
+            xmemmove(dst + dstStart * s, src + srcStart * s, length * s);
+         }
+         result = true;
+      }
+      if (isObjectArray && p->currentContext != gcContext)
+         UNLOCKVAR(omm);
    }
    p->retI = result;
 }
@@ -89,7 +114,7 @@ void updateDaylightSavings(Context currentContext);
 
 TC_API void tsV_setTime_t(NMParams p) // totalcross/sys/Vm native public static void setTime(totalcross.sys.Time t);
 {
-   Object time = p->obj[0];
+   TCObject time = p->obj[0];
 
    if (!time)
       throwNullArgumentException(p->currentContext, "t");
@@ -109,8 +134,8 @@ TC_API void tsV_exitAndReboot(NMParams p) // totalcross/sys/Vm native public sta
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_exec_ssib(NMParams p) // totalcross/sys/Vm native public static int exec(String command, String args, int launchCode, boolean wait);
 {
-   Object command = p->obj[0];
-   Object args = p->obj[1];
+   TCObject command = p->obj[0];
+   TCObject args = p->obj[1];
    int32 launchCode = p->i32[0];
    bool wait = (bool) p->i32[1];
    TCHARP szCommand;
@@ -149,8 +174,8 @@ TC_API void tsV_sleep_i(NMParams p) // totalcross/sys/Vm native public static vo
    else
    {
       Sleep(max32(millis,1)); // don't sleep 0, or threads may starve to death
-#ifdef WIN32
-      if (millis == 1)
+#if defined WIN32 && !defined WP8
+      //if (millis == 1) - guich@310: also for other sleep values
       {
          MSG msg;
          PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE );
@@ -166,7 +191,7 @@ TC_API void tsV_getFreeMemory(NMParams p) // totalcross/sys/Vm native public sta
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_interceptSpecialKeys_I(NMParams p) // totalcross/sys/Vm native public static void interceptSpecialKeys(int []keys);
 {
-   Object keysArray = p->obj[0];
+   TCObject keysArray = p->obj[0];
    int32 *keys = null;
    int32 keysLen = 0;
 
@@ -181,7 +206,7 @@ TC_API void tsV_interceptSpecialKeys_I(NMParams p) // totalcross/sys/Vm native p
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_debug_s(NMParams p) // totalcross/sys/Vm native public static void debug(String s);
 {
-   Object strObj = p->obj[0];
+   TCObject strObj = p->obj[0];
    CharP s;
 
    if (!strObj)             
@@ -196,7 +221,7 @@ TC_API void tsV_debug_s(NMParams p) // totalcross/sys/Vm native public static vo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_alert_s(NMParams p) // totalcross/sys/Vm native public static void alert(String s);
 {
-   Object strObj = p->obj[0];
+   TCObject strObj = p->obj[0];
    CharP s;
 
    if (!strObj)
@@ -211,7 +236,7 @@ TC_API void tsV_alert_s(NMParams p) // totalcross/sys/Vm native public static vo
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_clipboardCopy_s(NMParams p) // totalcross/sys/Vm native public static void clipboardCopy(String s);
 {
-   Object string = p->obj[0];
+   TCObject string = p->obj[0];
    if (!string)
       throwNullArgumentException(p->currentContext, "s");
    else
@@ -242,7 +267,7 @@ TC_API void tsV_clipboardPaste(NMParams p) // totalcross/sys/Vm native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_attachLibrary_s(NMParams p) // totalcross/sys/Vm native public static boolean attachLibrary(String name);
 {
-   Object nameObj;
+   TCObject nameObj;
    char name[MAX_PATHNAME];
 
    nameObj = p->obj[0];
@@ -258,7 +283,7 @@ TC_API void tsV_attachLibrary_s(NMParams p) // totalcross/sys/Vm native public s
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_privateAttachNativeLibrary_s(NMParams p) // totalcross/sys/Vm native private static boolean privateAttachNativeLibrary(String name);
 {
-   Object nameObj;
+   TCObject nameObj;
    char name[MAX_PATHNAME],*c; // usualy a short name
 
    p->retI = false;
@@ -292,7 +317,7 @@ TC_API void tsV_gc(NMParams p) // totalcross/sys/Vm native public static void gc
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_getFile_s(NMParams p) // totalcross/sys/Vm native public static byte[] getFile(String name);
 {
-   Object name = p->obj[0];
+   TCObject name = p->obj[0];
    char szName[256];
    int32 nameLen;
    TCZFile file;
@@ -318,15 +343,24 @@ TC_API void tsV_getRemainingBattery(NMParams p) // totalcross/sys/Vm native publ
    p->retI = vmGetRemainingBattery();
 }
 //////////////////////////////////////////////////////////////////////////
+int tweakSSL;
+
 TC_API void tsV_tweak_ib(NMParams p) // totalcross/sys/Vm native public static void tweak(int param, boolean set);
 {
    int32 param = p->i32[0];
    int32 bit = param - 1;
    int32 on = p->i32[1];
+   
+   if (bit == -999) // temporary for Tekann only
+      tweakSSL = on;
+   else   
    if (on)
       vmTweaks |=  (1<<bit);
    else
       vmTweaks &= ~(1<<bit);
+   if (param == VMTWEAK_TRACE_METHODS)
+      traceOn = on;
+   else
    if (param == VMTWEAK_DISABLE_GC && !on) // guich@tc114_18
       gc(p->currentContext);
    else
@@ -345,7 +379,7 @@ TC_API void tsV_tweak_ib(NMParams p) // totalcross/sys/Vm native public static v
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_getStackTrace_t(NMParams p) // totalcross/sys/Vm native public static String getStackTrace(Throwable t);
 {
-   Object t = p->obj[0];
+   TCObject t = p->obj[0];
    if (!t)
       throwNullArgumentException(p->currentContext, "t");
    else
@@ -369,9 +403,14 @@ TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static 
 #endif   
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tsV_identityHashCode_o(NMParams p) // totalcross/sys/Vm native public static int identityHashCode(Object object);
+{
+   jlO_nativeHashCode(p);
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tsV_preallocateArray_oi(NMParams p) // totalcross/sys/Vm native public static void preallocateArray(Object sample, int length);
 {
-   Object t = p->obj[0];
+   TCObject t = p->obj[0];
    int32 len = p->i32[0];
    if (!t)
       throwNullArgumentException(p->currentContext, "sample");

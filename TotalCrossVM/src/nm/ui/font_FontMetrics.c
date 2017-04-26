@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_fontMetricsCreate(NMParams p) // totalcross/ui/font/FontMetrics native void fontMetricsCreate();
 {
-   Object fm, font = FontMetrics_font(fm = p->obj[0]);
+   TCObject fm = p->obj[0],font = FontMetrics_font(fm);
    UserFont uf = loadUserFontFromFontObj(p->currentContext, font, ' ');
    if (uf != null)
    {
@@ -33,7 +33,7 @@ TC_API void tufFM_charWidth_c(NMParams p) // totalcross/ui/font/FontMetrics nati
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(String s);
 {
-   Object s = p->obj[1];
+   TCObject s = p->obj[1];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s");
    else
@@ -42,7 +42,7 @@ TC_API void tufFM_stringWidth_s(NMParams p) // totalcross/ui/font/FontMetrics na
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics native public int stringWidth(char []chars, int start, int count);
 {
-   Object charArray = p->obj[1];
+   TCObject charArray = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    if (charArray == null)
@@ -54,7 +54,7 @@ TC_API void tufFM_stringWidth_Cii(NMParams p) // totalcross/ui/font/FontMetrics 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_sbWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native public int sbWidth(StringBuffer s);
 {
-   Object s = p->obj[1];
+   TCObject s = p->obj[1];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s"); // throw NPE
    else
@@ -63,7 +63,7 @@ TC_API void tufFM_sbWidth_s(NMParams p) // totalcross/ui/font/FontMetrics native
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_sbWidth_sii(NMParams p) // totalcross/ui/font/FontMetrics native public int sbWidth(StringBuffer s, int start, int count);
 {
-   Object s = p->obj[1];
+   TCObject s = p->obj[1];
    int32 start = p->i32[0];
    int32 count = p->i32[1];
    if (s == null)
@@ -75,7 +75,7 @@ TC_API void tufFM_sbWidth_sii(NMParams p) // totalcross/ui/font/FontMetrics nati
 //////////////////////////////////////////////////////////////////////////
 TC_API void tufFM_charWidth_si(NMParams p) // totalcross/ui/font/FontMetrics native public int charWidth(StringBuffer s, int i);
 {
-   Object s = p->obj[1];
+   TCObject s = p->obj[1];
    int32 i = p->i32[0];
    if (s == null)
       throwNullArgumentException(p->currentContext, "s"); // throw NPE

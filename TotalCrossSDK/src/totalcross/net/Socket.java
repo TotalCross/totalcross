@@ -186,7 +186,9 @@ public class Socket extends Stream
    {
       try
       {
-         socketRef = new java.net.Socket(host, port);
+         java.net.Socket socket = new java.net.Socket();
+         socketRef = socket;
+         socket.connect(new java.net.InetSocketAddress(host, port), timeout);
       }
       catch (java.lang.SecurityException e)
       {

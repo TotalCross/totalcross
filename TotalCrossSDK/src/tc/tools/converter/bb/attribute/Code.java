@@ -78,7 +78,7 @@ public class Code implements AttributeInfo
       }
    }
 
-   private void getAttributes(Class infoType, Vector v)
+   private void getAttributes(Class<?> infoType, Vector v)
    {
       JavaAttribute attribute;
 

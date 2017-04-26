@@ -45,4 +45,28 @@ public class RuntimeException4D extends Exception
    {
    	super(msg);
    }
+   
+   /**
+    * Create an exception with a message and a cause.
+    *
+    * @param s the message string
+    * @param cause the cause of this exception
+    * @since 1.4
+    */
+   public RuntimeException4D(String s, Throwable cause)
+   {
+     super(s, cause);
+   }
+
+   /**
+    * Create an exception with the given cause, and a message of
+    * <code>cause == null ? null : cause.toString()</code>.
+    *
+    * @param cause the cause of this exception
+    * @since 1.4
+    */
+   public RuntimeException4D(Throwable cause)
+   {
+     super(cause);
+   }
 }

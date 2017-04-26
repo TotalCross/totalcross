@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU General Lesser License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -26,14 +38,6 @@
 #include <stdarg.h>
 #include "ssl.h"
 
-/* Don't import the default key/certificate if not used */
-#if defined(CONFIG_SSL_USE_DEFAULT_KEY) || defined(CONFIG_SSL_SKELETON_MODE)
-static const    /* saves a few bytes and RAM */
-#include "cert.h"
-static const    /* saves a few more bytes */
-#include "private_key.h"
-#endif
-
 /* The session expiry time */
 #define SSL_EXPIRY_TIME     (CONFIG_SSL_EXPIRY_TIME*3600)
 
@@ -43,7 +47,7 @@ static const char * server_finished = "server finished";
 static const char * client_finished = "client finished";
 
 static int do_handshake(SSL *ssl, uint8_t *buf, int read_len);
-static void set_key_block(SSL *ssl, int is_write);
+static int set_key_block(SSL *ssl, int is_write);
 static int verify_digest(SSL *ssl, int mode, const uint8_t *buf, int read_len);
 static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt);
 static int send_raw_packet(SSL *ssl, uint8_t protocol);
@@ -52,47 +56,27 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol);
  * The server will pick the cipher based on the order that the order that the
  * ciphers are listed. This order is defined at compile time.
  */
-#ifdef CONFIG_SSL_SKELETON_MODE
-const uint8_t ssl_prot_prefs[NUM_PROTOCOLS] =
-{ TLS_RSA_WITH_RC4_128_SHA };
-#else
-static void session_free(SSL_SESS *ssl_sessions[], int sess_index);
-
-const uint8_t ssl_prot_prefs[NUM_PROTOCOLS] =
-#ifdef CONFIG_SSL_PROT_LOW                  /* low security, fast speed */
-{ TLS_RSA_WITH_RC4_128_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_RC4_128_MD5 };
-#elif CONFIG_SSL_PROT_MEDIUM                /* medium security, medium speed */
-{ TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_RC4_128_SHA, TLS_RSA_WITH_RC4_128_MD5 };
-#else /* CONFIG_SSL_PROT_HIGH */            /* high security, low speed */
-{ TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_RC4_128_SHA, TLS_RSA_WITH_RC4_128_MD5 };
+#ifndef CONFIG_SSL_SKELETON_MODE
+static void session_free(SSL_SESSION *ssl_sessions[], int sess_index);
 #endif
-#endif /* CONFIG_SSL_SKELETON_MODE */
 
+const uint8_t ssl_prot_prefs[NUM_PROTOCOLS] = 
+#ifdef CONFIG_SSL_PROT_LOW                  /* same as medium for now */
+{ SSL_AES128_SHA, SSL_AES256_SHA };
+#elif CONFIG_SSL_PROT_MEDIUM                /* medium security, medium speed */
+{ SSL_AES128_SHA, SSL_AES256_SHA };    
+#else /* CONFIG_SSL_PROT_HIGH */            /* high security, low speed */
+{ SSL_AES256_SHA, SSL_AES128_SHA };
+#endif
 /**
  * The cipher map containing all the essentials for each cipher.
  */
-#ifdef CONFIG_SSL_SKELETON_MODE
-static const cipher_info_t cipher_info[NUM_PROTOCOLS] =
-{
-    {   /* RC4-SHA */
-        TLS_RSA_WITH_RC4_128_SHA,       /* RC4-SHA */
-        16,                             /* key size */
-        0,                              /* iv size */
-        2*(SHA1_SIZE+16),               /* key block size */
-        0,                              /* no padding */
-        SHA1_SIZE,                      /* digest size */
-        hmac_sha1,                      /* hmac algorithm */
-        (crypt_func)RC4_crypt,          /* encrypt */
-        (crypt_func)RC4_crypt           /* decrypt */
-    },
-};
-#else
-static const cipher_info_t cipher_info[NUM_PROTOCOLS] =
+static const cipher_info_t cipher_info[NUM_PROTOCOLS] = 
 {
     {   /* AES128-SHA */
-        TLS_RSA_WITH_AES_128_CBC_SHA,   /* AES128-SHA */
+        SSL_AES128_SHA,                 /* AES128-SHA */
         16,                             /* key size */
-        16,                             /* iv size */
+        16,                             /* iv size */ 
         2*(SHA1_SIZE+16+16),            /* key block size */
         16,                             /* block padding size */
         SHA1_SIZE,                      /* digest size */
@@ -101,44 +85,17 @@ static const cipher_info_t cipher_info[NUM_PROTOCOLS] =
         (crypt_func)AES_cbc_decrypt     /* decrypt */
     },
     {   /* AES256-SHA */
-        TLS_RSA_WITH_AES_256_CBC_SHA,   /* AES256-SHA */
+        SSL_AES256_SHA,                 /* AES256-SHA */
         32,                             /* key size */
-        16,                             /* iv size */
+        16,                             /* iv size */ 
         2*(SHA1_SIZE+32+16),            /* key block size */
         16,                             /* block padding size */
         SHA1_SIZE,                      /* digest size */
         hmac_sha1,                      /* hmac algorithm */
         (crypt_func)AES_cbc_encrypt,    /* encrypt */
         (crypt_func)AES_cbc_decrypt     /* decrypt */
-    },
-    {   /* RC4-SHA */
-        TLS_RSA_WITH_RC4_128_SHA,       /* RC4-SHA */
-        16,                             /* key size */
-        0,                              /* iv size */
-        2*(SHA1_SIZE+16),               /* key block size */
-        0,                              /* no padding */
-        SHA1_SIZE,                      /* digest size */
-        hmac_sha1,                      /* hmac algorithm */
-        (crypt_func)RC4_crypt,          /* encrypt */
-        (crypt_func)RC4_crypt           /* decrypt */
-    },
-    /*
-     * This protocol is from SSLv2 days and is unlikely to be used - but was
-     * useful for testing different possible digest algorithms.
-     */
-    {   /* RC4-MD5 */
-        TLS_RSA_WITH_RC4_128_MD5,       /* RC4-MD5 */
-        16,                             /* key size */
-        0,                              /* iv size */
-        2*(MD5_SIZE+16),                /* key block size */
-        0,                              /* no padding */
-        MD5_SIZE,                       /* digest size */
-        hmac_md5,                       /* hmac algorithm */
-        (crypt_func)RC4_crypt,          /* encrypt */
-        (crypt_func)RC4_crypt           /* decrypt */
-    },
+    },       
 };
-#endif
 
 static void prf(const uint8_t *sec, int sec_len, uint8_t *seed, int seed_len,
         uint8_t *out, int olen);
@@ -150,7 +107,7 @@ static void add_hmac_digest(SSL *ssl, int snd, uint8_t *hmac_header,
 
 /* win32 VC6.0 doesn't have variadic macros */
 #if defined(WIN32) && !defined(CONFIG_SSL_FULL_MODE)
-void DISPLAY_BYTES(SSL *ssl, const char *format,
+void DISPLAY_BYTES(SSL *ssl, const char *format, 
         const uint8_t *data, int size, ...) {}
 #endif
 
@@ -161,32 +118,26 @@ EXP_FUNC SSL_CTX *STDCALL ssl_ctx_new(uint32_t options, int num_sessions)
 {
     SSL_CTX *ssl_ctx = (SSL_CTX *)calloc(1, sizeof (SSL_CTX));
     ssl_ctx->options = options;
+    RNG_initialize();
+
+    if (load_key_certs(ssl_ctx) < 0)
+    {
+        free(ssl_ctx);  /* can't load our key/certificate pair, so die */
+        return NULL;
+    }
+
 #ifndef CONFIG_SSL_SKELETON_MODE
     ssl_ctx->num_sessions = num_sessions;
 #endif
 
     SSL_CTX_MUTEX_INIT(ssl_ctx->mutex);
 
-#if defined(CONFIG_SSL_USE_DEFAULT_KEY) || defined(CONFIG_SSL_SKELETON_MODE)
-    if (~options & SSL_NO_DEFAULT_KEY)
-    {
-        ssl_obj_memory_load(ssl_ctx, SSL_OBJ_RSA_KEY, default_private_key,
-                default_private_key_len, NULL);
-        ssl_obj_memory_load(ssl_ctx, SSL_OBJ_X509_CERT,
-                    default_certificate, default_certificate_len, NULL);
-    }
-#endif
-
 #ifndef CONFIG_SSL_SKELETON_MODE
     if (num_sessions)
     {
-        ssl_ctx->ssl_sessions = (SSL_SESS **)
-                        calloc(1, num_sessions*sizeof(SSL_SESS *));
+        ssl_ctx->ssl_sessions = (SSL_SESSION **)
+                        calloc(1, num_sessions*sizeof(SSL_SESSION *));
     }
-#endif
-
-#ifdef CONFIG_SSL_CERT_VERIFICATION
-    ssl_ctx->ca_cert_ctx = (CA_CERT_CTX *)calloc(1, sizeof(CA_CERT_CTX));
 #endif
 
     return ssl_ctx;
@@ -248,8 +199,10 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl)
     if (ssl == NULL)        /* just ignore null pointers */
         return;
 
+    /* only notify if we weren't notified first */
     /* spec says we must notify when we are dying */
-    send_alert(ssl, SSL_ALERT_CLOSE_NOTIFY);
+    if (!IS_SET_SSL_FLAG(SSL_SENT_CLOSE_NOTIFY))
+      send_alert(ssl, SSL_ALERT_CLOSE_NOTIFY);
 
     ssl_ctx = ssl->ssl_ctx;
 
@@ -269,16 +222,13 @@ EXP_FUNC void STDCALL ssl_free(SSL *ssl)
     SSL_CTX_UNLOCK(ssl_ctx->mutex);
 
     /* may already be free - but be sure */
-    free(ssl->all_pkts);
-    free(ssl->final_finish_mac);
-    free(ssl->key_block);
     free(ssl->encrypt_ctx);
     free(ssl->decrypt_ctx);
-    free(ssl->master_secret);
+    disposable_free(ssl);
 #ifdef CONFIG_SSL_CERT_VERIFICATION
     x509_free(ssl->x509_ctx);
 #endif
-
+    memset(ssl,0,sizeof(SSL)); // guich
     free(ssl);
 }
 
@@ -290,7 +240,7 @@ EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data)
     int ret = basic_read(ssl, in_data);
 
     /* check for return code so we can send an alert */
-    if (ret < SSL_OK)
+    if (ret < SSL_OK && ret != SSL_CLOSE_NOTIFY)
     {
         if (ret != SSL_ERROR_CONN_LOST)
         {
@@ -310,18 +260,17 @@ EXP_FUNC int STDCALL ssl_read(SSL *ssl, uint8_t **in_data)
  */
 EXP_FUNC int STDCALL ssl_write(SSL *ssl, const uint8_t *out_data, int out_len)
 {
-
     int n = out_len, nw, i, tot = 0;
 
     /* maximum size of a TLS packet is around 16kB, so fragment */
-    do
+    do 
     {
         nw = n;
 
         if (nw > RT_MAX_PLAIN_LENGTH)    /* fragment if necessary */
             nw = RT_MAX_PLAIN_LENGTH;
 
-        if ((i = send_packet(ssl, PT_APP_PROTOCOL_DATA,
+        if ((i = send_packet(ssl, PT_APP_PROTOCOL_DATA, 
                                             &out_data[tot], nw)) <= 0)
         {
             out_len = i;    /* an error */
@@ -345,21 +294,26 @@ int add_cert(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
     X509_CTX *cert = NULL;
     int offset;
 
-    while (ssl_ctx->certs[i].buf && i < CONFIG_SSL_MAX_CERTS)
+    while (i < CONFIG_SSL_MAX_CERTS && ssl_ctx->certs[i].buf) 
         i++;
 
     if (i == CONFIG_SSL_MAX_CERTS) /* too many certs */
     {
 #ifdef CONFIG_SSL_FULL_MODE
-        printf("Error: maximum number of certs added - change of "
-                "compile-time configuration required\n");
+        printf("Error: maximum number of certs added (%d) - change of "
+                "compile-time configuration required\n",
+                CONFIG_SSL_MAX_CERTS);
 #endif
-        ret = SSL_ERROR_TOO_MANY_CERTS;
         goto error;
     }
 
     if ((ret = x509_new(buf, &offset, &cert)))
         goto error;
+
+#if defined (CONFIG_SSL_FULL_MODE)
+    if (ssl_ctx->options & SSL_DISPLAY_CERTS)
+        x509_print(cert, NULL);
+#endif
 
     ssl_cert = &ssl_ctx->certs[i];
     ssl_cert->size = len;
@@ -367,15 +321,15 @@ int add_cert(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
     memcpy(ssl_cert->buf, buf, len);
     ssl_ctx->chain_length++;
     len -= offset;
+    ret = SSL_OK;           /* ok so far */
 
-    /* recurse? or 'ok' so far */
-    ret = (len > 0) ? add_cert(ssl_ctx, &buf[offset], len) : SSL_OK;
+    /* recurse? */
+    if (len > 0)
+    {
+        ret = add_cert(ssl_ctx, &buf[offset], len);
+    }
 
 error:
-    if (ret)
-    {
-        //x509_display_error(ret);
-    }
     x509_free(cert);        /* don't need anymore */
     return ret;
 }
@@ -386,47 +340,45 @@ error:
  */
 int add_cert_auth(SSL_CTX *ssl_ctx, const uint8_t *buf, int len)
 {
-    int ret = SSL_ERROR_NO_CERT_DEFINED;
+    int ret = X509_OK; /* ignore errors for now */
     int i = 0;
-    int offset;
-    X509_CTX *cert = NULL;
-    CA_CERT_CTX *ca_cert_ctx = ssl_ctx->ca_cert_ctx;
+    CA_CERT_CTX *ca_cert_ctx;
 
-    while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i])
+    if (ssl_ctx->ca_cert_ctx == NULL)
+        ssl_ctx->ca_cert_ctx = (CA_CERT_CTX *)calloc(1, sizeof(CA_CERT_CTX));
+
+    ca_cert_ctx = ssl_ctx->ca_cert_ctx;
+
+    while (i < CONFIG_X509_MAX_CA_CERTS && ca_cert_ctx->cert[i]) 
         i++;
 
-    if (i > CONFIG_X509_MAX_CA_CERTS)
+    while (len > 0)
     {
+        int offset;
+        if (i >= CONFIG_X509_MAX_CA_CERTS)
+        {
 #ifdef CONFIG_SSL_FULL_MODE
-        printf("Error: maximum number of CA certs added - change of "
-                "compile-time configuration required\n");
+            printf("Error: maximum number of CA certs added (%d) - change of "
+                    "compile-time configuration required\n", 
+                    CONFIG_X509_MAX_CA_CERTS);
 #endif
-        ret = SSL_ERROR_TOO_MANY_CERTS;
-        goto error;
+            ret = X509_MAX_CERTS;
+            break;
+        }
+
+        /* ignore the return code */
+        if (x509_new(buf, &offset, &ca_cert_ctx->cert[i]) == X509_OK)
+        {
+#if defined (CONFIG_SSL_FULL_MODE)
+            if (ssl_ctx->options & SSL_DISPLAY_CERTS)
+                x509_print(ca_cert_ctx->cert[i], NULL);
+#endif
+        }
+
+        i++;
+        len -= offset;
     }
 
-    if ((ret = x509_new(buf, &offset, &ca_cert_ctx->cert[i])))
-        goto error;
-
-    /* make sure the cert is valid */
-    cert = ca_cert_ctx->cert[i];
-    if ((ret = x509_verify(ca_cert_ctx, cert)))
-    {
-        x509_free(cert);        /* get rid of it */
-        ca_cert_ctx->cert[i] = NULL;
-        goto error;
-    }
-
-    len -= offset;
-
-    /* recurse? or 'ok' so far */
-    ret = (len > 0) ? add_cert_auth(ssl_ctx, &buf[offset], len) : SSL_OK;
-
-error:
-    if (ret)
-    {
-        //x509_display_error(ret);
-    }
     return ret;
 }
 
@@ -446,8 +398,8 @@ EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
         case SSL_X509_CERT_ORGANIZATION:
             return ssl->x509_ctx->cert_dn[X509_ORGANIZATION];
 
-        case SSL_X509_CERT_ORGANIZATIONAL_NAME:
-            return ssl->x509_ctx->cert_dn[X509_ORGANIZATIONAL_TYPE];
+        case SSL_X509_CERT_ORGANIZATIONAL_NAME:       
+            return ssl->x509_ctx->cert_dn[X509_ORGANIZATIONAL_UNIT];
 
         case SSL_X509_CA_CERT_COMMON_NAME:
             return ssl->x509_ctx->ca_cert_dn[X509_COMMON_NAME];
@@ -455,15 +407,35 @@ EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
         case SSL_X509_CA_CERT_ORGANIZATION:
             return ssl->x509_ctx->ca_cert_dn[X509_ORGANIZATION];
 
-        case SSL_X509_CA_CERT_ORGANIZATIONAL_NAME:
-            return ssl->x509_ctx->ca_cert_dn[X509_ORGANIZATIONAL_TYPE];
+        case SSL_X509_CA_CERT_ORGANIZATIONAL_NAME:       
+            return ssl->x509_ctx->ca_cert_dn[X509_ORGANIZATIONAL_UNIT];
 
         default:
             return NULL;
     }
 }
 
-#endif
+/*
+ * Retrieve a "Subject Alternative Name" from a v3 certificate
+ */
+EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl,
+        int dnsindex)
+{
+    int i;
+
+    if (ssl->x509_ctx == NULL || ssl->x509_ctx->subject_alt_dnsnames == NULL)
+        return NULL;
+
+    for (i = 0; i < dnsindex; ++i)
+    {
+        if (ssl->x509_ctx->subject_alt_dnsnames[i] == NULL)
+            return NULL;
+    }
+
+    return ssl->x509_ctx->subject_alt_dnsnames[dnsindex];
+}
+
+#endif /* CONFIG_SSL_CERT_VERIFICATION */
 
 /*
  * Find an ssl object based on the client's file descriptor.
@@ -498,6 +470,7 @@ EXP_FUNC int STDCALL ssl_renegotiate(SSL *ssl)
 {
     int ret = SSL_OK;
 
+    disposable_new(ssl);
 #ifdef CONFIG_SSL_ENABLE_CLIENT
     if (IS_SET_SSL_FLAG(SSL_IS_CLIENT))
     {
@@ -506,7 +479,7 @@ EXP_FUNC int STDCALL ssl_renegotiate(SSL *ssl)
     else
 #endif
     {
-        send_packet(ssl, PT_HANDSHAKE_PROTOCOL,
+        send_packet(ssl, PT_HANDSHAKE_PROTOCOL, 
                 g_hello_request, sizeof(g_hello_request));
         SET_SSL_FLAG(SSL_NEED_RECORD);
     }
@@ -546,13 +519,12 @@ SSL *ssl_new(SSL_CTX *ssl_ctx, int client_fd)
     ssl->need_bytes = SSL_RECORD_SIZE;      /* need a record */
     ssl->client_fd = client_fd;
     ssl->flag = SSL_NEED_RECORD;
-    ssl->certs = ssl_ctx->certs;
-    ssl->chain_length = ssl_ctx->chain_length;
     ssl->bm_data = ssl->bm_all_data+BM_RECORD_OFFSET; /* space at the start */
     ssl->hs_status = SSL_NOT_OK;            /* not connected */
 #ifdef CONFIG_ENABLE_VERIFICATION
     ssl->ca_cert_ctx = ssl_ctx->ca_cert_ctx;
 #endif
+    disposable_new(ssl);
 
     /* a bit hacky but saves a few bytes of memory */
     ssl->flag |= ssl_ctx->options;
@@ -592,32 +564,32 @@ error:
     return ret;
 }
 
-/**
+/** 
  * Increment the read sequence number (as a 64 bit endian indepenent #)
- */
+ */     
 static void increment_read_sequence(SSL *ssl)
 {
     int i;
 
-    for (i = 7; i >= 0; i--)
-    {
+    for (i = 7; i >= 0; i--) 
+    {       
         if (++ssl->read_sequence[i])
             break;
     }
 }
-
+            
 /**
  * Increment the read sequence number (as a 64 bit endian indepenent #)
- */
+ */      
 static void increment_write_sequence(SSL *ssl)
-{
-    int i;
-
+{        
+    int i;                  
+         
     for (i = 7; i >= 0; i--)
-    {
+    {                       
         if (++ssl->write_sequence[i])
             break;
-    }
+    }                       
 }
 
 /**
@@ -627,20 +599,20 @@ static void add_hmac_digest(SSL *ssl, int mode, uint8_t *hmac_header,
         const uint8_t *buf, int buf_len, uint8_t *hmac_buf)
 {
     int hmac_len = buf_len + 8 + SSL_RECORD_SIZE;
-    uint8_t *t_buf = (uint8_t *)malloc(hmac_len+10);
+    uint8_t *t_buf = (uint8_t *)alloca(hmac_len+10);
 
-    memcpy(t_buf, (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_WRITE) ?
+    memcpy(t_buf, (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_WRITE) ? 
                     ssl->write_sequence : ssl->read_sequence, 8);
     memcpy(&t_buf[8], hmac_header, SSL_RECORD_SIZE);
     memcpy(&t_buf[8+SSL_RECORD_SIZE], buf, buf_len);
 
-    ssl->cipher_info->hmac(t_buf, hmac_len,
-            (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_READ) ?
-                ssl->server_mac : ssl->client_mac,
+    ssl->cipher_info->hmac(t_buf, hmac_len, 
+            (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_READ) ? 
+                ssl->server_mac : ssl->client_mac, 
             ssl->cipher_info->digest_size, hmac_buf);
 
 #if 0
-    print_blob("record", ssl->hmac_tx, SSL_RECORD_SIZE);
+    print_blob("record", hmac_header, SSL_RECORD_SIZE);
     print_blob("buf", buf, buf_len);
     if (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_WRITE)
     {
@@ -653,43 +625,60 @@ static void add_hmac_digest(SSL *ssl, int mode, uint8_t *hmac_header,
 
     if (mode == SSL_SERVER_WRITE || mode == SSL_CLIENT_READ)
     {
-        print_blob("server mac",
+        print_blob("server mac", 
                 ssl->server_mac, ssl->cipher_info->digest_size);
     }
     else
     {
-        print_blob("client mac",
+        print_blob("client mac", 
                 ssl->client_mac, ssl->cipher_info->digest_size);
     }
     print_blob("hmac", hmac_buf, SHA1_SIZE);
 #endif
-
-    free(t_buf);
 }
 
 /**
  * Verify that the digest of a packet is correct.
  */
 static int verify_digest(SSL *ssl, int mode, const uint8_t *buf, int read_len)
-{
-    unsigned char hmac_buf[SHA1_SIZE];
+{   
+    uint8_t hmac_buf[SHA1_SIZE];
     int hmac_offset;
-
+   
     if (ssl->cipher_info->padding_size)
     {
-        hmac_offset = read_len-buf[read_len-1]-ssl->cipher_info->digest_size-1;
+        int last_blk_size = buf[read_len-1], i;
+        hmac_offset = read_len-last_blk_size-ssl->cipher_info->digest_size-1;
+
+        /* guard against a timing attack - make sure we do the digest */
+        if (hmac_offset < 0)
+        {
+            hmac_offset = 0;
+        }
+        else
+        {
+            /* already looked at last byte */
+            for (i = 1; i < last_blk_size; i++)
+            {
+                if (buf[read_len-i] != last_blk_size)
+                {
+                    hmac_offset = 0;
+                    break;
+                }
+            }
+        }
     }
-    else
+    else /* stream cipher */
     {
         hmac_offset = read_len - ssl->cipher_info->digest_size;
+
+        if (hmac_offset < 0)
+        {
+            hmac_offset = 0;
+        }
     }
 
     /* sanity check the offset */
-    if (hmac_offset < 0)
-    {
-        return SSL_ERROR_INVALID_HMAC;
-    }
-
     ssl->hmac_header[3] = hmac_offset >> 8;      /* insert size */
     ssl->hmac_header[4] = hmac_offset & 0xff;
     add_hmac_digest(ssl, mode, ssl->hmac_header, buf, hmac_offset, hmac_buf);
@@ -708,16 +697,14 @@ static int verify_digest(SSL *ssl, int mode, const uint8_t *buf, int read_len)
  */
 void add_packet(SSL *ssl, const uint8_t *pkt, int len)
 {
-    int new_len = ssl->all_pkts_len + len;
-    ssl->all_pkts = (uint8_t *)realloc(ssl->all_pkts, new_len);
-    memcpy(&ssl->all_pkts[ssl->all_pkts_len], pkt, len);
-    ssl->all_pkts_len = new_len;
+    MD5_Update(&ssl->dc->md5_ctx, pkt, len);
+    SHA1_Update(&ssl->dc->sha1_ctx, pkt, len);
 }
 
 /**
  * Work out the MD5 PRF.
  */
-static void p_hash_md5(const uint8_t *sec, int sec_len,
+static void p_hash_md5(const uint8_t *sec, int sec_len, 
         uint8_t *seed, int seed_len, uint8_t *out, int olen)
 {
     uint8_t a1[128];
@@ -745,7 +732,7 @@ static void p_hash_md5(const uint8_t *sec, int sec_len,
 /**
  * Work out the SHA1 PRF.
  */
-static void p_hash_sha1(const uint8_t *sec, int sec_len,
+static void p_hash_sha1(const uint8_t *sec, int sec_len, 
         uint8_t *seed, int seed_len, uint8_t *out, int olen)
 {
     uint8_t a1[128];
@@ -789,7 +776,7 @@ static void prf(const uint8_t *sec, int sec_len, uint8_t *seed, int seed_len,
     p_hash_md5(S1, len, seed, seed_len, xbuf, olen);
     p_hash_sha1(S2, len, seed, seed_len, ybuf, olen);
 
-    for (i=0; i < olen; i++)
+    for (i = 0; i < olen; i++)
         out[i] = xbuf[i] ^ ybuf[i];
 }
 
@@ -801,10 +788,9 @@ void generate_master_secret(SSL *ssl, const uint8_t *premaster_secret)
 {
     uint8_t buf[128];   /* needs to be > 13+32+32 in size */
     strcpy((char *)buf, "master secret");
-    memcpy(&buf[13], ssl->client_random, SSL_RANDOM_SIZE);
-    memcpy(&buf[45], ssl->server_random, SSL_RANDOM_SIZE);
-    ssl->master_secret = (uint8_t *)malloc(SSL_SECRET_SIZE);
-    prf(premaster_secret, SSL_SECRET_SIZE, buf, 77, ssl->master_secret,
+    memcpy(&buf[13], ssl->dc->client_random, SSL_RANDOM_SIZE);
+    memcpy(&buf[45], ssl->dc->server_random, SSL_RANDOM_SIZE);
+    prf(premaster_secret, SSL_SECRET_SIZE, buf, 77, ssl->dc->master_secret,
             SSL_SECRET_SIZE);
 }
 
@@ -821,16 +807,16 @@ static void generate_key_block(uint8_t *client_random, uint8_t *server_random,
     prf(master_secret, SSL_SECRET_SIZE, buf, 77, key_block, key_block_size);
 }
 
-/**
+/** 
  * Calculate the digest used in the finished message. This function also
  * doubles up as a certificate verify function.
  */
 void finished_digest(SSL *ssl, const char *label, uint8_t *digest)
 {
-    unsigned char mac_buf[128];
-    unsigned char *q = mac_buf;
-    MD5_CTX md5_ctx;
-    SHA1_CTX sha1_ctx;
+    uint8_t mac_buf[128]; 
+    uint8_t *q = mac_buf;
+    MD5_CTX md5_ctx = ssl->dc->md5_ctx;
+    SHA1_CTX sha1_ctx = ssl->dc->sha1_ctx;
 
     if (label)
     {
@@ -838,19 +824,15 @@ void finished_digest(SSL *ssl, const char *label, uint8_t *digest)
         q += strlen(label);
     }
 
-    MD5Init(&md5_ctx);
-    MD5Update(&md5_ctx, ssl->all_pkts, ssl->all_pkts_len);
-    MD5Final(&md5_ctx, q);
+    MD5_Final(q, &md5_ctx);
     q += MD5_SIZE;
-
-    SHA1Init(&sha1_ctx);
-    SHA1Update(&sha1_ctx, ssl->all_pkts, ssl->all_pkts_len);
-    SHA1Final(&sha1_ctx, q);
+    
+    SHA1_Final(q, &sha1_ctx);
     q += SHA1_SIZE;
 
     if (label)
     {
-        prf(ssl->master_secret, SSL_SECRET_SIZE, mac_buf, (int)(q-mac_buf),
+        prf(ssl->dc->master_secret, SSL_SECRET_SIZE, mac_buf, (int)(q-mac_buf),
             digest, SSL_FINISHED_HASH_SIZE);
     }
     else    /* for use in a certificate verify */
@@ -860,12 +842,12 @@ void finished_digest(SSL *ssl, const char *label, uint8_t *digest)
 
 #if 0
     printf("label: %s\n", label);
-    print_blob("master secret", ssl->master_secret, 48);
+    print_blob("master secret", ssl->dc->master_secret, 48);
     print_blob("mac_buf", mac_buf, q-mac_buf);
     print_blob("finished digest", digest, SSL_FINISHED_HASH_SIZE);
 #endif
-}
-
+}   
+    
 /**
  * Retrieve (and initialise) the context of a cipher.
  */
@@ -873,8 +855,7 @@ static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt)
 {
     switch (ssl->cipher)
     {
-#ifndef CONFIG_SSL_SKELETON_MODE
-        case TLS_RSA_WITH_AES_128_CBC_SHA:
+        case SSL_AES128_SHA:
             {
                 AES_CTX *aes_ctx = (AES_CTX *)malloc(sizeof(AES_CTX));
                 AES_set_key(aes_ctx, key, iv, AES_MODE_128);
@@ -887,7 +868,7 @@ static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt)
                 return (void *)aes_ctx;
             }
 
-        case TLS_RSA_WITH_AES_256_CBC_SHA:
+        case SSL_AES256_SHA:
             {
                 AES_CTX *aes_ctx = (AES_CTX *)malloc(sizeof(AES_CTX));
                 AES_set_key(aes_ctx, key, iv, AES_MODE_256);
@@ -899,17 +880,6 @@ static void *crypt_new(SSL *ssl, uint8_t *key, uint8_t *iv, int is_decrypt)
 
                 return (void *)aes_ctx;
             }
-            break;
-
-        case TLS_RSA_WITH_RC4_128_MD5:
-#endif
-        case TLS_RSA_WITH_RC4_128_SHA:
-            {
-                RC4_CTX *rc4_ctx = (RC4_CTX *)malloc(sizeof(RC4_CTX));
-                RC4_setup(rc4_ctx, key, 16);
-                return (void *)rc4_ctx;
-            }
-            break;
     }
 
     return NULL;    /* its all gone wrong */
@@ -926,26 +896,24 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
     int ret = SSL_OK;
 
     rec_buf[0] = protocol;
-    rec_buf[1] = 0x03;      /* version = 3.1 (TLS) */
-    rec_buf[2] = 0x01;
+    rec_buf[1] = 0x03;      /* version = 3.1 or higher */
+    rec_buf[2] = ssl->version & 0x0f;
     rec_buf[3] = ssl->bm_index >> 8;
     rec_buf[4] = ssl->bm_index & 0xff;
 
-    DISPLAY_BYTES(ssl, "sending %d bytes", ssl->bm_all_data,
+    DISPLAY_BYTES(ssl, "sending %d bytes", ssl->bm_all_data, 
                              pkt_size, pkt_size);
 
     while (sent < pkt_size)
     {
-        if ((ret = SOCKET_WRITE(ssl->client_fd,
-                        &ssl->bm_all_data[sent], pkt_size)) < 0)
-        {
-            ret = SSL_ERROR_CONN_LOST;
-            break;
-        }
+        ret = SOCKET_WRITE(ssl->client_fd, 
+                        &ssl->bm_all_data[sent], pkt_size-sent);
 
+        if (ret < 0)
+           return SSL_ERROR_CONN_LOST;
+        if (ret >= 0)
         sent += ret;
 
-#if !defined(PALMOS) && !defined(__SYMBIAN32__)
         /* keep going until the write buffer has some space */
         if (sent != pkt_size)
         {
@@ -953,21 +921,18 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
             FD_ZERO(&wfds);
             FD_SET((unsigned int)ssl->client_fd, &wfds);
 
+            /* block and wait for it */
             if (select(ssl->client_fd + 1, NULL, &wfds, NULL, NULL) < 0)
-            {
-                ret = SSL_ERROR_CONN_LOST;
-                break;
-            }
+                return SSL_ERROR_CONN_LOST;
         }
-#endif
     }
 
     SET_SSL_FLAG(SSL_NEED_RECORD);  /* reset for next time */
     ssl->bm_index = 0;
 
-    if (protocol != PT_APP_PROTOCOL_DATA)
+    if (protocol != PT_APP_PROTOCOL_DATA)  
     {
-        /* always return SSL_OK during handshake */
+        /* always return SSL_OK during handshake */   
         ret = SSL_OK;
     }
 
@@ -979,9 +944,7 @@ static int send_raw_packet(SSL *ssl, uint8_t protocol)
  */
 int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 {
-    int msg_length = length;
-    int ret, pad_bytes = 0;
-    ssl->bm_index = msg_length;
+    int ret, msg_length = 0;
 
     /* if our state is bad, don't bother */
     if (ssl->hs_status == SSL_ERROR_DEAD)
@@ -992,17 +955,20 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
         memcpy(ssl->bm_data, in, length);
     }
 
+    msg_length += length;
+
     if (IS_SET_SSL_FLAG(SSL_TX_ENCRYPTED))
     {
-        int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ?
+        int mode = IS_SET_SSL_FLAG(SSL_IS_CLIENT) ? 
                             SSL_CLIENT_WRITE : SSL_SERVER_WRITE;
-        uint8_t hmac_header[SSL_RECORD_SIZE];
-
-        hmac_header[0] = protocol;
-        hmac_header[1] = 0x03;
-        hmac_header[2] = 0x01;
-        hmac_header[3] = length >> 8;
-        hmac_header[4] = length & 0xff;
+        uint8_t hmac_header[SSL_RECORD_SIZE] = 
+        {
+            protocol, 
+            0x03, /* version = 3.1 or higher */
+            ssl->version & 0x0f,
+            msg_length >> 8,
+            msg_length & 0xff 
+        };
 
         if (protocol == PT_HANDSHAKE_PROTOCOL)
         {
@@ -1010,21 +976,20 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
             if (ssl->bm_data[0] != HS_HELLO_REQUEST)
             {
-                add_packet(ssl, ssl->bm_data, ssl->bm_index);
+                add_packet(ssl, ssl->bm_data, msg_length);
             }
         }
 
         /* add the packet digest */
+        add_hmac_digest(ssl, mode, hmac_header, ssl->bm_data, msg_length, 
+                                                &ssl->bm_data[msg_length]);
         msg_length += ssl->cipher_info->digest_size;
-        ssl->bm_index = msg_length;
-        add_hmac_digest(ssl, mode, hmac_header, ssl->bm_data, length,
-                                                &ssl->bm_data[length]);
 
         /* add padding? */
         if (ssl->cipher_info->padding_size)
         {
             int last_blk_size = msg_length%ssl->cipher_info->padding_size;
-            pad_bytes = ssl->cipher_info->padding_size - last_blk_size;
+            int pad_bytes = ssl->cipher_info->padding_size - last_blk_size;
 
             /* ensure we always have at least 1 padding byte */
             if (pad_bytes == 0)
@@ -1032,14 +997,27 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
             memset(&ssl->bm_data[msg_length], pad_bytes-1, pad_bytes);
             msg_length += pad_bytes;
-            ssl->bm_index = msg_length;
         }
 
         DISPLAY_BYTES(ssl, "unencrypted write", ssl->bm_data, msg_length);
         increment_write_sequence(ssl);
 
+        /* add the explicit IV for TLS1.1 */
+        if (ssl->version >= SSL_PROTOCOL_VERSION1_1 &&
+                        ssl->cipher_info->iv_size)
+        {
+            uint8_t iv_size = ssl->cipher_info->iv_size;
+            uint8_t *t_buf = alloca(msg_length + iv_size);
+            memcpy(t_buf + iv_size, ssl->bm_data, msg_length);
+            if (get_random(iv_size, t_buf) < 0)
+                return SSL_NOT_OK;
+
+            msg_length += iv_size;
+            memcpy(ssl->bm_data, t_buf, msg_length);
+        }
+
         /* now encrypt the packet */
-        ssl->cipher_info->encrypt(ssl->encrypt_ctx, ssl->bm_data,
+        ssl->cipher_info->encrypt(ssl->encrypt_ctx, ssl->bm_data, 
                                             ssl->bm_data, msg_length);
     }
     else if (protocol == PT_HANDSHAKE_PROTOCOL)
@@ -1048,10 +1026,11 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
 
         if (ssl->bm_data[0] != HS_HELLO_REQUEST)
         {
-            add_packet(ssl, ssl->bm_data, ssl->bm_index);
+            add_packet(ssl, ssl->bm_data, length);
         }
     }
 
+    ssl->bm_index = msg_length;
     if ((ret = send_raw_packet(ssl, protocol)) <= 0)
         return ret;
 
@@ -1062,35 +1041,37 @@ int send_packet(SSL *ssl, uint8_t protocol, const uint8_t *in, int length)
  * Work out the cipher keys we are going to use for this session based on the
  * master secret.
  */
-static void set_key_block(SSL *ssl, int is_write)
+static int set_key_block(SSL *ssl, int is_write)
 {
     const cipher_info_t *ciph_info = get_cipher_info(ssl->cipher);
     uint8_t *q;
     uint8_t client_key[32], server_key[32]; /* big enough for AES256 */
     uint8_t client_iv[16], server_iv[16];   /* big enough for AES128/256 */
     int is_client = IS_SET_SSL_FLAG(SSL_IS_CLIENT);
-    int key_block_existed = 1;
     uint8_t* ptr; //flsobral@tc114_36: auxiliary pointer to avoid error when using free, see usage below.
 
+    if (ciph_info == NULL)
+        return -1;
+
     /* only do once in a handshake */
-    if (ssl->key_block == NULL)
+    if (ssl->dc->key_block == NULL)
     {
-        ssl->key_block = (uint8_t *)malloc(ciph_info->key_block_size);
+        ssl->dc->key_block = (uint8_t *)malloc(ciph_info->key_block_size);
 
 #if 0
-        print_blob("client", ssl->client_random, 32);
-        print_blob("server", ssl->server_random, 32);
-        print_blob("master", ssl->master_secret, SSL_SECRET_SIZE);
+        print_blob("client", ssl->dc->client_random, 32);
+        print_blob("server", ssl->dc->server_random, 32);
+        print_blob("master", ssl->dc->master_secret, SSL_SECRET_SIZE);
 #endif
-        generate_key_block(ssl->client_random, ssl->server_random,
-            ssl->master_secret, ssl->key_block, ciph_info->key_block_size);
+        generate_key_block(ssl->dc->client_random, ssl->dc->server_random,
+            ssl->dc->master_secret, ssl->dc->key_block, 
+            ciph_info->key_block_size);
 #if 0
-        print_blob("keyblock", ssl->key_block, ciph_info->key_block_size);
+        print_blob("keyblock", ssl->dc->key_block, ciph_info->key_block_size);
 #endif
-        key_block_existed = 0;
     }
 
-    q = ssl->key_block;
+    q = ssl->dc->key_block;
 
     if ((is_client && is_write) || (!is_client && !is_write))
     {
@@ -1110,7 +1091,6 @@ static void set_key_block(SSL *ssl, int is_write)
     memcpy(server_key, q, ciph_info->key_size);
     q += ciph_info->key_size;
 
-#ifndef CONFIG_SSL_SKELETON_MODE
     if (ciph_info->iv_size)    /* RC4 has no IV, AES does */
     {
         memcpy(client_iv, q, ciph_info->iv_size);
@@ -1118,20 +1098,14 @@ static void set_key_block(SSL *ssl, int is_write)
         memcpy(server_iv, q, ciph_info->iv_size);
         q += ciph_info->iv_size;
     }
-#endif
 
     ptr = is_write ? ssl->encrypt_ctx : ssl->decrypt_ctx;
     free(ptr); //flsobral@tc114_36: vc2008 gives an error if we try to use the above statement here, so we use this pointer to fix it.
 
-    if (ssl->final_finish_mac == NULL)
-    {
-        ssl->final_finish_mac = (uint8_t *)malloc(SSL_FINISHED_HASH_SIZE);
-    }
-
     /* now initialise the ciphers */
     if (is_client)
     {
-        finished_digest(ssl, server_finished, ssl->final_finish_mac);
+        finished_digest(ssl, server_finished, ssl->dc->final_finish_mac);
 
         if (is_write)
             ssl->encrypt_ctx = crypt_new(ssl, client_key, client_iv, 0);
@@ -1140,7 +1114,7 @@ static void set_key_block(SSL *ssl, int is_write)
     }
     else
     {
-        finished_digest(ssl, client_finished, ssl->final_finish_mac);
+        finished_digest(ssl, client_finished, ssl->dc->final_finish_mac);
 
         if (is_write)
             ssl->encrypt_ctx = crypt_new(ssl, server_key, server_iv, 0);
@@ -1149,14 +1123,7 @@ static void set_key_block(SSL *ssl, int is_write)
     }
 
     ssl->cipher_info = ciph_info;
-
-    /* clean up if possible */
-    if (key_block_existed)
-    {
-        memset(ssl->key_block, 0, ciph_info->key_block_size);
-        free(ssl->key_block);
-        ssl->key_block = NULL;
-    }
+    return 0;
 }
 
 /**
@@ -1174,7 +1141,7 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
 
     do
     {
-       read_len = SOCKET_READ(ssl->client_fd, &buf[ssl->bm_read_index],
+       read_len = SOCKET_READ(ssl->client_fd, (char*)&buf[ssl->bm_read_index],
                                ssl->need_bytes-ssl->got_bytes);
 
        /* connection has gone, so die */
@@ -1199,16 +1166,12 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
     if (IS_SET_SSL_FLAG(SSL_NEED_RECORD))
     {
         /* check for sslv2 "client hello" */
-        if (buf[0] & 0x80 && buf[2] == 1 && buf[3] == 0x03)
+        if (buf[0] & 0x80 && buf[2] == 1)
         {
-#ifdef CONFIG_SSL_ENABLE_V23_HANDSHAKE
-            DISPLAY_BYTES(ssl, "ssl2 record", buf, 5);
-            add_packet(ssl, &buf[2], 3);
-            ret = process_sslv23_client_hello(ssl);
-#else
-            printf("Error: no SSLv23 handshaking allowed\n"); TTY_FLUSH();
-            ret = SSL_ERROR_NOT_SUPPORTED;
+#ifdef CONFIG_SSL_FULL_MODE
+            printf("Error: no SSLv23 handshaking allowed\n");
 #endif
+            ret = SSL_ERROR_NOT_SUPPORTED;
             goto error; /* not an error - just get out of here */
         }
 
@@ -1236,6 +1199,14 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
     if (IS_SET_SSL_FLAG(SSL_RX_ENCRYPTED))
     {
         ssl->cipher_info->decrypt(ssl->decrypt_ctx, buf, buf, read_len);
+
+        if (ssl->version >= SSL_PROTOCOL_VERSION1_1 &&
+                        ssl->cipher_info->iv_size)
+        {
+            buf += ssl->cipher_info->iv_size;
+            read_len -= ssl->cipher_info->iv_size;
+        }
+
         read_len = verify_digest(ssl,
                 is_client ? SSL_CLIENT_READ : SSL_SERVER_READ, buf, read_len);
 
@@ -1254,7 +1225,16 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
     switch (ssl->record_type)
     {
         case PT_HANDSHAKE_PROTOCOL:
+            if (ssl->dc != NULL)
+            {
+                ssl->dc->bm_proc_index = 0;
             ret = do_handshake(ssl, buf, read_len);
+            }
+            else /* no client renegotiation allowed */
+            {
+                ret = SSL_ERROR_NO_CLIENT_RENOG;              
+                goto error;
+            }
             break;
 
         case PT_CHANGE_CIPHER_SPEC:
@@ -1264,26 +1244,43 @@ start: // flsobral@tc113_34: new tag on basic_read, so we can loop back and read
                 goto error;
             }
 
+            if (set_key_block(ssl, 0) < 0)
+            {
+                ret = SSL_ERROR_INVALID_HANDSHAKE;
+                goto error;
+            }
+            
             /* all encrypted from now on */
             SET_SSL_FLAG(SSL_RX_ENCRYPTED);
-            set_key_block(ssl, 0);
             memset(ssl->read_sequence, 0, 8);
             break;
 
         case PT_APP_PROTOCOL_DATA:
-            if (in_data)
+            if (in_data && ssl->hs_status == SSL_OK)
             {
-                *in_data = ssl->bm_data;   /* point to the work buffer */
+                *in_data = buf;   /* point to the work buffer */
                 (*in_data)[read_len] = 0;  /* null terminate just in case */
-            }
-
             ret = read_len;
+            }
+            else
+                ret = SSL_ERROR_INVALID_PROT_MSG;
             break;
 
         case PT_ALERT_PROTOCOL:
             /* return the alert # with alert bit set */
+            if(buf[0] == SSL_ALERT_TYPE_WARNING &&
+               buf[1] == SSL_ALERT_CLOSE_NOTIFY)
+            {
+              ret = SSL_CLOSE_NOTIFY;
+              send_alert(ssl, SSL_ALERT_CLOSE_NOTIFY);
+              SET_SSL_FLAG(SSL_SENT_CLOSE_NOTIFY);
+            }
+            else 
+            {
             ret = -buf[1];
             DISPLAY_ALERT(ssl, buf[1]);
+            }
+
             break;
 
         default:
@@ -1355,8 +1352,13 @@ int send_change_cipher_spec(SSL *ssl)
 {
     int ret = send_packet(ssl, PT_CHANGE_CIPHER_SPEC,
             g_chg_cipher_spec_pkt, sizeof(g_chg_cipher_spec_pkt));
+
+    if (ret >= 0 && set_key_block(ssl, 1) < 0)
+        ret = SSL_ERROR_INVALID_HANDSHAKE;
+    
+    if (ssl->cipher_info)
     SET_SSL_FLAG(SSL_TX_ENCRYPTED);
-    set_key_block(ssl, 1);
+
     memset(ssl->write_sequence, 0, 8);
     return ret;
 }
@@ -1366,12 +1368,8 @@ int send_change_cipher_spec(SSL *ssl)
  */
 int send_finished(SSL *ssl)
 {
-    uint8_t *buf = ssl->bm_data;
-
-    buf[0] = HS_FINISHED;
-    buf[1] = 0;
-    buf[2] = 0;
-    buf[3] = SSL_FINISHED_HASH_SIZE;
+    uint8_t buf[SSL_FINISHED_HASH_SIZE+4] = {
+        HS_FINISHED, 0, 0, SSL_FINISHED_HASH_SIZE };
 
     /* now add the finished digest mac (12 bytes) */
     finished_digest(ssl,
@@ -1383,12 +1381,12 @@ int send_finished(SSL *ssl)
     if (!IS_SET_SSL_FLAG(SSL_SESSION_RESUME) && ssl->ssl_ctx->num_sessions)
     {
         memcpy(ssl->session->master_secret,
-                ssl->master_secret, SSL_SECRET_SIZE);
+                ssl->dc->master_secret, SSL_SECRET_SIZE);
     }
 #endif
 
     return send_packet(ssl, PT_HANDSHAKE_PROTOCOL,
-                                NULL, SSL_FINISHED_HASH_SIZE+4);
+                                buf, SSL_FINISHED_HASH_SIZE+4);
 }
 
 /**
@@ -1447,6 +1445,10 @@ int send_alert(SSL *ssl, int error_code)
             alert_num = SSL_ALERT_BAD_CERTIFICATE;
             break;
 
+        case SSL_ERROR_NO_CLIENT_RENOG:
+            alert_num = SSL_ALERT_NO_RENEGOTIATION;
+            break;
+
         default:
             /* a catch-all for any badly verified certificates */
             alert_num = (error_code <= SSL_X509_OFFSET) ?
@@ -1464,9 +1466,8 @@ int send_alert(SSL *ssl, int error_code)
 /**
  * Process a client finished message.
  */
-int process_finished(SSL *ssl, int hs_len)
+int process_finished(SSL *ssl, uint8_t *buf, int hs_len)
 {
-    uint8_t *buf = ssl->bm_data;
     int ret = SSL_OK;
     int is_client = IS_SET_SSL_FLAG(SSL_IS_CLIENT);
     int resume = IS_SET_SSL_FLAG(SSL_SESSION_RESUME);
@@ -1474,7 +1475,7 @@ int process_finished(SSL *ssl, int hs_len)
     PARANOIA_CHECK(ssl->bm_index, SSL_FINISHED_HASH_SIZE+4);
 
     /* check that we all work before we continue */
-    if (memcmp(ssl->final_finish_mac, &buf[4], SSL_FINISHED_HASH_SIZE))
+    if (memcmp(ssl->dc->final_finish_mac, &buf[4], SSL_FINISHED_HASH_SIZE))
         return SSL_ERROR_FINISHED_INVALID;
 
     if ((!is_client && !resume) || (is_client && resume))
@@ -1482,19 +1483,6 @@ int process_finished(SSL *ssl, int hs_len)
         if ((ret = send_change_cipher_spec(ssl)) == SSL_OK)
             ret = send_finished(ssl);
     }
-
-    /* Don't need this stuff anymore */
-    free(ssl->all_pkts);
-    ssl->all_pkts = NULL;
-    ssl->all_pkts_len = 0;
-
-    memset(ssl->master_secret, 0, SSL_SECRET_SIZE);
-    free(ssl->master_secret);
-    ssl->master_secret = NULL;
-
-    memset(ssl->final_finish_mac, 0, SSL_FINISHED_HASH_SIZE);
-    free(ssl->final_finish_mac);
-    ssl->final_finish_mac = NULL;
 
     /* if we ever renegotiate */
     ssl->next_state = is_client ? HS_HELLO_REQUEST : HS_CLIENT_HELLO;
@@ -1517,11 +1505,10 @@ int send_certificate(SSL *ssl)
     buf[0] = HS_CERTIFICATE;
     buf[1] = 0;
     buf[4] = 0;
-    buf[7] = 0;
 
-    while (i < ssl->chain_length)
+    while (i < ssl->ssl_ctx->chain_length)
     {
-        SSL_CERT *cert = &ssl->certs[i];
+        SSL_CERT *cert = &ssl->ssl_ctx->certs[i];
         buf[offset++] = 0;
         buf[offset++] = cert->size >> 8;        /* cert 1 length */
         buf[offset++] = cert->size & 0xff;
@@ -1540,17 +1527,46 @@ int send_certificate(SSL *ssl)
     return send_packet(ssl, PT_HANDSHAKE_PROTOCOL, NULL, offset);
 }
 
+/**
+ * Create a blob of memory that we'll get rid of once the handshake is
+ * complete.
+ */
+void disposable_new(SSL *ssl)
+{
+    if (ssl->dc == NULL)
+    {
+        ssl->dc = (DISPOSABLE_CTX *)calloc(1, sizeof(DISPOSABLE_CTX));
+        MD5_Init(&ssl->dc->md5_ctx);
+        SHA1_Init(&ssl->dc->sha1_ctx);
+    }
+}
+
+/**
+ * Remove the temporary blob of memory.
+ */
+void disposable_free(SSL *ssl)
+{
+    if (ssl->dc)
+    {
+        free(ssl->dc->key_block);
+        memset(ssl->dc, 0, sizeof(DISPOSABLE_CTX));
+        free(ssl->dc);
+        ssl->dc = NULL;
+    }
+
+}
+
 #ifndef CONFIG_SSL_SKELETON_MODE     /* no session resumption in this mode */
 /**
  * Find if an existing session has the same session id. If so, use the
  * master secret from this session for session resumption.
  */
-SSL_SESS *ssl_session_update(int max_sessions,
-        SSL_SESS *ssl_sessions[], SSL *ssl, const uint8_t *session_id)
+SSL_SESSION *ssl_session_update(int max_sessions, SSL_SESSION *ssl_sessions[], 
+        SSL *ssl, const uint8_t *session_id)
 {
     time_t tm = time(NULL);
     time_t oldest_sess_time = tm;
-    SSL_SESS *oldest_sess = NULL;
+    SSL_SESSION *oldest_sess = NULL;
     int i;
 
     /* no sessions? Then bail */
@@ -1564,8 +1580,10 @@ SSL_SESS *ssl_session_update(int max_sessions,
         {
             if (ssl_sessions[i])
             {
-                /* kill off any expired sessions */
-                if (tm > ssl_sessions[i]->conn_time + SSL_EXPIRY_TIME)
+                /* kill off any expired sessions (including those in 
+                   the future) */
+                if ((tm > ssl_sessions[i]->conn_time + SSL_EXPIRY_TIME) ||
+                            (tm < ssl_sessions[i]->conn_time))
                 {
                     session_free(ssl_sessions, i);
                     continue;
@@ -1576,9 +1594,8 @@ SSL_SESS *ssl_session_update(int max_sessions,
                 if (memcmp(ssl_sessions[i]->session_id, session_id,
                                                 SSL_SESSION_ID_SIZE) == 0)
                 {
-                    ssl->master_secret = (uint8_t *)malloc(SSL_SECRET_SIZE);
                     ssl->session_index = i;
-                    memcpy(ssl->master_secret,
+                    memcpy(ssl->dc->master_secret, 
                             ssl_sessions[i]->master_secret, SSL_SECRET_SIZE);
                     SET_SSL_FLAG(SSL_SESSION_RESUME);
                     SSL_CTX_UNLOCK(ssl->ssl_ctx->mutex);
@@ -1594,7 +1611,7 @@ SSL_SESS *ssl_session_update(int max_sessions,
         if (ssl_sessions[i] == NULL)
         {
             /* perfect, this will do */
-            ssl_sessions[i] = (SSL_SESS *)calloc(1, sizeof(SSL_SESS));
+            ssl_sessions[i] = (SSL_SESSION *)calloc(1, sizeof(SSL_SESSION));
             ssl_sessions[i]->conn_time = tm;
             ssl->session_index = i;
             SSL_CTX_UNLOCK(ssl->ssl_ctx->mutex);
@@ -1611,8 +1628,8 @@ SSL_SESS *ssl_session_update(int max_sessions,
 
     /* ok, we've used up all of our sessions. So blow the oldest session away */
     oldest_sess->conn_time = tm;
-    memset(oldest_sess->session_id, 0, sizeof(SSL_SESSION_ID_SIZE));
-    memset(oldest_sess->master_secret, 0, sizeof(SSL_SECRET_SIZE));
+    memset(oldest_sess->session_id, 0, SSL_SESSION_ID_SIZE);
+    memset(oldest_sess->master_secret, 0, SSL_SECRET_SIZE);
     SSL_CTX_UNLOCK(ssl->ssl_ctx->mutex);
     return oldest_sess;
 }
@@ -1620,7 +1637,7 @@ SSL_SESS *ssl_session_update(int max_sessions,
 /**
  * Free an existing session.
  */
-static void session_free(SSL_SESS *ssl_sessions[], int sess_index)
+static void session_free(SSL_SESSION *ssl_sessions[], int sess_index)
 {
     if (ssl_sessions[sess_index])
     {
@@ -1632,7 +1649,7 @@ static void session_free(SSL_SESS *ssl_sessions[], int sess_index)
 /**
  * This ssl object doesn't want this session anymore.
  */
-void kill_ssl_session(SSL_SESS **ssl_sessions, SSL *ssl)
+void kill_ssl_session(SSL_SESSION **ssl_sessions, SSL *ssl)
 {
     SSL_CTX_LOCK(ssl->ssl_ctx->mutex);
 
@@ -1652,6 +1669,14 @@ void kill_ssl_session(SSL_SESS **ssl_sessions, SSL *ssl)
 EXP_FUNC const uint8_t * STDCALL ssl_get_session_id(const SSL *ssl)
 {
     return ssl->session_id;
+}
+
+/*
+ * Get the session id size for a handshake. 
+ */
+EXP_FUNC uint8_t STDCALL ssl_get_session_id_size(const SSL *ssl)
+{
+    return ssl->sess_id_size;
 }
 
 /*
@@ -1713,7 +1738,10 @@ EXP_FUNC int STDCALL ssl_get_config(int offset)
  */
 EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl)
 {
-    int ret = x509_verify(ssl->ssl_ctx->ca_cert_ctx, ssl->x509_ctx);
+    int ret;
+    SSL_CTX_LOCK(ssl->ssl_ctx->mutex);
+    ret = x509_verify(ssl->ssl_ctx->ca_cert_ctx, ssl->x509_ctx);
+    SSL_CTX_UNLOCK(ssl->ssl_ctx->mutex);
 
     if (ret)        /* modify into an SSL error type */
     {
@@ -1726,35 +1754,101 @@ EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl)
 /**
  * Process a certificate message.
  */
-int process_certificate(SSL *ssl, X509_CTX **x509_ctx, uint8_t *buf, int hs_len)
+int process_certificate(SSL *ssl, X509_CTX **x509_ctx)
 {
     int ret = SSL_OK;
+    uint8_t *buf = &ssl->bm_data[ssl->dc->bm_proc_index];
     int pkt_size = ssl->bm_index;
-    int cert_size, offset = 5;
+    int cert_size, offset = 5, offset_start;
     int total_cert_size = (buf[offset]<<8) + buf[offset+1];
     int is_client = IS_SET_SSL_FLAG(SSL_IS_CLIENT);
-    X509_CTX **chain = x509_ctx;
+    X509_CTX *chain = 0;
+    X509_CTX **certs = 0;
+    int *cert_used = 0;
+    int num_certs = 0;
+    int i = 0;
     offset += 2;
 
     PARANOIA_CHECK(total_cert_size, offset);
 
+    // record the start point for the second pass
+    offset_start = offset;
+
+    // first pass - count the certificates
+    while (offset < total_cert_size)
+    {
+        offset++;       /* skip empty char */
+        cert_size = (buf[offset]<<8) + buf[offset+1];
+        offset += 2;
+        offset += cert_size;
+        num_certs++;
+    }
+
+    PARANOIA_CHECK(pkt_size, offset);
+
+    certs = (X509_CTX**) calloc(num_certs, sizeof(void*));
+    cert_used = (int*) calloc(num_certs, sizeof(int));
+    num_certs = 0;
+
+    // restore the offset from the saved value 
+    offset = offset_start;
+
+    // second pass - load the certificates
     while (offset < total_cert_size)
     {
         offset++;       /* skip empty char */
         cert_size = (buf[offset]<<8) + buf[offset+1];
         offset += 2;
 
-        if (x509_new(&buf[offset], NULL, chain))
+        if (x509_new(&buf[offset], NULL, certs+num_certs))
         {
             ret = SSL_ERROR_BAD_CERTIFICATE;
             goto error;
         }
 
-        chain = &((*chain)->next);
+        num_certs++;
         offset += cert_size;
     }
 
     PARANOIA_CHECK(pkt_size, offset);
+
+    // third pass - link certs together, assume server cert is the first
+    *x509_ctx = certs[0];
+    chain = certs[0];
+    cert_used[0] = 1;
+
+    // repeat until the end of the chain is found
+    while (1)
+    {
+        // look for CA cert
+        for( i = 1; i < num_certs; i++ )
+        {
+            if (certs[i] == chain) 
+                continue;
+            if (cert_used[i]) 
+                continue; // don't allow loops
+
+            if (asn1_compare_dn(chain->ca_cert_dn, certs[i]->cert_dn) == 0)
+            {
+                // CA cert found, add it to the chain
+                cert_used[i] = 1;
+                chain->next = certs[i];
+                chain = certs[i];
+                break;
+            }
+        }
+
+        // no CA cert found, reached the end of the chain
+        if (i >= num_certs) 
+            break;
+    }
+
+    // clean up any certs that aren't part of the chain
+    for (i = 1; i < num_certs; i++)
+    {
+        if (cert_used[i] == 0) 
+            x509_free(certs[i]);
+    }
 
     /* if we are client we can do the verify now or later */
     if (is_client && !IS_SET_SSL_FLAG(SSL_SERVER_VERIFY_LATER))
@@ -1762,9 +1856,16 @@ int process_certificate(SSL *ssl, X509_CTX **x509_ctx, uint8_t *buf, int hs_len)
         ret = ssl_verify_cert(ssl);
     }
 
-    DISPLAY_CERT(ssl, "process_certificate", *x509_ctx);
     ssl->next_state = is_client ? HS_SERVER_HELLO_DONE : HS_CLIENT_KEY_XCHG;
+    ssl->dc->bm_proc_index += offset;
 error:
+    // clean up arrays
+    if (certs) 
+        free(certs);
+
+    if (cert_used) 
+        free(cert_used);
+
     return ret;
 }
 
@@ -1784,8 +1885,8 @@ void DISPLAY_STATE(SSL *ssl, int is_send, uint8_t state, int not_ok)
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_STATES))
         return;
 
-    printf(not_ok ? "Error - invalid State:\t" : "State:\t");
-    printf(is_send ? "sending " : "receiving ");
+    debug(not_ok ? "Error - invalid State:\t" : "State:\t");
+    debug(is_send ? "sending " : "receiving ");
 
     switch (state)
     {
@@ -1835,26 +1936,13 @@ void DISPLAY_STATE(SSL *ssl, int is_send, uint8_t state, int not_ok)
             break;
     }
 
-    printf("%s\n", str);
-    TTY_FLUSH();
-}
-
-/**
- * Debugging routine to display X509 certificates.
- */
-void DISPLAY_CERT(SSL *ssl, const char *label, const X509_CTX *x509_ctx)
-{
-    if (!IS_SET_SSL_FLAG(SSL_DISPLAY_CERTS))
-        return;
-
-    x509_print(ssl->ssl_ctx->ca_cert_ctx, x509_ctx);
-    TTY_FLUSH();
+    debug("%s\n", str);
 }
 
 /**
  * Debugging routine to display RSA objects
  */
-void DISPLAY_RSA(SSL *ssl, const char *label, const RSA_CTX *rsa_ctx)
+void DISPLAY_RSA(SSL *ssl, const RSA_CTX *rsa_ctx)
 {
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_RSA))
         return;
@@ -1869,7 +1957,7 @@ void DISPLAY_RSA(SSL *ssl, const char *label, const RSA_CTX *rsa_ctx)
 void DISPLAY_BYTES(SSL *ssl, const char *format,
         const uint8_t *data, int size, ...)
 {
-#if !defined(PALMOS)
+#if 0 //!defined(PALMOS)
     va_list(ap);
 
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_BYTES))
@@ -1890,84 +1978,86 @@ EXP_FUNC void STDCALL ssl_display_error(int error_code)
     if (error_code == SSL_OK)
         return;
 
-    printf("Error: ");
+    debug("Error: ");
 
     /* X509 error? */
     if (error_code < SSL_X509_OFFSET)
     {
-        x509_display_error(error_code - SSL_X509_OFFSET);
-        printf("\n");
+        debug("%s\n", x509_display_error(error_code - SSL_X509_OFFSET));
         return;
     }
 
     /* SSL alert error code */
     if (error_code > SSL_ERROR_CONN_LOST)
     {
-        printf("SSL error %d\n", -error_code);
+        debug("SSL error %d\n", -error_code);
         return;
     }
 
     switch (error_code)
     {
         case SSL_ERROR_DEAD:
-            printf("connection dead");
+            debug("connection dead");
             break;
 
         case SSL_ERROR_INVALID_HANDSHAKE:
-            printf("invalid handshake");
+            debug("invalid handshake");
             break;
 
         case SSL_ERROR_INVALID_PROT_MSG:
-            printf("invalid protocol message");
+            debug("invalid protocol message");
             break;
 
         case SSL_ERROR_INVALID_HMAC:
-            printf("invalid mac");
+            debug("invalid mac");
             break;
 
         case SSL_ERROR_INVALID_VERSION:
-            printf("invalid version");
+            debug("invalid version");
             break;
 
         case SSL_ERROR_INVALID_SESSION:
-            printf("invalid session");
+            debug("invalid session");
             break;
 
         case SSL_ERROR_NO_CIPHER:
-            printf("no cipher");
+            debug("no cipher");
             break;
 
         case SSL_ERROR_CONN_LOST:
-            printf("connection lost");
+            debug("connection lost");
             break;
 
         case SSL_ERROR_BAD_CERTIFICATE:
-            printf("bad certificate");
+            debug("bad certificate");
             break;
 
         case SSL_ERROR_INVALID_KEY:
-            printf("invalid key");
+            debug("invalid key");
             break;
 
         case SSL_ERROR_FINISHED_INVALID:
-            printf("finished invalid");
+            debug("finished invalid");
             break;
 
         case SSL_ERROR_NO_CERT_DEFINED:
-            printf("no certificate defined");
+            debug("no certificate defined");
+            break;
+
+        case SSL_ERROR_NO_CLIENT_RENOG:
+            debug("client renegotiation not supported");
             break;
 
         case SSL_ERROR_NOT_SUPPORTED:
-            printf("Option not supported");
+            debug("Option not supported");
             break;
 
         default:
-            printf("undefined as yet - %d", error_code);
+            debug("undefined as yet - %d", error_code);
             break;
     }
 
-    printf("\n");
-    TTY_FLUSH();
+    debug("\n");
 }
 
 /**
@@ -1978,53 +2068,56 @@ void DISPLAY_ALERT(SSL *ssl, int alert)
     if (!IS_SET_SSL_FLAG(SSL_DISPLAY_STATES))
         return;
 
-    printf("Alert: ");
+    debug("Alert: ");
 
     switch (alert)
     {
         case SSL_ALERT_CLOSE_NOTIFY:
-            printf("close notify");
+            debug("close notify");
             break;
 
         case SSL_ALERT_INVALID_VERSION:
-            printf("invalid version");
+            debug("invalid version");
             break;
 
         case SSL_ALERT_BAD_CERTIFICATE:
-            printf("bad certificate");
+            debug("bad certificate");
             break;
 
         case SSL_ALERT_UNEXPECTED_MESSAGE:
-            printf("unexpected message");
+            debug("unexpected message");
             break;
 
         case SSL_ALERT_BAD_RECORD_MAC:
-            printf("bad record mac");
+            debug("bad record mac");
             break;
 
         case SSL_ALERT_HANDSHAKE_FAILURE:
-            printf("handshake failure");
+            debug("handshake failure");
             break;
 
         case SSL_ALERT_ILLEGAL_PARAMETER:
-            printf("illegal parameter");
+            debug("illegal parameter");
             break;
 
         case SSL_ALERT_DECODE_ERROR:
-            printf("decode error");
+            debug("decode error");
             break;
 
         case SSL_ALERT_DECRYPT_ERROR:
-            printf("decrypt error");
+            debug("decrypt error");
+            break;
+
+        case SSL_ALERT_NO_RENEGOTIATION:
+            debug("no renegotiation");
             break;
 
         default:
-            printf("alert - (unknown %d)", alert);
+            debug("alert - (unknown %d)", alert);
             break;
     }
 
-    printf("\n");
-    TTY_FLUSH();
+    debug("\n");
 }
 
 #endif /* CONFIG_SSL_FULL_MODE */
@@ -2048,10 +2141,10 @@ EXP_FUNC void STDCALL ssl_display_error(int error_code) {}
 
 #ifdef CONFIG_BINDINGS
 #if !defined(CONFIG_SSL_ENABLE_CLIENT)
-EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx,
-                        int client_fd, const uint8_t *session_id)
+EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx, int client_fd, const
+        uint8_t *session_id, uint8_t sess_id_size)
 {
-    printf(unsupported_str);
+    debug(unsupported_str);
     return NULL;
 }
 #endif
@@ -2059,13 +2152,20 @@ EXP_FUNC SSL * STDCALL ssl_client_new(SSL_CTX *ssl_ctx,
 #if !defined(CONFIG_SSL_CERT_VERIFICATION)
 EXP_FUNC int STDCALL ssl_verify_cert(const SSL *ssl)
 {
-    printf(unsupported_str);
+    debug(unsupported_str);
     return -1;
 }
 
+
 EXP_FUNC const char * STDCALL ssl_get_cert_dn(const SSL *ssl, int component)
 {
-    printf(unsupported_str);
+    debug(unsupported_str);
+    return NULL;
+}
+
+EXP_FUNC const char * STDCALL ssl_get_cert_subject_alt_dnsname(const SSL *ssl, int index)
+{
+    printf("%s", unsupported_str);
     return NULL;
 }
 

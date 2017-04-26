@@ -1,26 +1,38 @@
 /*
- *  Copyright(C) 2006 Cameron Rich
+ * Copyright (c) 2007-2014, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
  * Load certificates/keys into memory. These can be in many different formats.
  * PEM support and other formats can be processed here.
  *
- * The PEM private keys may be optionally encrypted with AES128 or AES256.
+ * The PEM private keys may be optionally encrypted with AES128 or AES256. 
  * The encrypted PEM keys were generated with something like:
  *
  * openssl genrsa -aes128 -passout pass:abcd -out axTLS.key_aes128.pem 512
@@ -32,23 +44,21 @@
 
 #include "ssl.h"
 
-static int do_obj(SSL_CTX *ssl_ctx, int obj_type,
+static int do_obj(SSL_CTX *ssl_ctx, int obj_type, 
                     SSLObjLoader *ssl_obj, const char *password);
 #ifdef CONFIG_SSL_HAS_PEM
-static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type,
+static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type, 
                         SSLObjLoader *ssl_obj, const char *password);
 #endif
-
-#define SECTION_BEGIN "-----BEGIN "
-#define SECTION_END   "-----END "
 
 /*
  * Load a file into memory that is in binary DER (or ascii PEM) format.
  */
-EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type,
+EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type, 
                             const char *filename, const char *password)
 {
 #ifndef CONFIG_SSL_SKELETON_MODE
+    static const char * const begin = "-----BEGIN";
     int ret = SSL_OK;
     SSLObjLoader *ssl_obj = NULL;
 
@@ -58,14 +68,8 @@ EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type,
         goto error;
     }
 
-//#if defined(__SYMBIAN32__)
-//    xplatConsolePrintf("alloc\n");
-//#endif
-
     ssl_obj = (SSLObjLoader *)calloc(1, sizeof(SSLObjLoader));
-
-    ssl_obj->len = get_file(filename, &ssl_obj->buf);
-
+    ssl_obj->len = get_file(filename, &ssl_obj->buf); 
     if (ssl_obj->len <= 0)
     {
         ret = SSL_ERROR_INVALID_KEY;
@@ -73,12 +77,14 @@ EXP_FUNC int STDCALL ssl_obj_load(SSL_CTX *ssl_ctx, int obj_type,
     }
 
     /* is the file a PEM file? */
-    if (strstr((char *)ssl_obj->buf, SECTION_BEGIN) != NULL)
+    if (strstr((char *)ssl_obj->buf, begin) != NULL)
     {
 #ifdef CONFIG_SSL_HAS_PEM
         ret = ssl_obj_PEM_load(ssl_ctx, obj_type, ssl_obj, password);
 #else
-        printf(unsupported_str);
+#ifdef CONFIG_SSL_FULL_MODE
+        printf("%s", unsupported_str);
+#endif
         ret = SSL_ERROR_NOT_SUPPORTED;
 #endif
     }
@@ -89,7 +95,9 @@ error:
     ssl_obj_free(ssl_obj);
     return ret;
 #else
-    printf(unsupported_str);
+#ifdef CONFIG_SSL_FULL_MODE
+    printf("%s", unsupported_str);
+#endif
     return SSL_ERROR_NOT_SUPPORTED;
 #endif /* CONFIG_SSL_SKELETON_MODE */
 }
@@ -97,39 +105,41 @@ error:
 /*
  * Transfer binary data into the object loader.
  */
-EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int mem_type,
+EXP_FUNC int STDCALL ssl_obj_memory_load(SSL_CTX *ssl_ctx, int mem_type, 
         const uint8_t *data, int len, const char *password)
 {
+	static const char * const begin = "-----BEGIN";
     int ret;
     SSLObjLoader *ssl_obj;
 
     ssl_obj = (SSLObjLoader *)calloc(1, sizeof(SSLObjLoader));
-    ssl_obj->buf = (uint8_t *)malloc(len+1);
+    ssl_obj->buf = (uint8_t *)malloc(len);
     memcpy(ssl_obj->buf, data, len);
-    ssl_obj->buf[len] = '\0';
     ssl_obj->len = len;
 
     /* is the file a PEM file? */
-    if (strstr((char *)ssl_obj->buf, SECTION_BEGIN) != NULL)
+    if (strstr((char *)ssl_obj->buf, begin) != NULL)
     {
 #ifdef CONFIG_SSL_HAS_PEM
         ret = ssl_obj_PEM_load(ssl_ctx, mem_type, ssl_obj, password);
 #else
-        printf(unsupported_str);
+#ifdef CONFIG_SSL_FULL_MODE
+        printf("%s", unsupported_str);
+#endif
         ret = SSL_ERROR_NOT_SUPPORTED;
 #endif
     }
     else
-        ret = do_obj(ssl_ctx, mem_type, ssl_obj, password);
+		ret = do_obj(ssl_ctx, mem_type, ssl_obj, password);
 
     ssl_obj_free(ssl_obj);
     return ret;
 }
 
 /*
- * Actually work out what we are doing
+ * Actually work out what we are doing 
  */
-static int do_obj(SSL_CTX *ssl_ctx, int obj_type,
+static int do_obj(SSL_CTX *ssl_ctx, int obj_type, 
                     SSLObjLoader *ssl_obj, const char *password)
 {
     int ret = SSL_OK;
@@ -146,7 +156,7 @@ static int do_obj(SSL_CTX *ssl_ctx, int obj_type,
 
 #ifdef CONFIG_SSL_CERT_VERIFICATION
         case SSL_OBJ_X509_CACERT:
-            ret = add_cert_auth(ssl_ctx, ssl_obj->buf, ssl_obj->len);
+            add_cert_auth(ssl_ctx, ssl_obj->buf, ssl_obj->len);
             break;
 #endif
 
@@ -160,7 +170,9 @@ static int do_obj(SSL_CTX *ssl_ctx, int obj_type,
             break;
 #endif
         default:
-            printf((char*)unsupported_str);
+#ifdef CONFIG_SSL_FULL_MODE
+            printf("%s", unsupported_str);
+#endif
             ret = SSL_ERROR_NOT_SUPPORTED;
             break;
     }
@@ -185,28 +197,37 @@ void ssl_obj_free(SSLObjLoader *ssl_obj)
  */
 #ifdef CONFIG_SSL_HAS_PEM
 
+#define NUM_PEM_TYPES               4
 #define IV_SIZE                     16
-
-#define NUM_PEM_TYPES               3
 #define IS_RSA_PRIVATE_KEY          0
 #define IS_ENCRYPTED_PRIVATE_KEY    1
-#define IS_CERTIFICATE              2
+#define IS_PRIVATE_KEY              2
+#define IS_CERTIFICATE              3
 
-static const char * const headers[NUM_PEM_TYPES] =
+static const char * const begins[NUM_PEM_TYPES] =
 {
-    "RSA PRIVATE KEY-----",
-    "ENCRYPTED PRIVATE KEY-----",
-    "CERTIFICATE-----",
+    "-----BEGIN RSA PRIVATE KEY-----",
+    "-----BEGIN ENCRYPTED PRIVATE KEY-----",
+    "-----BEGIN PRIVATE KEY-----",
+    "-----BEGIN CERTIFICATE-----",
+};
+
+static const char * const ends[NUM_PEM_TYPES] =
+{
+    "-----END RSA PRIVATE KEY-----",
+    "-----END ENCRYPTED PRIVATE KEY-----",
+    "-----END PRIVATE KEY-----",
+    "-----END CERTIFICATE-----",
 };
 
 static const char * const aes_str[2] =
 {
     "DEK-Info: AES-128-CBC,",
-    "DEK-Info: AES-256-CBC,"
+    "DEK-Info: AES-256-CBC," 
 };
 
 /**
- * Take a base64 blob of data and decrypt it (using AES) into its
+ * Take a base64 blob of data and decrypt it (using AES) into its 
  * proper ASN.1 form.
  */
 static int pem_decrypt(const char *where, const char *end,
@@ -221,10 +242,10 @@ static int pem_decrypt(const char *where, const char *end,
     AES_CTX aes_ctx;
     uint8_t key[32];        /* AES256 size */
 
-    if (password == NULL)
+    if (password == NULL || strlen(password) == 0)
     {
 #ifdef CONFIG_SSL_FULL_MODE
-        printf("Error: need a password for this PEM file\n");
+        printf("Error: Need a password for this PEM file\n");
 #endif
         goto error;
     }
@@ -238,7 +259,7 @@ static int pem_decrypt(const char *where, const char *end,
         is_aes_256 = 1;
         start += strlen(aes_str[1]);
     }
-    else
+    else 
     {
 #ifdef CONFIG_SSL_FULL_MODE
         printf("Error: Unsupported password cipher\n");
@@ -264,18 +285,18 @@ static int pem_decrypt(const char *where, const char *end,
         goto error;
 
     /* work out the key */
-    MD5Init(&md5_ctx);
-    MD5Update(&md5_ctx, (const uint8_t *)password, strlen(password));
-    MD5Update(&md5_ctx, iv, SALT_SIZE);
-    MD5Final(&md5_ctx, key);
+    MD5_Init(&md5_ctx);
+    MD5_Update(&md5_ctx, (const uint8_t *)password, strlen(password));
+    MD5_Update(&md5_ctx, iv, SALT_SIZE);
+    MD5_Final(key, &md5_ctx);
 
     if (is_aes_256)
     {
-        MD5Init(&md5_ctx);
-        MD5Update(&md5_ctx, key, MD5_SIZE);
-        MD5Update(&md5_ctx, (const uint8_t *)password, strlen(password));
-        MD5Update(&md5_ctx, iv, SALT_SIZE);
-        MD5Final(&md5_ctx, &key[MD5_SIZE]);
+        MD5_Init(&md5_ctx);
+        MD5_Update(&md5_ctx, key, MD5_SIZE);
+        MD5_Update(&md5_ctx, (const uint8_t *)password, strlen(password));
+        MD5_Update(&md5_ctx, iv, SALT_SIZE);
+        MD5_Final(&key[MD5_SIZE], &md5_ctx);
     }
 
     /* decrypt using the key/iv */
@@ -285,115 +306,112 @@ static int pem_decrypt(const char *where, const char *end,
     ret = 0;
 
 error:
-    return ret;
+    return ret; 
 }
 
 /**
  * Take a base64 blob of data and turn it into its proper ASN.1 form.
  */
-static int new_pem_obj(SSL_CTX *ssl_ctx, int is_cacert, char *where,
+static int new_pem_obj(SSL_CTX *ssl_ctx, int is_cacert, char *where, 
                     int remain, const char *password)
 {
-    int ret = SSL_OK;
+    int ret = SSL_ERROR_BAD_CERTIFICATE;
     SSLObjLoader *ssl_obj = NULL;
-    char *start = NULL;
 
-    /* find a section start */
-    while ((start = strstr(where, SECTION_BEGIN)) != NULL)
+    while (remain > 0)
     {
-        int i;
-        start += strlen(SECTION_BEGIN);
+        int i, pem_size, obj_type;
+        char *start = NULL, *end = NULL;
 
-        /* find out the kind of object */
         for (i = 0; i < NUM_PEM_TYPES; i++)
         {
-            if (strncmp(start, headers[i], strlen(headers[i])) == 0)
+            if ((start = strstr(where, begins[i])) &&
+                    (end = strstr(where, ends[i])))
             {
-                int pem_size, obj_type;
-                char *end = NULL;
-
-                /* advance to the data part */
-                start += strlen(headers[i]);
-
-                /* find the section end */
-                if ((end = strstr(start, SECTION_END)) == NULL) goto leave_now;
-
-                /* does the end object type match with the start ? */
-                if (strncmp(end + strlen(SECTION_END), headers[i], strlen(headers[i])) != 0) goto leave_now;
-
-                where = end + 1; /* advance for a further section search */
-
+                remain -= (int)(end-where);
+                start += strlen(begins[i]);
                 pem_size = (int)(end-start);
 
                 ssl_obj = (SSLObjLoader *)calloc(1, sizeof(SSLObjLoader));
 
                 /* 4/3 bigger than what we need but so what */
                 ssl_obj->buf = (uint8_t *)calloc(1, pem_size);
+                ssl_obj->len = pem_size;
 
-                if (i == IS_RSA_PRIVATE_KEY &&
-	                        strstr(start, "Proc-Type:") &&
-	                        strstr(start, "4,ENCRYPTED"))
+                if (i == IS_RSA_PRIVATE_KEY && 
+                            strstr(start, "Proc-Type:") && 
+                            strstr(start, "4,ENCRYPTED"))
                 {
                     /* check for encrypted PEM file */
                     if (pem_decrypt(start, end, password, ssl_obj) < 0)
-                        goto leave_now;
-	             }
-	             else if (base64_decode(start, pem_size,
-                        ssl_obj->buf, &ssl_obj->len) != 0)
-                    goto leave_now;
+                    {
+                        ret = SSL_ERROR_BAD_CERTIFICATE;
+                        goto error;
+                    }
+                }
+                else 
+                {
+                    ssl_obj->len = pem_size;
+                    if (base64_decode(start, pem_size, 
+                                ssl_obj->buf, &ssl_obj->len) != 0)
+                    {
+                        ret = SSL_ERROR_BAD_CERTIFICATE;
+                        goto error;
+                    }
+                }
 
-	             switch (i)
-	             {
+                switch (i)
+                {
                     case IS_RSA_PRIVATE_KEY:
                         obj_type = SSL_OBJ_RSA_KEY;
                         break;
+
                     case IS_ENCRYPTED_PRIVATE_KEY:
+                    case IS_PRIVATE_KEY:
                         obj_type = SSL_OBJ_PKCS8;
                         break;
-	                 case IS_CERTIFICATE:
-	                     obj_type = is_cacert ?
-                                    SSL_OBJ_X509_CACERT : SSL_OBJ_X509_CERT;
-	                     break;
 
-	                 default:
-	                     goto leave_now;
-	             }
+                    case IS_CERTIFICATE:
+                        obj_type = is_cacert ?
+                                        SSL_OBJ_X509_CACERT : SSL_OBJ_X509_CERT;
+                        break;
 
-	             /* In a format we can now understand - so process it */
-	             if ((ret = do_obj(ssl_ctx, obj_type, ssl_obj, password)))
-                {
-                	 /* @TODO processing continue strategy... In CAlists
-                	  * some CA certs may have expired and they will cause a
-                	  * processing stop. Maybe introduce an SSL_CTX options ?
-                	  */
-#if 0
-                   goto leave_now;
-#else
-                	 char keep = *where;
-                   *where = '\0';
-                   *where = keep;
-#endif
+                    default:
+                        ret = SSL_ERROR_BAD_CERTIFICATE;
+                        goto error;
                 }
 
-                ssl_obj_free(ssl_obj);
-                ssl_obj = NULL;
+                /* In a format we can now understand - so process it */
+                if ((ret = do_obj(ssl_ctx, obj_type, ssl_obj, password)))
+                    goto error;
 
-                /* section processed, break to start a new one */
+                end += strlen(ends[i]);
+                remain -= strlen(ends[i]);
+                while (remain > 0 && (*end == '\r' || *end == '\n'))
+                {
+                    end++;
+                    remain--;
+                }
+
+                where = end;
                 break;
             }
         }
-        if (i == NUM_PEM_TYPES) goto leave_now; /* can't find any supported object */
-    }
 
-leave_now:
-    if (ssl_obj != NULL) ssl_obj_free(ssl_obj);
+        ssl_obj_free(ssl_obj);
+        ssl_obj = NULL;
+        if (start == NULL)
+           break;
+    }
+error:
+    ssl_obj_free(ssl_obj);
     return ret;
 }
 
 /*
  * Load a file into memory that is in ASCII PEM format.
  */
-static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type,
+static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type, 
                         SSLObjLoader *ssl_obj, const char *password)
 {
     char *start;
@@ -407,3 +425,81 @@ static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type,
                                 start, ssl_obj->len, password);
 }
 #endif /* CONFIG_SSL_HAS_PEM */
+
+/**
+ * Load the key/certificates in memory depending on compile-time and user
+ * options. 
+ */
+int load_key_certs(SSL_CTX *ssl_ctx)
+{
+    int ret = SSL_OK;
+    uint32_t options = ssl_ctx->options;
+#ifdef CONFIG_SSL_GENERATE_X509_CERT 
+    uint8_t *cert_data = NULL;
+    int cert_size;
+    static const char *dn[] = 
+    {
+        CONFIG_SSL_X509_COMMON_NAME,
+        CONFIG_SSL_X509_ORGANIZATION_NAME,
+        CONFIG_SSL_X509_ORGANIZATION_UNIT_NAME
+    };
+#endif
+
+    /* do the private key first */
+    if (strlen(CONFIG_SSL_PRIVATE_KEY_LOCATION) > 0)
+    {
+        if ((ret = ssl_obj_load(ssl_ctx, SSL_OBJ_RSA_KEY, 
+                                CONFIG_SSL_PRIVATE_KEY_LOCATION,
+                                CONFIG_SSL_PRIVATE_KEY_PASSWORD)) < 0)
+            goto error;
+    }
+    else if (!(options & SSL_NO_DEFAULT_KEY))
+    {
+#if defined(CONFIG_SSL_USE_DEFAULT_KEY) || defined(CONFIG_SSL_SKELETON_MODE)
+        static const    /* saves a few more bytes */
+#include "private_key.h"
+
+        ssl_obj_memory_load(ssl_ctx, SSL_OBJ_RSA_KEY, default_private_key,
+                default_private_key_len, NULL); 
+#endif
+    }
+
+    /* now load the certificate */
+#ifdef CONFIG_SSL_GENERATE_X509_CERT 
+    if ((cert_size = ssl_x509_create(ssl_ctx, 0, dn, &cert_data)) < 0)
+    {
+        ret = cert_size;
+        goto error;
+    }
+
+    ssl_obj_memory_load(ssl_ctx, SSL_OBJ_X509_CERT, cert_data, cert_size, NULL);
+    free(cert_data);
+#else
+    if (strlen(CONFIG_SSL_X509_CERT_LOCATION))
+    {
+        if ((ret = ssl_obj_load(ssl_ctx, SSL_OBJ_X509_CERT, 
+                                CONFIG_SSL_X509_CERT_LOCATION, NULL)) < 0)
+            goto error;
+    }
+    else if (!(options & SSL_NO_DEFAULT_KEY))
+    {
+#if defined(CONFIG_SSL_USE_DEFAULT_KEY) || defined(CONFIG_SSL_SKELETON_MODE)
+        static const    /* saves a few bytes and RAM */
+#include "cert.h"
+        ssl_obj_memory_load(ssl_ctx, SSL_OBJ_X509_CERT, 
+                    default_certificate, default_certificate_len, NULL);
+#endif
+    }
+#endif
+
+error:
+#ifdef CONFIG_SSL_FULL_MODE
+    if (ret)
+    {
+        printf("Error: Certificate or key not loaded\n");
+    }
+#endif
+
+    return ret;
+
+}

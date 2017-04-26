@@ -27,7 +27,7 @@ import totalcross.io.Stream;
  * This class implements a stream filter for reading and writing files in the ZIP file format. Currently supports only
  * compressed entries.<br>
  * <br>
- * See the sammple TotalCrossSDK/src/tc/samples/util/zip/zip.
+ * See the sammple TotalCross3/src/tc/samples/util/zip/zip.
  * 
  * @since TotalCross 1.20
  */

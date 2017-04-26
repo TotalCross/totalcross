@@ -20,6 +20,7 @@ int keyboardH;
 UIWindow* window;
 void Sleep(int ms);
 extern int32 iosScale;
+extern bool isIpad;
 
 @implementation MainViewController
 
@@ -27,48 +28,55 @@ bool initGLES(ScreenSurface screen)
 {
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
+   isIpad = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
    // initialize the screen bitmap with the full width and height
-   CGRect rect = [[UIScreen mainScreen] bounds]; // not needed, when fixing opengl, try to remove it
+   CGRect rect = [[UIScreen mainScreen] bounds];
    window = [[UIWindow alloc] initWithFrame: rect];
    window.rootViewController = [(DEVICE_CTX->_mainview = [MainViewController alloc]) init];
+   window.autoresizesSubviews = YES; // IOS 8 - make didLayoutSubviews be called
    [window makeKeyAndVisible];
    [DEVICE_CTX->_childview setScreenValues: screen];
    [DEVICE_CTX->_childview createGLcontext];
-   screen->pixels = (void*)1;
    return true;
 }
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+- (BOOL)shouldAutorotate // ios 6
 {
-   [UIView setAnimationsEnabled:NO];
-   [self destroySIP];
+// [UIView setAnimationsEnabled:NO];
+ //  [self destroySIP]; - commented out because its the reason why the keyboard wont close on app launch
+   [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationNone];
    return YES;
 }
 
-static int lastOrientationIsPortrait = true;
+- (NSUInteger)supportedInterfaceOrientations // ios 6
+{
+   return UIInterfaceOrientationMaskAll;
+}
+
 - (void) setFirstOrientation
 {
-   int orientation = [[UIDevice currentDevice] orientation];
-   bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
-   if (lastOrientationIsPortrait == -1 && orientation != UIDeviceOrientationUnknown)
-      lastOrientationIsPortrait = isPortrait;
+   lastOrientationSentToVM = [child_view getOrientation];
+}
+
+bool iosLowMemory;
+- (void)didReceiveMemoryWarning
+{
+   [super didReceiveMemoryWarning];
+   iosLowMemory = true;
 }
 
 - (void)viewDidLayoutSubviews
 {
-   int orientation = [[UIDevice currentDevice] orientation];
-   if (orientation == UIDeviceOrientationUnknown)
-      lastOrientationIsPortrait = -1;
-   else
+   //NSLog(@"*** view will layout subviews");
+   int orientation = [child_view getOrientation];
+   if (orientation != lastOrientationSentToVM)
    {
-      bool isPortrait = orientation != UIDeviceOrientationLandscapeLeft && orientation != UIDeviceOrientationLandscapeRight;
-      if (lastOrientationIsPortrait != isPortrait)
-      {
-         [self destroySIP];
-         [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
-                  [NSNumber numberWithInt:child_view.bounds.size.width *iosScale], @"width",
-                  [NSNumber numberWithInt:child_view.bounds.size.height*iosScale], @"height", nil] ];
-      }
-      lastOrientationIsPortrait = isPortrait;
+      [self destroySIP];
+      lastOrientationSentToVM = orientation;
+      child_view.frame = [child_view getBounds]; // SET THE CHILD_VIEW FRAME
+      CGSize res = [child_view getResolution];
+      [ self addEvent: [[NSDictionary alloc] initWithObjectsAndKeys: @"screenChange", @"type",
+                        [NSNumber numberWithInt: res.width], @"width",
+                        [NSNumber numberWithInt: res.height], @"height", nil] ];
    }
 }
 
@@ -139,7 +147,8 @@ static int lastOrientationIsPortrait = true;
 
 - (bool)isEventAvailable;
 {
-   unsigned int num = [_events count];
+   int num = (int)[_events count];
+   Sleep(5); // prevent 100% cpu as shown in XCode. 5ms=0%cpu, 2ms=3%cpu
    return num > 0;
 }
 
@@ -150,6 +159,10 @@ static int lastOrientationIsPortrait = true;
    return events;
 }
 
+- (bool)hasEvents
+{
+   return _events != nil && _events.count > 0;
+}
 - (void)addEvent:(NSDictionary*)event
 {
    if(_events == nil)
@@ -189,11 +202,21 @@ static int lastOrientationIsPortrait = true;
       NSURL *url = [NSURL URLWithString:number];
       [[UIApplication sharedApplication] openURL:url];
    });
+   [self updateLayout];
+}
+
+-(void) updateLayout
+{
+   dispatch_sync(dispatch_get_main_queue(), ^
+   {
+      lastOrientationSentToVM = -1;
+      [self viewDidLayoutSubviews];
+   });
 }
 
 static bool callingCamera;
 
--(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h
+-(BOOL) cameraClick:(NSString*) fileName width:(int)w height:(int)h type:(int)t
 {
    callingCamera = true;
    imageFileName = fileName;
@@ -202,21 +225,27 @@ static bool callingCamera;
    dispatch_sync(dispatch_get_main_queue(), ^
    {
       imagePicker = [[UIImagePickerController alloc] init];
-      if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      if(t != 3 && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+      {
          [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+         imagePicker.allowsEditing = NO;
+      }
       else
          [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
       [imagePicker setDelegate:self];
-      [self presentModalViewController:imagePicker animated:YES];
+      [self presentModalViewController:imagePicker animated:NO];
    });
    while (callingCamera)
       Sleep(100);
+   UIDeviceOrientation o = [child_view getOrientation];
+   if (o != UIDeviceOrientationLandscapeLeft && o != UIDeviceOrientationLandscapeRight) // when the camera comes back from landscape and we call updateLayout, the screen gets painted as if it was in portrait. this hack makes the screen a bit better, but still buggy.
+      [self updateLayout];
    return imageFileName != null;
 }
 
 -(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-   [self->imagePicker dismissModalViewControllerAnimated:YES];
+   [self->imagePicker dismissModalViewControllerAnimated:NO];
    imageFileName = null;
    callingCamera = false;
 }
@@ -230,13 +259,23 @@ static bool callingCamera;
    {
       int w = finalImage.size.width;
       int h = finalImage.size.height;
+      if (h > w && imageW > imageH) // if user selected a landscape resolution and the photo was taken in portrait, swap the resolution
+      {
+         int t = imageW; imageW = imageH; imageH = t;
+      }
       if (imageW != 0 && imageH != 0 && (w >= imageW || h >= imageH))
       {
-         int ww=imageW,hh;
+         int ww,hh;
          if (w < h)
-            hh = (int)(imageW * w / h);
+         {
+            hh = imageH;
+            ww = (int)(imageH * w / h);
+         }
          else
+         {
+            ww = imageW;
             hh = (int)(imageW * h / w);
+         }
          CGRect imageRect = CGRectMake(0, 0, ww,hh);
          UIGraphicsBeginImageContext(imageRect.size);
          [finalImage drawInRect:imageRect];
@@ -247,30 +286,36 @@ static bool callingCamera;
       NSData* data = UIImageJPEGRepresentation(finalImage, 0.8);
       [data writeToFile:imageFileName atomically:NO];
    }
-   [self dismissModalViewControllerAnimated:YES];
+   [self dismissModalViewControllerAnimated:NO];
    callingCamera = false;
 }
 
-- (BOOL) mapsShowAddress:(NSString*) address showSatellitePhotos:(bool)showSat;
+#define SHOW_SAT 1
+#define USE_WAZE 2
+- (BOOL) mapsShowAddress:(NSString*) address flags:(int)flags;
 {
    NSString *stringURL;
    char c = [address characterAtIndex:0];
-   NSString* type = showSat ? @"&t=h" : @"&t=m";
+   NSString* type = (flags & SHOW_SAT) != 0 ? @"&t=h" : @"&t=m";
+   if ((flags & USE_WAZE) != 0 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"waze://"]])
+      stringURL = [NSString stringWithFormat:@"waze://?q=%@&navigate=yes", address];
+   else
    if ([address length] == 0) // not working yet
    {
 //      CLLocationCoordinates2D cl = [self getCurrentLocation];
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%20Location&z=14%@%",type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=Current%%20Location&z=14%@",type];
    }
    else
    if (c == '@')
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address substringFromIndex:1],type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%%&z=14%@", [address substringFromIndex:1],type];
    else
-      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%&z=14%@%", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
+      stringURL = [NSString stringWithFormat:@"http://maps.google.com/maps?q=%@%%&z=14%@", [address stringByReplacingOccurrencesOfString:@" " withString:@"%20"],type];
    dispatch_sync(dispatch_get_main_queue(), ^
    {
       NSURL *url = [NSURL URLWithString:stringURL];
       [[UIApplication sharedApplication] openURL:url];
    });
+   [self updateLayout];
    return TRUE;
 }
 
@@ -293,8 +338,8 @@ static bool callingCamera;
    locationPDOP = newLocation.horizontalAccuracy;
    locationVeloc = newLocation.speed;
    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:newLocation.timestamp];
-   locationDate = [components day] + [components month] * 100 + [components year] * 10000;
-   locationTime = [components second] + [components minute] * 100 + [components hour] * 10000;
+   locationDate = (int)([components day] + [components month] * 100 + [components year] * 10000);
+   locationTime = (int)([components second] + [components minute] * 100 + [components hour] * 10000);
 }
 
 - (int) gpsStart
@@ -305,6 +350,8 @@ static bool callingCamera;
          locationManager = [[CLLocationManager alloc] init];
          locationManager.delegate = self;
          locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+         if ([locationManager respondsToSelector:@selector(requestAlwaysAuthorization)])
+            [locationManager requestAlwaysAuthorization];
          [locationManager startUpdatingLocation];
          locationCount = 0;
       });
@@ -326,6 +373,13 @@ static bool callingCamera;
 - (int) gpsUpdateLocation
 {
    return 0;
+}
+
+
+-(IBAction)closeWebView:(id)sender
+{
+   self.view = child_view;
+   webView = nil;
 }
 
 //--------------------------------------------------------------------------------------------------------
@@ -360,10 +414,10 @@ void fillIOSSettings(int* daylightSavingsPtr, int* daylightSavingsMinutesPtr, in
 
 //////////////// interface to mainview methods ///////////////////
 
-bool iphone_mapsShowAddress(char* addr, bool showSatellitePhotos)
+bool iphone_mapsShowAddress(char* addr, int flags)
 {
    NSString* string = [NSString stringWithFormat:@"%s", addr];
-   return [DEVICE_CTX->_mainview mapsShowAddress:string showSatellitePhotos:showSatellitePhotos];
+   return [DEVICE_CTX->_mainview mapsShowAddress:string flags:flags];
 }
 
 void iphone_dialNumber(char* number)
@@ -372,10 +426,10 @@ void iphone_dialNumber(char* number)
    [DEVICE_CTX->_mainview dialNumber:string];
 }
 
-int iphone_cameraClick(int w, int h, char* fileName)
+int iphone_cameraClick(int w, int h, int t, char* fileName)
 {
    NSString* string = [NSString stringWithFormat:@"%s", fileName];
-   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h];
+   return [DEVICE_CTX->_mainview cameraClick:string width:w height:h type:t];
 }
 
 int iphone_gpsStart()

@@ -13,10 +13,10 @@
 
 #include "tcvm.h"
 
-Object iso88591bytes2chars(Context currentContext, uint8* bytes, int32 length)
+TCObject iso88591bytes2chars(Context currentContext, uint8* bytes, int32 length)
 {
    JCharP chars;
-   Object charArray = createCharArray(currentContext, length);
+   TCObject charArray = createCharArray(currentContext, length);
    if (charArray)
    {
       chars = (JCharP)ARRAYOBJ_START(charArray);
@@ -27,9 +27,9 @@ Object iso88591bytes2chars(Context currentContext, uint8* bytes, int32 length)
    return charArray;
 }
 
-Object iso88591chars2bytes(Context currentContext, JCharP chars, int32 length)
+TCObject iso88591chars2bytes(Context currentContext, JCharP chars, int32 length)
 {
-   Object byteArray = createByteArray(currentContext, length);
+   TCObject byteArray = createByteArray(currentContext, length);
    if (byteArray != null)
    {
       JChar* end = chars+length-1;
@@ -57,9 +57,9 @@ Object iso88591chars2bytes(Context currentContext, JCharP chars, int32 length)
    return byteArray;
 }
 
-Object utf8bytes2chars(Context currentContext, uint8* bytes, int32 length)
+TCObject utf8bytes2chars(Context currentContext, uint8* bytes, int32 length)
 {
-   Object charArray = createCharArray(currentContext, length); // upper bound
+   TCObject charArray = createCharArray(currentContext, length); // upper bound
    if (charArray)
    {
       JCharP chars = (JCharP)ARRAYOBJ_START(charArray), chars0 = chars;
@@ -114,7 +114,7 @@ Object utf8bytes2chars(Context currentContext, uint8* bytes, int32 length)
    return charArray;
 }
 
-static int32 utf8len(JCharP chars, int32 length)
+int32 utf8len(JCharP chars, int32 length)
 {
    int r = 0;
    while (length-- > 0)
@@ -131,60 +131,46 @@ static int32 utf8len(JCharP chars, int32 length)
    return r;
 }
 
-Object utf8chars2bytes(Context currentContext, JCharP chars, int32 length)
+void utf8chars2bytesBuf(JCharP chars, int32 length, uint8* bytes)
 {
-   Object byteArray = createByteArray(currentContext, utf8len(chars, length)); // find the exact length, since it can be max 3*length
+   JCharP end = chars + length;
+   while (chars < end)
+   {
+      int32 r = *chars++;
+      if (r < 0x80)                       // 1 byte sequence
+         *bytes++ = (uint8)r;
+      else
+      if (r < 0x800)                      // 2 bytes sequence?
+      {
+         *bytes++ = (uint8)(0xC0 | (r >> 6));
+         *bytes++ = (uint8)(0x80 | (r & 0x3F));
+      }
+      else                                     // 3 bytes sequence.
+      {
+         *bytes++ = (uint8)(0xE0 | (r >> 12));
+         *bytes++ = (uint8)(0x80 | ((r >> 6) & 0x3F));
+         *bytes++ = (uint8)(0x80 | (r & 0x3F));
+      }
+   }
+}
+TCObject utf8chars2bytes(Context currentContext, JCharP chars, int32 length)
+{
+   TCObject byteArray = createByteArray(currentContext, utf8len(chars, length)); // find the exact length, since it can be max 3*length
    if (byteArray != null)
    {
       uint8* bytes = ARRAYOBJ_START(byteArray);
-      JCharP end = chars + length;
-
-      while (chars < end)
-      {
-         int32 r = *chars++;
-         if (r < 0x80)                       // 1 byte sequence
-            *bytes++ = (uint8)r;
-         else
-         if (r < 0x800)                      // 2 bytes sequence?
-         {
-            *bytes++ = (uint8)(0xC0 | (r >> 6));
-            *bytes++ = (uint8)(0x80 | (r & 0x3F));
-         }
-         else                                     // 3 bytes sequence.
-         {
-            *bytes++ = (uint8)(0xE0 | (r >> 12));
-            *bytes++ = (uint8)(0x80 | ((r >> 6) & 0x3F));
-            *bytes++ = (uint8)(0x80 | (r & 0x3F));
-         }
-      }
+      utf8chars2bytesBuf(chars, length, bytes);      
       setObjectLock(byteArray, UNLOCKED);
    }
    return byteArray;
 }
 
 ///////////////
-
-static Object *charConverterPtr, lastCharConverter;
-static TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
 static Method chars2bytesMtd;
+static TCObject lastCharConverter;
 
-Object chars2bytes(Context currentContext, JCharP chars, int32 length)
+TCObject chars2bytes(Context currentContext, JCharP chars, int32 length)
 {
-   if (charConverterPtr == null)
-   {
-      TCClass c = loadClass(currentContext, "totalcross.sys.Convert", true);
-      if (c == null)
-         return null;
-      charConverterPtr = getStaticFieldObject(c, "charConverter");
-      if (charConverterPtr == null)
-         return null;
-      ISO88591CharacterConverter = loadClass(currentContext, "totalcross.sys.CharacterConverter", true);
-      if (ISO88591CharacterConverter == null)
-         return null;
-      UTF8CharacterConverter = loadClass(currentContext, "totalcross.sys.UTF8CharacterConverter", true);
-      if (UTF8CharacterConverter == null)
-         return null;
-   }
    if (OBJ_CLASS(*charConverterPtr) == ISO88591CharacterConverter)
       return iso88591chars2bytes(currentContext, chars, length);
    if (OBJ_CLASS(*charConverterPtr) == UTF8CharacterConverter)
@@ -203,7 +189,7 @@ Object chars2bytes(Context currentContext, JCharP chars, int32 length)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsCC_bytes2chars_Bii(NMParams p) // totalcross/sys/CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
 {
-   Object bytes = p->obj[1];
+   TCObject bytes = p->obj[1];
    int32 offset = p->i32[0];
    int32 len = p->i32[1];
    if (checkArrayRange(p->currentContext, bytes, offset, len))
@@ -212,7 +198,7 @@ TC_API void tsCC_bytes2chars_Bii(NMParams p) // totalcross/sys/CharacterConverte
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsCC_chars2bytes_Cii(NMParams p) // totalcross/sys/CharacterConverter native public byte[] chars2bytes(char []chars, int offset, int length);
 {
-   Object chars = p->obj[1];
+   TCObject chars = p->obj[1];
    int32 offset = p->i32[0];
    int32 len = p->i32[1];
    if (checkArrayRange(p->currentContext, chars, offset, len))
@@ -221,7 +207,7 @@ TC_API void tsCC_chars2bytes_Cii(NMParams p) // totalcross/sys/CharacterConverte
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p) // totalcross/sys/UTF8CharacterConverter native public char[]bytes2chars(byte []bytes, int offset, int length);
 {
-   Object bytes = p->obj[1];
+   TCObject bytes = p->obj[1];
    int32 offset = p->i32[0];
    int32 len = p->i32[1];
    if (checkArrayRange(p->currentContext, bytes, offset, len))
@@ -230,7 +216,7 @@ TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p) // totalcross/sys/UTF8Character
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsUTF8CC_chars2bytes_Cii(NMParams p) // totalcross/sys/UTF8CharacterConverter native public byte[] chars2bytes(char []chars, int offset, int length);
 {
-   Object chars = p->obj[1];
+   TCObject chars = p->obj[1];
    int32 offset = p->i32[0];
    int32 len = p->i32[1];
    if (checkArrayRange(p->currentContext, chars, offset, len))

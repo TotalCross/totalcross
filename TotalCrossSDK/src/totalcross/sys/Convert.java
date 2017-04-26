@@ -45,16 +45,26 @@ public final class Convert
        * create it if necessary. The values in the class aren't important; but
        * they must not be null.
        */
-      if (Launcher.instance == null)
+      try
       {
-         new Launcher();
+         if (Launcher.instance == null)
+         {
+            new Launcher();
+         }
+         if (Launcher.instance == null)
+         {
+            new Launcher();
+            System.out.println("******************** NULL");
+         }
+         Launcher.instance.fillSettings(); // guich@tc100
       }
-      if (Launcher.instance == null)
+      catch (java.awt.HeadlessException he)
       {
-         new Launcher();
-         System.out.println("******************** NULL");
       }
-      Launcher.instance.fillSettings(); // guich@tc100
+      catch (Throwable t)
+      {
+         t.printStackTrace();
+      }
    }
    static void newLauncherInstance4D() {}
 
@@ -63,7 +73,7 @@ public final class Convert
       newLauncherInstance();
    }
 
-   private static char []b2h = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+   public static char []b2h = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
    private static byte []h2b = new byte['f' + 1];
    private static byte h2bInvalid = (byte)0xFF;
    static
@@ -77,8 +87,6 @@ public final class Convert
       for (int i = 'a', j = 10; i <= 'f'; i++, j++)
          h2b[i] = (byte)j;
    }
-
-   private static byte[] buffer = new byte[32];
 
    /** The bytes are converted to char and vice-versa using the CharacterConverter associated in this charConverter member.
     * @see totalcross.sys.Convert#setDefaultConverter(String)
@@ -124,6 +132,10 @@ public final class Convert
       return ok;
    }
 
+   /** The minimum char value: '\u0000' */
+   public static final char MIN_CHAR_VALUE = '\u0000';
+   /** The maximum char value:  */
+   public static final char MAX_CHAR_VALUE = '\uFFFF';
    /** The maximum short value: 32767 */
    public static final short MAX_SHORT_VALUE = 32767;
    /** The minimum short value: -32768 */
@@ -144,11 +156,34 @@ public final class Convert
    public static final int MAX_DOUBLE_DIGITS = 15;
    private static final double DOUBLE_MAX_NON_EXP = 9.007199254740992E15; // 2^53
    private static final double DOUBLE_MIN_NON_EXP = 1.1102230246251565E-16; // 2^-53
-   
+
+   static final char[] TITLE = "\u01c4\u01c5\u01c5\u01c5\u01c6\u01c5\u01c7\u01c8\u01c8\u01c8\u01c9\u01c8\u01ca\u01cb\u01cb\u01cb\u01cc\u01cb\u01f1\u01f2\u01f2\u01f2\u01f3\u01f2".toCharArray();
+
    static final boolean useNative = !Settings.onJavaSE;
 
    private Convert()
    {
+   }
+
+   /**
+    * Converts a Unicode character into its titlecase equivalent mapping.
+    * If a mapping does not exist, then the character passed is returned.
+    * Note that isTitleCase(toTitleCase(ch)) does not always return true.
+    *
+    * @param ch character to convert to titlecase
+    * @return titlecase mapping of ch, or ch if titlecase mapping does
+    *         not exist
+    * @see #toLowerCase(char)
+    * @see #toUpperCase(char)
+    */
+   public static char toTitleCase(char ch)
+   {
+      char[] title = TITLE;
+     // As title is short, it doesn't hurt to exhaustively iterate over it.
+     for (int i = title.length - 2; i >= 0; i -= 2)
+       if (title[i] == ch)
+         return title[i + 1];
+     return toUpperCase(ch);
    }
 
    /** Creates a copy of the given array. */
@@ -821,9 +856,6 @@ public final class Convert
       return as;
    }
 
-   private static Vector vtok = new Vector(); // used below
-   private static IntHashtable ihttok = new IntHashtable(10);
-
    /**
     * Tokenize the given input string. If there's no delim chars in input, returns the input string. The delim parameter
     * is not a set of possible single characters: it is a whole string that is searched inside the given input.<br>
@@ -840,7 +872,7 @@ public final class Convert
          throw new java.lang.NullPointerException("Argument 'input' cannot have a null value");
       if (delim == null)
          throw new java.lang.NullPointerException("Argument 'delim' cannot have a null value");
-      vtok.removeAllElements(); // here we use a vector bc the indexOf(string,string) is slower
+      Vector vtok = new Vector(10);
       int inc = delim.length();
       if (inc == 0 || input.length() == 0) return new String[]{input}; // guich@566_21
       int position = 0;
@@ -857,9 +889,7 @@ public final class Convert
             vtok.addElement(input.substring(position, newPosition));
          position = newPosition + inc;
       }
-      String[] ret = (String[])vtok.toObjectArray();
-      vtok.removeAllElements(); // guich@tc100: clear the strings to allow gc if needed.
-      return ret;
+      return (String[])vtok.toObjectArray();
    }
 
    /**
@@ -880,25 +910,24 @@ public final class Convert
       if (delims.length == 1) // use a faster algorithm if there's a single letter
          return tokenizeString(input, delims[0]);
 
+      Vector vtok = new Vector(10); // used below
+
       int inputLen = input.length();
       int start = 0;
       char[] inputChars = input.toCharArray();
-      ihttok.clear();
-      for (int i = delims.length; --i >= 0;)
-         ihttok.put(delims[i], 1);
 
-      vtok.removeAllElements();
       for (int i = 0; i < inputLen; i++)
-         if (ihttok.exists(inputChars[i]))
-         {
-            if (i - start >= 0)
-               vtok.addElement(new String(inputChars, start, i - start));
-            start = i + 1;
-         }
+         for (char t: delims) // guich@310: for small arrays, a loop is faster than IntHashTable
+            if (t == inputChars[i])
+            {
+               if (i - start >= 0)
+                  vtok.addElement(new String(inputChars, start, i - start));
+               start = i + 1;
+               break;
+            }
       if (start > 0 && start <= inputLen)
          vtok.addElement(new String(inputChars, start, inputLen - start));
       String[] ret = (String[]) vtok.toObjectArray();
-      vtok.removeAllElements();
       return ret == null ? new String[] { input } : ret;
    }
 
@@ -929,6 +958,60 @@ public final class Convert
       }
       return chars.toString();
    }
+
+   private static int getLineCount(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
+   {
+      StringBuffer chars = new StringBuffer(text); // guich@tc114_76: change | to \n before applying our algorithm.
+      int last = chars.length()-1;
+      int lines = 1;
+      for (int pos = 0; pos <= last; pos++)
+      {
+         pos = getBreakPos(fm, chars, pos, maxWidth, true);
+         if (pos < 0 || pos > last) // not enough space to break the string or reached the end?
+            break;
+         if (chars.charAt(pos) != '\n')
+         {
+            insertAt(chars, pos, '\n');
+            last++;
+            lines++;
+         }
+      }
+      return lines;
+   }
+
+   /** This method is useful to insert line breaks into the text used in the Toast.show; it behaves like
+    * insertLineBreak but tries to split the string in a balanced number of chars.
+    * @see #insertLineBreak(int, FontMetrics, String)
+    */
+   public static String insertLineBreakBalanced(int maxWidth, totalcross.ui.font.FontMetrics fm, String text) // guich@200b4_30 - guich@tc100: changed to use the new StringBuffer functions
+   {
+      // check if the string already fits
+      if (fm.stringWidth(text) <= maxWidth)
+         return text;
+      int parts = 2;
+      StringBuffer sb = new StringBuffer(text);
+      int lt = text.length();
+      for (int i = 0; i < lt; i++, parts++)
+      {
+         int l = lt / parts; // finds the number of parts
+         int ww = fm.sbWidth(sb,0,l);
+         if (ww < maxWidth) // does the first string already fits in the desired max width?
+         {
+            while (l < lt) // checks if the number of lines equals to the number of parts; if not, skip to next word and try again
+            {
+               int lines = getLineCount(ww+fm.height/4, fm, text);
+               if (lines == parts)
+                  return insertLineBreak(ww+fm.height/4, fm, text);
+               l++;
+               while (l < lt && sb.charAt(l) != ' ')
+                  l++;
+               ww = fm.sbWidth(sb,0,l);
+            }
+         }
+      }
+      return insertLineBreak(maxWidth, fm, text);
+   }
+
 
    /** Finds the best position to break the line, with word-wrap and respecting \n.
     * @since TotalCross 1.0
@@ -1530,10 +1613,7 @@ public final class Convert
       char[] chars = s.toCharArray();
       int count = chars.length;
 
-      if (buffer.length < count)
-         buffer = new byte[count + 32];
-
-      byte[] buf = buffer;
+      byte[] buf = new byte[count];
       boolean firstChar = true;
       int pos = 0;
       byte b, invalid = h2bInvalid;
@@ -1659,6 +1739,26 @@ public final class Convert
       return hash;
    }
 
+   /** Removes the given set of chars from the String.
+    * Example:
+    * <pre>
+    * String s = Convert.remove("abcdef","df"); // returns "abce";
+    * </pre>
+    * @since TotalCross 3.05
+    */
+   public static String remove(String source, String chars)
+   {
+      if (chars.length() == 1) // use a faster method
+         return replace(source, chars, "");
+      int len = source.length();
+      StringBuffer sb = new StringBuffer(len);
+      char ch;
+      for (int i = 0; i < len; i++)
+         if (chars.indexOf(ch=source.charAt(i)) == -1)
+            sb.append(ch);
+      return sb.length() == len ? source : sb.toString();
+   }
+   
    /** Replace all occurences of the <code>from</code> String by the <code>to</code> String in the given <code>source</code> String.
     * @since TotalCross 1.0
     */
@@ -2243,6 +2343,7 @@ public final class Convert
    public static final long DOUBLE_NAN_BITS = 0x7ff8000000000000L;
    public static final double DOUBLE_POSITIVE_INFINITY_VALUE = longBitsToDouble(DOUBLE_POSITIVE_INFINITY_BITS);
    public static final double DOUBLE_NEGATIVE_INFINITY_VALUE = longBitsToDouble(DOUBLE_NEGATIVE_INFINITY_BITS);
+   public static final double DOUBLE_NAN_VALUE = longBitsToDouble(DOUBLE_NAN_BITS);
    static class Constants // get rid of symbols not used in device.
    {
       private static String spaces = "";
@@ -2273,7 +2374,40 @@ public final class Convert
    {
    }
 
+   static String withAcc = "áÁâÂàÀåÅãÃäÄçÇéÉêÊèÈëËíÍîÎìÌïÏñÑóÓôÔòÒõÕöÖúÚûÛùÙüÜýÝÿÿ";
+   static char[] woutAcc = "aAaAaAaAaAaAcCeEeEeEeEiIiIiIiInNoOoOoOoOoOuUuUuUuUyYyY".toCharArray();
+   /** Returns the given string without accentuation characters, using the unicode range 0-255 */
+   public static String removeAccentuation(String s)
+   {
+      if (s == null) return null;
+      char[] chars = s.toCharArray();
+      boolean changed = false;
+      for (int i = chars.length; --i >= 0;)
+      {
+         int normal = withAcc.indexOf(chars[i]);
+         if (normal != -1)
+         {
+            changed = true;
+            chars[i] = woutAcc[normal];
+         }
+      }
+      return changed ? new String(chars) : s;
+   }
+   
+   public static boolean equals(byte[] b1, byte[] b2)
+   {
+      if (b1 != null && b2 != null && b1.length == b2.length)
+      {
+         for (int i = b1.length; --i >= 0;)
+            if (b1[i] != b2[i])
+               return false;
+         return true;
+      }
+      return b1 == b2;
+   }
+   
    //////// Native methods for device
+   native public static boolean equals4D(byte[] b1, byte[] b2);
    native public static String dup4D(char c, int count);
    native public static String spacePad4D(String what, int count, boolean before);
    native public static int toInt4D(String s) throws InvalidNumberException;

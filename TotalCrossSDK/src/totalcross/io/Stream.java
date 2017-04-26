@@ -18,6 +18,10 @@
 
 package totalcross.io;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import totalcross.sys.*;
 
 /**
@@ -142,4 +146,197 @@ public abstract class Stream extends Connection
 
       return bytesSkipped;
    }
+   
+   /**
+    * @deprecated use {@link #asInputStream()} instead
+    */
+   @Deprecated
+   public InputStream wrapInputStream() {
+	   return asInputStream();
+   }
+   
+   public InputStream asInputStream() {
+	   return new WrapInputStream(this);
+   }
+   
+   public OutputStream asOutputStream() {
+	   return new WrapOutputStream(this);
+   }
+
+   /**
+    * @deprecated use {@link #asStream(InputStream)} instead
+    */
+   @Deprecated()
+   public static Stream wrapInputStreamToStream(InputStream inputStream) {
+	   return asStream(inputStream);
+   }
+   
+   public static Stream asStream(InputStream inputStream) {
+      if (inputStream instanceof WrapInputStream) {
+         return ((WrapInputStream) inputStream).stream;
+      }
+      return new WrapFromInputStream(inputStream);
+   }
+   
+   public static Stream asStream(OutputStream outputStream) {
+	      if (outputStream instanceof WrapOutputStream) {
+	         return ((WrapOutputStream) outputStream).stream;
+	      }
+	      return new WrapFromOutputStream(outputStream);
+	   }
+}
+
+class WrapInputStream extends InputStream {
+	Stream stream;
+
+	WrapInputStream(Stream stream) {
+		this.stream = stream;
+	}
+
+	@Override
+	public int read() throws IOException {
+		byte[] b = new byte[1];
+		if (read(b) == -1) {
+			return -1;
+		}
+		
+		return b[0];
+	}
+	
+	@Override
+	public int read(byte b[], int off, int len) throws IOException {
+		try {
+			return stream.readBytes(b, off, len);
+		} catch (totalcross.io.IOException e) {
+			throw new java.io.IOException(e);
+		}
+	}
+	
+}
+
+class WrapOutputStream extends OutputStream {
+	Stream stream;
+
+	WrapOutputStream(Stream stream) {
+		this.stream = stream;
+	}
+
+	@Override
+	public void write(int b) throws IOException {
+		write(new byte[] { (byte) b });
+	}
+	
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		try {
+			do {
+				int delta;
+				delta = stream.writeBytes(b, off, len);
+				off += delta;
+			} while (off < len);
+		} catch (totalcross.io.IOException e) {
+			throw new java.io.IOException(e);
+		}
+	}
+	
+}
+
+class WrapFromInputStream extends Stream {
+	InputStream inputStream;
+	
+	WrapFromInputStream(InputStream inputStream) {
+		this.inputStream = inputStream;
+	}
+	
+	@Override
+	public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
+		try {
+			return inputStream.read(buf, start, count);
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
+	@Override
+	public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't write to a wrapped input stream");
+	}
+	
+	@Override
+	public int writeBytes(byte[] buf) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't write to a wrapped input stream");
+	}
+	
+	@Override
+	public int writeBytes(String string) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't write to a wrapped input stream");
+	}
+	
+	@Override
+	public int skipBytes(int n) throws totalcross.io.IOException {
+		try {
+			return (int) inputStream.skip(n);
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
+	@Override
+	public InputStream asInputStream() {
+		return inputStream;
+	}
+	
+	@Override
+	public void close() throws totalcross.io.IOException {
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
+	
+}
+
+class WrapFromOutputStream extends Stream {
+	OutputStream outputStream;
+	
+	WrapFromOutputStream(OutputStream outputStream) {
+		this.outputStream = outputStream;
+	}
+	
+	@Override
+	public int writeBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
+		try {
+			outputStream.write(buf, start, count);
+			return count - start;
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
+	@Override
+	public int readBytes(byte[] buf, int start, int count) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't read from a wrapped output stream");
+	}
+	
+	@Override
+	public int skipBytes(int n) throws totalcross.io.IOException {
+		throw new totalcross.io.IOException("Can't skip in a wrapped output stream");
+	}
+	
+	@Override
+	public OutputStream asOutputStream() {
+		return outputStream;
+	}
+	
+	@Override
+	public void close() throws totalcross.io.IOException {
+		try {
+			outputStream.close();
+		} catch (IOException e) {
+			throw new totalcross.io.IOException(e);
+		}
+	}
+	
 }

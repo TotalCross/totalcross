@@ -14,7 +14,9 @@
 #include "tcvm.h"
 #include "guid.h"
 
-#if defined (WIN32) || defined (WINCE)
+#if defined (WP8)
+
+#elif defined (WIN32) || defined (WINCE)
  #include "win/SerialPortClient_c.h"
 #elif defined ANDROID
  #include "android/SerialPortClient_c.h"
@@ -23,12 +25,12 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPC_createSerialPortClient_s(NMParams p) // totalcross/io/device/bluetooth/SerialPortClient native private void createSerialPortClient(String address, int port, String []params) throws totalcross.io.IOException;  
 {
-#if defined (WIN32) || defined (WINCE) || defined (ANDROID)
-   Object serialPortClientObj = p->obj[0];
-   Object addressObj = p->obj[1];
-   Object paramsArray = p->obj[2];
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
+   TCObject serialPortClientObj = p->obj[0];
+   TCObject addressObj = p->obj[1];
+   TCObject paramsArray = p->obj[2];
    int32 channel = p->i32[0];
-   Object nativeHandleObj;
+   TCObject nativeHandleObj;
    NATIVE_HANDLE* nativeHandle; 
    char address[13];
    Err err;
@@ -57,12 +59,12 @@ TC_API void tidbSPC_createSerialPortClient_s(NMParams p) // totalcross/io/device
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPC_readBytes_Bii(NMParams p) // totalcross/io/device/bluetooth/SerialPortClient native public int readBytes(byte []b, int offset, int count) throws totalcross.io.IOException;
 {
-#if defined (WIN32) || defined (WINCE) || defined (ANDROID)
-   Object serialPortClientObj = p->obj[0];
-   Object byteArrayObj = p->obj[1];
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
+   TCObject serialPortClientObj = p->obj[0];
+   TCObject byteArrayObj = p->obj[1];
    int32 offset = p->i32[0];
    int32 count = p->i32[1];
-   Object nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+   TCObject nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
    NATIVE_HANDLE* nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
    uint8* byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
    int32 bytesRead;
@@ -78,12 +80,12 @@ TC_API void tidbSPC_readBytes_Bii(NMParams p) // totalcross/io/device/bluetooth/
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPC_writeBytes_Bii(NMParams p) // totalcross/io/device/bluetooth/SerialPortClient native public int writeBytes(byte []b, int offset, int count) throws totalcross.io.IOException;
 {
-#if defined (WIN32) || defined (WINCE) || defined (ANDROID)
-   Object serialPortClientObj = p->obj[0];
-   Object byteArrayObj = p->obj[1];
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
+   TCObject serialPortClientObj = p->obj[0];
+   TCObject byteArrayObj = p->obj[1];
    int32 offset = p->i32[0];
    int32 count = p->i32[1];
-   Object nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+   TCObject nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
    NATIVE_HANDLE* nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
    uint8* byteArrayP = (uint8*) ARRAYOBJ_START(byteArrayObj);
    int32 bytesWritten;
@@ -103,9 +105,9 @@ TC_API void tidbSPC_writeBytes_Bii(NMParams p) // totalcross/io/device/bluetooth
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbSPC_close(NMParams p) // totalcross/io/device/bluetooth/SerialPortClient native public void close() throws totalcross.io.IOException;
 {
-#if defined (WIN32) || defined (WINCE) || defined (ANDROID)
-   Object serialPortClientObj = p->obj[0];
-   Object nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
+#if !defined WP8 && (defined (WIN32) || defined (WINCE) || defined (ANDROID))
+   TCObject serialPortClientObj = p->obj[0];
+   TCObject nativeHandleObj = SerialPortClient_nativeHandle(serialPortClientObj);
    NATIVE_HANDLE* nativeHandle;
    Err err;
 

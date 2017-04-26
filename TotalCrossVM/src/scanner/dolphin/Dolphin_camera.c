@@ -1,7 +1,7 @@
 // Imagingsample.cpp : Defines the entry point for the application.
 //
 
-#include "barcode.h"
+#include "..\barcode.h"
 #include "resource.h"
 #include <commctrl.h>
 

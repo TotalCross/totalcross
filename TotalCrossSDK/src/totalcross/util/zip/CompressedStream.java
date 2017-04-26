@@ -107,7 +107,7 @@ public abstract class CompressedStream extends Stream
             start += l;
             count -= l;            
          } while (count > 0);
-         return r;
+         return r == 0 ? -1 : r;
       }
       catch (java.io.EOFException e)
       {

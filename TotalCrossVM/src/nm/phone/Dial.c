@@ -13,11 +13,15 @@
 
 #include "tcvm.h"
 
+#ifdef WINCE
 static void throwDialException(CharP msg, uint32 param);
 static Context currentContext;
 static void statusChange(CharP msg);
+#endif
 
-#if defined WINCE || defined WIN32
+#if defined WP8
+
+#elif defined WINCE || defined WIN32
  #include "win/Dial_c.h"
 #if defined WINCE
  #include "../io/device/win/RadioDevice_c.h"
@@ -28,24 +32,25 @@ static void statusChange(CharP msg);
  #include "posix/Dial_c.h"
 #endif
 
+#ifdef WINCE
 static void throwDialException(CharP msg, uint32 param)
 {
    throwException(currentContext, IOException, msg, param);
 }
 
-Object* listener;
+TCObject* listener;
 Method dialStatusChange;
-Object lastListener;
+TCObject lastListener;
 
 static void statusChange(CharP msg)
 {
-   Object msgObj;
+   TCObject msgObj;
    if (listener == null || *listener != lastListener)
    {
       TCClass dial = loadClass(currentContext, "totalcross.phone.Dial", true); //flsobral@tc114_75: fixed Dial's full qualified name.
       if (dial == null) // exception already thrown
          return;
-      listener = getStaticFieldObject(dial, "listener");
+      listener = getStaticFieldObject(null, dial, "listener");
       if (listener == null)
       {
          throwException(currentContext, NoSuchFieldError, "Can't find Dial.listener static field.");
@@ -66,24 +71,35 @@ static void statusChange(CharP msg)
       setObjectLock(msgObj, UNLOCKED);
    }
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tpD_number_s(NMParams p) // totalcross/phone/Dial native public static void number(String number);
 {
-#if defined(WINCE) || defined(ANDROID) || defined(darwin)
-   Object numberObj = p->obj[0];
-   currentContext = p->currentContext;
+   TCObject numberObj = p->obj[0];
    if (numberObj == null)
+   {
       throwNullArgumentException(p->currentContext, "number");
+      return;
+   }
 #if defined (WINCE)
-   else if (RdGetState(PHONE) == RADIO_STATE_DISABLED)
-      throwException(p->currentContext, IOException, "Phone is disabled");
+   currentContext = p->currentContext;
+   if (RdGetState(PHONE) == RADIO_STATE_DISABLED)
+      throwException(currentContext, IOException, "Phone is disabled");
 #endif
+#if defined(WINCE) || defined(ANDROID) || defined(darwin) || defined(WP8)
    else
    {
+      
+#if !defined WP8
       char number[100];
       JCharP2CharPBuf(String_charsStart(numberObj), min32(String_charsLen(numberObj),sizeof(number)-1),number);
-      dialNumber(number);
+      dialNumber(number); 
+#else
+      JChar number[100];
+      JCharPDupBuf(String_charsStart(numberObj), min32(String_charsLen(numberObj), sizeof(number) - 1), number);
+      dialNumberCPP(number);
+#endif
    }
 #else
    UNUSED(p);

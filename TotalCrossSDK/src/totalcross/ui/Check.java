@@ -49,7 +49,7 @@ import totalcross.ui.image.*;
  * </pre>
  */
 
-public class Check extends Control
+public class Check extends Control implements TextControl
 {
    private String text;
    private boolean checked;
@@ -92,7 +92,7 @@ public class Check extends Control
    /** Called by the system to pass events to the check control. */
    public void onEvent(Event event)
    {
-      if (event.target != this || !enabled) return;
+      if (event.target != this || !isEnabled()) return;
       switch (event.type)
       {
          case KeyEvent.ACTION_KEY_PRESS:
@@ -178,12 +178,13 @@ public class Check extends Control
    {
       cbColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       cfColor = getForeColor();
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
+      boolean enabled = isEnabled();
       int wh = lines.length == 1 ? height : fmH+Edit.prefH;
       int xx,yy;
 
@@ -195,6 +196,7 @@ public class Check extends Control
       if (!uiAndroid && uiVista && enabled) // guich@573_6
          g.fillVistaRect(0,0,wh,wh,cbColor,true,false);
       else
+      if (!uiAndroid || !transparentBackground)
       {
          g.backColor = uiAndroid ? backColor : cbColor;
          g.fillRect(0,0,wh,wh); // guich@220_28
@@ -202,9 +204,12 @@ public class Check extends Control
       if (uiAndroid)
          try 
          {
-            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor),0,0);
+            Image img = enabled ? Resources.checkBkg.getNormalInstance(wh,wh,foreColor) : Resources.checkBkg.getDisabledInstance(wh,wh,foreColor);
+            img.alphaMask = alphaValue;
+            NinePatch.tryDrawImage(g, img,0,0);
+            img.alphaMask = 255;
             if (checked)
-               g.drawImage(Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+               NinePatch.tryDrawImage(g,Resources.checkSel.getPressedInstance(wh,wh,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}
       else
          g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28

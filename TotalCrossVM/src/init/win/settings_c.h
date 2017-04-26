@@ -12,7 +12,9 @@
 
 
 #include "../../nm/ui/media_Sound.h"
-#include <Tapi.h>
+#if !defined WP8
+ #include <Tapi.h>
+#endif
 
 #if defined (WINCE)
  #include "../nm/io/device/RadioDevice.h"
@@ -26,7 +28,9 @@
  // COBJMACROS must be defined to include the macros from wbemcli.h that are used
  // to invoke methods of WBEM objects when the code is in C.
  #define COBJMACROS
+#if !defined WP8
  #include <wbemcli.h>
+#endif
  
  // Define the CLSID_WbemLocator. It is defined in wbemcli.h only for C++ programs.
  GUID CLSID_WbemLocator2 =  { 0x4590f811, 0x1d3a, 0x11d0, { 0x89, 0x1f, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
@@ -72,28 +76,78 @@ static TCHAR *createRegistryKey(TCHAR *buf, uint32 crid)
    return buf;
 }
 
-#define SW_STR_DEFAULT_KEY TEXT("Software\\SuperWaba\\appSettings\\1234")
-#define SW_BIN_DEFAULT_KEY TEXT("Software\\SuperWaba\\appSettings\\B1234")
-
 #define STR_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\1234")
 #define BIN_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\B1234") // guich@573_16
-static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM, bool isSW) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
+static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
 {
+#if !defined WP8
    TCHAR buf[40];
-   tcscpy(buf, bin ? (isSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (isSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
+   tcscpy(buf, bin ? BIN_DEFAULT_KEY : STR_DEFAULT_KEY);
 #ifdef WINCE
    if (RegDeleteKey(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, createRegistryKey(buf,crid)) != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
 #endif
       RegDeleteKey(HKEY_CURRENT_USER,createRegistryKey(buf,crid));
+#else
+	//WP8 should not use registry
+#endif
+}
+
+static void getSettingsFile(uint32 crid, bool bin, bool isHKLM, CharP out)
+{
+   char src[MAX_PATHNAME];
+   char c1 = (TCHAR)((crid >> 24) & 0xFF);
+   char c2 = (TCHAR)((crid >> 16) & 0xFF);
+   char c3 = (TCHAR)((crid >> 8)  & 0xFF);
+   char c4 = (TCHAR)(crid & 0xFF);
+   int32 type;
+   if (isHKLM)
+   {
+      c1 -= 64;
+      c2 -= 64;
+      c3 -= 64;
+      c4 -= 64;
+   }
+   type = bin ? 1 : isHKLM ? 2 : 3;
+   xstrprintf(src, "%%ALLUSERSPROFILE%%\\app%c%c%c%c.dt%d",c1,c2,c3,c4,type);
+   ExpandEnvironmentStrings(src, out, sizeof(src));
 }
 
 static void deleteAppSettings(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
 {
-   deleteAppSettingsTry(crid, bin, isHKLM, false);
+#if defined(WIN32) && !defined(WINCE) && !defined(WP8)
+   char dest[MAX_PATHNAME];
+   FILE* f;
+   getSettingsFile(crid, bin, isHKLM, dest);
+   f = fopen(dest, "wb"); // just truncate the file
+   if (f) fclose(f);
+#else
+   deleteAppSettingsTry(crid, bin, isHKLM);
+#endif
 }
 
-static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static void setAppSettings(uint32 crid, TCObject ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
+	//WP8 app should not use registry
+#if defined(WIN32) && !defined(WINCE) && !defined(WP8)
+   char dest[MAX_PATHNAME];
+   FILE* f;
+   getSettingsFile(crid, bin, isHKLM, dest);
+   f = fopen(dest, "wb");
+   if (f)
+   {
+      uint8* data;
+      uint32 len;
+      TCObject obj = (TCObject)ptr;
+      if (!bin)
+         obj = String_chars(obj);
+      len = ARRAYOBJ_LEN(obj);
+      data = (uint8*)ARRAYOBJ_START(obj);
+      if (!bin)
+         len *= 2;
+      fwrite(data,len,1,f);
+      fclose(f);
+   }
+#elif !defined WP8
    HKEY handle;
    DWORD disp;
    long ret;
@@ -103,14 +157,14 @@ static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // gu
 
 #ifndef WINCE
    ret = RegCreateKeyEx(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,NULL,0,KEY_ALL_ACCESS,NULL,&handle,&disp);
-   if (ret != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
+   if (isHKLM && (ret || RegOpenKeyEx(HKEY_LOCAL_MACHINE, buf, 0, KEY_READ, &handle))) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
 #endif
       ret = RegCreateKeyEx(HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,NULL,0,KEY_ALL_ACCESS,NULL,&handle,&disp);
    if (ret == NO_ERROR)
    {
       uint8* data;
       uint32 len;
-      Object obj = (Object)ptr;
+      TCObject obj = (TCObject)ptr;
       if (!bin)
          obj = String_chars(obj);
       len = ARRAYOBJ_LEN(obj);
@@ -120,6 +174,7 @@ static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // gu
       ret = RegSetValueEx(handle,TEXT("Value"),0,REG_BINARY,data,len); // store the data
       RegCloseKey(handle);
    }
+#endif
 }
 
 static void char8tochar16(CharP value, int32 i)
@@ -134,15 +189,17 @@ static void char8tochar16(CharP value, int32 i)
 }
 
 // don't forget to free the allocated buffer
-static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM, bool testSW) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
+	// WP8 app should not use registry
+#if !defined WP8
    HKEY handle;
    long ret;
    DWORD len,type;
    TCHAR buf[40];
-   Object temp = null, target = null;
+   TCObject temp = null, target = null;
 
-   tcscpy(buf, bin ? (testSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (testSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
+   tcscpy(buf, bin ? BIN_DEFAULT_KEY : STR_DEFAULT_KEY);
 
 #ifndef WINCE
    ret = RegOpenKeyEx(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,KEY_READ,&handle);
@@ -153,7 +210,7 @@ static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, b
    {
       len = 0;
       ret = RegQueryValueEx(handle,TEXT("Value"),NULL,NULL,NULL,&len);
-      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, testSW ? len : len/2); // guich@tc113_10: sw uses len, not len/2
+      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, len/2); // guich@tc113_10: sw uses len, not len/2
       if (temp)
       {
          type = REG_BINARY;
@@ -161,8 +218,6 @@ static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, b
       }
       if (!bin) // if not binary, create a string and set the chars to our created buffer
       {
-         if (testSW)
-            char8tochar16(ARRAYOBJ_START(temp), len); // guich@tc113_10: sw uses char8, not char16
          if ((target = createObject(currentContext, "java.lang.String")) != null)
             String_chars(target) = temp;
          setObjectLock(temp, UNLOCKED);
@@ -170,22 +225,55 @@ static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, b
       RegCloseKey(handle);
    }
    return target;
+#endif
+   return 0;
 }
 
-static Object getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+static TCObject getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
 {
-   Object o = getAppSettingsTry(currentContext, crid, bin, isHKLM, false); // first test at TC
-   if (o == null)
+   TCObject o = null;
+#if !defined WP8
+#ifndef WINCE
+   // guich@tc310: now we first look at the file, then at the registry
+   char dest[MAX_PATHNAME];
+   FILE* f;
+   getSettingsFile(crid, bin, isHKLM, dest);
+   f = fopen(dest, "rb");
+   if (f)
    {
-      o = getAppSettingsTry(currentContext, crid, bin, isHKLM, true); // guich@tc111_14: now test at SW
-      if (o != null) // if we retrieved it, then delete the SW key
-         deleteAppSettingsTry(crid, bin, isHKLM, true);
+      TCObject temp = null, target = null;
+      int32 len;
+
+      fseek(f, 0, SEEK_END);
+      len=ftell(f);
+      fseek(f, 0, SEEK_SET);
+      if (len == 0) // deleted?
+         goto end;
+
+      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, len/2); // guich@tc113_10: sw uses len, not len/2
+      if (temp)
+         fread(ARRAYOBJ_START(temp), len, 1, f);
+      if (!bin) // if not binary, create a string and set the chars to our created buffer
+      {
+         if ((target = createObject(currentContext, "java.lang.String")) != null)
+            String_chars(target) = temp;
+         setObjectLock(temp, UNLOCKED);
+      }
+      o = target;
+end:
+      fclose(f);
    }
+   if (o == null)
+#endif // wince
+      o = getAppSettingsTry(currentContext, crid, bin, isHKLM); // first test at TC
+#endif
    return o;
 }
 
 static bool queryRegistry(HKEY key, TCHAR *subkey, TCHAR *name, char *buf, uint32 size)
 {
+	// WP8 app should not use registry
+#if !defined WP8
    HKEY handle;
    long ret;
    DWORD type;
@@ -198,6 +286,7 @@ static bool queryRegistry(HKEY key, TCHAR *subkey, TCHAR *name, char *buf, uint3
       RegCloseKey(handle);
       return true;
    }
+#endif
    return false;
 }
 
@@ -367,11 +456,15 @@ bool checkWindowsMobile()
 
 bool hasVirtualKeyboard()
 {
-#if defined (WINCE) && _WIN32_WCE >= 300
+#if defined (WP8)
+	return true;
+#else
+ #if defined (WINCE) && _WIN32_WCE >= 300
    if (SipStatus() == SIP_STATUS_AVAILABLE)
       return true;
-#endif
+ #endif
    return false;
+#endif
 }
 
 void CALLBACK lineCallbackFunc(DWORD dwDevice, DWORD dwMsg, DWORD dwCallbackInstance, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3)
@@ -476,10 +569,15 @@ static void fillICCID() // guich@tc126_75
 #endif //WINCE
 }
 
-static bool hasKeyboard() //
+static bool hasKeyboard()
 {
+	// jeffque: WP8 never has a keyboard.
+#if !defined WP8
    int32 ret;
    return queryRegistry(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Shell"), TEXT("HasKeyboard"), (char*)&ret, sizeof(ret)) && ret == 1;
+#else
+	return false;
+#endif
 }
 
 #ifndef WINCE
@@ -502,6 +600,8 @@ void GetMacAddress(char* serialBuf) // guich@tc110_96
    FreeLibrary(dll);
 }
 
+// header wbemcli.h not defined in WP8, looks like that
+#if !defined WP8
 int GetMacAddressWMI(char* serialBuf)
 {
    HRESULT hres;
@@ -735,6 +835,7 @@ cleanup:
    return hres;
 }
 #endif
+#endif
 
 void updateDaylightSavings(Context currentContext)
 {
@@ -742,20 +843,18 @@ void updateDaylightSavings(Context currentContext)
    TIME_ZONE_INFORMATION tzi;
    char timeZone[128];
 
-   if ((ret=GetTimeZoneInformation(&tzi)) != TIME_ZONE_ID_UNKNOWN)
-   {
-      *tcSettings.timeZoneMinutesPtr = -tzi.Bias; // for gmt-3 it returns 180
-      *tcSettings.timeZonePtr = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
-      *tcSettings.daylightSavingsPtr = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
-      if (*tcSettings.daylightSavingsPtr)
-         *tcSettings.daylightSavingsMinutesPtr = -tzi.DaylightBias;
+   ret = GetTimeZoneInformation(&tzi); // even if TIME_ZONE_ID_UNKNOWN is returned, the fields are filled correctly
+   (*tcSettings.timeZoneMinutesPtr) = -tzi.Bias; // for gmt-3 it returns 180
+   (*tcSettings.timeZonePtr) = *tcSettings.timeZoneMinutesPtr / 60; // divide by 60 to get -3.
+   (*tcSettings.daylightSavingsPtr) = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
+   if (*tcSettings.daylightSavingsPtr)
+      (*tcSettings.daylightSavingsMinutesPtr) = -tzi.DaylightBias;
 
-      if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
-         JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
-      else
-         JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
-      setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
-   }
+   if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
+      JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
+   else
+      JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
+   setObjectLock(*getStaticFieldObject(currentContext, settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
 }
 
 bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
@@ -764,17 +863,28 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
    int32 len;
+#if !defined(WP8)
    HRESULT hres;
 #endif
+#endif
 
+#ifdef WP8
+   *(tcSettings.romVersionPtr) = getOSVersion();
+   getRomSerialNumberCPP(romSerialNumber);
+   getDeviceIdCPP(deviceId);
+   *(tcSettings.virtualKeyboardPtr) = isVirtualKeyboard();
+   platform = "WindowsPhone";
+   //   xstrcpy(deviceId, GetDisplayNameWP8());
+#else
    // OS version
    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
    GetVersionEx(&osvi);
+   *(tcSettings.romVersionPtr) = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
+#endif
 
-   *tcSettings.romVersionPtr   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
 #ifdef WINCE
    romSerialNumber[0] = 0;
-   if (*tcSettings.romVersionPtr >= 400)
+   if (*(tcSettings.romVersionPtr) >= 400)
    {
       GetSerialNumberPocketPC2002(romSerialNumber);
       if (romSerialNumber[0] == 0)
@@ -787,17 +897,17 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    {
       isMotoQ = tcscmp(wcbuf,TEXT("MotoQ")) == 0;
       TCHARP2CharPBuf(wcbuf, deviceId);
-      *tcSettings.virtualKeyboardPtr = !hasKeyboard(); // guich@584_3
+      *(tcSettings.virtualKeyboardPtr) = !hasKeyboard(); // guich@584_3
    }
    else
-      *tcSettings.virtualKeyboardPtr = true;
+      *(tcSettings.virtualKeyboardPtr) = true;
 
-   if (*tcSettings.romVersionPtr < 300)
+   if (*(tcSettings.romVersionPtr) < 300)
       platform = "WindowsCE";
    else
    {
       #ifdef HAS_SIP
-      *tcSettings.keyboardFocusTraversablePtr = SipStatus() == SIP_STATUS_UNAVAILABLE; // guich@570_39
+      *(tcSettings.keyboardFocusTraversablePtr) = SipStatus() == SIP_STATUS_UNAVAILABLE; // guich@570_39
       #endif
       if (!isWindowsMobile) //flsobral@tc110_37: Our global was already initialized, so let's use it.
          platform = "PocketPC";
@@ -815,48 +925,68 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    if (queryRegistry(HKEY_CURRENT_USER, TEXT("ControlPanel\\Owner"), TEXT("Owner"), (char *)wcbuf, MAX_PATH*sizeof(TCHAR)))
       TCHARP2CharPBuf(wcbuf, userName);
 #else
+# ifndef WP8
    len = sizeof(deviceId);
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
+   *(tcSettings.virtualKeyboardPtr) = GetSystemMetrics(SM_TABLETPC);
+# endif
+
+#if !defined WP8
    //use the mac address as the serial number
    hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
    if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
       debug("Unable to retrieve device registration information, please try again or contact support if the problem persists. (%X)", hres);
    else if (romSerialNumber[0] == 0)
    {
-      if (*tcSettings.romVersionPtr < 501)
+      if (*(tcSettings.romVersionPtr) < 501)
          GetMacAddress(romSerialNumber);
-      if (romSerialNumber[0] == 0)
-      {
-#if !defined(ENABLE_RAS)
-         xstrcpy(romSerialNumber, "unknown");
-#endif
-#if !defined(ENABLE_NORAS)
-         debug("Unable to retrieve device registration information, please make sure the network interfaces are enabled and try again or contact support if the problem persists. (%X)", hres);
-#endif
-      }
+//      if (romSerialNumber[0] == 0)
+//         xstrcpy(romSerialNumber, "unknown");
    }
+#endif
 
-   len = sizeof(userName);
+ 
+#if !defined WP8 
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
       queryRegistry(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Logon User Name", userName, sizeof(userName)) || // first, try as a winnt machine
       queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
       ;
 #endif
+#endif
    {
+	   //XXX WP8 does not have GetDC or similar...
+#if !defined WP8
       HDC hdc = GetDC(mainHWnd);
-      *tcSettings.deviceFontHeightPtr = abs(12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72);
+      *(tcSettings.deviceFontHeightPtr) = abs(12 * GetDeviceCaps(hdc, LOGPIXELSY) / 72);
       DeleteDC(hdc);
+#else
+	  *(tcSettings.deviceFontHeightPtr) = (int32) getFontHeightCPP();
+#endif
    }
-   *tcSettings.decimalSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
-   *tcSettings.thousandsSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
-   if (*tcSettings.decimalSeparatorPtr == *tcSettings.thousandsSeparatorPtr) // guich@421_12: make sure they differ
-      *tcSettings.decimalSeparatorPtr = *tcSettings.thousandsSeparatorPtr=='.' ? ',' : '.';
-   *tcSettings.dateSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDATE,wcbuf,2) ? (char)wcbuf[0] : '/';
-   *tcSettings.timeSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STIME,wcbuf,2) ? (char)wcbuf[0] : ':';
-   *tcSettings.weekStartPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
-   *tcSettings.is24HourPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
-   *tcSettings.dateFormatPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
+#if defined WP8
+#define GetLocaleInfo_COMPAT GetLocaleInfoEx
+#define LOCALE_USER_DEFAULT_COMPAT LOCALE_NAME_USER_DEFAULT
+#else
+#define GetLocaleInfo_COMPAT GetLocaleInfo
+#define LOCALE_USER_DEFAULT_COMPAT LOCALE_USER_DEFAULT
+#endif
+   *(tcSettings.decimalSeparatorPtr)     = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
+   *(tcSettings.thousandsSeparatorPtr)   = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
+   if (*(tcSettings.decimalSeparatorPtr) == *(tcSettings.thousandsSeparatorPtr)) // guich@421_12: make sure they differ
+      *(tcSettings.decimalSeparatorPtr)  = *(tcSettings.thousandsSeparatorPtr)=='.' ? ',' : '.';
+   *(tcSettings.dateSeparatorPtr)        = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_SDATE,wcbuf,2) ? (char)wcbuf[0] : '/';
+   *(tcSettings.timeSeparatorPtr)        = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_STIME,wcbuf,2) ? (char)wcbuf[0] : ':';
+   *(tcSettings.weekStartPtr)            = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
+   *(tcSettings.is24HourPtr)             = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
+   *(tcSettings.dateFormatPtr)           = GetLocaleInfo_COMPAT(LOCALE_USER_DEFAULT_COMPAT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
+
+#if defined(WP8)
+   *(tcSettings.virtualKeyboardPtr)      = true;
+   *(tcSettings.fingerTouchPtr)          = true;
+   *(tcSettings.unmovableSIP)            = true;
+   //*(tcSettings.keyboardFocusTraversablePtr) = true;
+#endif
 
    // guich@340_33: timezone and daylight savings
    updateDaylightSavings(currentContext);

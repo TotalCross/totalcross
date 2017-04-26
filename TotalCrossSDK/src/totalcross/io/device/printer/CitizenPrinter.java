@@ -52,6 +52,13 @@ public class CitizenPrinter extends BluetoothPrinter
       super(con);
    }
    
+   /** Creates a new CitizenPrinter instance, using the given Stream as bridge to the printer.
+    */
+   public CitizenPrinter(Stream con) throws IOException
+   {
+      super(con);
+   }
+   
    /** Sets the current font based on the given attributes. */
    public void setFont(boolean fontA, boolean bold, boolean doubleWidth, boolean doubleHeight, boolean underline) throws IOException
    {

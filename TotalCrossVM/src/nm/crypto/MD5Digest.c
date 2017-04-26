@@ -17,8 +17,8 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcdMD5D_nativeCreate(NMParams p) // totalcross/crypto/digest/MD5Digest native void nativeCreate();
 {
-   Object md5dObj = p->obj[0];
-   Object digestObj;
+   TCObject md5dObj = p->obj[0];
+   TCObject digestObj;
 
    if ((digestObj = createByteArray(p->currentContext, sizeof(MD5_CTX))) != null)
    {
@@ -29,12 +29,12 @@ TC_API void tcdMD5D_nativeCreate(NMParams p) // totalcross/crypto/digest/MD5Dige
 //////////////////////////////////////////////////////////////////////////
 TC_API void tcdMD5D_process_B(NMParams p) // totalcross/crypto/digest/MD5Digest native protected final byte[] process(byte []data);
 {
-   Object md5dObj = p->obj[0];
-   Object dataObj = p->obj[1];
-   Object digestObj = *Digest_digestRef(md5dObj);
+   TCObject md5dObj = p->obj[0];
+   TCObject dataObj = p->obj[1];
+   TCObject digestObj = *Digest_digestRef(md5dObj);
    MD5_CTX *ctx = (MD5_CTX*) ARRAYOBJ_START(digestObj);
 
-   Object byteArrayResult;
+   TCObject byteArrayResult;
 
    if (!dataObj)
    {
@@ -42,13 +42,13 @@ TC_API void tcdMD5D_process_B(NMParams p) // totalcross/crypto/digest/MD5Digest 
       return;
    }
 
-   MD5Init(ctx);
-   MD5Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
+   MD5_Init(ctx);
+   MD5_Update(ctx, ARRAYOBJ_START(dataObj), ARRAYOBJ_LEN(dataObj));
 
    if ((byteArrayResult = createByteArray(p->currentContext, MD5_SIZE)) != null)
    {
       p->retO = byteArrayResult;
       setObjectLock(byteArrayResult, UNLOCKED);
-      MD5Final(ctx, ARRAYOBJ_START(byteArrayResult));
+      MD5_Final(ARRAYOBJ_START(byteArrayResult), ctx);
    }
 }

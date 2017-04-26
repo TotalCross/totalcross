@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -31,6 +32,16 @@ import totalcross.util.*;
 
 public class Control extends GfxSurface
 {
+   /** Used when this Control is translucent */
+   public static enum TranslucentShape
+   {
+      NONE,
+      RECT,
+      ROUND,
+      LESS_ROUND,
+      CIRCLE
+   };
+
    /** The type of surface. */
    int surfaceType; // don't move from here! must be at position 0
    /** The control's x location */
@@ -48,7 +59,7 @@ public class Control extends GfxSurface
    /** The control's previous sibling. */
    Control prev;
    /** True if the control is enabled (accepts events) or false if not */
-   protected boolean enabled=true;
+   private boolean enabled=true;
    /** The font used by the control. */
    protected Font font;
    /** The fontMetrics corresponding to the controls font. */
@@ -67,8 +78,10 @@ public class Control extends GfxSurface
    public String clearValueStr = ""; // guich@572_19
    /** Default value when calling clear. When the control will use a numeric value or a String, depends on the type of control. Defaults to zero. */
    public int clearValueInt; // guich@572_19
+   /** The next control that will receive focus when tab is hit. */
+   public Control nextTabControl;
    public static final int RANGE = 10000000;
-   private static final int UICONST = RANGE*2+1000000;
+   public static final int UICONST = RANGE*2+1000000;
    /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
    public static final int PREFERRED = 1*UICONST;
    /** Constant used in param x in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: LEFT+2 or LEFT-1. */
@@ -113,7 +126,8 @@ public class Control extends GfxSurface
     * @since TotalCross 1.14
     */
    public static final int KEEP       = 16*UICONST; // guich@tc114_68
-   /** Constant used in param width (will use parent's width) and height (will use parent's height) in setRect. 
+   /** Constant used in param width (will use parent's width) and height (will use parent's height) in setRect.
+    * It can also be used in X or Y, representing the position where to draw it. 
     * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
     * There are two ways to use it:<br>
     * 1. PARENTSIZE + constant: it will use as a PERCENTAGE of the parent's size. For example, PARENTSIZE+20 in width will result in 20% of parent's size.<br>
@@ -169,6 +183,16 @@ public class Control extends GfxSurface
     * @since TotalCross 2.0
     */
    public static final int PARENTSIZEMAX = 21*UICONST;
+   /** Constant used in param width (will use parent's width) and height (will use the current font size/height) in setRect.
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. FONTSIZE + constant: it will use as a PERCENTAGE of the parent's size. For example, FONTSIZE+20 in width will result in 20% of font's size.<br>
+    * 2. FONTSIZE - constant: it will use as a FRACTION of the parent's size. For example, FONTSIZE-4 in width will result in 1/4 of font's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the font's width/height. So, FONTSIZE and FONTSIZE+100 is the same.
+    * @since TotalCross 1.52
+    */
+   public static final int FONTSIZE = 22*UICONST;
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
@@ -181,6 +205,9 @@ public class Control extends GfxSurface
     */
    public static final int WILL_RESIZE = RANGE/3; // guich@tc114_68
    private static final int MAXABSOLUTECOORD = PREFERRED - RANGE;
+   
+   /** Set to true to ignore parent's insets when placing this control on screen. */
+   public boolean ignoreInsets;
 
    private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
 
@@ -215,16 +242,20 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiFlat,uiVista=true,uiAndroid;
+   protected static boolean uiFlat,uiVista=true,uiAndroid,uiHolo;
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
     */
    protected boolean focusLess;
 
-   boolean eventsEnabled = true;
+   protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
+   public boolean eventsEnabled = true;
 
-   static Rect cli = new Rect();
+   Rect cli = new Rect();
+   /** Specifies if this device is a tablet, computing the number of text lines.
+    */
+   public static boolean isTablet;
 
    static final int SETX_NOT_SET = -100000000;
    protected int setX = SETX_NOT_SET, setY, setW, setH;
@@ -232,7 +263,8 @@ public class Control extends GfxSurface
    protected Control setRel;
    protected boolean repositionAllowed;
    protected int tempW; // used in flowContainer
-   
+   protected TranslucentShape translucentShape = TranslucentShape.NONE;
+
    /** The shadow color to be applied to this control. */
    public int textShadowColor; // guich@tc126_26
 
@@ -254,8 +286,12 @@ public class Control extends GfxSurface
    /** To be used in the setTextShadowColor method. */
    public static final int DARKER_BACKGROUND = -3;
 
-   private Vector listeners;
+   Vector listeners;
+   private static boolean callingUpdScr,callingRepNow;
 
+   /** Alpha to be used in some controls, ranging from 0 to 255. */
+   public int alphaValue = 255;
+   
    /** Set the background to be transparent, by not filling the control's area with the background color.
     * @since TotalCross 1.0
     */
@@ -270,6 +306,17 @@ public class Control extends GfxSurface
    
    private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
+   /** The offscreen image taken with takeScreenShot. The onPaint will use this shot until the user calls releaseScreenShot.
+    */
+   public Image offscreen;
+   
+   /** Keep the control disabled even if enabled is true. */
+   public boolean keepDisabled;
+   
+   /** Keep the control enabled even if enabled is false. */
+   public boolean keepEnabled;
+   
+   
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
@@ -278,6 +325,7 @@ public class Control extends GfxSurface
          MainWindow.defaultFont = Font.getFont(Font.DEFAULT, false, Font.NORMAL_SIZE);
          if (Settings.onJavaSE && !Font.DEFAULT.equals("TCFont"))
             Vm.warning("You're using the old font. Consider porting your program to the new font. See Settings.useNewFont javadocs.");
+         isTablet = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE > 30;
       }
       font = MainWindow.defaultFont;
       fm = font.fm; // guich@450_36: new way of getting the fontMetrics.
@@ -286,6 +334,69 @@ public class Control extends GfxSurface
       textShadowColor = UIColors.textShadowColor;
    }
 
+   /** Take a screen shot of this container and stores it in <code>offscreen</code>.
+    */
+   public void takeScreenShot()
+   {
+      try
+      {
+         offscreen = null;
+         Image offscreen = new Image(width,height);
+         paint2shot(offscreen.getGraphics(),false);
+         this.offscreen = offscreen;
+         this.offscreen.applyChanges();
+      }
+      catch (Throwable t)
+      {
+         this.offscreen = null;
+      }
+   }
+   
+   void paint2shot(Graphics g, boolean shift)
+   {
+      if (!transparentBackground && parent != null && !(parent.parent != null && parent.parent instanceof ScrollContainer && parent.parent.transparentBackground)) // last clause prevents a white background on SAV's menu 
+      {
+         g.backColor = parent.backColor;
+         g.fillRect(0,0,width,height);
+      }
+      g.setFont(font);
+      if (asWindow != null)
+         asWindow.paintWindowBackground(g);
+      paint2shot(g,this,shift);
+   }
+
+   /** Releases the screen shot. */
+   public void releaseScreenShot()
+   {
+      offscreen = null;
+      Window.needsPaint = true;
+   }
+   
+   void paint2shot(Graphics g, Control top, boolean shift)
+   {
+      // if (asContainer != null || asWindow != null)
+      //  this.refreshGraphics(g,0,top);
+      if (this.asWindow == null) 
+         this.onPaint(g);
+      Window w = getParentWindow();      
+      int x0 = shift ? w.x : 0;
+      int y0 = shift ? w.y : 0;
+      Rect rtop = top.getRect();
+      if (asContainer != null)
+         for (Control child = asContainer.children; child != null; child = child.next)
+            if (child.visible)
+            {
+               Rect r = child.getAbsoluteRect();
+               if (rtop.intersects(r))
+               {
+                  child.refreshGraphics(g,0,top,x0,y0);
+                  child.onPaint(g);
+                  if (child.asContainer != null)
+                     child.asContainer.paint2shot(g,top,shift);
+               }
+            }
+   }
+   
    /** Call to set the color value to place a shadow around the control's text. The shadow is made
     * drawing the button in (x-1,y-1), (x+1,y-1), (x-1,y+1), (x+1,y+1) positions.
     * Defaults to -1, which means no shadow.
@@ -355,7 +466,13 @@ public class Control extends GfxSurface
       uitip.show();
    }
    
-   /** Posts a ControlEvent.PRESSED event whith this control as target.
+   /** Shows a message using a global tip shared by all controls. */
+   public void showTip(String s, int duration, int y)
+   {
+	   Control.showTip(this, s, duration, y);
+   }
+   
+   /** Posts a ControlEvent.PRESSED event with this control as target.
     * @since TotalCross 1.14 
     */
    public void postPressedEvent()
@@ -523,13 +640,9 @@ public class Control extends GfxSurface
      * @see #SCREENSIZEMIN
      * @see #SCREENSIZEMAX
      * @see #PARENTSIZE
-<<<<<<< HEAD
-=======
-     * @see #SCREENSIZEMIN
-     * @see #SCREENSIZEMAX
->>>>>>> refs/remotes/origin/develop
      * @see #PARENTSIZEMIN
      * @see #PARENTSIZEMAX
+     * @see #FONTSIZE
      * @see Container#add(Control, int, int)
      * @see Container#add(Control, int, int, Control)
      */
@@ -546,11 +659,19 @@ public class Control extends GfxSurface
          repositionAllowed = true;
          int lpx=0,lpy=0;
          Container parent = this.parent; // guich@450_36: use local var instead of field
-         Rect cli = Control.cli; // guich@450_36: avoid recreating Rects
+         Rect cli = this.cli; // guich@450_36: avoid recreating Rects
          // relative placement
          if (parent != null)
          {
-            parent.getClientRect(cli);
+            if (!ignoreInsets)
+               parent.getClientRect(cli);
+            else
+            {
+               cli.x = cli.y = 0;
+               cli.width = parent.width;
+               cli.height = parent.height;
+            }
+               
             lpx = parent.lastX;
             lpy = parent.lastY;
             if (relative != null)
@@ -578,48 +699,54 @@ public class Control extends GfxSurface
          if (Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported)
          {
             // non-dependant width
+            if (width < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;}
-            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;} else
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= width && width  <= (FONTSIZE+RANGE)) {width -= FONTSIZE; if (width < 0) width = fmH / -width; else if (width == 0) width = fmH; else width = width * fmH / 100;} 
             tempW = width;
             // non-dependant height
+            if (height < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
-            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;}
-            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
+            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; else // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;} else
+            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= height && height <= (FONTSIZE+RANGE)) {height -= FONTSIZE; if (height < 0) height = fmH / -height; else if (height == 0) height = fmH; else height = height * fmH / 100;} 
             // x
-            if (x > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x = parent.lastX + parent.lastW +(x-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
-               if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x = parent.lastX - width +(x-BEFORE)*fmH/100; else
-               if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x = parent.lastX +(x-SAME)*fmH/100; else
-               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x = cli.x +(x-LEFT)*fmH/100; else
-               if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x = cli.x + cli.width-width +(x-RIGHT)*fmH/100; else
-               if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x = cli.x + ((cli.width-width) >> 1) +(x-CENTER)*fmH/100; else
-               if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x = parent.lastX + (parent.lastW - width)/2 +(x-CENTER_OF)*fmH/100; else // guich@tc110_88
-               if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x = parent.lastX + (parent.lastW - width) +(x-RIGHT_OF)*fmH/100; // guich@tc110_97
-            }
+            if (x < MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x = parent.lastX + parent.lastW +(x-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x = parent.lastX - width +(x-BEFORE)*fmH/100; else
+            if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x = parent.lastX +(x-SAME)*fmH/100; else
+            if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x = cli.x +(x-LEFT)*fmH/100; else
+            if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x = cli.x + cli.width-width +(x-RIGHT)*fmH/100; else
+            if ((PARENTSIZE-RANGE) <= x && x  <= (PARENTSIZE+RANGE)) {x -= PARENTSIZE; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100; x -= width/2;} else
+            if ((PARENTSIZEMIN-RANGE) <= x && x  <= (PARENTSIZEMIN+RANGE)) {x -= PARENTSIZEMIN; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100; x -= width;} else
+            if ((PARENTSIZEMAX-RANGE) <= x && x  <= (PARENTSIZEMAX+RANGE)) {x -= PARENTSIZEMAX; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100; } else
+            if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x = cli.x + ((cli.width-width) >> 1) +(x-CENTER)*fmH/100; else
+            if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x = parent.lastX + (parent.lastW - width)/2 +(x-CENTER_OF)*fmH/100; else // guich@tc110_88
+            if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x = parent.lastX + (parent.lastW - width) +(x-RIGHT_OF)*fmH/100; // guich@tc110_97
             // y
-            if (y > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y = parent.lastY + parent.lastH +(y-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
-               if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y = parent.lastY - height +(y-BEFORE)*fmH/100; else
-               if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y = parent.lastY +(y-SAME)*fmH/100; else
-               if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y = cli.y +(y-TOP)*fmH/100; else
-               if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y = cli.y + cli.height-height +(y-BOTTOM)*fmH/100; else
-               if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y = cli.y + ((cli.height-height) >> 1) +(y-CENTER)*fmH/100; else
-               if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y = parent.lastY + (parent.lastH - height)/2 +(y-CENTER_OF)*fmH/100; else // guich@tc110_88
-               if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y = parent.lastY + (parent.lastH - height) +(y-BOTTOM_OF)*fmH/100; // guich@tc110_97
-            }
+            if (y <= MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y = parent.lastY + parent.lastH +(y-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y = parent.lastY - height +(y-BEFORE)*fmH/100; else
+            if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y = parent.lastY +(y-SAME)*fmH/100; else
+            if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y = cli.y +(y-TOP)*fmH/100; else
+            if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y = cli.y + cli.height-height +(y-BOTTOM)*fmH/100; else
+            if ((PARENTSIZE-RANGE) <= y && y  <= (PARENTSIZE+RANGE)) {y -= PARENTSIZE; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100; y -= height/2;} else
+            if ((PARENTSIZEMIN-RANGE) <= y && y  <= (PARENTSIZEMIN+RANGE)) {y -= PARENTSIZEMIN; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100; y -= height;} else
+            if ((PARENTSIZEMAX-RANGE) <= y && y  <= (PARENTSIZEMAX+RANGE)) {y -= PARENTSIZEMAX; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100; } else
+            if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y = cli.y + ((cli.height-height) >> 1) +(y-CENTER)*fmH/100; else
+            if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y = parent.lastY + (parent.lastH - height)/2 +(y-CENTER_OF)*fmH/100; else // guich@tc110_88
+            if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y = parent.lastY + (parent.lastH - height) +(y-BOTTOM_OF)*fmH/100; // guich@tc110_97
             // width that depends on x
             if (width > MAXABSOLUTECOORD)
             {
@@ -637,48 +764,54 @@ public class Control extends GfxSurface
          else
          {
             // non-dependant width
+            if (width < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
-            if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;}
-            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;}
+            if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; else // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= width && width  <= (SCREENSIZEMIN+RANGE)) {width -= SCREENSIZEMIN; if (width < 0) width = Math.min(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.min(Settings.screenWidth,Settings.screenHeight); else width = width * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= width && width  <= (SCREENSIZEMAX+RANGE)) {width -= SCREENSIZEMAX; if (width < 0) width = Math.max(Settings.screenWidth,Settings.screenHeight) / -width; else if (width == 0) width = Math.max(Settings.screenWidth,Settings.screenHeight); else width = width * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= width && width  <= (PARENTSIZEMIN+RANGE)) {width -= PARENTSIZEMIN; if (width < 0) width = Math.min(cli.width,cli.height) / -width; else if (width == 0) width = Math.min(cli.width,cli.height); else width = width * Math.min(cli.width,cli.height) / 100;} else
+            if ((PARENTSIZEMAX-RANGE) <= width && width  <= (PARENTSIZEMAX+RANGE)) {width -= PARENTSIZEMAX; if (width < 0) width = Math.max(cli.width,cli.height) / -width; else if (width == 0) width = Math.max(cli.width,cli.height); else width = width * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= width && width  <= (FONTSIZE+RANGE)) {width -= FONTSIZE; if (width < 0) width = fmH / -width; else if (width == 0) width = fmH; else width = width * fmH / 100;}
             tempW = width;
             // non-dependant height
+            if (height < MAXABSOLUTECOORD) {} else
             if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
-            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
-            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;}
-            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
-            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;}
-            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;}
+            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; else // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;} else
+            if ((SCREENSIZEMIN-RANGE) <= height && height  <= (SCREENSIZEMIN+RANGE)) {height -= SCREENSIZEMIN; if (height < 0) height = Math.min(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.min(Settings.screenWidth,Settings.screenHeight); else height = height * Math.min(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((SCREENSIZEMAX-RANGE) <= height && height  <= (SCREENSIZEMAX+RANGE)) {height -= SCREENSIZEMAX; if (height < 0) height = Math.max(Settings.screenWidth,Settings.screenHeight) / -height; else if (height == 0) height = Math.max(Settings.screenWidth,Settings.screenHeight); else height = height * Math.max(Settings.screenWidth,Settings.screenHeight) / 100;} else
+            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;} else
+            if ((PARENTSIZEMIN-RANGE) <= height && height  <= (PARENTSIZEMIN+RANGE)) {height -= PARENTSIZEMIN; if (height < 0) height = Math.min(cli.width,cli.height) / -height; else if (height == 0) height = Math.min(cli.width,cli.height); else height = height * Math.min(cli.width,cli.height) / 100;} else
+            if ((PARENTSIZEMAX-RANGE) <= height && height  <= (PARENTSIZEMAX+RANGE)) {height -= PARENTSIZEMAX; if (height < 0) height = Math.max(cli.width,cli.height) / -height; else if (height == 0) height = Math.max(cli.width,cli.height); else height = height * Math.max(cli.width,cli.height) / 100;} else
+            if ((FONTSIZE-RANGE)      <= height && height  <= (FONTSIZE+RANGE)) {height -= FONTSIZE; if (height < 0) height = fmH / -height; else if (height == 0) height = fmH; else height = height * fmH / 100;}
             // x
-            if (x > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
-               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
-               if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
-               if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
-               if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
-               if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
-               if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
-               if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
-            }
+            if (x < MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
+            if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
+            if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
+            if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
+            if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
+            if ((PARENTSIZE-RANGE) <= x && x  <= (PARENTSIZE+RANGE)) {x -= PARENTSIZE; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100; x -= width/2;} else
+            if ((PARENTSIZEMIN-RANGE) <= x && x  <= (PARENTSIZEMIN+RANGE)) {x -= PARENTSIZEMIN; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100; x -= width;} else
+            if ((PARENTSIZEMAX-RANGE) <= x && x  <= (PARENTSIZEMAX+RANGE)) {x -= PARENTSIZEMAX; if (x < 0) x = cli.width / -x; else if (x == 0) x = cli.width; else x = x * cli.width / 100; } else
+            if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
+            if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
+            if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
             // y
-            if (y > MAXABSOLUTECOORD)
-            {
-               if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
-               if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
-               if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
-               if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
-               if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
-               if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
-               if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
-               if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
-            }
+            if (y <= MAXABSOLUTECOORD) {} else
+            if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
+            if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
+            if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
+            if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
+            if ((PARENTSIZE-RANGE) <= y && y  <= (PARENTSIZE+RANGE)) {y -= PARENTSIZE; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100; y -= height/2;} else
+            if ((PARENTSIZEMIN-RANGE) <= y && y  <= (PARENTSIZEMIN+RANGE)) {y -= PARENTSIZEMIN; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100; y -= height;} else
+            if ((PARENTSIZEMAX-RANGE) <= y && y  <= (PARENTSIZEMAX+RANGE)) {y -= PARENTSIZEMAX; if (y < 0) y = cli.height / -y; else if (y == 0) y = cli.height; else y = y * cli.height / 100; } else
+            if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
+            if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
+            if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
             // width that depends on x
             if (width > MAXABSOLUTECOORD)
             {
@@ -697,13 +830,28 @@ public class Control extends GfxSurface
          // quick check to see if all bounds were set.
          if (Settings.onJavaSE) // guich@450_36: do these checks only if running on desktop
          {
-            if (cli.width == 0 || cli.height == 0) throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
+            if (cli.width == 0 || cli.height == 0) 
+               throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
             else
 	         if (x+y+width+height > RANGE)
 	         {
-	            x=y=0;
-	            width=height=10;
-               throw new RuntimeException("To use AFTER/BEFORE/SAME you must add first the control "+toString()+" to the parent container.");
+	            String error = "";
+	            if (isOnlyForSize(x) || isOnlyForY(x))
+	               error += "x,";
+	            if (isOnlyForSize(y) || isOnlyForX(y))
+	               error += "y,";
+	            if (isOnlyForPos(width))
+	               error += "width,";
+	            if (isOnlyForPos(height))
+	               error += "height,";
+	            
+               x=y=0;
+               width=height=10;
+               
+	            if (!error.isEmpty())
+	               throw new RuntimeException("You are using constant positions "+error.substring(0,error.length()-1)+" in a wrong place for control "+toString()); 
+	            else   
+                  throw new RuntimeException("To use AFTER/BEFORE/SAME you must add first the control "+toString()+" to the parent container.");
 	         } else
 	         if (x+y < -RANGE) // guich@300_27
 	         {
@@ -737,6 +885,48 @@ public class Control extends GfxSurface
       }
    }
    
+   private boolean isOnlyForSize(int k)
+   {
+      return 
+         ((SCREENSIZEMIN-RANGE) <= k && k <= (SCREENSIZEMIN+RANGE)) ||
+         ((SCREENSIZEMAX-RANGE) <= k && k <= (SCREENSIZEMAX+RANGE)) |
+         ((PARENTSIZEMIN-RANGE) <= k && k <= (PARENTSIZEMIN+RANGE)) ||
+         ((PARENTSIZEMAX-RANGE) <= k && k <= (PARENTSIZEMAX+RANGE)) || 
+         ((FILL-RANGE)          <= k && k <= (FILL+RANGE)) ||
+         ((FIT -RANGE)          <= k && k <= (FIT +RANGE));
+   }
+   
+   private boolean isOnlyForPos(int k)
+   {
+      return 
+         ((AFTER  -RANGE) <= k && k <= (AFTER  +RANGE)) ||
+         ((BEFORE -RANGE) <= k && k <= (BEFORE +RANGE)) ||
+         ((TOP    -RANGE) <= k && k <= (TOP   +RANGE)) ||
+         ((BOTTOM -RANGE) <= k && k <= (BOTTOM  +RANGE)) ||
+         ((LEFT   -RANGE) <= k && k <= (LEFT   +RANGE)) ||
+         ((RIGHT  -RANGE) <= k && k <= (RIGHT  +RANGE)) ||
+         ((CENTER -RANGE) <= k && k <= (CENTER +RANGE)) ||
+         ((CENTER_OF-RANGE) <= k && k <= (CENTER_OF+RANGE)) ||
+         ((BOTTOM_OF-RANGE) <= k && k <= (BOTTOM_OF+RANGE)) ||
+         ((RIGHT_OF-RANGE)  <= k && k <= (RIGHT_OF+RANGE));
+   }
+
+   private boolean isOnlyForX(int k)
+   {
+      return 
+         ((LEFT   -RANGE) <= k && k <= (LEFT   +RANGE)) ||
+         ((RIGHT  -RANGE) <= k && k <= (RIGHT  +RANGE)) ||
+         ((RIGHT_OF-RANGE)  <= k && k <= (RIGHT_OF+RANGE));
+   }
+
+   private boolean isOnlyForY(int k)
+   {
+      return 
+         ((TOP   -RANGE) <= k && k <= (TOP   +RANGE)) ||
+         ((BOTTOM  -RANGE) <= k && k <= (BOTTOM  +RANGE)) ||
+         ((BOTTOM_OF-RANGE)  <= k && k <= (BOTTOM_OF+RANGE));
+   }
+
    /** Resets the original points that are set by the first setRect, so if you call setRect again, the 
     * old positions are replaced by the new ones. The set positions are used when a rotation occurs.
     * @since TotalCross 1.25
@@ -744,6 +934,13 @@ public class Control extends GfxSurface
    public void resetSetPositions()
    {
       setX = SETX_NOT_SET;
+   }
+   
+   /** Used internally. */
+   public void setSet(int x, int y)
+   {
+      setX = x;
+      setY = y;
    }
    
    protected void updateTemporary() // guich@tc114_68
@@ -914,13 +1111,13 @@ public class Control extends GfxSurface
             parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
          else
          {
-            Graphics g = refreshGraphics(gfx, 0);
+            Graphics g = refreshGraphics(gfx, 0, null,0,0);
             if (g != null)
             {
                onPaint(g);
                if (asContainer != null) // else, if this is a Container, be sure to repaint all its children
                   asContainer.paintChildren();
-               updateScreen();
+               safeUpdateScreen();
             }
          }
       }
@@ -951,35 +1148,36 @@ public class Control extends GfxSurface
      */
    public Graphics getGraphics()
    {
-      return refreshGraphics(gfx, 0);
+      return refreshGraphics(gfx, 0, null,0,0);
    }
 
-   Graphics refreshGraphics(Graphics g, int expand)
+   Graphics refreshGraphics(Graphics g, int expand, Control topParent, int tx0, int ty0)
    {
       if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
          return null;
       int sw = this.width;
       int sh = this.height;
       int sx = this.x, sy = this.y, cx, cy, delta, tx = sx, ty = sy;
-      for (Container c = parent; c != null; c = c.parent)
-      {
-         cx = c.x;  cy = c.y;
-         tx += cx;  ty += cy;
-         sx += cx;  sy += cy;
-
-         // before?
-         delta = sx - cx;
-         if (delta < 0) {sw += delta; sx = cx;}
-         delta = sy - cy;
-         if (delta < 0) {sh += delta; sy = cy;}
-
-         // after?
-         delta = (sx+sw)-(cx+c.width);
-         if (delta > 0) sw -= delta;
-         delta = (sy+sh)-(cy+c.height);
-         if (delta > 0) sh -= delta;
-      }
-      g.refresh(sx-expand,sy-expand,sw+expand+expand,sh+expand+expand, tx, ty, font);
+      if (this != topParent)
+         for (Container c = parent; c != topParent; c = c.parent)
+         {
+            cx = c.x;  cy = c.y;
+            tx += cx;  ty += cy;
+            sx += cx;  sy += cy;
+   
+            // before?
+            delta = sx - cx;
+            if (delta < 0) {sw += delta; sx = cx;}
+            delta = sy - cy;
+            if (delta < 0) {sh += delta; sy = cy;}
+   
+            // after?
+            delta = (sx+sw)-(cx+c.width);
+            if (delta > 0) sw -= delta;
+            delta = (sy+sh)-(cy+c.height);
+            if (delta > 0) sh -= delta;
+         }
+      g.refresh(sx+tx0-expand,sy-expand+ty0,sw+expand+expand,sh+expand+expand, tx+tx0, ty+ty0, font);
       return g;
    }
 
@@ -996,7 +1194,7 @@ public class Control extends GfxSurface
          (asContainer!=null?asContainer:parent.asContainer).setHighlighting();
 
       // don't dispatch events when disabled except TIMER events or (fingertouch and pen events) 
-      if ((!enabled && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
+      if ((!isEnabled() && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
          return;
 
       boolean dragTargetCalled = false;
@@ -1043,26 +1241,40 @@ public class Control extends GfxSurface
       event.consumed = false; // set to false again bc some controls reuse event objects
    }
 
-   protected EnabledStateChangeEvent esce = new EnabledStateChangeEvent();
    /** Sets if this control can or not accept events.
      * It changes the appearance of many controls to indicate they are disabled.
      */
    public void setEnabled(boolean enabled)
    {
+      internalSetEnabled(enabled, true);
+   }
+   
+   /** For internal use only. Used by derived controls to set the enabled flag. */
+   public boolean internalSetEnabled(boolean enabled, boolean post)
+   {
       if (enabled != this.enabled)
       {
          this.enabled = enabled;
          onColorsChanged(false);
-         esce.update(this);
-         postEvent(esce);
+         if (post)
+            post();
          Window.needsPaint = true; // now the controls have different l&f for disabled states
+         return true;
       }
+      return false;
+   }
+   
+   /** Posts the enable state change event. */
+   public void post()
+   {
+      esce.update(this);
+      postEvent(esce);
    }
 
    /** Returns if this control can or not accept events */
    public boolean isEnabled()
    {
-      return this.enabled;
+      return keepEnabled || (this.enabled && !keepDisabled);
    }
 
    /**
@@ -1144,7 +1356,7 @@ public class Control extends GfxSurface
    @since SuperWaba 2.0 */
    public int getForeColor()
    {
-      return enabled?foreColor:Color.brighter(foreColor);
+      return isEnabled()?foreColor:Color.brighter(foreColor);
    }
 
    /** Get the desired background color of this control.
@@ -1152,7 +1364,7 @@ public class Control extends GfxSurface
    public int getBackColor()
    {
       // note: if were in a white back color, return the color without darking
-      return (enabled || parent == null)?backColor:Color.darker(backColor);
+      return (isEnabled() || parent == null)?backColor:Color.darker(backColor);
    }
 
    /** Return true if the parent of this Control is added to somewhere.
@@ -1236,8 +1448,9 @@ public class Control extends GfxSurface
       if (!uiStyleAlreadyChanged)
       {
          uiFlat    = Settings.uiStyle == Settings.Flat;
-         uiAndroid = Settings.uiStyle == Settings.Android;
+         uiAndroid = Settings.uiStyle == Settings.Android || Settings.uiStyle == Settings.Holo;
          uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
+         uiHolo    = Settings.uiStyle == Settings.Holo || uiAndroid;
          uiStyleAlreadyChanged = true;
       }
       else throw new RuntimeException("The user interface style can be changed only once, in the MainWindow's constructor.");
@@ -1265,7 +1478,7 @@ public class Control extends GfxSurface
             return null;
          idx += inc;
          Control c = (Control)v.items[idx];
-         if (c.visible && c.enabled && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
+         if (c.visible && c.isEnabled() && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
             if (c.focusTraversable) // guich@580_56: added focusTraversable test.
                return c;
             else
@@ -1310,6 +1523,8 @@ public class Control extends GfxSurface
     * is saved in a buffer and, when this method is called,
     * the buffer is transfered to the screen, using the 
     * nextTransitionEffect set.
+    * NOTE: for a thread-safe version, use safeUpdateScreen
+    * @see #safeUpdateScreen() 
     * @see Container#nextTransitionEffect
     * @since SuperWaba 5.0
     */
@@ -1321,6 +1536,33 @@ public class Control extends GfxSurface
          Graphics.needsUpdate = false;
       }
    }
+   
+   /** This method causes the screen's update. If called at the main thread,
+    * the screen is updated immediatly. If not, the updated is schedulled to occur as
+    * soon as possible.
+    * @see #updateScreen()
+    * @since TotalCross 3.1
+    */
+   public static void safeUpdateScreen()
+   {
+      if (MainWindow.isMainThread())
+         updateScreen();
+      else
+      if (!callingUpdScr)
+      {
+         callingUpdScr = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               updateScreen();
+               Vm.sleep(1);
+               callingUpdScr = false;
+            }
+         });
+      }
+   }
+
    
    native public static void updateScreen4D();
 
@@ -1375,7 +1617,7 @@ public class Control extends GfxSurface
             font = setFont; fm = font.fm; fmH = font.fm.height;
             setRect(setX, setY, setW, setH, setRel, true);
             font = current; fm = font.fm; fmH = font.fm.height;
-            refreshGraphics(gfx, 0);
+            refreshGraphics(gfx, 0, null,0,0);
          }
          if (recursive && asContainer != null)
          {
@@ -1439,7 +1681,7 @@ public class Control extends GfxSurface
    /** Adds a listener for mouse events.
     * @see totalcross.ui.event.MouseListener
     */
-   public void addMouseListener(PenListener listener)
+   public void addMouseListener(MouseListener listener)
    {
       addListener(Listener.MOUSE, listener);
    }
@@ -1482,6 +1724,14 @@ public class Control extends GfxSurface
    public void addPressListener(PressListener listener)
    {
       addListener(Listener.PRESS, listener);
+   }
+
+   /** Adds a listener for PushNotification events.
+    * @see totalcross.ui.event.PushNotificationEvent
+    */
+   public void addPushNotificationListener(PushNotificationListener listener)
+   {
+      addListener(Listener.PUSHNOTIFICATION, listener);
    }
 
    /** Adds a listener for Timer events.
@@ -1539,6 +1789,14 @@ public class Control extends GfxSurface
    public void removePenListener(PenListener listener)
    {
       removeListener(Listener.PEN, listener);
+   }
+
+   /** Removes a listener for PushNotification events.
+    * @see totalcross.ui.event.PushNotificationEvent
+    */
+   public void removePushNotificationListener(PushNotificationListener listener)
+   {
+      removeListener(Listener.PUSHNOTIFICATION, listener);
    }
 
    /** Removes a listener for mouse events.
@@ -1626,39 +1884,47 @@ public class Control extends GfxSurface
    {
       // although this code is not much eficient, the number of listeners for a single control will be only one, most of the times.
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
-      {
-         Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || (callListenersOnAllTargets && (e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
-         switch (e.type)
+         try
          {
-            case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
-            case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
-            case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
-            case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
-            case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
-            case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
-            case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
-            case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
-            case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
-            case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
-            case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
-            case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
-            case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
-            case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
-            case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
-            case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
-            case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
-            case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
-            case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
-            case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
-            case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
-            case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
-            case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
-            case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
-            case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
-            case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
+            Listener l = (Listener)listeners.items[i];
+            if (e.target == l.target || (callListenersOnAllTargets && (e instanceof ListContainerEvent || e instanceof KeyEvent || e instanceof PenEvent))) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+            switch (e.type)
+            {
+               case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
+               case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
+               case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+               case MouseEvent.MOUSE_WHEEL:       if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseWheel((MouseEvent)e);       break;
+               case MultiTouchEvent.SCALE:        if (l.type == Listener.MULTITOUCH)((MultiTouchListener)l.listener).scale((MultiTouchEvent)e);      break;
+               case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
+               case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
+               case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
+               case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
+               case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
+               case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
+               case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
+               case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
+               case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
+               case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
+               case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
+               case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
+               case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
+               case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
+               case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
+               case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
+               case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
+               case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
+               case PushNotificationEvent.MESSAGE_RECEIVED:       if (l.type == Listener.PUSHNOTIFICATION)     ((PushNotificationListener)l.listener).messageReceived((PushNotificationEvent)e);   break;
+               case PushNotificationEvent.TOKEN_RECEIVED:         if (l.type == Listener.PUSHNOTIFICATION)     ((PushNotificationListener)l.listener).tokenReceived((PushNotificationEvent)e);   break;
+               case ListContainerEvent.ITEM_SELECTED_EVENT:       if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
+               case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT:  if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
+               case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
+               case EnabledStateChangeEvent.ENABLED_STATE_CHANGE: if (l.type == Listener.ENABLED) ((EnabledStateChangeListener)l.listener).enabledStateChange((EnabledStateChangeEvent)e);  break;
+            }
          }
-      }
+         catch (ClassCastException ee) // prevent totalcross.ui.event.PenEvent is not compatible with totalcross.ui.event.DragEvent
+         {
+            if (Settings.onJavaSE) throw ee;
+         }
    }
 
    /**
@@ -1688,12 +1954,12 @@ public class Control extends GfxSurface
     */
    public boolean isVisibleAndInside(int x0, int y0, int xf, int yf) // guich@tc115_40
    {
-      return this.visible && this.y <= yf && (this.y+this.height) >= y0 && this.x <= xf && (this.x+this.width) >= x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+      return this.visible && this.y < yf && (this.y+this.height) > y0 && this.x < xf && (this.x+this.width) > x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
    }
 
    boolean isVisibleAndInside(int y0, int yf) // guich@tc115_40
    {
-      return this.visible && this.y <= yf && (this.y+this.height) >= y0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+      return this.visible && this.y < yf && (this.y+this.height) > y0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
    }
 
    public int getGap(int gap)
@@ -1752,7 +2018,7 @@ public class Control extends GfxSurface
     * A scroll occurs before a flick is started.
     * @since TotalCross 1.3
     */
-   protected boolean hadParentScrolled()
+   public boolean hadParentScrolled()
    {
       for (Container c = parent; c != null; c = c.parent)
          if (c instanceof Scrollable && ((Scrollable)c).wasScrolled())
@@ -1792,5 +2058,103 @@ public class Control extends GfxSurface
    {
       Window w = getParentWindow();
       return w != null && w == Window.topMost;
+   }
+
+   /** Returns true if this control is obscured by the topmost window. 
+    * Note: parentWindow is retrieved with getParentWindow.
+    * @since TotalCross 2.1
+    */
+   public boolean isObscured(Window parentWindow)
+   {
+      if (parentWindow == Window.topMost)
+         return false;
+      int cx1 = Window.topMost.x, cy1 = Window.topMost.y, cx2 = cx1 + Window.topMost.width, cy2 = cy1 + Window.topMost.height;
+      int x1 = this.x, y1 = this.y, x2,y2;
+      for (Control c = parent; c != null; c = c.parent)
+      {
+         x1 += c.x;
+         y1 += c.y;
+      }
+      x2 = x1 + this.width; y2 = y1 + this.height;
+      return x1 >= cx1 && x2 < cx2 && y1 >= cy1 && y2 < cy2; 
+   }
+
+   /** Called by code that runs on threads to safely repaint now.
+    * @since TotalCross 3.1
+    */
+   protected void safeRepaintNow()
+   {
+      if (Settings.isOpenGL || MainWindow.isMainThread())
+         repaintNow();
+      else
+      if (!callingRepNow)
+      {
+         Window.needsPaint = true;
+         callingRepNow = true;
+         MainWindow.getMainWindow().runOnMainThread(new Runnable()
+         {
+            public void run()
+            {
+               repaintNow();
+               callingRepNow = false;
+            }
+         });
+      }
+   }
+
+   // for internal use only. Used by Tree
+   public void intXYWH(int x, int y, int w, int h)
+   {
+      this.x = x;
+      this.y = y;
+      if (w != 0) this.width = w;
+      if (h != 0) this.height = h;
+   }
+   
+   /** Make this control a translucent one by setting the desired shape instead of NONE. 
+    * Calling this resets the backColor to BLACK, foreColor to WHITE, and the textShadowColor to 0x444444, but you may change that value later.
+    * You can also change the translucentAlpha value.
+    * Note that a translucent button does not have a visual DISABLED state.
+    * It requires the Android or Holo user interface styles.
+    */
+   public void setTranslucent(TranslucentShape shape)
+   {
+      translucentShape = shape;
+      transparentBackground = true;
+      backColor = Color.BLACK;
+      foreColor = Color.WHITE;
+      textShadowColor = 0x444444;
+      alphaValue = 0x80;
+   }
+
+   private Image transback;
+   public boolean drawTranslucentBackground(Graphics g, int alphaValue)
+   {
+      if (translucentShape != TranslucentShape.NONE)
+      {
+         if (transback == null || transback.getWidth() != width || transback.getHeight() != height)
+            try
+            {
+               transback = new Image(width,height);
+               Graphics gg = transback.getGraphics();
+               gg.backColor = backColor;
+               switch (translucentShape)
+               {
+                  case NONE: return false;
+                  case RECT: gg.fillRect(0,0,width,height); break;
+                  case LESS_ROUND: gg.fillRoundRect(0,0,width,height,height/8); break;
+                  case ROUND: gg.fillRoundRect(0,0,width,height,height/4); break;
+                  case CIRCLE: gg.fillRoundRect((width-height)/2,0,height,height,height/2); break;
+               }
+            }
+            catch (Throwable t) {}
+         if (transback != null)
+         {
+            transback.alphaMask = alphaValue;
+            g.drawImage(transback,0,0);
+         }
+         return true;
+      }
+      return false;
    }
 }

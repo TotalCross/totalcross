@@ -11,10 +11,6 @@
 
 //#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
 
-#ifdef DEBUG_TO_ADB_ONLY
-#pragma warn ============================ DEBUGGING TO ADB ==========================
-#endif
-
 #include "tcvm.h"
 
 #if defined(WINCE) || defined(WIN32)
@@ -55,13 +51,19 @@ void destroyDebug()
    debugstr = null;
 }
 
+void iphoneDebug(CharP s);
 /* Displays the given char ptr in stdout (or somewhere else). */
 TC_API bool debug(const char *s, ...)
 {
    va_list args;
    char* buf = debugstr ? debugstr : debugstrSmall;
    if (debugstr == null) // guich@tc120_3: check disableDebug
-      return false;
+   {
+#ifdef ANDROID   
+      __android_log_print(ANDROID_LOG_INFO, "TotalCross", s);
+#endif         
+      return false;  
+   }
 
    va_start(args, s);
 
@@ -72,6 +74,12 @@ TC_API bool debug(const char *s, ...)
 
 bool debugStr(char *s)
 {
+#ifdef ANDROID   
+   if (s && !strEq(s,ALTERNATIVE_DEBUG)) // is the user asking to change the mode?
+      __android_log_write(ANDROID_LOG_INFO, "TotalCross", s);
+#elif defined darwin
+   iphoneDebug(s);
+#endif
    if (tcSettings.disableDebug && *tcSettings.disableDebug) // guich@tc120_3
       return false;
    return privateDebug(s);
@@ -107,4 +115,9 @@ TC_API bool alert(char *s, ...)
       return true;
    }
    return false;
+}
+
+TC_API void tcabort(char* msg, char* file, int32 line)
+{
+   debug("@@@ ABORT %s REQUESTED AT %s (%d)", msg, file, line);
 }

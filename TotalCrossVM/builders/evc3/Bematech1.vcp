@@ -1,0 +1,204 @@
+# Microsoft eMbedded Visual Tools Project File - Name="Bematech1" - Package Owner=<4>
+# Microsoft eMbedded Visual Tools Generated Build File, Format Version 6.02
+# ** DO NOT EDIT **
+
+# TARGTYPE "Win32 (WCE MIPS) External Target" 0x8206
+# TARGTYPE "Win32 (WCE SH3) External Target" 0x8106
+# TARGTYPE "Win32 (WCE ARM) External Target" 0x8506
+
+CFG=Bematech1 - Win32 (WCE SH3) Debug
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
+!MESSAGE 
+!MESSAGE NMAKE /f "Bematech1.vcn".
+!MESSAGE 
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "Bematech1.vcn" CFG="Bematech1 - Win32 (WCE SH3) Debug"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "Bematech1 - Win32 (WCE SH3) Release" (based on "Win32 (WCE SH3) External Target")
+!MESSAGE "Bematech1 - Win32 (WCE SH3) Debug" (based on "Win32 (WCE SH3) External Target")
+!MESSAGE "Bematech1 - Win32 (WCE MIPS) Release" (based on "Win32 (WCE MIPS) External Target")
+!MESSAGE "Bematech1 - Win32 (WCE MIPS) Debug" (based on "Win32 (WCE MIPS) External Target")
+!MESSAGE "Bematech1 - Win32 (WCE ARM) Release" (based on "Win32 (WCE ARM) External Target")
+!MESSAGE "Bematech1 - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) External Target")
+!MESSAGE 
+
+# Begin Project
+# PROP AllowPerConfigDependencies 0
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+# PROP ATL_Project 2
+
+!IF  "$(CFG)" == "Bematech1 - Win32 (WCE SH3) Release"
+
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "SH3Rel"
+# PROP BASE Intermediate_Dir "SH3Rel"
+# PROP BASE CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP BASE Rebuild_Opt "/a"
+# PROP BASE Target_File "Bematech.exe"
+# PROP BASE Bsc_Name "Bematech.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "SH3Rel"
+# PROP Intermediate_Dir "SH3Rel"
+# PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP Rebuild_Opt "/a"
+# PROP Target_File "Bematech1.exe"
+# PROP Bsc_Name "Bematech1.bsc"
+# PROP Target_Dir ""
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE SH3) Debug"
+
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "SH3Dbg"
+# PROP BASE Intermediate_Dir "SH3Dbg"
+# PROP BASE CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP BASE Rebuild_Opt "/a"
+# PROP BASE Target_File "Bematech.exe"
+# PROP BASE Bsc_Name "Bematech.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "SH3Dbg"
+# PROP Intermediate_Dir "SH3Dbg"
+# PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP Rebuild_Opt "/a"
+# PROP Target_File "Bematech1.exe"
+# PROP Bsc_Name "Bematech1.bsc"
+# PROP Target_Dir ""
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE MIPS) Release"
+
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "MIPSRel"
+# PROP BASE Intermediate_Dir "MIPSRel"
+# PROP BASE CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP BASE Rebuild_Opt "/a"
+# PROP BASE Target_File "Bematech.exe"
+# PROP BASE Bsc_Name "Bematech.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "MIPSRel"
+# PROP Intermediate_Dir "MIPSRel"
+# PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP Rebuild_Opt "/a"
+# PROP Target_File "Bematech1.exe"
+# PROP Bsc_Name "Bematech1.bsc"
+# PROP Target_Dir ""
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE MIPS) Debug"
+
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "MIPSDbg"
+# PROP BASE Intermediate_Dir "MIPSDbg"
+# PROP BASE CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP BASE Rebuild_Opt "/a"
+# PROP BASE Target_File "Bematech.exe"
+# PROP BASE Bsc_Name "Bematech.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "MIPSDbg"
+# PROP Intermediate_Dir "MIPSDbg"
+# PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP Rebuild_Opt "/a"
+# PROP Target_File "Bematech1.exe"
+# PROP Bsc_Name "Bematech1.bsc"
+# PROP Target_Dir ""
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE ARM) Release"
+
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ARMRel"
+# PROP BASE Intermediate_Dir "ARMRel"
+# PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP BASE Rebuild_Opt "/a"
+# PROP BASE Target_File "Bematech.exe"
+# PROP BASE Bsc_Name "Bematech.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ARMRel"
+# PROP Intermediate_Dir "ARMRel"
+# PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP Rebuild_Opt "/a"
+# PROP Target_File "Bematech1.exe"
+# PROP Bsc_Name "Bematech1.bsc"
+# PROP Target_Dir ""
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE ARM) Debug"
+
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "ARMDbg"
+# PROP BASE Intermediate_Dir "ARMDbg"
+# PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP BASE Rebuild_Opt "/a"
+# PROP BASE Target_File "Bematech.exe"
+# PROP BASE Bsc_Name "Bematech.bsc"
+# PROP BASE Target_Dir ""
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "ARMDbg"
+# PROP Intermediate_Dir "ARMDbg"
+# PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Cmd_Line "NMAKE /f Bematech.vcn"
+# PROP Rebuild_Opt "/a"
+# PROP Target_File "Bematech1.exe"
+# PROP Bsc_Name "Bematech1.bsc"
+# PROP Target_Dir ""
+
+!ENDIF 
+
+# Begin Target
+
+# Name "Bematech1 - Win32 (WCE SH3) Release"
+# Name "Bematech1 - Win32 (WCE SH3) Debug"
+# Name "Bematech1 - Win32 (WCE MIPS) Release"
+# Name "Bematech1 - Win32 (WCE MIPS) Debug"
+# Name "Bematech1 - Win32 (WCE ARM) Release"
+# Name "Bematech1 - Win32 (WCE ARM) Debug"
+
+!IF  "$(CFG)" == "Bematech1 - Win32 (WCE SH3) Release"
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE SH3) Debug"
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE MIPS) Release"
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE MIPS) Debug"
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "Bematech1 - Win32 (WCE ARM) Debug"
+
+!ENDIF 
+
+# Begin Source File
+
+SOURCE=.\Bematech.vcp
+# End Source File
+# End Target
+# End Project

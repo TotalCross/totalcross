@@ -46,8 +46,6 @@ extern "C" {
  #define I64_CONST(x) x##LL
 #endif
 
-#define PTRSIZE sizeof(void*)
-
 #ifdef darwin
  #define inline_
 #else
@@ -100,14 +98,16 @@ typedef double TDouble;
 typedef uint16 JChar; // Java char
 typedef JChar* JCharP;
 
-#if defined(WINCE) || defined(WIN32)
- #define inline __inline
- #if defined(UNICODE)
+#if !defined HAS_TCHAR
+ #if defined(WINCE) || defined(WIN32)
+  #define inline __inline
+  #if defined(UNICODE) && !defined(__cplusplus)
   typedef uint16 TCHAR;
- #endif
-#else
+  #endif
+ #else
     #define TEXT(x) x
     typedef char TCHAR;
+ #endif
 #endif
 typedef TCHAR* TCHARP;
 
@@ -135,7 +135,7 @@ typedef TUInt8 UInt8;
 typedef TDouble Double;
 typedef TInt64 Int64;
 
-#ifndef INT32_MAX
+#if !defined(INT32_MAX) && !defined(WP8)
  #define INT32_MAX (2147483647)
 #endif
 
@@ -176,14 +176,14 @@ typedef int64* Value64Array;
 #define xstrcmp(str1, str2) strcmp(str1, str2)
 CharP xstrncpy(CharP dest, CharP src, int32 len); // this one makes sure that the string is terminated with \0
 #define xstrcpy(dest, src) strcpy(dest, src)
-#define xstrlen(str) strlen(str)
+#define xstrlen(str) (int)strlen(str)
 #define xstrcat(dest, src) strcat(dest, src)
 CharP xstrrchr(CharP str, int32 what);
 #define xstrchr(str, what) strchr(str, what)
 #define xstrstr(str, what) strstr(str, what)
 #define xstrprintf sprintf
 #define xstrvprintf vsprintf
-// faster routines to move 8, 4, 2 and PTRSIZE pointers
+// faster routines to move 8, 4, 2 and TSIZE pointers
 #define xmove8(dest,src)                         \
    do                                            \
    {                                             \
@@ -210,14 +210,19 @@ CharP xstrrchr(CharP str, int32 what);
       ((uint8*)(dest))[0] = ((uint8*)(src))[0];  \
       ((uint8*)(dest))[1] = ((uint8*)(src))[1];  \
    } while(0)
+#ifdef WP8 // remove vc2013 warnings
 #define xmoveptr(dest,src)                       \
+   xmove4(dest, src);                       
+#else
+#define xmoveptr(dest, src)                       \
    do                                            \
    {                                             \
-      if (PTRSIZE == 4)                          \
+      if (TSIZE == 4)                          \
          xmove4(dest,src);                       \
       else                                       \
          xmove8(dest,src);                       \
    } while(0)
+#endif
 
 #define xmemmove(dest, src, len) memmove(dest, src, len)
 #define xmemzero(mem, len) memset(mem, 0, len)
@@ -247,7 +252,7 @@ int32 xstrncasecmp(const char *a1, const char *a2, int32 size);
  #define tcscmp strcmp
  #define tcsncpy xstrncpy
  #define tcscpy strcpy
- #define tcslen strlen
+ #define tcslen (int)strlen
  #define tcscat strcat
  #define tcsrchr xstrrchr
  #define tcschr strchr

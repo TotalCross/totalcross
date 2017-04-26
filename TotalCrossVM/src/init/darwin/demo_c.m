@@ -3,9 +3,13 @@
 
 bool getElapsed(int32 *value)
 {
+   bool ret = false;
    CFNumberRef cfNumber = (CFNumberRef)CFPreferencesCopyAppValue(CFSTR("ttl"), CFSTR("com.totalcross.iphone.TotalCross"));
    if (cfNumber != null)
-      return CFNumberGetValue(cfNumber, kCFNumberSInt32Type, value);
+   {
+      ret = CFNumberGetValue(cfNumber, kCFNumberSInt32Type, value);
+      [(id)cfNumber release];
+   }
    return false;
 }
 

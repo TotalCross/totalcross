@@ -36,13 +36,12 @@ void destroyContexts()
 }
 
 
-Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
+Context newContext(ThreadHandle thread, TCObject threadObj, bool bigContextSizes)
 {
    volatile Heap heap;
    Context c;
    int32 i;
    int32 regIsize, regOsize, reg64size, stackSize;
-   VoidPs* temp;      
    
    bool freeSlot = false;
    for (i = 0; i < MAX_CONTEXTS && !freeSlot; i++)
@@ -71,7 +70,8 @@ Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
       }
    UNLOCKVAR(omm);
    if (i == MAX_CONTEXTS)
-   {
+   {                     
+      debug("*** NO MORE CONTEXT SLOTS!");
       heapDestroy(heap);
       return null;
    }
@@ -80,7 +80,7 @@ Context newContext(ThreadHandle thread, Object threadObj, bool bigContextSizes)
    c->threadObj = threadObj;
    c->regI         = c->regIStart      = newPtrArrayOf(Int32, regIsize, c->heap);
    c->regIEnd      = c->regIStart      + regIsize;
-   c->regO         = c->regOStart      = newPtrArrayOf(Object, regOsize, c->heap);
+   c->regO         = c->regOStart      = newPtrArrayOf(TCObject, regOsize, c->heap);
    c->regOEnd      = c->regOStart      + regOsize;
    c->reg64        = c->reg64Start     = newArrayOf(Value64, reg64size, c->heap);
    c->reg64End     = c->reg64Start     + reg64size;
@@ -127,7 +127,7 @@ static bool contextIncrease(Heap h, uint8** start, uint8** end, uint8** current,
    xmemmove(a, *start, oldLen * ssize); // move old contents
    // setup new pointers
    *current = ((int32)(*current - *start)) + a; // must be the first update!
-   *r = ((int32)(*r - *start)) + a;
+   if (r) *r = ((int32)(*r - *start)) + a;
    heapFreeArray(h, *start); // free old pointer
    *start = a;
    *end   = a + newLen * ssize;
@@ -138,7 +138,7 @@ bool contextIncreaseRegI(Context c, int32** r)
 {
    return contextIncrease(c->heap, (uint8**)&c->regIStart, (uint8**)&c->regIEnd, (uint8**)&c->regI, (uint8**)r, sizeof(*c->regI), STARTING_REGI_SIZE / 4);
 }
-bool contextIncreaseRegO(Context c, Object** r)
+bool contextIncreaseRegO(Context c, TCObject** r)
 {
    return contextIncrease(c->heap, (uint8**)&c->regOStart, (uint8**)&c->regOEnd, (uint8**)&c->regO, (uint8**)r, sizeof(*c->regO), STARTING_REGO_SIZE / 4);
 }
@@ -146,9 +146,9 @@ bool contextIncreaseReg64(Context c, Value64* r)
 {
    return contextIncrease(c->heap, (uint8**)&c->reg64Start, (uint8**)&c->reg64End, (uint8**)&c->reg64, (uint8**)r, sizeof(*c->reg64), STARTING_REG64_SIZE / 4);
 }
-bool contextIncreaseCallStack(Context c, VoidP** r)
+bool contextIncreaseCallStack(Context c)
 {
-   return contextIncrease(c->heap, (uint8**)&c->callStackStart, (uint8**)&c->callStackEnd, (uint8**)&c->callStack, (uint8**)r, sizeof(*c->callStack), STARTING_STACK_SIZE / 4);
+   return contextIncrease(c->heap, (uint8**)&c->callStackStart, (uint8**)&c->callStackEnd, (uint8**)&c->callStack, null, sizeof(*c->callStack), STARTING_STACK_SIZE / 4);
 }
 
 Context getMainContext()

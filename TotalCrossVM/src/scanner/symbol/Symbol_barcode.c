@@ -36,7 +36,7 @@
 #define TC_privateXmalloc              privateXmalloc
 #define TC_privateXrealloc             privateXrealloc
 #define TC_createArrayObject           createArrayObject
-#include "barcode.h"
+#include "..\barcode.h"
 
 // now Scanner specific includes
 #include <Strucinf.h>
@@ -113,7 +113,7 @@ debugFunc procDebug;
          int2hex(var[i],2,s);
       *s = 0;
       settingsClass = loadClass(scannerContext, "totalcross.sys.Settings", true);
-      setObjectLock(*getStaticFieldObject(settingsClass, "romSerialNumber") = createStringObjectFromCharP(scannerContext, serial, -1), UNLOCKED);
+      setObjectLock(*getStaticFieldObject(null,settingsClass, "romSerialNumber") = createStringObjectFromCharP(scannerContext, serial, -1), UNLOCKED);
    }
 }*/
 
@@ -897,4 +897,8 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
       destroyScanner();
 #endif
    }
+}
+//////////////////////////////////////////////////////////////////////////
+SCAN_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
+{
 }

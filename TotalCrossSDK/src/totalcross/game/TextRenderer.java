@@ -107,7 +107,6 @@ public class TextRenderer
   private int w0;
 
   private int maxDigits;
-  private int backColor;
   private Graphics gfx;
 
   /**
@@ -165,7 +164,6 @@ public class TextRenderer
    protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits) throws ImageException
    {
       this.maxDigits = maxDigits;
-      this.backColor = backColor;
 
       gfx = GameEngineMainWindow.getEngineGraphics();
       gfx.setFont(font);

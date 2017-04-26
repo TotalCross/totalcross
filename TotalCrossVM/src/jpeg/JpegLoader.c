@@ -37,7 +37,7 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
    else
    {
       uint8* start = (uint8*)buff;
-      Object bufObj = in->params[1].asObj;
+      TCObject bufObj = in->params[1].asObj;
       int tempBufSize = ARRAYOBJ_LEN(bufObj);
       uint8 *tempBufStart = (uint8*)ARRAYOBJ_START(bufObj);
 
@@ -52,14 +52,14 @@ int jpegRead(void *buff, int count, JPEGFILE *in)
          cur += n;
          count -= n;
       }
-      return cur - start;
+      return (int)(cur - start);
    }
 }
 
 // Write the JPEG Output file.
 int jpegWrite(void *buff, int count, JPEGFILE *in)
 {
-   Object bufObj = in->params[1].asObj;
+   TCObject bufObj = in->params[1].asObj;
    int32 bufObjSize = ARRAYOBJ_LEN(in->bufObj);
    int32 remaining;
    int32 current = 0;
@@ -70,14 +70,14 @@ int jpegWrite(void *buff, int count, JPEGFILE *in)
       remaining = count - current;
       toCopy = in->params[3].asInt32 = bufObjSize < remaining ? bufObjSize : remaining;
       xmemmove(ARRAYOBJ_START(bufObj), (uint8*) buff + current, toCopy);
-      executeMethod(in->currentContext, in->writeBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32).asInt32;
+      executeMethod(in->currentContext, in->writeBytesMethod, in->params[0].asObj, in->params[1].asObj, in->params[2].asInt32, in->params[3].asInt32);
       current += toCopy;
    }
    return current;
 }
 
 // imageObj+tcz+first4, if reading from a tcz; imageObj+inputStream+bufObj+bufCount, if reading from a totalcross.io.Stream
-void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Object bufObj, TCZFile tcz, char* first4)
+void jpegLoad(Context currentContext, TCObject imageObj, TCObject inputStreamObj, TCObject bufObj, TCZFile tcz, char* first4)
 {
    JPEGFILE file;
    Pixel *pixels;
@@ -87,7 +87,7 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
    uint8* buffer;
    int32 x,width,height;
    struct jpeg_decompress_struct cinfo;
-   Object pixelsObj;
+   TCObject pixelsObj;
 
    xmemzero(&errbase, sizeof(errbase));
    xmemzero(&cinfo, sizeof(cinfo));
@@ -183,13 +183,13 @@ void jpegLoad(Context currentContext, Object imageObj, Object inputStreamObj, Ob
    heapDestroy(heap);
 }
 
-bool rgb565_2jpeg(Context currentContext, Object srcStreamObj, Object dstStreamObj, int32 width, int32 height)
+bool rgb565_2jpeg(Context currentContext, TCObject srcStreamObj, TCObject dstStreamObj, int32 width, int32 height)
 {
    JPEGFILE srcFile, dstFile;
    struct jpeg_error_mgr errbase;
    struct jpeg_compress_struct cinfo;
    volatile Heap heap;
-   Object bufObj;
+   TCObject bufObj;
    uint8* bufP;
    uint8* bufAux;
    int32 i, p;
@@ -266,7 +266,6 @@ bool rgb565_2jpeg(Context currentContext, Object srcStreamObj, Object dstStreamO
       executeMethod(srcFile.currentContext, srcFile.readBytesMethod, srcFile.params[0].asObj, srcFile.params[1].asObj, 0, scanLineIn);
       if (currentContext->thrownException != null)
       {
-         //alert("abort compress");
          jpeg_abort_compress(&cinfo);
          goto finish;
       }
@@ -301,22 +300,21 @@ finish:
    return ret;
 }
 
-bool image2jpeg(Context currentContext, Object srcImageObj, Object dstStreamObj, int32 quality)
+bool image2jpeg(Context currentContext, TCObject srcImageObj, TCObject dstStreamObj, int32 quality)
 {
    JPEGFILE dstFile;
    struct jpeg_error_mgr errbase;
    struct jpeg_compress_struct cinfo;
    volatile Heap heap;
-   Object bufObj;
-   uint8* bufP;
+   TCObject bufObj;
    uint8* bufAux;
-   int32 i, p,scanLineOut;
+   int32 i, scanLineOut;
    volatile bool ret = false;                  
    
-   Object pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
+   TCObject pixObj = (Image_frameCount(srcImageObj) > 1) ? Image_pixelsOfAllFrames(srcImageObj) : Image_pixels(srcImageObj);
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int32 width = (Image_frameCount(srcImageObj) > 1) ? Image_widthOfAllFrames(srcImageObj) : Image_width(srcImageObj);
-   int32 height = Image_height(srcImageObj), n;
+   int32 height = Image_height(srcImageObj);
    scanLineOut = width * 3;
 
    // initialize structs
@@ -403,3 +401,4 @@ finish:
 
    return ret;
 }
+

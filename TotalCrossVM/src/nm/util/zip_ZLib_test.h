@@ -20,10 +20,10 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
 {
 #if TEST_ZLIB
    TNMParams tmnpZlib, tmnpFileIn, tmnpFileOut;
-   int32 i32Zlib[1], i32FileIn[2], i32FileOut[2];
-   Object objZlib[2];
-   Object objFileIn[2];
-   Object objFileOut[2];
+   int32 i32Zlib[3], i32FileIn[2], i32FileOut[2];
+   TCObject objZlib[2];
+   TCObject objFileIn[2];
+   TCObject objFileOut[2];
    char srcFileName[MAX_PATHNAME];
    char zipFileName[MAX_PATHNAME];
    char dstFileName[MAX_PATHNAME];
@@ -52,7 +52,7 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
    File_path(tmnpFileIn.obj[0]) = createStringObjectFromCharP(currentContext, srcFileName, -1);
    tmnpFileIn.obj[1] = File_path(tmnpFileIn.obj[0]);
    ASSERT1_EQUALS(NotNull, tmnpFileIn.obj[1]);
-   tmnpFileIn.i32[0] = 2; // READ_WRITE
+   tmnpFileIn.i32[0] = 5; // CREATE_EMPTY
    tmnpFileIn.i32[1] = -1;
    tiF_create_sii(&tmnpFileIn); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -62,16 +62,18 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
    File_path(tmnpFileOut.obj[0]) = createStringObjectFromCharP(currentContext, zipFileName, -1);
    tmnpFileOut.obj[1] = File_path(tmnpFileOut.obj[0]);
    ASSERT1_EQUALS(NotNull, tmnpFileOut.obj[1]);
-   tmnpFileOut.i32[0] = 8; // CREATE_EMPTY
+   tmnpFileOut.i32[0] = 5; // CREATE_EMPTY
    tmnpFileOut.i32[1] = -1;
    tiF_create_sii(&tmnpFileOut); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
-   tmnpZlib.i32[0] = 9; //Max compression
+   tmnpZlib.i32[0] = 9; // Max compression
+   tmnpZlib.i32[1] = 0; // Default strategy.
+   tmnpZlib.i32[2] = false; // No wrap.
    tmnpZlib.obj[0] = tmnpFileIn.obj[0];
    tmnpZlib.obj[1] = tmnpFileOut.obj[0];
 
-   tuzZL_deflate_iss(&tmnpZlib);
+   tuzZL_deflate_ssiib(&tmnpZlib);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiF_nativeClose(&tmnpFileIn);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
@@ -93,16 +95,17 @@ TESTCASE(ZLib) // totalcross/util/zip/ZLib
    File_path(tmnpFileOut.obj[0]) = createStringObjectFromCharP(currentContext, dstFileName, -1);
    tmnpFileOut.obj[1] = File_path(tmnpFileOut.obj[0]);
    ASSERT1_EQUALS(NotNull, tmnpFileOut.obj[1]);
-   tmnpFileOut.i32[0] = 8; // CREATE_EMPTY
+   tmnpFileOut.i32[0] = 5; // CREATE_EMPTY
    tmnpFileOut.i32[1] = -1;
    tiF_create_sii(&tmnpFileOut); // create file
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    tmnpZlib.i32[0] = -1;
+   tmnpZlib.i32[1] = false;
    tmnpZlib.obj[0] = tmnpFileIn.obj[0];
    tmnpZlib.obj[1] = tmnpFileOut.obj[0];
 
-   tuzZL_inflate_ssi(&tmnpZlib);
+   tuzZL_inflate_ssib(&tmnpZlib);
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    tiF_nativeClose(&tmnpFileIn);
    ASSERT1_EQUALS(Null, currentContext->thrownException);

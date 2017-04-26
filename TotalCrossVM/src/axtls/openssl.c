@@ -1,19 +1,31 @@
 /*
- *  Copyright(C) 2007 Cameron Rich
+ * Copyright (c) 2007-2016, Cameron Rich
+ * 
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
  *
- *  This library is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation; either version 2.1 of the License, or
- *  (at your option) any later version.
+ * * Redistributions of source code must retain the above copyright notice, 
+ *   this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * * Neither the name of the axTLS project nor the names of its contributors 
+ *   may be used to endorse or promote products derived from this software 
+ *   without specific prior written permission.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU General Lesser License
- *  along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
@@ -34,60 +46,31 @@
 
 #define OPENSSL_CTX_ATTR  ((OPENSSL_CTX *)ssl_ctx->bonus_attr)
 
-typedef struct _SSL_METHOD SSL_METHOD;
+static char *key_password = NULL;
 
-SSL_METHOD *SSLv23_server_method(void) { return (SSL_METHOD*)1; }
-SSL_METHOD *SSLv3_server_method(void)  { return (SSL_METHOD*)2; }
-SSL_METHOD *TLSv1_server_method(void)  { return (SSL_METHOD*)3; }
-SSL_METHOD *SSLv23_client_method(void) { return (SSL_METHOD*)10; }
-SSL_METHOD *SSLv3_client_method(void)  { return (SSL_METHOD*)11; }
-SSL_METHOD *TLSv1_client_method(void)  { return (SSL_METHOD*)12; }
+void *SSLv3_server_method(void) { return NULL; }
+void *TLSv1_server_method(void) { return NULL; }
+void *SSLv3_client_method(void) { return NULL; }
+void *TLSv1_client_method(void) { return NULL; }
 
+typedef void * (*ssl_func_type_t)(void);
 typedef void * (*bio_func_type_t)(void);
 
 typedef struct
 {
-   SSL_METHOD *ssl_methods;
-   char *password;
+    ssl_func_type_t ssl_func_type;
 } OPENSSL_CTX;
 
-typedef int pem_password_cb(char *buf, int size, int rwflag, void *userdata);
-
-void SSL_CTX_set_default_passwd_cb(SSL_CTX *ssl_ctx, pem_password_cb *cb)
-{
-   char buffer[128];
-   int size;
-
-   if (OPENSSL_CTX_ATTR->password)
-      free(OPENSSL_CTX_ATTR->password);
-
-   size = cb(buffer, sizeof(buffer), 0, NULL);
-   if (size > 0)
-   {
-      buffer[size] = '\0';
-#if defined(WINCE) && _WIN32_WCE >= 300
-      OPENSSL_CTX_ATTR->password = strdup(buffer);
-#else
-      OPENSSL_CTX_ATTR->password = malloc(strlen(buffer));
-      if (OPENSSL_CTX_ATTR->password)
-         memmove(OPENSSL_CTX_ATTR->password, buffer, strlen(buffer)+1);
-#endif
-   }
-}
-
-SSL_CTX * SSL_CTX_new(SSL_METHOD *meth)
+SSL_CTX * SSL_CTX_new(ssl_func_type_t meth)
 {
    SSL_CTX *ssl_ctx = ssl_ctx_new(0, 5);
    ssl_ctx->bonus_attr = malloc(sizeof(OPENSSL_CTX));
-   OPENSSL_CTX_ATTR->ssl_methods = meth;
-   OPENSSL_CTX_ATTR->password = NULL;
+    OPENSSL_CTX_ATTR->ssl_func_type = meth;
    return ssl_ctx;
 }
 
 void SSL_CTX_free(SSL_CTX * ssl_ctx)
 {
-   if (OPENSSL_CTX_ATTR->password)
-      free(OPENSSL_CTX_ATTR->password);
    free(ssl_ctx->bonus_attr);
    ssl_ctx_free(ssl_ctx);
 }
@@ -95,18 +78,14 @@ void SSL_CTX_free(SSL_CTX * ssl_ctx)
 SSL * SSL_new(SSL_CTX *ssl_ctx)
 {
     SSL *ssl;
-    //ssl_func_type_t ssl_func_type;
-    SSL_METHOD *ssl_methods;
+#ifdef CONFIG_SSL_ENABLE_CLIENT
+    ssl_func_type_t ssl_func_type = OPENSSL_CTX_ATTR->ssl_func_type;
+#endif
 
     ssl = ssl_new(ssl_ctx, -1);        /* fd is set later */
-    //ssl_func_type = OPENSSL_CTX_ATTR->ssl_func_type;
-    ssl_methods = OPENSSL_CTX_ATTR->ssl_methods;
-
 #ifdef CONFIG_SSL_ENABLE_CLIENT
-    //if (ssl_func_type == SSLv23_client_method ||
-    //    ssl_func_type == SSLv3_client_method ||
-    //    ssl_func_type == TLSv1_client_method)
-    if (ssl_methods >= SSLv23_client_method())
+    if (ssl_func_type == SSLv3_client_method ||
+        ssl_func_type == TLSv1_client_method)
     {
         SET_SSL_FLAG(SSL_IS_CLIENT);
     }
@@ -170,41 +149,121 @@ int SSL_write(SSL *ssl, const void *buf, int num)
 
 int SSL_CTX_use_certificate_file(SSL_CTX *ssl_ctx, const char *file, int type)
 {
-    return (ssl_obj_load(ssl_ctx, SSL_OBJ_X509_CERT, file, OPENSSL_CTX_ATTR->password) == SSL_OK);
-}
-
-int SSL_CTX_use_RSAPrivateKey_file(SSL_CTX *ssl_ctx, const char *file, int type)
-{
-    return (ssl_obj_load(ssl_ctx, SSL_OBJ_RSA_KEY, file, OPENSSL_CTX_ATTR->password) == SSL_OK);
+    return (ssl_obj_load(ssl_ctx, SSL_OBJ_X509_CERT, file, NULL) == SSL_OK);
 }
 
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *ssl_ctx, const char *file, int type)
 {
-    return (ssl_obj_load(ssl_ctx, SSL_OBJ_RSA_KEY, file, OPENSSL_CTX_ATTR->password) == SSL_OK);
+    return (ssl_obj_load(ssl_ctx, SSL_OBJ_RSA_KEY, file, key_password) == SSL_OK);
 }
 
 int SSL_CTX_use_certificate_ASN1(SSL_CTX *ssl_ctx, int len, const uint8_t *d)
 {
-    return (ssl_obj_memory_load(ssl_ctx, SSL_OBJ_X509_CERT, d, len, OPENSSL_CTX_ATTR->password) == SSL_OK);
+    return (ssl_obj_memory_load(ssl_ctx, 
+                        SSL_OBJ_X509_CERT, d, len, NULL) == SSL_OK);
 }
 
-int SSL_CTX_load_verify_locations(SSL_CTX *ssl_ctx, const char *CAfile, const char *CApath)
+int SSL_CTX_set_session_id_context(SSL_CTX *ctx, const unsigned char *sid_ctx,
+                                            unsigned int sid_ctx_len)
 {
-   char fn[256];
-   strcpy(fn, CApath ? CApath : "");
-   if (CApath)
-      strcat(fn, "/");
-   strcat(fn, CAfile);
-   return (ssl_obj_load(ssl_ctx, SSL_OBJ_X509_CACERT, fn, OPENSSL_CTX_ATTR->password) == SSL_OK);
+    return 1;
 }
 
-#if 0
-const uint8_t *SSL_get_session(const SSL *ssl)
+int SSL_CTX_set_default_verify_paths(SSL_CTX *ctx)
 {
-    /* TODO: return SSL_SESSION type */
-    return ssl_get_session_id(ssl);
+    return 1;
 }
-#endif
+
+int SSL_CTX_use_certificate_chain_file(SSL_CTX *ssl_ctx, const char *file)
+{
+    return (ssl_obj_load(ssl_ctx, 
+                        SSL_OBJ_X509_CERT, file, NULL) == SSL_OK);
+}
+
+int SSL_shutdown(SSL *ssl)
+{
+    return 1;
+}
+
+/*** get/set session ***/
+SSL_SESSION *SSL_get1_session(SSL *ssl)
+{
+    return (SSL_SESSION *)ssl_get_session_id(ssl); /* note: wrong cast */
+}
+
+int SSL_set_session(SSL *ssl, SSL_SESSION *session)
+{
+    memcpy(ssl->session_id, (uint8_t *)session, SSL_SESSION_ID_SIZE);
+    return 1;
+}
+
+void SSL_SESSION_free(SSL_SESSION *session) { }
+/*** end get/set session ***/
+
+long SSL_CTX_ctrl(SSL_CTX *ctx, int cmd, long larg, void *parg)
+{
+    return 0;
+}
+
+void SSL_CTX_set_verify(SSL_CTX *ctx, int mode,
+                                 int (*verify_callback)(int, void *)) { }
+
+void SSL_CTX_set_verify_depth(SSL_CTX *ctx,int depth) { }
+
+int SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile,
+                                           const char *CApath)
+{
+    return 1;
+}
+
+void *SSL_load_client_CA_file(const char *file)
+{
+    return (void *)file;
+}
+
+void SSL_CTX_set_client_CA_list(SSL_CTX *ssl_ctx, void *file) 
+{ 
+
+    ssl_obj_load(ssl_ctx, SSL_OBJ_X509_CERT, (const char *)file, NULL);
+}
+
+void SSL_CTX_set_default_passwd_cb(SSL_CTX *ctx, void *cb) { }
+
+void SSL_CTX_set_default_passwd_cb_userdata(SSL_CTX *ctx, void *u) 
+{ 
+    key_password = (char *)u;
+}
+
+int SSL_peek(SSL *ssl, void *buf, int num)
+{
+    memcpy(buf, ssl->bm_data, num);
+    return num;
+}
+
+void SSL_set_bio(SSL *ssl, void *rbio, void *wbio) { }
+
+long SSL_get_verify_result(const SSL *ssl)
+{
+    return ssl_handshake_status(ssl);
+}
+
+int SSL_state(SSL *ssl)
+{
+    return 0x03; // ok state
+}
+
+/** end of could do better list */
+
+void *SSL_get_peer_certificate(const SSL *ssl)
+{
+    return &ssl->ssl_ctx->certs[0];
+}
+
+int SSL_clear(SSL *ssl)
+{
+    return 1;
+}
+
 
 int SSL_CTX_check_private_key(const SSL_CTX *ctx)
 {
@@ -223,13 +282,16 @@ int SSL_get_error(const SSL *ssl, int ret)
 }
 
 void SSL_CTX_set_options(SSL_CTX *ssl_ctx, int option) {}
-int SSL_library_init() { return 1; }
-void SSL_load_error_strings() {}
+int SSL_library_init(void ) { return 1; }
+void SSL_load_error_strings(void ) {}
 void ERR_print_errors_fp(FILE *fp) {}
+
+#ifndef CONFIG_SSL_SKELETON_MODE
 long SSL_CTX_get_timeout(const SSL_CTX *ssl_ctx) {
                             return CONFIG_SSL_EXPIRY_TIME*3600; }
 long SSL_CTX_set_timeout(SSL_CTX *ssl_ctx, long t) {
                             return SSL_CTX_get_timeout(ssl_ctx); }
+#endif
 void BIO_printf(FILE *f, const char *format, ...)
 {
     va_list(ap);

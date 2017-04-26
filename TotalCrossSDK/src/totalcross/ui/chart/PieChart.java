@@ -20,6 +20,7 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.chart.Series;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
 /** A simple pie chart.
@@ -32,8 +33,8 @@ import totalcross.ui.gfx.*;
 
 public class PieChart extends Chart
 {
-   /** Specifies the distance that the selected pie will be placed from the rest of the pie. Defaults to 10. */
-   public int distanceOfSelectedPie=10;
+   /** Specifies the distance that the selected pie will be placed from the rest of the pie. Defaults to fmH. */
+   public int distanceOfSelectedPie = Font.NORMAL_SIZE;
    /** Specifies the selected pie. */
    public int selectedSeries=-1;
    /** The suffix used in the legend to display the values. E.G.: "%". Defaults to blank.
@@ -43,10 +44,10 @@ public class PieChart extends Chart
    public boolean showValuesOnLegend;
 
    /** Perspective horizontal distance. */
-   public int perspectiveH = 4;
+   public int perspectiveH = Font.NORMAL_SIZE/2;
 
    /** Perspective vertical distance. */
-   public int perspectiveV = 4;
+   public int perspectiveV = Font.NORMAL_SIZE/2;
    
    /** GAO: keeps track of the currently selected slice */
    public int selectedSlice = -1;
@@ -113,7 +114,6 @@ public class PieChart extends Chart
          return;
 
       // Update points
-      g.useAA = true;
       int xx = clientRect.x + clientRect.width/2;
       int yy = clientRect.y + clientRect.height/2;
       int rr = Math.min(clientRect.width, clientRect.height)/2 - distanceOfSelectedPie;
@@ -124,7 +124,6 @@ public class PieChart extends Chart
             drawPie(g, xx+perspectiveH, yy+perspectiveV, rr, true);
          drawPie(g, xx, yy, rr, false);
       }
-      g.useAA = false;
    }
 
    private void drawPie(Graphics g, int xx, int yy, int rr, boolean is3d)
@@ -178,7 +177,7 @@ public class PieChart extends Chart
             g.foreColor = is3d || sum == v ? color : 0; // fixed color when only 1 serie has value > 0
             g.backColor = color;
             g.fillPie(xx, yy, rr, last, current);
-            Window.updateScreen();
+            Window.safeUpdateScreen();
          }
          last = current;
       }
@@ -221,6 +220,7 @@ public class PieChart extends Chart
                   else
                      degree += 180;
                   // find the slice that contains this angle
+                  if (sum == 0) break;
                   int sCount = series.size(),i;
                   double last=0,current;
                   for (i = 0; i < sCount; i++) // for each series

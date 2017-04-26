@@ -70,6 +70,7 @@ extern int32 defScrX,defScrY,defScrW,defScrH;
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 {
+#ifndef WP8
    DWORD style;
    int32 width, height;
    RECT rect;
@@ -90,11 +91,15 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
 
    if (appTczAttr & ATTR_WINDOWSIZE_320X480) {defScrX=defScrY=-2; width = 320; height = 480;} else
    if (appTczAttr & ATTR_WINDOWSIZE_480X640) {defScrX=defScrY=-2; width = 480; height = 640;} else
-   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = 800;} else
+   if (appTczAttr & ATTR_WINDOWSIZE_600X800) {defScrX=defScrY=-2; width = 600; height = min32(800,rect.bottom-rect.top);} else
    {
       width = defScrW == -1 ? 240 : defScrW;
       height = defScrH == -1 ? 320 : defScrH;
-   }
+   }                                                                                                                          
+#ifdef _DEBUG
+   defScrX = defScrY = 0;
+#endif
+
    rect.left = defScrX == -1 ? 0 : defScrX == -2 ? (rect.left+(rect.right -width )/2) : defScrX;
    rect.top  = defScrY == -1 ? 0 : defScrY == -2 ? (rect.top +(rect.bottom-height)/2) : defScrY;
    rect.bottom = height;
@@ -140,6 +145,10 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    ReleaseDC(mainHWnd, deviceContext);
 #endif
 
+#endif
+#if defined(_DEBUG) && !defined(WINCE)
+   SetProcessAffinityMask(GetCurrentProcess(), 1);
+#endif
    return true;
 }
 

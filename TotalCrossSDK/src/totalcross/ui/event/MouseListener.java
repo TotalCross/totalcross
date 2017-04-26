@@ -38,4 +38,10 @@ public interface MouseListener
     * @see PenEvent 
     */
    public void mouseOut(MouseEvent e);
+   
+   /** The event type for a mouse wheel moving down.
+    * This is a hardware event. 
+    */
+   public void mouseWheel(MouseEvent e);
+
 }

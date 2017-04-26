@@ -47,8 +47,13 @@ public class NinePatch
    public static final int TAB          = 8;
    public static final int GRID         = 9;
    public static final int GRID_CAPTION = 1;
+   public static final int TAB2          = 10;
    
    static NinePatch instance;
+   
+   /** Defines if we will use the Image.applyColor (1) or Image.applyColor2 (2) algorithms
+    * when getting the pressed instance. */ 
+   public static int pressColorAlgorithm = 1;
    
    public static NinePatch getInstance()
    {
@@ -57,6 +62,36 @@ public class NinePatch
    
    private NinePatch()
    {
+      if (Settings.uiStyle == Settings.Holo)
+         parts = new Parts []
+         {
+            load(Resources.button,7,4), 
+            load(Resources.edit,16,2), 
+            load(Resources.combobox,5,2),
+            load(Resources.listbox,5,3),
+            load(Resources.multiedit,9,4), 
+            load(Resources.progressbarv,9,4),
+            load(Resources.scrollposh,3,2),
+            load(Resources.scrollposv,3,2),
+            load(Resources.tab,10,4),
+            load(Resources.grid,5,3),
+            load(Resources.tab2,18,3),
+         };
+      else
+         parts = new Parts [] 
+         {
+            load(Resources.button,7,1), 
+            load(Resources.edit,5,3), 
+            load(Resources.combobox,5,2),
+            load(Resources.listbox,5,3),
+            load(Resources.multiedit,9,4), 
+            load(Resources.progressbarv,9,4),
+            load(Resources.scrollposh,3,2),
+            load(Resources.scrollposv,3,2),
+            load(Resources.tab,10,4),
+            load(Resources.grid,5,3),
+            load(Resources.tab2,10,2),
+         };
    }
    
    public class Parts
@@ -67,19 +102,7 @@ public class NinePatch
    
    private Lock imageLock = new Lock();
    
-   private Parts []parts = 
-   {
-      load(Resources.button,7,1), 
-      load(Resources.edit,5,3), 
-      load(Resources.combobox,5,2),
-      load(Resources.listbox,5,3),
-      load(Resources.multiedit,9,4), 
-      load(Resources.progressbarv,9,4),
-      load(Resources.scrollposh,3,2),
-      load(Resources.scrollposv,3,2),
-      load(Resources.tab,10,4),
-      load(Resources.grid,5,3),
-   };
+   private Parts [] parts;
    
    private Hashtable htBtn = new Hashtable(100); 
    private Hashtable htPressBtn = new Hashtable(100); 
@@ -183,49 +206,44 @@ public class NinePatch
       return ret;
    }
    
-   public Image getNormalInstance(int type, int width, int height, int color, boolean rotate, boolean fromCache) throws ImageException
+   // rotate is only used by TabbedContainer
+   public Image getNormalInstance(int type, int width, int height, int color, boolean rotate) throws ImageException
    {
       Image ret = null;
       synchronized (imageLock)
       {
          int hash = 0;
-         if (fromCache)
-         {
-            sbBtn.setLength(0);
-            hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color).append('|').append(rotate));
-            ret = (Image)htBtn.get(hash);
-         }
+         sbBtn.setLength(0);
+         hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color).append('|').append(rotate));
+         ret = (Image)htBtn.get(hash);
          if (ret == null)
          {
             ret = getNormalInstance(parts[type],width,height,color,rotate);
-            if (fromCache)
-               htBtn.put(hash, ret);
+            htBtn.put(hash, ret);
          }
       }
       return ret;
    }
    
-   public Image getPressedInstance(Image img, int backColor, int pressColor, boolean fromCache) throws ImageException
+   public Image getPressedInstance(Image img, int backColor, int pressColor) throws ImageException
    {
       Image pressed = null;
       sbBtn.setLength(0);
-      int hash = 0;
-      if (fromCache)
-      {
-         hash = Convert.hashCode(sbBtn.append(img).append('|').append(backColor).append('|').append(pressColor));
-         pressed = (Image)htPressBtn.get(hash);
-      }
+      int hash = Convert.hashCode(sbBtn.append(img).append('|').append(backColor).append('|').append(pressColor));
+      pressed = (Image)htPressBtn.get(hash);
       if (pressed == null)
          synchronized(imageLock)
          {
             if (pressColor != -1)
             {
                pressed = img.getFrameInstance(0); // get a copy of the image
-               pressed.applyColor(pressColor); // colorize it
+               if (pressColorAlgorithm == 1)
+                  pressed.applyColor(pressColor); // colorize it
+               else
+                  pressed.applyColor2(pressColor); // colorize it
             }
             else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
-            if (fromCache)
-               htPressBtn.put(hash, pressed);
+            htPressBtn.put(hash, pressed);
          }
       return pressed;
    }
@@ -234,6 +252,21 @@ public class NinePatch
    {
       htBtn.clear();
       htPressBtn.clear();
+   }
+
+   /** Used internally to prevent Out of Memory errors. */
+   public static void tryDrawImage(Graphics g, Image npback, int x, int y)
+   {
+      try
+      {
+         if (npback != null)
+            g.drawImage(npback, x,y);
+      }
+      catch (OutOfMemoryError oome)
+      {
+         getInstance().flush(); // release memory and try again
+         g.drawImage(npback, x,y);
+      }
    }
 }
 

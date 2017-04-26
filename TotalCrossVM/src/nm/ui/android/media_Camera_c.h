@@ -25,11 +25,11 @@ void JNICALL Java_totalcross_Launcher4A_pictureTaken(JNIEnv *env, jclass _class,
    takingPicture = false;         
 }
 
-static Object Camera_getNativeResolutions(Context currentContext)
+static TCObject Camera_getNativeResolutions(Context currentContext)
 {
    JNIEnv *env = getJNIEnv();
    jstring src = (*env)->CallStaticObjectMethod(env, applicationClass, jgetNativeResolutions); 
-   Object ret = null;
+   TCObject ret = null;
    if (src != null)              
    {
       const char *str = (*env)->GetStringUTFChars(env, src, 0);
@@ -45,11 +45,13 @@ static Object Camera_getNativeResolutions(Context currentContext)
 
 static void cameraClick(NMParams p)
 {
-   Object obj = p->obj[0];
-   Object defaultFN = Camera_defaultFileName(obj);                      
+   TCObject obj = p->obj[0];
+   TCObject defaultFN = Camera_defaultFileName(obj);                      
    int32 width = Camera_resolutionWidth(obj);
    int32 height = Camera_resolutionHeight(obj);
    int32 quality = Camera_stillQuality(obj);
+   bool allowRotation = Camera_allowRotation(obj);
+   int cameraType = Camera_cameraType(obj);
    JNIEnv *env = getJNIEnv();      
    bool isPhoto = Camera_captureMode(obj) == 0;
    if (env)                      
@@ -81,7 +83,7 @@ static void cameraClick(NMParams p)
       }
       CharP2JCharPBuf(fileName,len,jfn,true);
       s = (*env)->NewString(env,jfn,len);
-      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height); 
+      (*env)->CallStaticVoidMethod(env, applicationClass, jshowCamera, s,quality,width,height, (jboolean)allowRotation,cameraType); 
       for (takingPicture = true; takingPicture;) // block vm until the picture is taken
          Sleep(250);
       switch (code)

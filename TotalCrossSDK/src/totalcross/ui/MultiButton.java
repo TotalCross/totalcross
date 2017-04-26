@@ -12,7 +12,7 @@ import totalcross.ui.image.*;
  * <pre>
  * MultiButton b = new MultiButton(new String[]{"+","-"});
    b.setBackColor(Color.CYAN);
-   add(b,LEFT+50,TOP+50,200,fmH*3/2);
+   add(b,LEFT+50,TOP+50,200,FONTSIZE+150);
  * </pre>
  * @since TotalCross 2.0
  */
@@ -42,6 +42,11 @@ public class MultiButton extends Control
    }
    
    public void onColorsChanged(boolean colorsChanged)
+   {
+      npback = null;
+   }
+   
+   public void onBoundsChanged(boolean colorsChanged)
    {
       npback = null;
    }
@@ -91,17 +96,19 @@ public class MultiButton extends Control
          int tcolor = Color.darker(bc,32);
          if (npback == null)
          {
-            int c = enabled ? bc : Color.getCursorColor(tcolor);
+            int c = isEnabled() ? bc : Color.getCursorColor(tcolor);
             if (divColor == -1) divColor = Color.darker(c,92);
             if (selColor == -1) selColor = Color.darker(backColor,64);
-            npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, c, false,true);
-            npsel  = NinePatch.getInstance().getPressedInstance(npback, backColor, selColor, true);
+            npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, c, false);
+            npsel  = NinePatch.getInstance().getPressedInstance(npback, backColor, selColor);
+            npback.alphaMask = alphaValue;
          }
          // without this, clicking will make the button fade out
          g.backColor = parent.getBackColor();
-         g.fillRect(0,0,width,height);
+         if (alphaValue == 255)
+            g.fillRect(0,0,width,height);
          
-         g.drawImage(npback,0,0);
+         NinePatch.tryDrawImage(g,npback,0,0);
          int w = width / tits.length;
          if (sel != -1)
             g.copyRect(npsel,sel*w+2,0,w-2,height,sel*w+2,1);
@@ -111,7 +118,7 @@ public class MultiButton extends Control
             int tw = fm.stringWidth(s);
             int tx = (w - tw) / 2 + x0;
             int ty = (height - fmH) / 2 -1 ;
-            boolean textEnabled = enabled && (disabled == null || !disabled[i]);
+            boolean textEnabled = isEnabled() && (disabled == null || !disabled[i]);
 
             if (is3dText && textEnabled)
             {
@@ -126,7 +133,7 @@ public class MultiButton extends Control
             g.drawText(tits[i], tx, ty);
             if (i < n) 
             {
-               g.foreColor = enabled ? divColor : Color.brighter(divColor);
+               g.foreColor = isEnabled() ? divColor : Color.brighter(divColor);
                int y1 = (height - fmH)/2, y2 = y1 + fmH, xx = x0+w;
                g.drawLine(xx,y1,xx,y2); xx++;
                g.foreColor = tcolor;
@@ -145,16 +152,16 @@ public class MultiButton extends Control
       switch (e.type)
       {
          case PenEvent.PEN_UP:
-            if (enabled && !hadParentScrolled())
+            if (isEnabled() && !hadParentScrolled())
             {
                PenEvent pe = (PenEvent)e;
                int sel = isInsideOrNear(pe.x,pe.y) ? pe.x / (width / tits.length) : -1;
-               if (sel != this.sel && (sel == -1 || disabled == null || !disabled[sel]))
+               if (sel != this.sel && (sel == -1 || disabled == null || (sel < disabled.length && !disabled[sel])))
                   setSelectedIndex(sel);
             }
             break;
          case KeyEvent.SPECIAL_KEY_PRESS:
-            if (enabled)
+            if (isEnabled())
             {
                KeyEvent ke = (KeyEvent)e;
                if (ke.isPrevKey())

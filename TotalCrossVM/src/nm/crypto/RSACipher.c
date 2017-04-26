@@ -20,8 +20,8 @@
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccRSAC_nativeCreate(NMParams p) // totalcross/crypto/digest/RSACipher native void nativeCreate();
 {
-   Object rsacObj = p->obj[0];
-   Object cipherObj;
+   TCObject rsacObj = p->obj[0];
+   TCObject cipherObj;
 
    if ((cipherObj = createByteArray(p->currentContext, sizeof(RSA_CTX))) != null)
       *Cipher_cipherRef(rsacObj) = cipherObj;
@@ -29,8 +29,8 @@ TC_API void tccRSAC_nativeCreate(NMParams p) // totalcross/crypto/digest/RSACiph
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccRSAC_finalize(NMParams p) // totalcross/crypto/digest/RSACipher native protected final void finalize();
 {
-   Object rsacObj = p->obj[0];
-   Object cipherObj = *Cipher_cipherRef(rsacObj);
+   TCObject rsacObj = p->obj[0];
+   TCObject cipherObj = *Cipher_cipherRef(rsacObj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(cipherObj);
 
    if (ctx->m) // initialized?
@@ -39,12 +39,12 @@ TC_API void tccRSAC_finalize(NMParams p) // totalcross/crypto/digest/RSACipher n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccRSAC_doReset(NMParams p) // totalcross/crypto/cipher/RSACipher native protected final void doReset() throws totalcross.crypto.CryptoException;
 {
-   Object rsacObj = p->obj[0];
-   Object cipherObj = *Cipher_cipherRef(rsacObj);
+   TCObject rsacObj = p->obj[0];
+   TCObject cipherObj = *Cipher_cipherRef(rsacObj);
    int32 operation = *Cipher_operation(rsacObj);
-   Object key = *Cipher_key(rsacObj);
+   TCObject key = *Cipher_key(rsacObj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(cipherObj);
-   Object e, d, n;
+   TCObject e, d, n;
    
    if (ctx->m) // already initialized?
    {
@@ -71,15 +71,15 @@ TC_API void tccRSAC_doReset(NMParams p) // totalcross/crypto/cipher/RSACipher na
 //////////////////////////////////////////////////////////////////////////
 TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher native protected byte[] process(byte []data) throws totalcross.crypto.CryptoException;
 {
-   Object rsacObj = p->obj[0];
-   Object dataObj = p->obj[1];
+   TCObject rsacObj = p->obj[0];
+   TCObject dataObj = p->obj[1];
    int32 operation = *Cipher_operation(rsacObj);
-   Object key = *Cipher_key(rsacObj);
-   Object cipherObj = *Cipher_cipherRef(rsacObj);
+   TCObject key = *Cipher_key(rsacObj);
+   TCObject cipherObj = *Cipher_cipherRef(rsacObj);
    RSA_CTX *ctx = (RSA_CTX*) ARRAYOBJ_START(cipherObj);
 
    uint8 *out;
-   Object byteArrayResult;
+   TCObject byteArrayResult;
    int32 count = -1;
 
    if (operation == OPERATION_ENCRYPT)
@@ -98,7 +98,7 @@ TC_API void tccRSAC_process_B(NMParams p) // totalcross/crypto/cipher/RSACipher 
          throwException(p->currentContext, OutOfMemoryError, null);
       else
       {
-         if ((count = RSA_decrypt(ctx, ARRAYOBJ_START(dataObj), out, true)) == -1)
+         if ((count = RSA_decrypt(ctx, ARRAYOBJ_START(dataObj), out, ARRAYOBJ_LEN(RSAPrivateKey_n(key)), true)) == -1)
             throwException(p->currentContext, CryptoException, "Decryption error");
       }
    }

@@ -19,17 +19,17 @@
  #include "../nm/io/device/win/RadioDevice_c.h"
 #endif
 
-static Object createInfo(Context currentContext)
+static TCObject createInfo(Context currentContext)
 {
-   Object info = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.util.Hashtable");
+   TCObject info = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.util.Hashtable");
    executeMethod(currentContext, getMethod(OBJ_CLASS(info), true, CONSTRUCTOR_NAME, 1, J_INT), info, 10);
    return info;
 }
 
-static bool putInfo(Context currentContext, Object info, CharP key, CharP val)
+static bool putInfo(Context currentContext, TCObject info, CharP key, CharP val)
 {
-   Object infoKey;
-   Object infoVal;
+   TCObject infoKey;
+   TCObject infoVal;
 
    if (info == null || key == null || val == null)
       throwException(currentContext, NullPointerException, "putInfo received a null pointer!");
@@ -49,9 +49,9 @@ static bool putInfo(Context currentContext, Object info, CharP key, CharP val)
    return currentContext->thrownException == null;
 }
 
-static bool putInfoObj(Context currentContext, Object info, CharP key, Object infoVal)
+static bool putInfoObj(Context currentContext, TCObject info, CharP key, TCObject infoVal)
 {
-   Object infoKey;
+   TCObject infoKey;
    
    if (info == null || key == null || infoVal == null)
       throwException(currentContext, NullPointerException, "putInfoObj received a null pointer!");
@@ -105,10 +105,10 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    MD5_CTX ctx;
    char serial[128],imei[32],deviceId[64];
    int32 notFound = 0;
-   Object res, out;
+   TCObject res, out;
    getDeviceId(deviceId); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
    
-   MD5Init(&ctx);
+   MD5_Init(&ctx);
    getImei(imei);
 #ifdef ANDROID
    if (__system_property_get("ro.serialno",serial) <= 0)
@@ -129,11 +129,11 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #if defined (WIN32) && !defined (WINCE)
       int32 serialLen = xstrlen(serial);
       if (serialLen > 12) // use only the first mac address to keep the hash the same as the previous versions.
-         MD5Update(&ctx, serial, 12);
+         MD5_Update(&ctx, serial, 12);
       else
-         MD5Update(&ctx, serial, serialLen);
+         MD5_Update(&ctx, serial, serialLen);
 #else
-      MD5Update(&ctx, serial, xstrlen(serial));
+      MD5_Update(&ctx, (uint8*)serial, xstrlen(serial));
 #endif
    }
    else notFound++;
@@ -144,7 +144,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 #endif
    {
       if (*imei)
-         MD5Update(&ctx, imei, xstrlen(imei));
+         MD5_Update(&ctx, (uint8*)imei, xstrlen(imei));
 #if defined (WINCE)
       else if (RdIsSupported(PHONE))
          return GDHERR_IMEI;
@@ -157,7 +157,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
       serial[0] = 0;
       getArtificialHash(serial);
       if (*serial)
-         MD5Update(&ctx, serial, xstrlen(serial));
+         MD5_Update(&ctx, (uint8*)serial, xstrlen(serial));
       else
          return GDHERR_ARTIFICIAL_HASH;
    }
@@ -165,7 +165,7 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    if ((out = createByteArray(currentContext, MD5_SIZE)) == null)
       return GDHERR_OOM;
 
-   MD5Final(&ctx, ARRAYOBJ_START(out));
+   MD5_Final(ARRAYOBJ_START(out), &ctx);
 
    res = executeMethod(currentContext, getMethod(loadClass(currentContext, "totalcross.sys.Convert", true), true, "bytesToHexString", 1, BYTE_ARRAY), out).asObj;
    setObjectLock(out, UNLOCKED);
@@ -179,8 +179,8 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getConfigInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getConfigInfo();
 {
-//   Object obj = p->obj[0];
-   Object info = createInfo(p->currentContext);
+//   TCObject obj = p->obj[0];
+   TCObject info = createInfo(p->currentContext);
 
    putInfo(p->currentContext, info, "SERVER_HOST", "www.superwaba.net");
    putInfo(p->currentContext, info, "SERVER_PORT", "6666");
@@ -192,16 +192,16 @@ TC_API void rU_getConfigInfo(NMParams p) // ras/Utils native public static total
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getProductInfo();
 {
-//   Object obj = p->obj[0];
-   Object info = createInfo(p->currentContext);
+//   TCObject obj = p->obj[0];
+   TCObject info = createInfo(p->currentContext);
    IntBuf buf;
    char buffer[64];
-   Object strObj;
+   TCObject strObj;
 
    putInfo(p->currentContext, info, "COMPILATION_DATE", int2str(getCompilationDate() ^ COMPILATION_MASK, buf));
 
    //flsobral@tc125: added more info on v2
-   if ((strObj = *getStaticFieldObject(settingsClass, "versionStr")) != null)
+   if ((strObj = *getStaticFieldObject(p->currentContext, settingsClass, "versionStr")) != null)
       putInfo(p->currentContext, info, "VERSAO_VM", String2CharPBuf(strObj, buffer));
 
    p->retO = info;
@@ -210,14 +210,14 @@ TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static tota
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getDeviceInfo() throws ActivationException;
 {
-//   Object obj = p->obj[0];
-   Object info;
+//   TCObject obj = p->obj[0];
+   TCObject info;
    char serial[128];
    char imei[32];
    char deviceId[128];
    CharP deviceHash;
    IntBuf buf;
-   Object strObj;
+   TCObject strObj;
    TCSettings settings = getSettingsPtr();
 
    getDeviceId(deviceId);
@@ -234,7 +234,7 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
       case NO_ERROR:
       {
          info = createInfo(p->currentContext);
-         if (putInfoObj(p->currentContext, info, "PLATFORM", *getStaticFieldObject(settingsClass, "platform")) &&
+         if (putInfoObj(p->currentContext, info, "PLATFORM", *getStaticFieldObject(p->currentContext, settingsClass, "platform")) &&
              putInfo(p->currentContext, info, "ID", deviceId) &&
              putInfo(p->currentContext, info, "HASH", deviceHash) &&
              putInfo(p->currentContext, info, "VERSAO_ROM", int2str(*settings->romVersionPtr, buf))) //flsobral@tc125: added more info on v2
@@ -242,7 +242,7 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
             //flsobral@tc138: v3 info
             if (putInfo(p->currentContext, info, "IMEI", imei) && putInfo(p->currentContext, info, "SERIAL", serial))
             {
-               if ((strObj = *getStaticFieldObject(settingsClass, "activationId")) != null)
+               if ((strObj = *getStaticFieldObject(p->currentContext,settingsClass, "activationId")) != null)
                   putInfoObj(p->currentContext, info, "COD_ATIVACAO" , strObj);
             }
          }

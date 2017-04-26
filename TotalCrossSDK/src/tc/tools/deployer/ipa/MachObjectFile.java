@@ -1,16 +1,27 @@
 package tc.tools.deployer.ipa;
 
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.x509.X509Store;
+import tc.tools.deployer.ipa.blob.BlobWrapper;
+import tc.tools.deployer.ipa.blob.CodeDirectory;
 import tc.tools.deployer.ipa.blob.EmbeddedSignature;
+import tc.tools.deployer.ipa.blob.Entitlements;
+import tc.tools.deployer.ipa.blob.Requirements;
 
 /**
  * http://llvm.org/docs/doxygen/html/MachOFormat_8h_source.html
  * http://comments.gmane.org/gmane.comp.programming.garbage-collection.boehmgc/4987
  */
-public class MachObjectFile
+public class MachObjectFile extends AppleBinary
 {
    protected long magic;
    protected long cputype;
@@ -20,27 +31,19 @@ public class MachObjectFile
    protected long sizeofcmds;
    protected long flags;
 
-   public byte[] data;
-
-   private List commands = new ArrayList();
+   private List<MachLoadCommand> commands = new ArrayList<MachLoadCommand>();
 
    private MachLoadCommandCodeSignature lc_signature = null;
    private MachLoadCommandSegment lc_segment = null;
 
    private byte[] signatureTemplate;
 
-   public MachObjectFile(byte[] data) throws IOException, InstantiationException, IllegalAccessException
+   protected MachObjectFile(byte[] data) throws IOException, InstantiationException, IllegalAccessException
    {
-      this.data = data;
+      super(data);
       ElephantMemoryReader reader = new ElephantMemoryReader(data);
 
-      this.magic = reader.readUnsignedIntLE();
-      this.cputype = reader.readUnsignedIntLE();
-      this.cpusubtype = reader.readUnsignedIntLE();
-      this.filetype = reader.readUnsignedIntLE();
-      this.ncmds = reader.readUnsignedIntLE();
-      this.sizeofcmds = reader.readUnsignedIntLE();
-      this.flags = reader.readUnsignedIntLE();
+      this.readHeader(reader);
       this.commands.clear();
       for (int i = 0; i < ncmds; i++)
       {
@@ -60,8 +63,20 @@ public class MachObjectFile
       }
       reader.close();
 
-      if (lc_segment == null || lc_signature == null || (lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize))
+      if (lc_segment == null || lc_signature == null
+            || (lc_signature.blobFileOffset + lc_signature.blobFileSize) != (lc_segment.fileoff + lc_segment.filesize))
          throw new RuntimeException("Template IPA files appears to be corrupted, please reinstall the SDK and try again");
+   }
+
+   protected void readHeader(ElephantMemoryReader reader) throws IOException
+   {
+      this.magic = reader.readUnsignedIntLE();
+      this.cputype = reader.readUnsignedIntLE();
+      this.cpusubtype = reader.readUnsignedIntLE();
+      this.filetype = reader.readUnsignedIntLE();
+      this.ncmds = reader.readUnsignedIntLE();
+      this.sizeofcmds = reader.readUnsignedIntLE();
+      this.flags = reader.readUnsignedIntLE();
    }
 
    public EmbeddedSignature getEmbeddedSignature()
@@ -82,8 +97,29 @@ public class MachObjectFile
       this.data = writer.buffer;
    }
 
-   public void resign() throws IOException, CMSException
+   public byte[] resign(KeyStore ks, X509Store certStore, String bundleIdentifier, byte[] entitlementsBytes, byte[] info,
+         byte[] sourceData) throws IOException, CMSException, UnrecoverableKeyException, CertificateEncodingException,
+         KeyStoreException, NoSuchAlgorithmException, OperatorCreationException
    {
+      // create a new codeDirectory with the new identifier, but keeping the same codeLimit
+      CodeDirectory codeDirectory = new CodeDirectory(bundleIdentifier, lc_signature.signature.codeDirectory.codeLimit);
+      // now create brand new entitlements and requirements
+      Entitlements entitlements = new Entitlements(entitlementsBytes);
+      Requirements requirements = new Requirements();
+
+      // now create the blob wrapper
+      BlobWrapper blobWrapper = new BlobWrapper(ks, certStore, codeDirectory);
+
+      // finally create the template of our new signature
+      EmbeddedSignature newSignature = new EmbeddedSignature(codeDirectory, entitlements, requirements, blobWrapper);
+
+      // add the new signature to the file
+      this.setEmbeddedSignature(newSignature);
+
+      // recalculate hashes
+      codeDirectory.setSpecialSlotsHashes(info, requirements.getBytes(), sourceData, null, entitlements.getBytes());
+      codeDirectory.setCodeSlotsHashes(this.data);
+
       lc_signature.signature.sign();
       byte[] resignedData = lc_signature.signature.getBytes();
       if (signatureTemplate.length != resignedData.length)
@@ -106,5 +142,7 @@ public class MachObjectFile
          this.data = new byte[expectedSize];
          System.arraycopy(writer.buffer, 0, this.data, 0, expectedSize);
       }
+
+      return this.data;
    }
 }

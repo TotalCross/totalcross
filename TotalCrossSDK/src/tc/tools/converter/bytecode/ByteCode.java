@@ -49,7 +49,7 @@ public class ByteCode implements JConstants
    /** The local variables */
    public static TCValue[] local;
 
-   private static Class []bcClasses;
+   private static Class<?> []bcClasses;
 
    public ByteCode getNext()
    {

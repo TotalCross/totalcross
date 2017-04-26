@@ -50,6 +50,10 @@ public class GPSLogger extends totalcross.Service
             }
          gps.stop();
       }
+      catch (GPSDisabledException gde)
+      {
+         Vm.debug("GPS IS DISABLED!");
+      }
       catch (Exception e)
       {
          e.printStackTrace();

@@ -19,7 +19,10 @@
 
 package totalcross.lang;
 
+import java.text.*;
+
 import totalcross.sys.*;
+import totalcross.util.regex.*;
 
 /** 
  * String is an <i>immutable</i> array of characters.
@@ -36,7 +39,7 @@ import totalcross.sys.*;
  * available.
  */
 
-public final class String4D
+public final class String4D implements Comparable<String4D>
 {
    char chars[];
 
@@ -128,6 +131,21 @@ public final class String4D
       this.chars = value;
    }
 
+   /**
+    * Creates a new String using the character sequence represented by
+    * the StringBuffer. Subsequent changes to buf do not affect the String.
+    *
+    * @param buffer StringBuffer to copy
+    * @throws NullPointerException if buffer is null
+    */
+   public String4D(StringBuffer4D buffer)
+   {
+      chars = new char[buffer.count];
+      String4D.copyChars(buffer.charbuf, 0, chars, 0, chars.length);
+   }
+
+
+
    /** Returns the length of the string in characters. */
    public int length()
    {
@@ -177,7 +195,7 @@ public final class String4D
    public static String valueOf(Object obj)
    {
       // this method is called for EVERY string literal in the applicaiton
-      return obj != null ? obj.toString() : "null";
+      return obj != null ? obj instanceof String ? (String)obj : obj.toString() : "null";
    }
 
    /**
@@ -344,4 +362,286 @@ public final class String4D
 
    /** Returns the hashcode for this string */
    native public int hashCode();
+   
+   public boolean contains(String4D part)
+   {
+      return indexOf(part) != -1;
+   }
+
+
+   /**
+    * Compares the given StringBuffer to this String. This is true if the
+    * StringBuffer has the same content as this String at this moment.
+    *
+    * @param buffer the StringBuffer to compare to
+    * @return true if StringBuffer has the same character sequence
+    * @throws NullPointerException if the given StringBuffer is null
+    * @since 1.4
+    */
+   public boolean contentEquals(StringBuffer4D buffer)
+   {
+      if (chars.length != buffer.count)
+         return false;
+      int i = chars.length;
+      while (--i >= 0)
+         if (chars[i] != buffer.charbuf[i])
+           return false;
+      return true;
+   }
+
+
+   /**
+    * Compares this String and another String (case insensitive). This
+    * comparison is <em>similar</em> to equalsIgnoreCase, in that it ignores
+    * locale and multi-characater capitalization, and compares characters
+    * after performing
+    * <code>Character.toLowerCase(Character.toUpperCase(c))</code> on each
+    * character of the string. 
+    *
+    * @param str the string to compare against
+    * @return the comparison
+    * @see Collator#compare(String, String)
+    * @since 1.2
+    */
+   public int compareToIgnoreCase(String4D str)
+   {
+      return toUpperCase().compareTo(str.toUpperCase()); // TODO optimize
+   }
+
+   /**
+    * Predicate which determines if this String matches another String
+    * starting at a specified offset for each String and continuing
+    * for a specified length. Indices out of bounds are harmless, and give
+    * a false result.
+    *
+    * @param toffset index to start comparison at for this String
+    * @param other String to compare region to this String
+    * @param ooffset index to start comparison at for other
+    * @param len number of characters to compare
+    * @return true if regions match (case sensitive)
+    * @throws NullPointerException if other is null
+    */
+   public boolean regionMatches(int toffset, String4D other, int ooffset, int len)
+   {
+     return regionMatches(false, toffset, other, ooffset, len);
+   }
+
+   /**
+    * Predicate which determines if this String matches another String
+    * starting at a specified offset for each String and continuing
+    * for a specified length, optionally ignoring case. Indices out of bounds
+    * are harmless, and give a false result. Case comparisons are based on
+    * <code>Character.toLowerCase()</code> and
+    * <code>Character.toUpperCase()</code>, not on multi-character
+    * capitalization expansions.
+    *
+    * @param ignoreCase true if case should be ignored in comparision
+    * @param toffset index to start comparison at for this String
+    * @param other String to compare region to this String
+    * @param ooffset index to start comparison at for other
+    * @param len number of characters to compare
+    * @return true if regions match, false otherwise
+    * @throws NullPointerException if other is null
+    */
+   public boolean regionMatches(boolean ignoreCase, int toffset, String4D other, int ooffset, int len)
+   {
+      if (toffset < 0 || ooffset < 0 || toffset + len > chars.length || ooffset + len > other.chars.length)
+          return false;
+        while (--len >= 0)
+          {
+            char c1 = chars[toffset++];
+            char c2 = other.chars[ooffset++];
+            // Note that checking c1 != c2 is redundant when ignoreCase is true,
+            // but it avoids method calls.
+            if (c1 != c2 && (! ignoreCase || (Convert.toLowerCase(c1) != Convert.toLowerCase(c2)
+                                          && (Convert.toUpperCase(c1) != Convert.toUpperCase(c2)))))
+               return false;
+          }
+        return true;
+   }
+
+   /**
+    * Test if this String matches a regular expression. This is shorthand for
+    * <code>{@link Pattern}.matches(regex, this)</code>.
+    *
+    * @param regex the pattern to match
+    * @return true if the pattern matches
+    * @throws NullPointerException if regex is null
+    * @throws PatternSyntaxException if regex is invalid
+    */
+   public boolean matches(String regex)
+   {
+     return Pattern.compile(regex).matches(this.toString());
+   }
+
+   /**
+    * Replaces the first substring match of the regular expression with a
+    * given replacement. This is shorthand for <code>{@link Pattern}
+    *   .compile(regex).matcher(this).replaceFirst(replacement)</code>.
+    *
+    * @param regex the pattern to match
+    * @param replacement the replacement string
+    * @return the modified string
+    * @throws NullPointerException if regex or replacement is null
+    * @throws PatternSyntaxException if regex is invalid
+    * @see #replaceAll(String, String)
+    * @see Pattern#compile(String)
+    */
+   /*public String replaceFirst(String regex, String replacement)
+   {
+     return Pattern.compile(regex).matcher(this.toString()).replaceFirst(replacement); // TODO JEFF
+   }*/
+
+   /**
+    * Replaces all matching substrings of the regular expression with a
+    * given replacement. This is shorthand for <code>{@link Pattern}
+    *   .compile(regex).matcher(this).replaceAll(replacement)</code>.
+    *
+    * @param regex the pattern to match
+    * @param replacement the replacement string
+    * @return the modified string
+    * @throws NullPointerException if regex or replacement is null
+    * @throws PatternSyntaxException if regex is invalid
+    * @see Pattern#compile(String)
+    */
+   public String replaceAll(String regex, String replacement)
+   {
+      return Pattern.compile(regex).replacer(replacement).replace(this.toString());
+   }
+
+   /**
+    * Split this string around the matches of a regular expression. Each
+    * element of the returned array is the largest block of characters not
+    * terminated by the regular expression, in the order the matches are found.
+    *
+    * <p>The limit affects the length of the array. If it is positive, the
+    * array will contain at most n elements (n - 1 pattern matches). If
+    * negative, the array length is unlimited, but there can be trailing empty
+    * entries. if 0, the array length is unlimited, and trailing empty entries
+    * are discarded.
+    *
+    * <p>For example, splitting "boo:and:foo" yields:<br>
+    * <table border=0>
+    * <th><td>Regex</td> <td>Limit</td> <td>Result</td></th>
+    * <tr><td>":"</td>   <td>2</td>  <td>{ "boo", "and:foo" }</td></tr>
+    * <tr><td>":"</td>   <td>t</td>  <td>{ "boo", "and", "foo" }</td></tr>
+    * <tr><td>":"</td>   <td>-2</td> <td>{ "boo", "and", "foo" }</td></tr>
+    * <tr><td>"o"</td>   <td>5</td>  <td>{ "b", "", ":and:f", "", "" }</td></tr>
+    * <tr><td>"o"</td>   <td>-2</td> <td>{ "b", "", ":and:f", "", "" }</td></tr>
+    * <tr><td>"o"</td>   <td>0</td>  <td>{ "b", "", ":and:f" }</td></tr>
+    * </table>
+    *
+    * <p>This is shorthand for
+    * <code>{@link Pattern}.compile(regex).split(this, limit)</code>.
+    *
+    * @param regex the pattern to match
+    * @param limit the limit threshold
+    * @return the array of split strings
+    * @throws NullPointerException if regex or replacement is null
+    * @throws PatternSyntaxException if regex is invalid
+    * @see Pattern#compile(String)
+    */
+  /* public String[] split(String regex, int limit)
+   {
+      return Pattern.compile(regex).split(this.toString(), limit); // TODO JEFF
+   } */
+
+   /**
+    * Split this string around the matches of a regular expression. Each
+    * element of the returned array is the largest block of characters not
+    * terminated by the regular expression, in the order the matches are found.
+    * The array length is unlimited, and trailing empty entries are discarded,
+    * as though calling <code>split(regex, 0)</code>.
+    *
+    * @param regex the pattern to match
+    * @return the array of split strings
+    * @throws NullPointerException if regex or replacement is null
+    * @throws PatternSyntaxException if regex is invalid
+    * @see Pattern#compile(String)
+    */
+   public String[] split(String regex)
+   {
+      for (int i = 0, n = regex.length(); i < n; i++)
+         if ("^$.[]{}()\\|?+*".indexOf(regex.charAt(i)) >= 0)
+            try
+            {
+               return Pattern.compile(regex).tokenizer(this.toString()).split();
+            }
+            catch (totalcross.util.ElementNotFoundException e)
+            {
+               return null;
+            }
+      return Convert.tokenizeString(this.toString(), regex);
+   }
+
+   /**
+    * Returns a String representation of a character array. Subsequent
+    * changes to the array do not affect the String.
+    *
+    * @param data the character array
+    * @return a String containing the same character sequence as data
+    * @throws NullPointerException if data is null
+    * @see #valueOf(char[], int, int)
+    */
+   public static String4D valueOf(char[] data)
+   {
+     return valueOf(data, 0, data.length);
+   }
+
+   /**
+    * Returns a String representing the character sequence of the char array,
+    * starting at the specified offset, and copying chars up to the specified
+    * count. Subsequent changes to the array do not affect the String.
+    *
+    * @param data character array
+    * @param offset position (base 0) to start copying out of data
+    * @param count the number of characters from data to copy
+    * @return String containing the chars from data[offset..offset+count]
+    * @throws NullPointerException if data is null
+    * @throws IndexOutOfBoundsException if (offset &lt; 0 || count &lt; 0
+    *         || offset + count &gt; data.length)
+    *         (while unspecified, this is a StringIndexOutOfBoundsException)
+    */
+   public static String4D valueOf(char[] data, int offset, int count)
+   {
+     return new String4D(data, offset, count);
+   }
+
+   /**
+    * Returns true if, and only if, {@link #length()}
+    * is <code>0</code>.
+    *
+    * @return true if the length of the string is zero.
+    * @since 1.6
+    */
+   public boolean isEmpty()
+   {
+     return chars.length == 0;
+   }
+
+   /**
+    * Returns a string that is this string with all instances of the sequence
+    * represented by <code>target</code> replaced by the sequence in
+    * <code>replacement</code>.
+    * @param target the sequence to be replaced
+    * @param replacement the sequence used as the replacement
+    * @return the string constructed as above
+    */
+   public String replace (String target, String replacement) // NOTE: the original version uses CharSequence
+   {
+     int targetLength = target.length();
+     int replaceLength = replacement.length();
+
+     int startPos = this.toString().indexOf(target);
+     StringBuilder result = new StringBuilder(this.toString());
+     while (startPos != -1)
+       {
+         // Replace the target with the replacement
+         result.replace(startPos, startPos + targetLength, replacement);
+
+         // Search for a new occurrence of the target
+         startPos = result.indexOf(target, startPos + replaceLength);
+       }
+     return result.toString();
+   }
 }

@@ -39,8 +39,7 @@ import totalcross.sys.*;
  * if (vec.size() > 5)
  * ...
  * </pre>
- * <br>For efficiency, get and set is made directly through the <items> public array.
- * <b>Please use the add and remove methods to manipulate the Vector.</b>
+ * This Vector class does not support Generics; use the ArrayList class instead.
  */
 public class Vector
 {
@@ -152,6 +151,28 @@ public class Vector
       else
          throw new IllegalArgumentException();
    }
+
+   /** Returns the last object, removing it, or the given default value
+    */
+   public Object pop(Object def)
+   {
+      if (count > 0)
+      {
+         Object o = items[--count];
+         items[count] = null; // let gc do their work
+         return o;
+      }
+      return def;
+   }
+
+   /** Returns the last object, without removing it, or the given default value.
+    * 
+    */
+   public Object peek(Object def)
+   {
+      return count > 0 ? items[count-1] : def;
+   }
+
 
    /** Returns if this Vector is empty.
     * @since TotalCross 1.0.
@@ -316,6 +337,16 @@ public class Vector
          Convert.qsort(items, 0, count-1);
    }
 
+   /** Sorts the elements of this Vector. If they are Strings,
+   the sort will be much faster because a cast to String is done;
+   if they are not strings, the toString() method is used to return
+   the string that will be used for comparison. */
+    public void qsort(int sortType)
+    {
+       if (count > 0)
+          Convert.qsort(items, 0, count-1, sortType);
+    }
+   
    /** Dumps the contents of this vector and returns a string of it.
     * If the number of elements is big, it can take a lot of memory!
     */
@@ -407,5 +438,10 @@ public class Vector
          items[i] = items[j];
          items[j] = temp;
       }
+   }
+   
+   public Object elementAt(int i)
+   {
+      return items[i];
    }
 }

@@ -9,17 +9,41 @@
  *                                                                               *
  *********************************************************************************/
 
+/*
+         String fontName = "SansSerif";
+         String tit = "__ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678890`~!@#$%^&*()_+=-{}\\][:;\"'<,>./?�������";
+         Label l;
+         ScrollContainer sc = new ScrollContainer();
+         add(sc,LEFT,TOP,FILL,FILL);
+         for (int i = 10; i < 80; i++)
+         {
+            // how only the fonts that match this name.
+            Font ff = Font.getFont(fontName, false, i);
+            if (ff.name.equals(fontName))
+            {
+               l = new Label(i+" "+tit);
+               l.setFont(ff);
+               sc.add(l,LEFT,AFTER);
+            }
+            ff = Font.getFont(fontName, true, i);
+            if (ff.name.equals(fontName))
+            {
+               l = new Label(i+" "+tit);
+               l.setFont(ff);
+               sc.add(l,LEFT,AFTER);
+            }
+         }
+         sc.resize();
 
+ */
 
 package tc.tools;
 
 import totalcross.io.*;
-import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
-import totalcross.ui.font.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
+
+import java.awt.*;
 
 /** Converts a Windows true type font to a pdb file that can be used by TotalCross programs
   * (and also by other programs)
@@ -28,12 +52,24 @@ import totalcross.util.zip.*;
 
 public class FontGenerator
 {
-   class Range {int s, e; String name; Range(int ss, int ee, String nn) {s = ss; e = ee; name=nn;}}
    public static byte detailed=0; // 1 show messages, 2 show msgs + chars
+
+   class Range 
+   {
+      int s, e; 
+      String name; 
+      
+      Range(int ss, int ee, String nn) 
+      {
+         s = ss; 
+         e = ee; 
+         name=nn;
+      }
+   }
 
    String fontName;
    PalmFont pf;
-   boolean antialiased;
+   int antialiased;
    Vector newRanges;
    java.awt.Component comp;
    static IntVector sizes = new IntVector(30);
@@ -51,7 +87,6 @@ public class FontGenerator
       if (jdkversion.startsWith("1.1.") || jdkversion.startsWith("1.2."))
          throw new Exception("This program requires JDK version greater or equal than 1.3!");
       String outName = fontName; // guich@401_11
-      boolean allSizes = true;
       boolean noBold = false;
       boolean isMono = false;
       for (i=1; i < extraArgs.length; i++) // 0 if font name
@@ -68,14 +103,14 @@ public class FontGenerator
             if (argLow.equals("/nobold"))
                noBold = true;
             else
-            if (argLow.equals("/defaultsizes"))
-               allSizes = false;
-            else
             if (argLow.startsWith("/sizes"))
                sizesArg = argLow.substring(argLow.indexOf(':')+1);
             else
             if (argLow.equals("/aa"))
-               antialiased = true;
+               antialiased = AA_8BPP; // always force 8bpp
+            else
+            if (argLow.equals("/aa8"))
+               antialiased = AA_8BPP;
             else
             if (argLow.startsWith("/rename:"))
             {
@@ -118,7 +153,7 @@ public class FontGenerator
          System.exit(1);
       }
       // create fonts
-      println("FontGenerator - Copyright (c) SuperWaba 2002-2012. Processing...");
+      println("FontGenerator - Copyright (c) SuperWaba 2002-2015. Processing...");
       if (sizesArg != null)
       {
          String[] ss = totalcross.sys.Convert.tokenizeString(sizesArg, ',');
@@ -127,35 +162,41 @@ public class FontGenerator
          sizes.qsort();
       }
       else
-      if (allSizes) // has unicode? - create only the main sizes: 9, 11, 12, 15, 18
-         for (i = totalcross.ui.font.Font.MIN_FONT_SIZE; i <= totalcross.ui.font.Font.MAX_FONT_SIZE; i++)
+      if (antialiased == AA_NO)
+         for (i = 7; i <= 60; i++)
             sizes.addElement(i);
       else
-      {
-         sizes.addElement(9);
-         sizes.addElement(11);
-         sizes.addElement(12);
-         sizes.addElement(13);
-         sizes.addElement(14);
-         sizes.addElement(18);
-         sizes.addElement(20);
-      }
+         sizes.addElements(new int[]{7,8,9,10,11,12,13,14,15,16,17,18,19,20,40,60,80});
       Vector v = new Vector(30);
 
       for (i = 0; i < sizes.size(); i++)
       {
          int s = sizes.items[i];
-         convertFont(v, new java.awt.Font(fontName, java.awt.Font.PLAIN, s), outName+"$p"+s, newRanges, isMono);
+         convertFont(v, getFont(fontName, java.awt.Font.PLAIN, s), outName+"$p"+s, newRanges, isMono);
          if (!noBold)
-            convertFont(v, new java.awt.Font(fontName, java.awt.Font.BOLD, s), outName+"$b"+s, newRanges, isMono);
+            convertFont(v, getFont(fontName, java.awt.Font.BOLD, s), outName+"$b"+s, newRanges, isMono);
       }
 
       // write the file
       try {new File(outName).delete();} catch (Exception e) {} // delete if it exists
       new TCZ(v, outName, (short)0);
-      // test fonts
-      runTestFont(outName);
+      System.out.println("\nFile "+outName+".tcz created.");
    }
+
+   private Font getFont(String name, int bold, int s)
+   {
+      int destSize = s;
+      while (s > 0)
+      {
+         Font f = new java.awt.Font(name, bold, s);
+         java.awt.FontMetrics fm = comp.getFontMetrics(f);
+         if (fm.getHeight() <= destSize)
+            return f;
+         s--;
+      }
+      return null;
+   }
+
 
    private void convertFont(Vector v, java.awt.Font f, String fileName, Vector newRanges, boolean isMono)
    {
@@ -165,7 +206,7 @@ public class FontGenerator
 
       java.awt.Image img = comp.createImage(width,height);
       java.awt.Graphics2D g = (java.awt.Graphics2D)img.getGraphics();
-      try {g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, antialiased ? java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON:java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);} catch (Throwable t) {println("Antialiased font not supported!"); System.exit(2);}
+      try {g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, antialiased != AA_NO ? java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON:java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);} catch (Throwable t) {println("Antialiased font not supported!"); System.exit(2);}
       g.setFont(f);
 
       // Note: Sun's JDK does not return a optimal width value for the
@@ -191,7 +232,7 @@ public class FontGenerator
       {
          Range rr = (Range)newRanges.items[ri];
          if (detailed == 0)
-            System.out.print(backs+((ri+1)*100/n)+"%");
+            System.out.print(backs+((ri+1)*100/n)+"% ");
          int ini = rr.s;
          int end = rr.e;
          for (i = ini; i <= end; i++)
@@ -216,7 +257,7 @@ public class FontGenerator
             }
             else
             {
-               int w = r.width+1; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
+               int w = r.width+r.height/5; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
                
                // guich@tc126_44: skip chars above normal
                if (wW == 0 && ch == 'W')
@@ -344,13 +385,20 @@ public class FontGenerator
       if (detailed==2) System.out.print((char)('@'));
    }
 
-   private void setNibble(int pixel, int x, int y)
+   private void setNibble4(int pixel, int x, int y)
    {
       int nibble = 0xF0 - (pixel & 0xF0);  // 4 bits of transparency
       if (detailed==2) System.out.print((char)('a'+nibble)/*'@'*/);
       if ((x & 1) != 0)
          nibble >>= 4;
       pf.bitmapTable[(x>>1) + (y * pf.rowWidthInBytes)] |= nibble;  // set
+   }
+   
+   private void setNibble8(int pixel, int x, int y)
+   {
+      int nibble = 0xFF - (pixel & 0xFF); // FFF5F5F5
+      if (detailed==2) System.out.print((char)('a'+nibble)/*'@'*/);
+      pf.bitmapTable[x + (y * pf.rowWidthInBytes)] = (byte)nibble;  // set
    }
 
    private void computeBits(int pixels[], int xx, int w)
@@ -361,10 +409,15 @@ public class FontGenerator
       {
          if (pixels[i] != white)
          {
-            if (antialiased)
-               setNibble(pixels[i], xx+x, y);
-            else
-               setBit(xx+x,y);
+            switch (antialiased)
+            {
+               case AA_NO: setBit(xx+x,y); break;
+               case AA_4BPP: setNibble4(pixels[i], xx+x, y); break;
+               case AA_8BPP: 
+                  setNibble8(pixels[i], xx+x, y); 
+                     //AndroidUtils.debug("@"+(xx+x)+","+y+": "+Integer.toHexString(pixels[i]).toUpperCase()+" -> "+Integer.toHexString(pf.bitmapTable[xx+x + (y * pf.rowWidthInBytes)] & 0xFF).toUpperCase());
+                  break;
+            }               
          }
          else
          if (detailed==2) System.out.print(' ');
@@ -439,22 +492,6 @@ public class FontGenerator
       System.out.println(s);
    }
 
-   public static void runTestFont(String fontName)
-   {
-      if (true)
-      {
-         totalcross.Launcher.main(new String[]
-         {
-            "/scr",      "800x600x24",
-            "/scale",    "1",
-            "/cmdLine",  fontName,
-            "tc.tools.FontGenerator$TestFont"
-         }); // guich@503_6: fixed package name
-         while (true)
-            totalcross.sys.Vm.sleep(100);
-      }
-      else System.exit(0);
-   }
    public static void main(String args[])
    {
       try
@@ -463,15 +500,14 @@ public class FontGenerator
          if (args.length < 1)
          {
             println("Format: java FontGenerator <font name> /rename:newName /detailed:1_or_2 /aa");
-            println("  /DefaultSizes /NoBold /sizes:<comma-separeted list of sizes> /u <list of ranges>");
+            println("  /NoBold /sizes:<comma-separeted list of sizes> /u <list of ranges>");
             println("");
             println("Parameters are case insensitive, meaning:");
             println(". /monospace To create a monospaced font.");
             println(". /rename:newName to rename the output font name.");
             println(". /detailed:1_or_2 to show detailed information.");
-            println(". /aa to create an antialiased font.");
-            println(". /DefaultSizes to create fonts only for the default sizes of each platform: ");
-            println("9, 11, 12, 13, 14, 18, 20. Otherwise, font sizes will range from "+Font.MIN_FONT_SIZE+" to "+Font.MAX_FONT_SIZE);
+            println(". /aa to create a 4-bpp antialiased font.");
+            println(". /aa8 to create a 8-bpp antialiased font.");
             println("  /sizes:<comma-separeted list of sizes> to create a font with the given sizes");
             println(". /NoBold to don't create the bold font.");
             println(". /skipBigChars: useful when creating monospaced fonts; the glyphs that have a width above the W char are skipped.");
@@ -482,11 +518,8 @@ public class FontGenerator
             println("\"/u 32-255 256-383 402-402 20284-40869\". The ranges must be in increased order.");
             println("The /u option must be the LAST option used.");
             println("");
-            println("When creating unicode fonts of a wide range, using options /nobold /defaultsizes");
+            println("When creating unicode fonts of a wide range, using options /nobold");
             println("will create a file 1/4 of the original size.");
-            println("");
-            println("Alternative format: java FontGenerator test <font name>");
-            println("This will open a TotalCross app to test the font");
             println("");
             println("Copyright (c) SuperWaba 2002-2012");
             println("Must use JDK 1.3 or higher!");
@@ -499,10 +532,10 @@ public class FontGenerator
             } catch (java.io.IOException ie) {}
          }
          else
-         if (args[0].equalsIgnoreCase("test"))
-            runTestFont(args[1]);
-         else
+         {
             new FontGenerator(args[0],args);
+            System.exit(0);
+         }
       }
       catch (Exception e)
       {
@@ -510,9 +543,12 @@ public class FontGenerator
       }
    }
 
+   static final int AA_NO = 0;
+   static final int AA_4BPP = 1;
+   static final int AA_8BPP = 2;
    static class PalmFont
    {
-      public boolean antialiased;  // true if its antialiased
+      public int antialiased;      // true if its antialiased
       public int firstChar;        // ASCII code of first character
       public int lastChar;         // ASCII code of last character
       public int spaceWidth;       // width of the space char
@@ -537,7 +573,7 @@ public class FontGenerator
             ByteArrayStream from = new ByteArrayStream(4096);
             ByteArrayStream to = new ByteArrayStream(2048);
             DataStreamLE ds = new DataStreamLE(from);
-            ds.writeShort(antialiased?1:0); // note that writeShort already writes an unsigned short (its the same method)
+            ds.writeShort(antialiased); // note that writeShort already writes an unsigned short (its the same method)
             ds.writeShort(firstChar  );
             ds.writeShort(lastChar   );
             ds.writeShort(spaceWidth );
@@ -581,7 +617,7 @@ public class FontGenerator
 
       public void initTables()
       {
-         rowWidthInBytes = rowWords << (antialiased ? 3 : 1); // 4 bits of transparency or 1 bit (B/W)
+         rowWidthInBytes = 2 * rowWords * (antialiased == AA_NO ? 1 : antialiased == AA_4BPP ? 4 : 8); // 4 bits of transparency or 1 bit (B/W)
          bitmapTableSize = (int)rowWidthInBytes * (int)maxHeight;
 
          bitmapTable     = new byte[bitmapTableSize];
@@ -592,56 +628,6 @@ public class FontGenerator
       {
          int index = ch - firstChar;
          return index < 0 || index > lastChar ? spaceWidth : bitIndexTable[index+1] - bitIndexTable[index];
-      }
-   }
-   public static class TestFont extends MainWindow
-   {
-      private Button btn;
-
-      public TestFont()
-      {
-         super("", TAB_ONLY_BORDER);
-         setUIStyle(Settings.Vista);
-      }
-      public void initUI()
-      {
-         Label l;
-         String fontName = getCommandLine();
-         setTitle("Test Font - "+fontName);
-         if (fontName == null || fontName.length() == 0)
-            exit(1);
-
-         String tit = "__ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678890`~!@#$%^&*()_+=-{}\\][:;\"'<,>./?�������";
-         if (sizes.size() == 0) // occurs when the user call the TestFont directly
-         {
-            for (int i = Font.MIN_FONT_SIZE; i <= Font.MAX_FONT_SIZE; i++)
-               sizes.addElement(i);
-         }
-         for (int ii = 0; ii < sizes.size(); ii++)
-         {
-            int i = sizes.items[ii];
-            // how only the fonts that match this name.
-            Font ff = Font.getFont(fontName, false, i);
-            if (ff.name.equals(fontName))
-            {
-               l = new Label(i+" "+tit);
-               l.setFont(ff);
-               add(l,LEFT,AFTER);
-            }
-            ff = Font.getFont(fontName, true, i);
-            if (ff.name.equals(fontName))
-            {
-               l = new Label(i+" "+tit);
-               l.setFont(ff);
-               add(l,LEFT,AFTER);
-            }
-         }
-         add(btn = new Button("Exit"), RIGHT,0);
-      }
-      public void onEvent(Event e)
-      {
-         if (e.type == ControlEvent.PRESSED && e.target == btn)
-            exit(0);
       }
    }
 }

@@ -55,7 +55,7 @@ import totalcross.sys.*;
  * @see totalcross.ui.RadioGroupController
  */
 
-public class Radio extends Control
+public class Radio extends Control implements TextControl
 {
    private String text;
    private boolean checked;
@@ -110,7 +110,7 @@ public class Radio extends Control
          vistaSelected = new Image("totalcross/res/radioon_vista.png");
          vistaUnselected = new Image("totalcross/res/radiooff_vista.png");
       }
-      String key = (isSelected?"*":"") + foreColor + "|" + backColor + "|" + fmH + (enabled?"*":""); // guich@tc110a_110: added backColor.
+      String key = (isSelected?"*":"") + foreColor + "|" + backColor + "|" + fmH + (isEnabled()?"*":""); // guich@tc110a_110: added backColor.
       Image img;
       if (imgs == null)
          imgs = new Hashtable(4);
@@ -121,7 +121,7 @@ public class Radio extends Control
       int h = height == 0 ? getPreferredHeight() : height;
       img = img.getSmoothScaledInstance(h,h);
       img.applyColor(foreColor);
-      if (!enabled)
+      if (!isEnabled())
          img = img.getFadedInstance();
       imgs.put(key, img);
       return img;
@@ -167,19 +167,19 @@ public class Radio extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1;
+      return textW+2+getPreferredHeight(); // use getPreferredHeight since it may be overloaded
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      return fmH+Edit.prefH; // guich@tc110_18: min size is 12
+      return fmH+Edit.prefH;
    }
 
    /** Called by the system to pass events to the radio control. */
    public void onEvent(Event event)
    {
-      if (event.target != this || !enabled) return;
+      if (event.target != this || !isEnabled()) return;
       switch (event.type)
       {
          case KeyEvent.ACTION_KEY_PRESS: // guich@550_15
@@ -321,11 +321,14 @@ public class Radio extends Control
       if (uiAndroid)
          try 
          {
-            Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, foreColor);
-            ret.applyColor(foreColor);
-            g.drawImage(ret,0,0);
+            int hh = Math.max(fmH,Math.min(width - (textW+2), height)); 
+            Image ret = isEnabled() ? Resources.radioBkg.getNormalInstance(hh,hh,foreColor) : Resources.radioBkg.getDisabledInstance(hh, hh, foreColor);
+            yy = (height - hh) / 2;
+            ret.alphaMask = alphaValue;
+            g.drawImage(ret,0,yy);
+            ret.alphaMask = 255;
             if (checked)
-               g.drawImage(Resources.radioSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+               g.drawImage(Resources.radioSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,isEnabled()),0,yy);
          } catch (ImageException ie) {}
       else
       if (uiVista && imgSel != null)
@@ -345,7 +348,7 @@ public class Radio extends Control
             g.fillCircle(7,7,7);
          else
             g.fillCircle(5,6,4);
-         if (uiVista && enabled) // guich@573_6: shade diagonally
+         if (uiVista && isEnabled()) // guich@573_6: shade diagonally
          {
             g.foreColor = Color.darker(bColor,UIColors.vistaFadeStep*2);
             for (k=9,j=6; j >= 0; j--) // bigger k -> darker
@@ -416,7 +419,7 @@ public class Radio extends Control
       // draw label
       yy = (this.height - fmH) >> 1;
       xx = leftJustify ? (uiFlat ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
-      g.foreColor = textColor != -1 ? (enabled ? textColor : Color.interpolate(textColor,backColor)) : cColor;
+      g.foreColor = textColor != -1 ? (isEnabled() ? textColor : Color.interpolate(textColor,backColor)) : cColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
 

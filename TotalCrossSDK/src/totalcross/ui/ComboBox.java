@@ -36,6 +36,9 @@ import totalcross.util.*;
 
 public class ComboBox extends Container
 {
+   public static final int ARROWSTYLE_DOWNDOT = 0;
+   public static final int ARROWSTYLE_PAGEFLIP = 1;
+   public static int arrowStyle = ARROWSTYLE_PAGEFLIP;
    protected ComboBoxDropDown pop;
    Button btn;
    private boolean armed;
@@ -74,19 +77,19 @@ public class ComboBox extends Container
     * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
     * popup list, but keep others with the PopupMenu, you can do something like:
     * <pre>
-    * public class MyListBox extends ListBox
-    * {
-    *    public MyListBox(String[] items)
-    *    {
-    *       super(items);
-    *    }
-    * }
-    * ...
-    * ComboBox cb = new ComboBox(new MyListBox(items));
+    *  // at the begining of your program:
+    *  ComboBox.usePopupMenu = true;
+    *  // when you want to create the standalone ComboBox
+    *  ComboBox.usePopupMenu = false; // turn flag off
+    *  .. create the ComboBox
+    *  ComboBox.usePopupMenu = true; // turn flag on again
     * </pre>
+    * An internal copy of the flag is set at the constructor.
     * @since TotalCross 1.5
     */
    public static boolean usePopupMenu = true;
+   
+   private boolean _usePopupMenu;
    
    /** Creates an empty ComboBox */
    public ComboBox()
@@ -115,6 +118,7 @@ public class ComboBox extends Container
    /** Constructs a ComboBox with the given PopList. */
    public ComboBox(ComboBoxDropDown userPopList) // guich@340_36
    {
+      _usePopupMenu = usePopupMenu;
       clearValueInt = defaultClearValueInt;
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
@@ -276,9 +280,20 @@ public class ComboBox extends Container
     */
    public void setSelectedItem(Object name) // guich@401_25
    {
+      setSelectedItem(name, Settings.sendPressEventOnChange);
+   }
+   
+   /**
+    * Selects an item. If the name is not found, the currently selected item is
+    * not changed.
+    *
+    * @since SuperWaba 4.01
+    */
+   public void setSelectedItem(Object name, boolean sendPress) // guich@401_25
+   {
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedItem(name);
-      if (Settings.sendPressEventOnChange && pop.lb.selectedIndex != idx)
+      if (sendPress && pop.lb.selectedIndex != idx)
          postPressedEvent();
       Window.needsPaint = true;
    }
@@ -319,15 +334,16 @@ public class ComboBox extends Container
    private Image getArrowImage() 
    {
       Image img;
+      Image img0 = arrowStyle == ARROWSTYLE_PAGEFLIP ? Resources.comboArrow2 : Resources.comboArrow;
       int s = fmH;
       try
       {
-         img = Resources.comboArrow.getSmoothScaledInstance(s,s);
+         img = arrowStyle == ARROWSTYLE_PAGEFLIP ? img0.smoothScaledFixedAspectRatio(s,false) : img0.getSmoothScaledInstance(s,s);
          img.applyColor2(backColor);
       }
       catch (ImageException e)
       {
-         img = Resources.comboArrow;
+         img = img0;
       }
       return img;
    }
@@ -344,9 +360,7 @@ public class ComboBox extends Container
          pop.setFont(font);
       // guich@tc100b3: resize the arrow based on the font.
       boolean uiAndroid = Control.uiAndroid;
-      if (uiAndroid)
-         btn.setImage(getArrowImage());
-      else
+      if (!uiAndroid)
       {
          ArrowButton ab = (ArrowButton)btn;
          int newWH = getArrowWidth();
@@ -373,8 +387,13 @@ public class ComboBox extends Container
       btnW = btn.getPreferredWidth();
       switch (Settings.uiStyle)
       {
+         case Settings.Holo:
          case Settings.Android:
-            btn.setRect(width - btnW - 3, 2, btnW, height-4,null,screenChanged);
+            btn.setImage(getArrowImage());
+            if (arrowStyle == ARROWSTYLE_PAGEFLIP)
+               btn.setRect(width - btnW - 1, height-fmH-2, btnW, fmH,null,screenChanged);
+            else
+               btn.setRect(width - btnW - 3, 2, btnW, height,null,screenChanged);
             break;
          default: // guich@573_6: both Flat and Vista use this
             btn.setRect(width - btnW - 3, 1, btnW + 2, height - 2, null, screenChanged);
@@ -391,7 +410,7 @@ public class ComboBox extends Container
       boolean inside;
       if (opened && event.type != ControlEvent.WINDOW_CLOSED)
          return;
-      if (enabled)
+      if (isEnabled())
       switch (event.type)
       {
          case PenEvent.PEN_DRAG:
@@ -485,7 +504,7 @@ public class ComboBox extends Container
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
-      if (uiAndroid && usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
+      if (uiAndroid && _usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
       {
          if (pop.lb.itemCount == 0)
             opened = false;
@@ -501,6 +520,7 @@ public class ComboBox extends Container
                pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
                pm.setCursorColor(pop.lb.back1);
                pm.setSelectedIndex(pop.lb.selectedIndex);
+               pm.setFont(this.font);
                if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
                pm.popup();
                Event.clearQueue(PenEvent.PEN_UP); // prevent problem when user selects an item that is at the top of this ComboBox
@@ -563,12 +583,13 @@ public class ComboBox extends Container
          }
          pop.lb.setBackForeColors(backColor, foreColor);
       }
-      if (!uiAndroid) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(), backColor, foreColor, fourColors);
    }
 
    /** paint the combo's border and the current selected item */
    public void onPaint(Graphics g)
    {
+      boolean enabled = isEnabled();
       // guich@200b4_126: repaint the background.
       if (!transparentBackground) // guich@tc115_18
          if (!uiAndroid && uiVista && enabled) // guich@573_6
@@ -582,14 +603,14 @@ public class ComboBox extends Container
          try
          {
             if (npback == null)
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false,true);
+               npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false);
             if ((armed || btn.armed) && nparmed == null)
                nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
             Image img = armed || btn.armed ? nparmed : npback;
             g.drawImage(img, 0,0);
 //            Graphics gg = img.getGraphics();
 //            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
-            g.setClip(2,2,width-btnW-8,height-4);
+            g.setClip(2,2,width-btnW-(arrowStyle == ARROWSTYLE_PAGEFLIP ? 0 : 8),height-4);
          }
          catch (ImageException e) {e.printStackTrace();}
       else
@@ -653,15 +674,18 @@ public class ComboBox extends Container
       repaintNow();
    }
 
-   /** Clears this control, selecting index clearValueInt (0 by default). */
+   /** Clears this control, selecting index clearValueInt (0 by default); uses clearValueStr if set, instead. */
    public void clear() // guich@572_19
    {
-      setSelectedIndex(clearValueInt);
+      if (clearValueStr != null)
+         setSelectedItem(clearValueStr);
+      else
+         setSelectedIndex(clearValueInt);
    }
 
    public void getFocusableControls(Vector v) // kmeehl@tc100
    {
-      if (visible && enabled) v.addElement(this);
+      if (visible && isEnabled()) v.addElement(this);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100
@@ -688,9 +712,21 @@ public class ComboBox extends Container
     */
    public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive) // guich@tc113_2
    {
+      return setSelectedItemStartingWith(text, caseInsensitive, Settings.sendPressEventOnChange);
+   }
+
+   /** Selects the item that starts with the given text
+    * @param text The text string to search for
+    * @param caseInsensitive If true, the text and all searched strings are first converted to lowercase.
+    * @param sendPress If true, sends the PRESSED event
+    * @return If an item was found and selected.
+    * @since TotalCross 1.13
+    */
+   public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive, boolean sendPress) // guich@tc310
+   {
       int idx = pop.lb.selectedIndex;
       boolean b = pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
-      if (Settings.sendPressEventOnChange && pop.lb.selectedIndex != idx)
+      if (sendPress && pop.lb.selectedIndex != idx)
          postPressedEvent();
       return b;
    }
@@ -702,5 +738,24 @@ public class ComboBox extends Container
    {
       pop = lb;
       setSelectedIndex(-1);
+   }
+   
+   public boolean equals(Object o)
+   {
+      if (o != null && o instanceof String[])
+      {
+         String[] s = (String[])o;
+         Vector v = pop.lb.items;
+         if (v.size() != s.length)
+            return false;
+         else
+         {
+            for (int i = s.length; --i >= 0;)
+               if ((s[i] == null && s[i] != v.items[i]) || (s[i] != null && !s[i].equals(v.items[i])))
+                  return false;
+            return true;
+         }
+      }
+      return super.equals(o);
    }
 }

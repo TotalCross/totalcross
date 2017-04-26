@@ -1,4 +1,5 @@
 package tc.tools.deployer.ipa;
+
 public interface ElephantMemoryStream
 {
    public abstract int getPos();

@@ -14,6 +14,10 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // tcclass.c
 extern Hashtable htLoadedClasses;
 extern TCClassArray vLoadedClasses;
@@ -28,11 +32,12 @@ extern int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;
+extern HANDLE hModuleTCVM;
 #elif defined(ANDROID)
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
 #endif
-#if defined(ANDROID) || defined(darwin)
+#if defined(ANDROID) || defined(darwin) || defined(WP8)
 extern int32 deviceFontHeight,iosScale;
 #endif
 
@@ -47,13 +52,12 @@ extern char commandLine[256];
 extern int32 exitCode;
 extern bool rebootOnExit;
 extern bool destroyingApplication;
-extern Object mainClass;  // the instance being executed
+extern TCObject mainClass;  // the instance being executed
 extern bool isMainWindow;   // extends MainWindow ?
 #if defined(ANDROID)
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
-;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 extern jfieldID jsipVisible,jappTitleH;
 extern jmethodID jgetHeight;
@@ -68,6 +72,8 @@ extern TScreenSurface screen;
 extern TCClass uiColorsClass;
 extern int32* shiftScreenColorP;
 extern int32* vistaFadeStepP;
+extern TCClass imageClass;
+extern int32 totalTextureLoaded;
 
 // mem.c
 extern uint32 maxAvail; // in bytes
@@ -103,23 +109,23 @@ extern TVirtualKeyboardSettings vkSettings;
 extern jmethodID jsetElapsed;
 #endif
 
-// objectmemorymanager.c
-extern bool runningGC,runningFinalizer;
-extern ObjectArray freeList; // the array with lists of free objects
-extern ObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
-extern ObjectArray lockList; // locked objects list
+// objectmemorymanager.c    
+extern bool runningGC,runningFinalizer,disableGC,callGConMainThread;
+extern TCObjectArray freeList; // the array with lists of free objects
+extern TCObjectArray usedList; // the array with lists of used objects (allocated after the last GC)
+extern TCObjectArray lockList; // locked objects list
 extern uint32 markedAsUsed; // starts as 1
 extern uint32 objCreated,skippedGC,objLocked; // a few counters
-extern int32 lastGC;
+extern int32 lastGC, markedImages;
 extern Heap ommHeap;
 extern Heap chunksHeap;
 extern Stack objStack;
 #if defined(ENABLE_TEST_SUITE)
 // The garbage collector tests requires that no objects are created, so we cache the state, then restore it when the test finishes
 extern bool canTraverse;
-extern ObjectArray freeList2; // the array with lists of free objects
-extern ObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
-extern ObjectArray lockList2; // locked objects list
+extern TCObjectArray freeList2; // the array with lists of free objects
+extern TCObjectArray usedList2; // the array with lists of used objects (allocated after the last GC)
+extern TCObjectArray lockList2; // locked objects list
 extern uint32 markedAsUsed2; // starts as 1
 extern uint32 gcCount2,objCreated2,skippedGC2,objLocked2; // the current gc count
 extern Heap ommHeap2,chunksHeap2;
@@ -137,6 +143,7 @@ extern int32 vmTweaks;
 extern bool showKeyCodes;
 extern int32 profilerMaxMem;
 extern TCClass lockClass;
+extern Hashtable htMutexes;
 
 // linux/graphicsprimitives.c, linux/event_c.h, darwin/event.m, tcview.m
 #if !defined(WIN32)
@@ -146,7 +153,7 @@ extern void *deviceCtx; // The device context points a structure containing plat
 // utils.c
 extern int32 firstTS;
 #ifdef ANDROID
-extern jmethodID jlistTCZs;
+extern jmethodID jlistTCZs,jgetFreeMemory;
 #endif
 
 // file.c
@@ -169,7 +176,7 @@ extern jmethodID jalert;
 // nativelib.c
 extern VoidPs* openNativeLibs;
 
-// native proc addresses for iOS
+// native proc addresses for iOS and Android
 extern Hashtable htNativeProcAddresses;
 
 // tcz.c
@@ -193,10 +200,19 @@ extern int32 oldAutoOffValue; // if not 0, the device is in NEVER-SLEEP mode, an
 extern jmethodID jclipboard;
 #endif
 
+// Convert.c
+extern TCObject *charConverterPtr;
+extern TCClass ISO88591CharacterConverter, UTF8CharacterConverter;
+
 // media_Sound.c
 extern TSoundSettings soundSettings;
 #ifdef ANDROID
-extern jmethodID jtone,jsoundEnable;
+extern jmethodID jtone,jsoundEnable,jsoundPlay, jsoundToText, jsoundFromText;
+#endif
+
+// money
+#ifdef ANDROID
+jmethodID jadsFunc;
 #endif
 
 // ConnectionManager.c
@@ -227,6 +243,12 @@ extern jmethodID jdial;
 // tcthread.c
 extern int32 threadCount;
 
+// class.c
+extern TCObject *voidTYPE,*booleanTYPE, *byteTYPE, *shortTYPE, *intTYPE, *longTYPE, *floatTYPE, *doubleTYPE, *charTYPE;
+
+// object.c
+extern TCClass cloneable;
+
 // These are set in the application's constructor
 extern uint32 applicationId;
 extern char applicationIdStr[5];
@@ -252,8 +274,8 @@ TC_API UInt32 getApplicationId();
 typedef UInt32 (*getApplicationIdFunc)();
 TC_API CharP getApplicationIdStr();
 typedef CharP (*getApplicationIdStrFunc)();
-TC_API Object getMainClass();
-typedef Object (*getMainClassFunc)();
+TC_API TCObject getMainClass();
+typedef TCObject (*getMainClassFunc)();
 TC_API CharP getVMPath();
 typedef CharP (*getVMPathFunc)();
 TC_API CharP getAppPath();
@@ -272,5 +294,9 @@ extern HINSTANCE aygshellDll, coreDll, cellcoreDll;
 
 bool initGlobals();
 void destroyGlobals();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

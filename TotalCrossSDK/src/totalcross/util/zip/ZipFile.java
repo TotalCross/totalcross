@@ -5,6 +5,8 @@ import totalcross.Launcher;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
 
+/** @deprecated This class was never fully implemented. Use ZipStream instead. */
+
 public class ZipFile
 {
    private java.util.zip.ZipFile nativeFile;
@@ -40,7 +42,7 @@ public class ZipFile
    public ZipEntry[] entries()
    {
       ZipEntry[] entries = new ZipEntry[nativeFile.size()];
-      Enumeration e = nativeFile.entries();
+      Enumeration<?> e = nativeFile.entries();
 
       for (int i = 0 ; e.hasMoreElements() ; i++)
          entries[i] = new ZipEntry(((java.util.zip.ZipEntry) e.nextElement()).getName());

@@ -172,12 +172,12 @@ static Err portConnectorReadWriteBytes(PortHandle portConnectorRef, int32 portNu
 
    if (isRead)
    {
-      if ((num = read(portConnectorRef, bytes + start, count)) < 0)
+      if ((num = (int)read(portConnectorRef, bytes + start, count)) < 0)
          return errno;
    }
    else
    {
-      if ((num = write(portConnectorRef, bytes + start, count)) < 0)
+      if ((num = (int)write(portConnectorRef, bytes + start, count)) < 0)
          return errno;
    }
 

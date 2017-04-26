@@ -20,7 +20,7 @@ void privateSetInt(Context c, int32 hk, TCHARP key, TCHARP value, int32 data);
 void privateSetString(Context c, int32 hk, TCHARP key, TCHARP value, CharP data);
 void privateSetBlob(Context c, int32 hk, TCHARP key, TCHARP value, uint8* data, int32 len);
 bool privateDelete(int32 hk, TCHARP key, TCHARP value);
-Object privateList(Context c, int32 hk, TCHARP key);
+TCObject privateList(Context c, int32 hk, TCHARP key);
 
 #else
 
@@ -53,7 +53,7 @@ static bool privateDelete(int32 hk, TCHARP key, TCHARP value)
    return false;
 }
 
-static Object privateList(Context c, int32 hk, TCHARP key)
+static TCObject privateList(Context c, int32 hk, TCHARP key)
 {
    return null;
 }

@@ -11,23 +11,32 @@
 
 #include "tcvm.h"	
 
+#ifdef ANDROID
+#undef __gl2_h_
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#include <EGL/egl.h>
+#endif
+
 #ifdef __gl2_h_
 #define Graphics_forePixel(o)      makePixelARGB(Graphics_foreColor(o) | Graphics_alpha(o))
 #define Graphics_backPixel(o)      makePixelARGB(Graphics_backColor(o) | Graphics_alpha(o))
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a);
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a);
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n);
 void glDrawPixels(int32 n, int32 rgb);
+void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill);
 int32 glGetPixel(int32 x, int32 y);
-void glDeleteTexture(Object img, int32* textureId, bool removeFromList);
-void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool removeFromList);
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH);
-void applyChanges(Context currentContext, Object obj, bool updateList);
-void freeTexture(Object obj, bool updateList);
+void glDeleteTexture(TCObject img, int32* textureId);
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha);
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask);
+void applyChanges(Context currentContext, TCObject obj);
+void freeTexture(TCObject obj);
 bool checkGLfloatBuffer(Context c, int32 n);
 void flushPixels();
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch);
-void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
+void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz);
 void glSetLineWidth(int32 w);
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a);
 void flushAll();
@@ -42,7 +51,9 @@ void flushAll();
 #endif*/
 #include "GraphicsPrimitives_c.h"
 
-#if defined(WINCE) || defined(WIN32)
+#ifdef WP8
+#include "wp8/gfx_Graphics_c.h"
+#elif defined(WINCE) || defined(WIN32)
  #include "win/gfx_Graphics_c.h"
 #elif defined(ANDROID) || defined(darwin)
  #include "android/gfx_Graphics_c.h"
@@ -62,6 +73,7 @@ void flushAll();
 #define Flat         2
 #define Vista        3
 #define Android      4
+#define Holo         5
 
 bool initGraphicsBeforeSettings(Context currentContext, int16 appTczAttr) // no thread are running at this point
 {
@@ -89,8 +101,8 @@ bool initGraphicsAfterSettings(Context currentContext)
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native protected void create(totalcross.ui.gfx.GfxSurface surface);
 {
-   Object g = p->obj[0];
-   Object surface = p->obj[1];
+   TCObject g = p->obj[0];
+   TCObject surface = p->obj[1];
    SurfaceType stype = getSurfaceType(p->currentContext, surface);
    int32 w,h;
 
@@ -114,163 +126,163 @@ TC_API void tugG_create_g(NMParams p) // totalcross/ui/gfx/Graphics native prote
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawEllipse_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawEllipse(int xc, int yc, int rx, int ry);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    ellipseDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_forePixel(g), false, false);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillEllipse_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillEllipse(int xc, int yc, int rx, int ry);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    ellipseDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_backPixel(g), Graphics_backPixel(g), true, false);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillEllipseGradient_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillEllipseGradient(int xc, int yc, int rx, int ry);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    ellipseDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_backPixel(g), true, true);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawArc_iiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void drawArc(int xc, int yc, int r, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_forePixel(g), false, false, false);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawPie_iiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void drawPie(int xc, int yc, int r, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_forePixel(g), false, true, false);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPie_iiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPie(int xc, int yc, int r, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_backPixel(g), true, true, false);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPieGradient_iiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_backPixel(g), true, true, true);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawEllipticalArc_iiiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_forePixel(g), false, false, false);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawEllipticalPie_iiiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_forePixel(g), false, true, false);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillEllipticalPie_iiiidd(NMParams p) // totalcross/ui/gfx/Graphics native public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_backPixel(g), true, true, false);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillEllipticalPieGradient_i(NMParams p) // totalcross/ui/gfx/Graphics native public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    arcPiePointDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], p->dbl[0], p->dbl[1], Graphics_forePixel(g), Graphics_backPixel(g), true, true, true);
 }                         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawCircle_iii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCircle(int xc, int yc, int r);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    ellipseDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], Graphics_forePixel(g), Graphics_forePixel(g), false, false);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillCircle_iii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillCircle(int xc, int yc, int r);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    ellipseDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], Graphics_backPixel(g), Graphics_backPixel(g), true, false);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillCircleGradient_iii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillCircleGradient(int xc, int yc, int r);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    ellipseDrawAndFill(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[2], Graphics_backPixel(g), Graphics_backPixel(g), true, true);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_getPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native public int getPixel(int x, int y);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    p->retI = getPixel(g, p->i32[0], p->i32[1]);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_setPixel_ii(NMParams p) // totalcross/ui/gfx/Graphics native public void setPixel(int x, int y);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    setPixel(p->currentContext, g, p->i32[0], p->i32[1], Graphics_forePixel(g));
 }           
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawLine_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawLine(int ax, int ay, int bx, int by);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g));
 }           
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawDots_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDots(int ax, int ay, int bx, int by);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawDottedLine(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_backPixel(g));
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRect(int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g));
 }           
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillRect(int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    fillRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_backPixel(g));
 }           
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawDottedRect_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawDottedRect(int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawDottedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], Graphics_forePixel(g), Graphics_backPixel(g));
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygon(int []xPoints, int []yPoints, int nPoints);
 {
-   Object g = p->obj[0];
-   Object xPoints = p->obj[1];
-   Object yPoints = p->obj[2];
+   TCObject g = p->obj[0];
+   TCObject xPoints = p->obj[1];
+   TCObject yPoints = p->obj[2];
    int32 nPoints = p->i32[0];
    // fdie@ the vm has a 4bytes pointer!
    int32* xp = (int32 *)ARRAYOBJ_START(xPoints);
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, Graphics_backPixel(g), Graphics_backPixel(g), false);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_backPixel(g), Graphics_backPixel(g), false);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillPolygonGradient_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void fillPolygonGradient(int []xPoints, int []yPoints, int nPoints);
 {
-   Object g = p->obj[0];
-   Object xPoints = p->obj[1];
-   Object yPoints = p->obj[2];
+   TCObject g = p->obj[0];
+   TCObject xPoints = p->obj[1];
+   TCObject yPoints = p->obj[2];
    int32 nPoints = p->i32[0];
    // fdie@ the vm has a 4bytes pointer!
    int32* xp = (int32 *)ARRAYOBJ_START(xPoints);
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, Graphics_forePixel(g), Graphics_backPixel(g), true);
+      fillPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_backPixel(g), true);
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawPolygon(int []xPoints, int []yPoints, int nPoints);
 {
-   Object g = p->obj[0];
-   Object xPoints = p->obj[1];
-   Object yPoints = p->obj[2];
+   TCObject g = p->obj[0];
+   TCObject xPoints = p->obj[1];
+   TCObject yPoints = p->obj[2];
    int32 nPoints = p->i32[0];
    // fdie@ the vm has a 4bytes pointer!
    int32* xp = (int32 *)ARRAYOBJ_START(xPoints);
@@ -278,37 +290,37 @@ TC_API void tugG_drawPolygon_IIi(NMParams p) // totalcross/ui/gfx/Graphics nativ
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
    {
-      drawPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, Graphics_forePixel(g));
+      drawPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g));
       drawLine(p->currentContext, g, xp[0],yp[0],xp[nPoints-1],yp[nPoints-1], Graphics_forePixel(g));
    }           
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawPolyline_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawPolyline(int []xPoints, int []yPoints, int nPoints);
 {
-   Object g = p->obj[0];
-   Object xPoints = p->obj[1];
-   Object yPoints = p->obj[2];
+   TCObject g = p->obj[0];
+   TCObject xPoints = p->obj[1];
+   TCObject yPoints = p->obj[2];
    int32 nPoints = p->i32[0];
    // fdie@ the vm has a 4bytes pointer!
    int32* xp = (int32 *)ARRAYOBJ_START(xPoints);
    int32* yp = (int32 *)ARRAYOBJ_START(yPoints);
 
    if (checkArrayRange(p->currentContext, xPoints, 0, nPoints) && checkArrayRange(p->currentContext, yPoints, 0, nPoints))
-      drawPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, Graphics_forePixel(g));
+      drawPolygon(p->currentContext, g, xp, yp, nPoints, 0,0,0, 0,0, Graphics_forePixel(g));
 }                 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_sii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y);
 {
-   Object text;
-   Object g = p->obj[0];
+   TCObject text;
+   TCObject g = p->obj[0];
    if ((text=p->obj[1]) != null)
       drawText(p->currentContext, g, String_charsStart(text), String_charsLen(text), p->i32[0], p->i32[1], Graphics_forePixel(g),0);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_Ciiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(char []chars, int start, int count, int x, int y);
 {
-   Object chars;
-   Object g = p->obj[0];
+   TCObject chars;
+   TCObject g = p->obj[0];
    if ((chars=p->obj[1]) != null)
    {
       uint32 start = p->i32[0];
@@ -320,8 +332,8 @@ TC_API void tugG_drawText_Ciiii(NMParams p) // totalcross/ui/gfx/Graphics native
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y);
 {
-   Object sb;
-   Object g = p->obj[0];
+   TCObject sb;
+   TCObject g = p->obj[0];
    if ((sb=p->obj[1]) != null)
    {
       uint32 start = p->i32[0];
@@ -333,8 +345,8 @@ TC_API void tugG_drawText_siiii(NMParams p) // totalcross/ui/gfx/Graphics native
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth);
 {
-   Object sb;
-   Object g = p->obj[0];
+   TCObject sb;
+   TCObject g = p->obj[0];
    if ((sb=p->obj[1]) != null)
    {
       uint32 start = p->i32[0];
@@ -346,13 +358,13 @@ TC_API void tugG_drawText_siiiii(NMParams p) // totalcross/ui/gfx/Graphics nativ
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth);
 {
-   Object text;
-   Object g = p->obj[0];
+   TCObject text;
+   TCObject g = p->obj[0];
    if ((text=p->obj[1]) != null)
       drawText(p->currentContext, g, String_charsStart(text), String_charsLen(text), p->i32[0], p->i32[1], Graphics_forePixel(g),p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
-static void drawTextShadowed(Context currentContext, Object g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth, bool shadow, Pixel shadowColor)
+static void drawTextShadowed(Context currentContext, TCObject g, JCharP text, int32 chrCount, int32 x0, int32 y0, Pixel foreColor, int32 justifyWidth, bool shadow, Pixel shadowColor)
 {
    if (shadow)
    {
@@ -366,8 +378,8 @@ static void drawTextShadowed(Context currentContext, Object g, JCharP text, int3
 
 TC_API void tugG_drawText_Ciiiibi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(char []chars, int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
 {
-   Object chars;
-   Object g = p->obj[0];
+   TCObject chars;
+   TCObject g = p->obj[0];
    if ((chars=p->obj[1]) != null)
    {
       uint32 start = p->i32[0];
@@ -379,8 +391,8 @@ TC_API void tugG_drawText_Ciiiibi(NMParams p) // totalcross/ui/gfx/Graphics nati
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siiiibi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, boolean shadow, int shadowColor);
 {
-   Object sb;
-   Object g = p->obj[0];
+   TCObject sb;
+   TCObject g = p->obj[0];
    if ((sb=p->obj[1]) != null)
    {
       uint32 start = p->i32[0];
@@ -392,8 +404,8 @@ TC_API void tugG_drawText_siiiibi(NMParams p) // totalcross/ui/gfx/Graphics nati
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siiiiibi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(StringBuffer sb, int chrStart, int chrCount, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
 {
-   Object sb;
-   Object g = p->obj[0];
+   TCObject sb;
+   TCObject g = p->obj[0];
    if ((sb=p->obj[1]) != null)
    {
       uint32 start = p->i32[0];
@@ -405,54 +417,54 @@ TC_API void tugG_drawText_siiiiibi(NMParams p) // totalcross/ui/gfx/Graphics nat
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siibi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, boolean shadow, int shadowColor);
 {
-   Object text;
-   Object g = p->obj[0];
+   TCObject text;
+   TCObject g = p->obj[0];
    if ((text=p->obj[1]) != null)
       drawTextShadowed(p->currentContext, g, String_charsStart(text), String_charsLen(text), p->i32[0], p->i32[1], Graphics_forePixel(g),0,p->i32[2],makePixelRGB(p->i32[3]));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawText_siiibi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawText(String text, int x, int y, int justifyWidth, boolean shadow, int shadowColor);
 {
-   Object text;
-   Object g = p->obj[0];
+   TCObject text;
+   TCObject g = p->obj[0];
    if ((text=p->obj[1]) != null)
       drawTextShadowed(p->currentContext, g, String_charsStart(text), String_charsLen(text), p->i32[0], p->i32[1], Graphics_forePixel(g),p->i32[2],p->i32[3],makePixelRGB(p->i32[4]));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawHatchedRect_iiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void drawHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawHatchedRect(p->currentContext, g,p->i32[0],p->i32[1],p->i32[2],p->i32[3],(bool)p->i32[4],(bool)p->i32[5],Graphics_forePixel(g));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillHatchedRect_iiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillHatchedRect(int x, int y, int width, int height, boolean top, boolean bottom);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    fillHatchedRect(p->currentContext, g,p->i32[0],p->i32[1],p->i32[2],p->i32[3],(bool)p->i32[4],(bool)p->i32[5],Graphics_backPixel(g));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundRect(int x, int y, int width, int height, int r);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawRoundRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], Graphics_forePixel(g));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillRoundRect_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillRoundRect(int x, int y, int width, int height, int r);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    fillRoundRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], Graphics_backPixel(g));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_setClip_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void setClip(int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    setClip(g, p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_clip_r(NMParams p) // totalcross/ui/gfx/Graphics native public boolean clip(totalcross.ui.gfx.Rect r);
 {
-   Object g = p->obj[0];
-   Object rect = p->obj[1];
+   TCObject g = p->obj[0];
+   TCObject rect = p->obj[1];
    bool b = false;
    if (rect)
    {
@@ -478,41 +490,37 @@ TC_API void tugG_clip_r(NMParams p) // totalcross/ui/gfx/Graphics native public 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_copyRect_giiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
 {
-   Object hDest = p->obj[0];
-   Object hOrig = p->obj[1];
+   TCObject hDest = p->obj[0];
+   TCObject hOrig = p->obj[1];
    if (hOrig)
       drawSurface(p->currentContext, hDest, hOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], true);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
+TC_API void tugG_drawRoundGradient_iiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor);
 {
-   Object g = p->obj[0];
-   PixelConv c1,c2;
-   
-   c1.pixel = p->i32[8];
-   c2.pixel = p->i32[9];
-   drawRoundGradient(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7],c1, c2,p->i32[10]);
+   TCObject g = p->obj[0];
+   drawRoundGradient(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7],p->i32[8],p->i32[9], p->i32[10]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawImage_iiib(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
 {
-   Object surfDest = p->obj[0];
-   Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, Image_width(surfOrig) * Image_hwScaleW(surfOrig), Image_height(surfOrig) * Image_hwScaleH(surfOrig), p->i32[0], p->i32[1], (bool)p->i32[2]);
+   TCObject surfDest = p->obj[0];
+   TCObject surfOrig = p->obj[1];
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0, 0, (int32)(Image_width(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_height(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], (bool)p->i32[2]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_copyImageRect_iiiiib(NMParams p) // totalcross/ui/gfx/Graphics native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
 {
-   Object surfDest = p->obj[0];
-   Object surfOrig = p->obj[1];
+   TCObject surfDest = p->obj[0];
+   TCObject surfOrig = p->obj[1];
    if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, p->i32[0], p->i32[1], p->i32[2], p->i32[3], 0,0, (bool)p->i32[4]);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_setPixels_IIi(NMParams p) // totalcross/ui/gfx/Graphics native public void setPixels(int []xPoints, int []yPoints, int nPoints);
 {
-   Object g = p->obj[0];
-   Object xPoints = p->obj[1];
-   Object yPoints = p->obj[2];
+   TCObject g = p->obj[0];
+   TCObject xPoints = p->obj[1];
+   TCObject yPoints = p->obj[2];
    int32 nPoints = p->i32[0];
    Pixel c = Graphics_forePixel(g);
 
@@ -527,13 +535,13 @@ TC_API void tugG_setPixels_IIi(NMParams p) // totalcross/ui/gfx/Graphics native 
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_refresh_iiiiiif(NMParams p) // totalcross/ui/gfx/Graphics native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
 {
-   Object g = p->obj[0];
-   Object surf = Graphics_surface(g);
+   TCObject g = p->obj[0];
+   TCObject surf = Graphics_surface(g);
    int32 scrW,scrH;
    if (Surface_isImage(surf)) // update everything, because a screen rotation may have occured
    {
-      scrW = Graphics_clipX2(g) = Graphics_width (g) = Graphics_pitch(g) = Image_width(surf) * Image_hwScaleW(surf);
-      scrH = Graphics_clipY2(g) = Graphics_height(g) = Image_height(surf) * Image_hwScaleH(surf);
+      scrW = Graphics_clipX2(g) = Graphics_width (g) = Graphics_pitch(g) = (int32)(Image_width(surf) * Image_hwScaleW(surf));
+      scrH = Graphics_clipY2(g) = Graphics_height(g) = (int32)(Image_height(surf) * Image_hwScaleH(surf));
    }
    else
    {
@@ -551,22 +559,21 @@ TC_API void tugG_refresh_iiiiiif(NMParams p) // totalcross/ui/gfx/Graphics nativ
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawVistaRect_iiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    drawVistaRect(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3], makePixelRGB(p->i32[4]),makePixelRGB(p->i32[5]),makePixelRGB(p->i32[6]),makePixelRGB(p->i32[7]));
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics native public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    int32 x = p->i32[0];
    int32 y = p->i32[1];
    int32 width = p->i32[2];
    int32 height = p->i32[3];
    int32 type = p->i32[4];
-   bool yMirror = (bool)p->i32[5];
    bool simple = (bool)p->i32[6];
    int32 *fourColorsI = (int32*)ARRAYOBJ_START(p->obj[1]);
-   Pixel fourColors[4], foreColor = Graphics_forePixel(g), backColor = Graphics_backPixel(g);
+   Pixel fourColors[4], foreColor = Graphics_forePixel(g);
 
    if (fourColorsI == null)
       return;
@@ -604,6 +611,7 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
                break;   
          }
          break;
+      case Holo:
       case Android:
       case Vista:
          switch (type)
@@ -627,13 +635,13 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillVistaRect_iiiiibb(NMParams p) // totalcross/ui/gfx/Graphics native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    fillVistaRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], makePixelRGB(p->i32[4]), (bool)p->i32[5], (bool)p->i32[6]);
 }                   
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawArrow_iiibbi(NMParams p) // totalcross/ui/gfx/Graphics native public void drawArrow(int x, int y, int h, byte type, boolean pressed, int color);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    int32 x = p->i32[0];
    int32 y = p->i32[1];
    int32 h = p->i32[2];
@@ -670,22 +678,22 @@ TC_API void tugG_drawArrow_iiibbi(NMParams p) // totalcross/ui/gfx/Graphics nati
 TC_API void tugG_drawImage_iii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawImage(totalcross.ui.image.Image image, int x, int y);
 {
    //copyRect(image, 0, 0, image.getWidth(),image.getHeight(), x, y);
-   Object surfDest = p->obj[0];
-   Object surfOrig = p->obj[1];
-   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, Image_width(surfOrig) * Image_hwScaleW(surfOrig), Image_height(surfOrig) * Image_hwScaleH(surfOrig), p->i32[0], p->i32[1], true);
+   TCObject surfDest = p->obj[0];
+   TCObject surfOrig = p->obj[1];
+   if (surfOrig) drawSurface(p->currentContext, surfDest, surfOrig, 0,0, (int32)(Image_width(surfOrig) * Image_hwScaleW(surfOrig)), (int32)(Image_height(surfOrig) * Image_hwScaleH(surfOrig)), p->i32[0], p->i32[1], true);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_getRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int getRGB(int []data, int offset, int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
-   Object data = p->obj[1];
+   TCObject g = p->obj[0];
+   TCObject data = p->obj[1];
    p->retI = getsetRGB(p->currentContext, g, data, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4],true);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_setRGB_Iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public int setRGB(int []data, int offset, int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
-   Object data = p->obj[1];
+   TCObject g = p->obj[0];
+   TCObject data = p->obj[1];
    p->retI = getsetRGB(p->currentContext, g, data, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4],false);
 }
 //////////////////////////////////////////////////////////////////////////
@@ -694,52 +702,25 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
 #ifdef __gl2_h_
    glFillRect(0,0,appW,appH,0,p->i32[0]);
 #else   
-   //int32 ini = getTimeStamp();
    if (graphicsLock(&screen, true))
    {
-      int32 fadeValue = p->i32[0], j,r,g,b;
-      PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
-      bool dec = fadeValue > 0;
-      PixelConv lastColor, lastFaded, rgb;
-      lastColor.pixel = lastFaded.pixel = rgb.pixel = -1;
-      for (j = screen.screenH * screen.screenW; j-- > 0; f++)
+      int32 fadeValue = p->i32[0], len,r,g,b;
+      PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
+      for (len = screen.screenH * screen.screenW; len-- > 0; pixels++)
       {
-         if (f->pixel == lastColor.pixel) // uigadgets have a cache hit of 90%
-            f->pixel = lastFaded.pixel;
-         else
-         {
-            lastColor.pixel = f->pixel;
-            r = f->r - fadeValue;
-            g = f->g - fadeValue;
-            b = f->b - fadeValue;
-            if (dec) // if the value is being decreased, it will never be greater than the max value
-            {
-               if (r < 0) r = 0; 
-               if (g < 0) g = 0; 
-               if (b < 0) b = 0; 
-            }
-            else
-            {
-               if (r > 255) r = 255;
-               if (g > 255) g = 255;
-               if (b > 255) b = 255;
-            }                 
-            f->r = r;
-            f->g = g;
-            f->b = b;
-            lastFaded.pixel = f->pixel;
-         }
+         r = pixels->r * fadeValue; pixels->r = (r+1 + (r >> 8)) >> 8;
+         g = pixels->g * fadeValue; pixels->g = (g+1 + (g >> 8)) >> 8;
+         b = pixels->b * fadeValue; pixels->b = (b+1 + (b >> 8)) >> 8;
       }
       graphicsLock(&screen, false);
    }                          
-   //debug("elapsed %d ms",getTimeStamp()-ini);
 #endif   
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
 {                      
    int32 thickness;
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    PixelConv borderColor,titleColor,bodyColor,footerColor;
    borderColor.pixel = makePixelRGB(p->i32[6]);
    titleColor .pixel = makePixelRGB(p->i32[7]);
@@ -754,23 +735,47 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_dither_iiii(NMParams p) // totalcross/ui/gfx/Graphics native public void dither(int x, int y, int w, int h);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    dither(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3]);
 }         
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawCylindricShade_iiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
 {
-   Object g = p->obj[0];
-   PixelConv c1,c2;
-   c1.pixel = p->i32[0];
-   c2.pixel = p->i32[1];
-   drawCylindricShade(p->currentContext, g, c1,c2, p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
+   TCObject g = p->obj[0];
+   drawCylindricShade(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5]);
 }                     
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_fillShadedRect_iiiibbiii(NMParams p) // totalcross/ui/gfx/Graphics native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
 {
-   Object g = p->obj[0];
+   TCObject g = p->obj[0];
    fillShadedRect(p->currentContext, g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], makePixelRGB(p->i32[6]), makePixelRGB(p->i32[7]), p->i32[8]);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawThickLine_iiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
+{       
+   TCObject g = p->obj[0];
+   int32 x1 = p->i32[0], y1 = p->i32[1], x2 = p->i32[2], y2 = p->i32[3], t = p->i32[4];
+   int32 dx = abs32(x2-x1); 
+   int32 dy = abs32(y2-y1); 
+   int32 tlx[4],tly[4];
+   t /= 2;
+   if (dx > dy)
+   {
+      tlx[0] = tlx[1] = x1; tlx[2] = tlx[3] = x2;
+      tly[0] = y1+t; tly[1] = y1-t; tly[2] = y2-t; tly[3] = y2+t;
+   }
+   else
+   {
+      tlx[0] = x1+t; tlx[1] = x1-t; tlx[2] = x2-t; tlx[3] = x2+t;
+      tly[0] = tly[1] = y1; tly[2] = tly[3] = y2;
+   }
+   fillPolygon(p->currentContext, g, tlx, tly, 4, 0,0,0, 0,0, Graphics_forePixel(g), Graphics_forePixel(g), false);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawCircleAA_iiibbbbb(NMParams p) // totalcross/ui/gfx/Graphics native protected void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
+{
+   TCObject g = p->obj[0];
+   drawCircleAA(p->currentContext, g, p->i32[0],p->i32[1],p->i32[2],p->i32[3],p->i32[4],p->i32[5],p->i32[6],p->i32[7], Graphics_forePixel(g));
 }
 
 #ifdef ENABLE_TEST_SUITE

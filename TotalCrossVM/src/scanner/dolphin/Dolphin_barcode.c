@@ -11,7 +11,7 @@
 
 
 
-#include "barcode.h"
+#include "..\barcode.h"
 
 // FROM extlibs/D7600/Include/Armv4i/Decoder.h
 
@@ -111,6 +111,10 @@ BOOL CheckOnSCAN(void)
 {
    return scanning;
 }
+static bool isScanKeyDown()
+{
+   return GetAsyncKeyState(SCAN_KEY) < 0 || GetAsyncKeyState(193) < 0 || GetAsyncKeyState(195) < 0 || GetAsyncKeyState(194) < 0; // last three are for dolphin 6510
+}
 
 LRESULT ScanMonitorThread()
 {
@@ -126,13 +130,14 @@ LRESULT ScanMonitorThread()
    running = true;
    while (running)
    {
-      Sleep(200);
+      Sleep(50);
       if (!running)
          break;
-      if (!scanning && GetAsyncKeyState(SCAN_KEY) < 0 && barcode[0] == 0)
+	  if (!scanning && isScanKeyDown())
       {
          scanning = 1;
-         nResult = decWaitForDecodeProc(5000, (BYTE*) barcode, (BYTE*) &cCodeID,(BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, CheckOnSCAN);
+		 xmemzero(barcode, MAX_MESSAGE_LENGTH);
+         nResult = decWaitForDecodeProc(500, (BYTE*) barcode, (BYTE*) &cCodeID,(BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, CheckOnSCAN);
          if (nResult == RESULT_SUCCESS)
          {
             if (cCodeID == SYMID_EAN13 || cCodeID == SYMID_EAN8)
@@ -150,8 +155,12 @@ LRESULT ScanMonitorThread()
                barcode[uBarcodeLen + 1] = 0;
             }
             PostMessage(getMainWindowHandle(), UM_SCAN, nResult, (long) barcode);
-            // clear read-ahead
-            while (decWaitForDecodeProc(100, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
+            // clear read-ahead - guich@tc330 - removed this because the scanner will keep on while the user is looking at a barcode
+            // while (decWaitForDecodeProc(50, (BYTE*) barcode2, (BYTE*) &cCodeID, (BYTE*) &cSymLetter, (BYTE*) &cSymModifier, &uBarcodeLen, 0) == RESULT_SUCCESS);
+
+			// wait until the user release the key
+			while (isScanKeyDown())
+				Sleep(50);
          }
          scanning = 0;
       }
@@ -305,4 +314,8 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
       p->retI = false;  // throw exception on error?
    else
       p->retI = true;
+}
+//////////////////////////////////////////////////////////////////////////
+SCAN_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
+{
 }

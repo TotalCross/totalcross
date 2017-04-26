@@ -53,13 +53,13 @@ import totalcross.util.Hashtable;
  * </pre>
  */
 
-public class Button extends Control
+public class Button extends Control implements TextControl
 {
    /** Specifies no border for this button. Used in the setBorder method. */
    public static final byte BORDER_NONE = 0;
    /** Specifies a single-lined border for this button. Used in the setBorder method. */
    public static final byte BORDER_SIMPLE = 1;
-   /** Specifies a 3d border this button. Used in the setBorder method. */
+   /** Specifies a 3d border for this button. Used in the setBorder method. */
    public static final byte BORDER_3D = 2;
    /** Specifies a vertical 3d-gradient border for this button. Used in the setBorder method.
     * Note that, in this mode, the back and fore colors are set using the borderColor3DG,
@@ -93,11 +93,27 @@ public class Button extends Control
     * @since TotalCross 1.12 
     */
    public static final byte BORDER_GRAY_IMAGE = 5; // guich@tc112_25
+   /** Specifies a rounded border for this button. Used in the setBorder method. Note that you MUST use PREFERRED when specifying button's height.
+    * @see #roundBorderFactor
+    * @since TotalCross 3.04 
+    */
+   public static final byte BORDER_ROUND = 6;
    
    /** Set to true to draw the button borders if transparentBackground is true.
     * @since TotalCross 1.15 
     */
    public boolean drawBordersIfTransparentBackground; // guich@tc115_74
+
+   /** The current frame in a multi-frame image. */
+   public int currentFrame; // defaults to 0
+   
+   /** Set to false to disable the button's shift when its pressed. */
+   public boolean shiftOnPress = true;
+   
+   /** The factor by which the height will be divided to find the round border radius. Used when
+    * border is set to BORDER_ROUND.
+    */
+   public int roundBorderFactor = 2;
 
    // guich@tc122_46: added auto-repeat for button
    /** Set to true to enable auto-repeat feature for this button. The PRESSED event will be sent while this button is held.
@@ -114,7 +130,7 @@ public class Button extends Control
    public int AUTO_DELAY = 150;
    
    protected String text;
-   protected Image img,imgDis;
+   protected Image img,img0,imgDis;
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
@@ -128,7 +144,8 @@ public class Button extends Control
    private boolean isAndroidStyle;
    private boolean skipPaint;
    private Rect clip;
-   
+   private int localCommonGap;
+
    private String []lines;
    private int []linesW;
 
@@ -177,12 +194,10 @@ public class Button extends Control
    public int hightlightColor = -1; // guich@tc112_29
 
    /** Set commonGap to a value to make all further buttons with the same internal
-     * gap. This is useful when you're creating the buttons but don't want to
-     * keep calling the <code>setGap</code> method.
-     * Note that this value will be added to the value of <code>gap</code>.
+     * gap. 
      * Remember to save the current value and restore it when done.
      * Changing this also affects the size of the ScrollBars created.
-     * @deprecated Does not work after screen rotation.
+     * The value is stored locally on the constructor so it works later if the screen is resized.
      */
    public static int commonGap; // guich@300_3
    
@@ -211,6 +226,12 @@ public class Button extends Control
     * @since TotalCross 2.0
     */
    public boolean underlinedText;
+   
+   /** The height of the image based on the button's height, ranging from 1 to 100. Used when an image is passed as parameter in one of the constructors. 
+    */
+   public int imageHeightFactor;
+   /** Fills the button when pressed even if transparentBackground is set. */
+   public boolean fillWhenPressedOnTransparentBackground;
 
    /** Creates a button that shows the given text and image.
     * @param text The text to be displayed
@@ -224,9 +245,10 @@ public class Button extends Control
    public Button(String text, Image img, int textPosition, int gap)
    {
       if (text != null) setText(text);
-      this.img = img;
+      this.img = this.img0 = img;
       this.tiGap = gap;
       txtPos = textPosition;
+      this.localCommonGap = commonGap;
    }
 
    /** Creates a button displaying the given text. */
@@ -234,7 +256,14 @@ public class Button extends Control
    {
       this(text,null,0,0);
    }
-
+   
+   /** Creates a button displaying the given text and border. */
+   public Button(String text, byte border)
+   {
+      this(text,null,0,0);
+      setBorder(border);
+   }
+   
    /** Sets the text that is displayed in the button. */
    public void setText(String text)
    {
@@ -245,14 +274,26 @@ public class Button extends Control
          img = null;
       Window.needsPaint = true;
    }
-
+   
    /** Creates a button with the given image. The transparentColor property of
     * the Image must be set before calling this constructor. */
    public Button(Image img)
    {
        this(null,img,0,0);
    }
+
+   /** Creates a button with the given image and border. The transparentColor property of
+    * the Image must be set before calling this constructor. */
+   public Button(Image img, byte border)
+   {
+       this(null,img,0,0);
+       setBorder(border);
+   }
    
+   protected Button()
+   {
+   }
+
    /** Sets the image that is displayed in the button. The
     transparentColor property of the Image must be set before calling this
     method.<br>
@@ -293,6 +334,9 @@ public class Button extends Control
       this.border = border;
       switch (border)
       {
+         case BORDER_ROUND:
+            transparentBackground = true;
+            break;
          case BORDER_3D: // guich@tc112_30
          case BORDER_3D_HORIZONTAL_GRADIENT:
          case BORDER_3D_VERTICAL_GRADIENT:
@@ -359,12 +403,16 @@ public class Button extends Control
          default:               
             prefW = tw + iw;
       }
-      return prefW + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
+      if (border == BORDER_ROUND)
+         prefW += getPreferredHeight();
+      return prefW + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
    }
 
    /** Returns the preffered height of this control. */
    public int getPreferredHeight()
    {
+      if (translucentShape == TranslucentShape.CIRCLE)
+         return getPreferredWidth();
       int border = this.border < 2 ? this.border : 2; // guich@tc112_31
       int prefH;
       int th = text == null ? 0 : ((uiVista?1:0)+fmH*lines.length);
@@ -391,7 +439,7 @@ public class Button extends Control
          default:               
             prefH = th + ih;
       }
-      return prefH + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
+      return prefH + ((localCommonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
    }
 
    /** Press and depress this Button to simulate that the user had clicked on it.
@@ -427,7 +475,7 @@ public class Button extends Control
    public void onEvent(Event event)
    {
       PenEvent pe;
-      if (enabled)
+      if (isEnabled())
       switch (event.type)
       {
          case TimerEvent.TRIGGERED:
@@ -483,7 +531,7 @@ public class Button extends Control
          boolean eus = Window.enableUpdateScreen;
          Window.enableUpdateScreen = false;
          skipPaint = true;
-         parent.repaintNow();
+         if (parent != null) parent.repaintNow();
          skipPaint = false;
          Window.enableUpdateScreen = eus;
       }
@@ -495,16 +543,26 @@ public class Button extends Control
    public void onPaint(Graphics g)
    {
       if (skipPaint) return;
+      boolean isRound = border == BORDER_ROUND;
       if (isAndroidStyle)
       {
-/*         g.getClip(clip);
-         g.backColor = parent.backColor;//g.getPixel(clip.x,clip.y); // use color painted by the parent
-         g.fillRect(0,0,width,height);
-*/      }
+         if (translucentShape == TranslucentShape.NONE && !Settings.isOpenGL && !Settings.onJavaSE)
+         {
+            g.getClip(clip);
+            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+            g.fillRect(0,0,width,height);
+         }
+      }
       else
-      if (!transparentBackground || drawBordersIfTransparentBackground)
+      if (!isRound && (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground) || drawBordersIfTransparentBackground))
          paintBackground(g);
 
+      if (isRound)
+      {
+         g.backColor = backColor;
+         g.fillRoundRect(0,0,width,height,height/roundBorderFactor);
+      }
+      else
       if (isAndroidStyle)
          paintImage(g, true, 0,0);
       
@@ -516,7 +574,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && !isAndroidStyle && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && !isAndroidStyle && shiftOnPress && (is3d || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
@@ -549,12 +607,21 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      int tiGap = getGap(this.tiGap);
+      if (imageHeightFactor != 0 && img0 != null)
+         try 
+         {
+            img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(height*imageHeightFactor/100,true) : img0.hwScaledFixedAspectRatio(height*imageHeightFactor/100,true);
+            if (img.getWidth() > this.width-4)
+               img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(width-4,false) : img0.hwScaledFixedAspectRatio(width-4,false);
+            img.setCurrentFrame(currentFrame);
+            imgDis = null;
+         } catch (Throwable t) {img = img0;}
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (isAndroidStyle && clip == null)
          clip = new Rect();
       npback = null;
       int th=0,iw=0,ih=0;
-      int tiGap = getGap(this.tiGap);
       
       if (isAndroidStyle && width > 0 && height > 0)
          transparentBackground = true;
@@ -562,8 +629,8 @@ public class Button extends Control
       if (text != null)
       {
          th = fmH * lines.length;
-         tx0 = (width  - maxTW) >> 1;
-         ty0 = (height - th) >> 1;
+         tx0 = (width  - maxTW) / 2;
+         ty0 = (height - th) / 2;
       }
       if (border == BORDER_GRAY_IMAGE) // guich@tc113_6: recompute image's
       {
@@ -616,6 +683,7 @@ public class Button extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      boolean enabled = isEnabled();
       npback = null;
       if (!enabled && autoRepeatTimer != null)
          disableAutoRepeat();
@@ -625,21 +693,13 @@ public class Button extends Control
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
       if (!isAndroidStyle)
          fourColors[1] = pressColor;
-      if (!enabled && img != null) // guich@tc110_50
-         try
-         {
-            imgDis = img.getFadedInstance();
-         }
-         catch (ImageException e)
-         {
-            imgDis = img;
-         }
    }
 
    /** Paint button's background. */
    protected void paintBackground(Graphics g)
    {
-      if (!transparentBackground)
+      boolean enabled = isEnabled();
+      if (!transparentBackground || (armed && fillWhenPressedOnTransparentBackground))
       {
          if (border == BORDER_GRAY_IMAGE)
          {
@@ -663,6 +723,7 @@ public class Button extends Control
                g.fillRect(0,0,width,height);
                break;
             case Settings.Android:
+            case Settings.Holo:
             case Settings.Vista: // guich@573_6
             {
                if (border == BORDER_NONE && flatBackground) // guich@582_14
@@ -692,7 +753,7 @@ public class Button extends Control
    /** Paint button's text. */
    protected void paintText(Graphics g, int tx, int ty)
    {
-      int shade = !enabled ? -1 : textShadowColor != -1 ? textShadowColor : hightlightColor;
+      int shade = !isEnabled() ? -1 : textShadowColor != -1 ? textShadowColor : hightlightColor;
       if (underlinedText) g.backColor = foreColor;
       for (int i = 0; i < lines.length; i++, ty += fmH)
       {
@@ -705,18 +766,35 @@ public class Button extends Control
 
    protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
    {
+      boolean enabled = isEnabled();
       if (bkg) // only in uiAndroid
          try
          {
-            if (npback == null)
-               npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false,true);
-            g.drawImage(enabled ? armed ? 
-                  NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor, true) : 
-                  npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false,true),ix,iy);
+            if (!drawTranslucentBackground(g, armed ? alphaValue >= 80 ? alphaValue/2 : alphaValue*2 : alphaValue))
+            {
+               if (npback == null)
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
+               NinePatch.tryDrawImage(g, enabled ? armed ? 
+                     NinePatch.getInstance().getPressedInstance(npback, backColor, pressColor) : 
+                     npback : NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false),ix,iy);
+            }
          }
          catch (ImageException ie) {ie.printStackTrace();}
       else
-         g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
+      if (!enabled)
+      {
+         if (img != null && imgDis == null) // guich@tc110_50 - guich@tc310: moved to here the generation of the disabled image
+            try
+            {
+               imgDis = img.getFadedInstance();
+            }
+            catch (ImageException e)
+            {
+               imgDis = img;
+            }
+         g.drawImage(imgDis,ix,iy);
+      }
+      else g.drawImage(armed && pressedImage != null ? pressedImage : img,ix,iy);
    }
 
    /** Returns the image that is assigned to this Button, or null if none. */

@@ -146,13 +146,13 @@ public class MessageBox extends Window
          Vm.vibrate(200);
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
-      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
+      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_FADE : TRANSITION_NONE;
       ha = 6 * Settings.screenHeight/160; // guich@450_24: increase arrow size if screen size change
       wa = ha*2+1; // guich@570_52: now wa is computed from ha
       if (text == null)
          text = "";
       this.originalText = text; // guich@tc100: now we use \n instead of |
-      if ((Settings.onJavaSE && Settings.screenWidth == 240) || Settings.isWindowsDevice()) // guich@tc110_53
+      if ((Settings.onJavaSE && Settings.screenWidth == 240) || Settings.isWindowsCE()) // guich@tc110_53
          setFont(font.asBold());
    }
 
@@ -169,7 +169,7 @@ public class MessageBox extends Window
       msg.repaintNow();
    }
    
-   protected void onPopup()
+   public void onPopup()
    {
       removeAll();
       int maxW = Settings.screenWidth-fmH - lgap;
@@ -246,7 +246,7 @@ public class MessageBox extends Window
       if (btns != null)
       {
          if (uiAndroid && !multiRow)
-            btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap/2,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
+            btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
          else
             btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
       }

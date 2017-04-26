@@ -13,12 +13,11 @@
 
 package tc.tools.deployer;
 
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.*;
 
-import totalcross.util.*;
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.util.*;
 
 /**
  * Some general utility methods used by the deployer programs.
@@ -150,7 +149,7 @@ public class Utils
          if (pathname.endsWith("/")) // a folder?
          {
             v.removeElementAt(i);
-            String[] ff = new File(pathname).listFiles();
+            String[] ff = new File(findPath(pathname,true)).listFiles();
             if (ff != null)
                for (int j = 0; j < ff.length; j++)
                   vextra.addElement(pathname+ff[j]+(pathnames.length > 1 && acceptsPath ? ","+pathnames[1] : ""));
@@ -158,6 +157,27 @@ public class Utils
       }
       if (vextra.size() > 0)
          v.addElements(vextra.toObjectArray());
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static void copyEntry(String s, String targetDir) throws Exception
+   {
+      String tpath = "";
+      if (s.indexOf(',') >= 0)
+      {
+         String [] ss = s.split(",");
+         s = ss[0];
+         tpath = ss[1];
+      }            
+      if (!new File(s).exists())
+      {
+         String s0 = s;
+         s = Utils.findPath(s,true);
+         if (s == null)
+            throw new DeployerException("File not found: "+s0);
+      }
+      String to = Convert.appendPath(targetDir,Convert.appendPath(tpath,Utils.getFileName(s)));
+      try {new File(getParent(to)).createDir();} catch (Exception e) {} // try to create target dir      
+      Utils.copyFile(s, to, false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception
@@ -187,6 +207,8 @@ public class Utils
             return p;
          if (new File(p=(DeploySettings.currentDir+"/"+fileName)).exists()) // guich@570_7: also search in the current working directory
             return p.replace('\\','/');
+         if (new File(p=(DeploySettings.baseDir+"/"+fileName)).exists()) // guich@570_7: also search in the current working directory
+            return p.replace('\\','/');
       }
       catch (Exception e)
       {
@@ -205,6 +227,8 @@ public class Utils
          {
             String path = searchPath[i].replace('\\','/');
             path = path.replace("\"",""); // remove any " surrounding the path
+            if (path.contains("system32")) // ignores the ones copied to C:/Windows/system32
+               continue;
             p = path+"/"+fileName;
             if (new File(p).exists())
                return p;
@@ -316,16 +340,21 @@ public class Utils
    public static void fillExclusionList()
    {
       String path = null;
-      String etcDir = DeploySettings.etcDir.toLowerCase();
-      if (java.io.File.separatorChar != '/')
-         etcDir = etcDir.replace('/', '\\'); // use the platform default separator
+      String etcDir = null;
+
+      if (DeploySettings.etcDir != null)
+      {
+         etcDir = DeploySettings.etcDir.toLowerCase();
+         if (java.io.File.separatorChar != '/')
+            etcDir = etcDir.replace('/', '\\'); // use the platform default separator
+      }
       try
       {
          if (DeploySettings.classPath != null) // search in the classpath
             for (int i =0; i < DeploySettings.classPath.length ; i++)
             {
                path = DeploySettings.classPath[i].toLowerCase();
-               if (path.endsWith(".jar") && !path.startsWith(etcDir)) // it's a jar file and not one of ours.
+               if (path.endsWith(".jar") && (etcDir == null || !path.startsWith(etcDir))) // it's a jar file and not one of ours.
                   try
                   {
                      java.io.File f = new java.io.File(path);
@@ -642,6 +671,16 @@ public class Utils
       return slash == -1 ? path : path.substring(slash+1);
    }
    /////////////////////////////////////////////////////////////////////////////////////
+   public static String getFileNameWithoutExt(String path)
+   {
+      int slash = path.lastIndexOf('/');
+      if (slash == -1)
+         slash = path.lastIndexOf('\\'); // guich@tc112_8: consider \ too
+      path = slash == -1 ? path : path.substring(slash+1);
+      int i = path.lastIndexOf('.');
+      return i == -1 ? path : path.substring(0,i);
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
    private static final char[] NON_LETTERS = {' ',':','-','\\','/'};
    /** "Agenda" -> "Agenda"    "Agenda 1.0" -> "Agenda"     "--== Agenda ==--" -> "Agenda"  */
    public static String stripNonLetters(String s)
@@ -660,14 +699,21 @@ public class Utils
    /////////////////////////////////////////////////////////////////////////////////////
    public static void copyTCZFile(String targetDir) throws Exception
    {
-      copyFile(DeploySettings.tczFileName, targetDir+"/"+Utils.getFileName(DeploySettings.tczFileName), false);
+      for (int i = 0; i < DeploySettings.tczs.length; i++)
+         copyFile(DeploySettings.tczs[i], targetDir+"/"+Utils.getFileName(DeploySettings.tczs[i]), false);
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   // currentDir: "O:/TotalCrossSDK/classes/tc"
+   // currentDir: "w:/TotalCross3/classes/tc"
    // passed: "samples/ui/gadgets/UIGadgets.class"
    // className   "tc/samples/ui/gadgets/UIGadgets"
    public static String getBaseFolder(String currentDir, String passed, String className)
    {
+      // currentDir: /home/raphael/Documentos/projetos/totalcross/marte/trunk/n 
+      // passed    : /home/raphael/Documentos/projetos/totalcross/marte/trunk/n/build/classes/main/Carregar.class
+      // className : main/Carregar
+      String className2 = className.endsWith(".class") ? className : className+".class";
+      if (passed.startsWith(currentDir) && passed.endsWith(className2))
+         return passed.substring(0,passed.length() - className2.length());
       // normalize the slashes
       currentDir = currentDir.replace('/',DeploySettings.SLASH).replace('\\',DeploySettings.SLASH);
       if (passed.indexOf(':') >= 0) // passed a full path? ignore the current dir
@@ -710,7 +756,7 @@ public class Utils
       StringBuffer message = new StringBuffer(1024);
       String lineIn;
       
-      for (int i =0; i < 30; i++) // 15 seconds must be enough...
+      for (int i =0; i < 30000/200; i++) // 30 seconds must be enough...
       {
          if (inputStream.available() > 0)
             while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
@@ -725,7 +771,7 @@ public class Utils
          }
          catch (Throwable throwable)
          {
-            Thread.sleep(1000);
+            Thread.sleep(200);
          }
       }
       return (message.length() > 0) ? message.toString() : null;
@@ -756,7 +802,7 @@ public class Utils
    public static void jarSigner(String jar, String targetDir) throws Exception
    {
       // Certificate fingerprint (MD5): 0D:79:8E:42:A9:CD:50:AC:29:72:85:F8:12:3C:22:0E
-      // jarsigner -keystore P:\TotalCrossSDK\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
+      // jarsigner -keystore P:\TotalCross3\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
       if (jarsignerExe == null)
          throw new DeployerException("Could not find the file "+DeploySettings.appendDotExe("jarsigner")+". Make sure you have installed a JDK that has this file in the bin folder. If so, make sure that the %JAVA_HOME%/bin is in the PATH.");
@@ -778,25 +824,80 @@ public class Utils
       v.addElement(jar);
       v.addElement("tcandroidkey");
       String out = Utils.exec((String[])v.toObjectArray(), targetDir);
-      if (out != null)
+      if (out != null && !out.startsWith("INPUT:jar signed"))
          throw new DeployerException("An error occured when signing the APK. The output is "+out);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static int version2int(String v)
    {
-      v = Convert.replace(v,".","");
+      int i;
       try
       {
-         int i = Convert.toInt(v);
-         if (i < 10)
-            i *= 10;
-         if (i < 100)
-            i *= 10;
-         return i;
+         if (DeploySettings.appBuildNumber != -1) // 2.9 -> 209, 2.10 -> 210, 2.123 -> 2123
+         {
+            int afterDot = v.length() - (v.indexOf('.')+1);            
+            i = Convert.toInt(afterDot == 1 ? v.replace('.','0')  // 2.9 -> 209 
+                                            : v.replace(".","")); // 2.10 -> 210
+         }
+         else
+         {
+            // 2.9 -> 290
+            v = Convert.replace(v,".","");
+            i = Convert.toInt(v);
+            if (i < 10)
+               i *= 10;
+            if (i < 100)
+               i *= 10;
+            return i;
+         }
       }
       catch (InvalidNumberException ine)
       {
-         return 100;
+         i = 100;
       }
+      return i;
    }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static String toString(String[] cmd)
+   {
+      StringBuilder sb = new StringBuilder(200);
+      for (int i = 0; i < cmd.length; i++)
+         sb.append(cmd[i]).append(" ");
+      return sb.toString();
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static int getToday()
+   {
+      java.util.Calendar c = java.util.Calendar.getInstance();
+      int y = c.get(java.util.Calendar.YEAR);
+      int m = c.get(java.util.Calendar.MONTH) + 1;
+      int d = c.get(java.util.Calendar.DAY_OF_MONTH);
+      return y * 10000 + m * 100 + d;
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static String pipeConcat(String... kv)
+   {
+      StringBuilder sb = new StringBuilder(256);
+      for (int i = 0; i < kv.length;)
+      {
+         if (i > 0) sb.append('|');
+         sb.append(kv[i++]).append('=').append(kv[i++]);
+      }
+      return sb.toString();
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static java.util.HashMap<String,String> pipeSplit(String sp)
+   {
+      java.util.HashMap<String,String> ret = new java.util.HashMap<String,String>(5);
+      String[] kv = sp.split("\\|");
+      for (int i = 0; i < kv.length; i++)
+      {
+         String []s = kv[i].split("=");
+         if (s.length == 1)
+            s = new String[]{s[0],""};
+         ret.put(s[0],s[1]);
+      }
+      return ret;
+   }
+   
 }

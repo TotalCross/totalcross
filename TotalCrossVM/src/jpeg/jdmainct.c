@@ -2,6 +2,7 @@
  * jdmainct.c
  *
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Modified 2002-2012 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -161,7 +162,7 @@ alloc_funny_pointers (j_decompress_ptr cinfo)
 {
   my_main_ptr mainp = (my_main_ptr) cinfo->main;
   int ci, rgroup;
-  int M = cinfo->min_DCT_scaled_size;
+  int M = cinfo->min_DCT_v_scaled_size;
   jpeg_component_info *compptr;
   JSAMPARRAY xbuf;
 
@@ -175,8 +176,8 @@ alloc_funny_pointers (j_decompress_ptr cinfo)
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
-      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    rgroup = (compptr->v_samp_factor * compptr->DCT_v_scaled_size) /
+      cinfo->min_DCT_v_scaled_size; /* height of a row group of component */
     /* Get space for pointer lists --- M+4 row groups in each list.
      * We alloc both pointer lists with one call to save a few cycles.
      */
@@ -194,7 +195,7 @@ alloc_funny_pointers (j_decompress_ptr cinfo)
 LOCAL(void)
 make_funny_pointers (j_decompress_ptr cinfo)
 /* Create the funny pointer lists discussed in the comments above.
- * The actual workspace is already allocated (in mainp->buffer),
+ * The actual workspace is already allocated (in main->buffer),
  * and the space for the pointer lists is allocated too.
  * This routine just fills in the curiously ordered lists.
  * This will be repeated at the beginning of each pass.
@@ -202,14 +203,14 @@ make_funny_pointers (j_decompress_ptr cinfo)
 {
   my_main_ptr mainp = (my_main_ptr) cinfo->main;
   int ci, i, rgroup;
-  int M = cinfo->min_DCT_scaled_size;
+  int M = cinfo->min_DCT_v_scaled_size;
   jpeg_component_info *compptr;
   JSAMPARRAY buf, xbuf0, xbuf1;
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
-      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    rgroup = (compptr->v_samp_factor * compptr->DCT_v_scaled_size) /
+      cinfo->min_DCT_v_scaled_size; /* height of a row group of component */
     xbuf0 = mainp->xbuffer[0][ci];
     xbuf1 = mainp->xbuffer[1][ci];
     /* First copy the workspace pointers as-is */
@@ -242,14 +243,14 @@ set_wraparound_pointers (j_decompress_ptr cinfo)
 {
   my_main_ptr mainp = (my_main_ptr) cinfo->main;
   int ci, i, rgroup;
-  int M = cinfo->min_DCT_scaled_size;
+  int M = cinfo->min_DCT_v_scaled_size;
   jpeg_component_info *compptr;
   JSAMPARRAY xbuf0, xbuf1;
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
-      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    rgroup = (compptr->v_samp_factor * compptr->DCT_v_scaled_size) /
+      cinfo->min_DCT_v_scaled_size; /* height of a row group of component */
     xbuf0 = mainp->xbuffer[0][ci];
     xbuf1 = mainp->xbuffer[1][ci];
     for (i = 0; i < rgroup; i++) {
@@ -277,8 +278,8 @@ set_bottom_pointers (j_decompress_ptr cinfo)
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
     /* Count sample rows in one iMCU row and in one row group */
-    iMCUheight = compptr->v_samp_factor * compptr->DCT_scaled_size;
-    rgroup = iMCUheight / cinfo->min_DCT_scaled_size;
+    iMCUheight = compptr->v_samp_factor * compptr->DCT_v_scaled_size;
+    rgroup = iMCUheight / cinfo->min_DCT_v_scaled_size;
     /* Count nondummy sample rows remaining for this component */
     rows_left = (int) (compptr->downsampled_height % (JDIMENSION) iMCUheight);
     if (rows_left == 0) rows_left = iMCUheight;
@@ -357,7 +358,7 @@ process_data_simple_main (j_decompress_ptr cinfo,
   }
 
   /* There are always min_DCT_scaled_size row groups in an iMCU row. */
-  rowgroups_avail = (JDIMENSION) cinfo->min_DCT_scaled_size;
+  rowgroups_avail = (JDIMENSION) cinfo->min_DCT_v_scaled_size;
   /* Note: at the bottom of the image, we may pass extra garbage row groups
    * to the postprocessor.  The postprocessor has to check for bottom
    * of image anyway (at row resolution), so no point in us doing it too.
@@ -417,7 +418,7 @@ process_data_context_main (j_decompress_ptr cinfo,
   case CTX_PREPARE_FOR_IMCU:
     /* Prepare to process first M-1 row groups of this iMCU row */
     mainp->rowgroup_ctr = 0;
-    mainp->rowgroups_avail = (JDIMENSION) (cinfo->min_DCT_scaled_size - 1);
+    mainp->rowgroups_avail = (JDIMENSION) (cinfo->min_DCT_v_scaled_size - 1);
     /* Check for bottom of image: if so, tweak pointers to "duplicate"
      * the last sample row, and adjust rowgroups_avail to ignore padding rows.
      */
@@ -440,8 +441,8 @@ process_data_context_main (j_decompress_ptr cinfo,
     mainp->buffer_full = FALSE;
     /* Still need to process last row group of this iMCU row, */
     /* which is saved at index M+1 of the other xbuffer */
-    mainp->rowgroup_ctr = (JDIMENSION) (cinfo->min_DCT_scaled_size + 1);
-    mainp->rowgroups_avail = (JDIMENSION) (cinfo->min_DCT_scaled_size + 2);
+    mainp->rowgroup_ctr = (JDIMENSION) (cinfo->min_DCT_v_scaled_size + 1);
+    mainp->rowgroups_avail = (JDIMENSION) (cinfo->min_DCT_v_scaled_size + 2);
     mainp->context_state = CTX_POSTPONED_ROW;
   }
 }
@@ -482,7 +483,7 @@ jinit_d_main_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
   mainp = (my_main_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
 				SIZEOF(my_main_controller));
-  cinfo->main = (struct jpeg_d_main_controller *) mainp;
+  cinfo->main = &mainp->pub;
   mainp->pub.start_pass = start_pass_main;
 
   if (need_full_buffer)		/* shouldn't happen */
@@ -492,21 +493,21 @@ jinit_d_main_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
    * ngroups is the number of row groups we need.
    */
   if (cinfo->upsample->need_context_rows) {
-    if (cinfo->min_DCT_scaled_size < 2) /* unsupported, see comments above */
+    if (cinfo->min_DCT_v_scaled_size < 2) /* unsupported, see comments above */
       ERREXIT(cinfo, JERR_NOTIMPL);
     alloc_funny_pointers(cinfo); /* Alloc space for xbuffer[] lists */
-    ngroups = cinfo->min_DCT_scaled_size + 2;
+    ngroups = cinfo->min_DCT_v_scaled_size + 2;
   } else {
-    ngroups = cinfo->min_DCT_scaled_size;
+    ngroups = cinfo->min_DCT_v_scaled_size;
   }
 
   for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
        ci++, compptr++) {
-    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
-      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    rgroup = (compptr->v_samp_factor * compptr->DCT_v_scaled_size) /
+      cinfo->min_DCT_v_scaled_size; /* height of a row group of component */
     mainp->buffer[ci] = (*cinfo->mem->alloc_sarray)
-			((j_common_ptr) cinfo, JPOOL_IMAGE,
-			 compptr->width_in_blocks * compptr->DCT_scaled_size,
-			 (JDIMENSION) (rgroup * ngroups));
+      ((j_common_ptr) cinfo, JPOOL_IMAGE,
+       compptr->width_in_blocks * ((JDIMENSION) compptr->DCT_h_scaled_size),
+       (JDIMENSION) (rgroup * ngroups));
   }
 }

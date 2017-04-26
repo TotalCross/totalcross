@@ -8,7 +8,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
+ 
 
 
 #include "tcvm.h"
@@ -22,10 +22,6 @@
  #include "android/startup_c.h"
 #else
  #include "posix/startup_c.h"
-#endif
-
-#if !defined(ENABLE_DEMO) && !defined(DISABLE_RAS)
- #define ENABLE_RAS
 #endif
 
 void rebootDevice(); // implemented in nm/sys/<plat>/Vm_c.h
@@ -56,11 +52,11 @@ static Context initAll(CharP* args)
       *args += xstrlen(appPathTemp) + 1;
    }
 #endif
+   ok = ok && initDebug();
    ok = ok && initGlobals();
    ok = ok && initMem();
    if (ok) firstTS = getTimeStamp();
    ok = ok && (c=initContexts()) != null;
-   ok = ok && initDebug();
    ok = ok && initObjectMemoryManager();
    ok = ok && initClassInfo();
    initNativeProcAddresses();
@@ -68,13 +64,8 @@ static Context initAll(CharP* args)
    return ok ? c : null;
 }
 
-void dump_memory_map(char* fileSuffix);
-
 static void destroyAll() // must be in inverse order of initAll calls
 {
-#if defined(DEBUG) || defined(_DEBUG)
-   dump_memory_map("destroyAll");
-#endif
    threadDestroyAll(); // first all threads must be destroyed - NOTE: when debugging on win32, this may hang the Visual C++ ide.
    destroyingApplication = true; // now is safe to destroy all objects
    runFinalizers();
@@ -94,7 +85,7 @@ static void destroyAll() // must be in inverse order of initAll calls
    destroyGlobals();
 }
 
-static int32 exitProgram(int32 exitcode)
+int32 exitProgram(int32 exitcode)
 {            
    if (exitcode != 0)
       debug("Exiting: %d", exitcode);
@@ -106,9 +97,11 @@ static int32 exitProgram(int32 exitcode)
    mainClass = null;
    if (rebootOnExit) // set by Vm.exitAndReboot
       rebootDevice();      
-#ifdef ANDROID
+   #ifdef ANDROID
    privateExit(exitcode); // exit from the android vm
-#endif
+   #elif defined(WP8)
+   appExit();
+   #endif
    return exitCode;
 }
 
@@ -197,130 +190,112 @@ static void checkFullScreenPlatform() // guich@tc120_59
    }
 }
 
-static int32* litebaseAllowedPtr; // don't make it global
-
-bool canLoadLitebase()
+#define ISNOTSIGNED 0
+#define ISFREE 1
+#define ISFAILED 2
+#define ISWILLACTIVATE 3
+#define ISACTIVATED 4
+#define ISNORAS 5
+static int checkActivation(Context currentContext)
 {
-#ifdef ENABLE_RAS
-   return litebaseAllowedPtr && *litebaseAllowedPtr;
+   TCClass c;
+   TCObject rasClientInstance, ret;
+   Method m;
+   uint8 *retb;
+
+   // load ActivationClient
+   c = loadClass(currentContext, "ras.ActivationClient", true);
+   if (currentContext->thrownException)
+      return ISFAILED;
+   m = getMethod(c, true, "getInstance", 0);
+   rasClientInstance = executeMethod(currentContext, m).asObj;
+   if (!rasClientInstance || currentContext->thrownException)
+      return ISFAILED;
+   
+   // noras has priority over ras
+   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
+   ret = executeMethod(currentContext, m, rasClientInstance).asObj;
+
+   // if readKey is null, the application was not signed!
+   if (ret == null || currentContext->thrownException)
+   {
+#ifdef DEBUG // let debug on IDEs
+      return ISACTIVATED;
 #else
-   return true;
+      return ISFAILED;
 #endif
+   }
+   retb = (uint8*)ARRAYOBJ_START(ret);
+
+   // check if free sdk
+   if (strEqn(retb, "TCST",4))
+	  return ISFREE;              
+	if (strEqn(retb, "TCDK",4))
+	  return ISNORAS;
+
+   // could not activate noras, try ras
+   m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
+   return executeMethod(currentContext, m, rasClientInstance).asInt32 == 1 ? ISACTIVATED : ISWILLACTIVATE;
 }
 
 TC_API int32 startProgram(Context currentContext)
 {
    TCClass c;
-   bool mustActivate = false;
-#if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
-   Object rasClientInstance;
-   Method m;
-
-   // 2. Check activation
-   c = loadClass(currentContext, "ras.ActivationClient", true);
-   if (!c || currentContext->thrownException)
-      return exitProgram(111);
-   m = getMethod(c, true, "getInstance", 0);
-   if (!m)
-      return exitProgram(112);
-   rasClientInstance = executeMethod(currentContext, m).asObj;
-   if (!rasClientInstance || currentContext->thrownException)
-      return exitProgram(113);
-
- #ifdef ENABLE_RAS // when RAS is enabled, we just call the activation process
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "isActivatedSilent", 0);
-   if (!m)
-      return exitProgram(114);
-
-   mustActivate = !executeMethod(currentContext, m, rasClientInstance).asInt32;
+   int32 retc;
+   
+   // load libraries must be before checking the activation, because the tcz may have been splitted
+   if (!loadLibraries(currentContext, vmPath, true))
+      return exitProgram(115);
+   
+   retc = checkActivation(currentContext);
+   switch (retc)
    {
-      // get the product id to see if litebase is allowed
-      litebaseAllowedPtr = getStaticFieldInt(c, "litebaseAllowed");
- #else // when NORAS is enabled, we must check if this specialized vm can run with the current key
- #ifndef DEBUG // only validate the NORAS key on release
-   m = getMethod(OBJ_CLASS(rasClientInstance), true, "readKey", 0);
-   if (!m)
-      return exitProgram(114);
-   else
+      case ISNOTSIGNED: return exitProgram(120);
+      case ISFAILED   : return exitProgram(121);
+#if defined(WINCE) || defined(WP8) || (defined(linux) && !defined(ANDROID) && !defined(darwin)) // win32 is allowed
+	  case ISFREE     : return exitProgram(122); // exit silently
+#endif
+   }
+        
+#if defined (WIN32) && !(defined (WINCE) || defined(WP8)) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
    {
-      char buf[4];
-      uint8 *allowedKey, *allowedKeysBase = ENABLE_NORAS, *signedKey;
-      Object ret = executeMethod(currentContext, m, rasClientInstance).asObj;
-      if (currentContext->thrownException || ret == null)
+      TCHAR litebasePath[MAX_PATHNAME];
+      if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
       {
-         alert("Invalid key (1).");
-         return exitProgram(1141);
+         tcscat(litebasePath, TEXT("/dist/lib/LitebaseLib.tcz")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
+         tczLoad(currentContext, litebasePath);
       }
-      // check the key
-      for (allowedKey = allowedKeysBase; *allowedKeysBase; allowedKey = allowedKeysBase += 24) {
-	     uint8 *signedKeyEnd = (uint8*)ARRAYOBJ_START(ret) + ARRAYOBJ_LEN(ret);
-         for (signedKey = (uint8*)ARRAYOBJ_START(ret); signedKey != signedKeyEnd ; allowedKey += 2, signedKey++)
-         {
-            int2hex(*signedKey, 2, buf);
-            if (buf[0] != allowedKey[0] || buf[1] != allowedKey[1])
-            {
-               break;
-            }
-            if (allowedKey == allowedKeysBase + 22)
-            {
-               goto jumpArgument;
-            }
-         }
-      }
-      alert("Invalid key (2).");
-      return exitProgram(1442);
-
-// activation ok, the name is misleading on purpose
-jumpArgument:
- #endif //#ifndef DEBUG
- #endif
-#endif
-      // load libraries
-      if (!loadLibraries(currentContext, vmPath, true))
-         return exitProgram(115);
-         
-#if defined (WIN32) && !defined (WINCE) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
-      if (canLoadLitebase())
-      {
-         TCHAR litebasePath[MAX_PATHNAME];
-         if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
-         {
-            tcscat(litebasePath, TEXT("/dist/lib/LitebaseLib.tcz")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
-            tczLoad(currentContext, litebasePath);
-         }
-      }
-#endif
-      // 3. Load the main class (also calls its static initializer)
-      c = loadClass(currentContext, mainClassName, true); // some fields of totalcross.sys.Settings may be set by the programmer at the static initializer, called now
-      if (c == null)
-      {
-         if (currentContext->thrownException != null)
-            showUnhandledException(currentContext,true);
-         else
-            alert("Class not found or corrupted: %s",mainClassName);
-         return exitProgram(116);
-      }
-      else
-      if (currentContext->thrownException == null && keepRunning)
-      {
-         checkFullScreenPlatform();
-         if (*tcSettings.isFullScreenPtr) // Settings.isFullScreen is set at the static initializer
-            setFullScreen();
-         // 4. Retrieve user settings
-         retrieveSettingsChangedAtStaticInitializer(currentContext);
-         // 5. create an instance and call the constructor
-         mainClass = createObject(currentContext, mainClassName); // keep it locked
-      }
-#if defined(ENABLE_NORAS) || defined(ENABLE_RAS)
    }
 #endif
+   // 3. Load the main class (also calls its static initializer)
+   c = loadClass(currentContext, mainClassName, true); // some fields of totalcross.sys.Settings may be set by the programmer at the static initializer, called now
+   if (c == null)
+   {
+      if (currentContext->thrownException != null)
+         showUnhandledException(currentContext,true);
+      else
+         alert("Class not found or corrupted: %s",mainClassName);
+      return exitProgram(116);
+   }
+   else
+   if (currentContext->thrownException == null && keepRunning)
+   {
+      checkFullScreenPlatform();
+      if (*tcSettings.isFullScreenPtr) // Settings.isFullScreen is set at the static initializer
+         setFullScreen();
+      // 4. Retrieve user settings
+      retrieveSettingsChangedAtStaticInitializer(currentContext);
+      // 5. create an instance and call the constructor
+      mainClass = createObject(currentContext, mainClassName); // keep it locked
+   }
    if (currentContext->thrownException == null && mainClass != null) // no unhandled exception was thrown?
    {
       // 6. call appStarting
-#ifndef ENABLE_DEMO // in demo mode, the MessageBox already does what waitUntilStarted does. Calling this in demo mode blocks the vm.
-      if (isMainWindow) waitUntilStarted(); // guich@tc115_27 - guich@tc120_7: only if MainWindow
-#endif
-      executeMethod(currentContext, getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN), mainClass, mustActivate ? -999999 : checkDemo());
+      Method mainMtd = getMethod(OBJ_CLASS(mainClass), true, "appStarting", 1, J_INT, J_BOOLEAN);
+      if (!mainMtd) return exitProgram(117);
+      if (isMainWindow) waitUntilStarted();
+      executeMethod(currentContext, mainMtd, mainClass, 
+         retc == ISNORAS ? -999998 : retc == ISACTIVATED ? -1 : retc == ISWILLACTIVATE ? -999999 : 0);
       // 7. call the main event loop
       if (isMainWindow) mainEventLoop(currentContext); // in the near future, MainClass apps will also receive events.
       // 8. call appEnding
@@ -352,7 +327,7 @@ static void loadExceptionClasses(Context currentContext)
    lockClass = loadClass(currentContext, "totalcross.util.concurrent.Lock", false);
 }
 
-#if defined(ANDROID) && !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
+#if defined(ANDROID) || !defined(ENABLE_TEST_SUITE) // running in android without the test_suite macro defined must skip the test suite
 #define ALLOW_TEST_SUITE false
 #else
 #define ALLOW_TEST_SUITE true
@@ -369,7 +344,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    int32 argsOriginalLen = argsOriginal ? xstrlen(argsOriginal) : 0;
    CharP c;
    Context currentContext;
-   Object name;
+   TCObject name;
 
 #if defined(WINCE)
  #if _WIN32_WCE >= 300 // splitted because HPC211 must be just ignored.
@@ -377,13 +352,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       return 109;
  #endif
 #elif defined WIN32
-   {
-      SYSTEM_INFO systemInfo;
-      GetSystemInfo(&systemInfo);
-      if (systemInfo.dwNumberOfProcessors > 1)  // flsobral@tc110_91: On Win32, TotalCross applications will run only in one processor. This should fix our problems with multi-core processors while thread synchronization is not supported.
-         SetProcessAffinityMask(GetCurrentProcess(), 1L);
-   }
-   if (xstrstr(argsOriginal,"/scr"))
+   if (argsOriginalLen > 0 && xstrstr(argsOriginal, "/scr"))
    {
       argsOriginal = parseScreenBounds(argsOriginal, &defScrX, &defScrY, &defScrW, &defScrH);
       if (!argsOriginal)
@@ -405,11 +374,18 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       alert("TCBase not found or corrupted. Please reinstall TotalCross");
       return 101;
    }
+   xstrcpy(tcbase, "TCUI.tcz");
+   if (!tczLoad(currentContext, tcbase))
+   {
+      alert("TCUI not found or corrupted. Please reinstall TotalCross");
+      return 103;
+   }
+   
    initException(); // load exceptions
 
    xstrcpy(argsLower, args);
    CharPToLower(argsLower);
-   if (xstrstr(argsLower, "launcher")) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
+   if (xstrstr(argsLower, "launcher") && 0) // if executing the default Launcher, instead of creating a launcher for an application, run the testsuite
       xstrcpy(args, " /cmd -testsuite");
 
    cmdline = xstrstr(args, " /cmd "); // check if there's a cmd line
@@ -433,6 +409,12 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
              return exitProgram(103);
           }
           waitUntilStarted();
+          imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
+          mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
+          gcContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError");
+          lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+          loadExceptionClasses(currentContext); // guich@tc112_18
+
           startTestSuite(currentContext); // run the testsuite before Graphics test to be able to test for Font and FontMetrics
           destroyGraphics();
          #else
@@ -441,6 +423,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
           return exitProgram(-1);
       }
       c = cmdline;
+      if (cmdline) 
       while (loop)
       {
          switch (*cmdline++)
@@ -479,20 +462,37 @@ jumpArgument:
       }
       while (*c == ' ' && *c != 0)
          c++;
-      xstrcpy(commandLine, c);
+      if (commandLine != null && c != null)
+         xstrcpy(commandLine, c);
    }
 
 #if defined(ENABLE_TRACE) && (defined(WINCE) || defined(ANDROID)) && !defined(DEBUG)
    traceOn = true;
 #endif
 
-#if defined(darwin) || defined(ANDROID)
+#if defined(darwin) || defined(ANDROID) || defined WP8
    strcat(tczName, ".tcz");
 #endif
    mainContext->OutOfMemoryErrorObj = createObject(currentContext, "java.lang.OutOfMemoryError"); // now its safe to initialize the OutOfMemoryErrorObj for the main context
    gcContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
    lifeContext->OutOfMemoryErrorObj   = createObject(currentContext, "java.lang.OutOfMemoryError");
+   imageClass = loadClass(currentContext, "totalcross.ui.image.Image", false);
    loadExceptionClasses(currentContext); // guich@tc112_18
+   voidTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Void",      false), "TYPE");
+   booleanTYPE = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Boolean",   false), "TYPE");
+   byteTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Byte",      false), "TYPE");
+   shortTYPE   = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Short",     false), "TYPE");
+   intTYPE     = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Integer",   false), "TYPE");
+   longTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Long",      false), "TYPE");
+   floatTYPE   = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Float",     false), "TYPE");
+   doubleTYPE  = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Double",    false), "TYPE");
+   charTYPE    = getStaticFieldObject(currentContext,loadClass(currentContext, "java.lang.Character", false), "TYPE");
+   // used in convert
+   charConverterPtr = getStaticFieldObject(currentContext, loadClass(currentContext, "totalcross.sys.Convert", false), "charConverter");
+   ISO88591CharacterConverter = loadClass(currentContext, "totalcross.sys.CharacterConverter", false);
+   UTF8CharacterConverter = loadClass(currentContext, "totalcross.sys.UTF8CharacterConverter", false);
+
+   cloneable = loadClass(currentContext, "java.lang.Cloneable", false); // Loads the Cloneable interface.
 
    // Create a Java thread for the main context and call it "TC Event Thread"
    mainContext->threadObj = createObjectWithoutCallingDefaultConstructor(currentContext, "java.lang.Thread");
@@ -511,11 +511,6 @@ jumpArgument:
    else
    {
       CharP mainClassName = loadedTCZ->header->names[0];
-#if defined (WIN32) && !defined (WINCE) && defined ENABLE_NORAS && defined TARGET_MAINCLASS && defined DEFAULT_BOUNDS // tweak for IBGE desktop app
-      if (strEq(TARGET_MAINCLASS, mainClassName))
-         if (!parseScreenBounds(DEFAULT_BOUNDS, &defScrX, &defScrY, &defScrW, &defScrH))
-            return exitProgram(110);
-#endif
 #if !defined(ANDROID) && !defined (PALMOS) && !defined (darwin) || defined (THEOS) // we load libraries in the application's path too (guich@tc139: all platforms except palm)
       loadLibraries(currentContext, appPath, false);
 #endif      

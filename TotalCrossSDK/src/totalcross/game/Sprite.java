@@ -299,7 +299,7 @@ public class Sprite
     */
    private void saveBackground(boolean enable) throws ImageException
    {
-      if (enable)
+      if (enable && !Settings.isOpenGL)
       {
          background = new Image(width, height);
          bgGfx = background.getGraphics();
@@ -543,7 +543,7 @@ public class Sprite
       int w2 = width >> 1;
       int h2 = height >> 1;
       // are we in background restoring mode ?
-      if (background != null)
+      if (!Settings.isOpenGL && background != null)
       {
          // Is it not the first paint ?
          if (bgX != INVALID)

@@ -238,7 +238,7 @@ public class ZipAlign {
         private ZipFile mZipFile;
         private RandomAccessFile mRafInput;
         private FilterOutputStreamEx mOutputStream;
-        private List mXEntries = new ArrayList();
+        private List<XEntry> mXEntries = new ArrayList<XEntry>();
         private long mInputFileOffset = 0;
         private int mTotalPadding = 0;
 
@@ -300,7 +300,7 @@ public class ZipAlign {
                 return;
             }
 
-            final Enumeration entries = mZipFile.entries();
+            final Enumeration<?> entries = mZipFile.entries();
             while (entries.hasMoreElements()) {
                 final ZipEntry entry = (ZipEntry)entries.nextElement();
 

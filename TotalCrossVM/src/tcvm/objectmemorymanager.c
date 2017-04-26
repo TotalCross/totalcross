@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-//#define ALTERNATIVE_GC // used for Prime Systems on Palm OS devices
-
 #include "tcvm.h"
 
 /**************************************************************************************
@@ -124,6 +122,7 @@ pointer to next):
 ****************************************************************************************/
 
 // debugging conditionals
+
 #ifdef TRACE_OBJCREATION
 #define _TRACE_OBJCREATION 1
 #else
@@ -149,17 +148,19 @@ pointer to next):
 #endif
 //
 
+void gc2(Context currentContext, bool lockOMM);
 void soundTone(int32 frequency, int32 duration);
 
-#define MIN_SPACE_LEFT 16
-#ifdef ALTERNATIVE_GC
- #define DEFAULT_CHUNK_SIZE (65536-96) // dlmalloc requires a bit more than 36 bytes. doing this to prevent allocating more than a 64k segment
+#if (defined(WIN32) && !defined(WINCE)) || defined(darwin) || defined(ANDROID)
+#define DEFAULT_CHUNK_SIZE (1024*1024-48)
 #else
- #define DEFAULT_CHUNK_SIZE 65500
+#define DEFAULT_CHUNK_SIZE (64*1024-64) 
 #endif
+
+#define MIN_SPACE_LEFT 16
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
-inline static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
+static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
 {
    int32 index;
    size = ((size+3)>>2)<<2;
@@ -169,22 +170,21 @@ inline static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProp
 
 typedef struct
 {
-   ObjectArray start;
+   TCObjectArray start;
    int32 n;
 } *ObjectsToVisit, TObjectsToVisit;
 
 #define OBJ_SIZE(o) OBJ_PROPERTIES(o)->size
 
-#define CHUNK2OBJECT(c) (Object)(((uint8*)c)+sizeof(TObjectProperties))
+#define CHUNK2OBJECT(c) (TCObject)(((uint8*)c)+sizeof(TObjectProperties))
 #define OBJECT2CHUNK(o) (Chunk)(((uint8*)o)-sizeof(TObjectProperties))
 
 #define OBJ_MARK(o)         OBJ_PROPERTIES(o)->mark
-#define OBJ_ISLOCKED(o)     (OBJ_PROPERTIES(o)->lock  == 1)
 #define OBJ_SETLOCKED(o)    OBJ_PROPERTIES(o)->lock = 1
 #define OBJ_SETUNLOCKED(o)  OBJ_PROPERTIES(o)->lock = 0
 
 #ifdef DEBUG_OMM_LIST
-static int32 countObjectsInList(Object o, bool dump, int32 mark, int32 *size);
+static int32 countObjectsInList(TCObject o, bool dump, int32 mark, int32 *size);
 #endif
 
 #if defined(ENABLE_TEST_SUITE)
@@ -193,10 +193,12 @@ static int32 countObjectsInList(Object o, bool dump, int32 mark, int32 *size);
 #define CANTRAVERSE true
 #endif
 
+static Hashtable htP1, htP2;
+
 #ifdef DEBUG_OMM_LIST
-static void dumpList(Object o, bool showSize)
+static void dumpList(TCObject o, bool showSize)
 {
-   Object o0 = o;
+   TCObject o0 = o;
    o = OBJ_PROPERTIES(o)->next;
    debug("G %X<-*%X->%X",OBJ_PROPERTIES(o0)->prev,o0,o);
    if (o)
@@ -209,7 +211,7 @@ static void dumpList(Object o, bool showSize)
 }
 #endif
 
-inline static void removeNodeFromDblList(Object headObj, Object nodeObj)
+static void removeNodeFromDblList(TCObject headObj, TCObject nodeObj)
 {
    ObjectProperties node = OBJ_PROPERTIES(nodeObj);
    ObjectProperties head = OBJ_PROPERTIES(headObj);
@@ -235,7 +237,7 @@ inline static void removeNodeFromDblList(Object headObj, Object nodeObj)
 #endif
 }
 
-inline static void insertNodeInDblList(Object headObj, Object nodeObj) // insert at the head
+static void insertNodeInDblList(TCObject headObj, TCObject nodeObj) // insert at the head
 {
    ObjectProperties node = OBJ_PROPERTIES(nodeObj);
    ObjectProperties head = OBJ_PROPERTIES(headObj);
@@ -263,13 +265,13 @@ inline static void insertNodeInDblList(Object headObj, Object nodeObj) // insert
 #endif
 }
 
-static void moveDblList(Object srcList, Object dstList) // append the src list to the dst list
+static void moveDblList(TCObject srcList, TCObject dstList) // append the src list to the dst list
 {
    ObjectProperties src = OBJ_PROPERTIES(srcList);
    ObjectProperties dst = OBJ_PROPERTIES(dstList);
-   Object frstSrcObj = src->next;                       // first object of src list
-   Object lastSrcObj = src->prev;                       // last object of src list
-   Object lastDstObj = dst->prev ? dst->prev : dstList;  // last object of dst list
+   TCObject frstSrcObj = src->next;                       // first object of src list
+   TCObject lastSrcObj = src->prev;                       // last object of src list
+   TCObject lastDstObj = dst->prev ? dst->prev : dstList;  // last object of dst list
    ObjectProperties frstSrc = OBJ_PROPERTIES(frstSrcObj);
    ObjectProperties lastDst = OBJ_PROPERTIES(lastDstObj);
 
@@ -298,7 +300,7 @@ static void moveDblList(Object srcList, Object dstList) // append the src list t
 static bool createChunk(uint32 size)
 {
    Chunk chunk;
-   Object o;
+   TCObject o;
    IF_HEAP_ERROR(chunksHeap)
       return false;
 
@@ -316,9 +318,11 @@ static bool createChunk(uint32 size)
    return true;
 }
 
+static Hashtable htObjsPerClass;
+
 bool initObjectMemoryManager()
 {
-   int32 i,skip = sizeof(TObjectProperties), size = skip+4, n = OBJARRAY_MAX_INDEX+1;
+   int32 i,skip = sizeof(TObjectProperties), size = skip+TSIZE, n = OBJARRAY_MAX_INDEX+1;
    uint8 *f, *u, *l;
    ommHeap = heapCreate();
    chunksHeap = heapCreate();
@@ -335,14 +339,14 @@ bool initObjectMemoryManager()
    f += skip;
    u += skip;
    l += skip;
-   freeList = newPtrArrayOf(Object,n,ommHeap);
-   usedList = newPtrArrayOf(Object,n,ommHeap);
-   lockList = newPtrArrayOf(Object,1,ommHeap);
-   lockList[0] = (Object)l;
+   freeList = newPtrArrayOf(TCObject,n,ommHeap);
+   usedList = newPtrArrayOf(TCObject,n,ommHeap);
+   lockList = newPtrArrayOf(TCObject,1,ommHeap);
+   lockList[0] = (TCObject)l;
    for (i =0; i < n; i++) // and now we just assign the starting pointer of each block
    {
-      freeList[i] = (Object)f; f += size;
-      usedList[i] = (Object)u; u += size;
+      freeList[i] = (TCObject)f; f += size;
+      usedList[i] = (TCObject)u; u += size;
    }
    markedAsUsed = 1;
    objStack = newStack(2048, sizeof(TObjectsToVisit), null); // must be > 1k!
@@ -358,9 +362,9 @@ void destroyObjectMemoryManager()
    heapDestroy(ommHeap);
 }
 
-static Object allocObjWith(uint32 size)
+static TCObject allocObjWith(uint32 size)
 {
-   Object o=null;
+   TCObject o=null;
    uint32 idx = size2idx(size);
    if (idx == OBJARRAY_MAX_INDEX || (o=OBJ_PROPERTIES(freeList[idx])->next) == null) // if this is the max index, or there's no free objects in the current index, try on the highest index
    {
@@ -376,13 +380,25 @@ static Object allocObjWith(uint32 size)
    return o;
 }
 
-Object allocObject(Context currentContext, uint32 size)
+extern bool iosLowMemory;
+static int32 consecutiveSkips;
+
+static TCObject allocObject(Context currentContext, uint32 size, TCClass cls, int32 alen)
 {
-   Object o = null;
-   bool firstPass = true;
+   TCObject o = null;
    ObjectProperties op;
 
-   if (currentContext == gcContext) // a finalize method is creating an object? return null
+#ifdef darwin
+   if (iosLowMemory/* && size > 1024*/)
+   {    
+      iosLowMemory = false;
+      debug("IOS low memory. Free: %d",getFreeMemory(0));
+      //iosLowMemory = getFreeMemory(0) <= 10*1024*1024;
+      //throwException(currentContext, OutOfMemoryError, "iOS low memory warning");
+      //return null;
+   }
+#endif
+   if (currentContext == gcContext) //  a finalize method is creating an object? return null
    {
       throwException(currentContext, OutOfMemoryError, "Objects can't be allocated during finalize.");
       return null;
@@ -391,31 +407,26 @@ Object allocObject(Context currentContext, uint32 size)
       while (runningFinalizer) // otherwise, another thread is trying to create an object; pass the timeslice back to the gc.
          Sleep(1);
 
-   if (size < 4)
-      size = 4;
-   size = ((size+3)>>2)<<2; // make power of 4
+   if (size < TSIZE)
+      size = TSIZE;
+   size = ((size+TSIZE-1)>>TSHIFT)<<TSHIFT; // make power of SIZE_T
 
+   LOCKVAR(omm);
    o = allocObjWith(size);
    if (!o) // no more memory to create this object? Run the GC to free up memory
    {
-tryAgain:
-      #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
-      UNLOCKVAR(omm);
-      gc(currentContext);
-      LOCKVAR(omm);
-      o = allocObjWith(size);
-      #endif
+      if (size < 1024*1024 || ++consecutiveSkips > 16)
+      {
+         #ifndef ENABLE_TEST_SUITE // test suite requires that no gc is run in this case - just create the chunk directly
+         gc2(currentContext,false);
+         o = allocObjWith(size);
+         #endif
+      }
       if (!o)
       {
          // still no memory? allocate a new chunk and place it at the OBJARRAY_MAX_INDEX
          if (!createChunk(size > DEFAULT_CHUNK_SIZE ? size : DEFAULT_CHUNK_SIZE))
          {
-            // "force" gc again, ignoring the timeout
-            if (firstPass)
-            {
-               firstPass = false;
-               goto tryAgain;
-            }
             if (COMPUTETIME) alert("out of memory!");
             throwException(currentContext, OutOfMemoryError, null);
             goto end; // no more memory at all, quit.
@@ -447,7 +458,7 @@ tryAgain:
          {
             // make the rest of this object a free object
             Chunk startOfNextChunk = ((uint8*)o) + size;
-            Object oremain = CHUNK2OBJECT(startOfNextChunk);
+            TCObject oremain = CHUNK2OBJECT(startOfNextChunk);
             uint32 ridx = size2idx(objectBytesRemaining);
             xmemzero(OBJ_PROPERTIES(oremain),sizeof(TObjectProperties));
             OBJ_SIZE(oremain) = objectBytesRemaining;
@@ -458,35 +469,42 @@ tryAgain:
          else size = oSize; // not enough memory remains in the object, so keep the old size
       }
       OBJ_SIZE(o) = size;
+
       // objects are always locked
       OBJ_SETLOCKED(o);
       insertNodeInDblList(lockList[0], o);
       objLocked++;
+
       if (_TRACE_OBJCREATION) debug("G Object %X locked",o);
       // erase the object.
       xmemzero(o, size);
+      if (alen >= 0) ARRAYOBJ_LEN(o) = alen;
+      OBJ_CLASS(o) = cls;
    }
 end:
+   UNLOCKVAR(omm);
    return o;
 }
 
-static Object privateCreateObject(Context currentContext, CharP className, bool callDefaultConstructor)
+static TCObject privateCreateObject(Context currentContext, CharP className, bool callDefaultConstructor)
 {
    TCClass c;
    uint32 objectSize;
-   Object o=null;
+   TCObject o=null;
 
-   LOCKVAR(omm);
    c = loadClass(currentContext, className, true);
    if (!c)
       goto end;
 
    objectSize = c->objSize;
-   o = allocObject(currentContext, objectSize);
+   o = allocObject(currentContext, objectSize, c, -1);
    if (!o)
       goto end;
-
-   OBJ_CLASS(o) = c;
+   if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
+   {
+      if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
+      htInc(&htObjsPerClass, (int32)c, 1);
+   }
 
    if (_TRACE_OBJCREATION) debug("G %X obj created %s of size %d at %d. lock: %d. mark: %d. context: %X", o, className, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o), markedAsUsed, currentContext);
 
@@ -498,62 +516,67 @@ static Object privateCreateObject(Context currentContext, CharP className, bool 
          executeMethod(currentContext, defaultConstructor, o);
    }
 end:
-   UNLOCKVAR(omm);
    return o;
 }
 
-TC_API Object createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className)
+TC_API TCObject createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className)
 {
    return privateCreateObject(currentContext, className, false);
 }
 
-TC_API Object createObject(Context currentContext, CharP className)
+TC_API TCObject createObject(Context currentContext, CharP className)
 {
    return privateCreateObject(currentContext, className, true);
 }
 
-Object createArrayObject(Context currentContext, CharP type, int32 len)
+TCObject createArrayObject(Context currentContext, CharP type, int32 len)
 {
    TCClass c;
    uint32 arraySize, objectSize;
-   Object o=null;
+   TCObject o=null;
 
    if (len < 0)
       return null;
 
-   LOCKVAR(omm);
    c = loadClass(currentContext, type, true);
    if (!c)
       goto end;
-   arraySize = len << c->flags.bits2shift;
-   objectSize = 4 + arraySize; // there's a single instance field in the Array class: length
-   o = allocObject(currentContext, objectSize);
-
+   arraySize = TC_ARRAYSIZE(c,len);
+   objectSize = TSIZE + arraySize; // there's a single instance field in the Array class: length
+   o = allocObject(currentContext, objectSize, c, len);
    if (!o)
       goto end;
-
+   if (IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS))
+   {
+      if (!htObjsPerClass.items) htObjsPerClass = htNew(511, null);
+      htInc(&htObjsPerClass, (int32)c, 1);
+   }
    if (_TRACE_OBJCREATION) debug("G %X array obj created %s len %d, size = %d at %d. lock: %d", o, c->name,len, objectSize, size2idx(objectSize), OBJ_ISLOCKED(o));
-
-   ARRAYOBJ_LEN(o) = len;
-   OBJ_CLASS(o) = c;
 end:
-   UNLOCKVAR(omm);
    return o;
 }
 
-Object createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI)
+TCObject createByteArrayObject(Context currentContext, int32 len, const char *file, int32 line)
+{
+   TCObject o = createArrayObject(currentContext, BYTE_ARRAY, len);
+   if (IS_VMTWEAK_ON(VMTWEAK_TRACE_LOCKED_OBJS))
+      debug("byteArray %X created at %s (%d)",o,file,line);
+   return o;
+}
+
+TCObject createArrayObjectMulti(Context currentContext, CharP type, int32 count, uint8* dims, int32* regI)
 {
    uint32 len;
-   Object o;
-   Object *oa;
+   TCObject o;
+   TCObject *oa;
 
    // note that all dimensions are type java.lang.Array, except the last one.
-   len = *dims < 65 ? regI[*dims] : (*dims-65);
+   len = dims == null ? regI[0] : *dims < 65 ? regI[*dims] : (*dims-65);
    o = createArrayObject(currentContext, type, len);
    if (o != null && count > 1)
    {
-      for (oa = (Object*)ARRAYOBJ_START(o); len-- > 0; oa++)
-         if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims+1, regI)) == null)
+      for (oa = (TCObject*)ARRAYOBJ_START(o); len-- > 0; oa++)
+         if ((*oa = createArrayObjectMulti(currentContext, type+1, count-1, dims == null ? null : dims+1, dims == null ? regI+1 : regI)) == null)
             return null;
          else
             setObjectLock(*oa, UNLOCKED);
@@ -561,9 +584,9 @@ Object createArrayObjectMulti(Context currentContext, CharP type, int32 count, u
    return o;
 }
 
-Object createStringObjectWithLen(Context currentContext, int32 len)
+TCObject createStringObjectWithLen(Context currentContext, int32 len)
 {
-   Object str;
+   TCObject str;
    str = createObjectWithoutCallingDefaultConstructor(currentContext, "java.lang.String"); // do not call default constructor, we'll set our own char array (2 lines below)
    if (str)
    {
@@ -574,9 +597,9 @@ Object createStringObjectWithLen(Context currentContext, int32 len)
    return (str && String_chars(str)) ? str : null;
 }
 
-Object createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len)
+TCObject createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int32 len)
 {
-   Object str;
+   TCObject str;
    if (len < 0) len = JCharPLen(srcChars);
    str = createStringObjectWithLen(currentContext, len);
    if (str)
@@ -584,12 +607,12 @@ Object createStringObjectFromJCharP(Context currentContext, JCharP srcChars, int
    return str;
 }
 
-Object createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len)
+TCObject createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int32 len)
 {
 #if !defined (WINCE)
    JCharP dst;
 #endif
-   Object str;
+   TCObject str;
    if (len < 0) len = tcslen(srcChars);
    if ((str = createStringObjectWithLen(currentContext, len)) != null)
    {
@@ -604,10 +627,10 @@ Object createStringObjectFromTCHARP(Context currentContext, TCHARP srcChars, int
    return str;
 }
 
-Object createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len)
+TCObject createStringObjectFromCharP(Context currentContext, CharP srcChars, int32 len)
 {
    JCharP dst;
-   Object str;
+   TCObject str;
    if (len < 0) len = xstrlen(srcChars);
    str = createStringObjectWithLen(currentContext, len);
    if (str == null)
@@ -618,7 +641,7 @@ Object createStringObjectFromCharP(Context currentContext, CharP srcChars, int32
    return str;
 }
 
-TC_API void setObjectLock(Object o, LockState lock)
+TC_API void setObjectLock(TCObject o, LockState lock)
 {
    int32 size,idx;
    if (o == null) return;
@@ -628,7 +651,7 @@ TC_API void setObjectLock(Object o, LockState lock)
    if (lock == LOCKED)
    {
       if (OBJ_ISLOCKED(o))
-         alert("FATAL ERROR: OBJECT %X (%s) IS BEING LOCKED BUT IT WAS NOT PREVIOUSLY UNLOCKED!", o, OBJ_CLASS(o)->name);
+         alert("FATAL ERROR: OBJECT %X (%s) IS BEING LOCKED BUT IT IS ALREADY LOCKED!", o, OBJ_CLASS(o)->name);
       OBJ_SETLOCKED(o);
       // remove from the used list
       removeNodeFromDblList(usedList[idx], o);
@@ -638,7 +661,7 @@ TC_API void setObjectLock(Object o, LockState lock)
    else
    {
       if (!OBJ_ISLOCKED(o))
-         alert("FATAL ERROR: OBJECT %X (%s) IS BEING UNLOCKED BUT IT WAS NOT PREVIOUSLY LOCKED!", o, OBJ_CLASS(o)->name);
+         alert("FATAL ERROR: OBJECT %X (%s) IS BEING UNLOCKED BUT IT IS ALREADY UNLOCKED!", o, OBJ_CLASS(o)->name);
       OBJ_SETUNLOCKED(o);
       // add it back to the used list
       removeNodeFromDblList(lockList[0], o);
@@ -650,11 +673,23 @@ TC_API void setObjectLock(Object o, LockState lock)
    UNLOCKVAR(omm);
 }
 
-static void markSingleObject(Object o)
+CharP getSpaces(Context currentContext, int32 n);
+static void markSingleObject(TCObject o, bool dump) // NEVER call this directly, unless the Object has no instance fields nor is an array
 {
    TCClass c;
    TObjectsToVisit objs;
+   if (OBJ_PROPERTIES(o) == null)
+   {
+      debug("****** props is null: %X",o);
+      return;
+   }
 
+   c = OBJ_CLASS(o);
+   if (c == null)
+   {
+      debug("****** class is null: %X",o);
+      return;
+   }
    if (OBJ_MARK(o) == markedAsUsed) // don't remove! this test is important
       return;
    // mark as used to avoid infinite recursion
@@ -664,6 +699,8 @@ static void markSingleObject(Object o)
    {
       // "revive" the object
       int32 size,idx;
+//      if (dump) //strEq(c->name,"totalcross.db.sqlite.RS")) 
+//         debug("!!! %s marking %X: %s",getSpaces(mainContext,dump),o,OBJ_CLASS(o)->name);
       size = OBJ_SIZE(o);
       idx = size2idx(size);
       // remove from the free list
@@ -672,28 +709,28 @@ static void markSingleObject(Object o)
       insertNodeInDblList(usedList[idx], o);
       if (_TRACE_OBJCREATION) debug("G Object revived: %X (%s). mark: %d",o, OBJ_CLASS(o)->name, OBJ_MARK(o));
    }
-   c = OBJ_CLASS(o);
    // if this object is an array, and the elements are objects (or arrays), then push them to be marked later
    if (c->flags.isObjectArray) // array of objects or array of arrays?
    {
-      objs.start = (ObjectArray)ARRAYOBJ_START(o);
+      objs.start = (TCObjectArray)ARRAYOBJ_START(o);
       if (objs.start != null && (objs.n = ARRAYOBJ_LEN(o)) > 0)
          stackPush(objStack, &objs);
    }
    else // else, mark the instance fields of this object (note that arrays have no object instance fields)
    if (c->objInstanceFields != null)
    {
-      objs.start = (ObjectArray)FIELD_OBJ_OFFSET(o,c);
-      objs.n = (int32)((ObjectArray)FIELD_V64_OFFSET(o,c) - objs.start); // the object fields ends where the 64-bit ones start.
+      objs.start = (TCObjectArray)FIELD_OBJ_OFFSET(o,c);
+      objs.n = (int32)((TCObjectArray)FIELD_V64_OFFSET(o,c) - objs.start); // the object fields ends where the 64-bit ones start.
       stackPush(objStack, &objs);
    }
 }
 
-static void markObjects(Object o)
+static void markObjects(TCObject o, bool dump)
 {
    TObjectsToVisit objs;
 
-   markSingleObject(o);
+   if (!o) return; // can occurr if concorrent threads are accessing the structure where this object is
+   markSingleObject(o,dump);
 
    // Here we will mark recursively all objects inside this one.
    // First we go through all fields and array values (if applicable),
@@ -708,30 +745,36 @@ static void markObjects(Object o)
       if (objs.n > 0) // if there still more objects to visit, push the structure back.
          stackPush(objStack, &objs);
       if (o != null)
-         markSingleObject(o);
+         markSingleObject(o,dump);
    }
 }
 
 static void markClass(int32 i32, VoidP ptr)
 {
    TCClass c = (TCClass)ptr;
-   int32 i;
-   Object* f = c->objStaticValues;
+   int32 i,n;
+   TCObject* f = c->objStaticValues;
+   bool dump = false;
    UNUSED(i32)
+//   debug("marking %s",c->name);
 
    // mark all static fields
-   for (i = ARRAYLENV(f); i-- > 0; f++)
+   for (i = 0, n = ARRAYLENV(f); i < n; f++, i++)
       if (*f && OBJ_MARK(*f) != markedAsUsed) // we must also mark the objects inside a locked object
-         markObjects(*f);
+      {
+         markObjects(*f,dump);
+      }
 }
 
-static int32 countObjectsInList(Object o, bool dump, int32 mark, int32* size)
+static int32 countObjectsInList(TCObject o, bool dump, int32 mark, int32* size, Hashtable *htOut)
 {
    int32 n = 0;
    if (size) *size = 0;
    for (o=OBJ_PROPERTIES(o)->next; o != null; o = OBJ_PROPERTIES(o)->next)
    {
       ObjectProperties op = OBJ_PROPERTIES(o);
+      if (htOut) 
+         htInc(htOut, (int)OBJ_CLASS(o),1);
       if (size)
          *size += op->size;
       if (_TRACE_OBJCREATION && dump) debug("G %X",o);
@@ -749,13 +792,13 @@ static int32 countObjectsInList(Object o, bool dump, int32 mark, int32* size)
    }
    return n;
 }
-static int32 countObjectsIn(ObjectArray oa, bool dumpCount, bool dumpObj, int32 mark)
+static int32 countObjectsIn(TCObjectArray oa, bool dumpCount, bool dumpObj, int32 mark, Hashtable *htOut)
 {
    int32 n = 0,i,j;
    int32 partial=0,total=0;
    for (i = 0; i <= OBJARRAY_MAX_INDEX; i++, oa++)
    {
-      j = countObjectsInList(*oa,dumpObj,mark, &partial);
+      j = countObjectsInList(*oa,dumpObj,mark, &partial, htOut);
       n += j;
       if (dumpCount && j > 0) debug("G %5d free of size %4d (%6d)",j,i<<2,partial);
       total += partial;
@@ -764,7 +807,7 @@ static int32 countObjectsIn(ObjectArray oa, bool dumpCount, bool dumpObj, int32 
    return n;
 }
 
-bool joinAdjacentObjects(uint8* block, uint32 size)
+static bool joinAdjacentObjects(uint8* block, uint32 size)
 {
    uint8* block00 = block;
    uint8* block0 = block;
@@ -811,7 +854,7 @@ bool joinAdjacentObjects(uint8* block, uint32 size)
          {
             int32 oldIdx = size2idx(op0->size);
             int32 newIdx = size2idx(newSize);
-            Object o = CHUNK2OBJECT(block0);
+            TCObject o = CHUNK2OBJECT(block0);
             if (_DEBUG_OMM_LIST) debug("G %X merged: %4d -> %4d (%3d->%3d)", o, op0->size, newSize,oldIdx,newIdx);
             op0->size = newSize;
             if (oldIdx != newIdx)
@@ -831,7 +874,8 @@ bool joinAdjacentObjects(uint8* block, uint32 size)
       if (tcSettings.chunksCreated) (*tcSettings.chunksCreated)--;
       return true;
    }
-   if (COMPUTETIME) debug("G Chunk %X size %d has %d used objects with %d bytes",block0, size-sizeof(TObjectProperties), usedCount, usedSize > 0 ? (usedSize-sizeof(TObjectProperties)) : 0);
+
+   if (COMPUTETIME) {int32 tt = size-sizeof(TObjectProperties), uu = usedSize > 0 ? (usedSize-sizeof(TObjectProperties)) : 0; debug("G Chunk %X size %d has %d used objects with %d bytes (%d%%)",block0, tt, usedCount, uu, uu * 100 / tt);}
    return false;
 }
 
@@ -840,35 +884,54 @@ static void markContexts()
    int32 i;         
    Context c;
    Context copy[MAX_CONTEXTS];
-   xmemmove(copy,contexts,MAX_CONTEXTS*sizeof(Context));
+   xmemmove(copy,contexts,MAX_CONTEXTS*sizeof(Context));  // warning: only pointers are copied
    
    for (i = 0; i < MAX_CONTEXTS; i++)
       if ((c=copy[i]) != null)
       {
-         ObjectArray oa = c->regOStart;
+         TCObjectArray oa = c->regOStart;
+         //debug("context: %X, regO: %X to %X (%d), retO: %X",c,c->regOStart,c->regO,(c->regO-c->regOStart),c->nmp.retO);
          if (c->threadObj)
-            markObjects(c->threadObj);
+            markObjects(c->threadObj,false);
          if (c->nmp.retO)
-            markObjects(c->nmp.retO);
+            markObjects(c->nmp.retO,false);
          for (oa = c->regOStart; oa < c->regO; oa++)
-            if (*oa && OBJ_MARK(*oa) != markedAsUsed) // we must also mark the objects inside a locked object
-               markObjects(*oa);
+         {
+            TCObject obj = *oa;
+            if (obj)
+            {
+               ObjectProperties op = OBJ_PROPERTIES(obj);
+               if (op && op->mark != markedAsUsed) // we must also mark the objects inside a locked object
+                  markObjects(obj, false);
+            }
+         }
          if (c->thrownException != null)
-            markObjects(c->thrownException);
+            markObjects(c->thrownException,false);
       }
 }
 
-inline_ void finalizeObject(Object o, TCClass c)
+static void finalizeObject(TCObject o, TCClass c)
 {
+   TCClass c0 = c;
    while (c != null) 
    {
+      MUTEX_TYPE* mutex;
+
+      mutex = htGetPtr(&htMutexes, (int32)o);
+      if (mutex)
+      {
+         DESTROY_MUTEX_VAR(*mutex);
+         xfree(mutex);
+         htRemove(&htMutexes, (int32)o);         
+      }
+
       if (c->finalizeMethod == null) 
          c = c->superClass;
       else 
       {
          if (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false) 
          {
-            if (_TRACE_OBJDESTRUCTION) debug("G object being finalized: %X (%s)", o, OBJ_CLASS(o)->name);
+            if (_TRACE_OBJDESTRUCTION) debug("G object being finalized: %X (%X)", o, OBJ_CLASS(o));
             executeMethod(gcContext, c->finalizeMethod, o);
             if (_TRACE_OBJDESTRUCTION) debug("G object finalized: %X (%s)", o, OBJ_CLASS(o)->name);
          }
@@ -877,10 +940,56 @@ inline_ void finalizeObject(Object o, TCClass c)
    }
 }
 
+static void markAllImages() // visits all images
+{
+   TCObjectArray freeL;
+   TCObject o,next=null;  
+   int32 i = 0;
+
+   for (freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
+      if (*freeL)
+         for (o=OBJ_PROPERTIES(*freeL)->next; o != null;)
+         {
+            next = OBJ_PROPERTIES(o)->next; // the markObjects below may break the loop
+            if (OBJ_CLASS(o) == imageClass && OBJ_MARK(o) != markedAsUsed)
+               markObjects(o, false);
+            o = next;
+         }
+}
+
+static TCObject retNext(TCObject o)
+{  
+   ObjectProperties p;
+   if (o == null) return null;
+   p = OBJ_PROPERTIES(o);
+   if (p == null) return null;
+   return p->next;
+}
+
+void visitImages(VisitElementFunc onImage, int32 param) // visits all images
+{
+   TCObjectArray usedL;
+   TCObject o;
+   int32 i;                    
+   if (destroyingApplication) return;
+
+   LOCKVAR(omm);
+   for (i = 0, usedL = usedList; i <= OBJARRAY_MAX_INDEX; i++, usedL++)
+      if (*usedL)
+         for (o=retNext(*usedL); o != null; o = retNext(o))
+            if (OBJ_PROPERTIES(o) != null && OBJ_CLASS(o) == imageClass)
+               onImage(param,o);
+   if (lockList)
+      for (o=retNext(*lockList); o != null; o = retNext(o))
+         if (OBJ_PROPERTIES(o) != null && OBJ_CLASS(o) == imageClass)
+            onImage(param,o);
+   UNLOCKVAR(omm);
+}
+
 void runFinalizers() // calls finalize of all objects in use
 {
-   ObjectArray usedL;
-   Object o;
+   TCObjectArray usedL;
+   TCObject o;
    int32 i;
    TCClass c;
    gcContext->litebasePtr = mainContext->litebasePtr;  // let litebase destroy the ptr if he wants so
@@ -895,17 +1004,18 @@ void runFinalizers() // calls finalize of all objects in use
    mainContext->litebasePtr = gcContext->litebasePtr; // update the ptr
 }
 
-#ifndef ALTERNATIVE_GC
- #if defined(ANDROID) || defined(WINCE)
-  #define CRITICAL_SIZE 2*1024*1024
-  #define USE_MAX_BLOCK true
- #else
-  #define CRITICAL_SIZE 5*1024*1024
-  #define USE_MAX_BLOCK false
- #endif
+#if defined(ANDROID) || defined(WINCE)
+ #define CRITICAL_SIZE 16*1024*1024
+ #define USE_MAX_BLOCK true
+#elif defined(WIN32)
+ #define CRITICAL_SIZE 8*1024*1024
+ #define USE_MAX_BLOCK true
+#else
+ #define CRITICAL_SIZE 64*1024*1024
+ #define USE_MAX_BLOCK false
 #endif
 
-void preallocateArray(Context currentContext, Object sample, int32 length)
+void preallocateArray(Context currentContext, TCObject sample, int32 length)
 {
    int32 size = OBJ_SIZE(sample);
    int32 totSize = size * length;
@@ -915,56 +1025,83 @@ void preallocateArray(Context currentContext, Object sample, int32 length)
          createChunk(DEFAULT_CHUNK_SIZE);
 }
 
+static void dumpCount(HTKey key, int32 i32, VoidP ptr)
+{
+   TCClass cc = (TCClass)key;
+   if (i32 > 0)
+      debug("%30s: %d (%d)",cc->name, i32, cc->objSize);
+}
+static int lastUsed, countp, indp, lastT,lastF,lastC;
+static void dumpDif(HTKey key, int32 i32, VoidP ptr)
+{
+   TCClass cc = (TCClass)key;
+   int conta2 = i32;
+   int conta1 = htGet32(&htP1, (int)cc);
+   if (conta1 == 0 || conta1 != conta2)
+      debug("% 3d %30s: %d -> %d (%d)",++indp,cc->name, conta1, conta2, conta2-conta1);
+}
+void vmVibrate(int32 ms);
+
 void gc(Context currentContext)
+{
+   gc2(currentContext, true);
+}
+void gc2(Context currentContext, bool lockOMM)
 {
    int32 i;
    TCClass c;
-   ObjectArray freeL, usedL;
-   Object o;
-   int32 iniT,endT, elapsed;
-   int32 nfree,nused,compIni;
-
+   TCObjectArray freeL, usedL;
+   TCObject o;
+   int32 iniT,endT;
+   int32 nfree,nused,compIni,freemem;
+   bool traceCreatedClassObjs;
+   bool traceObjsCreatedBetween2GCs = IS_VMTWEAK_ON(VMTWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS);
+   int32 total0 = totalAllocated/1024/1024, free0 = getFreeMemory(USE_MAX_BLOCK)/1024/1024, chunks0 = tcSettings.chunksCreated?*tcSettings.chunksCreated : 0;
+   if (lockOMM) LOCKVAR(omm); // guich@tc120: another fix for concurrent threads
    iniT = getTimeStamp();
-   elapsed = iniT - lastGC;
 #ifdef WINCE // guich@tc113_20
    if (oldAutoOffValue != 0) // guich@450_33: since the autooff timer function don't work on wince, we must keep resetting the idle timer so that the device will never go sleep - guich@554_7: reimplemented this feature
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
-#ifdef ALTERNATIVE_GC
-   if ( IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
-#else
-   if ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && getFreeMemory(USE_MAX_BLOCK) > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
-#endif
+   freemem = getFreeMemory(USE_MAX_BLOCK);
+   if (disableGC || (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) && freemem > CRITICAL_SIZE)) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
-      if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
+      if (COMPUTETIME) 
+         debug("G ====  GC SKIPPED");
+      if (lockOMM) UNLOCKVAR(omm);
       return;
    }
 #endif
+   consecutiveSkips = 0;
+   //debug("gc %d (%dms / %d bytes)",tcSettings.gcCount ? *tcSettings.gcCount : 0,elapsed,freemem);
    if (destroyingApplication)
+   {
+      UNLOCKVAR(omm);
       return;
+   }
 
-   while (runningGC) Sleep(1);
-   LOCKVAR(omm);
    runningGC = true;
 
+   traceCreatedClassObjs = IS_VMTWEAK_ON(VMTWEAK_TRACE_CREATED_CLASSOBJS) && htObjsPerClass.items;
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
       soundTone(1000,10);
 
    if (COMPUTETIME)
    {
-      debug("G checking free at start"); nfree = countObjectsIn(freeList,false,false,-1);
-      debug("G checking used at start"); nused = countObjectsIn(usedList,false,false,!markedAsUsed);
+      debug("G checking free at start"); nfree = countObjectsIn(freeList,false,false,-1,0);
+      debug("G checking used at start"); nused = countObjectsIn(usedList,false,false,!markedAsUsed,0);
       debug("G ====  GC INI : %d (skipped: %d) free: %d, used: %d, mark: %d, chunks: %d, objs created: %d (%d ms ago), locked objs: %d, context: %X, free mem: %d (max: %d). context: %X", tcSettings.gcCount ? *tcSettings.gcCount : 0, skippedGC, nfree, nused, markedAsUsed, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, objCreated, iniT - lastGC, objLocked, currentContext, getFreeMemory(false), getFreeMemory(true), currentContext);
       iniT = getTimeStamp(); // discount the time used to compute these
    }
 
    skippedGC = objCreated = 0;
    if (tcSettings.gcCount) (*tcSettings.gcCount)++;
-
    IF_HEAP_ERROR(objStack->heap)
+   {
       goto heaperror;
+   }
    IF_HEAP_ERROR(chunksHeap)
    {
 heaperror:
@@ -979,28 +1116,52 @@ heaperror:
          moveDblList(*usedL, *freeL);
    if (!destroyingApplication) // if this is the last gc, just collect all objects
    {
+      Hashtable htCount;
+      bool traceLockedObjs = IS_VMTWEAK_ON(VMTWEAK_TRACE_LOCKED_OBJS);
+      int lockCount=0;
+      if (traceLockedObjs) htCount = htNew(511,null); else htCount.items = 0;
       // 2. go through all the reachable objects and move them back to the used list
-      // 2a. static fields of loaded classes
+      // 2a. static fields of loaded classes  
       if (CANTRAVERSE)
          htTraverse(&htLoadedClasses, markClass);
+#ifdef __gl2_h_
+      if (currentContext != mainContext) // in opengl, an image can only be freed in the main context, otherwise the texture will not be released
+      {                                                                                       
+         callGConMainThread = true; // set to run the gc on main thread so that the images can be collected
+         markAllImages(); // marking all images
+      }
+#endif                                         
       // 2b. mark the locked objects
       if (_TRACE_OBJCREATION) debug("G marking locked objs start");
       for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       {
+         if (traceLockedObjs)
+         {
+            if (strEq(OBJ_CLASS(o)->name,BYTE_ARRAY))
+               debug("locked ba: %X",o);
+            htInc(&htCount, (int32)OBJ_CLASS(o), 1);
+            lockCount++;
+         }
          //if (_TRACE_OBJCREATION) debug("G marking locked obj %X",o);
          if (OBJ_CLASS(o)->flags.isString) // 99% of the locked objects, due to the constant pool
          {
             OBJ_MARK(o) = markedAsUsed;
-            if (String_chars(o)) markSingleObject(String_chars(o));
+            if (String_chars(o)) markSingleObject(String_chars(o),false);
          }
-         else markObjects(o);
+         else 
+            markObjects(o,false);
+      }
+      if (traceLockedObjs) 
+      {
+         htTraverseWithKey(&htCount, dumpCount);
+         debug("locked: %d",lockCount);
       }
       if (_TRACE_OBJCREATION) debug("G marking locked objs end");
       // 2c. used objects in the object registers of all available contexts
       markContexts();
    }
    // now all reachable objects are moved to the still-alive list.
-   if (COMPUTETIME) compIni = getTimeStamp();
+   /*if (COMPUTETIME) */compIni = getTimeStamp();
    // 3. mark the free chunks as empty, so the compact can work correctly, and run the finalize methods if any
    markedAsUsed = !markedAsUsed; // otherwise, objects allocated in this executeMethod will have problems when being collected
    runningFinalizer = true;
@@ -1017,10 +1178,19 @@ heaperror:
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
+               if (traceCreatedClassObjs) htInc(&htObjsPerClass, (int32)OBJ_CLASS(o),-1);
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
    if (COMPUTETIME) debug("G finished finalizers");
+   
+   if (traceCreatedClassObjs)
+   {
+      debug("objects that were not destroyed");
+      htTraverseWithKey(&htObjsPerClass, dumpCount);
+      htFree(&htObjsPerClass, null);
+      htObjsPerClass = htNew(511,null);
+   }
 
    runningFinalizer = false;
    markedAsUsed = !markedAsUsed;
@@ -1030,26 +1200,59 @@ heaperror:
    heapFreeAsking(chunksHeap, joinAdjacentObjects);
 #endif
 end:
-   lastGC = endT = getTimeStamp();
+   endT = getTimeStamp();
    //if (endT != iniT) debug("G GC elapsed: %d",endT-iniT);
    if (tcSettings.gcTime) 
       *tcSettings.gcTime += endT - iniT;
 
-   if (COMPUTETIME)
+   //debug("gc %d - chunks %d",tcSettings.gcCount ? *tcSettings.gcCount : 0,tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0);
+
+   if (COMPUTETIME || traceObjsCreatedBetween2GCs)
    {
-      debug("G checking free at end"); nfree = countObjectsIn(freeList,true,false,-1);
-      nused = countObjectsIn(usedList,false,false,markedAsUsed);
-      debug("G checking used at end"); debug("G ====  GC END : free: %d, used: %d, chunks: %d, elapsed: %4d (compact: %3d)", nfree, nused, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
+      int rdif;
+      if (traceObjsCreatedBetween2GCs && !htP1.items)
+      {
+         htP1 = htNew(511, null); 
+         htP2 = htNew(511, null);
+      }
+      nfree = countObjectsIn(freeList,false,false,-1,0);
+      countp++;
+      nused = countObjectsIn(usedList,false,false,markedAsUsed, !traceObjsCreatedBetween2GCs ? null : countp == 1 ? &htP1 : &htP2);
+      rdif = nused-lastUsed;
+      if (traceObjsCreatedBetween2GCs && htP1.size > 0 && htP2.size > 0)
+      {
+         indp = 0;
+         htTraverseWithKey(&htP2, dumpDif);
+         htFree(&htP1, null);
+         htP1 = htP2;
+         htP2 = htNew(511,null);
+      }
+      debug("GC %d : free: %d, used: %d (dif: %d), chunks: %d, elapsed: %4d (compact: %3d)", tcSettings.gcCount ? *tcSettings.gcCount : 0,nfree, nused, rdif, tcSettings.chunksCreated ? *tcSettings.chunksCreated : 1, endT-iniT, endT - compIni);
+      lastUsed = nused;
    }
    // and now INVERT THE MARK BIT
    markedAsUsed = !markedAsUsed;
 
    if (IS_VMTWEAK_ON(VMTWEAK_AUDIBLE_GC))
+   {
+#ifdef WIN32
       soundTone(1100,10);
+#else      
+      vmVibrate(50);
+#endif
+   }
 
    //debug("G Freed objects (including allocated chunks)"); countObjectsIn(freeList,false);
+   lastGC = getTimeStamp(); // guich@tc210: moving to begining will make only one thread using the gc and the others will just allocate the needed memory. this fixes a crash in LaudoMovel loading jpegs in threads. guich@tc330: moving to the end fixes 2 threads being able to call gc one after the other, thus spending time in the 2nd call
    runningGC = false;
-   UNLOCKVAR(omm);
+   if (lockOMM) UNLOCKVAR(omm);
+   {
+      int32 totalf = totalAllocated / 1024 / 1024, freef = getFreeMemory(USE_MAX_BLOCK) / 1024 / 1024, chunksf = tcSettings.chunksCreated ? *tcSettings.chunksCreated : 0;
+#ifdef DEBUG
+      if ((lastT != totalf) || (lastF != freef) || (lastC != chunksf))
+         debug("%d gc u:%d->%d f:%d->%d, c:%d->%d tex:%d t:%X (%c) %dms", tcSettings.gcCount ? *tcSettings.gcCount : 0, total0, lastT = totalf, free0, lastF = freef, chunks0, lastC = chunksf, totalTextureLoaded, currentContext, currentContext == mainContext ? 'M' : currentContext == gcContext ? 'G' : 'T', endT - iniT);
+#endif /* DEBUG */
+   }
 }
 
 #ifdef ENABLE_TEST_SUITE

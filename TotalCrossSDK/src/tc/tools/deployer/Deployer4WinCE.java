@@ -14,6 +14,7 @@ package tc.tools.deployer;
 import totalcross.io.DataStream;
 import totalcross.io.File;
 import totalcross.io.FileNotFoundException;
+import totalcross.sys.Convert;
 import totalcross.sys.Vm;
 import totalcross.util.Hashtable;
 import totalcross.util.Vector;
@@ -21,22 +22,7 @@ import totalcross.util.Vector;
 /** An exe for Windows CE */
 public class Deployer4WinCE
 {
-   String []stubPaths = // guich@321_1 and guich@330_3: changed \\ to /
-   {
-      "POCKETPC/ARM",
-      "HPC211/ARM",
-      "POCKETPC/MIPS",
-      "POCKETPC/SH3",
-      "HPC2000/ARM",
-   };
-   static int []versionOffsets =   // 3.11 = 0x03 0x00 0x0B 0x00
-   {
-      0x114, // POCKETPC-ARM
-      0x11c, // HPC211-ARM      - guich@400_45
-      0x114, // POCKETPC-MIPS
-      0x114, // POCKETPC-SH3
-      0x10c, // HPC2000-ARM
-   };
+   static final int versionOffsetARM = 0x114;  // 3.11 = 0x03 0x00 0x0B 0x00
 
    // Offsets into the byte structure which defines the stub applcation
    static int launchOffset=-1;            // dynamically set
@@ -49,45 +35,69 @@ public class Deployer4WinCE
    private String cabName; // used in deleteAll
    private String targetDir;
    
-   private int pathsCount; // guich@tc125_17
-
    // guich@200 - to make modifications easier, we now read the prc bytes from disk and modify it.
    byte bytes[];
 
    String sEx = "The CEStub.exe file has been modified. some of the placeholder strings could not be found. Reinstall TotalCross. - "; // string Exception - sEx - good name, isnt? ;-)
+   boolean allTargets;
 
    public Deployer4WinCE(boolean allTargets) throws Exception
    {
-      pathsCount = allTargets ? stubPaths.length : 1;
+      this.allTargets = allTargets;
       // suportar tb arquivo .inf alem de .pkg
       String ceArguments = DeploySettings.commandLine.trim(); // the name of the tcz will be the same of the .exe
       if (ceArguments.length() > DeploySettings.defaultArgument.length/2)
          throw new IllegalArgumentException("ERROR - launch string too long: "+ceArguments);
-      targetDir = DeploySettings.targetDir+"wince/";
+      targetDir = Convert.appendPath(DeploySettings.targetDir,"wince");
       File f = new File(targetDir);
       if (!f.exists())
          f.createDir();
       if (DeploySettings.mainClassName != null)
-         for (int i =0; i < pathsCount; i++)
-            try
-            {
-               String fileName = DeploySettings.etcDir+"launchers/wince/"+stubPaths[i]+"/Launcher.exe";
-               bytes = Utils.findAndLoadFile(fileName,false);
-               if (bytes == null) throw new DeployerException("Could not find "+fileName+". Please add tc.jar to the classpath!");
-               findOffsets(DeploySettings.bitmaps);
-               storeInformation(ceArguments, versionOffsets[i]);
-               DeploySettings.bitmaps.saveWinCEIcons(bytes, bitmap16x16x8_Offset, bitmap32x32x8_Offset, bitmap48x48x8_Offset);
-               saveStub(targetDir, stubPaths[i], DeploySettings.filePrefix, false);
-            } catch (Exception e) {Utils.println("Exception: "+i+" - "+e.getMessage());}
-      else // if no exe files, just create the directories
-         for (int i =0; i < pathsCount; i++)
-            try {new File(targetDir+stubPaths[i]).createDir();} catch (totalcross.io.IOException e) {}
+      {
+         try
+         {
+            String fileName = Convert.appendPath(DeploySettings.etcDir, "launchers/wince/Launcher.exe");
+            bytes = Utils.findAndLoadFile(fileName, false);
+            if (bytes == null)
+               throw new DeployerException("Could not find " + fileName + ". Please add tc.jar to the classpath!");
+            findOffsets(DeploySettings.bitmaps);
+            storeInformation(ceArguments, versionOffsetARM);
+            DeploySettings.bitmaps.saveWinCEIcons(bytes, bitmap16x16x8_Offset, bitmap32x32x8_Offset,
+                  bitmap48x48x8_Offset);
+            saveStub(targetDir, DeploySettings.filePrefix, false);
+         }
+         catch (Exception e)
+         {
+            Utils.println("Exception: " + e.getMessage());
+         }
+      }
+      else
+      {
+         // if no exe files, just create the directories
+         try
+         {
+            new File(targetDir).createDir();
+         }
+         catch (totalcross.io.IOException e)
+         {
+         }
+      }
 
       if (keepExe) // guich@tc126_29: if we're keeping the exe, copy the tcz to the target folder
          Utils.copyTCZFile(targetDir);
       if (!keepExeAndDontCreateCabFiles) // guich@tc126_29: don't create the cab file
          createInstallFiles();
-      if (!keepExe) deleteAll();
+      if (!keepExe)
+      {
+         try
+         {
+            new File(Convert.appendPath(targetDir,DeploySettings.filePrefix+".exe"), File.DONT_OPEN).delete();
+         }
+         catch (FileNotFoundException e)
+         {
+            // ignore if file wasn't found for deletion
+         }
+      }
    }
 
    /////////////////////////////////////////////////////////////////////////////////////
@@ -100,15 +110,14 @@ public class Deployer4WinCE
       bytes[versionOffset+2] = (byte)DeploySettings.getAppVersionLo();
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   private void saveStub(String userPath, String exePath, String exeName, boolean show) throws Exception
+   private void saveStub(String userPath, String exeName, boolean show) throws Exception
    {
-      String path = userPath+exePath;
       String fileName = DeploySettings.filePrefix+".exe";
       // write the file
-      String fullPath = path+"/"+fileName;
+      String fullPath = Convert.appendPath(userPath,fileName);
       if (show) Utils.println("...writing "+fullPath);
 
-      try {new File(path).createDir();} catch (totalcross.io.IOException e) {}
+      try {new File(userPath).createDir();} catch (totalcross.io.IOException e) {}
 
       File fos = new File(fullPath, File.CREATE_EMPTY);
       fos.writeBytes(bytes,0,bytes.length);
@@ -132,57 +141,43 @@ public class Deployer4WinCE
       if (bitmap48x48x8_Offset == -1) System.out.println("Could not find offset for 48x48x8");
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   private String getCabName(int i)
+   private String getCabName()
    {
-      return targetDir+cabName+"."+stubPaths[i].replace('/','_')+".cab";
+      return Convert.appendPath(targetDir,cabName+".cab");
    }
-   // guich@340_43: from here to bottom.
-   private boolean wasAllCabsCreated() throws totalcross.io.IOException
-   {
-      for (int i=0; i < pathsCount; i++)
-         if (!new File(getCabName(i)).exists())
-            return false;
-      return true;
-   }
+
    /////////////////////////////////////////////////////////////////////////////////////
    private void deleteCabs() throws totalcross.io.IOException
    {
-      for (int i=0; i < pathsCount; i++)
-         try
-         {
-            new File(getCabName(i)).delete(); // guich@341_14 replaced '/' by java.io.File.separatorChar
-         }
-         catch (FileNotFoundException e)
-         {
-         }
-   }
-   /////////////////////////////////////////////////////////////////////////////////////
-   public void deleteAll() throws totalcross.io.IOException
-   {
-      File f;
-      for (int i=0; i < pathsCount; i++)
+      try
       {
-         File.deleteDir(targetDir+stubPaths[i]);
-         f = new File(targetDir+stubPaths[i]);
-         if (f.exists())
-            f.delete();
+         new File(getCabName()).delete(); // guich@341_14 replaced '/' by java.io.File.separatorChar
       }
-      f = new File(targetDir+"HPC211");
-      if (f.exists())
-         f.delete();
-      f = new File(targetDir+"POCKETPC");
-      if (f.exists())
-         f.delete();
-      f = new File(targetDir+"HPC2000");
-      if (f.exists())
-         f.delete();
+      catch (FileNotFoundException e)
+      {
+      }
    }
+
    /////////////////////////////////////////////////////////////////////////////////////
    public void deleteTemp(boolean includingInf)
    {
-      for (int i=0; i < pathsCount; i++)
-         try {new File(targetDir+cabName+"."+stubPaths[i].replace('/','_')+".dat").delete();} catch (totalcross.io.IOException e) {}
-      if (includingInf) try {new File(targetDir+cabName+".inf").delete();} catch (totalcross.io.IOException e) {}
+      try
+      {
+         new File(Convert.appendPath(targetDir,cabName + ".dat")).delete();
+      }
+      catch (totalcross.io.IOException e)
+      {
+      }
+      if (includingInf)
+      {
+         try
+         {
+            new File(Convert.appendPath(targetDir, cabName + ".inf")).delete();
+         }
+         catch (totalcross.io.IOException e)
+         {
+         }
+      }
    }
    /////////////////////////////////////////////////////////////////////////////////////
    private String toString(Vector v, String post, boolean copyFile) throws Exception
@@ -193,7 +188,7 @@ public class Deployer4WinCE
       {
          String fullName = (String)v.items[i];
          String onlyName = Utils.getFileName(fullName);
-         String targetName = targetDir+onlyName;
+         String targetName = Convert.appendPath(targetDir,onlyName);
          // copy the file to the current folder if it does not exists.
          // (cabwiz don't allow pathnames on the input file list)
          if (copyFile && !new File(targetName).exists())
@@ -223,7 +218,7 @@ public class Deployer4WinCE
          infFileName = "wince.inf";
          cabName = infFileName.substring(0,Math.min(8,infFileName.length()-4)); // strip the .inf - guich@421_75
          deleteCabs();
-         File oFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
+         File oFile = new File(Convert.appendPath(targetDir,infFileName),File.CREATE_EMPTY);
          File iFile = new File("wince.inf",File.READ_ONLY);
          iFile.copyTo(oFile);
          oFile.close();
@@ -237,11 +232,11 @@ public class Deployer4WinCE
 
          vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
          vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
-         vLocals.addElement(DeploySettings.tczFileName);
+         vLocals.addElements(DeploySettings.tczs);
          Utils.preprocessPKG(vLocals,false);
          Utils.preprocessPKG(vGlobals,false);
          String tcFolder = null, lbFolder = null;
-         if (DeploySettings.packageType != 0) // include the vm?
+         if (DeploySettings.packageVM) // include the vm?
          {
             if (!hasExe)
                System.out.println("Warning: /p ignored since package has no binary files");
@@ -249,37 +244,37 @@ public class Deployer4WinCE
             {
                // tc is always included
                // include non-binary files
-               vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
-               vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
-               boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
-               tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"wince/";
-               if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
-               {
-                  vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
-                  lbFolder = DeploySettings.folderLitebaseSDKDistLIB + "wince/";
-               }
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"TCBase.tcz"));
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"TCUI.tcz"));
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,DeploySettings.fontTCZ));
+               vLocals.addElement(Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"LitebaseLib.tcz"));
+               lbFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"wince");
+               tcFolder = Convert.appendPath(DeploySettings.folderTotalCross3DistVM,"wince");
                // copy binary files
-               for (int i =0; i < pathsCount; i++)
+               try
                {
-                  String name = stubPaths[i]+"/tcvm.dll";
-                  try {new File(targetDir+stubPaths[i]).createDir();} catch (Exception e) {}
-                  File.copy(tcFolder+name,targetDir+name);
-                  if (lbFolder != null)
-                  {
-                     name = stubPaths[i]+"/Litebase.dll";
-                     File.copy(lbFolder+name,targetDir+name);
-                  }
+                  new File(targetDir).createDir();
+               }
+               catch (Exception e)
+               {
+               }
+               String name = "/tcvm.dll";
+               File.copy(Convert.appendPath(tcFolder, name), Convert.appendPath(targetDir, name));
+               if (lbFolder != null)
+               {
+                  name = "/Litebase.dll";
+                  File.copy(Convert.appendPath(lbFolder, name), Convert.appendPath(targetDir, name));
                }
             }
          }         
 
          cabName = DeploySettings.filePrefix.trim().replace(' ','_');
-         if (cabName.length() > 8) cabName = cabName.substring(0,8); // guich@421_75
+         if (cabName.length() > 20) cabName = cabName.substring(0,20); // guich@421_75
          deleteCabs();
 
          infFileName = cabName+".inf";
-         File infFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
-         String installDir = DeploySettings.isService ? "\\"+DeploySettings.filePrefix+"\\" : "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
+         File infFile = new File(Convert.appendPath(targetDir,infFileName),File.CREATE_EMPTY);
+         String installDir = "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
          String inf =
             "[Version]\n" +
 
@@ -298,49 +293,16 @@ public class Deployer4WinCE
 
             "[Strings]\n" +
 
-            "TCDir    = \"\\"+(DeploySettings.isService ? DeploySettings.filePrefix : "TotalCross")+"\"\n" +
+            "TCDir    = \"\\TotalCross\"\n" +
 
             //-----------------------------------------------
 
-            (pathsCount == 1 ? "" : "[CEDevice.HPC2000_ARM]\n" +
-            "ProcessorType   = 2577\n" +
+            "[CEDevice]\n" +
+//            "ProcessorType   = 2577\n" +
             "VersionMin = 3.0\n" +
-            "VersionMax = 4.0\n" +
-            "UnsupportedPlatforms = \"Palm PC\"\n" +
-
-            "[CEDevice.HPC211_ARM]\n" +
-            "ProcessorType   = 2577\n" +
-            "VersionMin = 2.11\n" +
-            "VersionMax = 2.11\n" +
-            "UnsupportedPlatforms = \"Palm PC\"\n" +
-
-            "[CEDevice.PocketPC_ARM]\n" +
-            ";ProcessorType   = 2577\n" +
-            "VersionMin = 3.0\n" +
-            "VersionMax = 6.99\n" +
-            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
+            "VersionMax = 7.99\n" +    // support wm compact 7
             "BuildMax=0xE0000000\n"+
-
-            "[CEDevice.PocketPC_MIPS]\n" +
-            "ProcessorType   = 4000\n" +
-            "VersionMin = 3.0\n" +
-            "VersionMax = 6.99\n" +
             "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
-            "BuildMax=0xE0000000\n"+
-
-            "[CEDevice.PocketPC_SH3]\n" +
-            "ProcessorType   = 10003\n" +
-            "VersionMin = 3.0\n" +
-            "VersionMax = 5.99\n" +
-            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
-            "BuildMax=0xE0000000\n")+
-
-            "[CEDevice.WMOBILE_ARM]\n" +
-            ";ProcessorType   = 2577\n" +
-            ";VersionMin = 3.0\n" +
-            ";VersionMax = 6.99\n" +
-            "UnsupportedPlatforms = \"HPC\",\"Jupiter\"\n" +
-            "BuildMax=0xE0000000\n"+
 
             //-----------------------------------------------
 
@@ -352,24 +314,12 @@ public class Deployer4WinCE
             // directories where the source files are located
 
             "[SourceDisksNames]\n" +
+            (hasExe ?  "1 =, \"Binaries\",,\n" : "") +
             // all local files, ie, local libraries, database pdbs, etc
             "2 =, \"LocalFiles\",,\n" +
             // any global files, ie, global libraries, fonts, etc
             // you must copy them to your app directory so they can be found
             "3 =, \"GlobalFiles\",,\n" +
-            (hasExe ? ((pathsCount == 1 ? "" : ( 
-            "[SourceDisksNames.HPC2000_ARM]\n" +
-            "1 =, \"Binaries\",,HPC2000\\ARM\n" +
-            "[SourceDisksNames.HPC211_ARM]\n" +
-            "1 =, \"Binaries\",,HPC211\\ARM\n" +
-            "[SourceDisksNames.PocketPC_ARM]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\ARM\n" +
-            "[SourceDisksNames.PocketPC_MIPS]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\MIPS\n" +
-            "[SourceDisksNames.PocketPC_SH3]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\SH3\n")) +
-            "[SourceDisksNames.WMOBILE_ARM]\n" +
-            "1 =, \"Binaries\",,POCKETPC\\ARM\n") : "") +
 
             //-----------------------------------------------
 
@@ -390,7 +340,7 @@ public class Deployer4WinCE
             (hasExe ? "Binaries = 0,%InstallDir%\n" : "") +
             "GlobalFiles = 0,%TCDir%\n" +
             "LocalFiles = 0,%InstallDir%\n" +
-            (DeploySettings.isService ? "Startmenu = 0,%CE4%\n" : "Startmenu = 0,%CE11%\n")+
+            "Startmenu = 0,%CE11%\n"+
 
             (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix+".exe\n") : "") +
             (tcFolder != null ? ("tcvm.dll\n") : "") +
@@ -403,7 +353,7 @@ public class Deployer4WinCE
             toString(vGlobals, "\n",true) +
 
             (hasExe ? ("[Startmenu]\n" +
-            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "") 
+            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "")
             ;
          
          new DataStream(infFile).writeBytes(inf.getBytes());
@@ -411,116 +361,54 @@ public class Deployer4WinCE
       }
 
       String path2Cabwiz, out;
-      if (pathsCount != 1)
-      {
-	      // ok, the .inf file is created, now we call the cabwiz program
-	      path2Cabwiz = Utils.findPath(DeploySettings.etcDir+"tools/makecab/Cabwiz.exe",false);
-	      if (path2Cabwiz == null)
-	         throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
-	      // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
-	      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","HPC2000_ARM","HPC211_ARM","PocketPC_ARM","PocketPC_MIPS","PocketPC_SH3"};
-	      out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
-	      // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
-	      for (int i =0; i < 100; i++)
-	      {
-	         if (wasAllCabsCreated())
-	            break;
-	         Vm.sleep(100);
-	      }
-	      if (!wasAllCabsCreated())
-	         System.err.println("\n\nFailed calling execCabWiz. Files for Windows CE prior to WM5 not generated!\n\nExecution output:\n\n"+out);
-      }
 
-      // create the windows mobile 5/6 cab
-      path2Cabwiz = Utils.findPath(DeploySettings.etcDir+"tools/makecab/Cabwizsp.exe",false);
+      // create the cab
+      path2Cabwiz = Utils.findPath(Convert.appendPath(DeploySettings.etcDir,"tools/makecab/Cabwiz.exe"),false);
       if (path2Cabwiz == null)
-         throw new DeployerException("Could not find Cabwizsp.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
+         throw new DeployerException("Could not find Cabwiz.exe in directories relative to the classpath. Be sure to add TotalCrossSDK/lib to the classpath");
       // since exec don't allow us to change the current path, we create a batch file that will cd to the current folder
-      try {new File(targetDir+cabName+".WMobile_ARM.CAB").delete();} catch (Exception e) {}
-      String[] callCabWiz = {path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/cpu","WMobile_ARM"};
+      try {new File(Convert.appendPath(targetDir,cabName+".CAB")).delete();} catch (Exception e) {}
+      String[] callCabWiz = allTargets ? new String[]{path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName} // old wince devices
+                                       : new String[]{path2Cabwiz.replace('/',DeploySettings.SLASH),infFileName,"/compress"};
       out = Utils.exec(callCabWiz, targetDir.replace('/',DeploySettings.SLASH));
 
       // now we need to wait the process finish. For some reason, the Process.waitFor does not work.
       for (int i =0; i < 100; i++)
       {
-         if (new File(targetDir+cabName+".WMobile_ARM.CAB").exists())
+         if (new File(Convert.appendPath(targetDir,cabName+".CAB")).exists())
             break;
          Vm.sleep(100);
       }
-      if (!new File(targetDir+cabName+".WMobile_ARM.CAB").exists())
+      if (!new File(Convert.appendPath(targetDir,cabName+".CAB")).exists())
       {
          System.err.println("\n\nFailed calling execCabWiz for WM5!\n\nExecution output:\n\n"+out);
       }
 
       // delete the temp files
-      deleteTemp(!infFileGiven);
+      if (!keepExe) deleteTemp(!infFileGiven);
       if (vLocals != null) deleteCopiedFiles(vLocals);
       if (vGlobals != null) deleteCopiedFiles(vGlobals);
       
      File batFile, iniFile;
      String bat, ini;
       
-      if (pathsCount != 1)
-      {
-	     // the cab files were created, now we need to create the bat file to start the instalation
-	     batFile = new File(targetDir+DeploySettings.filePrefix+"_Install.bat",File.CREATE_EMPTY);
-	     bat =
-	        "@echo off\r\n" +
-	        "\r\n" +
-	        "echo This script installs this TotalCross Application on CE device.\r\n" +
-	        "rem test on the ProgramFiles variable\r\n" +
-	        "if not \"%ProgramFiles%\"==\"\" goto ok\r\n" +
-	        "set ProgramFiles=c:\\Progra~1\r\n" +
-	        ":ok\r\n" +
-	        "\"%ProgramFiles%\\Microsoft ActiveSync\\CeAppMgr.exe\" \".\\"+DeploySettings.filePrefix+"_Install.ini\"\r\n" + // guich@tc110_36: surround with ""
-	        "if \"%errorlevel%\"==\"1\" goto end\r\n" +
-	        "\r\n" +
-	        "\"%windir%\\WindowsMobile\\CeAppMgr.exe\" \".\\"+DeploySettings.filePrefix+"_Install.ini\"\r\n" + // guich@tc110_36: surround with ""
-	        "if \"%errorlevel%\"==\"1\" goto end\r\n" +
-	        "\r\n" +
-	        "CeAppMgr.exe \".\\"+DeploySettings.filePrefix+"_Install.ini\"\r\n" + // guich@tc110_36: surround with ""
-	        "if \"%errorlevel%\"==\"0\" goto end\r\n" +
-	        "\r\n" +
-	        "echo:\r\n" +
-	        "echo ERROR: Cannot locate CeAppMgr.exe. Please put the\r\n" +
-	        "echo \"Microsoft ActiveSync\" directory on your path variable.\r\n" +
-	        "echo It is usually located under \"Program Files\".\r\n" +
-	        "echo:\r\n" +
-	        "pause\r\n" +
-	        ":end\r\n";
-	     new DataStream(batFile).writeBytes(bat.getBytes());
-	     batFile.close();
-	     
-	     // and now create the .ini file for installation
-	     iniFile = new File(targetDir+DeploySettings.filePrefix+"_Install.ini", File.CREATE_EMPTY);
-	     ini =
-	        "[CEAppManager]\r\n" +
-	        "Version        = 1.0\r\n" +
-	        "Component      = App\r\n" +
-	        "[App]\r\n" +
-	        "Description    = \""+DeploySettings.filePrefix+"\"\r\n" + // guich@tc110_36: surround with ""
-	        "CabFiles       = "+cabName+".HPC2000_ARM.CAB,"+cabName+".HPC211_ARM.CAB,"+cabName+".PocketPC_ARM.CAB,"+cabName+".PocketPC_MIPS.CAB,"+cabName+".PocketPC_SH3.CAB\r\n";
-	     new DataStream(iniFile).writeBytes(ini.getBytes());
-	     iniFile.close();
-      }
-      // guich@tc114_85: dedicated files for WINDOWS MOBILE devices
       // the cab files were created, now we need to create the bat file to start the instalation
-      batFile = new File(targetDir+DeploySettings.filePrefix+"_Install_WMOBILE.bat",File.CREATE_EMPTY);
+      batFile = new File(Convert.appendPath(targetDir,DeploySettings.filePrefix+"_Install.bat"),File.CREATE_EMPTY);
       bat =
          "@echo off\r\n" +
          "\r\n" +
-         "echo This script installs this TotalCross Application on a WINDOWS MOBILE device.\r\n" +
+         "echo This script installs this TotalCross Application on a WINDOWS CE or WINDOWS MOBILE device.\r\n" +
          "rem test on the ProgramFiles variable\r\n" +
          "if not \"%ProgramFiles%\"==\"\" goto ok\r\n" +
          "set ProgramFiles=c:\\Progra~1\r\n" +
          ":ok\r\n" +
-         "\"%ProgramFiles%\\Microsoft ActiveSync\\CeAppMgr.exe\" \".\\"+DeploySettings.filePrefix+"_Install_WMOBILE.ini\"\r\n" + // guich@tc110_36: surround with ""
+         "\"%ProgramFiles%\\Microsoft ActiveSync\\CeAppMgr.exe\" \".\\"+DeploySettings.filePrefix+"_Install.ini\"\r\n" + // guich@tc110_36: surround with ""
          "if \"%errorlevel%\"==\"1\" goto end\r\n" +
          "\r\n" +
-         "\"%windir%\\WindowsMobile\\CeAppMgr.exe\" \".\\"+DeploySettings.filePrefix+"_Install_WMOBILE.ini\"\r\n" + // guich@tc110_36: surround with ""
+         "\"%windir%\\WindowsMobile\\CeAppMgr.exe\" \".\\"+DeploySettings.filePrefix+"_Install.ini\"\r\n" + // guich@tc110_36: surround with ""
          "if \"%errorlevel%\"==\"1\" goto end\r\n" +
          "\r\n" +
-         "CeAppMgr.exe \".\\"+DeploySettings.filePrefix+"_Install_WMOBILE.ini\"\r\n" + // guich@tc110_36: surround with ""
+         "CeAppMgr.exe \".\\"+DeploySettings.filePrefix+"_Install.ini\"\r\n" + // guich@tc110_36: surround with ""
          "if \"%errorlevel%\"==\"0\" goto end\r\n" +
          "\r\n" +
          "echo:\r\n" +
@@ -533,19 +421,24 @@ public class Deployer4WinCE
       new DataStream(batFile).writeBytes(bat.getBytes());
       batFile.close();
       // and now create the .ini file for installation
-      iniFile = new File(targetDir+DeploySettings.filePrefix+"_Install_WMOBILE.ini", File.CREATE_EMPTY);
+      iniFile = new File(Convert.appendPath(targetDir,DeploySettings.filePrefix+"_Install.ini"), File.CREATE_EMPTY);
       ini =
          "[CEAppManager]\r\n" +
          "Version        = 1.0\r\n" +
          "Component      = App\r\n" +
          "[App]\r\n" +
          "Description    = \""+DeploySettings.filePrefix+"\"\r\n" + // guich@tc110_36: surround with ""
-         "CabFiles       = "+cabName+".WMobile_ARM.CAB\r\n";
+         "CabFiles       = "+cabName+".CAB\r\n";
       new DataStream(iniFile).writeBytes(ini.getBytes());
       iniFile.close();
       
       // delete the inf file
-      if (!keepExe) try {new File(targetDir+Utils.getFileName(DeploySettings.tczFileName)).delete();} catch (FileNotFoundException e) {}
+      if (!keepExe)
+         for (int i = 0; i < DeploySettings.tczs.length; i++)
+            try 
+            {
+               new File(Convert.appendPath(targetDir,Utils.getFileName(DeploySettings.tczs[i]))).delete();
+            } catch (FileNotFoundException e) {}
       // everything done!
       System.out.println("... Files written to folder "+targetDir);
    }

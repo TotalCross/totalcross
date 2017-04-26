@@ -139,16 +139,25 @@ void startTestSuite(Context currentContext)
    int i;
    int from = 0;
    int to = TEST_COUNT-1;
+   int lastNumberOfFail = 0; //How many tests have failed until now?
+   int testsResults[TEST_COUNT] = { 0 }; // This flag vector indicates whether a given test had failed
    testFunc tests[TEST_COUNT];
 
+   xmemzero(tests, sizeof(tests));
    fillTestCaseArray(tests);
 
-   for (i = from; i <= to; i++)
+   for (i = from; !tc->abort && i <= to; i++)
    {
       tc->total++;
-      tests[i](tc);
+      currentContext->thrownException = null;
+      if (tests[i]) tests[i](tc, currentContext);
+      if (tc->failed != lastNumberOfFail)
+      {
+         testsResults[i] = 1;
+         lastNumberOfFail = tc->failed;
+      }
    }
-   showTestResults();
+   showTestResults(testsResults);
 }
 
 #endif
@@ -200,8 +209,9 @@ To enable the memory test, define ENABLE_MEMORY_TEST at your project settings.
 
 // This function must be called to start the tests. It is called by the GenTestCalls on the automatically generated SWTests.c
 void startTestSuite(Context currentContext);
-// This function presents the test results at the proper place
-void showTestResults();
+// This function presents the test results at the proper place; if the array testResults isn't NULL, then print which tests have failed by their number
+
+void showTestResults(int *testResults);
 
 // Memory tests
 #ifdef ENABLE_MEMORY_TEST
@@ -209,7 +219,7 @@ void showTestResults();
           do                                                                        \
           {                                                                         \
              int32 xtonull;                                                         \
-             Object lastException = null;                                           \
+             TCObject lastException = null;                                         \
              for (xtonull = 1; TCAPI_FUNC(getCountToReturnNull)() == 0; xtonull++)  \
              {                                                                      \
                 TCAPI_FUNC(setCountToReturnNull)(xtonull);
@@ -258,7 +268,7 @@ DECLARE_ASSERT_FUNC2(EqualsU16     , uint16  , uint16)
 DECLARE_ASSERT_FUNC2(EqualsU32     , uint32  , uint32)
 DECLARE_ASSERT_FUNC2(EqualsDbl     , double  , double)
 DECLARE_ASSERT_FUNC2(EqualsSz      , CharP   , CharP )
-DECLARE_ASSERT_FUNC2(EqualsObj     , Object  , Object)
+DECLARE_ASSERT_FUNC2(EqualsObj     , TCObject, TCObject)
 DECLARE_ASSERT_FUNC2(EqualsPtr     , VoidP   , VoidP )
 DECLARE_ASSERT_FUNC3(EqualsBlock   , VoidP   , VoidP  , int32 )
 DECLARE_ASSERT_FUNC3(EqualsFilled  , VoidP   , uint32 , uint8 )

@@ -9,19 +9,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #define CONVERT_PRIORITY(v) (7 - ((v-1)*7/9)) // java 1=min, 10=max; windows: 7=min, 0=max
+
+DWORD WINAPI privateThreadFunc(VoidP argP);
 
 static ThreadHandle privateThreadCreateNative(Context context, ThreadFunc t, VoidP this_)
 {
-   int32 id;
    ThreadHandle h = null;
    ThreadArgs targs = ThreadArgsFromObject(this_);
 
    targs->context = context;
    targs->threadObject = this_;
-   h = CreateThread(NULL, 0, t, targs, CREATE_SUSPENDED, &id);
+   h = CreateThread(NULL, 0, t, targs, CREATE_SUSPENDED, NULL);
    if (h != null)
    {
       ThreadHandleFromObject(this_) = h;
@@ -39,11 +38,13 @@ static ThreadHandle privateThreadGetCurrent()
 
 static void privateThreadDestroy(ThreadHandle h, bool threadDestroyingItself)
 {
+#ifndef WP8
    if (!threadDestroyingItself) TerminateThread(h, 0);
+#endif
    CloseHandle(h);
 }
 
-static DWORD WINAPI privateThreadFunc(VoidP argP)
+DWORD WINAPI privateThreadFunc(VoidP argP)
 {
    ThreadArgs targs = (ThreadArgs)argP;
    executeThreadRun(targs->context, targs->threadObject);

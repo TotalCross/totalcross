@@ -6,9 +6,9 @@ import tc.tools.deployer.ipa.blob.EmbeddedSignature;
 
 public class MachLoadCommandCodeSignature extends MachLoadCommand
 {
-   public EmbeddedSignature signature;
-   public long blobFileOffset;
-   public long blobFileSize;
+   protected EmbeddedSignature signature;
+   protected long blobFileOffset;
+   protected long blobFileSize;
 
    private int offset2FileSize;
 

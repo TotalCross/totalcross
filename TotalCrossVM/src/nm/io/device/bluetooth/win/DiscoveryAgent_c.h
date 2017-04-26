@@ -145,11 +145,11 @@ Err nativeStartInquiry(DeviceSearch deviceSearchP, boolean* inquiryStarted)
 DWORD WINAPI ThreadStartInquiry(LPVOID lpParameter)
 {
    DeviceSearch deviceSearchP = (DeviceSearch) lpParameter;
-   Object remoteDevice;
-   Object deviceClass;
+   TCObject remoteDevice;
+   TCObject deviceClass;
    
-   Object friendlyName;
-   Object address;
+   TCObject friendlyName;
+   TCObject address;
 
    TCHAR szAddress[13];
 
@@ -253,7 +253,7 @@ void convertUUIDBytesToGUID(uint8* bytes, GUID* uuid)
       uuid->Data4[i] = bytes[i + 8];
 }
 
-Err getServicesHandle(Context currentContext, Object uuidSet, BTH_ADDR btAddress, ULONG** serviceRecordHandleArray, int32* serviceRecordHandleArrayLen)
+Err getServicesHandle(Context currentContext, TCObject uuidSet, BTH_ADDR btAddress, ULONG** serviceRecordHandleArray, int32* serviceRecordHandleArrayLen)
 {
    LPWSAQUERYSET pwsaResults;
    HANDLE hLookupSearchServices;
@@ -262,7 +262,7 @@ Err getServicesHandle(Context currentContext, Object uuidSet, BTH_ADDR btAddress
    WSAQUERYSET querySet;
    BLOB blob;
    BTHNS_RESTRICTIONBLOB queryService;
-   ObjectArray uuidArray = (ObjectArray) ARRAYOBJ_START(uuidSet);
+   TCObjectArray uuidArray = (TCObjectArray) ARRAYOBJ_START(uuidSet);
    int32 uuidArrayLen = ARRAYOBJ_LEN(uuidSet);
    GUID guid;
    int32 i;
@@ -340,7 +340,7 @@ Err getServicesHandle(Context currentContext, Object uuidSet, BTH_ADDR btAddress
 	return err;
 }
 
-Err getServiceAttributes(Context currentContext, ULONG serviceHandle, BTH_ADDR btAddress, Object attrSet, Object* byteArray)
+Err getServiceAttributes(Context currentContext, ULONG serviceHandle, BTH_ADDR btAddress, TCObject attrSet, TCObject* byteArray)
 {
    HANDLE hLookupServiceAttributes;
    CSADDR_INFO csai;
@@ -348,7 +348,7 @@ Err getServiceAttributes(Context currentContext, ULONG serviceHandle, BTH_ADDR b
    WSAQUERYSET queryset;
    BLOB blob;
 	BTHNS_RESTRICTIONBLOB *queryService;
-   ObjectArray attrArray = (ObjectArray) ARRAYOBJ_START(attrSet);
+   TCObjectArray attrArray = (TCObjectArray) ARRAYOBJ_START(attrSet);
    int32 attrArrayLen = ARRAYOBJ_LEN(attrSet);
    Err err = -1;
    
@@ -421,7 +421,7 @@ Err getServiceAttributes(Context currentContext, ULONG serviceHandle, BTH_ADDR b
 }
 
 // Mutex will be already locked by tidbDA_startInquiry_id, we'll always have exclusive access to the search structure from here.
-Err nativeSearchServices(Context currentContext, Object remoteDevice, ServiceSearch serviceSearchP, Object attrSet, Object uuidSet, boolean* searchStarted)
+Err nativeSearchServices(Context currentContext, TCObject remoteDevice, ServiceSearch serviceSearchP, TCObject attrSet, TCObject uuidSet, boolean* searchStarted)
 {
    HANDLE* hLookupP = &((NATIVE_FIELDS) serviceSearchP->nativeFields)->hLookup;
    BTH_ADDR _btAddr;
@@ -448,17 +448,17 @@ Err nativeSearchServices(Context currentContext, Object remoteDevice, ServiceSea
          else
          {
             int32 result;
-            Object byteArray;
-            Object serviceRecordArray = createArrayObject(serviceSearchP->currentContext, "[totalcross.io.device.bluetooth.ServiceRecord", serviceRecordHandleArrayLen);
+            TCObject byteArray;
+            TCObject serviceRecordArray = createArrayObject(serviceSearchP->currentContext, "[totalcross.io.device.bluetooth.ServiceRecord", serviceRecordHandleArrayLen);
             for (i = 0 ; i < serviceRecordHandleArrayLen ; i++)
             {
-               Object serviceRecord = createObject(serviceSearchP->currentContext, "totalcross.io.device.bluetooth.ServiceRecord");
+               TCObject serviceRecord = createObject(serviceSearchP->currentContext, "totalcross.io.device.bluetooth.ServiceRecord");
                Method readSDP = getMethod(OBJ_CLASS(serviceRecord), false, "readSDP", 3, "totalcross.io.device.bluetooth.RemoteDevice", BYTE_ARRAY, INT_ARRAY);
                
                getServiceAttributes(currentContext, serviceRecordHandleArray[i], *btAddr, attrSet, &byteArray);
                result = executeMethod(serviceSearchP->currentContext, readSDP, serviceRecord, remoteDevice, byteArray, attrSet).asInt32;
 
-               *((ObjectArray) ARRAYOBJ_START(serviceRecordArray) + i) = serviceRecord;
+               *((TCObjectArray) ARRAYOBJ_START(serviceRecordArray) + i) = serviceRecord;
             }
             xfree(serviceRecordHandleArray);
             executeMethod(serviceSearchP->currentContext, serviceSearchP->servicesDiscovered, serviceSearchP->listener, 0, serviceRecordArray);

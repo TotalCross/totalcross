@@ -14,24 +14,15 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.crypto.signature;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-
+import java.security.spec.*;
 import totalcross.crypto.*;
-import totalcross.crypto.cipher.Key;
-import totalcross.crypto.cipher.RSAPrivateKey;
-import totalcross.crypto.cipher.RSAPublicKey;
-import totalcross.crypto.digest.Digest;
-import totalcross.crypto.digest.MD5Digest;
-import totalcross.crypto.digest.SHA1Digest;
-import totalcross.crypto.digest.SHA256Digest;
+import totalcross.crypto.cipher.*;
+import totalcross.crypto.digest.*;
 
 /**
  * This class implements the PKCS #1 signature algorithm.
@@ -43,9 +34,9 @@ public class PKCS1Signature extends Signature
    /**
     * Creates a new PKCS1Signature algorithm with the given message digest.
     * 
-    * @param digest the message digest.
-    * 
-    * @throws CryptoException if the given message digest is not supported.
+    * @param digest The message digest.
+    * @throws CryptoException If the given message digest is not supported.
+    * @throws NoSuchAlgorithmException If no Provider supports a Signature implementation for the specified algorithm.
     */
    public PKCS1Signature(Digest digest) throws NoSuchAlgorithmException, CryptoException
    {
@@ -68,6 +59,11 @@ public class PKCS1Signature extends Signature
       }
    }
    
+   /**
+    * Returns the name of the algorithm.
+    * 
+    * @return The name of the algorithm used. 
+    */
    public String getAlgorithm()
    {
       return algorithm;

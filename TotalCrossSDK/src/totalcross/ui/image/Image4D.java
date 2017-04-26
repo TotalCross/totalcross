@@ -32,15 +32,19 @@ public class Image4D extends GfxSurface
    private int currentFrame=-1, widthOfAllFrames;
    public int transparentColor = Color.WHITE;
    public boolean useAlpha; // guich@tc126_12
+   public int alphaMask=255;
+   public int lastAccess=-1;
    
    // object
    private int[] pixels; // must be at Object position 0
    protected int[] pixelsOfAllFrames;
-   int[] textureId = new int[1];
+   int[] textureId = new int[2];
    public String comment;
    private Graphics4D gfx;
    private boolean[] changed = {true};
    private int []instanceCount = new int[1];
+   private Image4D[] master = new Image4D[1];
+   private String path;
 
    // double
    public double hwScaleW=1,hwScaleH=1;
@@ -61,6 +65,7 @@ public class Image4D extends GfxSurface
 
    public Image4D(String path) throws ImageException
    {
+      this.path = path;
       imageLoad(path);
       if (width == 0)
          throw new ImageException("Could not load image, file not found: "+path);
@@ -69,6 +74,8 @@ public class Image4D extends GfxSurface
 
    public Image4D(Stream s) throws ImageException, totalcross.io.IOException
    {
+      if (s instanceof File)
+         path = ((File)s).getPath();
       // the buffer must go initially filled so that the native parser can discover if this is a jpeg or png image
       byte[] buf = new byte[512];
       int n = s.readBytes(buf, 0, 4);
@@ -82,14 +89,51 @@ public class Image4D extends GfxSurface
 
    public Image4D(byte []fullDescription) throws ImageException
    {
-      if (fullDescription.length < 4)
+      this(fullDescription, fullDescription.length);
+   }
+   
+   public Image4D(byte []fullDescription, int len) throws ImageException
+   {
+      if (len < 4)
          throw new ImageException("Invalid image description");
       ByteArrayStream bas = new ByteArrayStream(fullDescription);
+      if (len != fullDescription.length) try {bas.setPos(len); bas.mark();} catch (Exception e) {}
       bas.skipBytes(4); // first 4 bytes are read directly from the fullDescription buffer
       imageParse(bas, fullDescription);
       if (width == 0)
          throw new ImageException("Error when loading image from stream");
       init();
+   }
+
+   private Image4D(Image4D src)
+   {
+      if (Settings.isOpenGL && src.changed[0]) // if the original image's texture was not yet loaded, do that now to ensure it will be added to the list, otherwise, the original image may be collected and the cloned image will be turned black
+         src.applyChanges();
+      this.surfaceType = src.surfaceType;
+      this.width = src.width;
+      this.height = src.height;
+      this.frameCount = src.frameCount;
+      this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
+      this.textureId = src.textureId; // shared among all instances
+      this.changed = src.changed;
+      this.pixels = src.pixels;
+      this.pixelsOfAllFrames = src.pixelsOfAllFrames;
+      this.comment = src.comment;
+      gfx = new Graphics4D(this);
+      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
+      this.transparentColor = src.transparentColor;
+      this.useAlpha = src.useAlpha; // guich@tc126_12
+      this.instanceCount = src.instanceCount; // shared among all instances
+      if (instanceCount[0] == 0) // first copy, create the array
+         this.master = new Image4D[]{src}; // must keep a copy of the original image
+      else
+         this.master = src.master;
+      src.instanceCount[0]++;
+   }
+   
+   public String getPath()
+   {
+      return path;
    }
 
    private void init() throws ImageException
@@ -153,18 +197,19 @@ public class Image4D extends GfxSurface
 
    public int getHeight()
    {
-      return Settings.isOpenGL ? (int)(height * hwScaleH) : height;
+      return (int)(height * hwScaleH);
    }
 
    public int getWidth()
    {
-      return Settings.isOpenGL ? (int)(width * hwScaleW) : width;
+      return (int)(width * hwScaleW);
    }
 
    public Graphics4D getGraphics()
    {
       if (pixels == null) return null;
       gfx.setFont(MainWindow.getDefaultFont());
+      gfx.refresh(0,0,width,height,0,0,null);
       return gfx;
    }
 
@@ -299,7 +344,7 @@ public class Image4D extends GfxSurface
       }
    }
 
-   native protected void getPixelRow(byte []fillIn, int y);
+   native public void getPixelRow(byte []fillIn, int y);
 
    private static final int SCALED_INSTANCE = 0;
    private static final int SMOOTH_SCALED_INSTANCE = 1;
@@ -466,6 +511,7 @@ public class Image4D extends GfxSurface
    {
       Image4D i = new Image4D(w,h);
       // copy other attributes
+      i.path = path;
       i.hwScaleH = this.hwScaleH;
       i.hwScaleW = this.hwScaleW;
       return i;
@@ -474,10 +520,12 @@ public class Image4D extends GfxSurface
    public Image4D getFrameInstance(int frame) throws ImageException
    {
       Image4D img = getCopy(width,height);
+      int old = currentFrame;
       setCurrentFrame(frame);
       int[] from = (int[])this.pixels;
       int[] to = (int[])img.pixels;
       Vm.arrayCopy(from, 0, to, 0, from.length);
+      setCurrentFrame(old);
       return img;
    }
    
@@ -535,8 +583,9 @@ public class Image4D extends GfxSurface
          pixels = pixelsOfAllFrames = null;
       }
    }
+   
    native public void createJpg(Stream s, int quality) throws ImageException, IOException;
-
+   
    public void setHwScaleFixedAspectRatio(int newSize, boolean isHeight)
    {
       int w = !isHeight ? newSize : (newSize * width / height);
@@ -545,28 +594,10 @@ public class Image4D extends GfxSurface
       hwScaleH = (double)h / height;
    }
    
-   private Image4D(Image4D src)
-   {
-      this.surfaceType = src.surfaceType;
-      this.width = src.width;
-      this.height = src.height;
-      this.frameCount = src.frameCount;
-      this.currentFrame=-1; this.widthOfAllFrames = src.widthOfAllFrames;
-      this.textureId = src.textureId; // shared among all instances
-      this.changed = src.changed;
-      this.pixels = src.pixels;
-      this.pixelsOfAllFrames = src.pixelsOfAllFrames;
-      this.comment = src.comment;
-      gfx = new Graphics4D(this);
-      gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
-      this.transparentColor = src.transparentColor;
-      this.useAlpha = src.useAlpha; // guich@tc126_12
-      this.instanceCount = src.instanceCount; // shared among all instances
-      src.instanceCount[0]++;
-   }
-   
    public Image4D hwScaledFixedAspectRatio(int newSize, boolean isHeight) throws ImageException
    {
+      if (!Settings.isOpenGL)
+         return smoothScaledFixedAspectRatio(newSize, isHeight);
       Image4D copy = new Image4D(this);
       copy.setHwScaleFixedAspectRatio(newSize,isHeight);
       gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
@@ -575,6 +606,8 @@ public class Image4D extends GfxSurface
 
    public Image4D getHwScaledInstance(int width, int height) throws ImageException
    {
+      if (!Settings.isOpenGL)
+         return getSmoothScaledInstance(width,height);
       Image4D copy = new Image4D(this);
       copy.hwScaleW = (double)width / this.width;
       copy.hwScaleH = (double)height / this.height;
@@ -584,10 +617,26 @@ public class Image4D extends GfxSurface
 
    public Image4D hwScaledBy(double scaleX, double scaleY) throws ImageException
    {
+      if (!Settings.isOpenGL)
+         return smoothScaledBy(scaleX,scaleY);
       Image4D copy = new Image4D(this);
       copy.hwScaleW = scaleX;
       copy.hwScaleH = scaleY;
       gfx.refresh(0,0,getWidth(),getHeight(),0,0,null);
       return copy;
    }   
+
+   native public void applyFade(int fadeValue);
+   
+   public Image4D getCopy() throws ImageException
+   {
+      return getFrameInstance(0);
+   }
+   public Image4D getClippedInstance(int x, int y, int w, int h) throws ImageException
+   {
+      Image4D img = new Image4D(w,h);
+      Graphics4D g = img.getGraphics();
+      g.copyImageRect(this, x,y,w,h,true);
+      return img;
+   }
 }

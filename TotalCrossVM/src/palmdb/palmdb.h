@@ -18,6 +18,7 @@
 #define TC_privateXmalloc              privateXmalloc
 #define TC_privateXrealloc             privateXrealloc
 #define TC_createArrayObject           createArrayObject
+#define TC_createByteArrayObject       createByteArrayObject
 #include "tcvm.h"
 
 /*

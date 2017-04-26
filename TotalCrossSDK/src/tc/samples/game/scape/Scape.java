@@ -43,7 +43,7 @@ public class Scape extends GameEngine implements ProdConfig
    protected final static boolean HAS_UI = false;
 
    protected final static int BLOCKS = 4;
-   protected final static int RADIUS = 60;
+   protected final static int RADIUS = Settings.screenWidth/2;
    protected final static int PEN_OFFSET = 24;
 
    protected final static int MAX_DIFFICULTIES = 3;
@@ -94,7 +94,7 @@ public class Scape extends GameEngine implements ProdConfig
 
    public Scape()
    {
-      setUIStyle(Settings.Flat);
+      setUIStyle(Settings.Android);
 
       // adjust attributes
       gameName = "Scape";
@@ -103,7 +103,7 @@ public class Scape extends GameEngine implements ProdConfig
             : PC_CREATOR_ID;
       gameVersion = 100;
       gameHighscoresSize = 0;
-      gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable?100:50) : NO_AUTO_REFRESH;
+      gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable?100:100) : NO_AUTO_REFRESH;
       gameDoClearScreen = CLEAR_SCREEN;
       gameHasUI = HAS_UI;
       setBackColor(0x66FFFF);
@@ -134,7 +134,7 @@ public class Scape extends GameEngine implements ProdConfig
       }
       catch (ImageException e)
       {
-         Vm.alert(e.getMessage());
+         MessageBox.showException(e,true);
       }
 
       // set the screen dimensions
@@ -158,15 +158,14 @@ public class Scape extends GameEngine implements ProdConfig
       // this is the hunted object
       try {ball = new Ball();} catch (ImageException e) {} catch (IOException e) {}
 
-      try
-      {
-         lostClip = new MediaClip(new ByteArrayStream(Vm.getFile("tc/samples/game/scape/lost.wav")));
-      }
-      catch (IOException e)
-      {
-         MessageBox.showException(e, true);
-      }
-      if (DEBUG) Vm.debug("lost clip=" + lostClip);
+//      try
+//      {
+//         lostClip = new MediaClip(new ByteArrayStream(Vm.getFile("tc/samples/game/scape/lost.wav")));
+//      }
+//      catch (IOException e)
+//      {
+//         MessageBox.showException(e, true);
+//      }
 
       showIntroduction();
    }
@@ -190,10 +189,9 @@ public class Scape extends GameEngine implements ProdConfig
             for (int i = 0; i < BLOCKS; i++)
             {
                int q = (i << 1) + 1;
-               int vecx = (int) (RADIUS * Math
-                     .cos(2 * Math.PI * q / (BLOCKS << 1)));
-               int vecy = (int) (RADIUS * Math
-                     .sin(2 * Math.PI * q / (BLOCKS << 1)));
+               int vecx = (int) (RADIUS * Math.cos(2 * Math.PI * q / (BLOCKS << 1)));
+               int vecy = (int) (RADIUS * Math.sin(2 * Math.PI * q / (BLOCKS << 1)));
+               
 
                int xx = (int) (midx + vecx);
                int yy = (int) (midy + vecy);
@@ -203,14 +201,13 @@ public class Scape extends GameEngine implements ProdConfig
                int bs4 = blockSize >> 2;
                int sx = bs4 + i * bs4;
                int sy = bs4 + bs4 * (BLOCKS - 1 - i);
-               if (DEBUG) Vm.debug("scale to " + sx + " x " + sy);
 
-               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy), ball);
+               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getHwScaledInstance(sx, sy), ball);
             }
          }
          catch (ImageException e)
          {
-            Vm.alert(e.getMessage());
+            MessageBox.showException(e,true);
          }
 
       ball.reduceZone(frameSizes[optDifficulty.value]);
@@ -239,11 +236,9 @@ public class Scape extends GameEngine implements ProdConfig
             {
                MessageBox.showException(e, true);
             }
-            if (DEBUG) Vm.debug("play sound: " + lostClip);
             if (!Settings.onJavaSE) 
                return; // showIntroduction will be displayed when the sound stops - in Java, stop is never called
          }
-         else Sound.tone(1000, 50);
       }
       // when the game stops, popup the GameOver window
       showIntroduction();
@@ -285,9 +280,7 @@ public class Scape extends GameEngine implements ProdConfig
             // increase the level and the ball speed
             level++;
             for (int i = 0; i < BLOCKS; i++)
-            {
                blocks[i].increaseSpeed(SPEED_INCR_PERC);
-            }
          }
 
          // render level & score
@@ -299,9 +292,7 @@ public class Scape extends GameEngine implements ProdConfig
    public final void onPenDown(PenEvent evt)
    {
       if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true))
-      {
          stop();
-      }
       // if non arcade game is selected, redrawings have to be called explicitly
       if (!ARCADE_GAME)
          refresh();
@@ -310,33 +301,8 @@ public class Scape extends GameEngine implements ProdConfig
    public final void onPenDrag(PenEvent evt)
    {
       if (!ball.place(evt.x - PEN_OFFSET, evt.y - PEN_OFFSET, true))
-      {
          stop();
-      }
       // if non arcade game is selected, redrawings have to be called explicitly
-      if (!ARCADE_GAME)
-         refresh();
-   }
-
-   public final void onKey (KeyEvent evt)
-   {
-      boolean nohit = true;
-
-      if (evt.key==SpecialKeys.HARD1 || evt.isUpKey())
-         nohit = ball.move(0, -moveDist);
-      else if (evt.key==SpecialKeys.HARD2 || evt.key==SpecialKeys.LEFT)
-         nohit = ball.move(-moveDist, 0);
-      else if (evt.key==SpecialKeys.HARD3 || evt.key==SpecialKeys.RIGHT)
-         nohit = ball.move(moveDist, 0);
-      else if (evt.key==SpecialKeys.HARD4 || evt.isDownKey())
-         nohit = ball.move(0, moveDist);
-
-      if (!nohit)
-      {
-         stop();
-      }
-
-      // if non arcade game is selected, redrawings have to be called explicitly.
       if (!ARCADE_GAME)
          refresh();
    }

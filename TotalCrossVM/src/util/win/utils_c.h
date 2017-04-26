@@ -10,18 +10,46 @@
  *********************************************************************************/
 
 
+#if !defined(WP8) && !defined(WINCE)
+#include "psapi.h"
+#pragma comment(lib, "psapi.lib") 
+#endif
 
 static int32 privateGetFreeMemory(bool maxblock)
 {
+#ifdef WP8
+   return getFreeMemoryWP8();
+#elif defined(WINCE)
    int32 result=1;
-   MEMORYSTATUS ms;  // works for most cases
+   MEMORYSTATUS ms = { 0 };  // works for most cases
+   ms.dwLength = sizeof(MEMORYSTATUS); // bytes
    GlobalMemoryStatus(&ms);
-#ifdef WINCE
    result = maxblock ? ms.dwTotalVirtual : ms.dwAvailVirtual; // guich@tc115_3: now using dwTotalVirtual instead of dwAvailPhys
-#else
-   result = maxblock ? ms.dwTotalPhys : ms.dwAvailPhys;
-#endif
    return result;
+#else
+   MEMORYSTATUSEX ms = { 0 };
+   ms.dwLength = sizeof(MEMORYSTATUSEX);  
+   GlobalMemoryStatusEx(&ms);
+   return (int32)(ms.ullAvailVirtual > INT_MAX ? ms.ullAvailVirtual - INT_MAX : ms.ullAvailVirtual); // although the correct would be to use INT_MAX if above 2GB, we use a diff to let the user know that the memory is decreasing.
+#endif
+}
+
+int32 getUsedMemory()
+{
+#ifdef WP8
+   return getUsedMemoryWP8();
+#elif defined(WINCE)
+   int32 result = 1;
+   MEMORYSTATUS ms = { 0 };  // works for most cases
+   ms.dwLength = sizeof(MEMORYSTATUS); // bytes
+   GlobalMemoryStatus(&ms);
+   result = ms.dwTotalVirtual - ms.dwAvailVirtual; // guich@tc330
+   return result;
+#else
+   PROCESS_MEMORY_COUNTERS_EX pmc;
+   GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+   return pmc.PrivateUsage;
+#endif
 }
 
 static int32 privateGetTimeStamp()
@@ -65,7 +93,7 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
    do
    {
 #if defined (WIN32) && !defined (WINCE)
-      if (findData.cFileName[0] != '.' || (!strEq(findData.cFileName, ".") && !strEq(findData.cFileName, ".."))) // first check is just for speedup
+	   if (findData.cFileName[0] != '.' || (tcscmp(findData.cFileName, TEXT(".")) && tcscmp(findData.cFileName, TEXT("..")))) // first check is just for speedup
 #endif
       {                                             
          fileNameSize = tcslen(findData.cFileName)+2; //One for null and one extra in case it is a directory.

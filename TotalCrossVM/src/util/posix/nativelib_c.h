@@ -48,8 +48,6 @@ VoidP privateLoadLibrary(CharP libName)
 #ifdef ANDROID
    if (library == null)
       library = tryAt(vmPath,"/lib/",libName); // needed for single apk applications
-   if (library == null && strEq(libName,"litebase"))
-      library = tryAt("/data/data/litebase.android/lib/","","litebase");
 #endif      
    if (library == null)
       library = tryAt("","",libName);
@@ -62,19 +60,17 @@ VoidP privateLoadLibrary(CharP libName)
 
 void privateUnloadLibrary(VoidP libPtr)
 {
+#ifndef ANDROID   
    dlclose(libPtr);
+#endif   
 }
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
 {
-#if defined (darwin) && !defined (THEOS)
+#if defined darwin || defined ANDROID
     return (NativeMethod)htGetPtr(&htNativeProcAddresses, hashCode(funcName));
 #else
-#if defined ANDROID
-   void *tcvm = module ? module : dlopen(getTotalCrossAndroidClass(VM_PATH), RTLD_LAZY);
-#else
    void *tcvm = module ? module : dlopen(TEXT(VM_PATH), RTLD_LAZY);
-#endif   	
    if (tcvm)
       return dlsym(tcvm, funcName);
 #endif

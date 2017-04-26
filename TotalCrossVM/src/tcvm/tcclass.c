@@ -126,8 +126,8 @@ void methodHashCode(CharP name, uint16* cpParams, int32 n, ConstantPool cp, int3
 void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap heap)
 {
    int32 len,i,partSize;
-   CharPArray sa; ObjectArray oa;
-   int16* u;
+   CharPArray sa; TCObjectArray oa;
+   uint16* u;
    char chars[256];
    uint8 mark;
 
@@ -188,7 +188,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
          }
       }
       t->boundNormal = (MethodPtrArray)newArray(sizeof(Method), t->mtdCount, heap);
-      t->boundVirtualMethod = (MethodAndClassPtrArray)newArray(PTRSIZE, t->mtdCount, heap);
+      t->boundVirtualMethod = (MethodAndClassPtrArray)newArray(TSIZE, t->mtdCount, heap);
    }
 
    partSize = tczRead32(tcz);
@@ -200,7 +200,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
       for (sa++, i = t->mtdfldCount; --i > 0; sa++)
       {
          len = *bunch;
-         *sa = bunch+1;
+         *sa = (CharP)(bunch+1);
          *bunch = 0; // cut the string
          bunch += len+1;
       }
@@ -215,7 +215,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
       for (sa++, i = t->clsCount; --i > 0; sa++)
       {
          len = *bunch;
-         *sa = bunch+1;
+         *sa = (CharP)(bunch+1);
          *bunch = 0; // cut the string
          bunch += len+1;
       }
@@ -225,7 +225,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
 #ifdef DEBUG_OMM_LIST
       debug("Start of constant pool strings");
 #endif
-      oa = t->str = newPtrArrayOf(Object, t->strCount, heap);
+      oa = t->str = newPtrArrayOf(TCObject, t->strCount, heap);
       for (oa++, i = t->strCount; --i > 0; oa++)
       {
          tczRead(tcz, &mark, 1); // read the mark
@@ -244,7 +244,7 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
             if (mark == 254) // can && l > 255
             {
                JCharP jc = String_charsStart(*oa);
-               uint8* c;
+               CharP c;
                while (len > 0)
                {
                   int32 l  = min32(255, len);
@@ -252,7 +252,10 @@ void readConstantPool(Context currentContext, ConstantPool t, TCZFile tcz, Heap 
                   c = chars;
                   len -= l;
                   while (--l >= 0)
-                     *jc++ = *c++;
+                  {
+                     *jc++ = *c & 0xFF;
+                     c++;
+                  }
                }
             }
             else // standard (mark=255)
@@ -357,9 +360,9 @@ static CharP createMethodSignature(Method m, Heap h)
             if (isUp && *pname == '&') // array of primitive?
                *c = *++pname;
             else
-               for (*c = *pname++; *pname; pname++)
-                  if (*pname == '.')
-                     *c = *(pname+1);
+               for (*c = *pname++; *pname; pname++) // guich@20131224: fix support for totalcross.db.sqlite.DB$ProgressObserver
+                  if (*pname == '.' || *pname == '$')
+                     *c = *(pname+1); // don't break! we want the last piece
             *c = isUp ? toUpper(*c) : toLower(*c);
          }
       }
@@ -500,8 +503,11 @@ static FieldArray readFields(ConstantPool cp, int32 len, TCZFile tcz, FieldArray
    f0 = f = newArrayOf(Field, len+lens, tcz->tempHeap);
 
    // first, get the inherited fields, to keep the same order
-   while (lens-- > 0)
-      *f++ = *super++;
+   for (; lens-- > 0; f++,super++)
+   {
+      *f = *super;
+      f->flags.isInherited = true;
+   }
    // then, get our fields
    for (; len-- > 0; f++)
    {
@@ -527,14 +533,14 @@ static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
    IF_HEAP_ERROR(heap)
    {
       heapDestroy(heap);
-      return heap && heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
+      return !heap || heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
    }
    heap->greedyAlloc = true;
 
    IF_HEAP_ERROR(tcz->header->hheap)
    {
       heapDestroy(heap);
-      return heap && heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
+      return !heap || heap->ex.errorCode == HEAP_MEMORY_ERROR ? CLASS_OUT_OF_MEMORY : null;
    }
 
    tczRead(tcz, &ci, 22);
@@ -575,7 +581,7 @@ static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
       if (ci.objStaticFieldsCount > 0)
       {
          c->objStaticFields   = readFields(cp, ci.objStaticFieldsCount, tcz, null, c->name);
-         c->objStaticValues = newPtrArrayOf(Object, ci.objStaticFieldsCount, heap);
+         c->objStaticValues = newPtrArrayOf(TCObject, ci.objStaticFieldsCount, heap);
       }
       if (ci.v64StaticFieldsCount > 0)
       {
@@ -597,11 +603,11 @@ static TCClass readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
       totalI32 = ci.i32InstanceFieldsCount + superI32;
       totalObj = ci.objInstanceFieldsCount + superObj;
       totalV64 = ci.v64InstanceFieldsCount + superV64;
-      c->objSize = totalI32 * 4 + totalObj * PTRSIZE + totalV64 * 8;
+      c->objSize = totalI32 * 4 + totalObj * TSIZE + totalV64 * 8;
       // The fields are placed sequentialy: int1, int2, ..., obj1, obj2, ..., double1/long1, double2/long2, ...
       // In each type, this class instance fields go first and non-private Inherited fields go LAST.
       c->objOfs = totalI32 * 4;
-      c->v64Ofs = totalI32 * 4 + totalObj * PTRSIZE;
+      c->v64Ofs = totalI32 * 4 + totalObj * TSIZE;
 
       // create a matrix of Fields so it can be easily accessed given the register type
       c->instanceFields[RegI] = c->i32InstanceFields;
@@ -644,6 +650,7 @@ bool initClassInfo()
    SETUP_MUTEX;
    INIT_MUTEX(classLoaderLock);
    htLoadedClasses = htNew(0xFF,null);
+   htMutexes = htNew(10, null);
    return true;
 }
 
@@ -661,6 +668,7 @@ void destroyClassInfo()
 {
    DESTROY_MUTEX(classLoaderLock);
    htFree(&htLoadedClasses, freeClass);
+   htFree(&htMutexes, freeMutex);
 }
 
 static int32 getArrayElementSize(CharP type)
@@ -687,13 +695,6 @@ TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFou
    volatile TCClass ret;
    int32 hc;
    Method staticInitializer = null;
-//   if (strEq("java.lang.StringBuilder",className))  - this would work - but what about the other pitfalls?
-//      xstrcpy(className, "java.lang.StringBuffer");
-   if (strEq(className,"litebase.LitebaseConnection") && !canLoadLitebase())
-   {
-      throwException(currentContext, RuntimeException, "This product was not signed with a key that allows Litebase.");
-      return null;
-   }
    // check if we already have loaded it
    LOCKVAR(classLoaderLock);
    hc = hashCodeSlash2Dot(className);
@@ -746,14 +747,17 @@ TCClass loadClass(Context currentContext, CharP className, bool throwClassNotFou
    }
    UNLOCKVAR(classLoaderLock);
 
-   if ((ret == null || ret == CLASS_OUT_OF_MEMORY) && throwClassNotFound)
-      throwException(currentContext, ret == CLASS_OUT_OF_MEMORY ? OutOfMemoryError : ClassNotFoundException, className);
+   if (ret == CLASS_OUT_OF_MEMORY)
+	   throwException(currentContext, OutOfMemoryError, className);
+   else
+   if (ret == null && throwClassNotFound)
+      throwException(currentContext, ClassNotFoundException, className);
    else if (staticInitializer)
       executeMethod(currentContext, staticInitializer);
    return ret == CLASS_OUT_OF_MEMORY ? null : ret;
 }
 
-static Type type2javaType(CharP type)
+Type type2javaType(CharP type)
 {
    if (*type == '[')
       type++;
@@ -770,11 +774,12 @@ static Type type2javaType(CharP type)
       case 'b': return Type_Boolean;
       case 'L': return Type_Long;
       case 'D': return Type_Double;
+      case 'F': return Type_Double;
       default : return Type_Object;
    }
 }
 
-static bool isSuperClass(TCClass s, TCClass t) // s instanceof t
+bool isSuperClass(TCClass s, TCClass t) // s instanceof t
 {
    int32 i;
    for (; s != null; s = s->superClass)
@@ -795,10 +800,22 @@ CompatibilityResult areClassesCompatible(Context currentContext, TCClass s, Char
    bool sIsArray,tIsArray;
    CharP className;
 
+   if (s == null)
+   {
+      debug("areClassesCompatible: class s is null");
+      return NOT_COMPATIBLE;
+   }
    className = s->name;
-   sIsArray = s->flags.isArray;
 tryAgain:
+   if (ident == null || className == null)
+   {
+      debug("areClassesCompatible: %X (%s) / %X (%s)", ident, ident ? ident : "null", className, className ? className : "null");
+      return NOT_COMPATIBLE;
+   }
    tIsArray = *ident == '[';
+   sIsArray = *className == '[';
+   if (!s && !(s = loadClass(currentContext, className, true)))
+      result = TARGET_CLASS_NOT_FOUND;
    if (strEq(ident,className)) // quick test
       result = COMPATIBLE;
    else
@@ -809,6 +826,9 @@ tryAgain:
       result = TARGET_CLASS_NOT_FOUND;
    else
    if (s == t) // another quick test
+      result = COMPATIBLE;
+   else
+   if (strEq(className, "java.lang.String") && strEq(ident, "java.lang.Class"))
       result = COMPATIBLE;
    else
    // If S is an ordinary (nonarray) class, then:
@@ -865,6 +885,7 @@ tryAgain:
             // TC and SC are reference types (2.4.6), and type SC can be cast to TC by recursive application of these rules.
             ident++; // strip the first array dimension and try again
             className++;
+            s = null;
             goto tryAgain;
          }
       }

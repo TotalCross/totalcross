@@ -70,6 +70,7 @@ final class ActivationClientImpl extends ActivationClient
 
          rsaPubKey = new RSAPublicKey(getSignerRSAKeyE(), getSignerRSAKeyN());
          pkcs1Signature = new PKCS1Signature(new MD5Digest());
+
       }
       catch (CryptoException e)
       {
@@ -88,6 +89,15 @@ final class ActivationClientImpl extends ActivationClient
             Settings.applicationId = field;
          if ((field = htVmParams.getString("appVersion")) != null)
             Settings.appVersion = field;
+         if ((field = htVmParams.getString("activationKey")) != null)
+            Settings.activationKey = field;
+         if ((field = htVmParams.getString("iosCertDate")) != null)
+            try{Settings.iosCertDate = new Time(field);} catch (Exception e) {}
+         if ((field = htVmParams.getString("pushTokenAndroid")) != null)
+         {
+            Settings.pushTokenAndroid = field;
+            Vm.exec("***REGISTER PUSH TOKEN***", field, 0, true);
+         }
       }
    }
 
@@ -133,6 +143,16 @@ final class ActivationClientImpl extends ActivationClient
       }
    }
 
+   private void baseChecks(byte[] key) throws ActivationException
+   {
+      if (key == null)
+         throw new ActivationException("This application was not signed with a registration key");
+
+      logger.info("Validating registration key");
+      if (!isValidKey(key))
+         throw new ActivationException("The registration key is not valid");
+   }
+   
    public boolean isActivated() throws ActivationException
    {
       activatedProductId = null;
@@ -149,10 +169,8 @@ final class ActivationClientImpl extends ActivationClient
       {
          //flsobral@tc125: fill the field Settings.activationId
          byte[] key = readKey();
-         if (key == null)
-            throw new Exception("This application was not signed with a registration key");
-         if (!isValidKey(key))
-            throw new Exception("The registration key is not valid");
+         baseChecks(key);
+
          litebaseAllowed = key[2] == 'L' && key[3] == 'B';
          Settings.activationId = Convert.bytesToHexString(generateActivationCode(key, Convert.hexStringToBytes((String) deviceInfo.get("HASH"))));
 
@@ -257,13 +275,8 @@ final class ActivationClientImpl extends ActivationClient
       {
          logger.info("Retrieving registration key");
          byte[] key = readKey();
-         if (key == null)
-            throw new Exception("This application was not signed with a registration key");
-
-         logger.info("Validating registration key");
-         if (!isValidKey(key))
-            throw new Exception("The registration key is not valid");
-
+         baseChecks(key);
+            
          logger.info("Generating activation code");
          byte[] activationCode = generateActivationCode(key, Convert.hexStringToBytes((String) deviceInfo.get("HASH")));
 
@@ -355,7 +368,7 @@ final class ActivationClientImpl extends ActivationClient
          {
             if (connection != null)
                connection.close();
-            ConnectionManager.close();
+            //ConnectionManager.close();
          }
          catch (IOException e2)
          {

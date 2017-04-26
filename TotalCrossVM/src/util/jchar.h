@@ -14,6 +14,9 @@
 #ifndef JCHAR_H
 #define JCHAR_H
 
+#include "../tcvm/tcapi.h"
+#include "xtypes.h"
+
 /// In the functions below, if len is < 0, it is computed from the given input (J)CharP.
 /// If (J)CharP is NOT terminated with 0, then you MUST provide its length
 
@@ -60,6 +63,10 @@ TC_API bool JCharPEqualsIgnoreCaseJCharP(JCharP me, JCharP other, int32 meLen, i
 typedef bool (*JCharPEqualsIgnoreCaseJCharPFunc)(JCharP me, JCharP other, int32 meLen, int32 otherLen);
 TC_API int32 JCharPLastIndexOfJChar(JCharP me, int32 meLen, JChar c, int32 startIndex);
 typedef int32 (*JCharPLastIndexOfJCharFunc)(JCharP me, int32 meLen, JChar c, int32 startIndex);
+TC_API void JCharPDupBuf(JCharP original, int32 length, JCharP buffer);
+typedef void(*JCharPDupBufFunc)(JCharP original, int32 length, JCharP buffer);
+TC_API JCharP JCharPDup(JCharP original, int32 length);
+typedef JCharP(*JCharPDupFunc)(JCharP original, int32 length);
 
 /// In WinCE, returns "from". In other platforms, calls JCharP2CharPBuf, using an internal buffer of size 255
 TC_API TCHARP JCharP2TCHARP(JCharP from, int32 len);

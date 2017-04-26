@@ -189,7 +189,7 @@ public class PortConnector extends Stream
       {
          // guich@330_38: use introspection to be able to compile everything without the comm.jar
          // javax.comm.CommPortIdentifier portId = javax.comm.CommPortIdentifier.getPortIdentifier(getPortName(number));
-         Class cpi = Class.forName("javax.comm.CommPortIdentifier"); // get the class
+         Class<?> cpi = Class.forName("javax.comm.CommPortIdentifier"); // get the class
 
          String portName = getPortName(number);
          System.out.println("Port found: "+portName);
@@ -202,7 +202,7 @@ public class PortConnector extends Stream
          Object port = mOpen.invoke(portId,new Object[]{"TotalCross",new Integer(1000)}); // invoke the portId.open method
 
          // port.setSerialPortParams(baudRate, bits, stopBits, parity?javax.comm.SerialPort.PARITY_EVEN:javax.comm.SerialPort.PARITY_NONE);
-         Class cSerialPort = port.getClass().getSuperclass();
+         Class<?> cSerialPort = port.getClass().getSuperclass();
          Method mSetSerialPortParams = cSerialPort.getMethod("setSerialPortParams", new Class[]{int.class,int.class,int.class,int.class}); // get the method setSerialPortParams
          String []parities = {"PARITY_NONE","PARITY_EVEN","PARITY_ODD"};
          Field parityField = cSerialPort.getField(parities[parity]);
@@ -213,12 +213,12 @@ public class PortConnector extends Stream
          mEnableReceiveTimeout.invoke(port,new Object[]{new Integer(100)});
 
          // thisInputStream = port.getInputStream();
-         Method mGetInputStream = cSerialPort.getMethod("getInputStream", null);
-         thisInputStream = mGetInputStream.invoke(port,null);
+         Method mGetInputStream = cSerialPort.getMethod("getInputStream");
+         thisInputStream = mGetInputStream.invoke(port);
 
          // thisOutputStream = port.getOutputStream();
-         Method mGetOutputStream = cSerialPort.getMethod("getOutputStream", null);
-         thisOutputStream = mGetOutputStream.invoke(port,null);
+         Method mGetOutputStream = cSerialPort.getMethod("getOutputStream");
+         thisOutputStream = mGetOutputStream.invoke(port);
 
          portConnectorRef = port;
       }
@@ -228,7 +228,7 @@ public class PortConnector extends Stream
       }
       catch (java.lang.NoClassDefFoundError e)
       {
-         throw new java.lang.NoClassDefFoundError(e.getClass().getName()+" - "+e.getMessage() + "\nCannot find javax.comm.CommPortIdentifier. You must add the /TotalCrossSDK/etc/tools/commapi/comm.jar file to your classpath. If you're not using Windows, then you must download the respective Comm api at http://java.sun.com/products/javacomm");
+         throw new java.lang.NoClassDefFoundError(e.getClass().getName()+" - "+e.getMessage() + "\nCannot find javax.comm.CommPortIdentifier. You must add the /TotalCross3/etc/tools/commapi/comm.jar file to your classpath. If you're not using Windows, then you must download the respective Comm api at http://java.sun.com/products/javacomm");
       }
       catch (Throwable t)
       {
@@ -259,8 +259,8 @@ public class PortConnector extends Stream
       try
       {
          // ((javax.comm.SerialPort)thisPortConnector).close();
-         Method m = portConnectorRef.getClass().getSuperclass().getMethod("close", null);
-         m.invoke(portConnectorRef,null);
+         Method m = portConnectorRef.getClass().getSuperclass().getMethod("close");
+         m.invoke(portConnectorRef);
       }
       catch (Throwable e)
       {
@@ -312,8 +312,8 @@ public class PortConnector extends Stream
       try
       {
          //return ((java.io.InputStream)thisInputStream).available();
-         Method m = thisInputStream.getClass().getSuperclass().getMethod("available", null);
-         Integer i = (Integer)m.invoke(thisInputStream,null);
+         Method m = thisInputStream.getClass().getSuperclass().getMethod("available");
+         Integer i = (Integer)m.invoke(thisInputStream);
          return i.intValue();
       }
       catch (Throwable t)
@@ -447,9 +447,9 @@ public class PortConnector extends Stream
       try
       {
          //java.util.Enumeration portIds = javax.comm.CommPortIdentifier.getPortIdentifiers();
-         Class cpi = Class.forName("javax.comm.CommPortIdentifier"); // get the class
-         Method mGetPortIdentifiers = cpi.getMethod("getPortIdentifiers", null);
-         java.util.Enumeration portIds = (java.util.Enumeration)mGetPortIdentifiers.invoke(null,null);
+         Class<?> cpi = Class.forName("javax.comm.CommPortIdentifier"); // get the class
+         Method mGetPortIdentifiers = cpi.getMethod("getPortIdentifiers");
+         java.util.Enumeration<?> portIds = (java.util.Enumeration<?>)mGetPortIdentifiers.invoke(null);
 
          if (number == 0)
          {
@@ -457,8 +457,8 @@ public class PortConnector extends Stream
             {
                // return ((javax.comm.CommPortIdentifier)portIds.nextElement()).getName();
                Object oCommPortIdentifier = portIds.nextElement();
-               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName", null);
-               String portName = (String)mGetName.invoke(oCommPortIdentifier,null);
+               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName");
+               String portName = (String)mGetName.invoke(oCommPortIdentifier);
                return portName;
             }
          }
@@ -468,8 +468,8 @@ public class PortConnector extends Stream
             {
                // portName = ((javax.comm.CommPortIdentifier)portIds.nextElement()).getName();
                Object oCommPortIdentifier = portIds.nextElement();
-               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName", null);
-               String portName = (String)mGetName.invoke(oCommPortIdentifier,null);
+               Method mGetName = oCommPortIdentifier.getClass().getMethod("getName");
+               String portName = (String)mGetName.invoke(oCommPortIdentifier);
                if (portName.indexOf(number+'0') != -1)
                   return portName;
             }

@@ -90,6 +90,9 @@ public class CalculatorBox extends Window
    /** The control that had focus when this CalculatorBox was popped up. */
    public Control cOrig;
    
+   /** The desired control that will be the original one. */
+   public Control cOrigDefault;
+   
    /** Set to true to don't replace the original value in the Edit if user pressed Ok. */
    public boolean keepOriginalValue;
    
@@ -252,7 +255,7 @@ public class CalculatorBox extends Window
    public void onPopup()
    {
       Control c = topMost.getFocus();
-      cOrig = c instanceof Edit || c instanceof SpinList ? (Control)c : null;
+      cOrig = cOrigDefault != null ? cOrigDefault : c instanceof Edit || c instanceof SpinList ? (Control)c : null;
       setupUI(false);
       clear();
       if (cOrig != null)

@@ -8,7 +8,7 @@ import tc.tools.deployer.ipa.ElephantMemoryWriter;
 
 public abstract class BlobHandler
 {
-   private static Map knownBlobs = new HashMap();
+   private static Map<Long, Class<?>> knownBlobs = new HashMap<Long, Class<?>>();
 
    static
    {
@@ -26,7 +26,7 @@ public abstract class BlobHandler
       long magic = reader.readUnsignedInt();
       long length = reader.readUnsignedInt();
 
-      Class blobClass = (Class) knownBlobs.get(Long.valueOf((int) magic));
+      Class<?> blobClass = (Class<?>) knownBlobs.get(Long.valueOf((int) magic));
       if (blobClass == null)
          blob = new BlobCore(magic);
       else

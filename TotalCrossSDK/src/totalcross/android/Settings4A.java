@@ -18,16 +18,17 @@
 
 package totalcross.android;
 
-import totalcross.*;
-
-import java.lang.reflect.*;
-
 import android.content.*;
 import android.content.res.*;
 import android.net.wifi.*;
 import android.os.*;
 import android.provider.*;
 import android.telephony.*;
+import java.lang.reflect.*;
+import java.util.*;
+import java.net.NetworkInterface;
+
+import totalcross.*;
 
 public final class Settings4A
 {
@@ -64,16 +65,19 @@ public final class Settings4A
    
    // identification
    public static String userName;
-   public static String imei;
+   public static String imei,imei2;
    public static String esn;   
    public static String iccid;
    public static String serialNumber;
+   public static String macAddress;
 
    // device capabilities
    public static boolean virtualKeyboard;
    public static boolean keypadOnly;
    
    public static String lineNumber;
+   
+   public static int buildNumber = 000;
 
    public static void refresh()
    {
@@ -86,7 +90,35 @@ public final class Settings4A
 	   
 	}
 	
-	static void fillSettings(boolean isActivationVM)
+	public static String getMacAddr() {
+        try {
+            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif : all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) {
+                    continue;
+                }
+ 
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    return "";
+                }
+ 
+                StringBuilder res1 = new StringBuilder();
+                for (byte b : macBytes) {
+                    res1.append(Integer.toHexString(b & 0xFF) + ":");
+                }
+ 
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                return res1.toString();
+            }
+        } catch (Exception ex) {
+        }
+        return "02:00:00:00:00:00";
+    }
+	
+	static void fillSettings()
 	{
 	   Context ctx = Launcher4A.instance.getContext();
 	   String id1,id2;
@@ -138,6 +170,12 @@ public final class Settings4A
                id2 = (String)m.invoke(telephonyMgr, new Integer(0));
                if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
                   imei = id1;
+               // dual-sim support
+               id1 = (String)m.invoke(telephonyMgr, new Integer(1));
+               id2 = (String)m.invoke(telephonyMgr, new Integer(1));
+               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+                  imei2 = id1;
+
                if (--toFind == 0) break;
             }
             catch (Exception ee)
@@ -190,25 +228,31 @@ public final class Settings4A
          }
          catch (NoSuchFieldError nsfe) {}
          catch (Throwable t) {}
-      
-      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR) // no else here!
+
+      if (!Loader.IS_EMULATOR)
       {
          WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
          if (wifiMan != null) // not sure what happens when device has no connectivity at all
          {
-            String macAddr = wifiMan.getConnectionInfo().getMacAddress();
-            if (macAddr == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
+            macAddress = wifiMan.getConnectionInfo().getMacAddress();
+            if (macAddress == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
             {
                wifiMan.setWifiEnabled(true);
                while (!wifiMan.isWifiEnabled()) // wait until its active
                   try {Thread.sleep(100);} catch (Exception e) {}
                wifiMan.setWifiEnabled(false);
-               macAddr = wifiMan.getConnectionInfo().getMacAddress();
+               macAddress = wifiMan.getConnectionInfo().getMacAddress();
             }
-            if (macAddr != null)
-               serialNumber = String.valueOf(((long)macAddr.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
+            
+            // Work around for Android 6 mac address, although not reliable...
+            if ("02:00:00:00:00:00".equals(macAddress)) {
+            	macAddress = getMacAddr();
+            }
          }
       }
+
+      if ((serialNumber == null || "unknown".equalsIgnoreCase(serialNumber)) && !Loader.IS_EMULATOR && macAddress != null) // no else here!
+         serialNumber = String.valueOf(((long)macAddress.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
       
       // virtualKeyboard
       virtualKeyboard = true; // always available on droid?
@@ -268,7 +312,9 @@ public final class Settings4A
    public static void settingsRefresh()
    {
       java.util.TimeZone tz = java.util.TimeZone.getDefault();
-      daylightSavingsMinutes = tz.getDSTSavings() / 60000;
+      Calendar cal = Calendar.getInstance();
+      int dls = cal.get(Calendar.DST_OFFSET);
+      daylightSavingsMinutes = dls / 60000;
       daylightSavings = daylightSavingsMinutes != 0;
       timeZone = tz.getRawOffset() / (60*60000);
       timeZoneMinutes = tz.getRawOffset() / 60000;

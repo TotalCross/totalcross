@@ -7,7 +7,6 @@
  *                                                                               *
  *********************************************************************************/
 
-#include <tcvm.h>
 #include "..\barcode.h"
 
 #undef malloc
@@ -98,7 +97,7 @@ void PrinterLibClose()
    closePrinter();
 }
 
-static TCHAR* getString(TCHAR* buf, Object str)
+static TCHAR* getString(TCHAR* buf, TCObject str)
 {
    JCharP c;
    int32 len;
@@ -179,7 +178,7 @@ TCHAR buff[1024];
 
 SCAN_API void pP_print_si(NMParams p) // pidion/Printer native public static void print(String text, int options) throws PrinterException;
 {
-   Object text = p->obj[0];
+   TCObject text = p->obj[0];
    JCharP start = String_charsStart(text);
    int32 len = String_charsLen(text);
    TCHARP temp = buff;
@@ -203,7 +202,7 @@ SCAN_API void pP_print_si(NMParams p) // pidion/Printer native public static voi
 //////////////////////////////////////////////////////////////////////////
 SCAN_API void pP_printBarcode_siiii(NMParams p) // pidion/Printer native public static void printBarcode(String data, int width, int height, int type, int align) throws PrinterException;
 {
-   Object text = p->obj[0];
+   TCObject text = p->obj[0];
    JCharP start = String_charsStart(text);
    int32 len = String_charsLen(text);
    TCHARP temp = buff;

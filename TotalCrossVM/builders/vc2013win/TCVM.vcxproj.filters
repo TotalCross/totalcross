@@ -1,0 +1,1142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{7d8ac3c8-cd23-49d1-afee-8a4fee9ab599}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Test cases">
+      <UniqueIdentifier>{580c079e-b210-4dc2-bfdd-12d20096c8b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods">
+      <UniqueIdentifier>{94460ac9-3083-461c-8359-19559d85f15e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io">
+      <UniqueIdentifier>{cbdea97f-a962-4fc0-8932-dd1f725d8597}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io\headers">
+      <UniqueIdentifier>{59e29e0a-c7cc-4d46-9e6c-f77dff7e4072}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io\device">
+      <UniqueIdentifier>{9aeef3c3-2a73-4548-8413-f6f904760492}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io\device\bluetooth">
+      <UniqueIdentifier>{719399e7-67dd-4927-ac50-50faf2d04682}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io\device\bluetooth\win">
+      <UniqueIdentifier>{acddf52b-c3d7-42e8-8f50-1eba0b05a282}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io\device\gps">
+      <UniqueIdentifier>{6fc85103-75cf-4e5f-8c4c-4339b53aefb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\io\device\gps\win">
+      <UniqueIdentifier>{6275ea93-cfa7-4f96-9199-2b863b1e9e41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\lang">
+      <UniqueIdentifier>{db3751ce-78b0-45bd-8bc1-d45f2877ab4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\net">
+      <UniqueIdentifier>{bac363c7-94d1-4833-b9d1-31fa50525ddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\net\win">
+      <UniqueIdentifier>{22277328-f219-4a71-9ce2-a9c84cdd8c36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\pim">
+      <UniqueIdentifier>{43d054e0-86eb-4222-a6d7-d5650f264a8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\sys">
+      <UniqueIdentifier>{665d8b1a-2ddf-4e8d-a531-4625cad77d51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\sys\win">
+      <UniqueIdentifier>{7131d45b-f4db-48db-aa44-d7222eb957ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui">
+      <UniqueIdentifier>{ad8ddbf4-710e-422c-87f1-426f5873140d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\win">
+      <UniqueIdentifier>{ca40c1c9-77af-4525-b668-563d84defc94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\headers">
+      <UniqueIdentifier>{6ad81dd8-f5bf-4135-a9e3-04892262afeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\palm">
+      <UniqueIdentifier>{b0c92767-6570-4c08-9110-f4dac68184ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\linux">
+      <UniqueIdentifier>{eb839f71-be4f-4243-b134-0f7973d5dd21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\ui\darwin">
+      <UniqueIdentifier>{efb98545-e232-42de-8ab6-42458c1eee30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\util">
+      <UniqueIdentifier>{e1403906-8ac2-4059-9593-1eada6f0c537}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\util\zip">
+      <UniqueIdentifier>{8c30b196-9650-437d-bf2c-24c6b3ca968f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\xml">
+      <UniqueIdentifier>{ba089b00-6978-49cf-bdf4-4a44aae735a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\phone">
+      <UniqueIdentifier>{fcb02158-eb19-4d10-8ade-c931e73f2124}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\phone\headers">
+      <UniqueIdentifier>{8b002c0c-c7aa-4eaf-88b3-50463722b696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\phone\win">
+      <UniqueIdentifier>{4d06740d-6e4e-4082-b2b9-11c5daea5ee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\crypto">
+      <UniqueIdentifier>{2b006f09-bd43-4a53-8cf0-1a3e6260e3f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Native methods\db">
+      <UniqueIdentifier>{a097df4c-bd74-4f82-aa9e-635703e05d0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ZLib">
+      <UniqueIdentifier>{c856328f-3a95-40db-a3f1-3887ebf4d0c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ZLib\headers">
+      <UniqueIdentifier>{0c3b9eab-f844-4236-a6c5-e2c0bcabd84d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{8c005163-1100-4bff-9a26-472ef74f0caa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\headers">
+      <UniqueIdentifier>{9145fca3-6df5-44f2-9536-59e4c4c947d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util files">
+      <UniqueIdentifier>{39a55b57-0b42-4d87-9615-3d6b9c1ef422}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VM Files">
+      <UniqueIdentifier>{fd1c8045-22f3-4370-9ab6-b7bb7ca8f36f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VM Files\headers">
+      <UniqueIdentifier>{8ae41363-7822-44b8-8764-741daf7344b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Event">
+      <UniqueIdentifier>{d391a081-6e2a-4840-974f-e89cf9d2c6a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jpeg">
+      <UniqueIdentifier>{d4393366-e7c0-4994-9c86-3f8f5b3ad1e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="jpeg\headers">
+      <UniqueIdentifier>{36759ce5-b65d-4b74-92a3-e7071255a9f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="init">
+      <UniqueIdentifier>{e80921a0-73bf-44fd-ada5-a598926709af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="init\headers">
+      <UniqueIdentifier>{f6f91617-c065-4b51-8d49-184e89b55976}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="init\win">
+      <UniqueIdentifier>{30bd9f8e-1029-43e4-8d8d-fe33585f356a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PalmDB">
+      <UniqueIdentifier>{7486ef23-af3c-4f1a-89f1-1447741d7617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="png">
+      <UniqueIdentifier>{80d0eb21-bfee-4ea0-8f4c-fcef4ff95062}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ras">
+      <UniqueIdentifier>{8f2bcbbe-10ea-4c40-9727-738cca461a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="axtls">
+      <UniqueIdentifier>{56ca5580-35f5-4876-b2a5-56c5eabf55d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Minizip">
+      <UniqueIdentifier>{ed1c4c5a-26d8-414d-ab97-9a4cb1389c72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Minizip\headers">
+      <UniqueIdentifier>{a77f5f87-3fe5-4825-a5de-b7db3317453e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sqlite">
+      <UniqueIdentifier>{45f395b6-fb95-4ae1-bcfc-1682dbe1d331}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\util\datastructures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\errormsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\guid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\jchar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\nativelib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\tcz.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\xtypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\lang\Class_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\Control_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\sys\Convert_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\device_PortConnector_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\event_Event_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\File_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\font_Font_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\font_FontMetrics_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\gfx_Graphics_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\image_Image_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\MainWindow_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\media_Sound_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\lang\Object_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\objectmemorymanager_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\PDBFile_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\net\ServerSocket_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\net\Socket_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\net\ssl_SSL_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\lang\String_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\lang\StringBuffer_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcvm_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\lang\Throwable_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\sys\Time_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\sys\Vm_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\Window_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\xml\xml_XmlTokenizer_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\util\zip_ZLib_test.h">
+      <Filter>Header Files\Test cases</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\instancefields.h">
+      <Filter>Native methods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\NativeMethods.h">
+      <Filter>Native methods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\device_PortConnector.h">
+      <Filter>Native methods\io\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\File.h">
+      <Filter>Native methods\io\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\PDBFile.h">
+      <Filter>Native methods\io\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\device\bluetooth\win\DiscoveryAgent_c.h">
+      <Filter>Native methods\io\device\bluetooth\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\device\bluetooth\win\SerialPortClient_c.h">
+      <Filter>Native methods\io\device\bluetooth\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\device\bluetooth\win\SerialPortServer_c.h">
+      <Filter>Native methods\io\device\bluetooth\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\io\device\gps\win\GPS_c.h">
+      <Filter>Native methods\io\device\gps\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\net\win\Socket_c.h">
+      <Filter>Native methods\net\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\sys\win\Registry_c.h">
+      <Filter>Native methods\sys\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\sys\win\Time_c.h">
+      <Filter>Native methods\sys\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\sys\win\Vm_c.h">
+      <Filter>Native methods\sys\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\GraphicsPrimitives_c.h">
+      <Filter>Native methods\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\ImagePrimitives_c.h">
+      <Filter>Native methods\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\PalmFont_c.h">
+      <Filter>Native methods\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\win\gfx_ex.h">
+      <Filter>Native methods\ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\win\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\win\media_Camera_c.h">
+      <Filter>Native methods\ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\win\media_MediaClip_c.h">
+      <Filter>Native methods\ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\win\media_Sound_c.h">
+      <Filter>Native methods\ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\win\Window_c.h">
+      <Filter>Native methods\ui\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\GraphicsPrimitives.h">
+      <Filter>Native methods\ui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\media_MediaClip.h">
+      <Filter>Native methods\ui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\media_Sound.h">
+      <Filter>Native methods\ui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\Window.h">
+      <Filter>Native methods\ui\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\gfx_ex.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\media_Camera_c.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\media_MediaClip_c.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\media_Sound_c.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\palmOneCameraCommon.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\palm\palmOneCameraLibARM.h">
+      <Filter>Native methods\ui\palm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\linux\gfx_ex.h">
+      <Filter>Native methods\ui\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\linux\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\linux\media_Sound_c.h">
+      <Filter>Native methods\ui\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\linux\Window_c.h">
+      <Filter>Native methods\ui\linux</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\childview.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\gfx_ex.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\gfx_Graphics_c.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\kbdview.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\mainview.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\media_Sound_c.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\sipargs.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\ui\darwin\Window_c.h">
+      <Filter>Native methods\ui\darwin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\phone\win\ril.h">
+      <Filter>Native methods\phone\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\phone\win\CellInfo_c.h">
+      <Filter>Native methods\phone\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\phone\win\Dial_c.h">
+      <Filter>Native methods\phone\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\nm\phone\win\SMS_c.h">
+      <Filter>Native methods\phone\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\crc32.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\deflate.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\inffast.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\inffixed.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\inflate.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\inftrees.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\trees.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\zconf.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\zconf.in.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\zlib.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\zlib\zutil.h">
+      <Filter>ZLib\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tests\tc_testsuite.h">
+      <Filter>Tests\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\context.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\objectmemorymanager.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\opcodes.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcclass.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcexception.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcfield.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcmethod.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcthread.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\tcvm\tcvm.h">
+      <Filter>VM Files\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\cderror.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\cdjpeg.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jchuff.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jconfig.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jdct.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jdhuff.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jerror.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jinclude.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jmemsys.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jmorecfg.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jpegint.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jpeglib.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\jpeg\jversion.h">
+      <Filter>jpeg\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\init\demo.h">
+      <Filter>init\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\init\globals.h">
+      <Filter>init\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\init\settings.h">
+      <Filter>init\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\init\startup.h">
+      <Filter>init\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\init\win\settings_c.h">
+      <Filter>init\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\init\win\startup_c.h">
+      <Filter>init\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\axssl_config.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\bigint.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\bigint_impl.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\cert.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\crypto.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\os_port.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\private_key.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\ssl.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\tls1.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\axtls\version.h">
+      <Filter>axtls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\minizip\crypt.h">
+      <Filter>Minizip\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\minizip\ioapi.h">
+      <Filter>Minizip\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\minizip\unzip.h">
+      <Filter>Minizip\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\minizip\zip.h">
+      <Filter>Minizip\headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\src\nm\NativeMethods.txt">
+      <Filter>Native methods</Filter>
+    </Text>
+    <Text Include="..\..\src\nm\NativeMethodsPrototypes.txt">
+      <Filter>Native methods</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\nm\io\device_PortConnector.c">
+      <Filter>Native methods\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\File.c">
+      <Filter>Native methods\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\PDBFile.c">
+      <Filter>Native methods\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\device\RadioDevice.c">
+      <Filter>Native methods\io\device</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\device\bluetooth\DiscoveryAgent.c">
+      <Filter>Native methods\io\device\bluetooth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\device\bluetooth\SerialPortClient.c">
+      <Filter>Native methods\io\device\bluetooth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\device\bluetooth\SerialPortServer.c">
+      <Filter>Native methods\io\device\bluetooth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\io\device\gps\GPS.c">
+      <Filter>Native methods\io\device\gps</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\Class.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\Object.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\Reflection.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\String.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\StringBuffer.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\Thread.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\lang\Throwable.c">
+      <Filter>Native methods\lang</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\net\ConnectionManager.c">
+      <Filter>Native methods\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\net\ServerSocket.c">
+      <Filter>Native methods\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\net\Socket.c">
+      <Filter>Native methods\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\net\ssl_SSL.c">
+      <Filter>Native methods\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\pim\POutlook.c">
+      <Filter>Native methods\pim</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\sys\CharacterConverter.c">
+      <Filter>Native methods\sys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\sys\Convert.c">
+      <Filter>Native methods\sys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\sys\Registry.c">
+      <Filter>Native methods\sys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\sys\Time.c">
+      <Filter>Native methods\sys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\sys\Vm.c">
+      <Filter>Native methods\sys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\Control.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\event_Event.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\font_Font.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\font_FontMetrics.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\gfx_Graphics.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\image_Image.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\MainWindow.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\media_Camera.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\media_MediaClip.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\media_Sound.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\ui\Window.c">
+      <Filter>Native methods\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\util\BigInteger.c">
+      <Filter>Native methods\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\util\concurrent_Lock.c">
+      <Filter>Native methods\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\util\zip_ZLib.c">
+      <Filter>Native methods\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\util\zip\CompressedStream.c">
+      <Filter>Native methods\util\zip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\util\zip\ZipEntry.c">
+      <Filter>Native methods\util\zip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\util\zip\ZipFile.c">
+      <Filter>Native methods\util\zip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\xml\xml_XmlTokenizer.c">
+      <Filter>Native methods\xml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\phone\CellInfo.c">
+      <Filter>Native methods\phone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\phone\Dial.c">
+      <Filter>Native methods\phone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\phone\SMS.c">
+      <Filter>Native methods\phone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\crypto\AESCipher.c">
+      <Filter>Native methods\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\crypto\MD5Digest.c">
+      <Filter>Native methods\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\crypto\PKCS1Signature.c">
+      <Filter>Native methods\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\crypto\RSACipher.c">
+      <Filter>Native methods\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\crypto\SHA1Digest.c">
+      <Filter>Native methods\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\crypto\SHA256Digest.c">
+      <Filter>Native methods\crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\nm\db\NativeDB.c">
+      <Filter>Native methods\db</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\adler32.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\compress.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\crc32.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\deflate.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\infback.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\inffast.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\inflate.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\inftrees.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\trees.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\uncompr.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\zlib\zutil.c">
+      <Filter>ZLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tests\tc_tests.c">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tests\tc_testsuite.c">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\datastructures.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\debug.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\dlmalloc.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\errormsg.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\guid.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\jchar.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\mem.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\nativelib.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\tcz.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\utils.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\winsockLib.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util\xtypes.c">
+      <Filter>Util files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\context.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\objectmemorymanager.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\tcclass.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\tcexception.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\tcfield.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\tcmethod.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\tcthread.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tcvm\tcvm.c">
+      <Filter>VM Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\event\Event.c">
+      <Filter>Event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\event\specialkeys.c">
+      <Filter>Event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcapimin.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcapistd.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jccoefct.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jccolor.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcdctmgr.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jchuff.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcinit.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcmainct.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcmarker.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcmaster.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcomapi.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcparam.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcphuff.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcprepct.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcsample.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdapimin.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdapistd.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdatadst.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdatasrc.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdcoefct.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdcolor.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jddctmgr.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdhuff.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdinput.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdmainct.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdmarker.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdmaster.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdphuff.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdpostct.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdsample.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jerror.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jmemmgr.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jmemnobs.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\JpegLoader.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jquant1.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jquant2.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jutils.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\rdbmp.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\init\demo.c">
+      <Filter>init</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\init\globals.c">
+      <Filter>init</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\init\settings.c">
+      <Filter>init</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\init\startup.c">
+      <Filter>init</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\palmdb\palmdb.c">
+      <Filter>PalmDB</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\png.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngerror.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngget.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\PngLoader.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngmem.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngpread.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngread.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngrio.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngrtran.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngrutil.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngset.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\png\pngtrans.c">
+      <Filter>png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ras\ras_Utils.c">
+      <Filter>ras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\aes.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\asn1.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\bigint.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\crypto_misc.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\hmac.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\loader.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\md2.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\md5.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\openssl.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\os_port.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\p12.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\rc4.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\rsa.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\sha1.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\sha256.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\sha384.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\sha512.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\x509.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\tls1.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\tls1_clnt.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\axtls\tls1_svr.c">
+      <Filter>axtls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\minizip\ioapi.c">
+      <Filter>Minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\minizip\unzip.c">
+      <Filter>Minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\minizip\zip.c">
+      <Filter>Minizip</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\sqlite\sqlite3.c">
+      <Filter>sqlite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdmerge.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jfdctint.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jidctflt.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jidctint.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jfdctflt.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jfdctfst.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jidctfst.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jaricom.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jcarith.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\jpeg\jdarith.c">
+      <Filter>jpeg</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\nm\ui\darwin\childview.m">
+      <Filter>Native methods\ui\darwin</Filter>
+    </None>
+    <None Include="..\..\src\nm\ui\darwin\kbdview.m">
+      <Filter>Native methods\ui\darwin</Filter>
+    </None>
+    <None Include="..\..\src\nm\ui\darwin\mainview.m">
+      <Filter>Native methods\ui\darwin</Filter>
+    </None>
+    <None Include="..\..\src\nm\ui\darwin\sipargs.m">
+      <Filter>Native methods\ui\darwin</Filter>
+    </None>
+    <None Include="..\..\src\nm\ui\darwin\Window_c.m">
+      <Filter>Native methods\ui\darwin</Filter>
+    </None>
+  </ItemGroup>
+</Project>

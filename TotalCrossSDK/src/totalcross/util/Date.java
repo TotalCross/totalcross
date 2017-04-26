@@ -44,8 +44,11 @@ public class Date implements Comparable
    private int year;
    private static int epochYear = 1000;
    /** After constructing a date, can be used to verify if the date was valid */
-   private static int parts[] = new int[3];
    private static int[][]part2idx = {{},{1,0,2},{0,1,2},{2,1,0}}; // guich@566_29
+   
+   /** Defines the minimum valid year. Any year before this date throws an InvalidDateException.
+    * Defaults to 1000 DC */
+   public static int minValidYear = epochYear;
 
    public static final int JANUARY = 1;
    public static final int FEBRUARY = 2;
@@ -107,7 +110,7 @@ public class Date implements Comparable
       {
          int n = strDate.length(), 
          j = 2; 
-         int p[] = parts;
+         int p[] = new int[3];
          char c;
          int value = 0;
          int mult = 1;
@@ -146,7 +149,7 @@ public class Date implements Comparable
       else
       if (20 <= year && year < 100)
          year += 1900;
-      if (!(day > 0 && month >= 1 && month <= 12 && day <= getDaysInMonth() && year >= epochYear && year < 3000)) // guich@200b4_118: fixed dates before epocYear giving a wrong result  - guich@230_26
+      if (!(day > 0 && month >= 1 && month <= 12 && day <= getDaysInMonth() && year >= minValidYear && year < 3000)) // guich@200b4_118: fixed dates before epocYear giving a wrong result  - guich@230_26
             throw new InvalidDateException("Invalid date. Day: "+day+", month: "+month+", year: "+year);
    }
    /** Constructs a Date object set to a passed string in the format specified in the dateFormat parameter. 
@@ -599,11 +602,49 @@ public class Date implements Comparable
       return (year - d.year) * 10000 + (month - d.month) * 100 + (day - d.day);
    }
 
-   /** Returns this date in the format YYYY-MM-DD
+   /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
     * @since TotalCross 2.0 
     */
-   public String getSQLDate()
+   public String getSQLString(StringBuffer sb)
    {
-      return year+"-"+month+"-"+day;
+      sb.append(year);
+      sb.append('-');
+      if (month < 10) sb.append('0'); sb.append(month);
+      sb.append('-');
+      if (day   < 10) sb.append('0'); sb.append(day);
+      //sb.append(" 00:00:00.000");
+      return sb.toString();
+   }
+   
+   /** Returns this date in the format <code>YYYY-MM-DD 00:00:00.000</code>
+    * @since TotalCross 2.0 
+    */
+   public String getSQLString()
+   {
+      return getSQLString(new StringBuffer(20));
+   }
+
+   /** Returns this date in the Time.getTimeLong format, with hour/minute/second/millis equal to 0.
+    * @since TotalCross 2.0 
+    */
+   public long getSQLLong()
+   {
+      return year * 10000000000000L + month * 100000000000L + day * 1000000000L;
+   }
+   
+
+   public static Date SQL_EPOCH;
+   
+   static 
+   {
+      try {SQL_EPOCH = new Date(1,1,1970);} catch (Exception e) {}
+   }
+   /** Returns the number of seconds since SQL_EPOCH 1/1/1970.
+    * @since TotalCross 2.1
+    */
+   public long getTime()
+   {
+      long days = SQL_EPOCH.subtract(this);
+      return days*24L*60L*60L;
    }
 }

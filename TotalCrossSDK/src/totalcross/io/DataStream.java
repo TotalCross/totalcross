@@ -572,11 +572,12 @@ public class DataStream extends Stream
    {
       // we have to read one character at a time.
       byte b[] = buffer, c;
+      byte[] buf = new byte[1];
       int size = 0;
       while (true)
       {
-         readBytesInternal(b, 0, 1, true);
-         c = b[0];
+         readBytesInternal(buf, 0, 1, true);
+         c = buf[0];
          if (c == 0)
             break;
          if (size == b.length) // grow the array if necessary
@@ -949,7 +950,7 @@ public class DataStream extends Stream
          totalcross.io.IOException
    {
       String className = readString();
-      Class c = Class.forName(className);
+      Class<?> c = Class.forName(className);
       Object o = c.newInstance();
       ((Storable) o).loadState(this);
       return o;

@@ -257,4 +257,9 @@ public class InputBox extends Window
    {
       return ed;
    }
+   /** Sets the Edit to the given one. */
+   public void setEdit(Edit ed)
+   {
+      this.ed = ed;
+   }
 }

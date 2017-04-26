@@ -19,11 +19,6 @@
 package totalcross.io;
 
 /** Base class of all input/output exceptions.
- * <p>Some IO operations may return platform-specific codes.
- * <ul>
- * <li> Windows: <a href='http://www.superwaba.org/etc/winerror.h' target=_blank>http://www.superwaba.org/etc/winerror.h</a>
- * <li> Palm: <a href='http://prc-tools.sourceforge.net/errorcodes.html' target=_blank>http://prc-tools.sourceforge.net/errorcodes.html</a>
- * </ul> 
  */
 
 public class IOException extends Exception
@@ -38,5 +33,15 @@ public class IOException extends Exception
    public IOException(String msg)
    {
       super(msg);
+   }
+
+   public IOException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
+
+   public IOException(Throwable cause)
+   {
+      super(cause);
    }
 }

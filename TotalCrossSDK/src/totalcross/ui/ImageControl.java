@@ -31,7 +31,7 @@ public class ImageControl extends Control
 {
    /** The amount to scroll when in penless mode. Defaults to 10. */
    public static int scrollValue = 10;
-   private Image img,imgBack;
+   private Image img,img0,imgBack;
    private int startX,startY;
    private Coord c = new Coord();
    private boolean isEventEnabled, canDrag;
@@ -43,6 +43,8 @@ public class ImageControl extends Control
 
    /** Change this member to set the border color.
     * You may also set it to -1 if you don't want a border color.
+    * Note: starting on TotalCross 3.1, the border is drawn around the color and no longer around the image,
+    * because it was not working on OpenGL devices.
     */
    public int borderColor = -1;
    /** Set to true to let the image be dragged beyond container limits. 
@@ -61,6 +63,9 @@ public class ImageControl extends Control
    
    /** Set to true to scale the image to fit the bounds. */
    public boolean scaleToFit;
+   
+   /** Set to true, with scaleToFit, to strech the image. */
+   public boolean strechImage;
 
    /** Constructs an ImageControl using the given image. */
    public ImageControl(Image img)
@@ -87,19 +92,27 @@ public class ImageControl extends Control
     */
    public void setImage(Image img)
    {
-      this.img = img;
+      this.img = this.img0 = img;
       c.x = c.y = lastX = lastY = 0;
       tempHwScale=NOTEMP;
       // test if it is really loaded.
       if (img != null && getImageWidth() > 0)
       {
-         // draw a red border in the image
-         if (borderColor != -1)
-         {
-            Graphics g = img.getGraphics();
-            g.foreColor = borderColor;
-            g.drawRect(0,0,getImageWidth(),getImageHeight());
-         }
+         if (scaleToFit)
+            try
+            {
+               if (strechImage)
+                  this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
+               else
+               if (width < height)
+                  this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
+               else
+                  this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
+            }
+            catch (ImageException e)
+            {
+               // keep original image
+            }
          if (centerImage)
          {
             lastX = (width-getImageWidth())/2;
@@ -125,16 +138,11 @@ public class ImageControl extends Control
                double newScale = tempHwScale * step;
                if (newScale > 0)
                {
-                  // -p + s/2
-                  int cx = img.getWidth();
-                  int cy = img.getHeight();
-                  
-                  int mx = (int)(cx * tempHwScale);
-                  int my = (int)(cy * tempHwScale);
                   tempHwScale = newScale;
-                  int mx2 = (int)(cx * tempHwScale);
-                  int my2 = (int)(cy * tempHwScale);
-                  moveTo(lastX+(mx-mx2)/2,lastY+(my-my2)/2);
+                  // always centers on screen
+                  lastX = (width-getImageWidth())/2;
+                  lastY = (height-getImageHeight())/2;
+                  repaintNow();
                }
             }
             break;
@@ -210,7 +218,16 @@ public class ImageControl extends Control
       if (scaleToFit)
          try
          {
-            img = img.hwScaledFixedAspectRatio(this.width,false);
+            if (img0 == null)
+               this.img = null;
+            else
+            if (strechImage)
+               this.img = Settings.enableWindowTransitionEffects ? img0.getSmoothScaledInstance(this.width, this.height) : img0.getHwScaledInstance(this.width,this.height);
+            else
+            if (width < height)
+               this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
+            else
+               this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
          }
          catch (ImageException e)
          {
@@ -237,7 +254,7 @@ public class ImageControl extends Control
 
    private void paint(Graphics g, boolean drawBack)
    {
-      g.backColor = enabled ? backColor : Color.interpolate(backColor,parent.backColor);
+      g.backColor = isEnabled() ? backColor : Color.interpolate(backColor,parent.backColor);
       if (!transparentBackground) // guich@tc115_41
          g.fillRect(0,0,width,height);
       if (img != null) // images found?
@@ -253,6 +270,11 @@ public class ImageControl extends Control
       }
       if (drawBack)
          fillBack(g);
+      if (borderColor != -1)
+      {
+         g.foreColor = borderColor;
+         g.drawRect(0,0,width,height);
+      }
    }
 
    /** Returns the image's width; when scaling, returns the scaled width. */
@@ -287,6 +309,12 @@ public class ImageControl extends Control
    public void setBackground(Image img)
    {
       imgBack = img;
+   }
+   
+   /** Returns the background image set with setBackground */
+   public Image getBackground()
+   {
+      return imgBack;
    }
 
    /** Gets an image representing the portion being shown. If all image is being shown,

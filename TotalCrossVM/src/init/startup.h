@@ -9,11 +9,16 @@
  *                                                                               *
  *********************************************************************************/
 
-#include "tcvm.h"
-
 #ifndef STARTUP_H
 #define STARTUP_H
 
+
+#include "tcvm.h"
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  * Executes the program using the given arguments. This should be called only by the launcher.
  * if the commandline starts with "-" the mainloop is not executed, it will be executed on a second call.
@@ -26,10 +31,11 @@ typedef int32 (*executeProgramFunc)(CharP args);
 TC_API int32 startVM(CharP argsOriginal, Context* cOut);
 TC_API int32 startProgram(Context currentContext);
 
-/** True if the class loader can load a Litebase class. */
-bool canLoadLitebase();
-
 bool wokeUp();  
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef ANDROID
 #ifdef __cplusplus

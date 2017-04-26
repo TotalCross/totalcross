@@ -18,6 +18,10 @@
 
 package totalcross.sys;
 
+import totalcross.ui.IVirtualKeyboard;
+import totalcross.util.*;
+
+
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
@@ -30,16 +34,54 @@ public final class Settings
    * base 100. For example, version 1.0 has value 100. version 4 has a
    * version value of 400. A beta 0.81 VM will have version 81.
    */
-   public static int version = 200;
+   public static int version = 340;
     
-   /** Field that represents the version in a string form, like "1.36beta" */
-   public static String versionStr = "2.0rc5";
+   /** Field that represents the version in a string form, like "1.36". Only digits and dot is allowed or an exception will be throws during tc.Deploy. */
+   public static String versionStr = "3.40";
     
-   /** Current build number.
+   /** Current build number for the TotalCross SDK.
     * @since TotalCross 1.53 
     */
-   public static int buildNumber = 20;
-
+   public static int buildNumber = 000;
+   
+   /** Some properties you may want to use in the application. 
+    * The file format must be:
+    * <pre>
+    * property=value&lt;enter&gt;
+    * </pre>
+    * This file must be named <code>tcapp.prop</code> and it is searched from the current folder up to the root folder.
+    * 
+    * To have a build number be incremented by tc.Deploy, just create the file somewhere in a parent folder from
+    * where you run tc.Deploy for your application. 
+    * The file will be inserted into the application's tcz and you will be able to retrieve the build number using
+    * <code>Settings.appBuildNumber()</code>.
+    * 
+    * Note that the properties are always read-only and you can add other values to be used in your application.
+    * @since TotalCross 3.1
+    */
+   public static Hashtable appProps;
+   
+   /** Returns the application's build number. You can make tc.Deploy use this automatically by
+    * making the appVersion end with a dot. For example:
+    * <pre>
+    * static
+    * {
+    *    Settings.appVersion = "2.1."; // leading dot
+    * }
+    * // then at the application's constructor:
+    * Settings.appVersion += Settings.appBuildNumber();
+    * </pre> 
+    * This way, when you run tc.Deploy, it will update the appVersion to include the build number in all platforms.
+    * @see #appProps
+    * @since TotalCross 3.1
+    */
+   public static String appBuildNumber()
+   {
+      String ret = Settings.appProps == null ? null : (String)Settings.appProps.get("build.number");
+      if (ret == null) ret = "0";
+      return ret;
+   }
+   
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
     * @see #DATE_MDY
@@ -90,6 +132,8 @@ public final class Settings
    public static final String WINDOWSMOBILE = "WindowsMobile";
    /** Underlying platform is desktop Windows. To be used with the <code>platform</code> member. */
    public static final String WIN32         = "Win32";
+   /** Underlying platform is Windows Phone. To be used with the <code>platform</code> member. */
+   public static final String WINDOWSPHONE  = "WindowsPhone";
    /** Underlying platform is Linux. To be used with the <code>platform</code> member. */
    public static final String LINUX         = "Linux";
    /** Underlying platform is iPhone. To be used with the <code>platform</code> member. */
@@ -110,7 +154,7 @@ public final class Settings
     * @see #LINUX        
     * @see #IPHONE       
     * @see #ANDROID      
-    * @see #isWindowsDevice()
+    * @see #isWindowsCE()
     * @see #isIOS()
     */
    public static String platform;
@@ -213,12 +257,17 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Android = 4; // guich@tc130
-
+   /** Defines an Holo user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Holo = 5; // guich@tc130
+   
    /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
     * @see #Flat
     * @see #Vista
     * @see #Android
+    * @see #Holo
     */
    public static byte uiStyle = Vista;
    
@@ -313,6 +362,14 @@ public final class Settings
      * @since SuperWaba 4.21
      */
    public static String romSerialNumber;
+   
+   /** The macAddress currently in use.
+    * Currently works only on Android.
+    * 
+    * @deprecated due to provide users with greater data protection
+    */
+   @Deprecated
+   public static String macAddress;
 
    /** Field that represents if the PDA has a password and the user choosen to hide the secret records
      * (via the Apps/Security/Current Privacy).
@@ -358,8 +415,9 @@ public final class Settings
     */
    public static String appPath; // guich@581_1
    
-   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. In Windows 32, the X button will still be visible, but clicking on it will not close the application
-    * If the device does not support removing the button, it will change to a MINIMIZE_BUTTON, which is the default on CE devices. 
+   /** To be used in the closeButtonType. Will remove the x/ok button from screen on Windows CE devices. 
+    * In Windows 32, the X button will still be visible, but clicking on it will not close the application;
+    * instead, the SpcialKeys.MENU key event will be sent to the application.
     */
    public static final int NO_BUTTON = 0;
    /** To be used in the closeButtonType. An OK button is placed, and the application is closed when its pressed. */
@@ -382,7 +440,7 @@ public final class Settings
    /** Set it at the application's static initializer. Makes the application full screen.
     * Only a simple assignment to true is supported; you cannot check the platform nor any other attribute of this class
     * because the static initializer is called BEFORE this class have its fields set. Also, some platforms set it at Deploying time.
-    * Note that Android applications are always full screen.
+    * Note that Android applications have problems with the keyboard when its fullscreen.
     * @since TotalCross 1.0
     * @see #fullScreenPlatforms
     */
@@ -408,31 +466,50 @@ public final class Settings
    public static String fullScreenPlatforms; // guich@tc120_59
 
    /** Set it at the application's static initializer. Defines the current application's version, which will be applied to the pdbs.
+    * 
+    * If you turn on automatic build number increment (with appProps) and the appVersion ends with a dot, during deploy the
+    * build number will be appended to the appVersion. For example, if appVersion is "2." and the current build number is 103, 
+    * deploy will change the appVersion to "2.103" during deploy. To see the version that will appear, use at your application's
+    * constructo: <code>Settings.appVersion += Settings.appBuildNumber();</code>
     * @since TotalCross 1.0
     */
    public static String appVersion;
 
-   /** Set it at the application's static initializer. Defines the company's information, which is used in some installations.
+   /** Set it at the application's static initializer; should not contain spaces. Defines the company's information, which is used in iOS, Windows CE and WP8.
+    * In WP8 its used for the PublisherDisplayName property.
+    * In iOS is used to form the bundle suffix id. 
     * @since TotalCross 1.0
     */
    public static String companyInfo;
 
-   /** Set it at the application's static initializer. Defines the user's or company's contact email, which is used in some installations.
+   /** Set it at the application's static initializer. Defines the user's or company's contact email, which is used in WP8.
     * @since TotalCross 1.0
     */
    public static String companyContact;
 
-   /** Set it at the application's static initializer. Defines the application's description, which is used in some installations.
+   /** Set it at the application's static initializer. Defines the application's description, which is used in WP8.
     * @since TotalCross 1.0
     */
    public static String appDescription;
-
-   /** Set it at the application's static initializer. Defines the application's location, which is used in some installations.
+   
+   /** Set it at the application's static initializer. Defines the application's package identifier, which is used in WP8.
+    */
+   public static String appPackageIdentifier;
+   
+   /** Set it at the application's static initializer. Defines the application's package publisher, which is used in WP8.
+    * In WP8 its used for the Publisher="CN".
+    */
+   public static String appPackagePublisher;
+   
+   /** Set it at the application's static initializer. Defines the application's package id, which is used in iOS. */
+   public static String iosCFBundleIdentifier;
+   
+   /** @deprecated No longer used.
     * @since TotalCross 1.0
     */
    public static String appLocation;
 
-   /** Set it at the application's static initializer. Defines the application's category, which is used in some installations.
+   /** @deprecated No longer used.
     * @since TotalCross 1.0
     */
    public static String appCategory;
@@ -460,6 +537,11 @@ public final class Settings
     */
    public static String imei;
 
+   /** Field that represents the smartphone IMEIs; used in phones with more than one line.
+    * @since TotalCross 1.0
+    */
+   public static String[] imeis;
+
    /** Field that represents the smartphone ESN (if this device is a CDMA smartphone) or null if there's none.
     * @since TotalCross 1.0
     */
@@ -476,6 +558,7 @@ public final class Settings
     *  You must provide a way to terminate the application by calling the exit method.
     *  @see totalcross.ui.MainWindow#exit(int)
     *  @since TotalCross 1.0
+    *  @deprecated Not used in any platform
     */
    public static boolean dontCloseApplication;
 
@@ -490,6 +573,7 @@ public final class Settings
     * Setting this field to true allows the execution of multiple instances of the same application.
     * When the application is started, it first checks if there is a running instance of the same application. If so, the
     * running instance is moved to the foreground and the starting application exits.
+    * This only works for Win32 and WinCE.
     * @since TotalCross 1.0
     */
    public static boolean multipleInstances;
@@ -600,15 +684,24 @@ public final class Settings
 
    /**
     * <b>READ-ONLY</b> unique identifier available for registered applications after the TotalCross VM is activated.<br>
-    * Value defaults to "NOT AVAILABLE" when running on DEMO.
+    * Value defaults to "NOT AVAILABLE" when running on DEMO, and "NO ACTIVATION" when using the new licensing model.
     * 
     * @since TotalCross 1.25
     */
    public static String activationId = "NOT AVAILABLE";
    
-   /** Returns true if the current platform is Windows Mobile or Pocket PC. Note that Windows Desktop (aka WIN32)
-    * returns false. */
+   /** Returns true if the current platform is Windows Mobile or Windows Phone. Note that Windows Desktop (aka WIN32)
+    * returns false.
+    */
    public static boolean isWindowsDevice()
+   {
+      return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform) || WINDOWSPHONE.equals(platform);
+   }
+   
+   /** Returns true if the current platform is Windows Mobile or Windows Phone. Note that Windows Desktop (aka WIN32)
+    * returns false.
+    */
+   public static boolean isWindowsCE()
    {
       return POCKETPC.equals(platform) || WINDOWSCE.equals(platform) || WINDOWSMOBILE.equals(platform);
    }
@@ -707,7 +800,6 @@ public final class Settings
     * Setting it to -1 (default value) will use half the current screen height.
     * 
     * This field is used in Windows CE devices only.
-    * 
     * @since TotalCross 1.3
     */
    public static int SIPBottomLimit = -1;
@@ -763,7 +855,6 @@ public final class Settings
     * @see #WINDOWSIZE_480X640
     * @see #WINDOWSIZE_600X800
     * @see #resizableWindow
-    * @see #windowFont
     */
    public static int windowSize;
    
@@ -774,6 +865,8 @@ public final class Settings
    
    /** Defines the window font size when running in a desktop computer.
     * Must be set in the static initializer.
+    * @deprecated Use at the application's constructor: if (Settings.platform.equals(Settings.WIN32)) setDefaultFont(Font.getFont(false,NN)); where NN is the desired font size
+
     * @since TotalCross 1.53
     * @see #WINDOWFONT_12
     * @see #WINDOWFONT_DEFAULT
@@ -802,15 +895,27 @@ public final class Settings
     */
    public static boolean isOpenGL;
 
+   /** An optional value for the backspace key. Android 4.4.2 has a bug that prevents the backspace from working well;
+    * this bug is fixed in 4.4.3. The workaround is to define a unused key that will work as the backspace one.
+    * Defaults to the î key, used only if romVersion is 442.
+    */
+   public static int optionalBackspaceKey = Settings.romVersion == 442 ? 'î' : 0;
+   
+   /** Set to false to disable the scroll optimization using images. This optimization
+    * greatly improves performance but uses more memory.
+    */
+   public static boolean optimizeScroll = Settings.isOpenGL;
+   
+
    // this class can't be instantiated
 	private Settings()
 	{
 	}
 	
    /** Dumb field to keep compilation compatibility with TC 1 */
-   public static final String PALMOS        = "PalmOS";
+   public static String PALMOS        = "PalmOS";
    /** Dumb field to keep compilation compatibility with TC 1 */
-   public static final String BLACKBERRY    = "BlackBerry";
+   public static String BLACKBERRY    = "BlackBerry";
    /** Dumb field to keep compilation compatibility with TC 1 */
    public static int nvfsVolume = -1;
    /** Dumb field to keep compilation compatibility with TC 1 */
@@ -819,4 +924,54 @@ public final class Settings
    public static boolean isMinimized;
    /** Dumb field to keep compilation compatibility with TC 1 */
    public static boolean keypadOnly;
+   
+   /** Set to 0 to disable the automatic scroll of the ScrollContainer under the
+    * mouse position when the mouse wheel changes.
+    */
+   public static int scrollDistanceOnMouseWheelMove;
+
+   /** An email that will be used to send bug reports when an unhandled exception is caught
+    * on your application. Note that you may receive dozens of emails per day. The bug report
+    * is sent after an application crash if, and only if, the application is called within 3 minutes
+    * after the crash, otherwise, Android may roll out the logs. Note that we always receive a copy 
+    * of the same message, even if you don't set this email, so we will be aware of the problems. The 
+    * bug report takes from 5 to 20 seconds to be generated and sent from application's startup time, 
+    * so if your application crashes too early, the report will halt the exit process until its effectively
+    * sent, and a black screen will appear in the meanwhile.
+    * 
+    * You must set this in your application's static initializer, preferrably at the first line. E.G.:
+    * <pre>
+    * static
+    * {
+    *    Settings.bugreportEmail = "bugreports@mycompany.com";
+    *    ...
+    * }
+    * </pre>
+    * Currently this is supported only on Android.
+    * 
+    * @since TotalCross 3.1
+    */
+   public static String bugreportEmail;
+
+   /** Set this to the username of your application to be able to filter at the bug report service.
+    * IMPORTANT: this must be assigned by your application at the constructor of the application, or it will
+    * be ignored in the crash report, because this one is sent very early.  
+    * @since TotalCross 3.1
+    */
+   public static String bugreportUser;
+
+   /** The activation key used during deploy */
+   public static String activationKey;
+
+   /** No longer used; put the 'google-services.json' so that the deploy will send it to the app, and it will*/
+   @Deprecated
+   public static String pushTokenAndroid;
+
+   /** The due date of the iOS certificate. You can use it to inform your costumers when its time to update the software. */
+   public static Time iosCertDate;
+
+   /** Field set to true if the program have aborted on last run. */
+   public static boolean abortedOnLastRun;
+
+   public static IVirtualKeyboard customKeyboard;
 }

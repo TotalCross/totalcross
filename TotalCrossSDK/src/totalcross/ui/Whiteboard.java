@@ -66,7 +66,7 @@ public class Whiteboard extends Control
          }
          catch (ImageException e)
          {
-            Vm.alert("Not enough memory to resize the whiteboard");
+            Vm.debug("Not enough memory to resize the whiteboard");
          }
    }
 
@@ -189,7 +189,7 @@ public class Whiteboard extends Control
             if (gScr != null) drawTo(gScr,pe.x,pe.y);
             oldX = pe.x;
             oldY = pe.y;
-            if (!Settings.isOpenGL) Window.updateScreen(); // important at desktop!
+            if (!Settings.isOpenGL) Window.safeUpdateScreen(); // important at desktop!
             break;
          case PenEvent.PEN_UP:
             getParentWindow().setGrabPenEvents(null);

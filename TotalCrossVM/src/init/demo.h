@@ -14,10 +14,6 @@
 #ifndef DEMO_H
 #define DEMO_H
 
-/// Called at startup to see how much time we have
-int32 checkDemo();
-/// Updates the demo time
-bool updateDemoTime();
 /// Gets the virtual machine compilation date in format YYYYMMDD, xored by 12341234 (defined below)
 int32 getCompilationDate();
 #define COMPILATION_MASK 12341234

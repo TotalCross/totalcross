@@ -14,7 +14,7 @@
 TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    CharP res8=null;
 
    tzero(p);
@@ -34,7 +34,7 @@ TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase()
 TESTCASE(jlS_toLowerCase) // java/lang/String native public String toLowerCase();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    CharP res8=null;
 
    tzero(p);
@@ -52,7 +52,7 @@ TESTCASE(jlS_toLowerCase) // java/lang/String native public String toLowerCase()
    xfree(res8);
 }
 
-static CharP valueOfDouble(Context currentContext, CharP buf,double d)
+static CharP valueOfDouble(Context currentContext, CharP buf, double d, int32 size)
 {
    TNMParams p;
 
@@ -64,6 +64,7 @@ static CharP valueOfDouble(Context currentContext, CharP buf,double d)
    if (p.retO == null)
       return null;
    String2CharPBuf(p.retO, buf);
+   buf[size] = 0;
    return buf;
 }
 
@@ -71,36 +72,36 @@ TESTCASE(jlS_valueOf_d) // java/lang/String native public static String valueOf(
 {
    char buf[25];
 
-   ASSERT2_EQUALS(Sz, "10.0", valueOfDouble(currentContext, buf,10));
-   ASSERT2_EQUALS(Sz, "0.0", valueOfDouble(currentContext, buf,0));
-   ASSERT2_EQUALS(Sz, "0.5", valueOfDouble(currentContext, buf,0.5));
-   ASSERT2_EQUALS(Sz, "0.55555555555", valueOfDouble(currentContext, buf,0.55555555555));
-   ASSERT2_EQUALS(Sz, "0.0055555555555", valueOfDouble(currentContext, buf,0.0055555555555));
-   ASSERT2_EQUALS(Sz, "0.000055555555555", valueOfDouble(currentContext, buf,0.000055555555555));
-   ASSERT2_EQUALS(Sz, "0.000000555555556", valueOfDouble(currentContext, buf,0.00000055555555555));
-   ASSERT2_EQUALS(Sz, "0.000000005555556", valueOfDouble(currentContext, buf,0.0000000055555555555));
-   ASSERT2_EQUALS(Sz, "0.000000005555556", valueOfDouble(currentContext, buf,0.000000005555555555555));
-   ASSERT2_EQUALS(Sz, "0.000000000055556", valueOfDouble(currentContext, buf,0.00000000005555555555555));
-   ASSERT2_EQUALS(Sz, "0.000000000000556", valueOfDouble(currentContext, buf,0.000000000000555555555555555));
-   ASSERT2_EQUALS(Sz, "0.000000000000006", valueOfDouble(currentContext, buf,0.00000000000000555555555555555));
-   ASSERT2_EQUALS(Sz, "5.55555555555555E-17", valueOfDouble(currentContext, buf,0.0000000000000000555555555555555));
-   ASSERT2_EQUALS(Sz, "10000.0", valueOfDouble(currentContext, buf,10000.0));
-   ASSERT2_EQUALS(Sz, "1000.543216", valueOfDouble(currentContext, buf,1000.543216));
-   ASSERT2_EQUALS(Sz, "-100.54", valueOfDouble(currentContext, buf,-100.54));
-   ASSERT2_EQUALS(Sz, "1.0E-40", valueOfDouble(currentContext, buf,1e-40));
-   ASSERT2_EQUALS(Sz, "-1.0E-40", valueOfDouble(currentContext, buf,-1e-40));
-   ASSERT2_EQUALS(Sz, "-1.0E40", valueOfDouble(currentContext, buf,-1e40));
-   ASSERT2_EQUALS(Sz, "1000000.0", valueOfDouble(currentContext, buf,1000000.0));
-   ASSERT2_EQUALS(Sz, "9999999.0", valueOfDouble(currentContext, buf,9999999.0));
-   ASSERT2_EQUALS(Sz, "0.99999999999", valueOfDouble(currentContext, buf,0.99999999999));
-   ASSERT2_EQUALS(Sz, "1.99999999999", valueOfDouble(currentContext, buf,1.99999999999));
-   ASSERT2_EQUALS(Sz, "-1.0E308", valueOfDouble(currentContext, buf,-1e308));
-   ASSERT2_EQUALS(Sz, "-1.432132689765E140", valueOfDouble(currentContext, buf,-1.432132689765E140));
-   ASSERT2_EQUALS(Sz, "-9.454938759257E240", valueOfDouble(currentContext, buf,-9.454938759257E240));
-   ASSERT2_EQUALS(Sz, "1.432132689765E140", valueOfDouble(currentContext, buf,1.432132689765E140));
-   ASSERT2_EQUALS(Sz, "9.454938759257E240", valueOfDouble(currentContext, buf,9.454938759257E240));
-   ASSERT2_EQUALS(Sz, "1.432132689765E-140", valueOfDouble(currentContext, buf,1.432132689765E-140));
-   ASSERT2_EQUALS(Sz, "9.454938759257E-240", valueOfDouble(currentContext, buf,9.454938759257E-240));
+   ASSERT2_EQUALS(Sz, "10.0", valueOfDouble(currentContext, buf,10, 4));
+   ASSERT2_EQUALS(Sz, "0.0", valueOfDouble(currentContext, buf,0, 3));
+   ASSERT2_EQUALS(Sz, "0.5", valueOfDouble(currentContext, buf,0.5, 3));
+   ASSERT2_EQUALS(Sz, "0.55555555555", valueOfDouble(currentContext, buf,0.55555555555, 13));
+   ASSERT2_EQUALS(Sz, "0.0055555555555", valueOfDouble(currentContext, buf,0.0055555555555, 15));
+   ASSERT2_EQUALS(Sz, "0.000055555555555", valueOfDouble(currentContext, buf,0.000055555555555, 17));
+   ASSERT2_EQUALS(Sz, "0.000000555555556", valueOfDouble(currentContext, buf, 0.00000055555555555, 17));
+   ASSERT2_EQUALS(Sz, "0.000000005555556", valueOfDouble(currentContext, buf, 0.0000000055555555555, 17));
+   ASSERT2_EQUALS(Sz, "0.000000005555556", valueOfDouble(currentContext, buf, 0.000000005555555555555, 17));
+   ASSERT2_EQUALS(Sz, "0.000000000055556", valueOfDouble(currentContext, buf, 0.00000000005555555555555, 17));
+   ASSERT2_EQUALS(Sz, "0.000000000000556", valueOfDouble(currentContext, buf, 0.000000000000555555555555555, 17));
+   ASSERT2_EQUALS(Sz, "0.000000000000006", valueOfDouble(currentContext, buf, 0.00000000000000555555555555555, 17));
+   ASSERT2_EQUALS(Sz, "5.55555555555555E-17", valueOfDouble(currentContext, buf,0.0000000000000000555555555555555, 20));
+   ASSERT2_EQUALS(Sz, "10000.0", valueOfDouble(currentContext, buf,10000.0, 7));
+   ASSERT2_EQUALS(Sz, "1000.543216", valueOfDouble(currentContext, buf, 1000.543216, 11));
+   ASSERT2_EQUALS(Sz, "-100.54", valueOfDouble(currentContext, buf, -100.54, 7));
+   ASSERT2_EQUALS(Sz, "1.0E-40", valueOfDouble(currentContext, buf, 1e-40, 7));
+   ASSERT2_EQUALS(Sz, "-1.0E-40", valueOfDouble(currentContext, buf, -1e-40, 8));
+   ASSERT2_EQUALS(Sz, "-1.0E40", valueOfDouble(currentContext, buf, -1e40, 7));
+   ASSERT2_EQUALS(Sz, "1000000.0", valueOfDouble(currentContext, buf,1000000.0, 10));
+   ASSERT2_EQUALS(Sz, "9999999.0", valueOfDouble(currentContext, buf,9999999.0, 10));
+   ASSERT2_EQUALS(Sz, "0.99999999999", valueOfDouble(currentContext, buf,0.99999999999, 13));
+   ASSERT2_EQUALS(Sz, "1.99999999999", valueOfDouble(currentContext, buf,1.99999999999, 13));
+   ASSERT2_EQUALS(Sz, "-1.0E308", valueOfDouble(currentContext, buf,-1e308, 8));
+   ASSERT2_EQUALS(Sz, "-1.432132689765E140", valueOfDouble(currentContext, buf,-1.432132689765E140, 19));
+   ASSERT2_EQUALS(Sz, "-9.454938759257E240", valueOfDouble(currentContext, buf,-9.454938759257E240, 19));
+   ASSERT2_EQUALS(Sz, "1.432132689765E140", valueOfDouble(currentContext, buf,1.432132689765E140, 18));
+   ASSERT2_EQUALS(Sz, "9.454938759257E240", valueOfDouble(currentContext, buf,9.454938759257E240, 18));
+   ASSERT2_EQUALS(Sz, "1.432132689765E-140", valueOfDouble(currentContext, buf,1.432132689765E-140, 19));
+   ASSERT2_EQUALS(Sz, "9.454938759257E-240", valueOfDouble(currentContext, buf,9.454938759257E-240, 19));
    //ASSERT2_EQUALS(Sz, "+Inf", valueOfDouble(currentContext, buf,1.0/0.0));
    //ASSERT2_EQUALS(Sz, "-Inf", valueOfDouble(currentContext, buf,-1.0/0.0));
    finish: ;
@@ -160,7 +161,7 @@ TESTCASE(jlS_valueOf_i) // java/lang/String native public static String valueOf(
 TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 i;
    JCharP j;
 
@@ -206,7 +207,7 @@ TESTCASE(jlS_indexOf_i) // java/lang/String native public int indexOf(int c);
 TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, int startIndex);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 is[2];
    JCharP j;
 
@@ -244,7 +245,7 @@ TESTCASE(jlS_indexOf_ii) // java/lang/String native public int indexOf(int c, in
 TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object obj);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -276,7 +277,7 @@ TESTCASE(jlS_equals_o) // java/lang/String native public boolean equals(Object o
 TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String s);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -303,7 +304,7 @@ TESTCASE(jlS_compareTo_s) // java/lang/String native public int compareTo(String
 TESTCASE(jlS_copyChars_CiCii) // java/lang/String native static boolean copyChars(char []srcArray, int srcStart, char []dstArray, int dstStart, int length);
 {
    TNMParams p;
-   Object objs[2],res;
+   TCObject objs[2],res;
    int32 i[3];
 
    tzero(p);
@@ -340,7 +341,7 @@ TESTCASE(jlS_copyChars_CiCii) // java/lang/String native static boolean copyChar
 TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c, int startIndex);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    int32 s;
 
    tzero(p);
@@ -388,7 +389,7 @@ TESTCASE(jlS_indexOf_si) // java/lang/String native public int indexOf(String c,
 TESTCASE(jlS_hashCode) // java/lang/String native public int hashCode();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;
@@ -444,7 +445,7 @@ TESTCASE(jlS_hashCode) // java/lang/String native public int hashCode();
 TESTCASE(jlS_startsWith_si) // java/lang/String native public boolean startsWith(String prefix, int from);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
    int32 from;
 
    tzero(p);
@@ -483,7 +484,7 @@ TESTCASE(jlS_startsWith_si) // java/lang/String native public boolean startsWith
 TESTCASE(jlS_endsWith_s) // java/lang/String native public boolean endsWith(String suffix);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -516,7 +517,7 @@ TESTCASE(jlS_endsWith_s) // java/lang/String native public boolean endsWith(Stri
 TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equalsIgnoreCase(String s);
 {
    TNMParams p;
-   Object objs[2];
+   TCObject objs[2];
 
    tzero(p);
    p.currentContext = currentContext;
@@ -542,7 +543,7 @@ TESTCASE(jlS_equalsIgnoreCase_s) // java/lang/String native public boolean equal
 TESTCASE(jlS_replace_cc) // java/lang/String native public String replace(char oldChar, char newChar);
 {
    TNMParams p;
-   Object obj,obj2;
+   TCObject obj,obj2;
    int32 is[2];
 
    tzero(p);
@@ -578,7 +579,7 @@ TESTCASE(jlS_replace_cc) // java/lang/String native public String replace(char o
 TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(int c, int startIndex);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 is[2];
    JCharP j;
 
@@ -616,7 +617,7 @@ TESTCASE(jlS_lastIndexOf_ii) // java/lang/String native public int lastIndexOf(i
 TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(int c);
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
    int32 i;
    JCharP j;
 
@@ -662,7 +663,7 @@ TESTCASE(jlS_lastIndexOf_i) // java/lang/String native public int lastIndexOf(in
 TESTCASE(jlS_trim) // java/lang/String native public String trim();
 {
    TNMParams p;
-   Object obj;
+   TCObject obj;
 
    tzero(p);
    p.currentContext = currentContext;

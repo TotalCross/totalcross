@@ -131,32 +131,8 @@ public class VmTest extends TestCase
       }
    }
 
-   private void setTimeStamp()
-   {
-      // this routine is not implemented on Java
-      if (Settings.onJavaSE)
-         return;
-      // get current time
-      Time t1 = new Time();
-      // this routine may fail if run cross midnight
-      if (t1.hour >= 23 && t1.minute >= 59)
-      {
-         output("setTimeStamp not runned: near midnight");
-         return;
-      }
-      // change the time to the current time
-      Vm.setTime(t1);
-      // get the current time again
-      Time t2 = new Time();
-      // check if they are the same
-      int s1 = t1.second + t1.minute * 60 + t1.hour * 60 * 60;
-      int s2 = t2.second + t2.minute * 60 + t2.hour * 60 * 60;
-      assertGreaterOrEqual(s2, s1);
-   }
-
    public void testRun()
    {
-      setTimeStamp();
       copyArray();
       sleep_getTimeStamp();
       if (!Settings.platform.equals(Settings.ANDROID)) 

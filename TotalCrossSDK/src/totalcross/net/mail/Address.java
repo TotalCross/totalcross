@@ -14,33 +14,39 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 /**
- * This class represents an Internet e-mail address using the syntax of RFC822. Typical address syntax is of the form
- * "user@host.domain" or "Personal Name <user@host.domain>".
+ * This class represents an Internet e-mail address using the syntax of RFC822. The typical address syntax is of the form
+ * <code>user@host.domain</code> or <code>Personal Name <user@host.domain></code>.
  * 
  * @since TotalCross 1.13
  */
 public class Address
 {
+   /**
+    * The e-mail address in the form <code>user@host.domain</code>.
+    */
    public String address;
+   
+   /**
+    * The personal name.
+    */
    public String personal;
+   
    String type;
 
+   /**
+    * The e-mail address format used.
+    */
    public static final String RFC822 = "rfc822";
 
    /**
-    * Creates a new Address object, which represents an Internet email address.
+    * Creates a new <code>Address</code> object, which represents an Internet email address.
     * 
-    * @param address
-    *           the address in RFC822 format
-    * @param personal
-    *           the personal name
-    * @throws AddressException
-    *            if the given address is null, or does not contain the character '@'
+    * @param address The address in the RFC822 format.
+    * @param personal The personal name.
+    * @throws AddressException If the given address is <code>null</code>, or does not contain the character <code>@</code>.
     * @since TotalCross 1.13
     */
    public Address(String address, String personal) throws AddressException
@@ -53,9 +59,9 @@ public class Address
    }
 
    /**
-    * Return a String representation of this address object.
+    * Returns a string representation of this address object.
     * 
-    * @return string representation of this address
+    * @return A string representation of this address.
     */
    public String toString()
    {

@@ -18,11 +18,18 @@ static void windowSetSIP(int32 sipOption)
    (*env)->CallStaticVoidMethod(env, applicationClass, m, (jint) sipOption);
 }
 
-static void windowSetDeviceTitle(Object titleObj)
+static void windowSetDeviceTitle(TCObject titleObj)
 {
    JNIEnv* env = getJNIEnv();
    jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setDeviceTitle", "(Ljava/lang/String;)V");
    jstring s = (*env)->NewString(env, String_charsStart(titleObj), String_charsLen(titleObj));
    (*env)->CallStaticVoidMethod(env, applicationClass, m, s);
    (*env)->DeleteLocalRef(env, s);
+}
+
+static void windowSetOrientation(int32 o)
+{
+   JNIEnv* env = getJNIEnv();
+   jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setOrientation", "(I)V");
+   (*env)->CallStaticVoidMethod(env, applicationClass, m, o);
 }

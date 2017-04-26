@@ -10,6 +10,9 @@
  *********************************************************************************/
 
 
+static void soundPlay(CharP filename)
+{
+}
 
 static void soundSetEnabled(bool b)
 {

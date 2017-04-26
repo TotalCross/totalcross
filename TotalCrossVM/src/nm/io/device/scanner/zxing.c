@@ -16,8 +16,8 @@ TC_API void tidsS_readBarcode_s(NMParams p) // totalcross/io/device/scanner/Scan
 {
 #ifdef ANDROID
    JNIEnv* env = getJNIEnv();         
-   Object mode = p->obj[0];
-   Object o = null;
+   TCObject mode = p->obj[0];
+   TCObject o = null;
    jstring jmode = mode == null ? null : (*env)->NewString(env, (jchar*) String_charsStart(mode), String_charsLen(mode));
    jstring result = (*env)->CallStaticObjectMethod(env, applicationClass, jzxing, jmode);
    (*env)->DeleteLocalRef(env, jmode);

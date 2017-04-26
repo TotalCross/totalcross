@@ -411,7 +411,7 @@ public class ScrollBar extends Container
                disableAutoScroll();
             Window.needsPaint = true;
             startDragPos = -1;
-            mustPostEvent = btnDec.enabled || btnInc.enabled;
+            mustPostEvent = btnDec.isEnabled() || btnInc.isEnabled();
             pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
             if (disableBlockIncrement && (pos < dragBarPos || pos > dragBarPos+dragBarSize))
             {
@@ -424,7 +424,7 @@ public class ScrollBar extends Container
             KeyEvent ke = (KeyEvent)event;
             if (ke.isPrevKey()) // guich@330_45
             {
-               if (btnDec.enabled)
+               if (btnDec.isEnabled())
                   value -= Settings.keyboardFocusTraversable ? unitIncrement : blockIncrement;
                event.consumed = true;
                mustPostEvent = true; // guich@240_21
@@ -432,7 +432,7 @@ public class ScrollBar extends Container
             else
             if (ke.isNextKey()) // guich@330_45
             {
-               if (btnInc.enabled)
+               if (btnInc.isEnabled())
                   value += Settings.keyboardFocusTraversable ? unitIncrement : blockIncrement;
                event.consumed = true;
                mustPostEvent = true; // guich@240_21
@@ -440,7 +440,8 @@ public class ScrollBar extends Container
             else
             if (ke.isActionKey())
             {
-               parent.requestFocus();
+               if (parent != null)
+                  parent.requestFocus();
                isHighlighting = true;
             }
             break;
@@ -452,7 +453,8 @@ public class ScrollBar extends Container
       else
       if (mustPostEvent)
       {
-         parent.postEvent(getPressedEvent(this));
+         if (parent != null)
+            parent.postEvent(getPressedEvent(this));
          isHighlighting = false; // don't let postEvent steal our focus!
       }
    }
@@ -505,11 +507,11 @@ public class ScrollBar extends Container
       boolean b = true;
       Window win = getParentWindow();
       if (!buttonScroll)
-        btnDec.setEnabled(b = (enabled && value > minimum));
+        btnDec.setEnabled(b = (isEnabled() && value > minimum));
       if (!b && win != null && win.getFocus() == btnDec) // if we're disabled now and we got the focus, move focus to other control
          requestFocus();
       if (!buttonScroll)
-         btnInc.setEnabled(b = (enabled && value+visibleItems < maximum));
+         btnInc.setEnabled(b = (isEnabled() && value+visibleItems < maximum));
       Control foc = win == null ? null : win.getFocus();
       if (!b && (foc == btnDec || foc == btnInc)) // guich@572_16: only if the focus is one of the buttons - bruno@tc114: avoid auto-setting the focus to a multi-edit
       {
@@ -535,13 +537,10 @@ public class ScrollBar extends Container
 
    public void setEnabled(boolean enabled)
    {
-      if (enabled != this.enabled)
+      if (internalSetEnabled(enabled,false))
       {
-         this.enabled = enabled;
-         btnDec.setEnabled(enabled && value > minimum);
-         btnInc.setEnabled(enabled && value+visibleItems < maximum);
-         onColorsChanged(false);
-         Window.needsPaint = true;
+         btnDec.setEnabled(isEnabled() && value > minimum);
+         btnInc.setEnabled(isEnabled() && value+visibleItems < maximum);
       }
    }
 
@@ -555,7 +554,7 @@ public class ScrollBar extends Container
       bColor = Color.brighter(getBackColor());
       if (parent != null && bColor == parent.getBackColor())
          bColor = Color.getCursorColor(bColor);
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    public void onPaint(Graphics g)
@@ -576,7 +575,7 @@ public class ScrollBar extends Container
       }
       if (verticalBar)
       {
-         if (uiVista && enabled) // guich@573_6
+         if (uiVista && isEnabled()) // guich@573_6
             g.fillVistaRect(0,dragBarPos,width,dragBarSize,backColor,startDragPos!=-1,true); // guich@tc110_51: press the bar if dragging.
          else
             g.fillRect(0,dragBarPos,width,dragBarSize);
@@ -595,7 +594,7 @@ public class ScrollBar extends Container
       }
       else
       {
-         if (uiVista && enabled) // guich@573_6
+         if (uiVista && isEnabled()) // guich@573_6
             g.fillVistaRect(dragBarPos,0,dragBarSize,height,backColor,startDragPos!=-1,false); // guich@tc110_51: press the bar if dragging.
          else
             g.fillRect(dragBarPos,0,dragBarSize,height);
@@ -665,5 +664,9 @@ public class ScrollBar extends Container
        }
        _onEvent(ke);
        return this;
+   }
+   
+   public void tempShow()
+   {
    }
 }

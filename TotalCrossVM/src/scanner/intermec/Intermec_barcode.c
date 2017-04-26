@@ -10,7 +10,7 @@
  *********************************************************************************/
 
 #if defined WINCE
-#include "barcode.h"
+#include "..\barcode.h"
 #include "itcscan.h"
 
 #define MAX_MESSAGE_LENGTH 4096
@@ -236,6 +236,10 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
    }
    else p->retI = false;
 }
+//////////////////////////////////////////////////////////////////////////
+SCAN_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
+{
+}
 
 #elif defined (ANDROID)
 #include "barcode.h"
@@ -319,5 +323,8 @@ bool callBoolMethodWithoutParams(CharP name)
    jclass applicationClass = androidFindClass(env, "totalcross/android/Scanner4A");
    return (*env)->CallStaticBooleanMethod(env, applicationClass, (*env)->GetStaticMethodID(env, applicationClass, name, "()Z"));
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tidsS_setParam_ss(NMParams p) // totalcross/io/device/scanner/Scanner native public static void setParam(String what, String value);
+{
+}
 #endif
-

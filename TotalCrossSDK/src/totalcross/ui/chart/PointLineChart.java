@@ -74,7 +74,6 @@ public abstract class PointLineChart extends Chart
       // Draw lines
       if (showLines)
       {
-         g.useAA = Settings.screenBPP > 8; 
          int thick = lineThickness;
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
@@ -83,21 +82,19 @@ public abstract class PointLineChart extends Chart
             Vector v = (Vector) points.items[i]; // the series' points
             if (v != null)
             {
-               for (int j = 0, n = v.size() - 2; j < n; j++) // for each series point
+               for (int j = 0, n = v.size() - 1; j < n; j++) // for each series point
                   if (s.yValues[j] != UNSET && s.yValues[j+1] != UNSET)
                   {
                      Coord c1 = (Coord) v.items[j];
                      Coord c2 = (Coord) v.items[j + 1];
-                     for (int k = -(thick>>1); k <= (thick>>1); k++)
-                        g.drawLine(c1.x, c1.y-k, c2.x, c2.y-k);
+                     g.drawThickLine(c1.x, c1.y, c2.x, c2.y, thick);
                   }
             }
          }
-         g.useAA = false;
       }
 
       // Draw points
-      if (!showLines || showPoints || hasFocus)
+      if (!showLines || showPoints || hasFocus || Settings.fingerTouch)
       {
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
@@ -189,7 +186,8 @@ public abstract class PointLineChart extends Chart
                selectedValue = -1;
 
                Rect r = new Rect();
-               r.width = r.height = pointR * 2;
+               int dim = fmH;
+               r.width = r.height = fmH*2;
 
                for (int i = series.size() - 1; i >= 0; i --) // for each series
                {
@@ -199,8 +197,8 @@ public abstract class PointLineChart extends Chart
                      for (int j = v.size() - 1; j >= 0; j --) // for each series point
                      {
                         Coord c = (Coord) v.items[j];
-                        r.x = c.x - pointR;
-                        r.y = c.y - pointR;
+                        r.x = c.x - dim;
+                        r.y = c.y - dim;
 
                         if (r.contains(xx, yy))
                         {

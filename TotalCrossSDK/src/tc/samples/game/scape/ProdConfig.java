@@ -32,6 +32,5 @@ interface ProdConfig
    static final boolean PC_COLOR = true;
    static final boolean PC_WAVES = true;
 
-   final static boolean DEBUG = false;
    final static boolean NEVER_LOSE = false;
 }

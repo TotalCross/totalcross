@@ -14,24 +14,28 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.net.mail;
 
 /**
- * Thrown by the Address constructor if the given String address is invalid
+ * Thrown by the <code>Address</code> constructor if the given string address is invalid.
  * 
  * @since TotalCross 1.13
  */
 public class AddressException extends Exception
 {
-   /** Constructs an empty Exception. */
+   /** 
+    * Constructs an empty Exception. 
+    */
    public AddressException()
    {
       super();
    }
 
-   /** Constructs an exception with the given message. */
+   /** 
+    * Constructs an exception with the given message. 
+    *
+    * @param msg The error message.
+    */
    public AddressException(String msg)
    {
       super(msg);

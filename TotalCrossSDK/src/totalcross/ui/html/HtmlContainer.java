@@ -105,7 +105,8 @@ public class HtmlContainer extends Container
    public void reposition()
    {
       super.reposition(false);
-      doc.reposition();
+      if (doc != null)
+         doc.reposition();
    }
 
    /** Resets the given form of the current document with the given parameters.

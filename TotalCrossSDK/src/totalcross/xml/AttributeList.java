@@ -15,39 +15,44 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.xml;
+
 import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
 * This class describes the attributes attached to a start-tag. Tags are case-insensitive.
 * <P>
-* The <code>AttributeListIterator</code> class provides an iterator over
-* the components of each attribute
-* in this </code>AttributeList</code> instance:
+* The <code>AttributeListIterator</code> class provides an iterator over the components of each attribute in this </code>AttributeList</code>
+* instance:
 * <UL>
 * <LI>the attribute name
 * <LI>the unquoted value
-* <LI>the quote, if one exist
+* <LI>the quote, if one exists
 * </UL>
 */
 public class AttributeList extends Hashtable
 {
    Filter filter;
    
-   /** Set to true if you want the get/set methods to be case insensitive. */
+   /** 
+    * Set to true if you want the get/set methods to be case insensitive. 
+    */
    public boolean caseInsensitive; // guich@tc113_29
 
+   /**
+    * Constructs an empty <code>attributeList</code> with 5 free positions. 
+    */
    public AttributeList()
    {
       super(5);
    }
 
    /**
-   * Clone
-   */
+    * Clones the given <code>attributeList</code>.
+    * 
+    * @param source The <code>attributeList</code> to be cloned.
+    */
    public AttributeList(AttributeList source)
    {
       super(source.size());
@@ -64,13 +69,12 @@ public class AttributeList extends Hashtable
    }
 
    /**
-   * Add a new attribute to this AttributeList
-   *
-   * @param attrName name of the attribute
-   * @param attrValue unquoted value of the attribute
-   * @param dlm   delimiter that started the attribute value (' or ").
-   *               '\0' if none
-   */
+    * Adds a new attribute to this AttributeList
+    *
+    * @param attrName The name of the attribute.
+    * @param attrValue The unquoted value of the attribute.
+    * @param dlm Delimiter that started the attribute value (<code>'</code> or <code>"</code>), or <code>'\0'</code> if none.
+    */
    public final void addAttribute(String attrName, String attrValue, byte dlm)
    {
       attrName = getKey(attrName); // guich@tc113_12: convert toLowerCase
@@ -79,11 +83,11 @@ public class AttributeList extends Hashtable
    }
 
    /**
-   * Get the attribute value for a given name
-   *
-   * @param name attribute name
-   * @return the value, or null if it wasn't specified
-   */
+    * Gets the attribute value for a given name.
+    *
+    * @param name The attribute name.
+    * @return The value, or <code>null</code> if it wasn't specified.
+    */
    public final String getAttributeValue(String name)
    {
       AttributeValue value = (AttributeValue)get(getKey(name)); // guich@tc113_12: convert toLowerCase
@@ -93,11 +97,11 @@ public class AttributeList extends Hashtable
    }
 
    /**
-    * Get the attribute value for a given name as an integer
+    * Gets the attribute value for a given name as an integer.
     *
-    * @param name attribute name
-    * @return the value, or the default value if it wasn't specified or 
-    * there's a problem in the number convertion
+    * @param name The attribute name.
+    * @param defaultValue The default value if there is no value for the attribute name.
+    * @return The value, or the default value if it wasn't specified or there's a problem in the number conversion.
     */
     public final int getAttributeValueAsInt(String name, int defaultValue)
     {
@@ -113,13 +117,12 @@ public class AttributeList extends Hashtable
     }
 
    /**
-   * Set an AttributeList.Filter to filter the attribute entered in
-   * this AttributeList
-   *
-   * @param filter AttributeList.Filter to set,
-   *               or null if the current AttributeList filter must be removed
-   * @return previous AttributeList.Filter or 0 if none was set
-   */
+    * Sets an <code>AttributeList.Filter</code> to filter the attribute entered in this <code>AttributeList</code>.
+    *
+    * @param filter The <code>AttributeList.Filter</code> to set, or <code>null</code> if the current <code>AttributeList</code> filter must be 
+    * removed.
+    * @return The previous <code>AttributeList.Filter</code> or <code>null</code> if none was set.
+    */
    Filter setFilter(Filter filter)
    {
       Filter old = this.filter;
@@ -127,24 +130,25 @@ public class AttributeList extends Hashtable
       return old;
    }
 
-   /** interface to filter each attribute before entering it
-   *   in this AttributeList
-   */
+   /** 
+    * Interface to filter each attribute before entering it in the <code>AttributeList</code>.
+    */
    public interface Filter
    {
       /**
-      * Call back to check if an attribute must be entered
-      *
-      * @param attrName name of the attribute
-      * @param attrValue unquoted value of the attribute
-      * @param dlm   delimiter that started the attribute value (' or ").
-      *               '\0' if none
-      * @return true if the attribute can be entered, false otherwise.
-      */
+       * Call back to check if an attribute must be entered.
+       *
+       * @param attrName The name of the attribute.
+       * @param attrValue The unquoted value of the attribute.
+       * @param dlm Delimiter that started the attribute value (<code>'</code> or <code>"</code>), or <code>'\0'</code> if none.
+       * @return <code>true</code> if the attribute can be entered; <code>false</code>, otherwise.
+       */
       boolean acceptAttribute(String attrName, String attrValue, byte dlm);
    }
 
-   /** class to iterate over each attribute of an AttributeList */
+   /** 
+    * Class to iterate over each attribute of an <code>AttributeList</code> 
+    */
    public class Iterator
    {
       private int current;
@@ -156,19 +160,18 @@ public class AttributeList extends Hashtable
       private static final String noQuote = "";
 
       /**
-      * Construct an Iterator over each attribute in the outer AttributeList
-      */
+       * Constructs an <code>Iterator</code> over each attribute in the outer <code>AttributeList</code>.
+       */
       public Iterator()
       {
          this.keys = getKeys();
       }
 
       /**
-      * Make current the next attribute in this AttributeList
-      *
-      * @return true if the next attribute was activated,
-      *         false if there are no more attribute in this list.
-      */
+       * Makes current the next attribute in this <code>AttributeList</code>.
+       *
+       * @return <code>true</code> if the next attribute was activated, or <code>false</code> if there are no more attribute in this list.
+       */
       public final boolean next()
       {
          if (current < size())
@@ -186,22 +189,20 @@ public class AttributeList extends Hashtable
       }
 
       /**
-      * Get the name of the current attribute
-      *
-      * @return the name of the current attribute,
-      *         or null if no attribute is actually current.
-      */
+       * Gets the name of the current attribute.
+       *
+       * @return The name of the current attribute, or <code>null</code> if no attribute is actually current.
+       */
       public final String getAttributeName()
       {
          return currentName;
       }
 
       /**
-      * Get the unquoted value of the current attribute
-      *
-      * @return the unquoted value of the current attribute,
-      *         or null if no attribute is actually current.
-      */
+       * Gets the unquoted value of the current attribute.
+       *
+       * @return The unquoted value of the current attribute, or <code>null</code> if no attribute is actually current.
+       */
       public final String getAttributeValue()
       {
          if (currentValue != null)
@@ -210,12 +211,11 @@ public class AttributeList extends Hashtable
       }
 
       /**
-      * Get the quote surrounding the value of the current attribute
-      *
-      * @return "\'", "\"" or "" (the latter when no quote were surrounding
-      *         the attribute value,)
-      *         or null if no attribute is actually current.
-      */
+       * Gets the quote surrounding the value of the current attribute.
+       *
+       * @return <code>\'</code>, <code>\"</code>, or <code>\0</code> (the latter when no quote were surrounding the attribute value) or 
+       * <code>null</code> if no attribute is actually current.
+       */
       public final String getValueDelimiter()
       {
          if (currentValue != null)
@@ -234,11 +234,10 @@ public class AttributeList extends Hashtable
       }
 
       /**
-      * Get the attribute as a String, the value being surrounded by single
-      * or double quotes if these were specified in the start-tag.
-      *
-      * @return The string a described above.
-      */
+       * Gets the attribute as a string, the value being surrounded by single or double quotes if these were specified in the start-tag.
+       *
+       * @return The string a described above.
+       */
       public final String getAttributeAsString()
       {
          if (currentValue != null)

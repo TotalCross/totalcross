@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="totalcross.android"
+      android:versionCode="305419896"
+      android:versionName="!1.0!"
+      android:sharedUserId="totalcross.app.sharedid"
+    >
+
+    <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
+         android:theme="@style/TCThemeNS" android:name="android.support.multidex.MultiDexApplication">
+        <meta-data android:name="isFullScreen" android:value="fullscreen:0" />
+        <activity android:name=".Loader" 
+        android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|fontScale|keyboard" 
+        android:windowSoftInputMode="adjustResize"
+        />
+        <activity android:name=".RouteViewer"/>
+        <activity android:name=".TouchImageViewer" />
+        <activity android:name=".WebViewer" />
+        <activity android:name=".CameraViewer" />
+        <activity android:name=".MapViewer" />
+        <uses-library android:name="com.google.android.maps" android:required="false" ></uses-library>
+        <activity android:name=".CaptureActivity"
+                 android:screenOrientation="landscape"
+                 android:clearTaskOnLaunch="true"
+                 android:stateNotNeeded="true"
+                 android:configChanges="orientation|keyboardHidden"
+                 android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+                 android:windowSoftInputMode="stateAlwaysHidden">
+         <intent-filter>
+           <action android:name="totalcross.zxing.client.android.SCAN"/>
+           <category android:name="android.intent.category.DEFAULT"/>
+         </intent-filter>
+         <intent-filter>
+           <action android:name="android.intent.action.AUTOMATICBARCODEACTIVITY" />
+           <category android:name="android.intent.category.DEFAULT" />
+         </intent-filter>         
+        </activity>
+        <!-- push notifications -->
+        <!-- receives the message -->
+		<service
+			android:name="totalcross.android.firebase.FirebaseMessageReceiver">
+			<intent-filter>
+				<action android:name="com.google.firebase.MESSAGING_EVENT" />
+			</intent-filter>
+		</service>
+        <!-- receives the token (2nd time on) -->
+        <service
+            android:name="totalcross.android.firebase.MyInstanceIDListenerService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+    </application>
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_APN_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.FLASHLIGHT"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"/>
+    <uses-permission android:name="android.permission.CONTROL_LOCATION_UPDATES"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.CALL_PRIVILEGED"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/> 
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/> 
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false"/>
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
+    <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+    <uses-feature android:name="android.hardware.location" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+    <uses-feature android:name="android.hardware.wifi" android:required="false"/>
+    <uses-permission android:name="com.honeywell.decode.permission.DECODE" android:required="false"/>
+	
+	<uses-feature android:glEsVersion="0x00020000" />
+</manifest>

@@ -98,7 +98,7 @@ public class DynamicScrollContainer extends ScrollContainer
 				bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
 			}
 		}
-		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnDec && sbV.btnDec.enabled == false)
+		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnDec && sbV.btnDec.isEnabled() == false)
 		{
 			/*
 			 * fixes issue where if you drag scroll handle all the way to the top the bag is never resized to start from the top
@@ -109,7 +109,7 @@ public class DynamicScrollContainer extends ScrollContainer
 			bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
 			updateVisibleViews(SCROLL_UNKNOWN);
 		}
-		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnInc && sbV.btnInc.enabled == false)
+		else if (event.type == EnabledStateChangeEvent.ENABLED_STATE_CHANGE && event.target == sbV.btnInc && sbV.btnInc.isEnabled() == false)
 		{
 			/*
 			 * fixes issue where if you drag scroll handle all the way to the bottom, we never get the bag resized to the 
@@ -127,6 +127,7 @@ public class DynamicScrollContainer extends ScrollContainer
 	 */
 	protected void updateVisibleViews(int scrollDirection)
 	{
+	   if (datasource == null) return;
 		int yStart = bag.y * -1;
 		int yEnd = ((bag.y * -1) + height);
 
@@ -159,8 +160,6 @@ public class DynamicScrollContainer extends ScrollContainer
 
 	/**
 	 * Returns the top most {@link AbstractView} that starts within the viewable area
-	 * 
-	 * @return
 	 */
 	public AbstractView getTopMostVisibleView()
 	{
@@ -237,9 +236,9 @@ public class DynamicScrollContainer extends ScrollContainer
 		}
 	}
 
-	public boolean scrollContent(int dx, int dy)
+	public boolean scrollContent(int dx, int dy, boolean fromFlick)
 	{
-		if (super.scrollContent(dx, dy))
+		if (super.scrollContent(dx, dy, fromFlick))
 		{
 			updateVisibleViews(dy < 0 ? SCROLL_UP : SCROLL_DOWN);
 			return true;
@@ -446,12 +445,11 @@ public class DynamicScrollContainer extends ScrollContainer
 		 * 
 		 * @param yStart
 		 * @param yEnd
-		 * @return
 		 */
 		public Vector getVisibleViewsVec(int yStart, int yEnd, int scrollDirection)
 		{
 			Vector visibleViewsVec = new Vector(20);
-			if (viewCount == 0)
+			if (viewCount == 0 || views == null) // guich@tc307: prevent NPE at line 505 - AbstractView view = ((AbstractView) (views.items[i]));
 				return visibleViewsVec;
 			switch (scrollDirection)
 			{
@@ -528,7 +526,6 @@ public class DynamicScrollContainer extends ScrollContainer
 		 * Returns view number <code>no<code> contained within this {@link DataSource}
 		 * 
 		 * @param no
-		 * @return
 		 */
 		public AbstractView getView(int no)
 		{

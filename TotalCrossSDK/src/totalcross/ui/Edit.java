@@ -24,7 +24,6 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
-import totalcross.ui.media.*;
 import totalcross.util.*;
 
 /**
@@ -82,13 +81,13 @@ import totalcross.util.*;
  * @see #clipboardDelay
  */
 
-public class Edit extends Control
+public class Edit extends Control implements TextControl
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
-   private static int xMins[] = {4,1,3,3,4};
+   private static int xMins[] = {4,1,3,3,4,4};
    public static final int prefH = uiAndroid ? 4 : 2;
 
-   private boolean hasFocus;
+   protected boolean hasFocus;
    private boolean cursorShowing;
    /** Specifies if the control accepts input from the user.
     * Note: do not change this directly; use the setEditable method instead.
@@ -102,6 +101,17 @@ public class Edit extends Control
     *  @since SuperWaba 5.03
     */
    public int alignment=LEFT;
+
+   /** The caption to draw when this Edit is empty.
+    * @see #captionColor 
+    */
+   public String caption;
+   
+   /** The caption's color. */
+   public int captionColor = -1;
+   
+   /** An optional caption's icon */
+   public Image captionIcon;
    
    /** @see CalculatorBox#rangeCheck */
    public CalculatorBox.RangeCheck rangeCheck;
@@ -250,7 +260,7 @@ public class Edit extends Control
     * @since TotalCross 1.6
     */
    public boolean virtualKeyboard = Settings.virtualKeyboard;
-   
+
    /** Cursor thickness */
    public static int cursorThickness = Math.max(Settings.screenWidth,Settings.screenHeight) > 1500 ? 3 : Math.max(Settings.screenWidth,Settings.screenHeight) > 700 ? 2 : 1;
 
@@ -424,12 +434,7 @@ public class Edit extends Control
             if (maskedEdit)
             {
                if (mask == null || mask.length == 0) // use a default mask
-               {
-                  String s = decimalPlaces == 0 ? "999a999a999a999a999" : ("999a999a999a999a999b"+Convert.dup('9',decimalPlaces));
-                  s = s.replace('a', Settings.thousandsSeparator);
-                  s = s.replace('b', Settings.decimalSeparator);
-                  mask = s.toCharArray();
-               }
+                  mask = getDefaultCurrencyMask(decimalPlaces);
                applyMaxLengthBasedOnMask();
                alignment = RIGHT;
             }
@@ -442,6 +447,14 @@ public class Edit extends Control
       }
       if (kbdType != KBD_NONE) // guich@tc115_29
          setKeyboard(KBD_DEFAULT);
+   }
+   
+   public static char[] getDefaultCurrencyMask(int decimalPlaces)
+   {
+      String s = decimalPlaces == 0 ? "999a999a999a999a999" : ("999a999a999a999a999b"+Convert.dup('9',decimalPlaces));
+      s = s.replace('a', Settings.thousandsSeparator);
+      s = s.replace('b', Settings.decimalSeparator);
+      return s.toCharArray();
    }
 
    private void applyMaxLengthBasedOnMask()
@@ -489,6 +502,11 @@ public class Edit extends Control
       }
    }
 
+   public int getMaxLength()
+   {
+      return maxLength;
+   }
+
    private void clearPosState()
    {
       insertPos = 0;
@@ -515,21 +533,22 @@ public class Edit extends Control
 
    protected int charPos2x(int n)
    {
+      int extra = captionIcon == null ? 0 : captionIcon.getWidth() + fmH;
       if (!isMaskedEdit)
       {
          if (n == 0) // start of string?
-            return xOffset;
+            return extra + xOffset;
          if (n >= chars.length()) // end or beyond end of string?
-            return xOffset + getTotalCharWidth();
+            return extra + xOffset + getTotalCharWidth();
       }
       else
       if (n > chars.length()) n = chars.length();
       switch (mode)
       {
          case PASSWORD_ALL:
-            return xOffset + wildW * n;
+            return extra + xOffset + wildW * n;
          case PASSWORD:
-            return xOffset + wildW * (n-1) + fm.charWidth(chars, chars.length()-1);
+            return extra + xOffset + wildW * (n-1) + fm.charWidth(chars, chars.length()-1);
          case CURRENCY:
             if (isMaskedEdit) // in currency, we go from right to left
             {
@@ -542,7 +561,7 @@ public class Edit extends Control
                   if ('0' <= c && c <= '9') // update the position at the main string only when a numeric value is represented
                      i--;
                }
-               return xx;
+               return extra + xx;
             }
             else break;
          default://case DATE:
@@ -556,10 +575,10 @@ public class Edit extends Control
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
-               return xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
+               return extra + xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
             }
       }
-      return xOffset + fm.sbWidth(chars, 0, n);
+      return extra + xOffset + fm.sbWidth(chars, 0, n);
    }
 
    /** Returns the text displayed in the edit control. If masking is enabled, the text with the mask is returned;
@@ -735,7 +754,7 @@ public class Edit extends Control
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(isEnabled(),backColor,foreColor,fourColors);
    }
 
    private int getTotalCharWidth()
@@ -765,69 +784,85 @@ public class Edit extends Control
       }
    }
 
-/*   protected void draw(Graphics g, boolean cursorOnly)
-   {
-      draw(g);
-   }
-*/   
    protected void draw(Graphics g)
    {
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
+      boolean uiAndroid = Control.uiAndroid || uiHolo;
       int y = this.height - fmH - gap;
       if (uiAndroid) y -= 1;
+      if (uiHolo) // no else here!
+         y = (height-fmH - gap) / 2;
 
-      //if (!cursorOnly) // guich@200b4_23: optimized when cursorOnly
+      g.backColor = back0;
+      if (!transparentBackground)
       {
-         g.backColor = back0;
-         if (!transparentBackground)
+         int gg = gap;
+         if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
+         if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+         if (hasBorder && uiAndroid)
          {
-            int gg = gap;
-            if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
-            if (!uiAndroid || !hasBorder) g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
-            if (hasBorder && uiAndroid)
+            try
             {
-               try
+               if (npback == null || focusColor != -1)
                {
-                  if (npback == null || focusColor != -1)
-                     npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false,true);
+                  npback = NinePatch.getInstance().getNormalInstance(NinePatch.EDIT, width, height, isEnabled() ? hasFocus && focusColor != -1 ? focusColor : back0 : (back0 == parent.backColor ? Color.darker(back0,32) : Color.interpolate(back0,parent.backColor)), false);
+                  npback.alphaMask = alphaValue;
                }
-               catch (ImageException e) {e.printStackTrace();}
-               g.drawImage(npback, 0,0);
             }
+            catch (ImageException e) {e.printStackTrace();}
+            NinePatch.tryDrawImage(g,npback,0,0);
          }
-         // draw the text and/or the selection
-         int len = chars.length();
-         if (len > 0)
+      }
+      // draw the text and/or the selection
+      int len = chars.length();
+      boolean drawCaption = caption != null && !hasFocus && len == 0;
+      if (len > 0 || drawCaption || captionIcon != null)
+      {
+         if (startSelectPos != -1 && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
          {
-            if (startSelectPos != -1 && editable) // moved here to avoid calling g.eraseRect (call fillRect instead) - guich@tc113_38: only if editable
+            // character regions are:
+            // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char
+            int sel1 = Math.min(startSelectPos,insertPos);
+            int sel2 = Math.max(startSelectPos,insertPos);
+            int sel1X = charPos2x(sel1);
+            int sel2X = charPos2x(sel2);
+            
+            if (sel1X != sel2X)
             {
-               // character regions are:
-               // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char
-               int sel1 = Math.min(startSelectPos,insertPos);
-               int sel2 = Math.max(startSelectPos,insertPos);
-               int sel1X = charPos2x(sel1);
-               int sel2X = charPos2x(sel2);
-
                int old = g.backColor;
                g.backColor = back1;
                g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
                g.backColor = old;
             }
+         }
 
-            g.foreColor = fColor;
-            int xx = xOffset;
-            if (!hasFocus) // guich@503_2: align the edit after it looses focus
-               switch (alignment)
-               {
-                  case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
-                  case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
-               }
-            if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
+         g.foreColor = fColor;
+         int xx = xOffset;
+         if (captionIcon != null)
+         {
+            xx += captionIcon.getWidth() + fmH;
+            g.drawImage(captionIcon, fmH, (height-captionIcon.getHeight())/2);
+         }
+            
+         if (!hasFocus && !drawCaption) // guich@503_2: align the edit after it looses focus
+            switch (alignment)
+            {
+               case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
+               case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
+            }
+         if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
+         if (drawCaption)
+         {
+            g.foreColor = captionColor != -1 ? captionColor : this.foreColor;
+            g.drawText(caption, xx, y, textShadowColor != -1, textShadowColor);
+         }
+         else
             switch (mode)
             {
                case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
-                  g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
+                  if (len > 0)
+                     g.drawText(Convert.dup('*',len-1)+chars.charAt(len-1), xx, y, textShadowColor != -1, textShadowColor);
                   break;
                case PASSWORD_ALL:
                   g.drawText(Convert.dup('*',len), xx, y, textShadowColor != -1, textShadowColor);
@@ -841,13 +876,12 @@ public class Edit extends Control
                   else
                      g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
             }
-            if (hasBorder) g.clearClip();
-         }
-         if (hasBorder && !uiAndroid)
-            g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
-         cursorX = charPos2x(insertPos);
+         if (hasBorder) g.clearClip();
       }
-      if (hasFocus && enabled && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
+      if (hasBorder && !uiAndroid)
+         g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
+      cursorX = charPos2x(insertPos);
+      if (hasFocus && isEnabled() && (editable || hasCursorWhenNotEditable)) // guich@510_18: added check to see if it is enabled
       {
          // draw cursor
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
@@ -980,7 +1014,7 @@ public class Edit extends Control
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE || !editable || !enabled) // fdie@ nothing to do if kdb has been disabled
+      if (kbdType == KBD_NONE || !editable || !isEnabled()) // fdie@ nothing to do if kdb has been disabled
          return;
       if (!popupsHidden())
       {
@@ -1038,23 +1072,27 @@ public class Edit extends Control
             break;
 
          default:
-            if (virtualKeyboard)
+            if (virtualKeyboard && editable && !"".equals(validChars))
             {
-               if (editable && !"".equals(validChars))
+               if (Settings.customKeyboard != null)
+               {
+                  Settings.customKeyboard.show(this, validChars);
+               }
+               else
                {
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
                   boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
+                  if (Settings.unmovableSIP && !Window.isSipShown) // guich@tc126_21
+                  {
+                     Window ww = getParentWindow();
+                     if (ww != null)
+                        ww.shiftScreen(this,this.height-(fmH+prefH));
+                  }
                   if (!Window.isSipShown)
                   {
                      Window.isSipShown = true;
                      Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-                  }
-                  if (Settings.unmovableSIP) // guich@tc126_21
-                  {
-                     Window ww = getParentWindow();
-                     if (ww != null)
-                        ww.shiftScreen(this,0);
                   }
                }
             }
@@ -1090,8 +1128,8 @@ public class Edit extends Control
 
    private void focusOut()
    {
-      if (Settings.isWindowsDevice() && virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
-         hideSip();
+//      if (virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
+//         hideSip();
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
@@ -1175,7 +1213,7 @@ public class Edit extends Control
             break;
          case KeyEvent.KEY_PRESS:
          case KeyEvent.SPECIAL_KEY_PRESS:
-            if (editable && enabled)
+            if (editable && isEnabled())
             {
                KeyEvent ke = (KeyEvent)event;
                if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
@@ -1184,7 +1222,6 @@ public class Edit extends Control
                   popupKCC();
                   break;
                }
-               
                boolean moveFocus = !Settings.geographicalFocus && (ke.isActionKey() || ke.key == SpecialKeys.TAB);
                if (event.target == this && moveFocus) // guich@tc100b2: move to the next edit in the same container
                {
@@ -1284,10 +1321,7 @@ public class Edit extends Control
                      ke.key = Convert.toLowerCase((char)ke.key);
 
                   if (!isCharValid((char)ke.key)) // guich@101: tests if the key is in the valid char set - moved to here because a valid clipboard char can be an invalid edit char
-                  {
-                     Sound.beep();
                      break;
-                  }
                }
                if (sel1 != -1 && (isPrintable || isDelete || isBackspace))
                {
@@ -1345,7 +1379,6 @@ public class Edit extends Control
                      newInsertPos++;
                      clearSelect = true;
                   }
-                  else Sound.beep();
                boolean isMove = true;
                switch (ke.key)
                {
@@ -1384,7 +1417,7 @@ public class Edit extends Control
          {
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
-            if (newInsertPos != insertPos && enabled)
+            if (newInsertPos != insertPos && isEnabled())
                extendSelect = true;
             break;
          }
@@ -1667,7 +1700,7 @@ public class Edit extends Control
    {
       String pasted = Vm.clipboardPaste();
       if (pasted == null || pasted.length() == 0)
-         Sound.beep();
+         ;
       else
       {
          showTip(this, pasteStr, 500, -1);
@@ -1679,13 +1712,13 @@ public class Edit extends Control
          }
             
          ke.type = KeyEvent.KEY_PRESS;
-         char ch[] = pasted.toCharArray();
-         for (int i =0; i < ch.length; i++)
+         int n = pasted.length();
+         for (int i =0; i < n; i++)
          {
-            ke.key = ch[i];
+            ke.key = pasted.charAt(i);
             _onEvent(ke);
          }
-         try {setCursorPos(insertPos+ch.length, insertPos+ch.length);} catch (Exception e) {}
+         try {setCursorPos(insertPos+n, insertPos+n);} catch (Exception e) {}
       }
    }
 

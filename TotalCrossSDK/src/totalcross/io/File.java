@@ -18,6 +18,7 @@
 package totalcross.io;
 
 import java.net.URISyntaxException;
+
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -235,7 +236,7 @@ public class File extends RandomAccessStream
 
       path = Convert.normalizePath(path);
       if (path.startsWith("device/")) // flsobral@tc110_108: added support for the alias "device/".
-         path = path.substring(6);
+         path = Convert.appendPath(Settings.appPath,path.substring(6)); // guich@tc310: in desktop was using the root folder of current drive
 
       this.path = path;
       this.mode = mode; // remove the sequential flag
@@ -333,15 +334,15 @@ public class File extends RandomAccessStream
              * Attempts to get an exclusive lock for this file, using reflection to call methods from JDK 1.4
              * ((java.io.RandomAccessFile) fileEx).getChannel().tryLock();
              */
-            if (mode == READ_WRITE)
+            if (mode != READ_ONLY)
             try
             {
                // RandomAccessFile.getChannel()
-               java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel", null);
-               Object fileChannel = getChannel.invoke(fileEx, null);
+               java.lang.reflect.Method getChannel = fileEx.getClass().getMethod("getChannel");
+               Object fileChannel = getChannel.invoke(fileEx);
                // FileChannel.tryLock() -> returns null if the file is already locked.
-               java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock", null);
-               if (tryLock.invoke(fileChannel, null) == null) 
+               java.lang.reflect.Method tryLock = fileChannel.getClass().getMethod("tryLock");
+               if (tryLock.invoke(fileChannel) == null) 
                {
                   // close everything and throw IOException.
                   ((java.io.RandomAccessFile) fileEx).close();
@@ -1142,7 +1143,7 @@ public class File extends RandomAccessStream
       dir = Convert.appendPath(dir, "/");
       files.addElement(dir);
       listFiles(dir, files, recursive);
-      files.qsort();
+      files.qsort(Convert.SORT_STRING_NOCASE);
       return (String[]) files.toObjectArray();
    }
 
@@ -1191,8 +1192,6 @@ public class File extends RandomAccessStream
     */
    public void copyTo(File dest) throws IOException // guich@tc126_8
    {
-      try {setPos(0);} catch (IOException ioe) {}
-      try {dest.setPos(0);} catch (IOException ioe) {}
       byte[] buf = new byte[4096];
       int n = 0;
       while ((n=readBytes(buf, 0, buf.length)) > 0)
@@ -1362,10 +1361,63 @@ public class File extends RandomAccessStream
     */
    public byte[] readAndClose() throws IOException
    {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         close();
+      }
+   }
+
+   /** Reads the entire file into a byte array and DELETES itself. A handy method that can be used like this:
+    * <pre>
+    * byte[] bytes = new File(...,File.READ_ONLY).readAndDelete();
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public byte[] readAndDelete() throws IOException
+   {
+      try
+      {
+         return read();
+      }
+      finally
+      {
+         delete();
+      }
+   }
+
+   /** Writes byte array to this file and closes itself. A handy method that can be used like this:
+    * <pre>
+    * new File(...,File.CREATE_EMPTY).writeAndClose(Vm.getFile("myfile.txt"));
+    * </pre>
+    * The only drawback is that this method consumes lots of memory if the file is big; use it carefully.
+    * @since TotalCross 1.53
+    */
+   public void writeAndClose(byte[] bytes) throws IOException
+   {
+      try
+      {
+         writeBytes(bytes, 0, bytes.length);
+      }
+      finally
+      {
+         close();
+      }
+   }
+
+   /** Reads the file and returns a byte array with its contents.
+    * @since TotalCross 3.1
+    */
+   public byte[] read() throws IOException
+   {
       int len = getSize();
       byte[] ret = new byte[len];
+      setPos(0);
       readBytes(ret,0,len);
-      close();
       return ret;
    }
 }

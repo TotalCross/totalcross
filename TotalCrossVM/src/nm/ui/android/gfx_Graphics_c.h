@@ -14,16 +14,26 @@
 #ifdef ANDROID
 #include <android/native_window.h> // requires ndk r5 or newer
 #include <android/native_window_jni.h> // requires ndk r5 or newer
-#include <android/log.h>
-#define debug(...) ((void)__android_log_print(ANDROID_LOG_INFO, "TotalCross", __VA_ARGS__))
 #endif
+#ifdef darwin
+bool isIpad;
+#else
+bool isIpad = false;
+#endif
+
+static void flushGlError()
+{
+   GLint error;
+   for (error = glGetError(); error; error = glGetError())
+      ;
+}
 
 bool checkGlError(const char* op, int line)
 {
    GLint error;
-   
+
    //debug("%s (%d)",op,line);
-   
+
    if (!op)
       return glGetError() != 0;
    else
@@ -46,53 +56,89 @@ bool checkGlError(const char* op, int line)
 #define GL_CHECK_ERROR checkGlError(__FILE__,__LINE__);
 
 #ifdef ANDROID
-static void setProjectionMatrix(GLfloat w, GLfloat h);
+static void setProjectionMatrix(float w, float h);
 static ANativeWindow *window,*lastWindow;
 static EGLDisplay _display;
 static EGLSurface _surface;
 static EGLContext _context;
-#endif
 static void destroyEGL();
+#endif
 static bool surfaceWillChange;
 
-VoidPs* imgTextures;
 int32 realAppH,appW,appH,glShiftY;
-GLfloat ftransp[16], f255[256];
+extern float ftransp[16];
+extern float f255[256];
 int32 flen;
-GLfloat* glcoords;//[flen*2]; x,y
-GLfloat* glcolors;//[flen];   alpha
-static GLfloat texcoords[16], lrcoords[8], shcolors[24],shcoords[8];
-static int32 *pixcoords, *pixcolors, *pixEnd;
+float *glXYA;//[flen*2]; x,y
+static float texcoords[16], lrcoords[8], shcolors[12],shcoords[8];
 
 // http://www.songho.ca/opengl/gl_projectionmatrix.html
 //////////// texture
 #define TEXTURE_VERTEX_CODE  \
       "attribute vec4 vertexPoint;" \
-      "attribute vec2 aTextureCoord;" \
+      "uniform float alpha;" \
       "uniform mat4 projectionMatrix; " \
       "varying vec2 vTextureCoord;" \
+      "varying float vAlpha;" \
       "void main()" \
       "{" \
-      "    gl_Position = vertexPoint * projectionMatrix;" \
-      "    vTextureCoord = aTextureCoord;" \
+      "    gl_Position = vec4(vertexPoint.xy,0,1.0) * projectionMatrix;" \
+      "    vTextureCoord = vertexPoint.zw;" \
+      "    vAlpha = alpha;" \
       "}"
 
 #define TEXTURE_FRAGMENT_CODE \
       "precision mediump float;" \
       "varying vec2 vTextureCoord;" \
       "uniform sampler2D sTexture;" \
-      "void main() {gl_FragColor = texture2D(sTexture, vTextureCoord);}"
+      "varying float vAlpha;" \
+      "void main()" \
+      "{" \
+      "   gl_FragColor = texture2D(sTexture, vTextureCoord);" \
+      "   gl_FragColor.a *= vAlpha;" \
+      "}"
 
 static GLuint textureProgram;
 static GLuint texturePoint;
-static GLuint textureCoord,textureS;
+static GLuint textureAlpha;
+static GLuint textureProjMat;
+
+///////
+
+#define TEXT_VERTEX_CODE  \
+      "attribute vec4 vertexPoint;" \
+      "uniform vec3 rgb;" \
+      "uniform mat4 projectionMatrix; " \
+      "varying vec2 vTextureCoord;" \
+      "varying vec3 v_rgb;" \
+      "void main()" \
+      "{" \
+      "    gl_Position = vec4(vertexPoint.xy,0,1.0) * projectionMatrix;" \
+      "    vTextureCoord = vertexPoint.zw;" \
+      "    v_rgb = rgb;" \
+      "}"
+
+#define TEXT_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 vTextureCoord;" \
+      "uniform sampler2D sTexture;" \
+      "varying vec3 v_rgb;" \
+      "void main()" \
+      "{" \
+      "   gl_FragColor = vec4(v_rgb,texture2D(sTexture, vTextureCoord).a);" \
+      "}"
+
+static GLuint textProgram;
+static GLuint textPoint;
+static GLuint textRGB;
+static GLuint textProjMat;
 
 //////////// points (text)
 
 #define POINTS_VERTEX_CODE \
-      "attribute vec4 a_Position; uniform vec4 a_Color; varying vec4 v_Color; attribute float alpha;" \
+      "attribute vec3 a_xya; uniform vec4 a_Color; varying vec4 v_Color;" \
       "uniform mat4 projectionMatrix; " \
-      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color.x,a_Color.y,a_Color.z,alpha); gl_Position = a_Position * projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color.x,a_Color.y,a_Color.z, a_xya.z); gl_Position = vec4(a_xya.xy,0,1.0) * projectionMatrix;}"
 
 #define POINTS_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -100,9 +146,26 @@ static GLuint textureCoord,textureS;
       "void main() {gl_FragColor = v_Color;}"
 
 static GLuint pointsProgram;
-static GLuint pointsPosition;
+static GLuint pointsXYA;
 static GLuint pointsColor;
-static GLuint pointsAlpha;
+static GLuint pointsProjMat;
+
+//////////// point colors (each point with a different color)
+
+#define POINTCOLORS_VERTEX_CODE \
+      "attribute vec2 a_xy; attribute vec4 a_Color; varying vec4 v_Color;" \
+      "uniform mat4 projectionMatrix; " \
+      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = vec4(a_xy.xy,0,1.0) * projectionMatrix;}"
+
+#define POINTCOLORS_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec4 v_Color;" \
+      "void main() {gl_FragColor = v_Color;}"
+
+static GLuint pointcolorsProgram;
+static GLuint pointcolorsXY;
+static GLuint pointcolorsColors;
+static GLuint pointcolorsProjMat;
 
 ///////////// line, rect, point
 
@@ -119,14 +182,36 @@ static GLuint pointsAlpha;
 static GLuint lrpProgram;
 static GLuint lrpPosition;
 static GLuint lrpColor;
-static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+static GLuint lrpProjMat;
+static GLushort rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
+
+///////////// dotted line (horizontal/vertical only)
+
+#define DOT_VERTEX_CODE \
+      "attribute vec4 a_Position;" \
+      "uniform mat4 projectionMatrix;" \
+      "varying vec2 v_xy;" \
+      "void main() {gl_PointSize = 1.0; gl_Position = a_Position*projectionMatrix; v_xy = a_Position.xy;}"
+
+#define DOT_FRAGMENT_CODE \
+      "precision mediump float;" \
+      "varying vec2 v_xy;" \
+      "uniform float isVert;" \
+      "uniform vec4 color1;" \
+      "uniform vec4 color2;" \
+      "void main() {gl_FragColor = mod(isVert > 0.0 ? v_xy.y : v_xy.x, 2.0) >= 1.0 ? color1 : color2;}"
+
+static GLuint dotProgram;
+static GLuint dotPosition,dotIsVert;
+static GLuint dotColor1,dotColor2;
+static GLuint dotProjMat;
 
 ///////////// shaded rect
 
 #define SHADE_VERTEX_CODE \
-      "attribute vec4 a_Position; attribute vec4 a_Color; varying vec4 v_Color;" \
+      "attribute vec4 a_Position; attribute vec3 a_Color; varying vec4 v_Color;" \
       "uniform mat4 projectionMatrix;" \
-      "void main() {gl_PointSize = 1.0; v_Color = a_Color; gl_Position = a_Position*projectionMatrix;}"
+      "void main() {gl_PointSize = 1.0; v_Color = vec4(a_Color,1.0); gl_Position = a_Position*projectionMatrix;}"
 
 #define SHADE_FRAGMENT_CODE \
       "precision mediump float;" \
@@ -136,10 +221,11 @@ static GLubyte rectOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 static GLuint shadeProgram;
 static GLuint shadePosition;
 static GLuint shadeColor;
+static GLuint shadeProjMat;
 
 GLuint loadShader(GLenum shaderType, const char* pSource)
 {
-   GLint ret=1;               
+   GLint ret=1;
    GLuint shader = glCreateShader(shaderType); GL_CHECK_ERROR
    glShaderSource(shader, 1, &pSource, NULL); GL_CHECK_ERROR
    glCompileShader(shader); GL_CHECK_ERROR
@@ -156,12 +242,19 @@ GLuint loadShader(GLenum shaderType, const char* pSource)
 }
 
 static GLint lastProg=-1;
+static Pixel lrpLastRGB = -2, lastTextRGB, lastTextId;
+static float lastAlphaMask = -1;
 static void setCurrentProgram(GLint prog)
 {
    if (prog != lastProg)
    {
       glUseProgram(lastProg = prog); GL_CHECK_ERROR
+      if (lastProg != textureProgram && lastProg != textProgram) lrpLastRGB = -2;
    }
+}
+static void resetGlobals()
+{
+   lastAlphaMask = lastTextRGB = lastTextId = -1;
 }
 
 static GLuint createProgram(char* vertexCode, char* fragmentCode)
@@ -184,60 +277,126 @@ static GLuint createProgram(char* vertexCode, char* fragmentCode)
 }
 
 bool initGLES(ScreenSurface screen); // in iOS, implemented in mainview.m
-void recreateTextures(); // imagePrimitives_c.h
 
-void setTimerInterval(int32 t);  
+void setTimerInterval(int32 t);
 int32 desiredglShiftY;
 bool setShiftYonNextUpdateScreen;
-#ifdef ANDROID           
+#ifdef ANDROID
 void JNICALL Java_totalcross_Launcher4A_nativeInitSize(JNIEnv *env, jobject this, jobject surface, jint width, jint height) // called only once
-{                    
-   if (!screen.extension)           
-      screen.extension = newX(ScreenSurfaceEx);
+{
+   if (!screen.extension)
+      screen.extension = xmalloc(4);//newX(ScreenSurfaceEx);
 
    if (surface == null) // passed null when the surface is destroyed
-   {       
+   {
       if (width == -999)
-      {                
+      {
          if (needsPaint != null)
          {
-            //debug("changing sip. appH: %d, heigth: %d, glShiftY: %d",appH,height,glShiftY);
             desiredglShiftY = height == 0 ? 0 : appH - height; // change only after the next screen update, since here we are running in a different thread
             setShiftYonNextUpdateScreen = true;
             *needsPaint = true; // schedule a screen paint to update the shiftY values
-            setTimerInterval(1);      
+            setTimerInterval(1);
+         }
+      }
+      else
+      if (width == -998)
+      {
+         if (ENABLE_TEXTURE_TRACE) debug("deleting textures due to screen change");
+         invalidateTextures(INVTEX_DEL_ALL); // first we delete the textures before the gl context is invalid
+         if (glShiftY != 0) // fixes green screen that occurs when the keyboard is open and the user turns off the device
+         {
+            desiredglShiftY = 0; // change only after the next screen update, since here we are running in a different thread
+            setShiftYonNextUpdateScreen = true;
+            *needsPaint = true; // schedule a screen paint to update the shiftY values
+            setTimerInterval(1);
+         }
+      }
+      else
+      if (width == -997) // when the screen is turned off and on again, this ensures that the textures will be recreated
+      {
+         if (lastWindow)
+         {
+            if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 1");
+            invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
          }
       }
       else
          surfaceWillChange = true; // block all screen updates
       return;
-   }  
-   desiredglShiftY = glShiftY = 0;         
+   }
+   desiredglShiftY = glShiftY = 0;
    setShiftYonNextUpdateScreen = true;
    appW = width;
    appH = height;
    surfaceWillChange = false;
+   if (window) // fixed memory leak
+      ANativeWindow_release(window);
    window = ANativeWindow_fromSurface(env, surface);
    realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (lastWindow && lastWindow != window)
-   {  
+   {
+      if (window == null) {debug("window is null. surface is %X. app will likely crash...",surface);}
       destroyEGL();
       initGLES(&screen);
-      recreateTextures();
+      if (ENABLE_TEXTURE_TRACE) debug("invalidating textures due to screen change 2");
+      invalidateTextures(INVTEX_INVALIDATE); // now we set the changed flag for all textures
    }
    lastWindow = window;
 }
 #endif
 
+static void initPointColors()
+{
+   pointcolorsProgram = createProgram(POINTCOLORS_VERTEX_CODE, POINTCOLORS_FRAGMENT_CODE);
+   pointcolorsColors = glGetAttribLocation(pointcolorsProgram, "a_Color"); GL_CHECK_ERROR
+   pointcolorsXY = glGetAttribLocation(pointcolorsProgram, "a_xy"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(pointcolorsXY); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   glEnableVertexAttribArray(pointcolorsColors); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   pointcolorsProjMat = glGetUniformLocation(pointcolorsProgram, "projectionMatrix"); GL_CHECK_ERROR
+}
+
+void glDrawPixelColors(Context currentContext, int32* x, int32* y, PixelConv* colors, int32 n)
+{
+   setCurrentProgram(pointcolorsProgram);
+   if (checkGLfloatBuffer(currentContext, n*4)) // allocated n*4*3 = n*12, and we need 2 * (n*2 (coords) + n*4 (color components))
+   {
+      int32 i;
+      float *glV = glXYA, *glA;
+      for (i = 0; i < n; i++)
+      {
+         *glV++ = (float)*x++;
+         *glV++ = (float)*y++;
+         *glV++ = (float)x[-1]+1;
+         *glV++ = (float)y[-1]+1;
+      }
+      glA = glV;
+      for (i = 0; i < n; i++)
+      {                      
+         PixelConv pc = *colors++;
+         *glV++ = f255[pc.r];
+         *glV++ = f255[pc.g];
+         *glV++ = f255[pc.b];
+         *glV++ = f255[pc.a];
+         *glV++ = f255[pc.r];
+         *glV++ = f255[pc.g];
+         *glV++ = f255[pc.b];
+         *glV++ = f255[pc.a];
+      }
+      
+      glVertexAttribPointer(pointcolorsColors, 4, GL_FLOAT, GL_FALSE, 0, glA); GL_CHECK_ERROR
+      glVertexAttribPointer(pointcolorsXY, 2, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
+      glDrawArrays(GL_LINES, 0, n*2); GL_CHECK_ERROR
+   }
+}
+
 static void initPoints()
 {
    pointsProgram = createProgram(POINTS_VERTEX_CODE, POINTS_FRAGMENT_CODE);
-   setCurrentProgram(lrpProgram);
    pointsColor = glGetUniformLocation(pointsProgram, "a_Color"); GL_CHECK_ERROR
-   pointsAlpha = glGetAttribLocation(pointsProgram, "alpha"); GL_CHECK_ERROR
-   pointsPosition = glGetAttribLocation(pointsProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
-   glEnableVertexAttribArray(pointsAlpha); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
-   glEnableVertexAttribArray(pointsPosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
+   pointsXYA = glGetAttribLocation(pointsProgram, "a_xya"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
+   glEnableVertexAttribArray(pointsXYA); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
+   pointsProjMat = glGetUniformLocation(pointsProgram, "projectionMatrix"); GL_CHECK_ERROR
 }
 
 static int pixLastRGB = -1;
@@ -249,32 +408,52 @@ void glDrawPixels(int32 n, int32 rgb)
       PixelConv pc;
       pc.pixel = pixLastRGB = rgb;
       glUniform4f(pointsColor, f255[pc.r], f255[pc.g], f255[pc.b], 0); GL_CHECK_ERROR
-   }                               
-   glVertexAttribPointer(pointsAlpha, 1, GL_FLOAT, GL_FALSE, 0, glcolors); GL_CHECK_ERROR
-   glVertexAttribPointer(pointsPosition, 2, GL_FLOAT, GL_FALSE, 0, glcoords); GL_CHECK_ERROR
+   }
+   glVertexAttribPointer(pointsXYA, 3, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
    glDrawArrays(GL_POINTS, 0,n); GL_CHECK_ERROR
 }
 
+void glDrawLines(Context currentContext, TCObject g, int32* x, int32* y, int32 n, int32 tx, int32 ty, Pixel rgb, bool fill)
+{
+   PixelConv pc;
+   setCurrentProgram(lrpProgram);
+   pc.pixel = rgb;
+   pc.a = 255;
+   if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
+   {
+      lrpLastRGB = pc.pixel;
+      glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+   }
+   if (checkGLfloatBuffer(currentContext, n))
+   {
+      int32 i;
+      float *glV = glXYA;
+      for (i = 0; i < n; i++)
+      {
+         *glV++ = (float)(*x++ + tx);
+         *glV++ = (float)(*y++ + ty);
+      }
+      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, glXYA); GL_CHECK_ERROR
+      glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINES, 0, n); GL_CHECK_ERROR
+   }
+}
+
 static void initShade()
-{         
+{
    shadeProgram = createProgram(SHADE_VERTEX_CODE, SHADE_FRAGMENT_CODE);
-   setCurrentProgram(shadeProgram);
    shadeColor = glGetAttribLocation(shadeProgram, "a_Color"); GL_CHECK_ERROR
    shadePosition = glGetAttribLocation(shadeProgram, "a_Position"); GL_CHECK_ERROR // get handle to vertex shader's vPosition member
    glEnableVertexAttribArray(shadeColor); GL_CHECK_ERROR // Enable a handle to the colors - since this is the only one used, keep it enabled all the time
    glEnableVertexAttribArray(shadePosition); GL_CHECK_ERROR // Enable a handle to the vertices - since this is the only one used, keep it enabled all the time
-   shcolors[3] = shcolors[7] = shcolors[11] = shcolors[15] = shcolors[19] = shcolors[23] = 1; // note: last 2 colors are not used by opengl
+   shadeProjMat = glGetUniformLocation(shadeProgram, "projectionMatrix"); GL_CHECK_ERROR
 }
 
-void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
+void glFillShadedRect(TCObject g, int32 x, int32 y, int32 w, int32 h, PixelConv c1, PixelConv c2, bool horiz)
 {
-   if (pixcolors != (int32*)glcolors) flushPixels(4);
    setCurrentProgram(shadeProgram);
-   glVertexAttribPointer(shadeColor, 4, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
+   glVertexAttribPointer(shadeColor, 3, GL_FLOAT, GL_FALSE, 0, shcolors); GL_CHECK_ERROR
    glVertexAttribPointer(shadePosition, 2, GL_FLOAT, GL_FALSE, 0, shcoords); GL_CHECK_ERROR
-   
-   y += glShiftY;
-   
+
    shcoords[0] = shcoords[2] = x;
    shcoords[1] = shcoords[7] = y;
    shcoords[3] = shcoords[5] = y+h;
@@ -282,60 +461,74 @@ void glFillShadedRect(Object g, int32 x, int32 y, int32 w, int32 h, PixelConv c1
 
    if (!horiz)
    {
-      shcolors[0] = shcolors[12] = f255[c2.r]; // upper left + upper right
-      shcolors[1] = shcolors[13] = f255[c2.g];
-      shcolors[2] = shcolors[14] = f255[c2.b];
-      
-      shcolors[4] = shcolors[8]  = f255[c1.r]; // lower left + lower right
-      shcolors[5] = shcolors[9]  = f255[c1.g];
-      shcolors[6] = shcolors[10] = f255[c1.b];
+      shcolors[0] = shcolors[9]  = f255[c2.r]; // upper left + upper right
+      shcolors[1] = shcolors[10] = f255[c2.g];
+      shcolors[2] = shcolors[11] = f255[c2.b];
+
+      shcolors[3] = shcolors[6]  = f255[c1.r]; // lower left + lower right
+      shcolors[4] = shcolors[7]  = f255[c1.g];
+      shcolors[5] = shcolors[8]  = f255[c1.b];
    }
    else
    {
-      shcolors[0] = shcolors[4] = f255[c2.r];  // upper left + lower left
-      shcolors[1] = shcolors[5] = f255[c2.g];
-      shcolors[2] = shcolors[6] = f255[c2.b];
-      
-      shcolors[8]  = shcolors[12] = f255[c1.r]; // lower right + upper right
-      shcolors[9]  = shcolors[13] = f255[c1.g];
-      shcolors[10] = shcolors[14] = f255[c1.b];
+      shcolors[0] = shcolors[3]  = f255[c2.r];  // upper left + lower left
+      shcolors[1] = shcolors[4]  = f255[c2.g];
+      shcolors[2] = shcolors[5]  = f255[c2.b];
+
+      shcolors[6] = shcolors[9]  = f255[c1.r]; // lower right + upper right
+      shcolors[7] = shcolors[10] = f255[c1.g];
+      shcolors[8] = shcolors[11] = f255[c1.b];
    }
-    
-   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
+
+   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); GL_CHECK_ERROR
 }
 
 void initTexture()
-{         
+{
+   // images
    textureProgram = createProgram(TEXTURE_VERTEX_CODE, TEXTURE_FRAGMENT_CODE);
-   setCurrentProgram(textureProgram);
-   textureS     = glGetUniformLocation(textureProgram, "sTexture"); GL_CHECK_ERROR
    texturePoint = glGetAttribLocation(textureProgram, "vertexPoint"); GL_CHECK_ERROR
-   textureCoord = glGetAttribLocation(textureProgram, "aTextureCoord"); GL_CHECK_ERROR
+   textureAlpha = glGetUniformLocation(textureProgram, "alpha"); GL_CHECK_ERROR
+   textureProjMat = glGetUniformLocation(textureProgram, "projectionMatrix"); GL_CHECK_ERROR
 
-   glEnableVertexAttribArray(textureCoord); GL_CHECK_ERROR
    glEnableVertexAttribArray(texturePoint); GL_CHECK_ERROR
+
+   // text char
+   textProgram = createProgram(TEXT_VERTEX_CODE, TEXT_FRAGMENT_CODE);
+   textPoint = glGetAttribLocation(textProgram, "vertexPoint"); GL_CHECK_ERROR
+   textRGB   = glGetUniformLocation(textProgram, "rgb"); GL_CHECK_ERROR
+   textProjMat = glGetUniformLocation(textProgram, "projectionMatrix"); GL_CHECK_ERROR
+
+   glEnableVertexAttribArray(textPoint); GL_CHECK_ERROR
 }
 
-void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool updateList)
+bool glLoadTexture(Context currentContext, TCObject img, int32* textureId, Pixel *pixels, int32 width, int32 height, bool onlyAlpha)
 {
    int32 i;
-   PixelConv* pf = (PixelConv*)pixels;
-   PixelConv* pt = (PixelConv*)xmalloc(width*height*4), *pt0 = pt;
+   bool ret = true;
+   PixelConv *p,ptemp;
    bool textureAlreadyCreated = *textureId != 0;
    bool err;
-   if (!pt)
+   int32 tidorig = textureId[0];
+   if (!textureAlreadyCreated)
    {
-      throwException(currentContext, OutOfMemoryError, "Out of bitmap memory for image with %dx%d",width,height);
-      return;
-   }
-
-   if (!textureAlreadyCreated) 
-   {
-      glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR              
-      if (err) 
+      if (currentContext == mainContext && totalTextureLoaded > 100*1024*1024) // 100MB
       {
-         throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
-         return;
+         debug("Releasing texture memory");
+         invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
+      }
+      glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+      if (err)
+      {
+         debug("Out of texture memory to allow %dx%d. Releasing old textures and trying again.",width,height);
+         if (currentContext == mainContext) 
+            invalidateTextures(INVTEX_DEL_ONLYOLD); // try to free memory and try again
+         glGenTextures(1, (GLuint*)textureId); err = GL_CHECK_ERROR
+         if (err)
+         {
+            throwException(currentContext, OutOfMemoryError, "Cannot bind texture for image with %dx%d",width,height);
+            return false;
+         }
       }
    }
    // OpenGL ES provides support for non-power-of-two textures, provided that the s and t wrap modes are both GL_CLAMP_TO_EDGE.
@@ -348,288 +541,186 @@ void glLoadTexture(Context currentContext, Object img, int32* textureId, Pixel *
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); GL_CHECK_ERROR
    }
    // must invert the pixels from ARGB to RGBA
-   for (i = width*height; --i >= 0;pt++,pf++) {pt->a = pf->r; pt->b = pf->g; pt->g = pf->b; pt->r = pf->a;}
+   if (!onlyAlpha)
+      for (i = width*height, p=(PixelConv*)pixels; --i >= 0; p++) {ptemp.pixel = p->pixel; p->a = ptemp.r; p->b = ptemp.g; p->g = ptemp.b; p->r = ptemp.a;}
    if (textureAlreadyCreated)
    {
-      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, GL_RGBA,GL_UNSIGNED_BYTE, pt0); GL_CHECK_ERROR
+      glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,width,height, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pixels); GL_CHECK_ERROR
       glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
    else
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,GL_UNSIGNED_BYTE, pt0); err = GL_CHECK_ERROR
+      glTexImage2D(GL_TEXTURE_2D, 0, onlyAlpha ? GL_ALPHA : GL_RGBA, width, height, 0, onlyAlpha ? GL_ALPHA : GL_RGBA,GL_UNSIGNED_BYTE, pixels); err = GL_CHECK_ERROR
       if (err)
-         throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
-      else
       {
-         if (updateList && !VoidPsContains(imgTextures, img)) // dont add duplicate
-            imgTextures = VoidPsAdd(imgTextures, img, null);
-         glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
+         glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
+         *textureId = 0;
+         throwException(currentContext, OutOfMemoryError, "Out of texture memory for image with %dx%d",width,height);
+         ret = false;
       }
+      glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
    }
-   xfree(pt0);
+   if (!onlyAlpha)
+      for (i = width*height, p=(PixelConv*)pixels; --i >= 0; p++) {ptemp.pixel = p->pixel; p->a = ptemp.r; p->b = ptemp.g; p->g = ptemp.b; p->r = ptemp.a;}
+   if (ENABLE_TEXTURE_TRACE) debug("glLoadTexture %X (%dx%d): %d -> %d",img, width,height, tidorig, *textureId);
+   totalTextureLoaded += width*height*4;
+   //debug("+total texture memory: %d (c:%d)",totalTextureLoaded,*tcSettings.chunksCreated);
+   return ret;
 }
 
-void glDeleteTexture(Object img, int32* textureId, bool updateList)
+void glDeleteTexture(TCObject img, int32* textureId)
 {
-	 if (textureId)        
-	 {
+   if (textureId != null && textureId[0] != 0)
+   {
       glDeleteTextures(1,(GLuint*)textureId); GL_CHECK_ERROR
-      *textureId = 0;                               
+      *textureId = 0;                              
+      if (img != null)
+      {
+         totalTextureLoaded -= Image_width(img)*Image_height(img)*4;
+         if (totalTextureLoaded < 0) totalTextureLoaded = 0;
+      }
+      //debug("-total texture memory: %d (c:%d)",totalTextureLoaded,*tcSettings.chunksCreated);
    }
-   if (updateList)
-      imgTextures = VoidPsRemove(imgTextures, img, null);
 }
-typedef GLfloat mat4[16];
-/*
-// Pre-calculated value of PI / 180.
-#define kPI180   0.017453
-// Pre-calculated value of 180 / PI.
-#define k180PI  57.295780
-// Converts degrees to radians.
-#define degreesToRadians(x) (x * kPI180)
-// Converts radians to degrees.
-#define radiansToDegrees(x) (x * k180PI)
-void matrixMultiply(mat4 m1, mat4 m2, mat4 result)
+
+void glDrawTexture(int32* textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 dstW, int32 dstH, int32 imgW, int32 imgH, PixelConv* color, int32 alphaMask)
 {
-    // Fisrt Column
-    result[0] = m1[0]*m2[0] + m1[4]*m2[1] + m1[8]*m2[2] + m1[12]*m2[3];
-    result[1] = m1[1]*m2[0] + m1[5]*m2[1] + m1[9]*m2[2] + m1[13]*m2[3];
-    result[2] = m1[2]*m2[0] + m1[6]*m2[1] + m1[10]*m2[2] + m1[14]*m2[3];
-    result[3] = m1[3]*m2[0] + m1[7]*m2[1] + m1[11]*m2[2] + m1[15]*m2[3];
-     
-    // Second Column
-    result[4] = m1[0]*m2[4] + m1[4]*m2[5] + m1[8]*m2[6] + m1[12]*m2[7];
-    result[5] = m1[1]*m2[4] + m1[5]*m2[5] + m1[9]*m2[6] + m1[13]*m2[7];
-    result[6] = m1[2]*m2[4] + m1[6]*m2[5] + m1[10]*m2[6] + m1[14]*m2[7];
-    result[7] = m1[3]*m2[4] + m1[7]*m2[5] + m1[11]*m2[6] + m1[15]*m2[7];
-     
-    // Third Column
-    result[8] = m1[0]*m2[8] + m1[4]*m2[9] + m1[8]*m2[10] + m1[12]*m2[11];
-    result[9] = m1[1]*m2[8] + m1[5]*m2[9] + m1[9]*m2[10] + m1[13]*m2[11];
-    result[10] = m1[2]*m2[8] + m1[6]*m2[9] + m1[10]*m2[10] + m1[14]*m2[11];
-    result[11] = m1[3]*m2[8] + m1[7]*m2[9] + m1[11]*m2[10] + m1[15]*m2[11];
-     
-    // Fourth Column
-    result[12] = m1[0]*m2[12] + m1[4]*m2[13] + m1[8]*m2[14] + m1[12]*m2[15];
-    result[13] = m1[1]*m2[12] + m1[5]*m2[13] + m1[9]*m2[14] + m1[13]*m2[15];
-    result[14] = m1[2]*m2[12] + m1[6]*m2[13] + m1[10]*m2[14] + m1[14]*m2[15];
-    result[15] = m1[3]*m2[12] + m1[7]*m2[13] + m1[11]*m2[14] + m1[15]*m2[15];
-}
-void matrixIdentity(mat4 m)
-{
-    m[0] = m[5] = m[10] = m[15] = 1.0;
-    m[1] = m[2] = m[3] = m[4] = 0.0;
-    m[6] = m[7] = m[8] = m[9] = 0.0;
-    m[11] = m[12] = m[13] = m[14] = 0.0;
-}
-void matrixRotateX(float degrees, mat4 matrix)
-{
-    float radians = degreesToRadians(degrees);
-     
-    matrixIdentity(matrix);
-     
-    // Rotate X formula.
-    matrix[5] = cosf(radians);
-    matrix[6] = -sinf(radians);
-    matrix[9] = -matrix[6];
-    matrix[10] = matrix[5];
-}
- 
-void matrixRotateY(float degrees, mat4 matrix)
-{
-    float radians = degreesToRadians(degrees);
-     
-    matrixIdentity(matrix);
-     
-    // Rotate Y formula.
-    matrix[0] = cosf(radians);
-    matrix[2] = sinf(radians);
-    matrix[8] = -matrix[2];
-    matrix[10] = matrix[0];
-}
-void matrixRotateZ(float degrees, mat4 matrix)
-{
-    float radians = degreesToRadians(degrees);
-     
-    matrixIdentity(matrix);
-     
-    // Rotate Z formula.
-    matrix[0] = cosf(radians);
-    matrix[1] = sinf(radians);
-    matrix[4] = -matrix[1];
-    matrix[5] = matrix[0];
-}
-*/
-void glDrawTexture(int32 textureId, int32 x, int32 y, int32 w, int32 h, int32 dstX, int32 dstY, int32 imgW, int32 imgH)
-{         
-   GLfloat* coords = texcoords;
-/*   GLfloat degrees = 45;
-   GLfloat radians = degreesToRadians(degrees);
-   GLfloat co = cosf(radians), si = sinf(radians);*/
-   if (pixcolors != (int32*)glcolors) flushPixels(6);
-   setCurrentProgram(textureProgram);
-   glBindTexture(GL_TEXTURE_2D, textureId); GL_CHECK_ERROR
+   bool isDrawText = color != null;
+   if (textureId[0] == 0) return;
 
-   dstY += glShiftY;
+   float* coords = texcoords;
 
-   // destination coordinates
-   coords[0] = coords[6] = dstX;
-   coords[1] = coords[3] = (dstY+h);
-   coords[2] = coords[4] = (dstX+w);
-   coords[5] = coords[7] = dstY;
-/* TODO trying to do rotation too 
-http://db-in.com/blog/2011/04/cameras-on-opengl-es-2-x/
-http://en.wikipedia.org/wiki/Transformation_matrix#Rotation_2
-http://androidbook.com/item/4254
+   setCurrentProgram(isDrawText ? textProgram : textureProgram);
+   if (lastTextId != *textureId) // the bound texture is per graphics card, not by per program
+      {glBindTexture(GL_TEXTURE_2D, lastTextId = *textureId); GL_CHECK_ERROR}
 
-   mat4 tempX,tempY,temp,temp2; 
-   matrixRotateX(rot, tempX); matrixRotateY(rot, tempY); 
-   matrixMultiply(tempX,tempY,temp);
-   matrixMultiply(coords,temp,temp2); 
-   xmemmove(coords,temp2,sizeof(mat4));*/
-   //matrixRotateZ(rotY, temp); matrixMultiply(coords,temp,temp2); xmemmove(coords,temp2,sizeof(mat4));
+   float left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
 
-   glVertexAttribPointer(texturePoint, 2, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
+   // coordinates
+   coords[0 ] = coords[12] = dstX;
+   coords[1 ] = coords[5 ] = isDrawText ? dstY+dstH : dstY+h;
+   coords[2 ] = coords[14] = left;
+   coords[3 ] = coords[7 ] = bottom;
+   coords[4 ] = coords[8 ] = isDrawText ? dstX+dstW : dstX+w;
+   coords[6 ] = coords[10] = right;
+   coords[9 ] = coords[13] = dstY;
+   coords[11] = coords[15] = top;
 
-   // source coordinates
-   GLfloat left = (float)x/(float)imgW,top=(float)y/(float)imgH,right=(float)(x+w)/(float)imgW,bottom=(float)(y+h)/(float)imgH; // 0,0,1,1
-   coords[ 8] = coords[14] = left;
-   coords[ 9] = coords[11] = bottom;
-   coords[10] = coords[12] = right;
-   coords[13] = coords[15] = top;
-   glVertexAttribPointer(textureCoord, 2, GL_FLOAT, false, 0, &coords[8]); GL_CHECK_ERROR
+   glVertexAttribPointer(isDrawText ? textPoint : texturePoint, 4, GL_FLOAT, false, 0, coords); GL_CHECK_ERROR
 
+   if (!isDrawText && lastAlphaMask != alphaMask) // prevent color change = performance x2 in galaxy tab2
+   {
+      lastAlphaMask = alphaMask;
+      glUniform1f(textureAlpha, f255[alphaMask]);
+   }
+   if (isDrawText && lastTextRGB != color->pixel) // prevent color change = performance x2 in galaxy tab2
+   {
+      lastTextRGB = color->pixel;
+      glUniform3f(textRGB, f255[color->r],f255[color->g],f255[color->b]); GL_CHECK_ERROR
+   }
    glDrawArrays(GL_TRIANGLE_FAN, 0, 4); GL_CHECK_ERROR
-   glBindTexture(GL_TEXTURE_2D, 0); GL_CHECK_ERROR
 }
 
 void initLineRectPoint()
-{         
+{
    lrpProgram = createProgram(LRP_VERTEX_CODE, LRP_FRAGMENT_CODE);
-   setCurrentProgram(lrpProgram);
    lrpColor = glGetUniformLocation(lrpProgram, "a_Color"); GL_CHECK_ERROR
    lrpPosition = glGetAttribLocation(lrpProgram, "a_Position"); GL_CHECK_ERROR
    glEnableVertexAttribArray(lrpPosition); GL_CHECK_ERROR
+   lrpProjMat = glGetUniformLocation(lrpProgram, "projectionMatrix"); GL_CHECK_ERROR
+
+   dotProgram = createProgram(DOT_VERTEX_CODE, DOT_FRAGMENT_CODE);
+   dotColor1 = glGetUniformLocation(dotProgram, "color1"); GL_CHECK_ERROR
+   dotColor2 = glGetUniformLocation(dotProgram, "color2"); GL_CHECK_ERROR
+   dotPosition = glGetAttribLocation(dotProgram, "a_Position"); GL_CHECK_ERROR
+   dotIsVert = glGetUniformLocation(dotProgram, "isVert"); GL_CHECK_ERROR
+   glEnableVertexAttribArray(dotPosition); GL_CHECK_ERROR
+   dotProjMat = glGetUniformLocation(dotProgram, "projectionMatrix"); GL_CHECK_ERROR
 }
 
 void glSetLineWidth(int32 w)
-{         
+{
    setCurrentProgram(lrpProgram);
    glLineWidth(w); GL_CHECK_ERROR
 }
 
-#define IS_PIXEL (1<<28)
-#define IS_DIAGONAL  (1<<27)
-
-static void clearPixels()
+typedef enum
 {
-   pixcoords = (int32*)glcoords;
-   pixcolors = (int32*)glcolors;
-}
+   SIMPLE,
+   DOTS,
+   DIAGONAL
+}  LRPType;
 
-void flushPixels(int q)
-{         
-   if (pixcolors != (int32*)glcolors)
-   {
-      int32 n = pixcolors-(int32*)glcolors, i;
-      PixelConv pc;
-      GLfloat* coords = lrcoords;
-      setCurrentProgram(lrpProgram);
-      pixcoords = (int32*)glcoords;
-      pixcolors = (int32*)glcolors;
-      glVertexAttribPointer(lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
-      int32 lastRGBA = ~*pixcolors;
-      int32 x,y,w,h,x2,y2;
-      int32 ty = glShiftY;
-      for (i = 0; i < n; i++)
-      {  
-         // color
-         int32 rgba = *pixcolors++;
-         if (lastRGBA != rgba) // prevent color change = performance x2 in galaxy tab2
-         {
-            pc.pixel = lastRGBA = rgba;
-            glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
-         }
-         // coord
-         x = *pixcoords++;
-         y = *pixcoords++;
-         y += ty;
-         if (x & IS_DIAGONAL)
-         {                    
-            x2 = *pixcoords++;
-            y2 = *pixcoords++ + ty;
-            coords[0] = x & ~IS_DIAGONAL;
-            coords[1] = y;
-            coords[2] = x2;
-            coords[3] = y2;
-            glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
-         }
-         else
-         {
-            if (x & IS_PIXEL)
-            {
-               x &= ~IS_PIXEL;
-               w = h = 1;
-            }
-            else
-            {
-               w = *pixcoords++;
-               h = *pixcoords++;
-            }
-            coords[0] = coords[2] = x;
-            coords[1] = coords[7] = y;
-            coords[3] = coords[5] = y+h;
-            coords[4] = coords[6] = x+w;
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, rectOrder); GL_CHECK_ERROR
-         }
-      }
-      clearPixels();
-   }
-}
-
-static void add2pipe(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
+void drawLRP(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 rgb2, int32 a, LRPType type)
 {
-   bool isPixel = (x & IS_PIXEL) != 0;
-   if ((pixcoords+(isPixel ? 2 : 4)) > pixEnd)
-      flushPixels(7);
-   *pixcoords++ = x;
-   *pixcoords++ = y;
-   if (!isPixel)
-   {
-      *pixcoords++ = w;
-      *pixcoords++ = h;
-   }
+   float* coords = lrcoords;
+   setCurrentProgram(type == DOTS ? dotProgram : lrpProgram);
+   glVertexAttribPointer(type == DOTS ? dotPosition : lrpPosition, 2, GL_FLOAT, GL_FALSE, 0, coords); GL_CHECK_ERROR
    PixelConv pc;
    pc.pixel = rgb;
    pc.a = a;
-   *pixcolors++ = pc.pixel;
+   if (type == DOTS)
+   {
+      glUniform1f(dotIsVert, x == w ? 1.0 : 0.0); GL_CHECK_ERROR
+      glUniform4f(dotColor1, f255[pc.r],f255[pc.g],f255[pc.b],1); GL_CHECK_ERROR
+      pc.pixel = rgb2;
+      glUniform4f(dotColor2, f255[pc.r],f255[pc.g],f255[pc.b],1); GL_CHECK_ERROR
+   }
+   else
+   if (lrpLastRGB != pc.pixel) // prevent color change = performance x2 in galaxy tab2
+   {
+      lrpLastRGB = pc.pixel;
+      glUniform4f(lrpColor, f255[pc.r],f255[pc.g],f255[pc.b],f255[pc.a]); GL_CHECK_ERROR
+   }
+   if (type == DIAGONAL || type == DOTS)
+   {
+      coords[0] = x;
+      coords[1] = y;
+      coords[2] = w; // x2
+      coords[3] = h; // y2
+      glDrawArrays(GL_LINES, 0,2); GL_CHECK_ERROR
+   }
+   else
+   {
+      coords[0] = coords[2] = x;
+      coords[1] = coords[7] = y;
+      coords[3] = coords[5] = y+h;
+      coords[4] = coords[6] = x+w;
+      glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, rectOrder); GL_CHECK_ERROR
+   }
 }
 
 void glDrawPixel(int32 x, int32 y, int32 rgb, int32 a)
-{   
-   add2pipe(x|IS_PIXEL,y,1,1,rgb,a);
+{
+   drawLRP(x,y,1,1,rgb,-1,a, SIMPLE);
 }
 
 void glDrawThickLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
-   add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);
+   drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
+}
+
+void glDrawDots(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb1, int32 rgb2)
+{
+   int32 extra = x1 == x2 ? 1 : 0;
+   drawLRP(x1+extra, y1, x2+extra, y2-extra, rgb1, rgb2, 255, DOTS);
 }
 
 void glDrawLine(int32 x1, int32 y1, int32 x2, int32 y2, int32 rgb, int32 a)
 {
    // The Samsung Galaxy Tab 2 (4.0.4) has a bug in opengl for drawing horizontal/vertical lines: it draws at wrong coordinates, and incomplete sometimes. so we use fillrect, which always work
    if (x1 == x2)
-      add2pipe(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1),rgb,a);
+      drawLRP(min32(x1,x2),min32(y1,y2),1,abs32(y2-y1), rgb,-1,a, SIMPLE);
    else
-   if (y1 == y2) 
-      add2pipe(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1,rgb,a);
-   else              
-      add2pipe(x1|IS_DIAGONAL,y1,x2,y2,rgb,a);
+   if (y1 == y2)
+      drawLRP(min32(x1,x2),min32(y1,y2),abs32(x2-x1),1, rgb,-1,a, SIMPLE);
+   else
+      drawLRP(x1,y1,x2,y2,rgb,-1,a, DIAGONAL);
 }
 
 void glFillRect(int32 x, int32 y, int32 w, int32 h, int32 rgb, int32 a)
 {
-   add2pipe(x,y,w,h,rgb,a);
+   drawLRP(x,y,w,h,rgb,-1,a, SIMPLE);
 }
 
 typedef union
@@ -639,24 +730,22 @@ typedef union
 } glpixel;
 
 int32 glGetPixel(int32 x, int32 y)
-{                
+{
    glpixel gp;
-   if (pixcolors != (int32*)glcolors) flushPixels(8);
    glReadPixels(x, appH-y-1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &gp); GL_CHECK_ERROR
    return (((int32)gp.r) << 16) | (((int32)gp.g) << 8) | (int32)gp.b;
 }
 
 void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height,int32 pitch)
-{          
+{
    #define GL_BGRA 0x80E1 // BGRA is 20x faster than RGBA on devices that supports it
    PixelConv* p;
    glpixel gp;
    int32 i;
    GLint ext_format, ext_type;
-   if (pixcolors != (int32*)glcolors) flushPixels(9);
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &ext_format);
    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &ext_type);
-   if (ext_format == GL_BGRA && ext_type == GL_UNSIGNED_BYTE) 
+   if (ext_format == GL_BGRA && ext_type == GL_UNSIGNED_BYTE)
       for (; height-- > 0; srcY++,dstPixels += pitch)
       {
          glReadPixels(srcX, appH-srcY-1, width, 1, GL_BGRA, GL_UNSIGNED_BYTE, dstPixels); GL_CHECK_ERROR
@@ -669,7 +758,7 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
             p->g = gp.g;
             p->b = gp.r;
          }
-      }   
+      }
    else
       for (; height-- > 0; srcY++,dstPixels += pitch)
       {
@@ -683,28 +772,34 @@ void glGetPixels(Pixel* dstPixels,int32 srcX,int32 srcY,int32 width,int32 height
             p->g = gp.g;
             p->b = gp.b;
          }
-      }   
+      }
 }
 
 void flushAll()
 {
-   flushPixels(10);
-   glFlush(); GL_CHECK_ERROR
+   //glFlush(); GL_CHECK_ERROR
 }
 
-static void setProjectionMatrix(GLfloat w, GLfloat h)
-{                              
-   mat4 mat =
+static void setProjectionMatrix(float w, float h)
+{
+   double t = -glShiftY, b = h-glShiftY; // f = 1, n = -1
+   float mat[] =
    {
-      2.0/w, 0.0, 0.0, -1.0,
-      0.0, -2.0/h, 0.0, 1.0,
-      0.0, 0.0, -1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0
+      2.0/w,    0.0,   0.0, -1.0,
+      0.0,    2.0/(t-b),   0.0,  -(t+b)/(t-b),
+      0.0,      0.0,  -1.0,  0.0,
+      0.0,      0.0,   0.0,  1.0
    };
-   setCurrentProgram(textureProgram); glUniformMatrix4fv(glGetUniformLocation(textureProgram, "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(lrpProgram);     glUniformMatrix4fv(glGetUniformLocation(lrpProgram    , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(pointsProgram);  glUniformMatrix4fv(glGetUniformLocation(pointsProgram , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
-   setCurrentProgram(shadeProgram);   glUniformMatrix4fv(glGetUniformLocation(shadeProgram  , "projectionMatrix"), 1, 0, mat); GL_CHECK_ERROR
+   
+   flushGlError();
+   setCurrentProgram(textProgram);         glUniformMatrix4fv(textProjMat        , 1, 0, mat); 
+   setCurrentProgram(textureProgram);      glUniformMatrix4fv(textureProjMat     , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(lrpProgram);          glUniformMatrix4fv(lrpProjMat         , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(dotProgram);          glUniformMatrix4fv(dotProjMat         , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);       glUniformMatrix4fv(pointsProjMat      , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointcolorsProgram);  glUniformMatrix4fv(pointcolorsProjMat , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(pointsProgram);       glUniformMatrix4fv(pointsProjMat      , 1, 0, mat); GL_CHECK_ERROR
+   setCurrentProgram(shadeProgram);        glUniformMatrix4fv(shadeProjMat       , 1, 0, mat); GL_CHECK_ERROR
 #ifdef darwin
     int fw,fh;
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &fw);
@@ -720,18 +815,13 @@ bool checkGLfloatBuffer(Context c, int32 n)
 {
    if (n > flen)
    {
-      xfree(glcoords);
-      xfree(glcolors);
+      xfree(glXYA);
       flen = n*3/2;
-      int len = flen*2;
-      glcoords = (GLfloat*)xmalloc(sizeof(GLfloat)*len); pixcoords = (int32*)glcoords;
-      glcolors = (GLfloat*)xmalloc(sizeof(GLfloat)*flen); pixcolors = (int32*)glcolors;
-      pixEnd = pixcoords + len;
-      if (!glcoords || !glcolors)
+      int len = flen*3;
+      glXYA = (float*)xmalloc(sizeof(float)*len);
+      if (!glXYA)
       {
          throwException(c, OutOfMemoryError, "Cannot allocate buffer for drawPixels");
-         xfree(glcoords);
-         xfree(glcolors);
          flen = 0;
          return false;
       }
@@ -741,7 +831,6 @@ bool checkGLfloatBuffer(Context c, int32 n)
 
 bool setupGL(int width, int height)
 {
-    int i;
     pixLastRGB = -1;
     appW = width;
     appH = height;
@@ -749,6 +838,7 @@ bool setupGL(int width, int height)
     initTexture();
     initLineRectPoint();
     initPoints();
+    initPointColors();
     initShade();
     setProjectionMatrix(appW,appH);
 
@@ -760,13 +850,7 @@ bool setupGL(int width, int height)
     glEnable(GL_BLEND); GL_CHECK_ERROR // enable color alpha channel
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); GL_CHECK_ERROR
 
-    for (i = 0; i < 14; i++)
-        ftransp[i+1] = (GLfloat)(i<<4) / (GLfloat)255; // make it lighter. since ftransp[0] is never used, shift it to [1]
-    ftransp[15] = 1;
-    for (i = 0; i <= 255; i++)
-        f255[i] = (GLfloat)i/(GLfloat)255;
-    clearPixels();
-    return checkGLfloatBuffer(mainContext,10000);
+    return checkGLfloatBuffer(mainContext,1000);
 }
 
 #ifdef ANDROID
@@ -792,7 +876,8 @@ bool initGLES(ScreenSurface /*screen*/unused)
    EGLContext context;
    EGLint width;
    EGLint height;
-   
+
+   if (!window)                                                             {debug("window is null"); return false;}
    if ((display = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY)    {debug("eglGetDisplay() returned error %d", eglGetError()); return false;}
    if (!eglInitialize(display, 0, 0))                                       {debug("eglInitialize() returned error %d", eglGetError()); return false;}
    if (!eglChooseConfig(display, attribs, &config, 1, &numConfigs))         {debug("eglChooseConfig() returned error %d", eglGetError()); destroyEGL(); return false;}
@@ -812,7 +897,7 @@ bool initGLES(ScreenSurface /*screen*/unused)
 }
 
 static void destroyEGL()
-{         
+{
    eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
    eglDestroyContext(_display, _context);
    eglDestroySurface(_display, _surface);
@@ -833,8 +918,7 @@ void privateScreenChange(int32 w, int32 h)
     appW = w;
     appH = h;
 #endif
-   clearPixels();
-   setProjectionMatrix(w,h); 
+   setProjectionMatrix(w,h);
 }
 
 bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
@@ -845,6 +929,7 @@ bool graphicsStartup(ScreenSurface screen, int16 appTczAttr)
    screen->screenH = lastH;
    screen->hRes = ascrHRes;
    screen->vRes = ascrVRes;
+
    return initGLES(screen);
 }
 
@@ -865,8 +950,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
    {
       destroyEGL();
       xfree(screen->extension);
-      xfree(glcoords);
-      xfree(glcolors);
+      xfree(glXYA);
    }
 #else
    if (isScreenChange)
@@ -876,36 +960,32 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
       if (screen->extension)
          free(screen->extension);
       deviceCtx = screen->extension = NULL;
-      xfree(glcoords);
-      xfree(glcolors);
+      xfree(glXYA);
    }
 #endif
 }
 
 void setTimerInterval(int32 t);
-void setShiftYgl()
-{                   
-#ifdef ANDROID           
+void setShiftYgl(int32 shiftY)
+{
    if (setShiftYonNextUpdateScreen && needsPaint != null)
-   {       
+   {
       setShiftYonNextUpdateScreen = false;
-      glShiftY = desiredglShiftY - desiredScreenShiftY;     // set both at once
-      screen.shiftY = desiredScreenShiftY;
-      *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
-      setTimerInterval(1);      
-   }                                     
-   if (glShiftY < 0) // guich: occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
-      glShiftY = 0;
+#ifdef ANDROID
+      glShiftY = max32(0,desiredglShiftY - shiftY); // guich: under 0 occurs sometimes when the keyboard is closed and the desired shift y is 0. it was resulting in a negative value.
 #else
-    glShiftY = -desiredScreenShiftY;
-#endif    
+      glShiftY = -shiftY;
+#endif
+      setProjectionMatrix(appW,appH);
+      screen.shiftY = shiftY;
+      *needsPaint = true; // now that the shifts has been set, schedule another window update to paint at the given location
+      setTimerInterval(1); // needed, dont remove!
+   }
 }
-extern int32 desiredScreenShiftY;
 void graphicsUpdateScreenIOS();
 void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
-{ 
-   if (surfaceWillChange) {clearPixels(); return;}
-   if (pixcolors != (int32*)glcolors) flushPixels(11);
+{
+   if (surfaceWillChange) return;
 #ifdef ANDROID
    eglSwapBuffers(_display, _surface); // requires API LEVEL 9 (2.3 and up)
 #else
@@ -913,7 +993,9 @@ void graphicsUpdateScreen(Context currentContext, ScreenSurface screen)
 #endif
    // erase buffer with keyboard's background color
    PixelConv gray;
-   gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFF;
-   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1); GL_CHECK_ERROR
-   glClear(GL_COLOR_BUFFER_BIT); GL_CHECK_ERROR
+   gray.pixel = shiftScreenColorP ? *shiftScreenColorP : 0xFFFFFFFF;
+   glClearColor(f255[gray.r],f255[gray.g],f255[gray.b],1);
+   glClear(GL_COLOR_BUFFER_BIT);
+   glClear(GL_DEPTH_BUFFER_BIT);
+   resetGlobals();
 }

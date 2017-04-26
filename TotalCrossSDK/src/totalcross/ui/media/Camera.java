@@ -33,7 +33,7 @@ import totalcross.ui.dialog.*;
  * <code>Image.getRotatedScaledInstance</code> method, after retrieving the image. 
  * 
  * To use this class with the Hand Held Dolphin barcode scanners, you must install
- * TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Dolphin.dll. Only 640x480 photos are supported, and you may change the
+ * TotalCross3/dist/vm/wince/POCKETPC/ARM/Dolphin.dll. Only 640x480 photos are supported, and you may change the
  * following options:
  * <ul>
  * <li>initialDir
@@ -50,6 +50,9 @@ import totalcross.ui.dialog.*;
  * In iOS there's no way to return the supported resolutions; it will take a photo using the default camera's resolution, and 
  * then will resize to the resolution defined in resolutionWidth/resolutionHeight, keeping the camera's aspect ratio. In iOS you can specify the defaultFileName with a path or just the name, or use a system-generated name. 
  * 
+ * In Android, you can use the internal camera by setting the cameraType field.
+
+ * 
  * @see #getSupportedResolutions()
  */
 
@@ -61,7 +64,7 @@ public class Camera
    public String defaultFileName;
    /** The title to display in the window. */
    public String title;
-
+   
    /**
     * The still quality.
     * 
@@ -93,6 +96,25 @@ public class Camera
     * @see #CAMERACAPTURE_MODE_VIDEOWITHAUDIO
     */
    public int captureMode = CAMERACAPTURE_MODE_STILL;
+   
+   /**
+    * This field is false by default so that the default camera orientation is still landscape. 
+	 * If this is set to true, the camera orientation will follow the device orientation.
+	 * Used on Android only.
+	 */
+   public boolean allowRotation;
+
+   /** The camera type; defaults to CAMERA_CUSTOM. */
+   public int cameraType;
+
+   /** The original camera used in TotalCross */
+   public static final int CAMERA_CUSTOM = 0;
+   /** The native camera application; a copy of the image is returned. */      
+   public static final int CAMERA_NATIVE = 1;
+   /** The native camera application; the original image is deleted and a copy of it is returned. */
+   public static final int CAMERA_NATIVE_NOCOPY = 2;
+   /** Take the picture from the gallery. */
+   public static final int CAMERA_FROM_GALLERY = 3;
 
    /** Used in the cameraMode member. */
    public static final int CAMERACAPTURE_MODE_STILL = 0;
@@ -117,6 +139,9 @@ public class Camera
    /** Used in the captureMode member. */
    public static final int CAMERACAPTURE_VIDEOTYPE_MESSAGING = 2;
 
+   /** The default title when used in desktop */
+   public static String fcbTitle = "Select a photo";
+   
    public Camera()
    {
    }
@@ -130,7 +155,8 @@ public class Camera
     */
    public String click() throws IOException
    {
-      FileChooserBox fcb = new FileChooserBox("Select a photo",FileChooserBox.defaultButtonCaptions,null);
+      FileChooserBox fcb = new FileChooserBox(fcbTitle,FileChooserBox.defaultButtonCaptions,null);
+      fcb.showPreview = fcb.newestFirst = true;
       fcb.popup();
       return fcb.getAnswer();
    }

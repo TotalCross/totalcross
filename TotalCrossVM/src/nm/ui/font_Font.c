@@ -20,7 +20,7 @@
 TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void fontCreate();
 {
    char name[50];
-   Object obj, fontName;
+   TCObject obj, fontName;
    FontFile ff;
 
    obj = p->obj[0];
@@ -38,7 +38,7 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
    }
    if (Font_hvUserFont(obj) == null) // alloc space for the pointer
    {
-      Font_hvUserFont(obj) = createByteArray(p->currentContext, PTRSIZE);
+      Font_hvUserFont(obj) = createByteArray(p->currentContext, TSIZE);
       setObjectLock(Font_hvUserFont(obj), UNLOCKED);
    }
    if (Font_hvUserFont(obj) != null) // alloc space for the pointer

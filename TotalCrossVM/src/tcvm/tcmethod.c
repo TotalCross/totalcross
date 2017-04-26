@@ -20,7 +20,7 @@ TC_API Method getMethod(TCClass c, bool searchSuperclasses, CharP methodName, in
    if (c)
    do
    {
-      int n  = ARRAYLENV(c->methods);
+      int32 n  = ARRAYLENV(c->methods);
       for (i = 0; i < n; i++)
       {
          Method mm = &c->methods[i];

@@ -37,8 +37,10 @@ public final class Graphics4D
    protected int minX, minY, maxX, maxY;
    protected int lastRX,lastRY,lastXC,lastYC,lastSize; // used by arcPiePointDrawAndFill
    protected int pitch;
-   private int alpha;
+   public int alpha;
    public boolean isVerticalText;
+   protected int lastClipFactor;
+   private boolean isControlSurface;
    // instance doubles
    protected double lastPPD; // used by arcPiePointDrawAndFill
    // instance objects
@@ -67,7 +69,14 @@ public final class Graphics4D
       this.surface = surface;
       if (surface instanceof totalcross.ui.image.Image)
          alpha = 0xFF000000;
+      else
+         isControlSurface = true;
       create(surface);
+   }
+
+   public boolean isControlSurface()
+   {
+      return isControlSurface;
    }
 
    public static int[] getPalette()
@@ -115,6 +124,14 @@ public final class Graphics4D
       clipX2 = maxX;
       clipY2 = maxY;
    }
+   public int getClipWidth()
+   {
+      return clipX2 - clipX1;
+   }
+   public int getClipHeight()
+   {
+      return clipY2 - clipY1;
+   }
    public Rect getClip(Rect r)
    {
       r.x      = clipX1 - transX;
@@ -122,6 +139,13 @@ public final class Graphics4D
       r.width  = clipX2 - clipX1;
       r.height = clipY2 - clipY1;
       return r;
+   }
+   public void expandClipLimits(int dx1, int dy1, int dx2, int dy2)
+   {
+      minX += dx1;
+      minY += dy1;
+      maxX += dx2;
+      maxY += dy2;
    }
 
    public void drawVerticalText(String text, int x, int y)
@@ -137,12 +161,11 @@ public final class Graphics4D
    }
    ////////////////////////////////////////////////////////////////////////////////
    private static Hashtable ht3dColors = new Hashtable(83);
-   private static StringBuffer sbc = new StringBuffer(30);
    public static void compute3dColors(boolean enabled, int backColor, int foreColor, int fourColors[])
    {
       if (backColor < 0 || foreColor < 0)
          return;
-      sbc.setLength(0);
+      StringBuffer sbc = new StringBuffer(20);
       String key = sbc.append(enabled).append(backColor).append(',').append(foreColor).toString();
       int four[] = (int[])ht3dColors.get(key);
       if (four == null)
@@ -236,7 +259,7 @@ public final class Graphics4D
    native public void copyRect(totalcross.ui.gfx.GfxSurface surface, int x, int y, int width, int height, int dstX, int dstY);
    native public void drawRoundGradient(int startX, int startY, int endX, int endY, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius,int startColor, int endColor, boolean vertical);
    native public void drawImage(totalcross.ui.image.Image image, int x, int y, boolean doClip);
-   native public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, boolean doClip);
+   native public void copyImageRect(totalcross.ui.image.Image4D image, int x, int y, int width, int height, boolean doClip);
    native public void setPixels(int []xPoints, int []yPoints, int nPoints);
    native public void refresh(int sx, int sy, int sw, int sh, int tx, int ty, totalcross.ui.font.Font f);
    native public void drawVistaRect(int x, int y, int width, int height, int topColor, int rightColor, int bottomColor, int leftColor);
@@ -260,6 +283,8 @@ public final class Graphics4D
    native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
    native public void dither(int x, int y, int w, int h);
    native public void drawCylindricShade(int startColor, int endColor, int startX, int startY, int endX, int endY);
+   native public void drawThickLine(int x1, int y1, int x2, int y2, int t);
+   native public void drawCircleAA(int xm, int ym, int r, boolean fill, boolean tl, boolean tr, boolean bl, boolean br);
    
    /** Dumb method to keep compilation compatibility with TC 1 */
    public void eraseRect(int x, int y, int w, int h)
@@ -292,7 +317,7 @@ public final class Graphics4D
    {
    }
    /** Dumb method to keep compilation compatibility with TC 1; parameters drawOp and backColor are ignored. */
-   public void copyImageRect(totalcross.ui.image.Image image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
+   public void copyImageRect(totalcross.ui.image.Image4D image, int x, int y, int width, int height, int drawOp, int backColor, boolean doClip)
    {
       copyImageRect(image, x, y, width, height, doClip);
    }
@@ -311,6 +336,7 @@ public final class Graphics4D
    {
       drawImage(image, x,y, doClip);
    }
+
 
    /** Dumb field to keep compilation compatibility with TC 1 */
    public int drawOp;

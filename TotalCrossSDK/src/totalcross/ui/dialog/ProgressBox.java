@@ -99,7 +99,7 @@ public class ProgressBox extends MessageBox
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
    
-   protected void onPopup()
+   public void onPopup()
    {
       lgap = fmH * 2 + fmH/4; // gap of fmH/8 at left and at right
       super.onPopup();

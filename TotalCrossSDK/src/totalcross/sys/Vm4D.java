@@ -69,6 +69,10 @@ public final class Vm4D
    public static final int TWEAK_DUMP_MEM_STATS = 2;
    public static final int TWEAK_MEM_PROFILER = 3;
    public static final int TWEAK_DISABLE_GC = 4;
+   public static final int TWEAK_TRACE_CREATED_CLASSOBJS = 5;
+   public static final int TWEAK_TRACE_LOCKED_OBJS = 6;
+   public static final int TWEAK_TRACE_OBJECTS_LEFT_BETWEEN_2_GCS = 7;
+   public static final int TWEAK_TRACE_METHODS = 8;
 
    public static boolean attachNativeLibrary(String name)
    {
@@ -93,6 +97,18 @@ public final class Vm4D
       try {throw new Exception("Stack trace");} catch (Exception e) {e.printStackTrace();}
    }
 
+   public static void printStackTrace(String msg)
+   {
+      try 
+      {
+         throw new Exception(msg);
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+   }
+
    public static void safeSleep(int millis)
    {
       int cur = getTimeStamp();
@@ -106,5 +122,18 @@ public final class Vm4D
             Window.pumpEvents();
          cur = getTimeStamp();
       }
+   }
+   
+   public static native int identityHashCode(Object object);
+
+   /** used internally for enum */
+   static void arraycopy(Object src,int srcPos,Object dest,int destPos,int length)
+   {
+      arrayCopy(src,srcPos,dest,destPos,length);
+   }
+
+   public static String getStackTrace()
+   {
+      try {throw new Exception();} catch (Exception e) {return getStackTrace(e);}      
    }
 }

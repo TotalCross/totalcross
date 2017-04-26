@@ -48,22 +48,24 @@ static bool createHT(Context currentContext)
 TC_API void tnsSSL_dispose(NMParams p) // totalcross/net/ssl/SSL native public void dispose();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
    int32 dontFinalize = SSL_sslDontFinalize(sslObj);
    int32 fd;
 
    if (!dontFinalize)
-   {
-      fd = ssl->client_fd; // we should access "ssl" only after checking the "dontFinalize" field
-      ssl_free(ssl);
-
-      LOCKVAR(htSSL);
-      htRemove(&htSSLSocket, fd); // remove socket object from the hash table when the ssl is disposed.
-      if (htSSLSocket.size == 0) // destroy the hash table if empty
-         destroyHT(p->currentContext, false);
-      UNLOCKVAR(htSSL);
-
+   {                
+      if (ssl)
+      {
+         fd = ssl->client_fd; // we should access "ssl" only after checking the "dontFinalize" field
+         ssl_free(ssl);
+   
+         LOCKVAR(htSSL);
+         htRemove(&htSSLSocket, fd); // remove socket object from the hash table when the ssl is disposed.
+         if (htSSLSocket.size == 0) // destroy the hash table if empty
+            destroyHT(p->currentContext, false);
+         UNLOCKVAR(htSSL);
+      }
       SSL_sslDontFinalize(sslObj) = true; //flsobral@tc114_36: don't finalize disposed objects.
    }
 #else
@@ -74,7 +76,7 @@ TC_API void tnsSSL_dispose(NMParams p) // totalcross/net/ssl/SSL native public v
 TC_API void tnsSSL_handshakeStatus(NMParams p) // totalcross/net/ssl/SSL native public int handshakeStatus();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
    p->retI = ssl_handshake_status(ssl);
@@ -86,7 +88,7 @@ TC_API void tnsSSL_handshakeStatus(NMParams p) // totalcross/net/ssl/SSL native 
 TC_API void tnsSSL_getCipherId(NMParams p) // totalcross/net/ssl/SSL native public byte getCipherId();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
    p->retI = ssl_get_cipher_id(ssl);
@@ -98,7 +100,7 @@ TC_API void tnsSSL_getCipherId(NMParams p) // totalcross/net/ssl/SSL native publ
 TC_API void tnsSSL_getSessionId(NMParams p) // totalcross/net/ssl/SSL native public byte[] getSessionId();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
    const uint8_t *id = ssl_get_session_id(ssl);
@@ -121,7 +123,7 @@ TC_API void tnsSSL_getSessionId(NMParams p) // totalcross/net/ssl/SSL native pub
 TC_API void tnsSSL_getCertificateDN_i(NMParams p) // totalcross/net/ssl/SSL native public String getCertificateDN(int component);
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    int32 component = p->i32[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
@@ -142,12 +144,12 @@ TC_API void tnsSSL_getCertificateDN_i(NMParams p) // totalcross/net/ssl/SSL nati
 TC_API void tnsSSL_read_s(NMParams p) // totalcross/net/ssl/SSL native public int read(totalcross.net.ssl.SSLReadHolder rh);
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
-   Object readHolder = p->obj[1];
+   TCObject sslObj = p->obj[0];
+   TCObject readHolder = p->obj[1];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
    int size = 0;
    uint8_t *in_data = null;
-   Object byteArray;
+   TCObject byteArray;
 
    if (readHolder == null)
    {
@@ -174,8 +176,8 @@ TC_API void tnsSSL_read_s(NMParams p) // totalcross/net/ssl/SSL native public in
 TC_API void tnsSSL_write_Bi(NMParams p) // totalcross/net/ssl/SSL native public int write(byte []out_data, int len);
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
-   Object out_data = p->obj[1];
+   TCObject sslObj = p->obj[0];
+   TCObject out_data = p->obj[1];
    int32 len = p->i32[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
@@ -188,7 +190,7 @@ TC_API void tnsSSL_write_Bi(NMParams p) // totalcross/net/ssl/SSL native public 
 TC_API void tnsSSL_verifyCertificate(NMParams p) // totalcross/net/ssl/SSL native public int verifyCertificate();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
    p->retI = ssl_verify_cert(ssl);
@@ -200,7 +202,7 @@ TC_API void tnsSSL_verifyCertificate(NMParams p) // totalcross/net/ssl/SSL nativ
 TC_API void tnsSSL_renegotiate(NMParams p) // totalcross/net/ssl/SSL native public int renegotiate();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslObj = p->obj[0];
+   TCObject sslObj = p->obj[0];
    SSL *ssl = (SSL*) SSL_sslRef(sslObj);
 
    p->retI = ssl_renegotiate(ssl);
@@ -212,11 +214,11 @@ TC_API void tnsSSL_renegotiate(NMParams p) // totalcross/net/ssl/SSL native publ
 TC_API void tnsSSLCTX_create_ii(NMParams p) // totalcross/net/ssl/SSLCTX native public void create(int options, int num_sessions);
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslCtxObj = p->obj[0];
+   TCObject sslCtxObj = p->obj[0];
    int32 options = p->i32[0];
    int32 num_sessions = p->i32[1];
 
-   SSLCTX_ctxRef(sslCtxObj) = (int32) ssl_ctx_new(options, num_sessions);
+   SSLCTX_ctxRef(sslCtxObj) = (int64) ssl_ctx_new(options, num_sessions);
 #else
    p = 0;
 #endif
@@ -225,7 +227,7 @@ TC_API void tnsSSLCTX_create_ii(NMParams p) // totalcross/net/ssl/SSLCTX native 
 TC_API void tnsSSLCTX_dispose(NMParams p) // totalcross/net/ssl/SSLCTX native public void dispose();
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslCtxObj = p->obj[0];
+   TCObject sslCtxObj = p->obj[0];
    SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
    int32 dontFinalize = SSLCTX_dontFinalize(sslCtxObj);
 
@@ -243,8 +245,8 @@ TC_API void tnsSSLCTX_dispose(NMParams p) // totalcross/net/ssl/SSLCTX native pu
 TC_API void tnsSSLCTX_find_s(NMParams p) // totalcross/net/ssl/SSLCTX native public totalcross.net.ssl.SSL find(totalcross.net.Socket s);
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslCtxObj = p->obj[0];
-   Object socketObj = p->obj[1];
+   TCObject sslCtxObj = p->obj[0];
+   TCObject socketObj = p->obj[1];
    SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
    SOCKET *socketHandle;
 
@@ -255,7 +257,7 @@ TC_API void tnsSSLCTX_find_s(NMParams p) // totalcross/net/ssl/SSLCTX native pub
    }
 
    socketHandle = (SOCKET*) ARRAYOBJ_START(Socket_socketRef(socketObj));
-   p->retO = (Object)ssl_find(ssl_ctx, (uint32)*socketHandle); // flsobral@tc110_106: ssl_find expects a handle, not an object.
+   p->retO = (TCObject)ssl_find(ssl_ctx, (uint32)*socketHandle); // flsobral@tc110_106: ssl_find expects a handle, not an object.
 
 #else
    p = 0;
@@ -267,12 +269,12 @@ TC_API void tnsSSLCTX_objLoad_iss(NMParams p) // totalcross/net/ssl/SSLCTX nativ
 #ifdef HAVE_IMPLEMENTATION
 
 #define BUFSIZE 0x400
-   Object sslCtxObj = p->obj[0];
+   TCObject sslCtxObj = p->obj[0];
    int32 obj_type = p->i32[0];
-   Object streamObj = p->obj[1];
-   Object passwordObj = p->obj[2];
+   TCObject streamObj = p->obj[1];
+   TCObject passwordObj = p->obj[2];
 
-   volatile Object byteArray = null;
+   volatile TCObject byteArray = null;
    Method readMethod;
    volatile CharP password = null;
    uint8* buffer = null;
@@ -343,11 +345,11 @@ cleanup:
 TC_API void tnsSSLCTX_objLoad_iBis(NMParams p) // totalcross/net/ssl/SSLCTX native public int objLoad(int obj_type, byte []data, int len, String password);
 {
 #ifdef HAVE_IMPLEMENTATION
-   Object sslCtxObj = p->obj[0];
+   TCObject sslCtxObj = p->obj[0];
    int32 obj_type = p->i32[0];
-   Object dataObj = p->obj[1];
+   TCObject dataObj = p->obj[1];
    int32 len = p->i32[1];
-   Object passwordObj = p->obj[2];
+   TCObject passwordObj = p->obj[2];
    SSLCTX *ssl_ctx = (SSLCTX*)SSLCTX_ctxRef(sslCtxObj);
    volatile CharP password = null;
 
@@ -371,9 +373,9 @@ TC_API void tnsSSLCTX_newClient_sB(NMParams p) // totalcross/net/ssl/SSLCTX nati
 {
 #ifdef HAVE_IMPLEMENTATION
    SSL_CTX *ssl_ctx = (SSL_CTX*)SSLCTX_ctxRef(p->obj[0]);
-   Object socketObj = p->obj[1];
-   Object id = p->obj[2];
-   volatile Object ssl = null;
+   TCObject socketObj = p->obj[1];
+   TCObject id = p->obj[2];
+   volatile TCObject ssl = null;
    SOCKET *socketHandle;
 
    if (socketObj == null || Socket_socketRef(socketObj) == null)
@@ -398,7 +400,7 @@ TC_API void tnsSSLCTX_newClient_sB(NMParams p) // totalcross/net/ssl/SSLCTX nati
    }
    UNLOCKVAR(htSSL);
 
-   SSL_sslRef(ssl) = (int32)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL);
+   SSL_sslRef(ssl) = (int64)ssl_client_new(ssl_ctx, (int32)*socketHandle, id ? ARRAYOBJ_START(id): NULL, id ? ARRAYOBJ_LEN(id) : 0);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);      
@@ -416,8 +418,8 @@ TC_API void tnsSSLCTX_newServer_s(NMParams p) // totalcross/net/ssl/SSLCTX nativ
 {
 #ifdef HAVE_IMPLEMENTATION
    SSL_CTX *ssl_ctx = (SSL_CTX*)SSLCTX_ctxRef(p->obj[0]);
-   Object socketObj = p->obj[1];
-   volatile Object ssl = null;
+   TCObject socketObj = p->obj[1];
+   volatile TCObject ssl = null;
    SOCKET *socketHandle;
 
    if (socketObj == null || Socket_socketRef(socketObj) == null)
@@ -442,7 +444,7 @@ TC_API void tnsSSLCTX_newServer_s(NMParams p) // totalcross/net/ssl/SSLCTX nativ
    }
    UNLOCKVAR(htSSL);
 
-   SSL_sslRef(ssl) = (int32)ssl_server_new(ssl_ctx, (int32)*socketHandle);
+   SSL_sslRef(ssl) = (int64)ssl_server_new(ssl_ctx, (int32)*socketHandle);
    p->retO = ssl;
 
    setObjectLock(p->retO, UNLOCKED);

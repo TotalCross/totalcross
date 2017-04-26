@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.converter;
 
 import tc.tools.converter.bytecode.*;
@@ -202,8 +200,7 @@ public class Bytecode2TCCode implements JConstants, TCConstants
       BC169_ret ji = (BC169_ret)i;
       int regIndex = -1;
       try {regIndex = htForBytecodeRet.get(ji.answer);} catch(Exception e) {}
-      Reg code = new Reg(JUMP_regI, lineOfPC);
-      code.set(regIndex);
+      Reg code = new Reg(JUMP_regI, lineOfPC, regIndex);
       vcode.addElement(code);
       return code;
    }
@@ -579,7 +576,8 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case POP: //87
          {
-            stack.pop();
+            if (!stack.empty())
+               stack.pop();
             break;
          }
          case POP2: //88
@@ -1509,14 +1507,33 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case ATHROW: //191
          {
-            if (!stack.empty())
-            {
-               OperandReg regO = (OperandReg) stack.pop();
-               Reg code = new Reg(THROW, lineOfPC);
-               code.set(regO.index);
-               vcode.addElement(code);
-               stack.push(regO);
-            }
+            /*
+             With this code:
+             
+               Lock objectLock = new Lock();
+               String connection = "";
+               
+               public String recoverTable() {
+                  synchronized (objectLock) {
+                      return connection;
+                  }
+               }
+             
+             Eclipse has an optimization that removes an extra move of the lock from the local
+             variables to the stack. This is the code it generates:
+             
+             14: aload_1
+             15: monitorexit
+             16: athrow
+             
+             At line 14, the stack holds the exception at top, and the lock at local variable 1.
+             However, the TC converter isn't aware that the exception is at the top of the stack,
+             so we check it and provide that extra operand that tells it.
+             */
+            OperandReg regO = stack.empty() ? new OperandRegO() : (OperandReg) stack.pop();
+            Reg code = new Reg(THROW, lineOfPC, regO.index);
+            vcode.addElement(code);
+            stack.push(regO);
             break;
          }
          case JCHECKCAST: //192
@@ -1542,18 +1559,26 @@ public class Bytecode2TCCode implements JConstants, TCConstants
          }
          case MONITORENTER: //194
          {
-            OperandReg regO = (OperandReg) stack.pop();
-            Reg code = new Reg(MONITOR_Enter, lineOfPC);
-            code.set(regO.index);
+            Operand reg = stack.pop();
+            Reg code;
+            
+            if (reg instanceof OperandReg)
+               code = new Reg(MONITOR_Enter, lineOfPC, ((OperandReg)reg).index);
+            else 
+               code = new Reg(MONITOR_Enter2, lineOfPC, ((OperandSymO)reg).index);
             vcode.addElement(code);
             tc = code;
             break;
          }
          case MONITOREXIT: //195
          {
-            OperandReg regO = (OperandReg) stack.pop();
-            Reg code = new Reg(MONITOR_Exit, lineOfPC);
-            code.set(regO.index);
+            Operand reg = (Operand) stack.pop();
+            Reg code;
+            
+            if (reg instanceof OperandReg)
+               code = new Reg(MONITOR_Exit, lineOfPC, ((OperandReg)reg).index);
+            else 
+               code = new Reg(MONITOR_Exit2, lineOfPC, ((OperandSymO)reg).index);
             vcode.addElement(code);
             tc = code;
             break;
@@ -2002,6 +2027,10 @@ public class Bytecode2TCCode implements JConstants, TCConstants
    {
       if (name.startsWith("totalcross/lang/"))
          return "java/lang/" + name.substring(16);
+      if (name.startsWith("totalcross/util/") && name.contains("4D") && !name.contains("/zip/"))
+         return name.replace("totalcross", "java");
+      if (name.startsWith("jdkcompat") && name.contains("4D"))
+         return name.replaceFirst("jdkcompat", "java");
       return name;
    }
 

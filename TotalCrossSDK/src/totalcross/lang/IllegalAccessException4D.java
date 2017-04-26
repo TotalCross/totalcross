@@ -33,7 +33,7 @@ package totalcross.lang;
  * available.
  */
 
-public class IllegalAccessException4D extends RuntimeException
+public class IllegalAccessException4D extends ReflectiveOperationException
 {
    /** Constructs an empty Exception. */
    public IllegalAccessException4D()

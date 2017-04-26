@@ -2,6 +2,7 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.util.*;
 
 /**
@@ -34,7 +35,7 @@ public class Flick implements PenListener, TimerListener
    /**
     * Desired animation frame rate in frames/second.
     */
-   public static int defaultFrameRate = 25;
+   public static int defaultFrameRate = 40; // each frame with 25ms
    public int frameRate = defaultFrameRate;
 
    /**
@@ -60,7 +61,7 @@ public class Flick implements PenListener, TimerListener
     * Flick acceleration in inches/second^2. This value simulates friction to slow the flick motion.
     * Defaults to 2.95 for screen height > 320, or 1.6 otherwise.
     */
-   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight) > 320 ? 2.95 : 1.6;
+   public static double defaultFlickAcceleration = Math.max(Settings.screenWidth,Settings.screenHeight)/Font.NORMAL_SIZE/(Settings.platform.equals(Settings.ANDROID) ? 10.0 : 5.0);
    public double flickAcceleration = defaultFlickAcceleration;
 
    // Device pixel densities in dpi.
@@ -154,7 +155,7 @@ public class Flick implements PenListener, TimerListener
    public void setScrollDistance(int v)
    {
       scrollDistance = v;
-      distanceToAbortScroll = v/5;
+      distanceToAbortScroll = v / (Control.isTablet ? 10 : 5);
    }
    
    /** The distance used to abort the scroll. Set to 0 to make it always scroll a page, even if it
@@ -209,8 +210,7 @@ public class Flick implements PenListener, TimerListener
       resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
       resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
       
-      if ((Settings.screenHeight > 700 && Settings.screenWidth  > 400) ||
-          (Settings.screenWidth  > 700 && Settings.screenHeight > 400))
+      if (Control.isTablet)
       {
         // Prefer high density on high res screens
         resX = (resX < 150) ? 240 : resX;
@@ -529,12 +529,23 @@ public class Flick implements PenListener, TimerListener
          calledFlickStarted = true;
          if (target.flickStarted())
          {
-            if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickStarted();
+            callListeners(true,false);
             currentFlick = this;
             flickPos = 0;
             ((Control)target).addTimer(timer, 1000 / frameRate);
          }
       }
+   }
+
+   /** Calls the listeners of this flick. */
+   public void callListeners(boolean started, boolean atPenDown)
+   {
+      if (listeners != null) 
+         for (int i = listeners.size(); --i >= 0;)
+            if (started)
+               ((Scrollable)listeners.items[i]).flickStarted();
+            else
+               ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
    }
    
    /**
@@ -552,7 +563,7 @@ public class Flick implements PenListener, TimerListener
       {
          calledFlickStarted = false;
          ((Control)target).removeTimer(timer);
-         if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
+         callListeners(false, atPenDown);
          target.flickEnded(atPenDown);
       }
    }
@@ -587,15 +598,15 @@ public class Flick implements PenListener, TimerListener
             {
                case DragEvent.UP:
                case DragEvent.DOWN:
-                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion);
-                  if (!target.scrollContent(0, -flickMotion))
+                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion, true);
+                  if (!target.scrollContent(0, -flickMotion, true))
                      endReached = true;
                break;
    
                case DragEvent.LEFT:
                case DragEvent.RIGHT:
-                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0);
-                  if (!target.scrollContent(-flickMotion, 0))
+                  if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0, true);
+                  if (!target.scrollContent(-flickMotion, 0, true))
                      endReached = true;
                break;
             }

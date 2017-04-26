@@ -33,6 +33,25 @@ import totalcross.util.Vector;
  */
 public class Chart extends Control
 {
+   /** Sample gray color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR1 = 0x4D4D4D; // (gray)
+   /** Sample blue color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR2 = 0x5DA5DA; // (blue)
+   /** Sample orange color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR3 = 0xFAA43A; // (orange)
+   /** Sample green color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR4 = 0x60BD68; // (green)
+   /** Sample pink color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR5 = 0xF17CB0; // (pink)
+   /** Sample brown color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR6 = 0xB2912F; // (brown)
+   /** Sample purple color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR7 = 0xB276B2; // (purple)
+   /** Sample yellow color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR8 = 0xDECF3F; // (yellow)
+   /** Sample red color to be used in the chart, taken from <a href='http://www.mulinblog.com/a-color-palette-optimized-for-data-visualization'>here</a>. */
+   public static final int COLOR9 = 0xF15854; // (red)
+
    /** Indicates a 3D chart. Default is 2D.
     * @see #type
     */
@@ -259,8 +278,8 @@ public class Chart extends Control
     */
    public void setYAxis(double min, double max, int steps)
    {
-      yAxisMinValue = min;
-      yAxisMaxValue = max;
+      yAxisMinValue = Math.min(min,max);
+      yAxisMaxValue = Math.max(min,max);
       yAxisSteps = steps;
    }
 
@@ -350,7 +369,7 @@ public class Chart extends Control
          int yvalW = yValuesSize;
          for (double v = yAxisMinValue; v <= yAxisMaxValue; v += incY)
             yvalW = Math.max(yvalW , fm.stringWidth(Convert.toCurrencyString(v,yDecimalPlaces)));
-         left += yvalW;
+         left += yvalW+3;
          top += snapToTop ? 0 : fm.ascent/2;
          bottom += snapToBottom ? 0 : fm.ascent/2;
          if (drawCategories)
@@ -547,7 +566,7 @@ public class Chart extends Control
             if (se.dot != null)
             {
                if (se.legendDot == null)
-                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth,true,-1);} catch (Exception e) {se.legendDot = se.dot;}
+                  try {se.legendDot = se.dot.smoothScaledFixedAspectRatio(sqWH - halfBlankWidth,true);} catch (Exception e) {se.legendDot = se.dot;}
                g.drawImage(se.legendDot,x + halfBlankWidth,y+sqOff + 1);
             }
             else

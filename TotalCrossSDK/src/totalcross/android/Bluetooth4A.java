@@ -43,7 +43,7 @@ public class Bluetooth4A
       Launcher4A.loader.achandler.sendMessage(msg);
       while (!Level5.isResponseReady)
       {
-         try {Thread.sleep(50);} catch (Exception e) {}
+         try {Thread.sleep(20);} catch (Exception e) {}
          if (Launcher4A.eventIsAvailable())
             Launcher4A.pumpEvents();
       }

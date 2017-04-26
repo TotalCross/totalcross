@@ -14,30 +14,31 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.sys;
 
 /**
- * This exception is thrown when Event.handleOneEvent() encounteres an event
- * that requires the app to exit.  The main purpose of this event is to unwind
- * the stack all the way back to the main event loop so that the app can
- * properly exit. It is mostly used to exit the vm when a Window is open with the
- * popup method.
+ * This exception is thrown when <code>Event.handleOneEvent()</code> finds an event that requires the application to exit. The main purpose of this 
+ * event is to unwind the stack all the way back to the main event loop so that the application can exit properly. It is mostly used to exit the VM 
+ * when a window is open with the <code>popup()</code> method.
  * <p>
- * WARNING: DO NOT CATCH THIS EXCEPTION IN YOUR APP UNLESS YOU KNOW WHAT YOU
- * ARE DOING.
+ * WARNING: DO NOT CATCH THIS EXCEPTION IN YOUR APP UNLESS YOU KNOW WHAT YOU ARE DOING.
  */
 
 public class AppExitException extends RuntimeException
 {
-   /** Constructs an empty Exception. */
+   /** 
+    * Constructs an empty Exception. 
+    */
    public AppExitException()
    {
       super();
    }
 
-   /** Constructs an exception with the given message. */
+   /** 
+    * Constructs an exception with the given message. 
+    * 
+    * @param msg The error message.
+    */
    public AppExitException(String msg)
    {
      super(msg);

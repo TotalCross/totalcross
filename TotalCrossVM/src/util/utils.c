@@ -41,6 +41,7 @@
 TC_API int32 hashCode(CharP s)
 {
    int32 hash=0;
+   if (s)
    while (*s)
       hash = (hash<<5) - hash + (int32)*s++;
    return hash;
@@ -310,7 +311,7 @@ TC_API CharP int2str(int32 i, IntBuf buf)
    if (i == 0)
       return "0";
    else
-   if (i == 0x80000000L) // handle the only exception - guich@tc126_69: hex value, not decimal!
+   if (i == 0x80000000) // handle the only exception - guich@tc126_69: hex value, not decimal!
       return "-2147483648";
    else
    {
@@ -445,7 +446,7 @@ static double np32[] = // guich@570_51
 {
    1.0,1e-32,1e-64,1e-96,1e-128,1e-160,1e-192,1e-224,1e-256,1e-288,1e-320,
 };
-inline static double Pow10(int32 exp) // fast pow(10,exp) - thanks to Peter M. Dickerson
+static double Pow10(int32 exp) // fast pow(10,exp) - thanks to Peter M. Dickerson
 {
    if (exp >=0)
       return p1[exp & 31]*p32[(exp>>5)];
@@ -532,7 +533,7 @@ TC_API double str2double(CharP str, bool *err) // guich@566_38: new routine
    if (dotPtr)
    {
       CharP end = ePtr ? ePtr : (str+len);
-      int32 order = end - dotPtr-1;
+      int32 order = (int)(end - dotPtr-1);
       int64 v = str2longPriv(dotPtr+1, &err2, true);
       if (err2)
       {
@@ -750,7 +751,7 @@ TC_API CharP int2CRID(int32 i, CharP crid)
 int32 fread32(FILE* f)
 {
    int32 i,err;
-   err = fread(&i, 1, 4, f);
+   err = (int32)fread(&i, 1, 4, f);
    if (err == -1)
       alert("Error on fread16: %d",errno);
    return i;
@@ -759,7 +760,7 @@ int16 fread16(FILE* f)
 {
    int16 i;
    int32 err;
-   err = fread(&i, 1, 2, f);
+   err = (int32)fread(&i, 1, 2, f);
    if (err == -1)
       alert("Error on fread16: %d",errno);
    return i;
@@ -869,10 +870,13 @@ TC_API int32 getFreeMemory(bool maxblock)
    int32 s;
 #ifdef INITIAL_MEM
    s = maxAvail;
-#else                         
+#elif defined ANDROID
+   JNIEnv *env = getJNIEnv();
+   return (*env)->CallStaticIntMethod(env, applicationClass, jgetFreeMemory);
+#else
    s = !maxblock ? 0 : privateGetFreeMemory(maxblock);
 #endif
-#if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
+#if !defined(ANDROID) && !defined(FORCE_LIBC_ALLOC) && !defined(ENABLE_WIN32_POINTER_VERIFICATION)
    if (!maxblock)
       s += dlmallinfo().fordblks;
 #else // for android and iphone, return something different of 0
@@ -899,7 +903,7 @@ TC_API TCHARP CharP2TCHARP(CharP from)
    int32 bufLen = xstrlen(from);
 
    if ((buf = (TCHARP) xmalloc((bufLen+1)*sizeof(TCHARP))) != null)
-#ifdef WINCE
+#ifdef UNICODE
       CharP2JCharPBuf(from, bufLen, buf, true);
 #else
       xstrncpy(buf, from, bufLen);
@@ -910,7 +914,7 @@ TC_API TCHARP CharP2TCHARP(CharP from)
 TC_API TCHARP CharP2TCHARPBuf(CharP from, TCHARP to)
 {
    int32 fromLen = xstrlen(from);
-#ifdef WINCE
+#ifdef UNICODE
    CharP2JCharPBuf(from, fromLen, to, true);
 #else
    xstrncpy(to, from, fromLen);
@@ -920,7 +924,7 @@ TC_API TCHARP CharP2TCHARPBuf(CharP from, TCHARP to)
 
 TC_API CharP TCHARP2CharPBuf(TCHARP from, CharP to)
 {
-#if defined (WINCE)
+#if defined (UNICODE)
   return JCharP2CharPBuf(from, -1, to);
 #else
   return xstrcpy(to, from);

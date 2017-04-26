@@ -336,6 +336,8 @@ public interface TCConstants extends tc.tools.converter.tclass.TClassConstants
    public static final int  JUMP_regI            = 155;
    public static final int  MONITOR_Enter        = 156;
    public static final int  MONITOR_Exit         = 157;
+   public static final int  MONITOR_Enter2       = 158;
+   public static final int  MONITOR_Exit2        = 159;
 
    public static final int  INSTRUCTION_NOT_FOUND = 255;
 

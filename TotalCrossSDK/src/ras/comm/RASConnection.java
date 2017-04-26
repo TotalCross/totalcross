@@ -1,11 +1,9 @@
 package ras.comm;
 
-import ras.ActivationClient;
-import totalcross.io.DataStream;
-import totalcross.io.IOException;
-import totalcross.io.Stream;
-import totalcross.net.ConnectionManager;
-import totalcross.util.Logger;
+import ras.*;
+
+import totalcross.io.*;
+import totalcross.util.*;
 
 public class RASConnection
 {
@@ -25,7 +23,8 @@ public class RASConnection
    public static RASConnection connect(int openTimeout, int readWriteTimeout) throws IOException
    {
       RASConnection connection = null;
-      ConnectionManager.open();
+//      if (!ConnectionManager.isInternetAccessible())
+//         ConnectionManager.open();
 
       try
       {
@@ -72,7 +71,7 @@ public class RASConnection
    public Packet receive() throws CommException
    {
       int id = 0;
-      Class packetClass;
+      Class<?> packetClass;
       Packet packet = null;
 
       // Receive packet
@@ -80,7 +79,7 @@ public class RASConnection
       try
       {
          id = ds.readInt();
-         packetClass = (Class) Packet.packetClasses.get(id);
+         packetClass = (Class<?>) Packet.packetClasses.get(id);
          if (packetClass == null)
             throw new CommException("Unsupported packet received: " + id);
 

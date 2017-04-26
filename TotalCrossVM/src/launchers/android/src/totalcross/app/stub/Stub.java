@@ -13,13 +13,14 @@
 
 package totalcross.app.stub;
 
-import java.util.*;
-
 import totalcross.*;
+
 import android.app.*;
 import android.app.ActivityManager.*;
 import android.content.*;
+import android.content.pm.*;
 import android.os.*;
+import java.util.*;
 
 public class Stub extends Activity 
 {
@@ -64,10 +65,12 @@ public class Stub extends Activity
       ht.clear();
       // set some parameters
       String app = getClass().getName();
-      String tczName = app.substring(app.lastIndexOf('.')+1); // strip the package
+      int dot = app.lastIndexOf('.');
+      String tczName = app.substring(dot+1); // strip the package
+      ht.put("package", app.substring(0,dot));
       ht.put("tczname", tczName);
       ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
-      ht.put("fullscreen", (getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.theme & 0xFF) == 0x0A ? "true" : "false");
+      ht.put("fullscreen", "fullscreen:1".equals(getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA).metaData.getString("isFullScreen")) ? "true" : "false"); // no longer used
       // set commandline
       Bundle extras = getIntent().getExtras();
       if (extras != null && extras.containsKey("cmdline"))

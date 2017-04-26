@@ -18,7 +18,7 @@
 
 package totalcross.phone;
 
-/** Used to send and receive SMS messages. Currently supports Windows CE and Blackberry.
+/** Used to send and receive SMS messages. Currently supports only WP8.
  * See the SmsSample for an example.
  */
 public class SMS
@@ -26,23 +26,15 @@ public class SMS
    /** Sends the given message to the destination.
     * @param destination The number to send to.
     * @param message The message to send. Note that some phones will strip unicode characters.
-    * @throws totalcross.io.IOException If any error occurs. For Windows CE errors, refer to 
-    * <a href='http://msdn.microsoft.com/en-us/library/aa455072.aspx'>http://msdn.microsoft.com/en-us/library/aa455072.aspx</a>.
+    * @throws totalcross.io.IOException if an error occurs.
     */
    public static void send(String destination, String message) throws totalcross.io.IOException
    {
    }
    
-   /** Blocks until a message becomes available. You may want to call this from within a thread, otherwise your
-    * program will block forever.
-    * <p>
-    * On Windows CE, if you get an error 0x105, there's another program that is listening to SMS. In this case you will have to close that program.
-    * Only one program can receive SMS messages at a time. All messages that are received are not visualized by the phone's SMS program
-    * (in other words, if you don't save them, they will be lost).
-    * @return A String array where the first string contains the number and the second string contains the message.
-    * @throws totalcross.io.IOException If any error occurs. For Windows CE errors, refer to 
-    * <a href='http://msdn.microsoft.com/en-us/library/aa455072.aspx'>http://msdn.microsoft.com/en-us/library/aa455072.aspx</a>.
-    * 
+   /** Supposed to block until a message becomes available.
+    *  Does not work on the currently supported platforms.
+    *  @deprecated
     */
    public static String[] receive() throws totalcross.io.IOException
    {

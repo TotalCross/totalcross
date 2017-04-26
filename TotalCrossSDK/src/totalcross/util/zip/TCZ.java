@@ -19,6 +19,7 @@
 package totalcross.util.zip;
 
 import totalcross.io.*;
+import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -146,6 +147,8 @@ public class TCZ
       if (!outName.toLowerCase().endsWith(".tcz"))
          outName =  outName.concat(".tcz");
       // creates an empty file for output
+      String path = Convert.getFilePath(outName);
+      if (path != null) try {new totalcross.io.File(path).createDir();} catch (totalcross.io.IOException e) {}
       File fout = new File(outName, File.CREATE_EMPTY);
 
       vout.qsort(); // sort the files

@@ -9,25 +9,29 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #include "tcvm.h"
 
-#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
+#if defined(darwin)
 #define EXTRA4ALIGN 0
 #else
+//#if defined(WIN32) || defined(ANDROID) || defined(darwin) // windows always give us aligned blocks
 #define EXTRA4ALIGN 4
-#endif
-
-#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
-#define dlmalloc malloc
-#define dlfree free
 #endif
 
 #define XMALLOC_MARK_START 8  // note: start must be multiple of 4, otherwise a "datatype misnaligned" will be thrown in wince
 #define XMALLOC_MARK_END 2
 #define XMALLOC_MARKSSIZE (XMALLOC_MARK_START + XMALLOC_MARK_END)
 #define XMALLOC_EXTRASIZE XMALLOC_MARKSSIZE
+
+#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
+int32 getUsedMemory();
+static void updateStats()
+{
+   totalAllocated = getUsedMemory();
+   if (totalAllocated > maxAllocated)
+      maxAllocated = totalAllocated;
+}
+#endif
 
 //// Memory failure test ////
 int32 allocCount2ReturnNull;
@@ -41,21 +45,21 @@ TC_API int32 getCountToReturnNull()
 }
 
 //// Primitive allocation ////
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE))
-mspace mspace1,mspace2;
-static inline VoidP realMalloc(uint32 size) // we can't use DbgMalloc on the leaks hashtable, otherwise memory will blow up too quickly.
+static VoidP realMalloc(uint32 size)
 {
-   return size <= 32 ? mspace_malloc(mspace1,size) : size <= 400 ? mspace_malloc(mspace2,size) : dlmalloc(size);
-} 
-#else
-static inline VoidP realMalloc(uint32 size)
-{
-   return dlmalloc(size);
+   VoidP p = malloc(size);
+   if (p == null)
+   {
+      Sleep(500);
+      p = malloc(size);
+      if (p)
+         debug("*** Sleep worked to alloc %d", size);
+   }
+   return p;
 }
-#endif
-static inline void realFree(VoidP p) 
+static void realFree(VoidP p) 
 {
-   dlfree(p);
+   free(p);
 }
 ////
 
@@ -125,16 +129,10 @@ static bool checkMemHeapLeaks();
 
 bool initMem()
 {
-   #if (defined(WIN32) && !defined(WINCE)) || defined(POSIX)
-//   leakCheckingEnabled = true;
+   #if defined(WIN32) && !defined(WINCE) && defined(_DEBUG)
+   //leakCheckingEnabled = true;
    #endif
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE))
-   mspace1 = create_mspace(0,0);
-   mspace2 = create_mspace(0,0);
-   return mspace1 != null && mspace2 != null;
-#else
    return true;
-#endif
 }
 
 static bool checkMemHeapLeaks()
@@ -158,36 +156,34 @@ void destroyMem()
 {
    bool b1 = checkMemHeapLeaks();
    bool b2 = checkMallocLeaks();
+#if defined(DEBUG) || defined(debug)
    if (showMemoryMessagesAtExit && (b1 || b2 || warnOnExit)) // guich@tc114_44
       alert("Memory %s found. Check the\ndebug console for more information.", warnOnExit ? "problems" : "leaks");
-#if !defined(ENABLE_WIN32_POINTER_VERIFICATION) && (defined(WIN32) || defined(WINCE))
-   if (mspace1)
-      destroy_mspace(mspace1);
-   if (mspace2)
-      destroy_mspace(mspace2);
-   mspace1 = mspace2 = 0;
-#endif
+#endif        
 }
 
 static int32 hpcount;
 
-TC_API Heap privateHeapCreate(const char *file, int32 line)
+TC_API Heap privateHeapCreate(bool add2list, const char *file, int32 line)
 {
    Heap p = newX(Heap);
    if (p)
    {
-      int32 len = strlen(file);
+      int32 len = xstrlen(file);
       VoidPs* ch;
       xstrcpy(p->ex.creationFile, max32(0,len-(sizeof(p->ex.creationFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
       p->ex.creationLine = line;
       p->count = ++hpcount;
-      LOCKVAR(createdHeaps);
-      ch = VoidPsAdd(createdHeaps, p, null); // cannot use a heap in VoidPsAdd
-      if (ch == null)
-         xfree(p);
-      else
-         createdHeaps = ch;
-      UNLOCKVAR(createdHeaps);
+      if (add2list)
+      {
+         LOCKVAR(createdHeaps);
+         ch = VoidPsAdd(createdHeaps, p, null); // cannot use a heap in VoidPsAdd
+         if (ch == null)
+            xfree(p);
+         else
+            createdHeaps = ch;
+         UNLOCKVAR(createdHeaps);
+      }
    }
    return p;
 }
@@ -232,8 +228,6 @@ TC_API void* heapAlloc(Heap m, uint32 size)
    {
       HEAP_ERROR(m, HEAP_MEMORY_ERROR);
    }
-   if (size > MEMBLOCK_SIZE)
-      size = size+0;
    size = ((size+3)>>2)<<2; // align at 4-bytes
    m->totalAlloc += size;
    m->numAlloc++;
@@ -277,10 +271,13 @@ void heapFree(Heap m, void* ptr)
             if (head == m->current)
                m->current = head->next;
             else
+            if (prev) // guich@tc330
                prev->next = head->next;
             freeArray(head->block);
             xfree(head);
             m->blocksAlloc--;
+            if (prev == null) // prevents program crash
+               break;
          }
          break;
       }
@@ -308,7 +305,7 @@ void heapFreeAsking(Heap m, AskIfFreeFunc ask)
       }
 }
 
-TC_API void heapDestroyPrivate(Heap m)
+TC_API void heapDestroyPrivate(Heap m, bool added2list)
 {
    if (!m)
       return;
@@ -319,23 +316,26 @@ TC_API void heapDestroyPrivate(Heap m)
    //debug("Freeing heap created at %s (%d). setjmp at %s (%d): %X",m->ex.creationFile,m->ex.creationLine,m->ex.setjmpFile, m->ex.setjmpLine, m);
    while (m->current != null)
    {
-      MemBlock mb = m->current->next;
+      volatile MemBlock mb = m->current->next;
       //xmemzero(m->current->block, ARRAYLEN(m->current->block)); // erase the block to make sure that no pointers inside of it are reused
       freeArray(m->current->block);
       xfree(m->current);
       m->current = mb;
    }
    m->finalizerFunc = null;
-   LOCKVAR(createdHeaps);
-   createdHeaps = VoidPsRemove(createdHeaps, m, null);
-   UNLOCKVAR(createdHeaps);
+   if (added2list)
+   {
+      LOCKVAR(createdHeaps);
+      createdHeaps = VoidPsRemove(createdHeaps, m, null);
+      UNLOCKVAR(createdHeaps);
+   }
    xfree(m);
 }
 
 TC_API void privateHeapError(Heap m, int32 errorCode, const char *file, int32 line)
 {
    jmp_buf errorJump;
-   int32 len = strlen(file);
+   int32 len = xstrlen(file);
    xstrcpy(m->ex.errorFile, max32(0,len-(sizeof(m->ex.errorFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
    m->ex.errorLine = line;
    m->ex.errorCode = errorCode;
@@ -352,7 +352,7 @@ void heapSetFinalizer(Heap m, HeapFinalizerFunc fin, void* bag)
 
 TC_API int32 privateHeapSetJump(Heap m, const char *file, int32 line)
 {
-   int32 len = strlen(file);
+   int32 len = xstrlen(file);
    xstrcpy(m->ex.setjmpFile, max32(0,len-(sizeof(m->ex.setjmpFile)-1)) + (char*)file); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
    m->ex.setjmpLine = line;
    return 0;
@@ -417,7 +417,7 @@ static struct htmElem *htmPut(uint32 addr, int line, const char* src)
          np->line = line;
          np->memH = memH;
          np->count = ++alcount;
-         len = strlen(src);
+         len = xstrlen(src);
          xstrcpy(np->src, max32(0,len-(sizeof(np->src)-1)) + (char*)src); // if src is bigger than the buffer, copy the end of the string (the filename is more important than the path)
          /* attach to hashtab array */
          mHashTable[hashval] = np;
@@ -473,10 +473,11 @@ extern size_t  _msize(void *);
 #endif
 
 #if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+size_t dlmalloc_usable_size(void*); 
 static uint32 getPtrSize(void *p)
 {
 #if defined(WIN32)
-   #ifdef ENABLE_WIN32_POINTER_VERIFICATION
+#if defined(ENABLE_WIN32_POINTER_VERIFICATION) || defined(FORCE_LIBC_ALLOC)
       return dbgGetPtrSize(p);
    #else
       return dlmalloc_usable_size(p);
@@ -490,6 +491,7 @@ static uint32 getPtrSize(void *p)
 ///// guich@550: added sanity checks for xmalloc/xfree/xrealloc
 #define XPTR_SIZE(ptr) *((uint32*)(((uint8*)ptr)-XMALLOC_MARK_START))
 
+#ifndef darwin
 static void *addMemMarks(uint32 size, uint8 *ptr)
 {
    // guich@550: detecting begin/end overwrites
@@ -505,9 +507,9 @@ static void *addMemMarks(uint32 size, uint8 *ptr)
    *(ptr+size+1) = 0x01;
    return ptr;
 }
-static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks, const char *file, int line)
+uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks, const char *file, int line)
 {
-   *_size = 0;
+   if (_size) *_size = 0;
    if (p)
    {
       uint8 *ptr = (uint8 *)p;
@@ -520,7 +522,7 @@ static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks
       else
       {
          uint32 size = XPTR_SIZE(ptr);
-         *_size = size;
+         if (_size) *_size = size;
          if (replaceMarks)
             *(ptr-1) = *(ptr-2) = *(ptr-3) = *(ptr-4) = 2; // set them to 2 so we can find a block that was freed twice
          if (*(ptr+size) != 0x01 || *(ptr+size+1) != 0x01)
@@ -537,6 +539,7 @@ static uint8* verifyMemMarks(void *p, char*msg, uint32* _size, bool replaceMarks
    }
    return p;
 }
+#endif
 
 static uint8* memError(char* func, int32 origSize, const char* file, int line)
 {
@@ -573,7 +576,9 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
    if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
       return null;
 
+   LOCKVAR(alloc);
    ptr = malloc(size);
+   
    allocCount++;
 	if (ptr != null)
    {
@@ -583,6 +588,8 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
    }
    else
       memError("XMALLOC",size, file, line);
+   updateStats();
+   UNLOCKVAR(alloc);
    return ptr;
 #else
    void *p=null;
@@ -591,13 +598,17 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
    //size = ((size >> 2) << 2) + 4; dlmalloc already aligns
    if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
       return null;
+   LOCKVAR(alloc);
 #ifdef INITIAL_MEM
    if (size <= maxAvail)
 #endif
       p = realMalloc(size);
 
    if (!p)
+   {
+      UNLOCKVAR(alloc);
       return memError("XMALLOC",origSize, file, line);
+   }
 #ifdef INITIAL_MEM
    maxAvail -= size;
 #ifdef TRACE_OBJCREATION
@@ -627,6 +638,7 @@ TC_API uint8 *privateXmalloc(uint32 size,const char *file, int line)
 #ifdef ENABLE_TRACE
    //debug("alloc(%d) in %s line %d. Free: %d, used: %d (%lX)",(int)size, file, line, (int)getFreeMemory(false),totalAllocated,(long)p);
 #endif
+   UNLOCKVAR(alloc);
    return p;
 #endif
 }
@@ -636,10 +648,13 @@ TC_API void privateXfree(void *p, const char *file, int line)
 #if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
    if (leakCheckingEnabled && !htmRemove((uint32)p))
       debug("free: %lX NOT REMOVED. xfree called from %s (%d)",(long)p, file, line);
+   LOCKVAR(alloc);
    freeCount++;
    free(p);
+   updateStats();
 #else
    uint32 size=0;
+   LOCKVAR(alloc);
 
    if (p)
    {
@@ -672,14 +687,19 @@ TC_API void privateXfree(void *p, const char *file, int line)
       }
    }
 #endif
+   UNLOCKVAR(alloc);
 }
 
 TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line)
 {                           
-   uint32 oldSize=0, origSize = size;
+   uint32 origSize = size;
+#ifndef darwin
+   uint32 oldSize=0;
+#endif
    uint8* p=null;
    if (ptr == null) // first allocation?
       return privateXmalloc(size, file, line);
+   LOCKVAR(alloc);
    if (leakCheckingEnabled)
       htmRemove((uint32)ptr);
 #if defined(FORCE_LIBC_ALLOC)
@@ -693,6 +713,8 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
       htmPut((uint32)p, line, file);
    if (!p)
       memError("XREALLOC",origSize, file, line);
+   updateStats();
+   UNLOCKVAR(alloc);
    return p;
 #elif defined(ENABLE_WIN32_POINTER_VERIFICATION)
    UNUSED(origSize);
@@ -706,6 +728,7 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
       if (leakCheckingEnabled)
          htmPut((uint32)p, line, file);
    }
+   UNLOCKVAR(alloc);
    return p;
 #else
    size += XMALLOC_EXTRASIZE;
@@ -716,10 +739,25 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
    {
       p = verifyMemMarks(ptr, "xrealloc", &oldSize, false, file, line);
       if (p)
-         p = dlrealloc(p, size);
+      {   
+         void* pp = dlrealloc(p, size);
+         if (!pp)
+         {
+            pp = dlmalloc(size);
+            if (pp)
+            {                                              
+               xmemmove(pp, p, size);
+               xfree(ptr);
+            }
+         }
+         p = pp;
+      }
    }
    if (!p)
+   {
+      UNLOCKVAR(alloc);
       return memError("XREALLOC",origSize, file, line);
+   }
 #ifdef INITIAL_MEM
    maxAvail -= (int32)size - (int32)oldSize;
 #endif
@@ -746,6 +784,83 @@ TC_API uint8 *privateXrealloc(uint8* ptr, uint32 size,const char *file, int line
 #ifdef ENABLE_TRACE
    //debug("realloc(%d->%d) in %s line %d. Free: %d, used: %d (%lX)",(int)oldSize, (int)size, file, line, (int)getFreeMemory(false),totalAllocated,(long)p);
 #endif
+   UNLOCKVAR(alloc);
+   return p;
+#endif
+}
+
+TC_API uint8 *privateXcalloc(uint32 NumOfElements,uint32 SizeOfElements,const char *file, int line)
+{
+#if defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION)
+   uint8 *ptr;
+   uint32 size = NumOfElements * SizeOfElements;
+
+   if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
+      return null;
+
+   LOCKVAR(alloc);
+   ptr = calloc(NumOfElements, SizeOfElements);
+   
+   allocCount++;
+	if (ptr != null)
+   {
+      xmemzero(ptr, size);
+      if (leakCheckingEnabled)
+         htmPut((uint32)ptr, line, file);
+   }
+   else
+      memError("XMALLOC",size, file, line);
+   updateStats();
+   UNLOCKVAR(alloc);
+   return ptr;
+#else
+   void *p=null;
+   uint32 origSize = NumOfElements * SizeOfElements;
+   uint32 size = origSize + XMALLOC_EXTRASIZE;
+   //size = ((size >> 2) << 2) + 4; dlmalloc already aligns
+   if (allocCount2ReturnNull > 0 && --allocCount2ReturnNull == 0) // used on test suites to return null after a given number of allocations
+      return null;
+   LOCKVAR(alloc);
+#ifdef INITIAL_MEM
+   if (size <= maxAvail)
+#endif
+      p = realMalloc(size);
+
+   if (!p)
+   {
+      UNLOCKVAR(alloc);
+      return memError("XMALLOC",origSize, file, line);
+   }
+#ifdef INITIAL_MEM
+   maxAvail -= size;
+#ifdef TRACE_OBJCREATION
+   //debug("xmalloc(%d) at %s (%d). avail after: %d",size, file, line, maxAvail);
+#endif
+#endif
+   xmemzero(p, size); // guich@340_21: make sure we erase the allocated memory
+//   debug("%7d at %s (%d)",size, file, line);
+
+// fdie: If you want to use a memory checking tool such as Valgrind,
+// you have to define USE_MEMCHECKER to limit your memory use to the requested
+// memory size or the checking tool may detect many false memory corruptions.
+#if !defined(USE_MEMCHECKER) && !defined(darwin) && !defined(ANDROID)
+   size = getPtrSize(p);
+#endif
+
+   p = addMemMarks(size, p);
+
+   allocCount++;
+   totalAllocated += size;
+   if (totalAllocated > maxAllocated)
+      maxAllocated = totalAllocated;
+   if (totalAllocated > profilerMaxMem) // guich@tc111_4
+      profilerMaxMem = totalAllocated;
+   if (leakCheckingEnabled)
+      htmPut((uint32)p, line, file);
+#ifdef ENABLE_TRACE
+   //debug("alloc(%d) in %s line %d. Free: %d, used: %d (%lX)",(int)size, file, line, (int)getFreeMemory(false),totalAllocated,(long)p);
+#endif
+   UNLOCKVAR(alloc);
    return p;
 #endif
 }

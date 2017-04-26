@@ -125,6 +125,7 @@ public class SOAP // guich@570_34
     * important because some servers require the names of the parameters.
     */
    public String namespace;
+   public String namespaceId;
    public String uri;
    public String mtd;
    /** The open timeout for the connection. Defaults to 25 seconds. */
@@ -140,7 +141,7 @@ public class SOAP // guich@570_34
    private String errorReason;
    private int errorReasonState;
    // luciana@570_45 - holds the parameter index of the request
-   private int paramIndex;
+   protected int paramIndex;
 
    private static final int DEFAULT_OPEN_TIMEOUT = 25000;
    private static final int DEFAULT_READ_WRITE_TIMEOUT = 60000;
@@ -290,13 +291,15 @@ public class SOAP // guich@570_34
     * The prefix string used when sending requests. Note that it uses UTF-8, so
     * unicode characters are not supported.
     */
-   public static String prefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-         + "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+   public static String prefix = "<soapenv:Envelope "
+         + "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+         + "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
+         + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
          + "<soapenv:Body>";
    /** The suffix string used when sending requests. */
    public static String suffix = "</soapenv:Body>" + "</soapenv:Envelope>";
 
-   private static StringBuffer sbuf = new StringBuffer(1024);
+   protected StringBuffer sbuf = new StringBuffer(1024);
 
    /**
     * Constructs a SOAP request with the given parameters. The default namespace
@@ -638,7 +641,9 @@ public class SOAP // guich@570_34
     */
    protected HttpStream.Options createOptions() // guich@583_14
    {
-      return new HttpStream.Options();
+      HttpStream.Options options = new HttpStream.Options();
+      options.setCharsetEncoding(HttpStream.Options.CHARSET_UTF8);
+      return options;
    }
    
    /** HttpStream.Options used by this SOAP connection. */
@@ -689,9 +694,12 @@ public class SOAP // guich@570_34
             httpOptions.postHeaders.put("Accept-Encoding", "deflate;q=1.0, gzip;q=0.5"); // flsobral@tc110_77: zlib encoding is preferred over gzip encoding.
          httpOptions.postHeaders.put("Content-Type", "text/xml; charset=utf-8");
          httpOptions.postHeaders.put("SOAPAction", "\"" + namespace + (!namespace.endsWith("/")? "/" : "") + mtd + "\""); // flsobral@tc100b5_48: only add a trailing slash if the namespace does not have one already.
-         httpOptions.postPrefix = prefix + "<" + mtd + " xmlns=\"" + namespace + "\">"; // guich@tc123_39: don't concatenate the args with the prefix and suffix
+         httpOptions.postPrefix =
+               "<?xml version=\"1.0\" encoding=\"" + httpOptions.getCharsetEncoding() + "\"?>"
+                     + prefix
+                     + (namespaceId == null ? "<" + mtd + " xmlns=\"" + namespace + "\">" : "<" + namespaceId + ":" + mtd + " xmlns:" + namespaceId + "=\"" + namespace + "\">"); // guich@tc123_39: don't concatenate the args with the prefix and suffix
          httpOptions.postDataSB = sbuf;
-         httpOptions.postSuffix = "</" + mtd + ">" + suffix;
+         httpOptions.postSuffix = namespaceId == null ? "</" + mtd + ">" + suffix : "</" + namespaceId + ":" + mtd + ">" + suffix;
          if (debug)
             Vm.debug("post: " + httpOptions.postPrefix + httpOptions.postDataSB + httpOptions.postSuffix);
          hs = new HttpStream(new URI(uri), httpOptions);

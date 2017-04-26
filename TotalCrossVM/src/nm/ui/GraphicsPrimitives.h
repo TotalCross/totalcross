@@ -14,6 +14,8 @@
 #ifndef GRAPHICSPRIMITIVES_H
 #define GRAPHICSPRIMITIVES_H
 
+#include "tcclass.h"
+
 #if defined(WINCE) || defined(WIN32)
  #include "win/gfx_ex.h"
 #elif defined(darwin)
@@ -26,7 +28,10 @@
  #endif
 #endif
 #include "xtypes.h"
-
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 typedef uint32 Pixel32; // 32 bpp
 typedef uint16 Pixel565; // 16 bpp
 typedef uint8  PixelPal; // 8 bpp - palettized
@@ -53,7 +58,7 @@ typedef enum
 typedef struct TScreenSurface // represents a device-dependant surface, there's only ONE per application
 {
    uint8* pixels; // pixels in native format
-   __unsafe_unretained Object mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
+   __unsafe_unretained TCObject mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
    int32 pitch; // screen memory pitch size in bytes
    uint32 bpp;
    int32 screenX, screenY, screenW, screenH,minScreenW,minScreenH;
@@ -62,11 +67,13 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    int32 shiftY;
 } *ScreenSurface, TScreenSurface;
 
+
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b);
 Pixel makePixel(int32 r, int32 g, int32 b);
 Pixel makePixelARGB(int32 rgb);
 Pixel makePixelRGB(int32 rgb);
 PixelConv makePixelConvRGB(int32 rgb);
+
 
 /**
  * The device context points a structure containing platform specific data
@@ -80,5 +87,9 @@ extern void *deviceCtx;
 
 #define SCREEN_EX(x)        ((ScreenSurfaceEx)((x)->extension))
 #define DEVICE_CTX          ((ScreenSurfaceEx)deviceCtx)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

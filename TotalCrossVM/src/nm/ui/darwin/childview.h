@@ -19,15 +19,19 @@
 
 @interface ChildView : UIView
 {
-   int lastEventTS;
+   bool isMultitouching;
    int shiftY;
-   int lastOrientation;
    UIViewController* controller;
    EAGLContext *glcontext;
 	GLuint defaultFramebuffer, colorRenderbuffer;
+   bool firstCall;
+   UIDeviceOrientation lastKnownOrientation;
 @public
-   UIDocumentInteractionController *uidController;
+   int taskbarHeight;
 }
+- (CGRect)getBounds;
+- (CGSize)getResolution;
+- (UIDeviceOrientation)getOrientation;
 - (id)init:(UIViewController*) ctrl;
 - (void)setScreenValues:(void*)screen;
 - (void)doRotate;
