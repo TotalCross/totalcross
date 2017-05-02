@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>LitebaseSDK</name>
+	<comment></comment>
+	<projects>
+		<project>TotalCrossSDK</project>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>bin</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_OUTPUT</locationURI>
+		</link>
+	</linkedResources>
+	<variableList>
+		<variable>
+			<name>ECLIPSE_OUTPUT</name>
+			<value>$%7BPARENT-2-PROJECT_LOC%7D/temp/eclipse/Litebase</value>
+		</variable>
+	</variableList>
+</projectDescription>

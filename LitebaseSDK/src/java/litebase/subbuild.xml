@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project name="buildlib">
+
+<import file="${sdk.root}/build.xml"/>
+
+<target name="init"/> <!-- avoid calling init from the main build.xml -->
+
+<!--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    These parameters are set by the caller and may be overriden:
+    <property name="warp.files"   value="${temp.arch.o}" />
+    <property name="warp.options" value="/lg" />>
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="sub-warp">
+  <antcall target="app-warp">
+    <param name="warp.name"         value="Litebase"/>
+    <param name="warp.includes"     value="litebase"/>
+    <param name="warp.targetDir"    value="${lib}/xplat"/>
+  </antcall>
+</target>
+
+</project>

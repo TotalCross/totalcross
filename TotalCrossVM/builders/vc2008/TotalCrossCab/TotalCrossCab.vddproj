@@ -82,7 +82,7 @@
         {
             "{BA458234-9B71-4F46-8107-E91156377184}:_197BE8F6E62E45A084B8960698CA4F88"
             {
-            "SourcePath" = "8:..\\..\\..\\..\\..\\Litebase\\LitebaseSDK\\dist\\lib\\LitebaseLib.tcz"
+            "SourcePath" = "8:..\\..\\..\\..\\..\\TotalCross\\LitebaseSDK\\dist\\lib\\LitebaseLib.tcz"
             "TargetName" = "8:LitebaseLib.tcz"
             "Tag" = "8:"
             "Folder" = "8:_3930CB07C1CC4273BB13B920A9971D5F"

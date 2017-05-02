@@ -537,85 +537,85 @@
     <ClCompile Include="..\..\..\..\..\src\sqlite\sqlite3.c">
       <Filter>TCVM\sqlite</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Index.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Key.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\lbFile.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Litebase.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\LitebaseGlobals.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\LitebaseLex.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\LitebaseMessage.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\LitebaseParser.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\MarkBits.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\MemoryFile.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\NativeMethods.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Node.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\NormalFile.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\PlainDB.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\PreparedStatement.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\ResultSet.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClause.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLColumnListClause.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLDeleteStatement.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLInsertStatement.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLSelectStatement.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\parser\SQLUpdateStatement.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\SQLValue.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\Table.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\TCVMLib.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c">
+    <ClCompile Include="..\..\..\..\..\..\LitebaseSDK\src\native\UtilsLB.c">
       <Filter>TCVM\Litebase</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\src\tests\tc_testsuite.c">

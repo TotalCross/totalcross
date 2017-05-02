@@ -1,0 +1,10 @@
+/*.db
+/*.dbo
+/*.idk
+/*.idr
+/*.pdb
+/temp*
+
+temp/
+output/
+/dist

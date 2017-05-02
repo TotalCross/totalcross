@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+IMPORTANT:
+           SDK -> SDK WITH DEMO VIRTUAL MACHINES WITH TRIAL PERIOD
+           VMS -> ONLY VIRTUAL MACHINES WITHOUT TRIAL PERIOD
+
+-->
+
+<project name="Litebase deploy" default="help" basedir=".">
+
+<description>
+   This file is used to deploy the Litebase C based components.
+</description>
+
+<!-- import ANT Contrib -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<taskdef classpath="orangevolt-ant-tasks-1.3.2.jar" resource="com/orangevolt/tools/ant/taskdefs.properties"/>
+
+<!-- load platform environment variables -->
+<property environment="env"/>
+
+<!-- this target displays a help message which documents this configuration file features -->
+
+<target name="help" >
+  <echo message="To see the possible targets, type 'ant -p'"/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: init
+
+-description:
+   setup all build process properties.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+  <condition property="exe" value=".exe" else=""><os family="windows" /></condition>
+
+  <!-- compiler settings -->
+  <condition property="rootpath" value="${basedir}/../..">
+   <os family="unix"/>
+  </condition>
+  <property name="rootpath"      value="p:"/> <!-- MUST BE ABSOLUTE PATH -->
+  <property file="${rootpath}/userpaths.properties"/>
+  <fail unless="msvc.path" message="Cannot find file ${rootpath}/userpaths.properties!"/>
+
+  <!-- javac settings -->
+  <property name="compile.listfiles"       value="no"/>
+  <property name="compile.target"          value="7"/>
+  <property name="compile.source"          value="7"/>
+  <property name="compile.debug"           value="yes"/>
+  <property name="compile.optimize"        value="yes"/>
+
+  <property name="tc.base.path"			value="${basedir}/../.."/>
+  <!-- IDEs and compilers project files -->
+  <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc2008"/>
+  <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
+  <property name="gcc.project.path"   value="${basedir}/gcc"/>
+  <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
+  <property name="android.project.path" value="${basedir}/android"/>
+  <property name="android.temp"      value="${android.project.path}/apps/litebase/deploy" />
+
+  <!-- properties regarding the TC paths -->
+  <property name="tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
+  <property name="source.tc.sdk.path" value="${tc.sdk.path}/src/main/java"/>
+  <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
+  <property name="source.lb.path"     value="${basedir}/.."/>
+   <property name="base.temp.path"    value="${basedir}/../../../temp"/>
+	<property name="base.target.path"  value="${basedir}/../../../output/release"/>
+  <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
+  <property name="tools"              value="${tc.sdk.path}/etc/tools"/>
+
+  <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
+  <condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r8b" else=""><os family="windows" /></condition>
+  <property name="apk" value="${android.temp}/Litebase.apk" />
+
+  <!-- installshield paths -->
+  <property file="${rootpath}/ishield.properties"/>
+
+  <!-- builder and iphone information -->
+  <property file="${rootpath}/buildserver.properties"/>
+   
+  <property name="src"                    value="${source.lb.path}/src/java"/>
+
+  <!-- load platform environment variables -->
+  <property environment="env"/>
+   
+   <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    get-version
+   
+   -description:
+           retrieves the Litebase version from the file "litebase/LitebaseConnection.java"
+   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+   
+   <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+   <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="lb.version">
+     <filterchain>
+       <linecontains>
+         <contains value="versionStr"/>
+       </linecontains>
+       <striplinebreaks/>
+       <tokenfilter>
+        <replacestring from="public" to=""/>
+        <replacestring from="static" to=""/>
+        <replacestring from="final" to=""/>
+        <replacestring from="String" to=""/>
+        <replacestring from="versionStr" to=""/>
+        <replacestring from="=" to=""/>
+        <deletecharacters chars='";'/>
+        <trim/>
+       </tokenfilter>
+     </filterchain>
+   </loadfile>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: makeNativeHT - updates the native methods hash table.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<target name="makeNativeHT" >
+   <property name="path.to.prototypeGenerator" value="${base.temp.path}/nmPrototypeGenerator" />
+   <mkdir dir="${path.to.prototypeGenerator}" />
+
+   <javac
+      srcdir="${source.tc.sdk.path}/tc/tools/"
+      encoding="ISO-8859-1"
+      debug="${compile.debug}"
+      optimize="${compile.optimize}"
+      target="${compile.target}"
+      source="${compile.source}"
+      includes="NativeMethodsPrototypeGenerator.java"
+      destdir="${path.to.prototypeGenerator}"
+      nowarn="true"
+    includeAntRuntime="false"
+   />
+   <java
+      classname="tc.tools.NativeMethodsPrototypeGenerator"
+      classpath="${path.to.prototypeGenerator}"
+      fork="yes"
+   >
+      <arg line="makeNativeHT LB ${source.lb.path}\src\native ${source.lb.path}\src\native\NativeMethods.txt" />
+   </java>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildWin32 - Generate the files for Windows 98 and beyond
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildWin32_vms" />
+
+<target name="buildWin32_sdk" >
+   <echo message="GENERATING WIN32 FILES - SDK"/>
+
+   <exec executable="${msvc.path}" failonerror="yes">
+      <arg line='${msvc.project.path}/TCVM.sln /project Litebase /rebuild "DEMO Release|Win32"'/>
+   </exec>
+</target>
+
+<!-- updates the version. -->
+<target name="updateCompilerDate" >
+    <property name="buildNumber" value="-1" />
+	<replace file="${source.lb.path}/src/java/litebase/LitebaseConnection.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+    <replace file="${source.lb.path}/src/java/litebase/LitebaseConnection4D.java" token="public static int buildNumber = 000" value="public static int buildNumber = ${buildNumber}"/>
+</target>
+    
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: createSkeleton - Create the folders from scratch
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="createSkeleton" depends="updateCompilerDate" >
+  <delete dir="${base.target.path}/Litebase*" failonerror="yes" />
+   <mkdir dir="${target.sdk.path}/dist/lib"/>
+   <copy todir="${target.sdk.path}">
+      <fileset dir="${source.lb.path}" includes="src/java/samples/**,License.txt,setup.bat" excludes="src/java/samples/sys/joins/**" />
+      </copy>
+</target>
+
+<target name="buildSkeleton" >
+  <echo message="Building Litebase SDK"/>
+  <ant antfile="build.xml" dir="${source.lb.path}" target="clean"           inheritAll="false"/>
+  <ant antfile="build.xml" dir="${source.lb.path}" target="build"           inheritAll="false"/>
+  <ant antfile="build.xml" dir="${source.lb.path}" target="javadoc"  		inheritAll="false"/>
+   <mkdir dir="${target.sdk.path}/docs"/>
+
+  <!-- copy the changed files to the release folder -->
+  <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist/lib" includes="*.tcz" /></copy>
+  <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
+</target>
+
+<target name="buildSamples_sdk" >
+  <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false"/>
+  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/dist/samples" /></copy>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildInstalls - run installshield to create the SDK and Samples
+        installers for win32
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildInstalls_sdk" />
+
+<target name="buildInstalls_vms" />
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildIPhone
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="build-deb">
+   <antcall target="compile-theos" />
+   <antcall target="package-deb" />
+</target>
+
+<target name="package-deb">
+   <antcall target="package-deb-release">
+      <param name="release.type"      value="demo" />
+      <param name="output.path"      value="${target.sdk.path}" />
+   </antcall>
+</target>
+
+<target name="compile-theos">
+   <property name="remote.path" value="~/ios_workspace/theos/${env.COMPUTERNAME}" />
+   <property name="remote.theos.path" value="${remote.path}/Litebase/LitebaseSDK/builders/theos" />
+   <property name="output.path.demo" value="${basedir}/theos/demo" />
+   <property name="output.path.ras" value="${basedir}/theos/ras" />
+   <delete dir="${output.path.demo}" quiet="yes" />
+   <delete dir="${output.path.ras}" quiet="yes" />
+
+   <tar
+      basedir="${basedir}/../../.."
+      includes="Litebase/LitebaseSDK/src/native/**, Litebase/LitebaseSDK/builders/theos/**, TotalCross/TotalCrossVM/src/**"
+      destfile="${base.temp.path}/Litebase_theos.tgz"
+      compression="gzip"
+      longfile="gnu" />
+   <sshexec command="
+      rm -Rf ${remote.path};
+      mkdir -p ${remote.path}"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   <scp
+      file="${base.temp.path}/Litebase_theos.tgz"
+      todir="${buildserver.user}@${macserver.host}:${remote.path}/"
+      trust="yes" password="${buildserver.pass}" port="22" />
+
+   <sshexec command="
+      tar -zxpf ${remote.path}/Litebase_theos.tgz -C ${remote.path};
+      bash -l ${remote.theos.path}/build.sh -clean -r demo;
+      bash -l ${remote.theos.path}//build.sh -clean -r ras"
+      host="${macserver.host}" trust="yes" password="${buildserver.pass}" port="22" username="${buildserver.user}" />
+   
+   <mkdir dir="${output.path.demo}" />
+   <mkdir dir="${output.path.ras}" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.theos.path}/demo/libLitebase.dylib" todir="${output.path.demo}" trust="yes" password="${buildserver.pass}" port="22" />
+   <scp file="${buildserver.user}@${macserver.host}:${remote.theos.path}/ras/libLitebase.dylib" todir="${output.path.ras}" trust="yes" password="${buildserver.pass}" port="22" />
+</target>
+
+<target name="package-deb-release">
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: buildLinux
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: Linux builds
+
+  1. build the demo litebase native
+  2. copy the demo litebase native
+  3. packaging
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="buildLinux_sdk_clean" >
+  <sshexec command="bash -l ~/build.sh -litebase -linux -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+
+<target name="buildLinux_sdk" >
+  <sshexec command="bash -l ~/build.sh -litebase -linux -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+</target>
+   
+<target name="packageLinux" >
+	<java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
+		<classpath>
+			<pathelement location="${base.temp.path}/classes_desktop"/>
+			<pathelement location="${tools}/jdeb/lib/ant.jar"/>
+			<pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+			<pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+			<pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+		</classpath>
+		<arg line="-n Litebase"/>
+		<arg line="-c 'Litebase Library'"/>
+		<arg line="-d 'TotalCross Litebase library'"/>
+		<arg line="-v ${lb.version}"/>
+		<arg line="-b ${gcc.project.path}/linux/${type}/libLitebase.so"/>
+		<arg line="-t ${target.path}/dist/lib/linux"/>
+		<arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
+	</java>
+</target>
+
+<target name="packageLinux_sdk">
+   <antcall target="packageLinux">
+      <param name="type" value="demo" />
+      <param name="target.path" value="${target.sdk.path}" />
+   </antcall>
+</target>
+   
+<target name="packageLinux_vms" />
+
+<target name="buildLinux_vms" />
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: Android builds
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="clean_android_native" />
+
+<target name="build_android_native" description="Compiles liblitebase.so for Android">
+   <property name="type" value="demo" />
+   <delete dir="${base.temp.path}/android/Litebase/${type}" failonerror="false" />
+   <exec dir="${source.lb.path}/src/native" executable="cmd.exe" failonerror="true">
+      <env key="TYPE" value="${type}" />
+      <env key="NDK_OUT" value="${base.temp.path}/android/Litebase/${TYPE}" />
+      <arg line="/c ${android.ndk.path}/ndk-build"/>
+   </exec>
+  <sleep seconds="3"/>
+</target>
+
+<target name="adb" description="Just installs Litebase on Android (no build is performed)." >
+  <property name="apk" value="${apk}" />
+  <exec executable="adb${exe}" >
+   <arg line="install -r ${apk}" />
+  </exec>
+</target>
+
+<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs Litebase on Android." />
+
+<target name="buildAndroid_sdkNoClean">
+  <delete dir="${android.project.path}/out/src" />
+  <antcall target="build_android_native" >
+   <param name="type" value="demo" />
+   </antcall>
+</target>
+
+<target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
+
+<target name="buildAndroid_vms" depends="" />
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: companion
+
+-description:
+        Converts the TotalCross companion file
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="companion" description="Generates the PDF for Litebase Companion">
+   <ant antfile="build.xml" dir="${tc.base.path}" target="jodconverter" inheritAll="false">
+      <property name="from" value="${source.lb.path}/docs/Litebase Companion.odt" />
+      <property name="to" value="${target.sdk.path}/docs/Litebase Companion.pdf" />
+   </ant>
+</target>	
+	
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: ftp things to the site
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="ftp_demo_vms" >
+
+  <property file="${rootpath}/swcombr.properties"/>
+  <property name="temp" value="${source.lb.path}/output/tempftp"/>
+  <property name="vm.dir" value="${target.sdk.path}/dist/lib"/>
+  <mkdir dir="${temp}" />
+
+  <zip destfile="${temp}/lb_win32.zip" compress="true" >
+    <zipfileset dir="${vm.dir}/win32" includes="Litebase.dll" />
+    <zipfileset dir="${vm.dir}" includes="LitebaseLib.tcz" />
+  </zip>
+  <zip destfile="${temp}/lb_android.zip" compress="true" filesonly="true" basedir="${vm.dir}/android" />
+  <copy todir="${temp}"><fileset dir="${vm.dir}/ios" includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
+  <copy todir="${temp}"><fileset dir="${vm.dir}/linux"    includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>
+
+  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="superwaba.com.br/vms" verbose="yes">
+     <fileset dir="${vm.dir}/wince" includes="*.CAB" />
+     <fileset dir="${temp}" />
+  </ftp>
+
+  <delete dir="${temp}" />
+
+</target>
+
+<target name="ftp_javadoc" >
+
+  <property file="${rootpath}/swcombr.properties"/>
+
+  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" action="del" >
+   <fileset includes="totalcross.com/doclb/**" />
+  </ftp>
+
+  <ftp server="ftp.superwaba.com.br" userid="${swcombr.user}" password="${swcombr.pass}" remotedir="totalcross.com/doclb" verbose="yes">
+     <fileset dir="${target.sdk.path}/docs/html" />
+  </ftp>
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: checks if we must update the versions of the files prior to a build.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="checkVersionOnProjects">
+  <loadfile srcfile="${msvc.project.path}/builders/vc2008/Litebase.vcproj" property="version.updated">
+    <filterchain>
+      <linecontains>
+         <contains value='Version="${tc.version}"'/>
+      </linecontains>
+    </filterchain>
+  </loadfile>
+
+  <fail unless="version.updated" message="************************************* Please update the project version information on VC2008, EVC, gcc-arm/vm/resources.rcp!!!! **********"/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: build targets
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton,buildSkeleton,build-deb,buildLinux_sdk_clean,packageLinux_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_vms" />
+
+<target name="ftp" depends="ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
+<target name="build_all" depends="build_sdk" description="builds sdk" />
+    
+<target name="buildWinCE_vms" />
+<target name="buildWinCE_sdk" />
+<target name="buildWinCECabsSingle" />
+    
+</project>

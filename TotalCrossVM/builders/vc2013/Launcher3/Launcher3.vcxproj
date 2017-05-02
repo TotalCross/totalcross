@@ -149,7 +149,7 @@
   <ItemGroup>
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCBase.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossSDK\dist\vm\TCFont.tcz" />
-    <XapFilesInputCollection Include="P:\gitrepo\Litebase\LitebaseSDK\dist\lib\LitebaseLib.tcz" />
+    <XapFilesInputCollection Include="P:\gitrepo\TotalCross\LitebaseSDK\dist\lib\LitebaseLib.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\AllTests.tcz" />
     <XapFilesInputCollection Include="P:\gitrepo\TotalCross\TotalCrossVM\builders\vc2013\Launcher3\UIControls.tcz" />
   </ItemGroup>
@@ -165,7 +165,7 @@
     <None Include="..\..\..\..\TotalCrossSDK\dist\vm\TCBase.tcz" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\Litebase\LitebaseSDK\builders\vc2013\litebase.vcxproj">
+    <ProjectReference Include="..\..\..\..\TotalCross\LitebaseSDK\builders\vc2013\litebase.vcxproj">
       <Project>{66ee456c-e926-4933-8f55-c2f572ce7444}</Project>
     </ProjectReference>
     <ProjectReference Include="..\TCVM\TCVM.vcxproj">
