@@ -375,7 +375,7 @@ public class Vector
     * @param ensureSize
     *           minimum size for the new internal buffer
     */
-   private void grow(int ensureSize)
+   protected void grow(int ensureSize)
    {
       if (ensureSize > 0 && items.length < ensureSize)
       {
