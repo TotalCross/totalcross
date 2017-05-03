@@ -209,7 +209,7 @@ public class Vector
       else // growing
       {
 //         while (newSize > items.length) 
-            grow(newSize); // grow buffer to reach newSize
+            ensureCapacity(newSize); // grow buffer to reach newSize
       }
       count = newSize;
    }
@@ -257,7 +257,7 @@ public class Vector
    {
       if (index < 0 || index > count) index = count; // guich@200b3: check if index is valid
       if (count == items.length)
-         grow(items.length + 1);
+         ensureCapacity(items.length + 1);
       if (index != count)
          Vm.arrayCopy(items, index, items, index + 1, count - index);
       items[index] = obj;
@@ -284,7 +284,7 @@ public class Vector
    {
       int newSize = count + objects.length;
       if (items.length < newSize)
-         grow(newSize);
+         ensureCapacity(newSize);
       Vm.arrayCopy(objects, 0, items, count, objects.length); //flsobral@tc120_33: inserting elements one position higher than it should.
       count += objects.length;
    }
@@ -301,7 +301,7 @@ public class Vector
    {
       int newSize = count + objects.length;
       if (items.length < newSize)
-         grow(newSize);
+         ensureCapacity(newSize);
       for (int i = 0; i < objects.length; i++)
          if (objects[i] != null)
             items[count++] = objects[i];
@@ -370,17 +370,18 @@ public class Vector
    }
 
    /**
-    * Grows the internal buffer.
+    * Increases the capacity of this vector, if necessary, to ensure
+    * that it can hold at least the number of components specified by
+    * the minimum capacity argument.
     * 
-    * @param ensureSize
-    *           minimum size for the new internal buffer
+    * @param minCapacity the desired minimum capacity
     */
-   protected void grow(int ensureSize)
+   public void ensureCapacity(int minCapacity)
    {
-      if (ensureSize > 0 && items.length < ensureSize)
+      if (minCapacity > 0 && items.length < minCapacity)
       {
          // On device, grows 20% + 1. On Java, grows 100% + 1.
-         int newSize = (Settings.onJavaSE ? ensureSize*2 : ensureSize*12/10) + 1; // flsobral@tc110_5: new size is >= current size + 1.- guich@tc112_6: +1 in both cases
+         int newSize = (Settings.onJavaSE ? minCapacity*2 : minCapacity*12/10) + 1; // flsobral@tc110_5: new size is >= current size + 1.- guich@tc112_6: +1 in both cases
          Object newItems[] = new Object[newSize];
          Vm.arrayCopy(items, 0, newItems, 0, count);
          items = newItems;
