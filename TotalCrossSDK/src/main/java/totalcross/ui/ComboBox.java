@@ -677,10 +677,8 @@ public class ComboBox extends Container
    /** Clears this control, selecting index clearValueInt (0 by default); uses clearValueStr if set, instead. */
    public void clear() // guich@572_19
    {
-      if (clearValueStr != null)
-         setSelectedItem(clearValueStr);
-      else
-         setSelectedIndex(clearValueInt);
+      final int clearValueStrIdx = clearValueStr != null ? indexOf(clearValueStr) : -1;
+      setSelectedIndex(clearValueStrIdx > -1 ? clearValueStrIdx : clearValueInt);
    }
 
    public void getFocusableControls(Vector v) // kmeehl@tc100
