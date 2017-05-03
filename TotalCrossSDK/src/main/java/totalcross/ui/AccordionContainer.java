@@ -146,6 +146,14 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       }
    }
    
+   public void expandNoAnim()
+   {
+      if (group != null)
+         group.collapseAll();
+      int maxH = getMaxHeight();
+      setPos(0,maxH);
+   }
+
    public void collapseNoAnim()
    {
       setPos(0, getPreferredHeight());      
