@@ -130,34 +130,39 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    
    public void expand()
    {
-      if (group != null)
-          group.collapseAll();
-      int maxH = getMaxHeight();
-      PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
-      p.useOffscreen = false;
-      p.setpos = this;
-      p.start();
+      this.expand(true);
    }
    
-   public void expandNoAnim()
+   public void expand(boolean showAnimation)
    {
       if (group != null)
          group.collapseAll();
-      int maxH = getMaxHeight();
-      setPos(0,maxH);
+      final int maxH = getMaxHeight();
+      if (showAnimation) {
+         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
+         p.useOffscreen = false;
+         p.setpos = this;
+         p.start();
+      } else {
+         setPos(0,maxH);
+      }
    }
 
-   public void collapseNoAnim()
+   public void collapse(boolean showAnimation)
    {
-      setPos(0, getPreferredHeight());      
+      if (showAnimation) {
+         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
+         p.useOffscreen = false;
+         p.setpos = this;
+         p.start();         
+      } else {
+         setPos(0, getPreferredHeight());
+      }
    }
    
    public void collapse()
    {
-      PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
-      p.useOffscreen = false;
-      p.setpos = this;
-      p.start();
+      this.collapse(true);
    }
    
    public boolean isExpanded()
