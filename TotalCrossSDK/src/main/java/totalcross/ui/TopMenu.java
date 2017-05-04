@@ -246,18 +246,10 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    public void unpop(AnimationListener alist)
    {
       this.alist = alist;
-      try
-      {
-         if (animDir == CENTER)
-            FadeAnimation.create(this,false,this,totalTime).start();
-         else
-            PathAnimation.create(this,-animDir,this,totalTime).with(FadeAnimation.create(this,false,null,totalTime)).start();
-      }
-      catch (Exception e)
-      {
-         if (Settings.onJavaSE) e.printStackTrace();
-         super.unpop(); // no animation, just unpop
-      }
+      if (animDir == CENTER)
+         FadeAnimation.create(this,false,this,totalTime).start();
+      else
+         PathAnimation.create(this,-animDir,this,totalTime).with(FadeAnimation.create(this,false,null,totalTime)).start();
    }
    public void onAnimationFinished(ControlAnimation anim)
    {
@@ -272,23 +264,15 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    public void onPopup()
    {
       selected = -1;
-      try
+      screenResized(); // fix problem when the container is on portrait, then landscape, then closed, then portrait, then open
+      if (animDir == CENTER)
       {
-         screenResized(); // fix problem when the container is on portrait, then landscape, then closed, then portrait, then open
-         if (animDir == CENTER)
-         {
-            resetSetPositions();
-            setRect(CENTER,CENTER,KEEP,KEEP);
-            FadeAnimation.create(this,true,null,totalTime).start();
-         }
-         else
-            PathAnimation.create(this,animDir,null,totalTime).with(FadeAnimation.create(this,true,null,totalTime)).start();
+         resetSetPositions();
+         setRect(CENTER,CENTER,KEEP,KEEP);
+         FadeAnimation.create(this,true,null,totalTime).start();
       }
-      catch (Exception e)
-      {
-         if (Settings.onJavaSE) e.printStackTrace();
-         // no animation, just popup
-      }
+      else
+         PathAnimation.create(this,animDir,null,totalTime).with(FadeAnimation.create(this,true,null,totalTime)).start();
    }
    
    public int getSelectedIndex()
