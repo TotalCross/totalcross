@@ -230,6 +230,7 @@ target: compile
   <copy todir="${output}/desktopsrc" overwrite="true" preservelastmodified="true" >
      <fileset dir="${src}" includes="totalcross/util/*4D.java" />
      <fileset dir="${src}" includes="totalcross/lang/**" excludes="**/*4B.*" />
+     <fileset dir="${src}" includes="jdkcompat/**/*.java,jdkcompatx/**/*.java" />
   </copy>
   <replaceregexp file="${output}/desktopsrc/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 
