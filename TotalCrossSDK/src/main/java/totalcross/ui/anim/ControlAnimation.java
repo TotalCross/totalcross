@@ -48,7 +48,7 @@ public abstract class ControlAnimation implements TimerListener
       this(c,null);
    }
 
-   public void start() throws Exception
+   public void start()
    {
       if (!slave)
       {
@@ -96,7 +96,9 @@ public abstract class ControlAnimation implements TimerListener
    private void handleThen()
    {
       if (then != null)
-         try {then.start();} catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
+      {
+         then.start();
+      }
    }
    
    protected double computeSpeed(double distance)

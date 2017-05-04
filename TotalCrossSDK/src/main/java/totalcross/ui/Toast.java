@@ -64,7 +64,6 @@ public class Toast
                animation = null;
             }
             if (message != null)
-            try
             {
                String msg = message;
                if (message.indexOf('\n') == -1)
@@ -97,11 +96,6 @@ public class Toast
                   }, -1)).start();
                   FadeAnimation.maxFade = FadeAnimation.DEFAULT_MAX_FADE;
                }
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-               btn = null;
             }
          }
       },true);

@@ -130,40 +130,39 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
    
    public void expand()
    {
-      try
-      {
-         if (group != null)
-             group.collapseAll();
-         int maxH = getMaxHeight();
+      this.expand(true);
+   }
+   
+   public void expand(boolean showAnimation)
+   {
+      if (group != null)
+         group.collapseAll();
+      final int maxH = getMaxHeight();
+      if (showAnimation) {
          PathAnimation p = PathAnimation.create(this, 0, this.height, 0, maxH, this, ANIMATION_TIME);
          p.useOffscreen = false;
          p.setpos = this;
          p.start();
-      }
-      catch (Exception ee)
-      {
-         ee.printStackTrace();
+      } else {
+         setPos(0,maxH);
       }
    }
-   
-   public void collapseNoAnim()
+
+   public void collapse(boolean showAnimation)
    {
-      setPos(0, getPreferredHeight());      
+      if (showAnimation) {
+         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
+         p.useOffscreen = false;
+         p.setpos = this;
+         p.start();         
+      } else {
+         setPos(0, getPreferredHeight());
+      }
    }
    
    public void collapse()
    {
-      try
-      {
-         PathAnimation p = PathAnimation.create(this, 0, this.height, 0, getPreferredHeight(), this, ANIMATION_TIME);
-         p.useOffscreen = false;
-         p.setpos = this;
-         p.start();
-      }
-      catch (Exception ee)
-      {
-         ee.printStackTrace();
-      }
+      this.collapse(true);
    }
    
    public boolean isExpanded()
@@ -171,7 +170,6 @@ public class AccordionContainer extends ClippedContainer implements PathAnimatio
       return this.height != getPreferredHeight();
    }
    
-
    public void onAnimationFinished(ControlAnimation anim)
    {
       getParentWindow().reposition();

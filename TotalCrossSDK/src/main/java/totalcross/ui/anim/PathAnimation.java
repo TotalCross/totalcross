@@ -24,7 +24,7 @@ public class PathAnimation extends ControlAnimation
       super(c,animFinish,totalTime);
    }
    
-   private void setPath(int x0, int y0, int xf, int yf) throws Exception
+   private void setPath(int x0, int y0, int xf, int yf)
    {
       x = x0;
       y = y0;
@@ -148,7 +148,7 @@ public class PathAnimation extends ControlAnimation
     * @param animFinish An interface method to be called when the animation finished, or null if none.
     * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
     */
-   public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish, int totalTime) throws Exception
+   public static PathAnimation create(Control c, int toX, int toY, AnimationFinished animFinish, int totalTime)
    {
       PathAnimation anim = new PathAnimation(c,animFinish,totalTime);
       anim.setPath(c.getX(),c.getY(),toX,toY);
@@ -164,7 +164,7 @@ public class PathAnimation extends ControlAnimation
     * @param animFinish An interface method to be called when the animation finished, or null if none.
     * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
     */
-   public static PathAnimation create(Control c, int fromX, int fromY, int toX, int toY, AnimationFinished animFinish, int totalTime) throws Exception
+   public static PathAnimation create(Control c, int fromX, int fromY, int toX, int toY, AnimationFinished animFinish, int totalTime)
    {
       PathAnimation anim = new PathAnimation(c,animFinish,totalTime);
       anim.setPath(fromX,fromY,toX,toY);
@@ -177,7 +177,7 @@ public class PathAnimation extends ControlAnimation
     * @param animFinish An interface method to be called when the animation finished, or null if none.
     * @param totalTime The total time in millis that the animation will take, or -1 to use the default value (800ms).
     */
-   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish, int totalTime) throws Exception
+   public static PathAnimation create(Control c, int direction, AnimationFinished animFinish, int totalTime)
    {
       PathAnimation anim = new PathAnimation(c,animFinish,totalTime);
       anim.dir = direction;

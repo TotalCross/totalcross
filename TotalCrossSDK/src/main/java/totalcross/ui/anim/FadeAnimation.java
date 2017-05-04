@@ -23,7 +23,7 @@ public class FadeAnimation extends ControlAnimation implements TimerListener
       releaseScreenShot = maxFade == 255;
    }
 
-   public void start() throws Exception
+   public void start()
    {
       super.start();
       c.offscreen.alphaMask = a;
