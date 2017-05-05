@@ -124,7 +124,7 @@ public class ImageControl extends Control
             {
                // keep original image
             }
-         if (centerImage)
+         if (centerImage && resetPositions)
          {
             lastX = (width-getImageWidth())/2;
             lastY = (height-getImageHeight())/2;
