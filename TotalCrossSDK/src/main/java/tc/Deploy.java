@@ -30,7 +30,7 @@ public class Deploy
     */
    public static String bootClassPath;
    
-   public static void main(String[] args)
+   public static void main(String[] args) throws Exception
    {
       new Deploy(args);
    }
@@ -54,7 +54,7 @@ public class Deploy
    private boolean waitIfError; // guich@tc111_24
    public static String activationKey;
    
-   public Deploy(String[] args)
+   public Deploy(String[] args) throws Exception
    {
       try
       {
@@ -142,10 +142,12 @@ public class Deploy
       catch (OutOfMemoryError oome)
       {
          showException(oome,"\nConsider increasing the memory available for tc.Deploy passing the parameter \n\n-Xmx512m");
+         throw oome;
       }
       catch (Exception e)
       {
          showException(e, null);
+         throw e;
       }
    }
    

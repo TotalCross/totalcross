@@ -120,7 +120,6 @@ public class DeploySettings
       hmMappedClasses.put("java.math.BigInteger","totalcross.util.BigInteger");
       hmMappedClasses.put("java.util.Random", "totalcross.util.Random");
       hmMappedClasses.put("java.lang.StringBuilder", "java.lang.StringBuffer");
-      hmMappedClasses.put("java.lang.CharSequence", "java.lang.String"); // used in the replace method
       
       appletFontSizes.addElement(12);
       

@@ -161,5 +161,9 @@ public final class Class4D<T>
    public native Field getDeclaredField(String name) throws NoSuchFieldException, SecurityException;
    public native Method getDeclaredMethod(String name, Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
    public native Constructor<?> getDeclaredConstructor(Class<?> parameterTypes[]) throws NoSuchMethodException, SecurityException;
-   
+ 
+   public boolean desiredAssertionStatus() {
+       return false;
+   }
+
 }
