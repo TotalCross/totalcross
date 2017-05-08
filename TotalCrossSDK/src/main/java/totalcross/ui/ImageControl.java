@@ -92,9 +92,20 @@ public class ImageControl extends Control
     */
    public void setImage(Image img)
    {
+      setImage(img, true);
+   }
+   
+   /** Sets the image to the given one, optionally resetting the image position. If the image size is different, you must explicitly call
+    * setRect again if you want to resize the control.
+    */
+   public void setImage(Image img, boolean resetPositions)
+   {
       this.img = this.img0 = img;
-      c.x = c.y = lastX = lastY = 0;
-      tempHwScale=NOTEMP;
+      if (resetPositions)
+      {
+         c.x = c.y = lastX = lastY = 0;
+         tempHwScale=NOTEMP;
+      }
       // test if it is really loaded.
       if (img != null && getImageWidth() > 0)
       {
@@ -113,7 +124,7 @@ public class ImageControl extends Control
             {
                // keep original image
             }
-         if (centerImage)
+         if (centerImage && resetPositions)
          {
             lastX = (width-getImageWidth())/2;
             lastY = (height-getImageHeight())/2;
