@@ -43,11 +43,12 @@ public class Throwable4D
     public String trace;
     
     /**
-     * The cause of the throwable, including null for an unknown or non-chained
-     * cause. This may only be set once; so the field is set to
-     * <code>this</code> until initialized.
+     * The throwable that caused this throwable to get thrown, or null if this 
+     * throwable was not caused by another throwable, or if the causative 
+     * throwable is unknown. If this field is equal to this throwable itself, 
+     * it indicates that the cause of this throwable has not yet been 
+     * initialized.
      *
-     * @serial the cause, or null if unknown, or this if not yet set
      * @since 1.4
      */
     private Throwable4D cause = this;
@@ -76,7 +77,7 @@ public class Throwable4D
      */
     public Throwable4D(String message, Throwable4D cause)
     {
-      this(message);
+      this.msg = message;
       this.cause = cause;
     }
 
@@ -89,7 +90,8 @@ public class Throwable4D
      */
     public Throwable4D(Throwable4D cause)
     {
-      this(cause == null ? null : cause.toString(), cause);
+      this.msg = (cause == null ? null : cause.toString());
+      this.cause = cause;
     }
 
     /** Returns the message passed on the constructor. May be null. */
@@ -100,11 +102,9 @@ public class Throwable4D
 
     public String toString()
     {
-       String ret = getClass().getName()+"@"+hashCode();
+       String ret = getClass().getName();
        if (msg != null)
-          ret += " - " + msg;
-       if (cause != null && cause != this)
-          ret += " caused by "+cause.toString();
+          ret += ": " + msg;
        return ret;
     }
 
@@ -128,10 +128,16 @@ public class Throwable4D
     
     public Throwable4D getCause()
     {
-       return cause;
+       return (cause == this ? null : cause);
     }
     public Throwable4D initCause(Throwable4D cause)
     {
+        if (this.cause != this) {
+            throw new IllegalStateException("Can't overwrite cause");
+        }
+        if (cause == this) {
+            throw new IllegalArgumentException("Self-causation not permitted");
+        }
        this.cause = cause;
        return this;
     }
