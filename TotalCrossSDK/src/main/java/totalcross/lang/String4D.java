@@ -19,10 +19,12 @@
 
 package totalcross.lang;
 
-import java.text.*;
-
-import totalcross.sys.*;
-import totalcross.util.regex.*;
+import totalcross.sys.Convert;
+import totalcross.util.ElementNotFoundException;
+import totalcross.util.regex.MatchIterator;
+import totalcross.util.regex.MatchResult;
+import totalcross.util.regex.Matcher;
+import totalcross.util.regex.Pattern;
 
 /** 
  * String is an <i>immutable</i> array of characters.
@@ -39,14 +41,25 @@ import totalcross.util.regex.*;
  * available.
  */
 
-public final class String4D implements Comparable<String4D>
+public final class String4D implements Comparable<String4D>, CharSequence
 {
    char chars[];
+   
+   private static char[] charSequence2charArryay(CharSequence cs) {
+	   int len = cs.length();
+	   char[] array = new char[len];
+	   cs.toString().getChars(0, len, array, 0);
+	   return array;
+   }
 
    /** Creates an empty string. */
    public String4D()
    {
       chars = new char[0];
+   }
+   
+   public String4D(CharSequence cs) {
+	   this(charSequence2charArryay(cs));
    }
 
    /** Creates a copy of the given string. */
@@ -367,6 +380,11 @@ public final class String4D implements Comparable<String4D>
    {
       return indexOf(part) != -1;
    }
+   
+   public boolean contains(CharSequence part)
+   {
+      return contains(new String4D(part));
+   }
 
 
    /**
@@ -492,6 +510,26 @@ public final class String4D implements Comparable<String4D>
      return Pattern.compile(regex).matcher(this.toString()).replaceFirst(replacement); // TODO JEFF
    }*/
 
+   public String replaceFirst(String regex, String replacement) {
+	   Matcher m = Pattern.compile(regex).matcher();
+	   MatchIterator mi = m.findAll();
+	   
+	   if (mi.hasMore()) {
+		   try {
+			   MatchResult mr = mi.nextMatch();
+			   int endIndex = mr.end();
+			   String4D ss = this.substring(0, endIndex);
+			   
+			   return ss.replaceAll(regex, replacement) + this.substring(endIndex);
+		   } catch (ElementNotFoundException e) {
+			   // TODO Auto-generated catch block
+//			   e.printStackTrace();
+		   }
+	   }
+	   return this.toString();
+	   //return Pattern.compile(regex).replacer(replacement).replace(this.toString()); 
+   }
+   
    /**
     * Replaces all matching substrings of the regular expression with a
     * given replacement. This is shorthand for <code>{@link Pattern}
@@ -627,8 +665,10 @@ public final class String4D implements Comparable<String4D>
     * @param replacement the sequence used as the replacement
     * @return the string constructed as above
     */
-   public String replace (String target, String replacement) // NOTE: the original version uses CharSequence
+   public String replace (CharSequence targetcs, CharSequence replacementcs) // NOTE: the original version uses CharSequence
    {
+	 String target = targetcs.toString();
+	 String replacement = replacementcs.toString();
      int targetLength = target.length();
      int replaceLength = replacement.length();
 
@@ -643,5 +683,10 @@ public final class String4D implements Comparable<String4D>
          startPos = result.indexOf(target, startPos + replaceLength);
        }
      return result.toString();
+   }
+ 
+   @Override
+   public String4D subSequence(int beginIndex, int endIndex) {
+	   return substring(beginIndex, endIndex);
    }
 }

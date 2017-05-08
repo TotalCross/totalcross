@@ -45,5 +45,9 @@ public class Error4D extends Throwable
    {
       super(msg);
    }
+   
+   public Error4D(String msg, Throwable cause) {
+	   super(msg, cause);
+   }
 }
 

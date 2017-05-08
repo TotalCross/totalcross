@@ -191,6 +191,16 @@ public final class StringBuffer4D
     {
         return this.append(str.substring(start, end));
     }
+    
+    public StringBuffer4D append(CharSequence seq)
+    {
+        return this.append(seq.toString());
+    }
+    
+    public StringBuffer4D append(CharSequence seq, int start, int end)
+    {
+        return this.append(seq.subSequence(start, end).toString());
+    }
 
    /**
    * Appends an array of characters to the end of this buffer.
