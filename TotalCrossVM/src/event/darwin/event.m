@@ -85,6 +85,10 @@ void iphone_privatePumpEvent(Context currentContext)
       {
          int pressedKey = [[event objectForKey:@"key"] intValue];
          #define SK_BACKSPACE -1011
+         #define SK_ENTER -1009
+         if (pressedKey == '\n')
+            postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_ENTER, 0,0,-1);
+         else
          if (pressedKey == '\b')
             postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_BACKSPACE, 0,0,-1);
          else
