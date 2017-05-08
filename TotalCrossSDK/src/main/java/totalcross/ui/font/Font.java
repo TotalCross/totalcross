@@ -240,4 +240,10 @@ public final class Font
    public void removeFromCache4D()
    {
    }
+
+   @Override
+   public String toString()
+   {
+      return name+"$"+(style==1?"B":"N")+size;
+   }
 }
