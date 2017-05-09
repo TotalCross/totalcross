@@ -37,6 +37,9 @@ EndProject
 Project("{B900F1C2-3D47-4FEC-85B3-04AAF18C3634}") = "TotalCrossCab", "TotalCrossCab\TotalCrossCab.vddproj", "{BBF7EF0C-384D-407D-ABC3-454B0036972B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpticonH16", "OpticonH16.vcproj", "{8CE97720-BD07-4B8C-AA08-5636AB1C8A6C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6DC7204-DD8B-4A7B-995F-368B82F630DE} = {B6DC7204-DD8B-4A7B-995F-368B82F630DE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
