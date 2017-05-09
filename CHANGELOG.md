@@ -1,7 +1,7 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## 3.41.3327 - 2017-05-09
 
 ### Added
  - Added `Vector.ensureCapacity(int)` method
@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file.
  - `ImageControl.setImage(Image)` calls `ImageControl.setImage(Image, boolean)` requesting to reset positions
 
 ### Fixed
- - `ComboBox.clear()` defaults to `clearValueStr`
+ - `ComboBox.clear()` now may default to `clearValueInt` when `clearValueStr` is set but not available on the options
  - Fixed possible recurrent `Throwable` constructors calls
  - Pressing enter on iOS devices fires a `SpecialEvent` key
 
