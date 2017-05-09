@@ -686,7 +686,7 @@ public final class String4D implements Comparable<String4D>, CharSequence
    }
  
    @Override
-   public String4D subSequence(int beginIndex, int endIndex) {
+   public CharSequence subSequence(int beginIndex, int endIndex) {
 	   return substring(beginIndex, endIndex);
    }
 }
