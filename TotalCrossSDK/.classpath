@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="etc/fonts"/>
+	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry excluding="tc/tools/PostInstall.java" kind="src" path="src/main/java"/>
 	<classpathentry kind="lib" path="etc/tools/jdeb/lib/ant.jar"/>
 	<classpathentry kind="lib" path="etc/tools/jdeb/jdeb-0.7.jar"/>
