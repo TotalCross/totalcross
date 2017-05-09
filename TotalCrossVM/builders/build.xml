@@ -174,11 +174,11 @@ target: createSkeleton - Create the folders from scratch
    <echo message="Copying SDK"/>
    <copy todir="${target.sdk.path}" overwrite="yes" >
       <fileset dir="${sdk.path}"
-         excludes=".*,.settings/**,etc/tools/jdeb/**,src/tc/samples/app/activation/**,src/totalcross/zxing/**,src/totalcross/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/ras/**,src/tc/test/**,src/tc/tools/**,src/totalcross/**/*4?.java,tc/*.java,src/totalcross/lang/**"/>
+         excludes=".*,.settings/**,etc/tools/jdeb/**,src/**/tc/samples/app/activation/**,src/**/totalcross/zxing/**,src/android/**,src/**/*.html,**/subbuild.xml,build.xml,*.bak,*.pdb,etc/obfuscator/**,src/tc/*.java,etc/fonts/**,etc/tools/makecab/totalcross*.inf,etc/scripts/**,etc/tools/makesis/**,**/CVS/**,output/**,docs/**,dist/**,src/**/ras/**,src/test/**,src/**/tc/tools/**,src/**/totalcross/**/*4?.java,tc/*.java,src/**/totalcross/lang/**"/>
       </copy>
    <copy todir="${target.sdk.path}" file="${sdk.path}/license.txt" overwrite="yes"  />
    <copy file="${sdk.path}/docs/companion_resources/ant_build/build.xml" todir="${target.sdk.path}/docs" overwrite="yes" />
-   <replaceregexp file="${target.sdk.path}/src/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
+   <replaceregexp file="${target.sdk.path}/src/main/java/totalcross/ui/MainWindow.java" flags="gs" match="//\$START:REMOVE-ON-SDK-GENERATION\$.*?//\$END:REMOVE-ON-SDK-GENERATION\$" replace="" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
