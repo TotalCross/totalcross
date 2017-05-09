@@ -13,6 +13,7 @@
 
 package tc.tools.deployer;
 
+import org.apache.commons.io.FileUtils;
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
@@ -89,6 +90,11 @@ public class Deployer4Win32
          File fout = new File(out, File.CREATE_EMPTY);
          fout.writeBytes(buf, 0, buf.length);
          fout.close();
+         
+         FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "TCBase.tcz"), new java.io.File(targetDir));
+         FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "TCFont.tcz"), new java.io.File(targetDir));
+         FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "TCUI.tcz"), new java.io.File(targetDir));
+         FileUtils.copyFileToDirectory(new java.io.File(DeploySettings.folderTotalCross3DistVM + "/win32/TCVM.dll"), new java.io.File(targetDir));
       }
       System.out.println("... Files written to folder "+targetDir);
    }
