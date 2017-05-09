@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file.
  - `java.lang.String.subsequence(int, int)` method
  - `java.lang.StringBuffer.append(CharSequence)` and `java.lang.StringBuffer.append(CharSequence, int, int)` methods
  - `totalcross.ui.font.Font.toString()` method returns the font name and some other properties
-  - like ``
+  - like `TCFont$N12`
  - Added `ImageControl.setImage(Image, boolean)`, where one may tells that it is desired (or not) to reset positions
  - `OpticonH16.dll` DLL to run proper scanner on WinCE devices
 
