@@ -3,6 +3,42 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+ - Added `Vector.ensureCapacity(int)` method
+ - Added `AccordionContainer.expand(boolean)` and `AccordionContainer.collapse(boolean)`
+  - Whether one wish to show an animation, just pass `true` as the argument
+ - Added initial support to some classes and interfaces to provides better Java compliance:
+  - `java.io.FilterOutputStream`
+  - `java.io.PrintStream`
+  - `java.lang.Appendable`
+  - `java.lang.AssertionError`
+  - `java.lang.CharSequence`
+  - `java.lang.System`: only the attributes `out` and `err`; both `out` and `err` prints to the `DebugConsole`
+  - Deploy time support to referencing `java.lang.ref.Reference` and `java.lang.ref.WeakReference`; no semantics **yet**
+  - Deploy time support to referencing `java.util.concurrent.ConcurrentLinkedQueue`; no semantics **yet**
+  - `java.inject.Provider`
+ - `java.lang.Class.desiredAssertionStatus()` method, returning `false`
+ - `java.lang.Error(String, Throwable)` constructor
+ - `java.lang.String.contains(CharSequence)` method
+ - `java.lang.String.replaceFirst(String, String)` method
+ - `java.lang.String.subsequence(int, int)` method
+ - `java.lang.StringBuffer.append(CharSequence)` and `java.lang.StringBuffer.append(CharSequence, int, int)` methods
+ - `totalcross.ui.font.Font.toString()` method returns the font name and some other properties
+  - like ``
+ - Added `ImageControl.setImage(Image, boolean)`, where one may tells that it is desired (or not) to reset positions
+ - `OpticonH16.dll` DLL to run proper scanner on WinCE devices
+
+### Changed
+ - Project files/folder structure ressembles a Maven/Gradle project
+ - `AccordionContainer.expand()` and `AccordionContainer.collapse()` calls `AccordionContainer.expand/collapse(true)`
+ - If the deploy process does not end happily, it will throw an exception and return code will be non-zero
+ - `ImageControl.setImage(Image)` calls `ImageControl.setImage(Image, boolean)` requesting to reset positions
+
+### Fixed
+ - `ComboBox.clear()` defaults to `clearValueStr`
+ - Fixed possible recurrent `Throwable` constructors calls
+ - Pressing enter on iOS devices fires a `SpecialEvent` key
+
 ## 3.40.3256 - 2017-04-25
 
 ### Added
