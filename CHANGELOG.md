@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## 3.41.3327 - 2017-05-09
 
+### Highlights
+With this new release, TotalCross now supports [Dagger](https://google.github.io/dagger/). A lightweight DI (dependency injection) framework, maintained by Google and with focus on high performance, low startup and better maintainability, which makes it perfect for mobile applications!
+
+
+Instructions for usage are available on the [wiki](https://gitlab.com/totalcross/TotalCross/wikis/dagger)
+
+
 ### Added
  - Added `Vector.ensureCapacity(int)` method
  - Added `AccordionContainer.expand(boolean)` and `AccordionContainer.collapse(boolean)`
@@ -33,11 +40,14 @@ All notable changes to this project will be documented in this file.
  - `AccordionContainer.expand()` and `AccordionContainer.collapse()` calls `AccordionContainer.expand/collapse(true)`
  - If the deploy process does not end happily, it will throw an exception and return code will be non-zero
  - `ImageControl.setImage(Image)` calls `ImageControl.setImage(Image, boolean)` requesting to reset positions
+ - Default background color components changed to white
+ - The Win32 deploy now also copies TotalCross files (dll and tcz) to the application folder
 
 ### Fixed
  - `ComboBox.clear()` now may default to `clearValueInt` when `clearValueStr` is set but not available on the options
- - Fixed possible recurrent `Throwable` constructors calls
- - Pressing enter on iOS devices fires a `SpecialEvent` key
+ - Fixed possible stack overflor on `Throwable` constructors calls
+ - Fixed `Throwable.toString()` result to match the format used by the JDK
+ - Pressing enter on iOS devices fires a `SpecialEvent.ENTER` key
 
 ## 3.40.3256 - 2017-04-25
 
