@@ -96,7 +96,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          Settings.touchTolerance = fmH/2;
       
       // update some settings
-      setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
+      setBackColor(UIColors.controlsBack = Color.WHITE); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
 
