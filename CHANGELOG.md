@@ -13,13 +13,22 @@ All notable changes to this project will be documented in this file.
   - `java.lang.Appendable`
   - `java.lang.AssertionError`
   - `java.lang.CharSequence`
-  - `java.lang.System`
-   - Only the attributes `out` and `err`
-    - Both `out` and `err` prints to the `DebugConsole`
+  - `java.lang.System`: only the attributes `out` and `err`; both `out` and `err` prints to the `DebugConsole`
+  - Deploy time support to referencing `java.lang.ref.Reference` and `java.lang.ref.WeakReference`; no semantics **yet**
+  - Deploy time support to referencing `java.util.concurrent.ConcurrentLinkedQueue`; no semantics **yet**
+  - `java.inject.Provider`
+ - `java.lang.Class.desiredAssertionStatus()` method, returning `false`
+ - `java.lang.Error(String, Throwable)` constructor
+ - `java.lang.String.contains(CharSequence)` method
+ - `java.lang.String.replaceFirst(String, String)` method
+ - `java.lang.String.subsequence(int, int)` method
+ - `java.lang.StringBuffer.append(CharSequence)` and `java.lang.StringBuffer.append(CharSequence, int, int)` methods
 
 ### Changed
  - Project files/folder structure ressembles a Maven/Gradle project
  - `AccordionContainer.expand()` and `AccordionContainer.collapse()` calls `AccordionContainer.expand/collapse(true)`
+ - If the deploy process does not end happily, it will throw an exception and return code will be non-zero
+ - a
 
 ### Fixed
  - `ComboBox.clear()` defaults to `clearValueStr`
