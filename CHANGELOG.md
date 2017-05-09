@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+ - Added `Vector.ensureCapacity(int)` method
+ - Added `AccordionContainer.expand(boolean)` and `AccordionContainer.collapse(boolean)`
+  - Whether one wish to show an animation, just pass `true` as the argument
+
+### Changed
+ - Project files/folder structure ressembles a Maven/Gradle project
+ - `AccordionContainer.expand()` and `AccordionContainer.collapse()` calls `AccordionContainer.expand/collapse(true)`
+
+### Fixed
+ - `ComboBox.clear()` defaults to `clearValueStr`
+
 ## 3.40.3206 - 2017-04-25
 
 ### Added
