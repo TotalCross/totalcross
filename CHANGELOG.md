@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
  - Added `Vector.ensureCapacity(int)` method
  - Added `AccordionContainer.expand(boolean)` and `AccordionContainer.collapse(boolean)`
   - Whether one wish to show an animation, just pass `true` as the argument
+ - Added initial support to some classes and interfaces to provides better Java compliance:
+  - `java.io.FilterOutputStream`
+  - `java.io.PrintStream`
+  - `java.lang.Appendable`
+  - `java.lang.AssertionError`
+  - `java.lang.CharSequence`
+  - `java.lang.System`
+   - Only the attributes `out` and `err`
+    - Both `out` and `err` prints to the `DebugConsole`
 
 ### Changed
  - Project files/folder structure ressembles a Maven/Gradle project
