@@ -1,6 +1,12 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## 3.41.3331 - 2017-05-10
+
+### Fixed
+ - Fixed deploy for Android, which was broken on the last release
+    - There were some issues with the CI on the last release that could make the deployed application fail to start on Android, but this was fixed and new tests added to the CI to prevent this problem from happening again 
+
 ## 3.41.3327 - 2017-05-09
 
 ### Highlights
