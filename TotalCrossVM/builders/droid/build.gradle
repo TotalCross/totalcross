@@ -32,7 +32,8 @@ android {
     sourceSets {
         main {
 			java.srcDirs = files(
-				fileTree(dir: '../../../TotalCrossSDK/src').matching { include 'totalcross/android/**', 'totalcross/zxing/**', 'totalcross/*4A.java', 'totalcross/MainClass.java', 'totalcross/TCEventThread.java' }, 
+				fileTree(dir: '../../../TotalCrossSDK/src/android/java').matching { include 'totalcross/android/**', 'totalcross/*4A.java' },
+				fileTree(dir: '../../../TotalCrossSDK/src/main/java').matching { include 'totalcross/MainClass.java', 'totalcross/TCEventThread.java' }, 
 				fileTree(dir: '../../src/launchers/android/src').matching { include 'totalcross/AndroidUtils.*' }
 				)
             assets.srcDirs = ['src/main/assets']
