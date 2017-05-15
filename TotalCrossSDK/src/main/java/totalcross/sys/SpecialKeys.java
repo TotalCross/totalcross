@@ -48,6 +48,8 @@ public interface SpecialKeys
    public static final int CONTROL   = (1 << 1);
    /** modifier for shift key */
    public static final int SHIFT     = (1 << 2);
+   /** modifier used in Android that states the key came from a trusted part of the system (ie, physical keyboard) */
+   public static final int SYSTEM    = (1 << 3);
 
    /** special key */
    public static final int PAGE_UP   = -1000;
