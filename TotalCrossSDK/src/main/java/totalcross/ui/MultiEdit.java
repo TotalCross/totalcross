@@ -614,6 +614,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl
                if (editable && isEnabled())
                {
                   KeyEvent ke = (KeyEvent) event;
+                  if (PreprocessKey.instance != null)
+                     PreprocessKey.instance.preprocess(this, ke);
                   if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                   if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsCE() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
                      ke.key = SpecialKeys.ENTER;
