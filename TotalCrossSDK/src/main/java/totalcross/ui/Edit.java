@@ -299,6 +299,7 @@ public class Edit extends Control implements TextControl
     * @param to The destination keys. Must have the same length of <code>from</code>
     * @since TotalCross 1.01
     * @see #setValidChars(String)
+    * @see #preprocess(KeyEvent)
     */
    public void mapKeys(String from, String to)
    {
@@ -1216,6 +1217,8 @@ public class Edit extends Control implements TextControl
             if (editable && isEnabled())
             {
                KeyEvent ke = (KeyEvent)event;
+               if (PreprocessKey.instance != null)
+                  PreprocessKey.instance.preprocess(this, ke);
                if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ke.key == SpecialKeys.ESCAPE) event.consumed = true; // don't let the back key be passed to the parent
                if (insertPos == 0 && ke.key == ' ' && (mode == CURRENCY || mode == DATE)) // guich@tc114_34
                {
