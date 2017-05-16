@@ -1553,6 +1553,7 @@ public class Edit extends Control implements TextControl
          }
          Container w = host.getParentWindow();
          clipboardMenu.setSelectedIndex(-1);
+         clipboardMenu.setFont(w.getFont());
          Rect cli = host.getAbsoluteRect();
          int ph = clipboardMenu.getPreferredHeight();
          w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? cli.y+cli.height-ph : (cli.y > w.height/2 ? cli.y-ph : cli.y+cli.height), PREFERRED+4,PREFERRED+4,host);
