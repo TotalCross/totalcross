@@ -80,12 +80,18 @@ public class Scanner
    {
       if (Settings.isWindowsCE())
       {
-         driverLoaded = Vm.attachNativeLibrary("Motorola") || 
+         if ("Marvell".equalsIgnoreCase(Settings.deviceId) || "CipherLab Inc".equalsIgnoreCase(Settings.deviceId)) {
+            driverLoaded = Vm.attachNativeLibrary("OpticonH16");
+         }
+         else {
+            driverLoaded = Vm.attachNativeLibrary("Motorola") || 
                         Vm.attachNativeLibrary("Dolphin") || 
                         Vm.attachNativeLibrary("Intermec") || 
                         Vm.attachNativeLibrary("Pidion");
-         if (!driverLoaded && tries++ == 0)
+         }
+         if (!driverLoaded && tries++ == 0) {
             throw new RuntimeException("Cannot find the native implementation for the scanner library.");
+         }
       }
    }
 
