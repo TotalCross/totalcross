@@ -1,6 +1,19 @@
 # TotalCross Change Log
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Fixed
+ - Fixed saving photo on portrait #47
+ - Fixed AccordionContainer when showAnimation is false
+
+### Added
+ - Added support for Compex scanners
+ - Added `java.sql` exceptions that were being replaced by their equivalents on `totalcross.sql` #40
+
+### Changes 
+- Fixed `Edit.clipboardMenu` so that it uses the same font from its parent's Window
+
 ## 3.41.3331 - 2017-05-10
 
 ### Fixed
