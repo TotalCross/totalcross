@@ -210,8 +210,8 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          }
          break;
    }
-}
 #endif
+}
 }
 
 static void windowSetDeviceTitle(TCObject titleObj)
