@@ -92,6 +92,7 @@ static void windowSetSIP(int32 sipOption, bool numeric)
    if (numeric)
       sipOption = sipOption == SIP_HIDE ? SIP_DISABLE_NUMERICPAD : SIP_ENABLE_NUMERICPAD;
    
+{
 #if defined(WIN32) && !defined(WINCE)
    switch (sipOption)
    {
@@ -209,6 +210,7 @@ static void windowSetSIP(int32 sipOption, bool numeric)
          }
          break;
    }
+}
 #endif
 }
 
