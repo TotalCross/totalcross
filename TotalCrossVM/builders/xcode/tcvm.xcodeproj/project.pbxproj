@@ -418,6 +418,7 @@
 		3A819A691D490AD900B6D4A4 /* jidctflt.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A5F1D490AD900B6D4A4 /* jidctflt.c */; };
 		3A819A6A1D490AD900B6D4A4 /* jidctint.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A601D490AD900B6D4A4 /* jidctint.c */; };
 		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
+		4B12E2731ED4C517008E304D /* SmsManager.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B12E2721ED4C517008E304D /* SmsManager.c */; };
 		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
 		CEFA5143181EF13F00B1B00A /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513F181EF13F00B1B00A /* sqlite3.c */; };
 		CEFA5144181EF13F00B1B00A /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = CEFA5140181EF13F00B1B00A /* sqlite3.h */; };
@@ -845,6 +846,7 @@
 		3A819A601D490AD900B6D4A4 /* jidctint.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jidctint.c; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
 		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
+		4B12E2721ED4C517008E304D /* SmsManager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SmsManager.c; path = telephony/SmsManager.c; sourceTree = "<group>"; };
 		CEFA513E181EF13F00B1B00A /* shell.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shell.c; path = sqlite/shell.c; sourceTree = "<group>"; };
 		CEFA513F181EF13F00B1B00A /* sqlite3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = sqlite3.c; path = sqlite/sqlite3.c; sourceTree = "<group>"; };
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
@@ -1106,6 +1108,7 @@
 		0F8C8AB01549CFC700E0967F /* nm */ = {
 			isa = PBXGroup;
 			children = (
+				4B12E2711ED4C501008E304D /* telephony */,
 				15A29AD8189C4D27007C420B /* db */,
 				0F8C8AB11549CFC700E0967F /* crypto */,
 				0F8C8AB81549CFC700E0967F /* instancefields.h */,
@@ -1869,6 +1872,14 @@
 			path = scanner;
 			sourceTree = "<group>";
 		};
+		4B12E2711ED4C501008E304D /* telephony */ = {
+			isa = PBXGroup;
+			children = (
+				4B12E2721ED4C517008E304D /* SmsManager.c */,
+			);
+			name = telephony;
+			sourceTree = "<group>";
+		};
 		CEFA5146181EF15300B1B00A /* sqlite */ = {
 			isa = PBXGroup;
 			children = (
@@ -2313,6 +2324,7 @@
 				0F8C8DCC1549CFC700E0967F /* pngset.c in Sources */,
 				0F8C8DCD1549CFC700E0967F /* pngtrans.c in Sources */,
 				0F8C8DCE1549CFC700E0967F /* ras_Utils.c in Sources */,
+				4B12E2731ED4C517008E304D /* SmsManager.c in Sources */,
 				0F8C8DDF1549CFC700E0967F /* context.c in Sources */,
 				0F8C8DE11549CFC700E0967F /* objectmemorymanager.c in Sources */,
 				0F8C8DE71549CFC700E0967F /* tcclass.c in Sources */,

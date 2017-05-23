@@ -632,6 +632,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
    public native void nativeInitSize(Surface surface, int w, int h);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
+   public native static void nativeSmsReceived(String displayOriginatingAddress, String displayMessageBody);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
    public void _onTimerTick(boolean canUpdate) {}
@@ -1690,5 +1691,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       while (adsRet == -1)
          try {Thread.sleep(20);} catch (Exception e) {};
       return adsRet;
+   }
+   
+   public static void startActivity(Intent intent) {
+      loader.startActivity(intent);
+   }
+   
+   public static void enableSmsReceiver(boolean enabled) {
+      loader.enableSmsReceiver(enabled);
    }
 }

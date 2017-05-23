@@ -962,6 +962,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       if (onMainLoop)
          Launcher4A.appPaused();
       super.onPause();
+      updateSmsReceiver(true);
       if (isFinishing() && runningVM) // guich@tc126_60: stop the vm if finishing is true, since onDestroy is not guaranteed to be called
          quitVM();                    // call app 1, exit, call app 2: onPause is called but onDestroy not
    }
@@ -986,6 +987,7 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          Launcher4A.appResumed();
       Launcher4A.appPaused = false;
       super.onResume();
+      updateSmsReceiver(false);      
    }
 
    public String strBarcodeData;    
@@ -1112,4 +1114,49 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
          Toast.makeText(getApplicationContext(), "Text to Speech is not supported", Toast.LENGTH_SHORT).show();
       }
    }
+   
+   private static boolean smsReceiverEnabled = false;
+   
+   IntentFilter intentFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+   
+   BroadcastReceiver mReceiver = new BroadcastReceiver() {
+      
+      @Override
+      public void onReceive(Context context, Intent intent) {
+         // Get the data (SMS data) bound to intent
+         Bundle bundle = intent.getExtras();
+  
+         android.telephony.SmsMessage[] msgs = null;
+  
+         if (bundle != null) {
+             // Retrieve the SMS Messages received
+             Object[] pdus = (Object[]) bundle.get("pdus");
+             msgs = new android.telephony.SmsMessage[pdus.length];
+  
+             // For every SMS message received
+             for (int i=0; i < msgs.length; i++) {
+                 // Convert Object array
+                 msgs[i] = android.telephony.SmsMessage.createFromPdu((byte[]) pdus[i]);
+                 Launcher4A.nativeSmsReceived(msgs[i].getDisplayOriginatingAddress(), msgs[i].getDisplayMessageBody());
+             }
+         }
+      }
+   };
+
+   public void enableSmsReceiver(boolean enabled) {
+      smsReceiverEnabled = enabled;
+      updateSmsReceiver(false);
+   }
+   
+  public void updateSmsReceiver(boolean unregisterOnly) {
+    if (unregisterOnly || !smsReceiverEnabled) {
+      try {
+        this.unregisterReceiver(this.mReceiver);
+      } catch (IllegalArgumentException e) {
+        // ignore exception thrown when the receiver was not registered
+      }
+    } else {
+      this.registerReceiver(mReceiver, intentFilter);
+    }
+  }
 }
