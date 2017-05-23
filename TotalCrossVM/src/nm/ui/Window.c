@@ -60,7 +60,7 @@ TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public sta
 #elif defined (ANDROID)
    windowSetSIP(sipOption, p->i32[1] /*numeric*/);
 #elif defined (WIN32) && !defined(WINCE) // for windows 8 and up tablet devices
-   windowSetSIP(sipOption);
+   windowSetSIP(sipOption, p->i32[1]);
 #else
    ;
 #endif

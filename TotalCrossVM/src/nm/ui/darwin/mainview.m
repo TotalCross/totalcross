@@ -95,7 +95,7 @@ bool iosLowMemory;
    kbd.delegate = self;
 }
 
-static int isShown;
+int isShown;
 
 - (void)destroySIP
 {
@@ -109,7 +109,8 @@ static int isShown;
    if (options == SIP_HIDE)
       [ self destroySIP ];
    else
-   {
+   {                       
+      isShown = true;
       [ self setFirstOrientation ];
       [ child_view addSubview: kbd ];
       [ kbd becomeFirstResponder ];
