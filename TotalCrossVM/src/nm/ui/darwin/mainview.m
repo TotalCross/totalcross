@@ -95,8 +95,11 @@ bool iosLowMemory;
    kbd.delegate = self;
 }
 
+static int isShown;
+
 - (void)destroySIP
 {
+   isShown = false;
    [ kbd removeFromSuperview ];
 }
 

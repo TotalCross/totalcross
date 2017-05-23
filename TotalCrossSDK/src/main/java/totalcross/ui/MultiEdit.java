@@ -538,11 +538,6 @@ public class MultiEdit extends Container implements Scrollable, TextControl
 
    private void focusOut()
    {
-//      if (Settings.virtualKeyboard && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-//      {
-//         Window.isSipShown = false;
-//         Window.setSIP(Window.SIP_HIDE,null,false);
-//      }
       hasFocus = false;
       // see what to do when popup
       if (removeTimer(blinkTimer))
@@ -927,13 +922,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
                      {
                         isScrolling = scScrolled = true;
                         dragDistance = 0;
-/* with this, dragging in a MultiEdit with keyboard open, closes the keyboard but the screen is kept shifted
-                        if (Settings.fingerTouch && editable && Window.isSipShown) // guich@tc122_39: only when fingerTouch is enabled
-                        {
-                           Window.isSipShown = false;
-                           Window.setSIP(Window.SIP_HIDE, null, false);
-                        }
-*/                        popupVKbd = false;
+                        popupVKbd = false;
                      }
                   }
                }
@@ -974,11 +963,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl
                }
                else if (editable)
                {
-                  if (Window.isSipShown)
-                  {
-                     Window.isSipShown = false;
+                  if (Window.isSipShown())
                      Window.setSIP(Window.SIP_HIDE, null, false);
-                  }
                   if (removeTimer(blinkTimer)) blinkTimer = null;
                }
                break;
@@ -1160,11 +1146,8 @@ public class MultiEdit extends Container implements Scrollable, TextControl
             int sbl = Settings.SIPBottomLimit;
             if (sbl == -1) sbl = Settings.screenHeight / 2;
             boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
-            if (!Window.isSipShown || Settings.isWindowsCE())
-            {
-               Window.isSipShown = true;
+            if (!Window.isSipShown() || Settings.isWindowsCE())
                Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
-            }
             if (Settings.unmovableSIP) // guich@tc126_21
             {
                Window w = getParentWindow();

@@ -116,6 +116,11 @@ public class Edit extends Control implements TextControl
    /** @see CalculatorBox#rangeCheck */
    public CalculatorBox.RangeCheck rangeCheck;
 
+   /** Set to true on Android devices to use the native numeric pad when mode is set to CURRENCY. 
+    * Note that the numeric keybaord will probably appear only on the default keyboard.
+    */ 
+   public static boolean useNativeNumericPad;
+
    private ControlEvent cursorChangedEvent;
    private StringBuffer chars = new StringBuffer(10);
    protected boolean hasBorder=true;
@@ -1054,65 +1059,79 @@ public class Edit extends Control implements TextControl
             break;
 
          case KBD_CALCULATOR:
+            if (useNativeNumericPad)
+               showVirtualKeyboard();
+            else
+            {
             if (calculator == null) calculator = new CalculatorBox();
             calculator.rangeCheck = this.rangeCheck;
             calculator.tempTitle = keyboardTitle;
             calculator.optionalValue = optionalValue4CalculatorBox;
             hideSip();
             calculator.popupNonBlocking();
+            }
             break;
 
          case KBD_NUMERIC:
+            if (useNativeNumericPad)
+               showVirtualKeyboard();
+            else
+            {
             if (numeric == null) numeric = new CalculatorBox(false);
             numeric.rangeCheck = this.rangeCheck;
             numeric.tempTitle = keyboardTitle;
             numeric.optionalValue = optionalValue4CalculatorBox;
             hideSip();
             numeric.popupNonBlocking();
+            }
             break;
 
          default:
-            if (virtualKeyboard && editable && !"".equals(validChars))
+            showVirtualKeyboard();
+      }
+   }
+   
+   private static boolean lastWasNumeric;
+   private void showVirtualKeyboard()
+   {
+      if (virtualKeyboard && editable && !"".equals(validChars))
+      {
+         if (Settings.customKeyboard != null)
+         {
+            Settings.customKeyboard.show(this, validChars);
+         }
+         else
+         {
+            int sbl = Settings.SIPBottomLimit;
+            if (sbl == -1) sbl = Settings.screenHeight / 2;
+            boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
+            if (Settings.unmovableSIP && !Window.isSipShown()) // guich@tc126_21
             {
-               if (Settings.customKeyboard != null)
-               {
-                  Settings.customKeyboard.show(this, validChars);
-               }
-               else
-               {
-                  int sbl = Settings.SIPBottomLimit;
-                  if (sbl == -1) sbl = Settings.screenHeight / 2;
-                  boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
-                  if (Settings.unmovableSIP && !Window.isSipShown) // guich@tc126_21
-                  {
-                     Window ww = getParentWindow();
-                     if (ww != null)
-                        ww.shiftScreen(this,this.height-(fmH+prefH));
-                  }
-                  if (!Window.isSipShown)
-                  {
-                     Window.isSipShown = true;
-                     Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-                  }
-               }
+               Window ww = getParentWindow();
+               if (ww != null)
+                  ww.shiftScreen(this,this.height-(fmH+prefH));
             }
-            else
+            boolean isNumeric = useNativeNumericPad && kbdType == KBD_NUMERIC;
+            if (!Window.isSipShown() || lastWasNumeric != isNumeric)
             {
-               if (keyboard == null) keyboard = new KeyboardBox();
-               keyboard.tempTitle = keyboardTitle;
-               showInputWindow(keyboard);
+               lastWasNumeric = isNumeric;
+               Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, isNumeric); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
             }
-            return;
+         }
+      }
+      else
+      {
+         if (keyboard == null) keyboard = new KeyboardBox();
+         keyboard.tempTitle = keyboardTitle;
+         showInputWindow(keyboard);
       }
    }
    
    protected void hideSip()
    {
-      if (Window.isSipShown) // non-default keyboards gets here
-      {
-         Window.isSipShown = false;
+      lastWasNumeric = false;
+      if (Window.isSipShown()) // non-default keyboards gets here
          Window.setSIP(Window.SIP_HIDE,null,false);
-      }
    }
 
    private void showInputWindow(Window w)
@@ -1128,8 +1147,6 @@ public class Edit extends Control implements TextControl
 
    private void focusOut()
    {
-//      if (virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
-//         hideSip();
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167

@@ -10,6 +10,9 @@
  *********************************************************************************/
 
 
+static bool windowGetSIP()
+{
+}
 
 static void windowSetSIP(int32 sipOption)
 {

@@ -202,6 +202,7 @@ TC_API void tuW_pumpEvents(NMParams p);
 TC_API void tuW_setSIP_icb(NMParams p);
 TC_API void tuW_setDeviceTitle_s(NMParams p);
 TC_API void tuW_setOrientation_i(NMParams p);
+TC_API void tuW_isSipShown(NMParams p);
 TC_API void tsCC_bytes2chars_Bii(NMParams p);
 TC_API void tsCC_chars2bytes_Cii(NMParams p);
 TC_API void tsUTF8CC_bytes2chars_Bii(NMParams p);

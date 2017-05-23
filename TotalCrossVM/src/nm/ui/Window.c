@@ -25,22 +25,40 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
+TC_API void tuW_isSipShown(NMParams p) // totalcross/ui/Window native public static boolean isSipShown();
+{     
+   int32 ret = 0;
+#if defined (WINCE) && _WIN32_WCE >= 300
+   if (*tcSettings.virtualKeyboardPtr)
+      ret = windowGetSIP();
+#elif defined (WP8)
+      ret = privateWindowGetSIP();
+#elif defined(darwin)
+   ret = windowGetSIP();
+#elif defined (ANDROID)
+   ret = windowGetSIP();
+#elif defined (WIN32) && !defined(WINCE) // for windows 8 and up tablet devices
+   ret = windowGetSIP();
+#endif   
+   p->retI = ret;
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tuW_setSIP_icb(NMParams p) // totalcross/ui/Window native public static void setSIP(int sipOption, totalcross.ui.Control control, boolean secret);
 {
    int32 sipOption = p->i32[0];
 
-   if (sipOption < SIP_HIDE || sipOption > SIP_DISABLE_NUMERICPAD)
+   if (sipOption < SIP_HIDE || sipOption > SIP_SHOW)
       throwIllegalArgumentExceptionI(p->currentContext, "sipOption", sipOption);
    else
 #if defined (WINCE) && _WIN32_WCE >= 300
-   if (*tcSettings.virtualKeyboardPtr || sipOption == SIP_ENABLE_NUMERICPAD || sipOption == SIP_DISABLE_NUMERICPAD)
-      windowSetSIP(sipOption);
+   if (*tcSettings.virtualKeyboardPtr)
+      windowSetSIP(sipOption, p->i32[1]);
 #elif defined (WP8)
       privateWindowSetSIP(sipOption != SIP_HIDE);
 #elif defined(darwin)
-   windowSetSIP(p->currentContext, sipOption, p->obj[0] /*control*/, p->i32[1] /*secret*/);
+   windowSetSIP(p->currentContext, sipOption, p->obj[0] /*control*/, p->i32[1] /*numeric*/);
 #elif defined (ANDROID)
-   windowSetSIP(sipOption);
+   windowSetSIP(sipOption, p->i32[1] /*numeric*/);
 #elif defined (WIN32) && !defined(WINCE) // for windows 8 and up tablet devices
    windowSetSIP(sipOption);
 #else
