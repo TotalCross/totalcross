@@ -1,1 +1,1 @@
-Check our [Changelogs](Changelog.md)
+Check our [Changelogs](CHANGELOG.md)
