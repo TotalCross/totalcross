@@ -89,6 +89,7 @@ void nativeSoundPlayCPP(CharP filename);
 // Etc
 double getFontHeightCPP();
 void privateWindowSetSIP(bool visible);
+bool privateWindowGetSIP();
 void appExit();
 void appSetFullScreen();
 
