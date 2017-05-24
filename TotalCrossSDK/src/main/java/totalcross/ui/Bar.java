@@ -54,6 +54,8 @@ public class Bar extends Container
    private int selected=-1;
    private int c1,c2,c3,c4,tcolor,pcolor;
    private Spinner spinner;
+   /** Set to <code>false</code> to remove the borders */
+   public boolean drawBorders = true;
    
    /** 
     * Set to <code>true</code> to allow the title to be selected and send events. 
@@ -149,7 +151,7 @@ public class Bar extends Container
             g.fillShadedRect(0,0,w,h,true,false,fc,pcolor,30);
          
          // draw borders
-         if (uiAndroid || uiVista || uiFlat)
+         if (drawBorders && (uiAndroid || uiVista || uiFlat))
          {
             g.foreColor = c1; g.drawLine(0,0,w,0);
             g.foreColor = c3; g.drawLine(w-1,0,w-1,h);
