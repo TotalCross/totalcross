@@ -173,7 +173,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          }
       add(sc,LEFT+scInsets.left,TOP+scInsets.top,FILL-scInsets.right,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-scInsets.bottom);
       sc.setBackColor(backColor);
-      for (int i = 0;; i++)
+      for (int i = 0; i < n ; i++)
       {
          Control tmi = items[i];
          tmi.appId = i+1;
