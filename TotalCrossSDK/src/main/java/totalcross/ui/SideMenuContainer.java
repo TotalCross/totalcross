@@ -45,7 +45,7 @@ public class SideMenuContainer extends Container {
     this.items = items;
     if (items.length > 0) {
       home = items[0];
-      for (Control control : items) {
+      for (final Control control : items) {
         control.setBackColor(Color.WHITE);
         if (control instanceof SideMenuContainer.Item) {
           control.addPressListener(
