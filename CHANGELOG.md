@@ -3,16 +3,29 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 3.42.3362 - 2017-05-25
+
+### Highlights
+- New class `SmsManager` to handle sms messages, only on Android for now.
+- New component `SideMenuContainer`, a template to make creating applications using a navbar and a sidemenu. This is an incubating feature, therefore backwards compatibility is not guaranteed for future releases.
+
 ### Fixed
  - Fixed saving photo on portrait #47
- - Fixed AccordionContainer when showAnimation is false
+ - Fixed `AccordionContainer` when `showAnimation` is `false`
+ - Fixed support for Samsung's default keyboard on Android which has a bug related to single character event handling and text prediction #35 
 
 ### Added
  - Added support for Compex scanners
  - Added `java.sql` exceptions that were being replaced by their equivalents on `totalcross.sql` #40
+ - Added `SmsManager` to send and listen to incoming sms messages, only supported on Android now #25
+ - Added property `Bar.drawBorders` to remove the component's borders
+ - Added constructor for `TopMenu` to allow using other borders type besides the default `ROUND_BORDER`
 
 ### Changes 
 - Fixed `Edit.clipboardMenu` so that it uses the same font from its parent's Window
+- Increased wait time for bluetooth read and write operations on Android #18
+- Additional check when drawing `TopMenu` to avoid NPE when there are no items to show
+- Deprecated method `Image.setTransparentColor` - use images with alpha channel instead
 
 ## 3.41.3331 - 2017-05-10
 
