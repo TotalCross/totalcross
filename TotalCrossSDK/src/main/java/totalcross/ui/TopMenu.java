@@ -116,9 +116,9 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
    }
    
    /** @param animDir LEFT, RIGHT, TOP, BOTTOM, CENTER */
-   public TopMenu(Control []items, int animDir)
+   public TopMenu(Control []items, int animDir, byte borderStyle)
    {
-      super(null,ROUND_BORDER);
+      super(null,borderStyle);
       this.items = items;
       this.animDir = animDir;
       titleGap = 0;
@@ -126,6 +126,12 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       borderColor = UIColors.separatorFore;
       setBackForeColors(UIColors.separatorFore,UIColors.topmenuFore);
+   }
+   
+   /** @param animDir LEFT, RIGHT, TOP, BOTTOM, CENTER */
+   public TopMenu(Control []items, int animDir)
+   {
+      this(items, animDir, ROUND_BORDER);
    }
 
    public void popup()
@@ -173,7 +179,7 @@ public class TopMenu extends Window implements PathAnimation.AnimationFinished
          }
       add(sc,LEFT+scInsets.left,TOP+scInsets.top,FILL-scInsets.right,isLR ? PARENTSIZE+100 : Math.min(prefH, Settings.screenHeight-fmH*2)-scInsets.bottom);
       sc.setBackColor(backColor);
-      for (int i = 0;; i++)
+      for (int i = 0; i < n ; i++)
       {
          Control tmi = items[i];
          tmi.appId = i+1;

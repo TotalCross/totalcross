@@ -421,4 +421,9 @@
 #define ZipStream_lastEntry(o)         getInstanceFieldObject(o, "lastEntry", "totalcross.util.zip.ZipStream")
 #define ZipStream_method(o)            *getInstanceFieldInt(o, "defaultMethod", "totalcross.util.zip.ZipStream")
 
+// totalcross.telephony.SmsManager
+#define SmsManager_smsReceiver(o)                     *getInstanceFieldObject(o, "receiver", "totalcross.telephony.SmsManager")
+#define SmsMessage_displayOriginatingAddress(o)       *getInstanceFieldObject(o, "displayOriginatingAddress", "totalcross.telephony.SmsMessage")
+#define SmsMessage_displayMessageBody(o)              *getInstanceFieldObject(o, "displayMessageBody", "totalcross.telephony.SmsMessage")
+
 #endif

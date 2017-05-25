@@ -227,9 +227,11 @@ public class Image extends GfxSurface
 
    /** Sets the transparent color of this image. A new image is NOT created.
     * 
+    * @deprecated use the alpha channel instead
     * @return The image itself
     * @since TotalCross 2.0
     */
+   @Deprecated
    public Image setTransparentColor(int color)
    {
       int[] pixels = (int[]) ((frameCount == 1) ? this.pixels : this.pixelsOfAllFrames); // guich@tc100b5_40

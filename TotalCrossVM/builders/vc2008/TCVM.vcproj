@@ -2581,6 +2581,14 @@
 				</Filter>
 			</Filter>
 			<Filter
+				Name="telephony"
+				>
+				<File
+					RelativePath="..\..\src\nm\telephony\SmsManager.c"
+					>
+				</File>
+			</Filter>
+			<Filter
 				Name="crypto"
 				>
 				<File
