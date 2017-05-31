@@ -76,10 +76,13 @@ public class Throwable4D
      * @param cause the cause, may be null
      * @since 1.4
      */
-    public Throwable4D(String message, Throwable4D cause)
-    {
-      this.msg = message;
-      this.cause = cause;
+    public Throwable4D(String message, Throwable4D cause) {
+    	this(message, cause, true, true);
+    }
+    
+    public Throwable4D(String message, Throwable4D cause,  boolean enableSuppression, boolean writableStackTrace) {
+    	this.msg = message;
+        this.cause = cause;
     }
 
     /**
