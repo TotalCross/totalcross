@@ -69,5 +69,9 @@ public class Exception4D extends Throwable4D
    {
      super(cause);
    }
+   
+   public Exception4D(String message, Throwable4D cause,  boolean enableSuppression, boolean writableStackTrace) {
+	   super(message, cause, enableSuppression, writableStackTrace);
+   }
 }
 
