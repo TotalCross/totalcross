@@ -59,12 +59,13 @@ public class Throwable4D
     /** Constructs an empty Exception. */
     public Throwable4D()
     {
+    	this(null, null);
     }
 
     /** Constructs an exception with the given message. */
     public Throwable4D(String msg)
     {
-	    this.msg = msg;
+	    this(msg, null);
     }
     
     /**
@@ -90,8 +91,7 @@ public class Throwable4D
      */
     public Throwable4D(Throwable4D cause)
     {
-      this.msg = (cause == null ? null : cause.toString());
-      this.cause = cause;
+      this(cause == null ? null : cause.toString(), cause);
     }
 
     /** Returns the message passed on the constructor. May be null. */
