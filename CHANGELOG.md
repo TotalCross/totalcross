@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 3.42.3366 - 2017-06-01
+
+### Added
+ - Added missing constructor `Throwable((String, Throwable, boolean, boolean)`
+ - Added missing constructor `Exception((String, Throwable, boolean, boolean)`
+ - Added missing constructor `RuntimeException((String, Throwable, boolean, boolean)`
+
+### Changes 
+- `SmsManager.sendTextMessage` asks the SMS composer application to automatically exit after the message is sent, switching back to the TotalCross application
+
 ## 3.42.3362 - 2017-05-25
 
 ### Highlights
