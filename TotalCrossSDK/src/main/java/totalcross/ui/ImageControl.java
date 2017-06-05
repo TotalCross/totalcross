@@ -252,12 +252,6 @@ public class ImageControl extends Control
       else lastX = lastY = 0;
    }
 
-   private void fillBack(Graphics g)
-   {
-      if (imgBack != null)
-         g.drawImage(imgBack,0,0, true);
-   }
-
    public void onPaint(Graphics g)
    {
       paint(g, true);
@@ -269,23 +263,26 @@ public class ImageControl extends Control
       if (!transparentBackground) // guich@tc115_41
          g.fillRect(0,0,width,height);
       if (img != null) // images found?
-      {
-         double dw = img.hwScaleW, dh = img.hwScaleH;
-         if (tempHwScale != NOTEMP)
-            img.hwScaleW = img.hwScaleH = tempHwScale;
-         if (allowBeyondLimits)
-            g.drawImage(img, lastX,lastY, true);
-         else
-            g.copyRect(img,0,0,img.getWidth(),img.getHeight(),lastX,lastY);
-         img.hwScaleW = dw; img.hwScaleH = dh;
-      }
-      if (drawBack)
-         fillBack(g);
+         drawImage(g, img);
+      if (drawBack && imgBack != null)
+         drawImage(g, imgBack);
       if (borderColor != -1)
       {
          g.foreColor = borderColor;
          g.drawRect(0,0,width,height);
       }
+   }
+
+   private void drawImage(Graphics g, Image img)
+   {
+      double dw = img.hwScaleW, dh = img.hwScaleH;
+      if (tempHwScale != NOTEMP)
+         img.hwScaleW = img.hwScaleH = tempHwScale;
+      if (allowBeyondLimits)
+         g.drawImage(img, lastX,lastY, true);
+      else
+         g.copyRect(img,0,0,img.getWidth(),img.getHeight(),lastX,lastY);
+      img.hwScaleW = dw; img.hwScaleH = dh;
    }
 
    /** Returns the image's width; when scaling, returns the scaled width. */
