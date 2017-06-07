@@ -19,6 +19,8 @@
 
 package totalcross.ui;
 
+import totalcross.firebase.FirebaseManager;
+import totalcross.firebase.iid.FirebaseInstanceIdService;
 import totalcross.io.*;
 import totalcross.res.*;
 import totalcross.sys.*;
@@ -85,6 +87,9 @@ public class MainWindow extends Window implements totalcross.MainClass
    public MainWindow(String title, byte style) // guich@112
    {
       super(title,style);
+      
+      FirebaseManager.getInstance().registerFirebaseInstanceIdService(initFirebaseInstanceIdService());
+      
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
       Settings.scrollDistanceOnMouseWheelMove = fmH;
 
@@ -114,7 +119,15 @@ public class MainWindow extends Window implements totalcross.MainClass
          Settings.appProps = new Hashtable(new String(bytes));
    }
    
-   //$START:REMOVE-ON-SDK-GENERATION$   
+   /**
+    * Register your own FirebaseInstanceIdService when initializing the app
+    * @return
+    */
+	protected FirebaseInstanceIdService initFirebaseInstanceIdService() {
+		return null;
+	}
+
+//$START:REMOVE-ON-SDK-GENERATION$   
    private static void sendStats()
    {
       try
