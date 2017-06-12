@@ -88,8 +88,6 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       super(title,style);
       
-      FirebaseManager.getInstance().registerFirebaseInstanceIdService(initFirebaseInstanceIdService());
-      
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
       Settings.scrollDistanceOnMouseWheelMove = fmH;
 
@@ -117,6 +115,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       byte[] bytes = Vm.getFile("tcapp.prop");
       if (bytes != null)
          Settings.appProps = new Hashtable(new String(bytes));
+      FirebaseManager.getInstance().registerFirebaseInstanceIdService(initFirebaseInstanceIdService());
    }
    
    /**
