@@ -17,6 +17,26 @@ TC_API void tfiFII_getToken(NMParams p)
 {
 #ifdef defined(ANDROID)
 	fprintf(stderr, "%s %d\n", __FILE__, __LINE__);
+	JNIEnv* env = getJNIEnv();
+
+	jmethodID getInstance = (*env)->GetStaticMethodID(env, jFirebaseInstanceId, "getInstance", "()Lcom/google/firebase/iid/FirebaseInstanceId");
+	jmethodID getToken = (*env)->GetMethodID(env, jFirebaseInstanceId, "getToken", "()Ljava/lang/String");
+	jobject firebase_instance = (*env)->CallStaticObjectMethod(env, jFirebaseInstanceId, getInstance);
+	jobject jtoken = (*env)->CallObjectMethod(firebase_instance, getToken);
+
+	if (jtoken == null) {
+		p->retO = null;
+	} else {
+		CharP sztoken = (*env)->GetStringUTFChars(env, jtoken, 0);
+		TCObject tctoken = createStringObjectFromCharP(mainContext, tctoken, -1);
+
+		p->retO = tctoken;
+		setObjectLock(p->retO, UNLOCKED);
+
+		(*env)->ReleaseStringUTFChars(env, jtoken, szDisplayOriginatingAddress);
+	}
+#else
+	p->retO = null;
 #endif
 }
 
