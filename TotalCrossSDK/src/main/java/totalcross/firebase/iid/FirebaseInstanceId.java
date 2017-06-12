@@ -7,7 +7,7 @@ public class FirebaseInstanceId {
 		
 	}
 	
-	static FirebaseInstanceId getInstance() {
+	public static FirebaseInstanceId getInstance() {
 		return instance;
 	}
 	
