@@ -13,10 +13,6 @@
 
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 TC_API void tfiFII_getToken(NMParams p)
 {
 #ifdef defined(ANDROID)
@@ -24,6 +20,3 @@ TC_API void tfiFII_getToken(NMParams p)
 #endif
 }
 
-#ifdef __cplusplus
-}
-#endif
