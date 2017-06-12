@@ -2589,6 +2589,14 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="firebase"
+				>
+				<File
+					RelativePath="..\..\src\nm\firebase\firbase.c"
+					>
+				</File>
+			</Filter>
+			<Filter
 				Name="crypto"
 				>
 				<File
