@@ -417,6 +417,9 @@
 		3A819A681D490AD900B6D4A4 /* jfdctint.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A5E1D490AD900B6D4A4 /* jfdctint.c */; };
 		3A819A691D490AD900B6D4A4 /* jidctflt.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A5F1D490AD900B6D4A4 /* jidctflt.c */; };
 		3A819A6A1D490AD900B6D4A4 /* jidctint.c in Sources */ = {isa = PBXBuildFile; fileRef = 3A819A601D490AD900B6D4A4 /* jidctint.c */; };
+		3ABDFBD61EEECB2D008C0A79 /* image_Image_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ABDFBD31EEECB2D008C0A79 /* image_Image_c.h */; };
+		3ABDFBD71EEECB2D008C0A79 /* image_Image_c.m in Sources */ = {isa = PBXBuildFile; fileRef = 3ABDFBD41EEECB2D008C0A79 /* image_Image_c.m */; };
+		3ABDFBD81EEECB2D008C0A79 /* imageImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3ABDFBD51EEECB2D008C0A79 /* imageImage.h */; };
 		3AFCD5FC174D474F008BA920 /* zxing.c in Sources */ = {isa = PBXBuildFile; fileRef = 3AFCD5FB174D474F008BA920 /* zxing.c */; };
 		4B12E2731ED4C517008E304D /* SmsManager.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B12E2721ED4C517008E304D /* SmsManager.c */; };
 		CEFA5142181EF13F00B1B00A /* shell.c in Sources */ = {isa = PBXBuildFile; fileRef = CEFA513E181EF13F00B1B00A /* shell.c */; };
@@ -427,6 +430,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		00CFDF6A1138442D0091FFFF /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		0F003EB3150FEBBF004F0653 /* libtcvm.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtcvm.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F003EB6150FEBBF004F0653 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0F003EC4150FEBBF004F0653 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -845,6 +849,9 @@
 		3A819A5F1D490AD900B6D4A4 /* jidctflt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jidctflt.c; sourceTree = "<group>"; };
 		3A819A601D490AD900B6D4A4 /* jidctint.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jidctint.c; sourceTree = "<group>"; };
 		3A8C3EC4159E4A3900D3E666 /* GPS_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPS_c.h; sourceTree = "<group>"; };
+		3ABDFBD31EEECB2D008C0A79 /* image_Image_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = image_Image_c.h; sourceTree = "<group>"; };
+		3ABDFBD41EEECB2D008C0A79 /* image_Image_c.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = image_Image_c.m; sourceTree = "<group>"; };
+		3ABDFBD51EEECB2D008C0A79 /* imageImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imageImage.h; sourceTree = "<group>"; };
 		3AFCD5FB174D474F008BA920 /* zxing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zxing.c; sourceTree = "<group>"; };
 		4B12E2721ED4C517008E304D /* SmsManager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SmsManager.c; path = telephony/SmsManager.c; sourceTree = "<group>"; };
 		CEFA513E181EF13F00B1B00A /* shell.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = shell.c; path = sqlite/shell.c; sourceTree = "<group>"; };
@@ -852,6 +859,7 @@
 		CEFA5140181EF13F00B1B00A /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3.h; path = sqlite/sqlite3.h; sourceTree = "<group>"; };
 		CEFA5141181EF13F00B1B00A /* sqlite3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqlite3ext.h; path = sqlite/sqlite3ext.h; sourceTree = "<group>"; };
 		CEFA5147181EF24700B1B00A /* mainview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mainview.m; sourceTree = "<group>"; };
+		DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -894,6 +902,8 @@
 				0FAA49A61549D7B30039F4BF /* UIKit.framework */,
 				0F003EB6150FEBBF004F0653 /* Foundation.framework */,
 				0F003EC4150FEBBF004F0653 /* SenTestingKit.framework */,
+				00CFDF6A1138442D0091FFFF /* ImageIO.framework */,
+				DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -1541,6 +1551,9 @@
 		0F8C8B481549CFC700E0967F /* darwin */ = {
 			isa = PBXGroup;
 			children = (
+				3ABDFBD31EEECB2D008C0A79 /* image_Image_c.h */,
+				3ABDFBD41EEECB2D008C0A79 /* image_Image_c.m */,
+				3ABDFBD51EEECB2D008C0A79 /* imageImage.h */,
 				CEFA5147181EF24700B1B00A /* mainview.m */,
 				3A52AACA1627275900DCEE4A /* gfx_Graphics_c.h */,
 				3A11E08915791A9D00F883EC /* childview.h */,
@@ -2040,6 +2053,7 @@
 				0F8C8D871549CFC700E0967F /* gfx_Graphics_c.h in Headers */,
 				0F8C8D881549CFC700E0967F /* media_Camera_c.h in Headers */,
 				0F8C8D891549CFC700E0967F /* media_MediaClip_c.h in Headers */,
+				3ABDFBD81EEECB2D008C0A79 /* imageImage.h in Headers */,
 				0F8C8D8A1549CFC700E0967F /* media_Sound_c.h in Headers */,
 				0F8C8D8B1549CFC700E0967F /* palmOneCameraCommon.h in Headers */,
 				0F8C8D8C1549CFC700E0967F /* palmOneCameraLibARM.h in Headers */,
@@ -2080,6 +2094,7 @@
 				0F8C8DF41549CFC700E0967F /* tcthread_c.h in Headers */,
 				0F8C8DFA1549CFC700E0967F /* tc_testsuite.h in Headers */,
 				0F8C8DFE1549CFC700E0967F /* datastructures.h in Headers */,
+				3ABDFBD61EEECB2D008C0A79 /* image_Image_c.h in Headers */,
 				0F8C8E001549CFC700E0967F /* debug.h in Headers */,
 				0F8C8E021549CFC700E0967F /* dlmalloc.h in Headers */,
 				0F8C8E041549CFC700E0967F /* errormsg.h in Headers */,
@@ -2242,6 +2257,7 @@
 				0F8C8CDF1549CFC700E0967F /* libtcvm.m in Sources */,
 				0F8C8CE11549CFC700E0967F /* ioapi.c in Sources */,
 				0F8C8CE31549CFC700E0967F /* unzip.c in Sources */,
+				3ABDFBD71EEECB2D008C0A79 /* image_Image_c.m in Sources */,
 				0F8C8CE51549CFC700E0967F /* zip.c in Sources */,
 				0F8C8CE71549CFC700E0967F /* AESCipher.c in Sources */,
 				0F8C8CE81549CFC700E0967F /* MD5Digest.c in Sources */,

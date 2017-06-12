@@ -25,6 +25,8 @@
 		3AD8771F1AA4A445008F9EDB /* libLitebase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AD8771E1AA4A42E008F9EDB /* libLitebase.a */; };
 		3AD877201AA4A44A008F9EDB /* libtcvm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AD877181AA4A41F008F9EDB /* libtcvm.a */; };
 		3AE9DFA5159E24F900DE3C09 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */; };
+		C725E001121DAC8FFFFA18FF /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFDF6A1138442D0091FFFF /* ImageIO.framework */; };
+		DDDDE001121DAC8FFFFADDDD /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		00CFDF6A1138442D0091FFFF /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		0F5AF5031507FA3600D6142B /* TotalCross.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TotalCross.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5AF5071507FA3600D6142B /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0F5AF5091507FA3600D6142B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -73,6 +76,7 @@
 		3AD877131AA4A41F008F9EDB /* tcvm.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = tcvm.xcodeproj; sourceTree = "<group>"; };
 		3AD877191AA4A42D008F9EDB /* Litebase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Litebase.xcodeproj; path = ../../../LitebaseSDK/builders/xcode/Litebase.xcodeproj; sourceTree = "<group>"; };
 		3AE9DFA4159E24F900DE3C09 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +95,8 @@
 				0F5AF5081507FA3600D6142B /* UIKit.framework in Frameworks */,
 				0F5AF50A1507FA3600D6142B /* Foundation.framework in Frameworks */,
 				0F5AF50C1507FA3600D6142B /* CoreGraphics.framework in Frameworks */,
+				C725E001121DAC8FFFFA18FF /* ImageIO.framework in Frameworks */,
+				DDDDE001121DAC8FFFFADDDD /* MobileCoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +139,8 @@
 				0F5AF5091507FA3600D6142B /* Foundation.framework */,
 				0F5AF50B1507FA3600D6142B /* CoreGraphics.framework */,
 				0F5AF5281507FA3600D6142B /* SenTestingKit.framework */,
+				00CFDF6A1138442D0091FFFF /* ImageIO.framework */,
+				DDDDDF6A1138442D0091DDDD /* MobileCoreServices.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
