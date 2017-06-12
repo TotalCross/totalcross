@@ -572,6 +572,7 @@ TC_API void tmA_setVisibleD_b(NMParams p);
 TC_API void tmA_isVisibleD(NMParams p);
 TC_API void ttSM_sendTextMessage_sss(NMParams p);
 TC_API void ttSM_registerSmsReceiver_s(NMParams p);
+TC_API void tfiFII_getToken(NMParams p);
 
 #ifdef __cplusplus
 }
