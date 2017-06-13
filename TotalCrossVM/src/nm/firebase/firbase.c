@@ -16,6 +16,7 @@
 TC_API void tfiFII_getToken(NMParams p)
 {
 #ifdef defined(ANDROID)
+#error "ERRO DESEJADO"
 	fprintf(stderr, "%s %d\n", __FILE__, __LINE__);
 	JNIEnv* env = getJNIEnv();
 
@@ -36,6 +37,7 @@ TC_API void tfiFII_getToken(NMParams p)
 		(*env)->ReleaseStringUTFChars(env, jtoken, szDisplayOriginatingAddress);
 	}
 #else
+#error "ERRO NAO DEFINIDO ANDROID"
 	p->retO = null;
 #endif
 }
