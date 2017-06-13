@@ -26,7 +26,7 @@ TC_API void tfiFII_getToken(NMParams p)
 		p->retO = null;
 	} else {
 		CharP sztoken = (*env)->GetStringUTFChars(env, jtoken, 0);
-		TCObject tctoken = createStringObjectFromCharP(mainContext, tctoken, -1);
+		TCObject tctoken = createStringObjectFromCharP(mainContext, sztoken, -1);
 
 		p->retO = tctoken;
 		setObjectLock(p->retO, UNLOCKED);
