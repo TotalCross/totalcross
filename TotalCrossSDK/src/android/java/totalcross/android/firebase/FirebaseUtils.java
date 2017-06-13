@@ -11,16 +11,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.iid.FirebaseInstanceId;
 import totalcross.AndroidUtils;
 import totalcross.Launcher4A;
-import totalcross.firebase.iid.FirebaseInstanceId;
 
 public class FirebaseUtils
 {
 	private static FirebaseApp registeredFirebaseApp;
 	
 	public static void registerFirebaseApp(FirebaseApp newFirebaseApp) {
-		registeredFirebaseApp = firebaseApp;
+		registeredFirebaseApp = newFirebaseApp;
 	}
 	
 	public static String getTokenFromRegisteredFirebaseApp() {
