@@ -10,11 +10,31 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
+import com.google.firebase.FirebaseApp;
 import totalcross.AndroidUtils;
 import totalcross.Launcher4A;
+import totalcross.firebase.iid.FirebaseInstanceId;
 
 public class FirebaseUtils
 {
+	private static FirebaseApp registeredFirebaseApp;
+	
+	public static registerFirebaseApp(FirebaseApp newFirebaseApp) {
+		registeredFirebaseApp = firebaseApp;
+	}
+	
+	public static String getTokenFromRegisteredFirebaseApp() {
+		if (registeredFirebaseApp != null) {
+			FirebaseInstanceId instanceId = FirebaseInstanceId.getInstance(registeredFirebaseApp);
+			
+			if (instanceId != null) {
+				return instanceId.getToken();
+			}
+		}
+		
+		return null;
+	}
+	
    private static String vmPath(Context cnt)
    {
       try
