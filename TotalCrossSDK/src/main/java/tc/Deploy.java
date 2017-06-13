@@ -247,7 +247,7 @@ public class Deploy
    private int parseOptions(String[] args) throws Exception
    {
       String arg0 = args[0];
-      if (arg0.startsWith("-") || arg0.startsWith("/"))
+      if (arg0.startsWith("-") || (arg0.startsWith("/") && !new File(arg0).exists()))
          throw new DeployerException("The first parameter must be the class or package name!");
       
       int options = 0;
