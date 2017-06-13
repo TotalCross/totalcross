@@ -19,7 +19,7 @@ public class FirebaseUtils
 {
 	private static FirebaseApp registeredFirebaseApp;
 	
-	public static registerFirebaseApp(FirebaseApp newFirebaseApp) {
+	public static void registerFirebaseApp(FirebaseApp newFirebaseApp) {
 		registeredFirebaseApp = firebaseApp;
 	}
 	
