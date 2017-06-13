@@ -16,7 +16,6 @@
 TC_API void tfiFII_getToken(NMParams p)
 {
 #if defined(ANDROID)
-#warning "ANDROID DEFINIDO"
 	fprintf(stderr, "%s %d\n", __FILE__, __LINE__);
 	JNIEnv* env = getJNIEnv();
 
