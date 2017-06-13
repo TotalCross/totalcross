@@ -15,7 +15,7 @@
 
 TC_API void tfiFII_getToken(NMParams p)
 {
-#ifdef defined(ANDROID)
+#if defined(ANDROID)
 #error "ERRO DESEJADO"
 	fprintf(stderr, "%s %d\n", __FILE__, __LINE__);
 	JNIEnv* env = getJNIEnv();
