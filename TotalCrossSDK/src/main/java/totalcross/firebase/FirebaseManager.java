@@ -6,6 +6,9 @@ import totalcross.ui.event.TimerEvent;
 import totalcross.ui.event.TimerListener;
 import totalcross.util.concurrent.Lock;
 
+/**
+ * For internal use only. Please, do not mess here. Leave this be.
+ */
 public class FirebaseManager {
 	static FirebaseManager instance = new FirebaseManager();
 	FirebaseInstanceIdService registeredService;
