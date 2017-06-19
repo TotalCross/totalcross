@@ -486,7 +486,9 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
 				builder.setApplicationId(mobilesdk_app_id);//<string name="google_app_id" translatable="false">1:462748528174:android:d1696eef73864aa2</string>
 				builder.setApiKey(current_api_key);//<string name="google_api_key" translatable="false">AIzaSyCiU3EE9ckkvlzvyC8_dc7Z9MiC8NGgfHI</string>
 				
-				FirebaseApp.initializeApp(getApplicationContext(), builder.build());
+				FirebaseApp app = FirebaseApp.initializeApp(getApplicationContext(), builder.build());
+				
+				FirebaseUtils.registerFirebaseApp(app);
 			} else {
 				AndroidUtils.debug("Could not initialize Firebase, can't find your package in google-services.json");
 			}
