@@ -5320,7 +5320,7 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='RAS Release|Win32'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='NO RAS Release|Win32'">false</CompileAsWinRT>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\src\nm\firebase\firbase.c">
+    <ClCompile Include="..\..\..\..\..\src\nm\firebase\firebase.c">
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='DEMO Debug|ARM'">false</BufferSecurityCheck>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='RAS Debug|ARM'">false</BufferSecurityCheck>
       <BufferSecurityCheck Condition="'$(Configuration)|$(Platform)'=='NO RAS Debug|ARM'">false</BufferSecurityCheck>

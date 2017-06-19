@@ -2592,7 +2592,7 @@
 				Name="firebase"
 				>
 				<File
-					RelativePath="..\..\src\nm\firebase\firbase.c"
+					RelativePath="..\..\src\nm\firebase\firebase.c"
 					>
 				</File>
 			</Filter>

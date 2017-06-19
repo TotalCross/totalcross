@@ -395,7 +395,7 @@
 		0FB62B751549D3E70011CEF6 /* tcvm-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */; };
 		15A29ADA189C4D3C007C420B /* NativeDB.c in Sources */ = {isa = PBXBuildFile; fileRef = 15A29AD9189C4D3C007C420B /* NativeDB.c */; };
 		15E4ED11189C35510012D8ED /* Reflection.c in Sources */ = {isa = PBXBuildFile; fileRef = 15E4ED10189C35510012D8ED /* Reflection.c */; };
-		37430B751EEECEEB008D89DF /* firbase.c in Sources */ = {isa = PBXBuildFile; fileRef = 37430B731EEECEEB008D89DF /* firbase.c */; };
+		37430B751EEECEEB008D89DF /* firebase.c in Sources */ = {isa = PBXBuildFile; fileRef = 37430B731EEECEEB008D89DF /* firebase.c */; };
 		37430B761EEECEEB008D89DF /* firebase.h in Headers */ = {isa = PBXBuildFile; fileRef = 37430B741EEECEEB008D89DF /* firebase.h */; };
 		3A11E08A15791A9D00F883EC /* childview.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A11E08915791A9D00F883EC /* childview.h */; };
 		3A1BF9211D4B8CF6009A7B42 /* pngdebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */; };
@@ -824,7 +824,7 @@
 		0FB62B741549D3E70011CEF6 /* tcvm-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "tcvm-Prefix.pch"; sourceTree = "<group>"; };
 		15A29AD9189C4D3C007C420B /* NativeDB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NativeDB.c; path = db/NativeDB.c; sourceTree = "<group>"; };
 		15E4ED10189C35510012D8ED /* Reflection.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Reflection.c; sourceTree = "<group>"; };
-		37430B731EEECEEB008D89DF /* firbase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firbase.c; path = firebase/firbase.c; sourceTree = "<group>"; };
+		37430B731EEECEEB008D89DF /* firebase.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = firebase.c; path = firebase/firebase.c; sourceTree = "<group>"; };
 		37430B741EEECEEB008D89DF /* firebase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = firebase.h; path = firebase/firebase.h; sourceTree = "<group>"; };
 		3A11E08915791A9D00F883EC /* childview.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.c.h; path = childview.h; sourceTree = "<group>"; tabWidth = 3; };
 		3A1BF91C1D4B8CF6009A7B42 /* pngdebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pngdebug.h; sourceTree = "<group>"; };
@@ -1864,7 +1864,7 @@
 		37430B771EEECEF2008D89DF /* firebase */ = {
 			isa = PBXGroup;
 			children = (
-				37430B731EEECEEB008D89DF /* firbase.c */,
+				37430B731EEECEEB008D89DF /* firebase.c */,
 				37430B741EEECEEB008D89DF /* firebase.h */,
 			);
 			name = firebase;
@@ -2342,7 +2342,7 @@
 				4B12E2731ED4C517008E304D /* SmsManager.c in Sources */,
 				0F8C8DDF1549CFC700E0967F /* context.c in Sources */,
 				0F8C8DE11549CFC700E0967F /* objectmemorymanager.c in Sources */,
-				37430B751EEECEEB008D89DF /* firbase.c in Sources */,
+				37430B751EEECEEB008D89DF /* firebase.c in Sources */,
 				0F8C8DE71549CFC700E0967F /* tcclass.c in Sources */,
 				0F8C8DE91549CFC700E0967F /* tcexception.c in Sources */,
 				0F8C8DEB1549CFC700E0967F /* tcfield.c in Sources */,
