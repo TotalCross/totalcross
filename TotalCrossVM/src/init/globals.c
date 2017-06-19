@@ -59,7 +59,7 @@ bool isMainWindow = false;   // extends MainWindow ?
 #if defined(ANDROID)
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
-jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A,jSmsManager4A;
+jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A,jSmsManager4A,jFirebaseInstanceId,jTcFirebaseUtils;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 jfieldID jsipVisible,jappTitleH;
 jmethodID jgetHeight;

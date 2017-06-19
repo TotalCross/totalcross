@@ -106,6 +106,8 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
    jSmsManager4A        = androidFindClass(env, "totalcross/android/SmsManager4A");
+   jFirebaseInstanceId  = androidFindClass(env, "com/google/firebase/iid/FirebaseInstanceId");
+   jTcFirebaseUtils     = androidFindClass(env, "totalcross/android/firebase/FirebaseUtils");
    jzxing            = (*env)->GetStaticMethodID(env, applicationClass, "zxing", "(Ljava/lang/String;)Ljava/lang/String;");
    jsoundToText      = (*env)->GetStaticMethodID(env, applicationClass, "soundToText", "(Ljava/lang/String;)Ljava/lang/String;");
    jsoundFromText    = (*env)->GetStaticMethodID(env, applicationClass, "soundFromText", "(Ljava/lang/String;)V");

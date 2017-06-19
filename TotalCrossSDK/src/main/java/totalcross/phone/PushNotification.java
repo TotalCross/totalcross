@@ -5,8 +5,10 @@ import totalcross.sys.*;
 
 import java.util.*;
 
+@Deprecated
 public class PushNotification
 {
+   @Deprecated
    public static String readToken() 
    {
       String ret = null;
@@ -29,6 +31,7 @@ public class PushNotification
       return ret;
    }
    
+   @Deprecated
    public static String[] readMessages() 
    {
       ArrayList<String> ret = new ArrayList<String>(5);

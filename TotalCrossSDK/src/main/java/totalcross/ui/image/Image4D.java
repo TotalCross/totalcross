@@ -639,4 +639,51 @@ public class Image4D extends GfxSurface
       g.copyImageRect(this, x,y,w,h,true);
       return img;
    }
+   
+	public static void resizeJpeg(String inputPath, String outputPath, int maxPixelSize) {
+		if (hasNativeResizeJpeg()) {
+			nativeResizeJpeg(inputPath, outputPath, maxPixelSize);
+			return;
+		}
+		try {
+			Image img = new Image(inputPath);
+
+			int height = img.getHeight();
+			int width = img.getWidth();
+
+			boolean doResize = false;
+			boolean isHeight = height > width;
+
+			if (maxPixelSize > 0) {
+				doResize = true;
+			}
+
+			Image resizedImage;
+
+			if (doResize) {
+				resizedImage = img.smoothScaledFixedAspectRatio(maxPixelSize, isHeight);
+			} else {
+				resizedImage = img;
+			}
+
+			File imageDestiny = null;
+			try {
+				imageDestiny = new File(outputPath, File.CREATE_EMPTY);
+				resizedImage.createJpg(imageDestiny, 85);
+			} finally {
+				if (imageDestiny != null) {
+					imageDestiny.close();
+				}
+			}
+		} catch (IOException | ImageException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static boolean hasNativeResizeJpeg() {
+		return Settings.isIOS();
+	}
+   
+   native public static void nativeResizeJpeg(String inputPath, String outputPath, int maxPixelSize);
 }

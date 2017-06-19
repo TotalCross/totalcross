@@ -69,4 +69,8 @@ public class RuntimeException4D extends Exception
    {
      super(cause);
    }
+   
+   public RuntimeException4D(String message, Throwable cause,  boolean enableSuppression, boolean writableStackTrace) {
+	   super(message, cause, enableSuppression, writableStackTrace);
+   }
 }

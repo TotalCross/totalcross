@@ -560,5 +560,6 @@ void fillNativeProcAddressesTC()
    htPutPtr(&htNativeProcAddresses, hashCode("tmA_isVisibleD"), &tmA_isVisibleD);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_sendTextMessage_sss"), &ttSM_sendTextMessage_sss);
    htPutPtr(&htNativeProcAddresses, hashCode("ttSM_registerSmsReceiver_s"), &ttSM_registerSmsReceiver_s);
+   htPutPtr(&htNativeProcAddresses, hashCode("tfiFII_getToken"), &tfiFII_getToken);
    htPutPtr(&htNativeProcAddresses, hashCode("getMainContext"), &getMainContext);
 }

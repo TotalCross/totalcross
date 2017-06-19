@@ -14,6 +14,7 @@ public class SmsManager4A {
 
     Intent sendIntent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + destinationAddress));
     sendIntent.putExtra("sms_body", text);
+    sendIntent.putExtra("exit_on_sent", true);
     Launcher4A.startActivity(sendIntent);
   }
 
