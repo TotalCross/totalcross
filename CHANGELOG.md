@@ -3,6 +3,31 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 3.43.3439 - 2017-06-20
+
+### Highlights
+- Now you can get Firebase identity token to send a unicast message to a single Android device
+  - Check the [wiki page](https://gitlab.com/totalcross/TotalCross/wikis/features/firebase-token) for more details;
+  - Also check the [GitHub example](https://github.com/TotalCross/totalcross-firebase-token/);
+  - Any news, we will keep updating the post and the source
+ 
+### Added
+- Added method to resize image natively on iOS `Image.resizeJpeg(String inputPath, String outputPath, int maxPixelSize)`
+  - This method is also available on other platforms, but it resizes using the TotalCross and more memory than the native counterpart
+
+### Changes
+- Set the `MessageBox` default colors in the constructor instead of `onPopup`
+  - `MessageBox` colors will no longer change if the `UIColors` constants are changed after the object is created
+- `ImageControl` resizes and pans the background image with the foreground image.
+  
+### Fixed
+- Deploy with absolute path in Unix system, it isn't anymore mistakenly recognized as a slash argument
+  
+### Deprecated
+- Those classes are not useful anymore and are deprecated:
+  * `totalcross.phone.PushNotification`
+  * `totalcross.ui.event.PushNotificationEvent`
+
 ## 3.42.3366 - 2017-06-01
 
 ### Added
