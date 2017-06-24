@@ -397,7 +397,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
    /** user method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == Edit.KBD_NONE || !editable || !isEnabled()) return;
+      if (kbdType == Edit.KBD_NONE || !editable || !isEnabled() || !Settings.enableVirtualKeyboard) return;
       if (Settings.virtualKeyboard)
          _onEvent(new Event(ControlEvent.FOCUS_IN,this,0)); // simulate a focus in event.
       else
@@ -1149,7 +1149,7 @@ public class MultiEdit extends Container implements Scrollable, TextControl
 
    private void showSip() // guich@tc126_21
    {
-      if (kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !hadParentScrolled() && !Window.isScreenShifted()) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
+      if (kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !hadParentScrolled() && !Window.isScreenShifted() && Settings.enableVirtualKeyboard) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
       {
          if (Settings.customKeyboard != null)
          {
