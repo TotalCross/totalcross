@@ -1072,6 +1072,9 @@ public class Edit extends Control implements TextControl
             break;
 
          default:
+            if (!Settings.enableVirtualKeyboard)
+               ;
+            else
             if (virtualKeyboard && editable && !"".equals(validChars))
             {
                if (Settings.customKeyboard != null)
