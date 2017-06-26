@@ -57,13 +57,13 @@ public class Toast
     * If delay is INFINITE, it will wait forever until you call show(null,0).
     * If delay is INFINITE_NOANIM, it will wait forever until you call show(null,0) and will not use animation.
     */
-   public static void show(final String message, final int delay, final Window topMost)
+   public static void show(final String message, final int delay, final Window parentWindow)
    {
       MainWindow.getMainWindow().runOnMainThread(new Runnable()
       {
          public void run()
          {
-            final Window parent = topMost;
+            final Window parent = parentWindow;
             if (btn != null && btn.parent != null)
             {
                btn.parent.remove(btn);
