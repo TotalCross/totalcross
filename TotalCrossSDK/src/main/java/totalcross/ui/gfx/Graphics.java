@@ -334,8 +334,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the arc
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawArc(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -350,8 +350,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawPie(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -365,8 +365,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillPie(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -380,8 +380,8 @@ public final class Graphics
     * @param xc x coordinate of the center of the circle that contains the arc.
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param r radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillPieGradient(int xc, int yc, int r, double startAngle, double endAngle)
    {
@@ -397,8 +397,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawEllipticalArc(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -414,8 +414,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void drawEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -432,8 +432,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillEllipticalPie(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -450,8 +450,8 @@ public final class Graphics
     * @param yc y coordinate of the center of the circle that contains the arc.
     * @param rx x radix of the circle that contains the pie
     * @param ry y radix of the circle that contains the pie
-    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
-    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param startAngle starting angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
+    * @param endAngle ending angle of the arc. It must be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     */
    public void fillEllipticalPieGradient(int xc, int yc, int rx, int ry, double startAngle, double endAngle)
    {
@@ -1861,7 +1861,7 @@ public final class Graphics
     *           unpredictable.
     * @param ry y radix of the circle that contains the point. Maximum ry value is 8000; above this, the result is
     *           unpredictable.
-    * @param angle angle of the point. It should be between 0 and 360 (degrees). 0บ is at 3 o'clock.
+    * @param angle angle of the point. It should be between 0 and 360 (degrees). 0ยบ is at 3 o'clock.
     * @param out the Coord with the x,y points
     */
    public void getAnglePoint(int xc, int yc, int rx, int ry, int angle, Coord out) // guich@300_41: fixed method
@@ -3585,5 +3585,12 @@ public final class Graphics
             err += ++y * 2 + 1;
          }
       } while (x < 0);
+   }
+
+   /** Draws a set of connected lines from the given x,y coordinates array. You must provide at least 2 points (4 int numbers). */
+   public void drawLines(int... p)
+   {
+      for (int i = 0, n = p.length-2; i < n; i += 2)
+         drawLine(p[i],p[i+1], p[i+2], p[i+3]);
    }
 }
