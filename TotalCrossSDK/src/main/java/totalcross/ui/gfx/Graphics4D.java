@@ -223,6 +223,12 @@ public final class Graphics4D
       out.y = yc - (asin[angle]*ry>>18);
    }
 
+   public void drawLines(int... p)
+   {
+      for (int i = 0, n = p.length-2; i < n; i += 2)
+         drawLine(p[i],p[i+1], p[i+2], p[i+3]);
+   }
+
    /////////////////////////////////////////////////////////////////////////////////////////////
    native public void fillVistaRect(int x, int y, int width, int height, int back, boolean invert, boolean rotate);
    native public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor);
