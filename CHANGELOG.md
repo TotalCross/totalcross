@@ -3,54 +3,48 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-## 3.43.3439 - 2017-06-20
+## 3.43.3439 - 2017-06-29
 
 ### Highlights
 - Now you can get Firebase identity token to send a unicast message to a single Android device
   - Check the [wiki page](https://gitlab.com/totalcross/TotalCross/wikis/features/firebase-token) for more details;
   - Also check the [GitHub example](https://github.com/TotalCross/totalcross-firebase-token/);
   - Any news, we will keep updating the post and the source
- 
-### Added
-- Added method `Image.resizeJpeg(String inputPath, String outputPath, int maxPixelSize)` to resize images on the file system with a smaller memory footprint.
-  - On iOS, this method has a native implementation that does not require loading the image on memory, greatly improving performance and memory consumption.
-  - On every other platform this method will still load the image on memory to perform the resize, but it should still be preferred over other resize methods as we intend to also add native implementation for other platforms in the future.
-- Added `Toast.show(final String message, final int delay, final Window parentWindow)`, where you can pass the window where the tooltip will be shown.
-- Added `Font.percentBy` which returns a font resized based on the given percentage.
 
-### Changes
-- Set the `MessageBox` default colors in the constructor instead of `onPopup`
-  - `MessageBox` colors will no longer change if the `UIColors` constants are changed after the object is created
-- `ImageControl` resizes and pans the background image with the foreground image.
-- `Vm.exec` on Android should now properly execute any video type supported by the viewer, using the MIME type associated with the file extension.
-  - Unsupported or wrong file extensions may not work, so make sure the file is ok if this method fails to play it.
-  
 ### Fixed
 - Deploy with absolute path in Unix system, it isn't anymore mistakenly recognized as a slash argument
 - Fixed `ScrollBar.recomputeParams` to ensure the values calculated are within a valid range.
 - Fixed TotalCross.apk deploy, which was not including Litebase libraries.
  - This affected only applications that used Litebase without packaging TotalCross (option `/p`) on Android.
-  
-### Deprecated
-- Those classes are not useful anymore and are deprecated:
-  * `totalcross.phone.PushNotification`
-  * `totalcross.ui.event.PushNotificationEvent`
-
-## 3.42.3366 - 2017-06-01
 
 ### Added
- - Added missing constructor `Throwable(String, Throwable, boolean, boolean)`
- - Added missing constructor `Exception(String, Throwable, boolean, boolean)`
- - Added missing constructor `RuntimeException(String, Throwable, boolean, boolean)`
+- Added missing constructor `Throwable(String, Throwable, boolean, boolean)`
+- Added missing constructor `Exception(String, Throwable, boolean, boolean)`
+- Added missing constructor `RuntimeException(String, Throwable, boolean, boolean)`
+- Added method `Image.resizeJpeg(String inputPath, String outputPath, int maxPixelSize)` to resize images on the file system with a smaller memory footprint.
+ - On iOS, this method has a native implementation that does not require loading the image on memory, greatly improving performance and memory consumption.
+ - On every other platform this method will still load the image on memory to perform the resize, but it should still be preferred over other resize methods as we intend to also add native implementation for other platforms in the future.
+- Added `Toast.show(final String message, final int delay, final Window parentWindow)`, where you can pass the window where the tooltip will be shown.
+- Added `Font.percentBy` which returns a font resized based on the given percentage.
 
-### Changes 
+### Changes
 - `SmsManager.sendTextMessage` asks the SMS composer application to automatically exit after the message is sent, switching back to the TotalCross application
+- Set the `MessageBox` default colors in the constructor instead of `onPopup`
+ - `MessageBox` colors will no longer change if the `UIColors` constants are changed after the object is created
+- `ImageControl` resizes and pans the background image with the foreground image.
+- `Vm.exec` on Android should now properly execute any video type supported by the viewer, using the MIME type associated with the file extension.
+ - Unsupported or wrong file extensions may not work, so make sure the file is ok if this method fails to play it.
+
+### Deprecated
+- Those classes are no longer used:
+ * `totalcross.phone.PushNotification`
+ * `totalcross.ui.event.PushNotificationEvent`
 
 ## 3.42.3362 - 2017-05-25
 
 ### Highlights
-- New class `SmsManager` to handle sms messages, only on Android for now.
-- New component `SideMenuContainer`, a template to make creating applications using a navbar and a sidemenu. This is an incubating feature, therefore backwards compatibility is not guaranteed for future releases.
+ - New class `SmsManager` to handle sms messages, only on Android for now.
+ - New component `SideMenuContainer`, a template to make creating applications using a navbar and a sidemenu. This is an incubating feature, therefore backwards compatibility is not guaranteed for future releases.
 
 ### Fixed
  - Fixed saving photo on portrait #47
