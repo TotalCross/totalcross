@@ -284,6 +284,12 @@ public class ScrollBar extends Container
          dragBarMin = uiFlat ? (btnWH-1) : btnWH;
          dragBarMax = size-dragBarMin-dragBarSize;
       }
+      // guich@20170628 - ensure that value is in the correct range
+      if (value < minimum)
+         value = minimum;
+      else
+      if (value > maximum-visibleItems)
+         value = maximum-visibleItems;
       dragBarPos = Math.min(dragBarMax,dragBarMin+(int)(valuesPerPixel * (value-minimum) + 0.5d)); // round value - guich@512_12: subtract minimum from value
       enableButtons();
    }
