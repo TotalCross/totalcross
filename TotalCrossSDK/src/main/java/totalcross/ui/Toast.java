@@ -35,7 +35,15 @@ public class Toast
    public static final int INFINITE = Convert.MAX_INT_VALUE;
    public static final int INFINITE_NOANIM = Convert.MIN_INT_VALUE;;
    
-   /** Shows a toast message using the given parameters.
+   /** Shows a toast message using the given parameters on the top most window.
+    * @see #show(String, int, Window)
+    */
+   public static void show(String message, int delay)
+   {
+      show(message, delay, Window.getTopMost());
+   }
+   
+   /** Shows a toast message using the given parameters on the given window.
     * Sample:
     * <pre>
     * String message = "This is a test";
@@ -49,13 +57,13 @@ public class Toast
     * If delay is INFINITE, it will wait forever until you call show(null,0).
     * If delay is INFINITE_NOANIM, it will wait forever until you call show(null,0) and will not use animation.
     */
-   public static void show(final String message, final int delay)
+   public static void show(final String message, final int delay, final Window parentWindow)
    {
       MainWindow.getMainWindow().runOnMainThread(new Runnable()
       {
          public void run()
          {
-            final Window parent = Window.getTopMost();
+            final Window parent = parentWindow;
             if (btn != null && btn.parent != null)
             {
                btn.parent.remove(btn);

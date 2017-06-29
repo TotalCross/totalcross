@@ -215,6 +215,24 @@ public final class Font
       return getFont(name,bold, size + delta);
    }
    
+   /** Returns a font with the size changed with that percentage. 
+    * The new size is thisFont.size * percent / 100.
+    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
+    */
+   public Font percentBy(int percent)
+   {
+      return getFont(name,style == 1, size * percent / 100);
+   }
+
+   /** Returns a font with the size changed with that percentage and the given bold style. 
+    * The new size is thisFont.size * percent / 100.
+    * delta can be positive or negative. The new size won't pass the minimum nor the maximum sizes.
+    */
+   public Font percentBy(int percent, boolean bold)
+   {
+      return getFont(name,bold, size * percent / 100);
+   }
+   
    /** Returns if this font is bold.
     * @since TotalCross 1.53
     */
