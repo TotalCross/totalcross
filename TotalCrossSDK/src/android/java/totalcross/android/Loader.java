@@ -37,6 +37,7 @@ import android.util.*;
 import android.view.*;
 import android.view.ViewGroup.*;
 import android.view.inputmethod.*;
+import android.webkit.MimeTypeMap;
 import android.widget.*;
 import com.google.android.gms.ads.*;
 import com.google.firebase.FirebaseApp;
@@ -906,7 +907,13 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
             if (args != null)
             {
                Intent i = new Intent(Intent.ACTION_VIEW);
-               i.setData(Uri.parse(args));
+               Uri uriData = Uri.parse(args);
+               String mimeType = getMimeType(uriData);
+               if (mimeType != null && !mimeType.endsWith("octet-stream")) {
+            	   i.setDataAndType(uriData, mimeType);
+               } else {
+            	   i.setData(uriData);
+               }
                startActivity(i);
             }
          }
@@ -937,6 +944,19 @@ public class Loader extends Activity implements BarcodeReadListener, TextToSpeec
       if (!wait)
          finish();
    }
+   
+   // From https://stackoverflow.com/a/31691791/4438007
+   public String getMimeType(Uri uri) {
+	    String mimeType = null;
+	    if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+	        ContentResolver cr = getContentResolver();
+	        mimeType = cr.getType(uri);
+	    } else {
+	        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+	        mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension.toLowerCase());
+	    }
+	    return mimeType;
+	}
    
    public void onConfigurationChanged(Configuration config)
    {
