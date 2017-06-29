@@ -89,7 +89,7 @@ android {
 		from ('../../../TotalCrossSDK/etc/fonts') {
 			include 'TCFont.tcz'
 		}
-		from ('../../../../Litebase/LitebaseSDK/dist/lib/') {
+		from ('../../../LitebaseSDK/dist/lib/') {
 			include 'LitebaseLib.tcz'
 		}
 		entryCompression ZipEntryCompression.STORED
