@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-## 3.43.3439 - 2017-06-29
+## 3.43.3452 - 2017-06-29
 
 ### Highlights
 - Now you can get Firebase identity token to send a unicast message to a single Android device
