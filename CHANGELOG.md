@@ -12,16 +12,24 @@ All notable changes to this project will be documented in this file.
   - Any news, we will keep updating the post and the source
  
 ### Added
-- Added method to resize image natively on iOS `Image.resizeJpeg(String inputPath, String outputPath, int maxPixelSize)`
-  - This method is also available on other platforms, but it resizes using the TotalCross and more memory than the native counterpart
+- Added method `Image.resizeJpeg(String inputPath, String outputPath, int maxPixelSize)` to resize images on the file system with a smaller memory footprint.
+  - On iOS, this method has a native implementation that does not require loading the image on memory, greatly improving performance and memory consumption.
+  - On every other platform this method will still load the image on memory to perform the resize, but it should still be preferred over other resize methods as we intend to also add native implementation for other platforms in the future.
+- Added `Toast.show(final String message, final int delay, final Window parentWindow)`, where you can pass the window where the tooltip will be shown.
+- Added `Font.percentBy` which returns a font resized based on the given percentage.
 
 ### Changes
 - Set the `MessageBox` default colors in the constructor instead of `onPopup`
   - `MessageBox` colors will no longer change if the `UIColors` constants are changed after the object is created
 - `ImageControl` resizes and pans the background image with the foreground image.
+- `Vm.exec` on Android should now properly execute any video type supported by the viewer, using the MIME type associated with the file extension.
+  - Unsupported or wrong file extensions may not work, so make sure the file is ok if this method fails to play it.
   
 ### Fixed
 - Deploy with absolute path in Unix system, it isn't anymore mistakenly recognized as a slash argument
+- Fixed `ScrollBar.recomputeParams` to ensure the values calculated are within a valid range.
+- Fixed TotalCross.apk deploy, which was not including Litebase libraries.
+ - This affected only applications that used Litebase without packaging TotalCross (option `/p`) on Android.
   
 ### Deprecated
 - Those classes are not useful anymore and are deprecated:
