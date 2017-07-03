@@ -1484,7 +1484,7 @@ static bool isInsideClip(TCObject g, int32 tx, int32 ty, int32* x, int32* y, int
    return true;
 }
 
-static bool isConvexAndInsideClip(TCObject g, int32 tx, int32 ty, int32* x, int32* y, int32 n)
+tatic bool isConvexAndInsideClip(TCObject g, int32 tx, int32 ty, int32* x, int32* y, int32 n)
 {
    // http://debian.fmi.uni-sofia.bg/~sergei/cgsr/docs/clockwise.htm
    int32 i,j,k;
@@ -1651,6 +1651,292 @@ static void fillPolygon(Context currentContext, TCObject g, int32 *xPoints1, int
                drawHLine(currentContext, g,yp[0],y,yp[1]-yp[0],c.pixel,c.pixel);
          }
       }
+   }
+}
+
+////////////////////////////////////////////////////////////////////////////
+// draws a polygon. if the polygon is not closed, close it
+static void drawPolygon(Context currentContext, TCObject g, int32 *xPoints1, int32 *yPoints1, int32 nPoints1, int32 *xPoints2, int32 *yPoints2, int32 nPoints2, int32 tx, int32 ty, Pixel pixel)
+{
+   if (xPoints1 && yPoints1 && nPoints1 >= 2)
+   {
+#if defined __gl2_h_ && !defined WP8
+      if (Graphics_useOpenGL(g) && (nPoints1 == 0 || isInsideClip(g, tx, ty, xPoints1, yPoints1, nPoints1)) && (nPoints2 == 0 || isInsideClip(g, tx, ty, xPoints2, yPoints2, nPoints2)))
+      {
+         if (nPoints1 > 0)
+            glDrawLines(currentContext, g, xPoints1, yPoints1, nPoints1, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+         if (nPoints2 > 0)
+            glDrawLines(currentContext, g, xPoints2, yPoints2, nPoints2, tx + Graphics_transX(g), ty + Graphics_transY(g), pixel, false);
+      } 
+      else
+#endif
+      {
+         int32 i;
+         for (i=1; i < nPoints1; i++)
+            drawLine(currentContext, g,tx + xPoints1[i-1], ty + yPoints1[i-1], tx + xPoints1[i], ty + yPoints1[i], pixel);
+         for (i=1; i < nPoints2; i++)
+            drawLine(currentContext, g,tx + xPoints2[i-1], ty + yPoints2[i-1], tx + xPoints2[i], ty + yPoints2[i], pixel);
+      }
+   }
+}
+////////////////////////////////////////////////////////////////////////////
+// draw an elliptical arc from startAngle to endAngle.
+// c is the fill color and c2 is the outline color
+// (if in fill mode - otherwise, c = outline color)
+static void arcPiePointDrawAndFill(Context currentContext, TCObject g, int32 xc, int32 yc, int32 rx, int32 ry, double startAngle, double endAngle, Pixel c, Pixel c2, bool fill, bool pie, bool gradient)
+{
+   // this algorithm was created by Guilherme Campos Hazan
+   double ppd;
+   int32 startIndex,endIndex,index,i,nq,size=0,oldX1=0,oldY1=0,last,oldX2=0,oldY2=0;
+   bool sameR,startSetTo0 = true;
+   TCObject *xPointsObj = &Graphics_xPoints(g);
+   TCObject *yPointsObj = &Graphics_yPoints(g);
+   int32 *xPoints = *xPointsObj ? (int32*)ARRAYOBJ_START(*xPointsObj) : null;
+   int32 *yPoints = *yPointsObj ? (int32*)ARRAYOBJ_START(*yPointsObj) : null;
+   int32 clipFactor = Graphics_minY(g) * Graphics_maxY(g);
+   bool sameClipFactor = Graphics_lastClipFactor(g) == clipFactor;
+
+   if (rx < 0 || ry < 0) // guich@501_13
+      return;
+   // make sure the values are -359 <= x <= 359
+   while (startAngle <= -360) startAngle += 360;
+   while (endAngle   <= -360) endAngle   += 360;
+   while (startAngle >   360) startAngle -= 360;
+   while (endAngle   >   360) endAngle   -= 360;
+
+   if (startAngle == endAngle) // guich@501_13
+      return;
+   if (startAngle > endAngle) // eg 235 to 45
+      startAngle -= 360; // set to -45 to 45 so we can handle it correctly
+   if (startAngle >= 0 && endAngle <= 0) // eg 135 to -135
+      endAngle += 360; // set to 135 to 225
+
+   // step 0: correct angle values
+   if (startAngle < 0.1 && endAngle > 359.9) // full circle? use the fastest routine instead
+   {
+      if (fill)
+         ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c2, true, gradient);
+      ellipseDrawAndFill(currentContext, g,xc, yc, rx, ry, c, c, false, gradient);
+      return;
+   }
+
+   // step 0: if possible, use cached results
+   sameR = rx == Graphics_lastRX(g) && ry == Graphics_lastRY(g);
+   if (!sameClipFactor || !sameR)
+   {
+      // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
+      // intermediate terms to speed up loop
+      int64 t1 = (int64)rx*(int64)rx, t2 = t1<<1, t3 = t2<<1;
+      int64 t4 = (int64)ry*(int64)ry, t5 = t4<<1, t6 = t5<<1;
+      int64 t7 = (int64)rx*t5, t8 = t7<<1, t9 = 0L;
+      int64 d1 = t2 - t7 + (t4>>1);    // error terms
+      int64 d2 = (t1>>1) - t8 + t5;
+      int32 x = rx;                 // ellipse points
+      int32 y = 0;                  // ellipse points
+
+      while (d2 < 0)              // til slope = -1
+      {
+         t9 += t3;
+         if (d1 < 0)             // move straight up
+         {
+            d1 += t9 + t2;
+            d2 += t9;
+         }
+         else                   // move up and left
+         {
+            --x;
+            t8 -= t6;
+            d1 += t9 + t2 - t8;
+            d2 += t9 + t5 - t8;
+         }
+         ++size;
+      }
+
+      do             // rest of top right quadrant
+      {
+         --x;         // always move left here
+         t8 -= t6;
+         if (d2 < 0)  // move up and left
+         {
+            t9 += t3;
+            d2 += t9 + t5 - t8;
+         }
+         else d2 += t5 - t8;  // move straight left
+         ++size;
+      } while (x >= 0);
+      nq = size;
+      size *= 4;
+      // step 2: computes how many points per degree
+      ppd = (double)size / 360.0f;
+      // step 3: create space in the buffer so it can save all the circle
+      size+=2;
+      if (pie) size++;
+      if (xPoints == null || ARRAYOBJ_LEN(*xPointsObj) != (uint32)size) // guich@tc304: changed < to != to fix a glytch when drawing two pies with different radius
+      {
+         *xPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
+         if (*xPointsObj == null)
+            return;
+         *yPointsObj = createArrayObject(currentContext, INT_ARRAY, max32(3,size));
+         if (*yPointsObj == null)
+         {
+            setObjectLock(*xPointsObj, UNLOCKED);
+            return;
+         }
+         setObjectLock(*xPointsObj, UNLOCKED);
+         setObjectLock(*yPointsObj, UNLOCKED);
+      }
+      xPoints = (int32*)ARRAYOBJ_START(*xPointsObj);
+      yPoints = (int32*)ARRAYOBJ_START(*yPointsObj);
+      if (pie) {xPoints++; yPoints++;} // make sure that startIndex-1 is at a valid pointer
+
+      // step 4: stores all the circle in the array. the odd arcs are drawn in reverse order
+      // intermediate terms to speed up loop
+      t2 = t1<<1;
+      t3 = t2<<1;
+      t8 = t7<<1;
+      t9 = 0;
+      d1 = t2 - t7 + (t4>>1); // error terms
+      d2 = (t1>>1) - t8 + t5;
+      x = rx;
+      i=0;
+      while (d2 < 0)          // til slope = -1
+      {
+         // save 4 points using symmetry
+         index = nq*0+i;      // 0/3
+         xPoints[index]=+x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)-i-1;    // 1/3
+         xPoints[index]=-x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)+i;      // 2/3
+         xPoints[index]=-x;
+         yPoints[index]=+y;
+
+         index = (nq<<2)-i-1;    // 3/3
+         xPoints[index]=+x;
+         yPoints[index]=+y;
+         i++;
+         y++;        // always move up here
+         t9 += t3;
+         if (d1 < 0)  // move straight up
+         {
+             d1 += t9 + t2;
+             d2 += t9;
+         }
+         else      // move up and left
+         {
+             x--;
+             t8 -= t6;
+             d1 += t9 + t2 - t8;
+             d2 += t9 + t5 - t8;
+         }
+      }
+
+      do             // rest of top right quadrant
+      {
+         // save 4 points using symmetry
+         index = nq*0+i;    // 0/3
+         xPoints[index]=+x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)-i-1;  // 1/3
+         xPoints[index]=-x;
+         yPoints[index]=-y;
+
+         index = (nq<<1)+i;    // 2/3
+         xPoints[index]=-x;
+         yPoints[index]=+y;
+
+         index = (nq<<2)-i-1;  // 3/3
+         xPoints[index]=+x;
+         yPoints[index]=+y;
+
+         ++i;
+         --x;        // always move left here
+         t8 -= t6;
+         if (d2 < 0)  // move up and left
+         {
+            ++y;
+            t9 += t3;
+            d2 += t9 + t5 - t8;
+         }
+         else d2 += t5 - t8;   // move straight left
+      } while (x >= 0);
+      // save last arguments
+      //Graphics_lastXC(g)   = xc; no longer
+      //Graphics_lastYC(g)   = yc;  needed
+      Graphics_lastRX(g)   = rx;
+      Graphics_lastRY(g)   = ry;
+      Graphics_lastPPD(g)  = ppd;
+      Graphics_lastSize(g) = size;
+      Graphics_lastClipFactor(g) = clipFactor;
+   }
+   else
+   {
+      size = Graphics_lastSize(g);
+      ppd = Graphics_lastPPD(g);
+   }
+   // step 5: computes the start and end indexes that will become part of the arc
+   if (startAngle < 0)
+      startAngle += 360;
+   if (endAngle < 0)
+      endAngle += 360;
+   startIndex = (int32)(ppd * startAngle);
+   endIndex = (int32)(ppd * endAngle);
+
+   last = size-2;
+   if (endIndex >= last) // 360?
+      endIndex--;
+   // step 6: fill or draw the polygons
+   endIndex++;
+   if (pie)
+   {
+      // connect two lines from the center to the two edges of the arc
+      oldX1 = xPoints[endIndex];
+      oldY1 = yPoints[endIndex];
+      xPoints[endIndex] = yPoints[endIndex] = 0;
+      if (xPoints[startIndex] == 0 && yPoints[startIndex] == 0)
+         startSetTo0 = false;
+      else
+      {
+         startIndex--;
+         oldX2 = xPoints[startIndex];
+         oldY2 = yPoints[startIndex];
+         xPoints[startIndex] = yPoints[startIndex] = 0;
+      }
+      endIndex++;
+   }
+  
+   if (startIndex > endIndex) // drawing from angle -30 to +30 ? (startIndex = 781, endIndex = 73, size=854)
+   {
+      int p1 = last-startIndex;
+      if (fill)
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1, xPoints, yPoints, endIndex, xc,yc, gradient ? c : c2, c2, gradient); // lower half, upper half
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, p1-1, xPoints+1, yPoints+1, endIndex-1, xc,yc, c);
+   }
+   else
+   {
+      int32 arc = pie ? 0 : 1;
+      if (fill)
+         fillPolygon(currentContext, g, xPoints+startIndex, yPoints+startIndex, endIndex-startIndex, 0,0,0, xc,yc, gradient ? c : c2, c2, gradient);   
+      if (!gradient) drawPolygon(currentContext, g, xPoints+startIndex+arc, yPoints+startIndex+arc, endIndex-startIndex-arc, 0,0,0, xc,yc, c);
+   }
+   if (pie)  // restore saved points
+   {
+      if (startSetTo0)
+      {
+         xPoints[startIndex] = oldX2;
+         yPoints[startIndex] = oldY2;
+      }
+      endIndex--;
+      xPoints[endIndex]   = oldX1;
+      yPoints[endIndex]   = oldY1;
+#ifdef ANDROID
+      if (!gradient && endAngle == 360) 
+         drawLine(currentContext,g, xc,yc, xc+xPoints[endIndex-1], yc+yPoints[endIndex-1], c);
+#endif         
    }
 }
 
