@@ -422,6 +422,8 @@ public class Window extends Container
             if (_focus == null) // guich@tc100: maybe the user changed the focus to a new control in the FOCUS_OUT event
             {
                _focus = c;
+               if (c.getParentWindow() != getTopMost()) // in case the focus is being set to a window under the current one
+                  focusOnPopup = c;
                if (c.isEnabled()) // guich@tc152: disabled controls can't send focus events
                {
                   _controlEvent.type = ControlEvent.FOCUS_IN;
