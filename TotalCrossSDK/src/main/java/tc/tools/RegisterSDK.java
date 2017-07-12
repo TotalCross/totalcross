@@ -34,12 +34,7 @@ public final class RegisterSDK
    
   public RegisterSDK(String key, String user) throws Exception {
     this(key, false);
-    FileOutputStream fos =
-        new FileOutputStream(
-            new File(
-                AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"), "key.dat"));
-    fos.write(key.getBytes(Charset.forName("UTF-8")));
-    fos.close();
+    storeActivationKey(key);
   }
    
    public RegisterSDK(String newkey) throws Exception
@@ -272,4 +267,31 @@ public final class RegisterSDK
       int year  = d / 10000;
       return day+" "+totalcross.util.Date.monthNames[month]+", "+year;
    }
+   
+  public static String getStoredActivationKey() {
+    String activationKey = null;
+    try (FileInputStream fis =
+        new FileInputStream(
+            new File(
+                AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"),
+                "key.dat"))) {
+      byte[] b = new byte[24];
+      fis.read(b);
+      activationKey = new String(b, "UTF-8");
+    } catch (FileNotFoundException e) {
+    } catch (java.io.IOException e) {
+      e.printStackTrace();
+    }
+    return activationKey;
+  }
+
+  private static void storeActivationKey(String activationKey) throws IOException {
+    try (FileOutputStream fos =
+        new FileOutputStream(
+            new File(
+                AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"),
+                "key.dat"))) {
+      fos.write(activationKey.getBytes(Charset.forName("UTF-8")));
+    }
+  }
 }

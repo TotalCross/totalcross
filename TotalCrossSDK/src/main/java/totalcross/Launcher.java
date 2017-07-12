@@ -33,8 +33,8 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.zip.ZipInputStream;
 
-import net.harawata.appdirs.AppDirsFactory;
 import tc.tools.JarClassPathLoader;
+import tc.tools.RegisterSDK;
 import tc.tools.deployer.DeploySettings;
 import totalcross.io.IOException;
 import totalcross.io.Stream;
@@ -641,16 +641,8 @@ final public class Launcher extends java.applet.Applet implements WindowListener
 
       Settings.dataPath = newDataPath;
     if (activationKey == null) {
-      try (FileInputStream fis = new FileInputStream(new File(AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"), "key.dat"))) {
-        byte[] b = new byte[24];
-        fis.read(b);
-        activationKey = new String(b, "UTF-8");
-      } catch (FileNotFoundException e) {
-      } catch (java.io.IOException e) {
-        e.printStackTrace();
-      }
+      activationKey = RegisterSDK.getStoredActivationKey();
     }
-      
       if (activationKey != null && activationKey.length() != 24)
       {
             System.err.println("The registration key has incorrect length: "+activationKey.length()+" but must have 24");
