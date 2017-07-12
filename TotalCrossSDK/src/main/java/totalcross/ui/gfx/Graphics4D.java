@@ -41,18 +41,19 @@ public final class Graphics4D
    public boolean isVerticalText;
    protected int lastClipFactor;
    private boolean isControlSurface;
+   protected int lastcRX, lastcRY, lastcSize;
    // instance doubles
-   protected double lastPPD; // used by arcPiePointDrawAndFill
+   protected double lastPPD, lastcPPD; // used by arcPiePointDrawAndFill
    // instance objects
    protected GfxSurface surface;
    protected Object font;
    protected int xPoints[], yPoints[]; // used by arcPiePointDrawAndFill
    protected int[]ints; // used by fillPolygon
+   protected int cyPoints[], cxPoints[];
    // static objects
    public static boolean needsUpdate; // IMPORTANT: NOT USED IN DEVICE
    private static int[] pal685;
    static int[] mainWindowPixels; // create the pixels
-   private static int[]acos,asin;
 
    static public final byte R3D_EDIT=1;
    static public final byte R3D_LOWERED=2;
@@ -195,32 +196,170 @@ public final class Graphics4D
    {
       if (angle < 0 || angle >= 360)
       {
-         while (angle <    0) angle += 360;
-         while (angle >= 360) angle -= 360;
+         while (angle < 0)
+            angle += 360;
+         while (angle >= 360)
+            angle -= 360;
       }
-      if (acos == null) // create a lookup table for sin and cos - these tend to be slooow when in loop.
-      {
-         acos = new int[360];
-         asin = new int[360];
-         double tick = 2.0 * Math.PI / acos.length, a = 0;
-         for (int i = 0; i <= 45; a += tick, i++)
-         {
-            acos[90-i] = asin[i] = (int)(Math.sin(a)*(1<<18));
-            asin[90-i] = acos[i] = (int)(Math.cos(a)*(1<<18));
-         }
-         for (int s,c,i = 0; i < 90; i++)
-         {
-            s = asin[i];
-            c = acos[i];
 
-            asin[i+90]  = c;
-            asin[i+180] = acos[i+90 ] = -s;
-            asin[i+270] = acos[i+180] = -c;
-            acos[i+270] = s;
+      int nPoints = 0;
+      // this algorithm was created by Guilherme Campos Hazan
+      double ppd;
+      int index, i;
+      int size = 0;
+      // step 0: correct angle values
+      int[] xPoints = cxPoints;
+      int[] yPoints = cyPoints;
+      // step 0: if possible, use cached results
+      boolean sameR = rx == lastcRX && ry == lastcRY;
+      if (!sameR)
+      {
+         long t1 = (long) rx * rx, t2 = t1 << 1, t3 = t2 << 1;
+         long t4 = (long) ry * ry, t5 = t4 << 1, t6 = t5 << 1;
+         long t7 = (long) rx * t5, t8 = t7 << 1, t9 = 0;
+         long d1 = t2 - t7 + (t4 >> 1); // error terms
+         long d2 = (t1 >> 1) - t8 + t5;
+         int x = rx, y = 0; // ellipse points
+
+         if (sameR)
+            size = lastcSize;
+         else
+         {
+            // step 1: computes how many points the circle has (computes only 45 degrees and mirrors the rest)
+            // intermediate terms to speed up loop
+            while (d2 < 0) // til slope = -1
+            {
+               t9 += t3;
+               if (d1 < 0) // move straight up
+               {
+                  d1 += t9 + t2;
+                  d2 += t9;
+               }
+               else // move up and left
+               {
+                  x--;
+                  t8 -= t6;
+                  d1 += t9 + t2 - t8;
+                  d2 += t9 + t5 - t8;
+               }
+               size++;
+            }
+
+            do // rest of top right quadrant
+            {
+               x--; // always move left here
+               t8 -= t6;
+               if (d2 < 0) // move up and left
+               {
+                  t9 += t3;
+                  d2 += t9 + t5 - t8;
+               }
+               else // move straight left
+                  d2 += t5 - t8;
+               size++;
+
+            } while (x >= 0);
          }
+         // step 2: computes how many points per degree
+         ppd = (double) size / 90.0;
+         // step 3: create space in the buffer so it can save 1/4 of the circle
+         if (nPoints < size)
+         {
+            cxPoints = cyPoints = null;
+            xPoints = cxPoints = new int[size];
+            yPoints = cyPoints = new int[size];
+         }
+         // step 4: stores all the 1/4 circle in the array. the odd arcs are drawn in reverse order
+         // intermediate terms to speed up loop
+         t2 = t1 << 1;
+         t3 = t2 << 1;
+         t8 = t7 << 1;
+         t9 = 0;
+         d1 = t2 - t7 + (t4 >> 1); // error terms
+         d2 = (t1 >> 1) - t8 + t5;
+         x = rx;
+
+         i = 0;
+         while (d2 < 0) // til slope = -1
+         {
+            // save 4 points using symmetry
+            xPoints[i] = x;
+            yPoints[i] = y;
+            i++;
+
+            y++; // always move up here
+            t9 += t3;
+            if (d1 < 0) // move straight up
+            {
+               d1 += t9 + t2;
+               d2 += t9;
+            }
+            else // move up and left
+            {
+               x--;
+               t8 -= t6;
+               d1 += t9 + t2 - t8;
+               d2 += t9 + t5 - t8;
+            }
+         }
+
+         do // rest of top right quadrant
+         {
+            // save 4 points using symmetry
+            // guich@340_3: added clipping
+            xPoints[i] = x;
+            yPoints[i] = y;
+            i++;
+
+            x--; // always move left here
+            t8 -= t6;
+            if (d2 < 0) // move up and left
+            {
+               y++;
+               t9 += t3;
+               d2 += t9 + t5 - t8;
+            }
+            else // move straight left
+               d2 += t5 - t8;
+         } while (x >= 0);
+         // save last arguments
+         lastcPPD = ppd;
+         lastcSize = size;
+         lastcRX = rx;
+         lastcRY = ry;
       }
-      out.x = xc + (acos[angle]*rx>>18);
-      out.y = yc - (asin[angle]*ry>>18);
+      else
+      {
+         ppd  = lastcPPD;
+         size = lastcSize;
+      }
+      // step 5: computes the start and end indexes that will become part of the arc
+      index = (int) (ppd * angle + 0.5);
+      int x = 0;
+      int y = 0;
+      switch (angle / 90)
+      {
+         case 0: 
+            x = + xPoints[index];
+            y = - yPoints[index];
+            break;
+         case 1:
+            x = - xPoints[size-(index-size)-1];
+            y = - yPoints[size-(index-size)-1];
+            break;
+         case 2:
+            x = - xPoints[index-2*size];
+            y = + yPoints[index-2*size];
+            break;
+         case 3:
+            int idx = size-(index-3*size)-1; if (idx < 0) idx = 0;
+            x = + xPoints[idx];
+            y = + yPoints[idx];
+            break;
+      }
+
+      out.x = xc + x;
+      out.y = yc + y;
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////
