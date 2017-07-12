@@ -2,12 +2,17 @@ package tc.tools;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.security.*;
-import java.util.*;
-import java.util.zip.*;
+import java.util.HashMap;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+
 import javax.crypto.*;
-import javax.crypto.spec.*;
-import tc.tools.deployer.*;
+import javax.crypto.spec.SecretKeySpec;
+
+import net.harawata.appdirs.AppDirsFactory;
+import tc.tools.deployer.Utils;
 
 public final class RegisterSDK
 {
@@ -26,6 +31,16 @@ public final class RegisterSDK
    private String user, home, key;
    private int today;
    private File flicense;
+   
+  public RegisterSDK(String key, String user) throws Exception {
+    this(key, false);
+    FileOutputStream fos =
+        new FileOutputStream(
+            new File(
+                AppDirsFactory.getInstance().getUserDataDir(null, null, "TotalCross"), "key.dat"));
+    fos.write(key.getBytes(Charset.forName("UTF-8")));
+    fos.close();
+  }
    
    public RegisterSDK(String newkey) throws Exception
    {
