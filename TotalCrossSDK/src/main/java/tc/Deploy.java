@@ -320,9 +320,6 @@ public class Deploy
                          if (key == null || key.length() != 24)
                             throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX; optionally, you can use %key% to refer to an environment variable");
                          activationKey = key;
-                         DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
-                         DeploySettings.isFreeSDK = new String(DeploySettings.rasKey,0,4).equals("TCST");
-                         System.out.println("The application was signed with the given registration key.");
                          break;
                case 't': DeploySettings.testClass = true; 
                          break; // guich@tc115_37: missing break
@@ -342,17 +339,24 @@ public class Deploy
                default:  throw new DeployerException("Invalid option: "+op);
             }
       }
-      if (activationKey == null)
-         throw new DeployerException("You must provide a registration key! If you're a PROFESSIONAL or ENTERPRISE, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a STARTER, the key was sent to the email that you used to download the SDK.");
-      else
-      if (DeploySettings.isFreeSDK)
-      {
-         if (options == BUILD_ALL)
-            options &= ~FREE_BLOCKED_PLATFORMS;
-         else
-         if ((options & FREE_BLOCKED_PLATFORMS) != 0)
-            throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
+    if (activationKey == null) {
+      activationKey = RegisterSDK.getStoredActivationKey();
+    }
+    if (activationKey == null) {
+      throw new DeployerException(
+          "You must provide a registration key! If you're a PROFESSIONAL or ENTERPRISE, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a STARTER, the key was sent to the email that you used to download the SDK.");
+    } else {
+      DeploySettings.rasKey = Convert.hexStringToBytes(activationKey, true);
+      DeploySettings.isFreeSDK = new String(DeploySettings.rasKey, 0, 4).equals("TCST");
+      System.out.println("The application was signed with the given registration key.");
+
+      if (DeploySettings.isFreeSDK) {
+        if (options == BUILD_ALL) options &= ~FREE_BLOCKED_PLATFORMS;
+        else if ((options & FREE_BLOCKED_PLATFORMS) != 0)
+          throw new DeployerException(
+              "The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
       }
+    }
       return options;
    }
 
