@@ -13,15 +13,15 @@
 
 package tc;
 
-import totalcross.sys.*;
-import totalcross.util.*;
-
 import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import tc.tools.*;
-import tc.tools.converter.*;
+
+import tc.tools.JarClassPathLoader;
+import tc.tools.RegisterSDK;
+import tc.tools.converter.J2TC;
 import tc.tools.deployer.*;
+import totalcross.sys.Convert;
+import totalcross.util.ElementNotFoundException;
+import totalcross.util.IntHashtable;
 
 public class Deploy
 {
@@ -166,49 +166,6 @@ public class Deploy
       JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/ipa/dd-plist.jar");
    }
 
-   /**
-    * Utility class that dynamically loads a jar file into the Deploy classpath.<br>
-    * It uses reflection to grant access to the loaded jar, a little hackish but that's the easiest way of doing it.<br>
-    * Another option would be to iterate through the jar entries and load classes one by one, which is not much better
-    * than this IMHO. So I decided to go with the easiest-to-implement solution.
-    * 
-    * @author Fabio Sobral
-    * @since TotalCross 1.15
-    */
-   //flsobral@tc115: just a mark for quick search, see class documentation above.
-   public static class JarClassPathLoader
-   {
-      private static final Class<?>[] parameters = new Class[] { URL.class };
-
-      public static void addFile(String s) throws java.io.IOException
-      {
-         java.io.File f = new java.io.File(s);
-         addFile(f);
-      }
-
-      public static void addFile(java.io.File f) throws java.io.IOException
-      {
-         addURL(f.toURI().toURL());
-      }
-
-      public static void addURL(URL u) throws java.io.IOException
-      {
-         URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-         Class<?> sysclass = URLClassLoader.class;
-
-         try
-         {
-            Method method = sysclass.getDeclaredMethod("addURL", parameters);
-            method.setAccessible(true);
-            method.invoke(sysloader, new Object[] { u });
-         }
-         catch (Throwable t)
-         {
-            throw new java.io.IOException("Error, could not add URL to system classloader", t);
-         }
-      }
-   }
-   
    private void showException(Throwable e, String extraMsg)
    {
       System.out.println();
@@ -363,9 +320,6 @@ public class Deploy
                          if (key == null || key.length() != 24)
                             throw new DeployerException("The key must be specified in the following format: XXXXXXXXXXXXXXXXXXXXXXXX; optionally, you can use %key% to refer to an environment variable");
                          activationKey = key;
-                         DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
-                         DeploySettings.isFreeSDK = new String(DeploySettings.rasKey,0,4).equals("TCST");
-                         System.out.println("The application was signed with the given registration key.");
                          break;
                case 't': DeploySettings.testClass = true; 
                          break; // guich@tc115_37: missing break
@@ -385,17 +339,24 @@ public class Deploy
                default:  throw new DeployerException("Invalid option: "+op);
             }
       }
-      if (activationKey == null)
-         throw new DeployerException("You must provide a registration key! If you're a PROFESSIONAL or ENTERPRISE, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a STARTER, the key was sent to the email that you used to download the SDK.");
-      else
-      if (DeploySettings.isFreeSDK)
-      {
-         if (options == BUILD_ALL)
-            options &= ~FREE_BLOCKED_PLATFORMS;
-         else
-         if ((options & FREE_BLOCKED_PLATFORMS) != 0)
-            throw new DeployerException("The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
+    if (activationKey == null) {
+      activationKey = RegisterSDK.getStoredActivationKey();
+    }
+    if (activationKey == null) {
+      throw new DeployerException(
+          "You must provide a registration key! If you're a PROFESSIONAL or ENTERPRISE, go to the TotalCross site and login into your account; the SDK key will be shown. If you're a STARTER, the key was sent to the email that you used to download the SDK.");
+    } else {
+      DeploySettings.rasKey = Convert.hexStringToBytes(activationKey, true);
+      DeploySettings.isFreeSDK = new String(DeploySettings.rasKey, 0, 4).equals("TCST");
+      System.out.println("The application was signed with the given registration key.");
+
+      if (DeploySettings.isFreeSDK) {
+        if (options == BUILD_ALL) options &= ~FREE_BLOCKED_PLATFORMS;
+        else if ((options & FREE_BLOCKED_PLATFORMS) != 0)
+          throw new DeployerException(
+              "The free SDK does not allow deployments to these platforms: wince, winmo, win32, linux");
       }
+    }
       return options;
    }
 

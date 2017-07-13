@@ -329,24 +329,36 @@ public class Vector
 
    /** Sorts the elements of this Vector. If they are Strings,
      the sort will be much faster because a cast to String is done;
-     if they are not strings, the toString() method is used to return
-     the string that will be used for comparison. */
+     if they are not strings, Convert.qsort will try to discover the type. */
    public void qsort() // flsobral@tc100b4_22: changed return type to void.
    {
       if (count > 0)
          Convert.qsort(items, 0, count-1);
    }
 
-   /** Sorts the elements of this Vector. If they are Strings,
-   the sort will be much faster because a cast to String is done;
-   if they are not strings, the toString() method is used to return
-   the string that will be used for comparison. */
-    public void qsort(int sortType)
-    {
-       if (count > 0)
-          Convert.qsort(items, 0, count-1, sortType);
-    }
+   /** Sorts the elements of this Vector, with the given sort type. */
+   public void qsort(int sortType)
+   {
+      if (count > 0)
+         Convert.qsort(items, 0, count-1, sortType);
+   }
    
+   /** Sorts the elements of this Vector, in the given order. If they are Strings,
+   the sort will be much faster because a cast to String is done;
+     if they are not strings, Convert.qsort will try to discover the type. */
+   public void qsort(boolean ascending) // flsobral@tc100b4_22: changed return type to void.
+   {
+      if (count > 0)
+         Convert.qsort(items, 0, count-1, Convert.SORT_AUTODETECT, ascending);
+   }
+
+   /** Sorts the elements of this Vector, with the given sort type and order. */
+   public void qsort(int sortType, boolean ascending)
+   {
+      if (count > 0)
+         Convert.qsort(items, 0, count-1, sortType, ascending);
+   }
+  
    /** Dumps the contents of this vector and returns a string of it.
     * If the number of elements is big, it can take a lot of memory!
     */

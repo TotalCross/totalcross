@@ -119,6 +119,7 @@ public class ImageControl extends Control
                   this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
                else
                   this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
+               if (this.img != null) this.img.alphaMask = img0.alphaMask;
             }
             catch (ImageException e)
             {
@@ -239,6 +240,7 @@ public class ImageControl extends Control
                this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.width,false) : img0.hwScaledFixedAspectRatio(this.width,false);
             else
                this.img = Settings.enableWindowTransitionEffects ? img0.smoothScaledFixedAspectRatio(this.height,true) : img0.hwScaledFixedAspectRatio(this.height,true);
+            if (this.img != null) this.img.alphaMask = img0.alphaMask;
          }
          catch (ImageException e)
          {
